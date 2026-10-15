@@ -54,12 +54,23 @@ pkgutil --expand "$PKG" "$TMP/expanded"
 [ -f "$TMP/expanded/Distribution" ] || fail "no Distribution in pkg"
 for c in app vst3 au; do
     d="$TMP/expanded/ohpe-$c.pkg"
-    [ -f "$d/Payload" ] || fail "component ohpe-$c.pkg has no Payload"
-    [ -f "$d/Scripts" ] || fail "component ohpe-$c.pkg has no Scripts"
+    # pkgutil --expand leaves Payload as an archive and unpacks Scripts into a folder
+    # (older versions keep Scripts as a gzip'ed cpio archive) - accept both.
+    [ -e "$d/Payload" ] || { find "$TMP/expanded" | head -n 40; fail "component ohpe-$c.pkg has no Payload"; }
+    if [ -d "$d/Scripts" ]; then
+        SCRIPTS_DIR="$d/Scripts"
+    elif [ -f "$d/Scripts" ]; then
+        mkdir -p "$TMP/scripts-$c"
+        (cd "$TMP/scripts-$c" && gzip -dc "$d/Scripts" | cpio -i --quiet)
+        SCRIPTS_DIR="$TMP/scripts-$c"
+    else
+        find "$TMP/expanded" | head -n 40
+        fail "component ohpe-$c.pkg has no Scripts"
+    fi
     grep -q "com.groovex.ohpe.$c" "$TMP/expanded/Distribution" || fail "Distribution lacks com.groovex.ohpe.$c"
     grep -q "version=\"$VERSION\"" "$d/PackageInfo" || fail "ohpe-$c.pkg version is not $VERSION"
-    (mkdir -p "$TMP/scripts-$c" && cd "$TMP/scripts-$c" && gzip -dc "$d/Scripts" | cpio -i --quiet)
-    [ -x "$TMP/scripts-$c/postinstall" ] || fail "ohpe-$c.pkg has no executable postinstall"
+    [ -x "$SCRIPTS_DIR/postinstall" ] || fail "ohpe-$c.pkg has no executable postinstall"
+    grep -q "xattr -dr com.apple.quarantine" "$SCRIPTS_DIR/postinstall" || fail "ohpe-$c.pkg postinstall lacks the Gatekeeper fix"
     pass "component ohpe-$c.pkg (payload, postinstall, version $VERSION)"
 done
 for lang in en de; do
