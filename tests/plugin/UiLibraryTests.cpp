@@ -414,7 +414,7 @@ TEST_CASE ("editor 0.3: tape and drum pages, library browser")
     lib.toggleTag ("Bass");
     CHECK (lib.numRows() == countFactory ("Bass"));
     lib.toggleTag ("Bass");
-    lib.setSearchText ("glass");
+    lib.setSearchText ("slap"); // one factory preset: Slap FM Bass
     REQUIRE (lib.numRows() == 1);
     lib.selectRow (0);
     CHECK ((int) std::lround (p.core().params().get ("p1.engine")) == (int) EngineType::FM);
