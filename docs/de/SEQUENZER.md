@@ -68,6 +68,16 @@ Vier Spuren mit bis zu 16 Schritten, jede mit eigener **Länge**, eigenem **Rast
 Die Spuren verschieben sich gegeneinander und treffen sich erst nach dem kleinsten gemeinsamen
 Vielfachen ihrer Längen wieder – lange, sich entwickelnde Muster aus wenigen Schritten.
 
+## Sequenzer spielen das Drum-Kit (0.4)
+
+Step-Sequenzer, Euklid und Orbit können statt ihres Ziel-Parts das **Drum-Kit** spielen:
+`seq.step.drums`, `seq.euclid.drums`, `seq.orbit.drums` (aus / an). Ihre Noten gehen dann an die
+Pads (Note − `drum.base` = Pad, standardmäßig C2 = Kick, D2 = Snare, F2 = geschlossene Hi-Hat …),
+als kämen sie auf MIDI-Kanal 10; Skalen-Quantisierung und Akkorde wirken dabei nicht. Orbit wird so
+zur Drum-Machine mit einer Spur pro Trommel und eigener Länge je Spur; Euklid spielt vier
+polyrhythmische Trommeln. Die Werks-Projekt-Presets nutzen beides – siehe
+[FACTORY-SOUNDS.md](FACTORY-SOUNDS.md).
+
 ## Skalen- und Akkord-Modus
 
 * **Tonart** (`key.root`) und **Skala** (`key.scale`: chromatisch, Dur, Moll, Kirchentonarten,

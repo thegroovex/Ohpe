@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "SamplerEngine.h"
 
+#include "../sample/FactoryBank.h"
+
 #include <cmath>
 
 namespace ohpe
@@ -76,6 +78,9 @@ void Voice::start (int midiNote, float vel, bool legato, const VoiceCommon& c) n
 {
     startBase (midiNote, vel, legato, c);
     const SampleMap* m = shared->map != nullptr ? shared->map->get() : nullptr;
+    ownerMap = m;
+    if (m != nullptr && m->builtIn && shared->instrument > 0) // 0.4: factory instrument (if loaded)
+        if (const auto* f = factory::instrumentMap (shared->instrument)) m = f;
     playingMap = m;
     if (m == nullptr || ! pickRegion (*m))
     {
@@ -91,13 +96,14 @@ void Voice::kill() noexcept
     killBase();
     sample = nullptr;
     playingMap = nullptr;
+    ownerMap = nullptr;
     for (auto& f : filter) f.reset();
 }
 
 void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) noexcept
 {
     const Shared& p = *shared;
-    if (sample == nullptr || shared->map == nullptr || shared->map->get() != playingMap)
+    if (sample == nullptr || shared->map == nullptr || shared->map->get() != ownerMap)
     {
         kill(); // the map was replaced: never read a retired sample
         return;
@@ -200,6 +206,8 @@ std::vector<ParamDescriptor> SamplerEngine::getParamDescriptors() const
     d.push_back (choice ("mode", "Mode", "Modus", { "Zones", "Slices" }, { "Zonen", "Slices" }, 0));
     d.push_back (continuous ("slicesens", "Slice Sensitivity", "Slice-Empfindlichkeit", 0.0f, 1.0f, 0.5f));
     d.push_back (integer ("slicebase", "First Slice Key", "Erste Slice-Taste", 0, 127, 36));
+    // 0.4 (late parameter, see firstLateParam())
+    d.push_back (choice ("inst", "Instrument", "Instrument", factory::instrumentNamesEn(), factory::instrumentNamesDe(), 0));
     return d;
 }
 
@@ -218,6 +226,10 @@ void SamplerEngine::setParam (int i, float v) noexcept
         case Mode: shared.mode = std::clamp ((int) v, 0, (int) ModeSlices); break;
         case SliceSensitivity: requestedSensitivity.store (dsp::clamp01 (v), std::memory_order_relaxed); break;
         case SliceBaseKey: shared.sliceBase = std::clamp ((int) v, 0, 127); break;
+        case Instrument:
+            shared.instrument = std::clamp ((int) std::lround (v), 0, factory::numInstruments - 1);
+            shared.factory = factory::instrumentMap (shared.instrument);
+            break;
         default: break;
     }
 }

@@ -1,0 +1,40 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Table Scanner",
+  "author": "groovex",
+  "tags": [
+    "FX",
+    "Textures"
+  ],
+  "engine": "wavetable",
+  "comment": "Digital table swept by a slow LFO: robotic movement.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 3,
+    "wavetable.pos": 0.5,
+    "wavetable.warp": 0.3,
+    "wavetable.tone": 0.55,
+    "wavetable.unison": 0.3,
+    "wavetable.sub": 0.0,
+    "wavetable.reso": 0.3,
+    "wavetable.keytrack": 0.5,
+    "wavetable.envpos": 0.6,
+    "amp.a": 0.2,
+    "amp.d": 1.0,
+    "amp.s": 0.9,
+    "amp.r": 1.0,
+    "mod.a": 2.0,
+    "mod.d": 2.0,
+    "mod.s": 0.0,
+    "mod.r": 1.0,
+    "mod.amt": 0.2,
+    "lfo.rate": 0.7,
+    "lfo.depth": 0.45,
+    "lfo.shape": 1,
+    "lfo.dest": 1,
+    "voices": 6,
+    "gain": 15.4
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Analog Dawn",
+  "author": "groovex",
+  "tags": [
+    "Pads"
+  ],
+  "engine": "analog",
+  "comment": "Pulse pad whose filter opens slowly, with a slow phaser.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.55,
+    "analog.detune": 0.22,
+    "analog.cutoff": 600,
+    "analog.reso": 0.18,
+    "analog.oscmix": 0.5,
+    "analog.sub": 0.1,
+    "analog.drive": 0.15,
+    "analog.keytrack": 0.5,
+    "amp.a": 1.0,
+    "amp.d": 1.5,
+    "amp.s": 0.9,
+    "amp.r": 2.0,
+    "mod.a": 2.2,
+    "mod.d": 2.0,
+    "mod.s": 0.6,
+    "mod.r": 2.0,
+    "mod.amt": 0.35,
+    "fx.type": 2,
+    "fx.phaser.rate": 0.12,
+    "fx.phaser.depth": 0.6,
+    "fx.phaser.feedback": 0.35,
+    "fx.phaser.mix": 0.35,
+    "voices": 10,
+    "gain": 6.4
+  }
+}

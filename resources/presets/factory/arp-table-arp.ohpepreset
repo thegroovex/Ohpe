@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Table Arp",
+  "author": "groovex",
+  "tags": [
+    "Arp"
+  ],
+  "engine": "wavetable",
+  "comment": "Wavetable sequence sound: the position snaps with each note.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 1,
+    "wavetable.pos": 0.6,
+    "wavetable.warp": 0.2,
+    "wavetable.tone": 0.55,
+    "wavetable.unison": 0.2,
+    "wavetable.sub": 0.0,
+    "wavetable.reso": 0.15,
+    "wavetable.keytrack": 0.6,
+    "wavetable.envpos": -0.5,
+    "amp.a": 0.003,
+    "amp.d": 0.25,
+    "amp.s": 0.0,
+    "amp.r": 0.12,
+    "mod.a": 0.002,
+    "mod.d": 0.12,
+    "mod.s": 0.0,
+    "mod.r": 0.1,
+    "mod.amt": 0.3,
+    "fx.type": 5,
+    "fx.delay.time": 0.45,
+    "fx.delay.feedback": 0.3,
+    "fx.delay.tone": 0.5,
+    "fx.delay.pingpong": 1,
+    "fx.delay.mix": 0.2,
+    "voices": 8,
+    "gain": 15.3
+  }
+}

@@ -9,11 +9,11 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 
 ![Ohpe – analog engine](docs/images/ohpe-analog.png)
 
-> **Status: phase 3 (0.3).** Eight engines, four parts, drum kit, step / Euclid / arpeggiator /
-> Orbit sequencers, tape machine, mixer dynamics, FX slot, MPE and MIDI clock sync – now with a
-> preset library, a pro view, direct manipulation on the display, step parameter locks, tape and
-> drum kit pages. Not released yet: build it yourself or grab the unsigned builds from a manual CI
-> run. The factory presets are placeholders; the real factory sounds follow.
+> **Status: phase 4 (0.4).** Eight engines, four parts, drum kit, step / Euclid / arpeggiator /
+> Orbit sequencers, tape machine, mixer dynamics, FX slot, MPE and MIDI clock sync, preset library,
+> pro view and direct manipulation – now with the **factory sounds**: 120 part presets, 7 demo
+> projects, five drum kits and ten recorded instruments. Not released yet: build it yourself or
+> grab the unsigned builds from a manual CI run.
 
 ## Features
 
@@ -26,11 +26,12 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **Cluster engine** | up to seven detuned oscillators per key as unison or chord shapes, slow drift, resonant low-pass |
 | **Grain engine** | granular synthesis from a loaded sample, the tape or a built-in texture |
 | **Vocal engine** | formant voice with vowels, breath, vibrato and jitter |
-| **Sampler engine** | key zones or automatic slices from WAV / AIFF / FLAC files, loop modes, built-in keys sound |
-| **Drum kit** | 24 pads on MIDI channel 10: factory recordings (CC0), own samples or synth models, choke groups |
+| **Sampler engine** | key zones or automatic slices from WAV / AIFF / FLAC files, loop modes, built-in keys sound and ten recorded factory instruments (kalimba, marimba, vibraphone, harp, harpsichord, recorder …) |
+| **Drum kit** | 24 pads on MIDI channel 10: five recorded factory kits (Studio, Tight, Room, Lo-Fi, Hybrid – CC0), own samples or synth models, choke groups |
+| **Factory sounds** | 120 part presets across all engines and categories, level-matched; 7 demo projects using all four parts, the sequencers and the drum kit – see [Factory sounds](docs/en/FACTORY-SOUNDS.md) |
 | **Four parts** | each with its own engine, envelopes, LFO, MIDI channel, scale / chord mode and MPE |
 | **Shared per voice** | amp and modulation envelopes, LFO with several destinations, glide, 16-voice polyphony |
-| **Sequencers** | step sequencer (up to 64 steps, probability, ratchets, parameter locks, 16 patterns, song mode), Euclid, arpeggiator and Orbit (polymeter), each with a target part |
+| **Sequencers** | step sequencer (up to 64 steps, probability, ratchets, parameter locks, 16 patterns, song mode), Euclid, arpeggiator and Orbit (polymeter), each with a target part – step, Euclid and Orbit can also play the drum kit |
 | **Tape machine** | eight stereo tracks: record / overdub / punch from the input, parts or drums, varispeed, reverse, loop, tape character, undo, export as WAV master and stems |
 | **Mixer** | eight channels with EQ, compressor, volume, pan, mute / solo, two sends (A: delay, B: reverb), master compressor, tape saturation and limiter; FX slot on part 1 (chorus, phaser, bitcrush, filter drive, delay, reverb) |
 | **Sync** | host transport in the plug-in; MIDI clock in / out and network tempo sync (Link) in the standalone app |
@@ -93,6 +94,7 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 * Engines: [Wavetable](docs/en/engines/wavetable.md), [Pluck](docs/en/engines/pluck.md),
   [Cluster](docs/en/engines/cluster.md), [Grain, Vocal, Sampler and drum kit](docs/en/GRAIN-VOCAL-SAMPLER-DRUM.md)
 * [Playing the interface](docs/en/USER-INTERFACE.md) – display, parts, pro view, step locks, tape and drum pages
+* [Factory sounds](docs/en/FACTORY-SOUNDS.md) – every preset by category, drum kits, recorded instruments
 * [Preset library](docs/en/PRESETS.md) – browsing, saving, MIDI, file format
 * [Sequencers, parts and scale mode](docs/en/SEQUENCERS.md)
 * [MIDI guide](docs/en/MIDI.md) – channels, MPE, clock, sync

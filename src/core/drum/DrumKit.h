@@ -9,6 +9,7 @@
 #include "DrumVoice.h"
 
 #include <array>
+#include <atomic>
 #include <string>
 #include <vector>
 
@@ -48,6 +49,11 @@ public:
     static std::vector<ParamDescriptor> paramDescriptors();
     /** Registers the kit parameters with the "drum." prefix (append-only block). */
     static void registerParams (ParamRegistry& reg);
+    /** 0.4: parameters added later ("kit"), registered in a later append-only block. */
+    static std::vector<ParamDescriptor> lateParamDescriptors();
+    static void registerLateParams (ParamRegistry& reg);
+    /** Local index of the first late parameter (setParam index of "kit"). */
+    static constexpr int kitParamIndex = 2 + numPads * numPadParams;
     /** The factory setting of one pad (the default kit). */
     static PadSettings defaultPad (int pad) noexcept;
     /** Short English name of a factory pad ("kick", "open hat" ...). */
@@ -81,12 +87,17 @@ public:
     /** The factory kit's recording for a pad (plug-in, at start-up). */
     void setFactorySample (int pad, SamplePtr sample);
     SamplePtr factorySample (int pad) const;
-    /** The sample the pad plays now (user, else factory; nullptr = model). */
+    /** The sample the pad plays now (user, else the selected kit's, else factory kit 0; nullptr = model). */
     SamplePtr effectiveSample (int pad) const;
+    /** 0.4: the selected factory kit ("drum.kit"; 0 = the original kit). */
+    int kitIndex() const noexcept { return kit.load (std::memory_order_relaxed); }
 
 private:
     std::array<PadSettings, numPads> pads {};
     void publish (int pad);
+    const SampleData* padSampleRt (int pad) const noexcept;
+    std::atomic<int> kit { 0 };
+    std::array<std::atomic<bool>, numPads> userSet {};
 
     std::array<RtShared<SampleData>, numPads> samples; ///< effective sample per pad (audio side)
     std::array<SamplePtr, numPads> userSamples, factorySamples;

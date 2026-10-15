@@ -1,0 +1,39 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Hot Wire",
+  "author": "groovex",
+  "tags": [
+    "Leads"
+  ],
+  "engine": "analog",
+  "comment": "Driven, resonant saw for rock-ish solos.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.05,
+    "analog.detune": 0.18,
+    "analog.cutoff": 1600,
+    "analog.reso": 0.45,
+    "analog.oscmix": 0.5,
+    "analog.sub": 0.0,
+    "analog.drive": 0.7,
+    "analog.keytrack": 0.5,
+    "amp.a": 0.003,
+    "amp.d": 0.4,
+    "amp.s": 0.85,
+    "amp.r": 0.15,
+    "mod.a": 0.002,
+    "mod.d": 0.35,
+    "mod.s": 0.5,
+    "mod.r": 0.2,
+    "mod.amt": 0.2,
+    "lfo.rate": 5.5,
+    "lfo.depth": 0.06,
+    "lfo.shape": 0,
+    "lfo.dest": 0,
+    "voices": 1,
+    "glide": 0.03,
+    "gain": 14.2
+  }
+}

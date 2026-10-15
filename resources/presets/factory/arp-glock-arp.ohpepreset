@@ -1,0 +1,35 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Glock Arp",
+  "author": "groovex",
+  "tags": [
+    "Arp",
+    "Keys"
+  ],
+  "engine": "sampler",
+  "comment": "Recorded glockenspiel for sparkling arpeggios (CC0).",
+  "params": {
+    "engine": 7,
+    "sampler.inst": 4,
+    "sampler.tone": 0.9,
+    "amp.a": 0.001,
+    "amp.d": 1.5,
+    "amp.s": 0.0,
+    "amp.r": 0.5,
+    "mod.a": 0.001,
+    "mod.d": 0.3,
+    "mod.s": 0.0,
+    "mod.r": 0.2,
+    "mod.amt": 0.0,
+    "fx.type": 5,
+    "fx.delay.time": 0.45,
+    "fx.delay.feedback": 0.3,
+    "fx.delay.tone": 0.5,
+    "fx.delay.pingpong": 1,
+    "fx.delay.mix": 0.18,
+    "voices": 12,
+    "gain": 12.1
+  }
+}

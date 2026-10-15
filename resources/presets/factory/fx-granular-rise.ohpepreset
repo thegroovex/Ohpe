@@ -1,0 +1,40 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Granular Rise",
+  "author": "groovex",
+  "tags": [
+    "FX"
+  ],
+  "engine": "grain",
+  "comment": "Grains scan forward and climb while the key is held.",
+  "params": {
+    "engine": 4,
+    "grain.pos": 0.1,
+    "grain.size": 90,
+    "grain.density": 40,
+    "grain.spray": 0.35,
+    "grain.pitch": 0,
+    "grain.reverse": 0.0,
+    "grain.spread": 0.9,
+    "grain.scan": 1.2,
+    "grain.tone": 0.6,
+    "grain.inst": 0,
+    "amp.a": 2.5,
+    "amp.d": 1.0,
+    "amp.s": 1.0,
+    "amp.r": 1.5,
+    "mod.a": 3.0,
+    "mod.d": 1.0,
+    "mod.s": 1.0,
+    "mod.r": 1.5,
+    "mod.amt": 0.35,
+    "lfo.rate": 0.25,
+    "lfo.depth": 0.3,
+    "lfo.shape": 2,
+    "lfo.dest": 0,
+    "voices": 6,
+    "gain": 14.0
+  }
+}

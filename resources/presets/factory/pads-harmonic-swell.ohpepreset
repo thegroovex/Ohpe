@@ -1,0 +1,34 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Harmonic Swell",
+  "author": "groovex",
+  "tags": [
+    "Pads"
+  ],
+  "engine": "wavetable",
+  "comment": "Harmonics bloom in as the pad swells.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 1,
+    "wavetable.pos": 0.2,
+    "wavetable.warp": 0.0,
+    "wavetable.tone": 0.5,
+    "wavetable.unison": 0.4,
+    "wavetable.sub": 0.15,
+    "wavetable.reso": 0.1,
+    "wavetable.keytrack": 0.5,
+    "wavetable.envpos": 0.5,
+    "amp.a": 1.4,
+    "amp.d": 2.0,
+    "amp.s": 0.9,
+    "amp.r": 2.2,
+    "mod.a": 2.0,
+    "mod.d": 2.5,
+    "mod.s": 0.7,
+    "mod.r": 2.0,
+    "mod.amt": 0.25,
+    "gain": 5.6
+  }
+}

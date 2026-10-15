@@ -1,0 +1,37 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Reverse Spray",
+  "author": "groovex",
+  "tags": [
+    "FX",
+    "Textures"
+  ],
+  "engine": "grain",
+  "comment": "Mostly reversed harp grains sprayed across the stereo field.",
+  "params": {
+    "engine": 4,
+    "grain.pos": 0.08,
+    "grain.size": 200,
+    "grain.density": 20,
+    "grain.spray": 0.2,
+    "grain.pitch": 0,
+    "grain.reverse": 0.8,
+    "grain.spread": 1.0,
+    "grain.scan": 0.0,
+    "grain.tone": 0.7,
+    "grain.inst": 5,
+    "amp.a": 0.3,
+    "amp.d": 1.0,
+    "amp.s": 0.9,
+    "amp.r": 1.8,
+    "mod.a": 0.5,
+    "mod.d": 1.0,
+    "mod.s": 1.0,
+    "mod.r": 1.0,
+    "mod.amt": 0.0,
+    "voices": 6,
+    "gain": 12.2
+  }
+}

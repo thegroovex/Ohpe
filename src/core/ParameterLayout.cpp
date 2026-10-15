@@ -157,5 +157,24 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
         add (toggle (Core::Ids::tapeRedo, "Tape Redo", "Tape Wiederholen", false));
         add (toggle (Core::Ids::tapeRtz, "Tape Return to Zero", "Tape zum Anfang", false));
     }
+
+    // ---- 0.4 (package F): factory instruments (Sampler, Grain) per part, factory drum kits --
+    for (auto& p : parts)
+    {
+        p->registerLateEngineParams (reg, EngineType::Sampler);
+        p->registerLateEngineParams (reg, EngineType::Grain);
+    }
+    drum::DrumKit::registerLateParams (reg);
+
+    // ---- 0.4 (package F): sequencers can play the drum kit instead of their target part ----
+    {
+        auto add = [&] (ParamDescriptor d, const char* group) { d.group = group; reg.add (std::move (d)); };
+        add (toggle (Core::Ids::stepDrums, "Step Seq to Drums", "Step-Sequenzer an Drums", false), "sequencer/step");
+        add (toggle (Core::Ids::euclidDrums, "Euclid to Drums", "Euklid an Drums", false), "sequencer/euclid");
+        add (toggle (Core::Ids::orbitDrums, "Orbit to Drums", "Orbit an Drums", false), "sequencer/orbit");
+    }
+
+    // ---- 0.4 (package F): part gain in dB (level matching of presets, on top of the volume) --
+    for (auto& p : parts) p->registerLateCommonParams (reg);
 }
 } // namespace ohpe

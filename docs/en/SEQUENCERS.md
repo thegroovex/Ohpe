@@ -67,6 +67,15 @@ playing into one part. Every lane has its own steps (note, velocity). Lanes drif
 other and meet again after the least common multiple of their lengths – long, evolving
 patterns from a few steps.
 
+## Sequencers playing the drum kit (0.4)
+
+The step sequencer, Euclid and Orbit can play the **drum kit** instead of their target part:
+`seq.step.drums`, `seq.euclid.drums`, `seq.orbit.drums` (off / on). Their notes then go to the pads
+(note − `drum.base` = pad, by default C2 = kick, D2 = snare, F2 = closed hi-hat …), as if played on
+MIDI channel 10; scale quantise and chords do not apply. Orbit makes a drum machine with one lane
+per drum and its own length per lane; Euclid plays four polyrhythmic drums. The factory project
+presets use both – see [FACTORY-SOUNDS.md](FACTORY-SOUNDS.md).
+
 ## Scale and chord mode
 
 * **Key** (`key.root`) and **Scale** (`key.scale`: chromatic, major, minor, the church modes,

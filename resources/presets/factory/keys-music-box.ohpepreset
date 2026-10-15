@@ -1,0 +1,36 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Music Box",
+  "author": "groovex",
+  "tags": [
+    "Keys",
+    "Plucks"
+  ],
+  "engine": "sampler",
+  "comment": "Glockenspiel softened into a music box; lullabies and toy melodies.",
+  "params": {
+    "engine": 7,
+    "sampler.inst": 4,
+    "sampler.tone": 0.7,
+    "amp.a": 0.001,
+    "amp.d": 1.8,
+    "amp.s": 0.0,
+    "amp.r": 0.6,
+    "mod.a": 0.001,
+    "mod.d": 0.3,
+    "mod.s": 0.0,
+    "mod.r": 0.2,
+    "mod.amt": 0.0,
+    "fx.type": 6,
+    "fx.reverb.size": 0.5,
+    "fx.reverb.damping": 0.5,
+    "fx.reverb.predelay": 0.02,
+    "fx.reverb.mix": 0.22,
+    "voices": 12,
+    "velsens": 0.5,
+    "tune": 0,
+    "gain": 11.3
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Slap FM Bass",
+  "author": "groovex",
+  "tags": [
+    "Bass"
+  ],
+  "engine": "fm",
+  "comment": "Percussive FM bass: the index snaps shut like a slapped string.",
+  "params": {
+    "engine": 0,
+    "fm.algo": 2,
+    "fm.modratio": 1.0,
+    "fm.index": 0.42,
+    "fm.feedback": 0.05,
+    "fm.op1ratio": 1,
+    "fm.op2ratio": 1,
+    "fm.op3ratio": 0.5,
+    "fm.op4ratio": 1,
+    "fm.op1level": 1.0,
+    "fm.op2level": 0.8,
+    "fm.op3level": 0.55,
+    "fm.op4level": 0.0,
+    "fm.op5level": 0.0,
+    "fm.op6level": 0.0,
+    "amp.a": 0.003,
+    "amp.d": 0.6,
+    "amp.s": 0.45,
+    "amp.r": 0.07,
+    "mod.a": 0.004,
+    "mod.d": 0.14,
+    "mod.s": 0.15,
+    "mod.r": 0.1,
+    "mod.amt": 1.0,
+    "voices": 1,
+    "velsens": 0.6,
+    "gain": 17.5
+  }
+}

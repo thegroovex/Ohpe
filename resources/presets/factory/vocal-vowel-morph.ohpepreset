@@ -1,0 +1,33 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Vowel Morph",
+  "author": "groovex",
+  "tags": [
+    "Vocal"
+  ],
+  "engine": "vocal",
+  "comment": "Each note sings 'ee' and opens to 'ah' with the envelope.",
+  "params": {
+    "engine": 5,
+    "vocal.vowel": 2.0,
+    "vocal.formant": 1.0,
+    "vocal.breath": 0.15,
+    "vocal.tension": 0.5,
+    "vocal.vibdepth": 0.22,
+    "vocal.vibrate": 5.4,
+    "vocal.jitter": 0.15,
+    "amp.a": 0.05,
+    "amp.d": 1.0,
+    "amp.s": 0.9,
+    "amp.r": 0.5,
+    "mod.a": 0.01,
+    "mod.d": 0.6,
+    "mod.s": 0.0,
+    "mod.r": 0.3,
+    "mod.amt": -1.0,
+    "voices": 10,
+    "gain": -1.1
+  }
+}

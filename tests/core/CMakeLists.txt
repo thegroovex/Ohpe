@@ -37,3 +37,11 @@ target_sources(ohpe_core_tests PRIVATE TapeTests.cpp FxTests.cpp AllocationTests
 target_sources(ohpe_core_tests PRIVATE SeqMidiTests.cpp)
 # 0.3 (package E): presets and the library
 target_sources(ohpe_core_tests PRIVATE PresetTests.cpp)
+# 0.4 (package F): offline preset renderer (factory-sound quality loop, see tools/render)
+add_executable(ohpe_render ${CMAKE_SOURCE_DIR}/tools/render/OhpeRender.cpp)
+target_include_directories(ohpe_render PRIVATE ${CMAKE_SOURCE_DIR}/tools)
+target_link_libraries(ohpe_render PRIVATE ohpe_core)
+# 0.4 (package F): factory sample bank, sequencers -> drums, part gain, factory presets render
+target_sources(ohpe_core_tests PRIVATE FactorySoundTests.cpp)
+target_include_directories(ohpe_core_tests PRIVATE ${CMAKE_SOURCE_DIR}/tools)
+target_compile_definitions(ohpe_core_tests PRIVATE OHPE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")

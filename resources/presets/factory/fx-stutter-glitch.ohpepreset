@@ -1,0 +1,40 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Stutter Glitch",
+  "author": "groovex",
+  "tags": [
+    "FX"
+  ],
+  "engine": "grain",
+  "comment": "Tiny, sparse grains: glitchy stutters from the marimba.",
+  "params": {
+    "engine": 4,
+    "grain.pos": 0.02,
+    "grain.size": 45,
+    "grain.density": 22,
+    "grain.spray": 0.12,
+    "grain.pitch": 0,
+    "grain.reverse": 0.3,
+    "grain.spread": 1.0,
+    "grain.scan": 0.0,
+    "grain.tone": 0.8,
+    "grain.inst": 2,
+    "amp.a": 0.005,
+    "amp.d": 1.0,
+    "amp.s": 1.0,
+    "amp.r": 0.4,
+    "mod.a": 0.01,
+    "mod.d": 1.0,
+    "mod.s": 1.0,
+    "mod.r": 0.4,
+    "mod.amt": 0.0,
+    "lfo.rate": 8.0,
+    "lfo.depth": 0.4,
+    "lfo.shape": 4,
+    "lfo.dest": 3,
+    "voices": 6,
+    "gain": 4.7
+  }
+}

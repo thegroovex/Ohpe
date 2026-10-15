@@ -1,0 +1,36 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Kalimba Dust",
+  "author": "groovex",
+  "tags": [
+    "Textures"
+  ],
+  "engine": "grain",
+  "comment": "Tiny kalimba grains scattered like dust.",
+  "params": {
+    "engine": 4,
+    "grain.pos": 0.03,
+    "grain.size": 70,
+    "grain.density": 45,
+    "grain.spray": 0.12,
+    "grain.pitch": 0,
+    "grain.reverse": 0.2,
+    "grain.spread": 1.0,
+    "grain.scan": 0.0,
+    "grain.tone": 0.75,
+    "grain.inst": 1,
+    "amp.a": 0.8,
+    "amp.d": 1.5,
+    "amp.s": 0.9,
+    "amp.r": 2.0,
+    "mod.a": 0.5,
+    "mod.d": 1.0,
+    "mod.s": 1.0,
+    "mod.r": 1.0,
+    "mod.amt": 0.0,
+    "voices": 8,
+    "gain": 8.5
+  }
+}

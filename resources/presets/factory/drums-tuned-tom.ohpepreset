@@ -1,0 +1,34 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Tuned Tom",
+  "author": "groovex",
+  "tags": [
+    "Drums"
+  ],
+  "engine": "pluck",
+  "comment": "Modelled drum-like bar with a big body; play it in octaves.",
+  "params": {
+    "engine": 3,
+    "pluck.material": 0.8,
+    "pluck.damping": 0.55,
+    "pluck.bright": 0.3,
+    "pluck.body": 0.75,
+    "pluck.excite": 0.6,
+    "pluck.pickpos": 0.4,
+    "pluck.bodysize": 0.95,
+    "amp.a": 0.001,
+    "amp.d": 0.6,
+    "amp.s": 0.0,
+    "amp.r": 0.2,
+    "mod.a": 0.001,
+    "mod.d": 0.1,
+    "mod.s": 0.0,
+    "mod.r": 0.1,
+    "mod.amt": 0.0,
+    "velsens": 0.6,
+    "voices": 6,
+    "gain": 15.4
+  }
+}

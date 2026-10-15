@@ -27,6 +27,7 @@ SampleLoader::SampleLoader (Core& c) : core (c)
 {
     formats.registerBasicFormats();
     factorykit::load (core); // the recorded factory drum kit
+    factorykit::loadBank();  // 0.4: factory instruments and drum kits (once per process)
 }
 
 juce::String SampleLoader::filePatterns() const { return formats.getWildcardForAllFormats(); }

@@ -1,0 +1,39 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Grit Drone",
+  "author": "groovex",
+  "tags": [
+    "Textures"
+  ],
+  "engine": "wavetable",
+  "comment": "Slowly churning Grit table; hold one low note.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 5,
+    "wavetable.pos": 0.4,
+    "wavetable.warp": 0.2,
+    "wavetable.tone": 0.5,
+    "wavetable.unison": 0.6,
+    "wavetable.sub": 0.25,
+    "wavetable.reso": 0.2,
+    "wavetable.keytrack": 0.4,
+    "wavetable.envpos": 0.0,
+    "amp.a": 1.5,
+    "amp.d": 2.0,
+    "amp.s": 0.9,
+    "amp.r": 2.5,
+    "mod.a": 1.0,
+    "mod.d": 2.0,
+    "mod.s": 1.0,
+    "mod.r": 2.0,
+    "mod.amt": 0.0,
+    "lfo.rate": 0.05,
+    "lfo.depth": 0.4,
+    "lfo.shape": 1,
+    "lfo.dest": 1,
+    "voices": 6,
+    "gain": 6.4
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Night Drive",
+  "author": "groovex",
+  "tags": [
+    "Pads",
+    "Textures"
+  ],
+  "engine": "analog",
+  "comment": "Dark resonant pad breathing with a slow filter LFO.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.15,
+    "analog.detune": 0.28,
+    "analog.cutoff": 780,
+    "analog.reso": 0.35,
+    "analog.oscmix": 0.5,
+    "analog.sub": 0.1,
+    "analog.drive": 0.2,
+    "analog.keytrack": 0.5,
+    "amp.a": 1.4,
+    "amp.d": 2.0,
+    "amp.s": 0.9,
+    "amp.r": 2.5,
+    "mod.a": 1.0,
+    "mod.d": 2.0,
+    "mod.s": 0.6,
+    "mod.r": 2.0,
+    "mod.amt": 0.1,
+    "lfo.rate": 0.08,
+    "lfo.depth": 0.35,
+    "lfo.shape": 1,
+    "lfo.dest": 1,
+    "fx.type": 1,
+    "fx.chorus.rate": 0.25,
+    "fx.chorus.depth": 0.5,
+    "fx.chorus.mix": 0.3,
+    "voices": 10,
+    "gain": 19.6
+  }
+}

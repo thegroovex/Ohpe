@@ -1,0 +1,40 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Vox Lead",
+  "author": "groovex",
+  "tags": [
+    "Leads",
+    "Vocal"
+  ],
+  "engine": "vocal",
+  "comment": "Solo synthetic voice with expressive vibrato and glide.",
+  "params": {
+    "engine": 5,
+    "vocal.vowel": 0.5,
+    "vocal.formant": 1.0,
+    "vocal.breath": 0.12,
+    "vocal.tension": 0.6,
+    "vocal.vibdepth": 0.32,
+    "vocal.vibrate": 5.6,
+    "vocal.jitter": 0.15,
+    "amp.a": 0.04,
+    "amp.d": 0.5,
+    "amp.s": 0.9,
+    "amp.r": 0.25,
+    "mod.a": 0.1,
+    "mod.d": 0.6,
+    "mod.s": 0.3,
+    "mod.r": 0.3,
+    "mod.amt": 0.2,
+    "fx.type": 6,
+    "fx.reverb.size": 0.6,
+    "fx.reverb.damping": 0.5,
+    "fx.reverb.predelay": 0.03,
+    "fx.reverb.mix": 0.22,
+    "voices": 1,
+    "glide": 0.07,
+    "gain": 8.1
+  }
+}

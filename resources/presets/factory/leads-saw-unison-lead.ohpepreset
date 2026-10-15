@@ -1,0 +1,42 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Saw Unison Lead",
+  "author": "groovex",
+  "tags": [
+    "Leads"
+  ],
+  "engine": "wavetable",
+  "comment": "Classic table at the saw position with wide unison.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 0,
+    "wavetable.pos": 0.5,
+    "wavetable.warp": 0.0,
+    "wavetable.tone": 0.62,
+    "wavetable.unison": 0.8,
+    "wavetable.sub": 0.15,
+    "wavetable.reso": 0.1,
+    "wavetable.keytrack": 0.6,
+    "wavetable.envpos": 0.0,
+    "amp.a": 0.004,
+    "amp.d": 0.4,
+    "amp.s": 0.9,
+    "amp.r": 0.18,
+    "mod.a": 0.002,
+    "mod.d": 0.4,
+    "mod.s": 0.6,
+    "mod.r": 0.2,
+    "mod.amt": 0.12,
+    "fx.type": 5,
+    "fx.delay.time": 0.45,
+    "fx.delay.feedback": 0.25,
+    "fx.delay.tone": 0.5,
+    "fx.delay.pingpong": 1,
+    "fx.delay.mix": 0.16,
+    "voices": 4,
+    "glide": 0.0,
+    "gain": 10.0
+  }
+}

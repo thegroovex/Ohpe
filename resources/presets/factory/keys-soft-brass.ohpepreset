@@ -1,0 +1,36 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Soft Brass",
+  "author": "groovex",
+  "tags": [
+    "Keys",
+    "Pads"
+  ],
+  "engine": "analog",
+  "comment": "Polyphonic brass: a slow filter swell on detuned saws.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.0,
+    "analog.detune": 0.25,
+    "analog.cutoff": 520,
+    "analog.reso": 0.12,
+    "analog.oscmix": 0.5,
+    "analog.sub": 0.0,
+    "analog.drive": 0.25,
+    "analog.keytrack": 0.6,
+    "amp.a": 0.03,
+    "amp.d": 0.8,
+    "amp.s": 0.8,
+    "amp.r": 0.3,
+    "mod.a": 0.06,
+    "mod.d": 0.6,
+    "mod.s": 0.45,
+    "mod.r": 0.3,
+    "mod.amt": 0.45,
+    "voices": 12,
+    "velsens": 0.6,
+    "gain": 6.9
+  }
+}

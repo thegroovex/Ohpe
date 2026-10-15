@@ -1,0 +1,39 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Noise Riser",
+  "author": "groovex",
+  "tags": [
+    "FX"
+  ],
+  "engine": "analog",
+  "comment": "Hold a key: filtered noise climbs for four seconds.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.0,
+    "analog.cutoff": 300,
+    "analog.reso": 0.55,
+    "analog.oscmix": 0.0,
+    "analog.sub": 0.0,
+    "analog.noise": 1.0,
+    "analog.ftype": 2,
+    "analog.drive": 0.45,
+    "analog.keytrack": 0.2,
+    "amp.a": 3.5,
+    "amp.d": 1.0,
+    "amp.s": 1.0,
+    "amp.r": 1.2,
+    "mod.a": 4.0,
+    "mod.d": 1.0,
+    "mod.s": 1.0,
+    "mod.r": 1.2,
+    "mod.amt": 0.65,
+    "lfo.rate": 0.5,
+    "lfo.depth": 0.4,
+    "lfo.shape": 0,
+    "lfo.dest": 3,
+    "voices": 4,
+    "gain": 18.6
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Cluster Organ",
+  "author": "groovex",
+  "tags": [
+    "Keys"
+  ],
+  "engine": "cluster",
+  "comment": "Octave stack of soft squares: a cheesy combo organ.",
+  "params": {
+    "engine": 6,
+    "cluster.detune": 0.05,
+    "cluster.spread": 0.5,
+    "cluster.tone": 0.55,
+    "cluster.chord": 1,
+    "cluster.stack": 3,
+    "cluster.shape": 0.5,
+    "cluster.side": 0.6,
+    "cluster.reso": 0.05,
+    "cluster.keytrack": 0.5,
+    "cluster.drift": 0.05,
+    "amp.a": 0.005,
+    "amp.d": 0.2,
+    "amp.s": 1.0,
+    "amp.r": 0.08,
+    "mod.a": 0.001,
+    "mod.d": 0.2,
+    "mod.s": 1.0,
+    "mod.r": 0.1,
+    "mod.amt": 0.0,
+    "lfo.rate": 6.0,
+    "lfo.depth": 0.02,
+    "lfo.shape": 0,
+    "lfo.dest": 0,
+    "voices": 16,
+    "velsens": 0.2,
+    "gain": -1.1
+  }
+}

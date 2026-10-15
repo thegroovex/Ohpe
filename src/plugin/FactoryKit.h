@@ -16,4 +16,16 @@ int load (Core& core);
 
 /** Number of embedded recordings. */
 int numRecordings() noexcept;
+
+/**
+    0.4 (package F): decodes the embedded factory sample bank (resources/samples: instruments for
+    the Sampler / Grain engines, drum kits Tight, Room, Lo-Fi, Hybrid - CC0 recordings, see
+    THIRD-PARTY.md) into the process-wide ohpe::factory bank. Only the first call per process
+    decodes; later calls return at once. Message thread; returns the number of files installed
+    by this call.
+*/
+int loadBank();
+
+/** Number of embedded bank files (FLAC). */
+int numBankFiles() noexcept;
 } // namespace ohpe::factorykit

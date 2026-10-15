@@ -1,0 +1,34 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Kalimba",
+  "author": "groovex",
+  "tags": [
+    "Plucks",
+    "Keys"
+  ],
+  "engine": "sampler",
+  "comment": "Recorded thumb piano with its buzzy, woody tines (CC0).",
+  "params": {
+    "engine": 7,
+    "sampler.inst": 1,
+    "sampler.tone": 0.78,
+    "amp.a": 0.001,
+    "amp.d": 2.8,
+    "amp.s": 0.0,
+    "amp.r": 0.6,
+    "mod.a": 0.001,
+    "mod.d": 0.3,
+    "mod.s": 0.0,
+    "mod.r": 0.2,
+    "mod.amt": 0.0,
+    "fx.type": 6,
+    "fx.reverb.size": 0.5,
+    "fx.reverb.damping": 0.5,
+    "fx.reverb.predelay": 0.02,
+    "fx.reverb.mix": 0.18,
+    "voices": 12,
+    "gain": 9.2
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Noise Snare",
+  "author": "groovex",
+  "tags": [
+    "Drums"
+  ],
+  "engine": "analog",
+  "comment": "Band-passed noise and tone: an electronic snare.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.5,
+    "analog.detune": 0.0,
+    "analog.cutoff": 1800,
+    "analog.reso": 0.25,
+    "analog.oscmix": 0.0,
+    "analog.sub": 0.35,
+    "analog.noise": 1.0,
+    "analog.ftype": 2,
+    "analog.drive": 0.55,
+    "analog.keytrack": 0.2,
+    "amp.a": 0.001,
+    "amp.d": 0.2,
+    "amp.s": 0.0,
+    "amp.r": 0.12,
+    "mod.a": 0.001,
+    "mod.d": 0.05,
+    "mod.s": 0.0,
+    "mod.r": 0.1,
+    "mod.amt": 0.25,
+    "velsens": 0.6,
+    "voices": 4,
+    "gain": 15.6
+  }
+}

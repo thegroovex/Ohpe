@@ -1,0 +1,40 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Zither Cloud",
+  "author": "groovex",
+  "tags": [
+    "Textures"
+  ],
+  "engine": "grain",
+  "comment": "Shimmering zither grains, octave sprinkles.",
+  "params": {
+    "engine": 4,
+    "grain.pos": 0.05,
+    "grain.size": 180,
+    "grain.density": 24,
+    "grain.spray": 0.15,
+    "grain.pitch": 0,
+    "grain.reverse": 0.15,
+    "grain.spread": 1.0,
+    "grain.scan": 0.0,
+    "grain.tone": 0.7,
+    "grain.inst": 9,
+    "amp.a": 0.8,
+    "amp.d": 1.5,
+    "amp.s": 0.9,
+    "amp.r": 2.2,
+    "mod.a": 0.5,
+    "mod.d": 1.0,
+    "mod.s": 1.0,
+    "mod.r": 1.0,
+    "mod.amt": 0.0,
+    "lfo.rate": 0.1,
+    "lfo.depth": 0.1,
+    "lfo.shape": 0,
+    "lfo.dest": 3,
+    "voices": 8,
+    "gain": 11.5
+  }
+}

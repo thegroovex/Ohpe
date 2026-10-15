@@ -261,3 +261,19 @@ presets. A trigger (`off / on`) fires when it rises to "on" (CC ≥ 64 or a note
 | `tape.edit.undo` | Tape Undo | Tape Rückgängig | trigger | off |
 | `tape.edit.redo` | Tape Redo | Tape Wiederholen | trigger | off |
 | `tape.edit.rtz` | Tape Return to Zero | Tape zum Anfang | trigger | off |
+
+## 0.4 – factory sounds (package F)
+
+Appended after `tape.edit.rtz`. Guides: [English](en/FACTORY-SOUNDS.md) · [Deutsch](de/FACTORY-SOUNDS.md).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `p1.sampler.inst`, `p1.grain.inst` … `p4.sampler.inst`, `p4.grain.inst` | Instrument | Instrument | Built-in, Kalimba, Marimba, Vibraphone, Glockenspiel, Harp, Harpsichord, Recorder, Singing Glass, Zither, Bowed Metal | Built-in |
+| `drum.kit` | Drum Kit | Drum-Kit | Studio, Tight, Room, Lo-Fi, Hybrid | Studio |
+| `seq.step.drums` | Step Seq to Drums | Step-Sequenzer an Drums | off / on | off |
+| `seq.euclid.drums` | Euclid to Drums | Euklid an Drums | off / on | off |
+| `seq.orbit.drums` | Orbit to Drums | Orbit an Drums | off / on | off |
+| `p1.gain` … `p4.gain` | Part N Gain | Part N Gain | −24 … +24 dB | 0 dB |
+
+Order: `p1.sampler.inst`, `p1.grain.inst`, `p2.sampler.inst`, `p2.grain.inst`, … `p4.grain.inst`,
+`drum.kit`, `seq.step.drums`, `seq.euclid.drums`, `seq.orbit.drums`, `p1.gain` … `p4.gain`.

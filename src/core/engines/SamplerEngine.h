@@ -19,7 +19,8 @@ namespace ohpe
 
     Samples arrive from the message thread (setSample / addZone / setZones); the engine keeps an
     immutable SampleMap published through RtShared, so the audio thread never allocates. Without
-    any loaded sample the engine plays a built-in harmonic tone (root C4), so it always sounds.
+    any loaded sample the engine plays a built-in harmonic tone (root C4), so it always sounds -
+    or, since 0.4, the factory instrument chosen with "inst" (see sample/FactoryBank.h).
 */
 namespace sampler
 {
@@ -28,6 +29,7 @@ enum Param
 {
     Start = 0, Tone, LoopStart, LoopEnd, // macros 1-4
     Root, LoopMode, Reverse, Mode, SliceSensitivity, SliceBaseKey,
+    Instrument, // 0.4: factory instrument (late parameter, registered at the end of the layout)
     numParams
 };
 
@@ -67,6 +69,8 @@ struct Shared
     int root = 60, loopMode = LoopOff, mode = ModeZones, sliceBase = 36;
     bool reverse = false;
     RtShared<SampleMap>* map = nullptr;
+    int instrument = 0;                    ///< 0.4: factory instrument index (0 = built-in tone)
+    const SampleMap* factory = nullptr;    ///< 0.4: its map (process lifetime), nullptr = not loaded
 };
 
 class Voice : public VoiceBase
@@ -83,7 +87,8 @@ public:
 private:
     bool pickRegion (const SampleMap& m) noexcept;
 
-    const SampleMap* playingMap = nullptr;
+    const SampleMap* playingMap = nullptr;  ///< map the voice reads (user map or factory map)
+    const SampleMap* ownerMap = nullptr;    ///< the engine's published map when the voice started
     const SampleData* sample = nullptr;
     int rootKey = 60;
     bool slice = false;
@@ -102,6 +107,7 @@ public:
     SamplerEngine();
     EngineInfo info() const noexcept override { return { "sampler", "Sampler", "Sampler", "sampler" }; }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
+    int firstLateParam() const noexcept override { return sampler::Instrument; }
     void setParam (int localIndex, float value) noexcept override;
 
     // ---- message thread: samples and zones ----

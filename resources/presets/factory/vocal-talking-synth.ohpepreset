@@ -1,0 +1,39 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Talking Synth",
+  "author": "groovex",
+  "tags": [
+    "Vocal",
+    "Leads"
+  ],
+  "engine": "vocal",
+  "comment": "The LFO walks through the vowels: a talking lead.",
+  "params": {
+    "engine": 5,
+    "vocal.vowel": 1.5,
+    "vocal.formant": 0.0,
+    "vocal.breath": 0.1,
+    "vocal.tension": 0.6,
+    "vocal.vibdepth": 0.1,
+    "vocal.vibrate": 5.5,
+    "vocal.jitter": 0.1,
+    "amp.a": 0.01,
+    "amp.d": 0.4,
+    "amp.s": 0.9,
+    "amp.r": 0.2,
+    "mod.a": 0.01,
+    "mod.d": 0.3,
+    "mod.s": 0.5,
+    "mod.r": 0.2,
+    "mod.amt": 0.0,
+    "lfo.rate": 1.6,
+    "lfo.depth": 0.8,
+    "lfo.shape": 1,
+    "lfo.dest": 1,
+    "voices": 1,
+    "glide": 0.05,
+    "gain": 3.4
+  }
+}

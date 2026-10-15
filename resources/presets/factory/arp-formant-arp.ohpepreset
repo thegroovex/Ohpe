@@ -1,0 +1,36 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Formant Arp",
+  "author": "groovex",
+  "tags": [
+    "Arp",
+    "Vocal"
+  ],
+  "engine": "wavetable",
+  "comment": "Vowel blips for talking sequences.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 2,
+    "wavetable.pos": 0.7,
+    "wavetable.warp": 0.0,
+    "wavetable.tone": 0.65,
+    "wavetable.unison": 0.1,
+    "wavetable.sub": 0.0,
+    "wavetable.reso": 0.1,
+    "wavetable.keytrack": 0.6,
+    "wavetable.envpos": -0.6,
+    "amp.a": 0.003,
+    "amp.d": 0.22,
+    "amp.s": 0.0,
+    "amp.r": 0.1,
+    "mod.a": 0.002,
+    "mod.d": 0.15,
+    "mod.s": 0.0,
+    "mod.r": 0.1,
+    "mod.amt": 0.2,
+    "voices": 8,
+    "gain": 19.7
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Detune Swarm",
+  "author": "groovex",
+  "tags": [
+    "FX",
+    "Textures"
+  ],
+  "engine": "cluster",
+  "comment": "Seven wildly drifting oscillators: a swarm.",
+  "params": {
+    "engine": 6,
+    "cluster.detune": 1.0,
+    "cluster.spread": 1.0,
+    "cluster.tone": 0.45,
+    "cluster.chord": 0,
+    "cluster.stack": 7,
+    "cluster.shape": 0.3,
+    "cluster.side": 0.9,
+    "cluster.reso": 0.2,
+    "cluster.keytrack": 0.4,
+    "cluster.drift": 1.0,
+    "amp.a": 1.0,
+    "amp.d": 1.0,
+    "amp.s": 0.9,
+    "amp.r": 2.0,
+    "mod.a": 1.0,
+    "mod.d": 1.0,
+    "mod.s": 1.0,
+    "mod.r": 1.0,
+    "mod.amt": 0.0,
+    "lfo.rate": 0.3,
+    "lfo.depth": 0.3,
+    "lfo.shape": 0,
+    "lfo.dest": 1,
+    "voices": 6,
+    "gain": 7.9
+  }
+}

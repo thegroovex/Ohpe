@@ -1,0 +1,38 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Breath Choir Pad",
+  "author": "groovex",
+  "tags": [
+    "Pads",
+    "Vocal"
+  ],
+  "engine": "vocal",
+  "comment": "Airy 'ah' choir with plenty of breath.",
+  "params": {
+    "engine": 5,
+    "vocal.vowel": 0.0,
+    "vocal.formant": 0.0,
+    "vocal.breath": 0.45,
+    "vocal.tension": 0.35,
+    "vocal.vibdepth": 0.15,
+    "vocal.vibrate": 5.0,
+    "vocal.jitter": 0.25,
+    "amp.a": 0.9,
+    "amp.d": 1.5,
+    "amp.s": 0.9,
+    "amp.r": 1.8,
+    "mod.a": 0.5,
+    "mod.d": 2.0,
+    "mod.s": 0.5,
+    "mod.r": 1.5,
+    "mod.amt": 0.0,
+    "fx.type": 1,
+    "fx.chorus.rate": 0.35,
+    "fx.chorus.depth": 0.5,
+    "fx.chorus.mix": 0.4,
+    "voices": 12,
+    "gain": 8.1
+  }
+}

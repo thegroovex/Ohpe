@@ -86,6 +86,7 @@ Teil eines Presets; Laden ändert nie die Parameterliste.
 Die Werks-Presets sind die `*.ohpepreset`-Dateien in
 [`resources/presets/factory/`](../../resources/presets/factory). Sie werden als Binärdaten in
 Plug-in und App eingebettet (CMake-Ziel `ohpe_presets`, Namensraum `OhpePresets`) und sind
-schreibgeschützt. Neue Werksklänge: Dateien dort ablegen und CMake neu ausführen. Die jetzt
-enthaltenen Presets sind **Platzhalter** zum Testen der Bibliothek; die echten Werksklänge folgen in
-einer späteren Version.
+schreibgeschützt. Neue Werksklänge: Dateien dort ablegen und CMake neu ausführen. Die Werksbank
+enthält 120 Part-Presets und 7 Projekt-Presets – siehe [FACTORY-SOUNDS.md](FACTORY-SOUNDS.md). Sie
+werden von `tools/presets/make_factory.py` erzeugt; der Plug-in-Test rendert jedes davon und prüft
+Pegel, Spitzen und Spektrum.

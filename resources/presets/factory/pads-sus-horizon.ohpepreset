@@ -1,0 +1,40 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Sus Horizon",
+  "author": "groovex",
+  "tags": [
+    "Pads"
+  ],
+  "engine": "cluster",
+  "comment": "Suspended-second stacks that never resolve; ambient beds.",
+  "params": {
+    "engine": 6,
+    "cluster.detune": 0.15,
+    "cluster.spread": 0.85,
+    "cluster.tone": 0.4,
+    "cluster.chord": 5,
+    "cluster.stack": 4,
+    "cluster.shape": 0.35,
+    "cluster.side": 0.55,
+    "cluster.reso": 0.05,
+    "cluster.keytrack": 0.5,
+    "cluster.drift": 0.5,
+    "amp.a": 1.6,
+    "amp.d": 2.0,
+    "amp.s": 0.9,
+    "amp.r": 3.0,
+    "mod.a": 2.0,
+    "mod.d": 2.0,
+    "mod.s": 0.6,
+    "mod.r": 2.0,
+    "mod.amt": 0.12,
+    "lfo.rate": 0.15,
+    "lfo.depth": 0.12,
+    "lfo.shape": 0,
+    "lfo.dest": 1,
+    "voices": 10,
+    "gain": 3.9
+  }
+}

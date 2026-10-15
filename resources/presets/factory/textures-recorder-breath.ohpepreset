@@ -1,0 +1,37 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Recorder Breath",
+  "author": "groovex",
+  "tags": [
+    "Textures",
+    "Vocal"
+  ],
+  "engine": "grain",
+  "comment": "Breathy recorder grains: airy, vocal-like tones.",
+  "params": {
+    "engine": 4,
+    "grain.pos": 0.5,
+    "grain.size": 140,
+    "grain.density": 28,
+    "grain.spray": 0.45,
+    "grain.pitch": 0,
+    "grain.reverse": 0.3,
+    "grain.spread": 0.9,
+    "grain.scan": 0.0,
+    "grain.tone": 0.6,
+    "grain.inst": 7,
+    "amp.a": 1.0,
+    "amp.d": 1.5,
+    "amp.s": 0.9,
+    "amp.r": 2.0,
+    "mod.a": 0.5,
+    "mod.d": 1.0,
+    "mod.s": 1.0,
+    "mod.r": 1.0,
+    "mod.amt": 0.0,
+    "voices": 8,
+    "gain": -4.3
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Rubber Bass",
+  "author": "groovex",
+  "tags": [
+    "Bass",
+    "Plucks"
+  ],
+  "engine": "analog",
+  "comment": "Bouncy plucked bass: fast filter decay, round sub.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.3,
+    "analog.detune": 0.05,
+    "analog.cutoff": 190,
+    "analog.reso": 0.35,
+    "analog.osc2oct": -1,
+    "analog.oscmix": 0.3,
+    "analog.sub": 0.5,
+    "analog.drive": 0.3,
+    "analog.keytrack": 0.4,
+    "amp.a": 0.003,
+    "amp.d": 0.35,
+    "amp.s": 0.3,
+    "amp.r": 0.06,
+    "mod.a": 0.002,
+    "mod.d": 0.12,
+    "mod.s": 0.0,
+    "mod.r": 0.1,
+    "mod.amt": 0.5,
+    "voices": 1,
+    "velsens": 0.6,
+    "gain": 21.2
+  }
+}

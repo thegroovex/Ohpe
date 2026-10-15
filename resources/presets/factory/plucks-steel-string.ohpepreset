@@ -1,0 +1,40 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Steel String",
+  "author": "groovex",
+  "tags": [
+    "Plucks"
+  ],
+  "engine": "pluck",
+  "comment": "Bright steel string plucked near the bridge.",
+  "params": {
+    "engine": 3,
+    "pluck.material": 0.0,
+    "pluck.damping": 0.22,
+    "pluck.bright": 0.48,
+    "pluck.body": 0.35,
+    "pluck.excite": 0.45,
+    "pluck.pickpos": 0.14,
+    "pluck.bodysize": 0.5,
+    "amp.a": 0.002,
+    "amp.d": 2.8,
+    "amp.s": 0.0,
+    "amp.r": 0.35,
+    "mod.a": 0.001,
+    "mod.d": 0.4,
+    "mod.s": 0.0,
+    "mod.r": 0.3,
+    "mod.amt": 0.1,
+    "fx.type": 4,
+    "fx.filterdrive.cutoff": 12000,
+    "fx.filterdrive.reso": 0.0,
+    "fx.filterdrive.drive": 0.04,
+    "fx.filterdrive.mode": 0,
+    "fx.filterdrive.mix": 1.0,
+    "voices": 12,
+    "velsens": 0.65,
+    "gain": 9.9
+  }
+}

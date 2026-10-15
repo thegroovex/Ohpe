@@ -1,0 +1,42 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Tick Hat",
+  "author": "groovex",
+  "tags": [
+    "Drums"
+  ],
+  "engine": "analog",
+  "comment": "High-passed noise tick for hi-hat patterns.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.0,
+    "analog.cutoff": 7500,
+    "analog.reso": 0.15,
+    "analog.oscmix": 0.0,
+    "analog.sub": 0.0,
+    "analog.noise": 1.0,
+    "analog.ftype": 3,
+    "analog.drive": 0.1,
+    "analog.keytrack": 0.0,
+    "amp.a": 0.001,
+    "amp.d": 0.08,
+    "amp.s": 0.0,
+    "amp.r": 0.05,
+    "mod.a": 0.001,
+    "mod.d": 0.05,
+    "mod.s": 0.0,
+    "mod.r": 0.05,
+    "mod.amt": 0.0,
+    "fx.type": 4,
+    "fx.filterdrive.cutoff": 13000,
+    "fx.filterdrive.reso": 0.0,
+    "fx.filterdrive.drive": 0.12,
+    "fx.filterdrive.mode": 0,
+    "fx.filterdrive.mix": 1.0,
+    "velsens": 0.7,
+    "voices": 4,
+    "gain": 22.4
+  }
+}

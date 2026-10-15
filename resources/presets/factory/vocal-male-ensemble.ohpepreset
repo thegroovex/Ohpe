@@ -1,0 +1,38 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Male Ensemble",
+  "author": "groovex",
+  "tags": [
+    "Vocal",
+    "Pads"
+  ],
+  "engine": "vocal",
+  "comment": "Low voices on 'oh': a men's choir.",
+  "params": {
+    "engine": 5,
+    "vocal.vowel": 3.0,
+    "vocal.formant": -3.0,
+    "vocal.breath": 0.2,
+    "vocal.tension": 0.4,
+    "vocal.vibdepth": 0.15,
+    "vocal.vibrate": 4.8,
+    "vocal.jitter": 0.25,
+    "amp.a": 0.35,
+    "amp.d": 1.0,
+    "amp.s": 0.9,
+    "amp.r": 1.0,
+    "mod.a": 0.5,
+    "mod.d": 1.0,
+    "mod.s": 1.0,
+    "mod.r": 1.0,
+    "mod.amt": 0.0,
+    "fx.type": 1,
+    "fx.chorus.rate": 0.35,
+    "fx.chorus.depth": 0.5,
+    "fx.chorus.mix": 0.35,
+    "voices": 12,
+    "gain": 4.9
+  }
+}
