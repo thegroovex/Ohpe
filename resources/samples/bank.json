@@ -1,0 +1,852 @@
+{
+ "format": "ohpe-factory-bank",
+ "instruments": {
+  "bowedmetal": [
+   {
+    "file": "instruments/bowedmetal/bowedmetal-45.flac",
+    "hi": 48,
+    "le": 122597,
+    "lo": 0,
+    "ls": 89722,
+    "root": 45,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/bowedmetal/bowedmetal-52.flac",
+    "hi": 53,
+    "le": 122597,
+    "lo": 49,
+    "ls": 89418,
+    "root": 52,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/bowedmetal/bowedmetal-55.flac",
+    "hi": 58,
+    "le": 122597,
+    "lo": 54,
+    "ls": 89522,
+    "root": 55,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/bowedmetal/bowedmetal-62.flac",
+    "hi": 65,
+    "le": 122597,
+    "lo": 59,
+    "ls": 89559,
+    "root": 62,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/bowedmetal/bowedmetal-69.flac",
+    "hi": 72,
+    "le": 122597,
+    "lo": 66,
+    "ls": 89522,
+    "root": 69,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/bowedmetal/bowedmetal-76.flac",
+    "hi": 127,
+    "le": 122597,
+    "lo": 73,
+    "ls": 89552,
+    "root": 76,
+    "vhi": 127,
+    "vlo": 1
+   }
+  ],
+  "glass": [
+   {
+    "file": "instruments/glass/glass-63.flac",
+    "hi": 64,
+    "le": 113778,
+    "lo": 0,
+    "ls": 80752,
+    "root": 63,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/glass/glass-66.flac",
+    "hi": 68,
+    "le": 113778,
+    "lo": 65,
+    "ls": 80762,
+    "root": 66,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/glass/glass-70.flac",
+    "hi": 72,
+    "le": 113778,
+    "lo": 69,
+    "ls": 80667,
+    "root": 70,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/glass/glass-74.flac",
+    "hi": 127,
+    "le": 113778,
+    "lo": 73,
+    "ls": 80740,
+    "root": 74,
+    "vhi": 127,
+    "vlo": 1
+   }
+  ],
+  "glockenspiel": [
+   {
+    "file": "instruments/glockenspiel/glockenspiel-67.flac",
+    "hi": 69,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 67,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/glockenspiel/glockenspiel-72.flac",
+    "hi": 75,
+    "le": -1,
+    "lo": 70,
+    "ls": -1,
+    "root": 72,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/glockenspiel/glockenspiel-79.flac",
+    "hi": 81,
+    "le": -1,
+    "lo": 76,
+    "ls": -1,
+    "root": 79,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/glockenspiel/glockenspiel-84.flac",
+    "hi": 87,
+    "le": -1,
+    "lo": 82,
+    "ls": -1,
+    "root": 84,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/glockenspiel/glockenspiel-91.flac",
+    "hi": 93,
+    "le": -1,
+    "lo": 88,
+    "ls": -1,
+    "root": 91,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/glockenspiel/glockenspiel-96.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 94,
+    "ls": -1,
+    "root": 96,
+    "vhi": 127,
+    "vlo": 1
+   }
+  ],
+  "harp": [
+   {
+    "file": "instruments/harp/harp-38.flac",
+    "hi": 41,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 38,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/harp/harp-45.flac",
+    "hi": 48,
+    "le": -1,
+    "lo": 42,
+    "ls": -1,
+    "root": 45,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/harp/harp-52.flac",
+    "hi": 55,
+    "le": -1,
+    "lo": 49,
+    "ls": -1,
+    "root": 52,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/harp/harp-59.flac",
+    "hi": 62,
+    "le": -1,
+    "lo": 56,
+    "ls": -1,
+    "root": 59,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/harp/harp-65.flac",
+    "hi": 68,
+    "le": -1,
+    "lo": 63,
+    "ls": -1,
+    "root": 65,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/harp/harp-72.flac",
+    "hi": 75,
+    "le": -1,
+    "lo": 69,
+    "ls": -1,
+    "root": 72,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/harp/harp-79.flac",
+    "hi": 82,
+    "le": -1,
+    "lo": 76,
+    "ls": -1,
+    "root": 79,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/harp/harp-86.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 83,
+    "ls": -1,
+    "root": 86,
+    "vhi": 127,
+    "vlo": 1
+   }
+  ],
+  "harpsichord": [
+   {
+    "file": "instruments/harpsichord/harpsichord-36.flac",
+    "hi": 39,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 36,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/harpsichord/harpsichord-42.flac",
+    "hi": 45,
+    "le": -1,
+    "lo": 40,
+    "ls": -1,
+    "root": 42,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/harpsichord/harpsichord-48.flac",
+    "hi": 51,
+    "le": -1,
+    "lo": 46,
+    "ls": -1,
+    "root": 48,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/harpsichord/harpsichord-54.flac",
+    "hi": 57,
+    "le": -1,
+    "lo": 52,
+    "ls": -1,
+    "root": 54,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/harpsichord/harpsichord-60.flac",
+    "hi": 63,
+    "le": -1,
+    "lo": 58,
+    "ls": -1,
+    "root": 60,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/harpsichord/harpsichord-66.flac",
+    "hi": 69,
+    "le": -1,
+    "lo": 64,
+    "ls": -1,
+    "root": 66,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/harpsichord/harpsichord-72.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 70,
+    "ls": -1,
+    "root": 72,
+    "vhi": 127,
+    "vlo": 1
+   }
+  ],
+  "kalimba": [
+   {
+    "file": "instruments/kalimba/kalimba-43.flac",
+    "hi": 46,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 43,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/kalimba/kalimba-49.flac",
+    "hi": 52,
+    "le": -1,
+    "lo": 47,
+    "ls": -1,
+    "root": 49,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/kalimba/kalimba-55.flac",
+    "hi": 58,
+    "le": -1,
+    "lo": 53,
+    "ls": -1,
+    "root": 55,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/kalimba/kalimba-61.flac",
+    "hi": 64,
+    "le": -1,
+    "lo": 59,
+    "ls": -1,
+    "root": 61,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/kalimba/kalimba-67.flac",
+    "hi": 70,
+    "le": -1,
+    "lo": 65,
+    "ls": -1,
+    "root": 67,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/kalimba/kalimba-73.flac",
+    "hi": 76,
+    "le": -1,
+    "lo": 71,
+    "ls": -1,
+    "root": 73,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/kalimba/kalimba-80.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 77,
+    "ls": -1,
+    "root": 80,
+    "vhi": 127,
+    "vlo": 1
+   }
+  ],
+  "marimba": [
+   {
+    "file": "instruments/marimba/marimba-36-v92.flac",
+    "hi": 39,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 36,
+    "vhi": 92,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/marimba/marimba-36-v127.flac",
+    "hi": 39,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 36,
+    "vhi": 127,
+    "vlo": 93
+   },
+   {
+    "file": "instruments/marimba/marimba-43-v92.flac",
+    "hi": 48,
+    "le": -1,
+    "lo": 40,
+    "ls": -1,
+    "root": 43,
+    "vhi": 92,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/marimba/marimba-43-v127.flac",
+    "hi": 48,
+    "le": -1,
+    "lo": 40,
+    "ls": -1,
+    "root": 43,
+    "vhi": 127,
+    "vlo": 93
+   },
+   {
+    "file": "instruments/marimba/marimba-53-v92.flac",
+    "hi": 56,
+    "le": -1,
+    "lo": 49,
+    "ls": -1,
+    "root": 53,
+    "vhi": 92,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/marimba/marimba-53-v127.flac",
+    "hi": 56,
+    "le": -1,
+    "lo": 49,
+    "ls": -1,
+    "root": 53,
+    "vhi": 127,
+    "vlo": 93
+   },
+   {
+    "file": "instruments/marimba/marimba-60-v92.flac",
+    "hi": 63,
+    "le": -1,
+    "lo": 57,
+    "ls": -1,
+    "root": 60,
+    "vhi": 92,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/marimba/marimba-60-v127.flac",
+    "hi": 63,
+    "le": -1,
+    "lo": 57,
+    "ls": -1,
+    "root": 60,
+    "vhi": 127,
+    "vlo": 93
+   },
+   {
+    "file": "instruments/marimba/marimba-67-v92.flac",
+    "hi": 72,
+    "le": -1,
+    "lo": 64,
+    "ls": -1,
+    "root": 67,
+    "vhi": 92,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/marimba/marimba-67-v127.flac",
+    "hi": 72,
+    "le": -1,
+    "lo": 64,
+    "ls": -1,
+    "root": 67,
+    "vhi": 127,
+    "vlo": 93
+   },
+   {
+    "file": "instruments/marimba/marimba-77-v92.flac",
+    "hi": 80,
+    "le": -1,
+    "lo": 73,
+    "ls": -1,
+    "root": 77,
+    "vhi": 92,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/marimba/marimba-77-v127.flac",
+    "hi": 80,
+    "le": -1,
+    "lo": 73,
+    "ls": -1,
+    "root": 77,
+    "vhi": 127,
+    "vlo": 93
+   },
+   {
+    "file": "instruments/marimba/marimba-84-v92.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 81,
+    "ls": -1,
+    "root": 84,
+    "vhi": 92,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/marimba/marimba-84-v127.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 81,
+    "ls": -1,
+    "root": 84,
+    "vhi": 127,
+    "vlo": 93
+   }
+  ],
+  "recorder": [
+   {
+    "file": "instruments/recorder/recorder-53.flac",
+    "hi": 54,
+    "le": 96138,
+    "lo": 0,
+    "ls": 63053,
+    "root": 53,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/recorder/recorder-56.flac",
+    "hi": 58,
+    "le": 96138,
+    "lo": 55,
+    "ls": 63008,
+    "root": 56,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/recorder/recorder-60.flac",
+    "hi": 62,
+    "le": 96138,
+    "lo": 59,
+    "ls": 63100,
+    "root": 60,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/recorder/recorder-64.flac",
+    "hi": 66,
+    "le": 96138,
+    "lo": 63,
+    "ls": 63093,
+    "root": 64,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/recorder/recorder-68.flac",
+    "hi": 70,
+    "le": 96138,
+    "lo": 67,
+    "ls": 63114,
+    "root": 68,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/recorder/recorder-72.flac",
+    "hi": 74,
+    "le": 96138,
+    "lo": 71,
+    "ls": 63100,
+    "root": 72,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/recorder/recorder-76.flac",
+    "hi": 127,
+    "le": 96138,
+    "lo": 75,
+    "ls": 63093,
+    "root": 76,
+    "vhi": 127,
+    "vlo": 1
+   }
+  ],
+  "vibraphone": [
+   {
+    "file": "instruments/vibraphone/vibraphone-41.flac",
+    "hi": 44,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 41,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/vibraphone/vibraphone-48.flac",
+    "hi": 51,
+    "le": -1,
+    "lo": 45,
+    "ls": -1,
+    "root": 48,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/vibraphone/vibraphone-55.flac",
+    "hi": 58,
+    "le": -1,
+    "lo": 52,
+    "ls": -1,
+    "root": 55,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/vibraphone/vibraphone-62.flac",
+    "hi": 65,
+    "le": -1,
+    "lo": 59,
+    "ls": -1,
+    "root": 62,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/vibraphone/vibraphone-69.flac",
+    "hi": 72,
+    "le": -1,
+    "lo": 66,
+    "ls": -1,
+    "root": 69,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/vibraphone/vibraphone-76.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 73,
+    "ls": -1,
+    "root": 76,
+    "vhi": 127,
+    "vlo": 1
+   }
+  ],
+  "zither": [
+   {
+    "file": "instruments/zither/zither-37.flac",
+    "hi": 40,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 37,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/zither/zither-44.flac",
+    "hi": 47,
+    "le": -1,
+    "lo": 41,
+    "ls": -1,
+    "root": 44,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/zither/zither-51.flac",
+    "hi": 53,
+    "le": -1,
+    "lo": 48,
+    "ls": -1,
+    "root": 51,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/zither/zither-56.flac",
+    "hi": 58,
+    "le": -1,
+    "lo": 54,
+    "ls": -1,
+    "root": 56,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/zither/zither-61.flac",
+    "hi": 63,
+    "le": -1,
+    "lo": 59,
+    "ls": -1,
+    "root": 61,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/zither/zither-66.flac",
+    "hi": 68,
+    "le": -1,
+    "lo": 64,
+    "ls": -1,
+    "root": 66,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/zither/zither-71.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 69,
+    "ls": -1,
+    "root": 71,
+    "vhi": 127,
+    "vlo": 1
+   }
+  ]
+ },
+ "kits": {
+  "hybrid": {
+   "1": "kits/hybrid/hybrid-01-kick.flac",
+   "10": "kits/hybrid/hybrid-10-tom-high.flac",
+   "11": "kits/hybrid/hybrid-11-tom-floor.flac",
+   "12": "kits/hybrid/hybrid-12-cross-stick.flac",
+   "13": "kits/hybrid/hybrid-13-ride.flac",
+   "14": "kits/hybrid/hybrid-14-ride-bell.flac",
+   "15": "kits/hybrid/hybrid-15-crash.flac",
+   "16": "kits/hybrid/hybrid-16-crash-sizzle.flac",
+   "17": "kits/hybrid/hybrid-17-hat-half.flac",
+   "18": "kits/hybrid/hybrid-18-snare-ghost.flac",
+   "19": "kits/hybrid/hybrid-19-cowbell.flac",
+   "2": "kits/hybrid/hybrid-02-kick-snares.flac",
+   "20": "kits/hybrid/hybrid-20-tambourine.flac",
+   "21": "kits/hybrid/hybrid-21-shaker.flac",
+   "22": "kits/hybrid/hybrid-22-claves.flac",
+   "23": "kits/hybrid/hybrid-23-conga.flac",
+   "24": "kits/hybrid/hybrid-24-bongo.flac",
+   "3": "kits/hybrid/hybrid-03-snare.flac",
+   "4": "kits/hybrid/hybrid-04-rimshot.flac",
+   "5": "kits/hybrid/hybrid-05-clap.flac",
+   "6": "kits/hybrid/hybrid-06-hat-closed.flac",
+   "7": "kits/hybrid/hybrid-07-hat-open.flac",
+   "8": "kits/hybrid/hybrid-08-hat-pedal.flac",
+   "9": "kits/hybrid/hybrid-09-tom-low.flac"
+  },
+  "lofi": {
+   "1": "kits/lofi/lofi-01-kick.flac",
+   "10": "kits/lofi/lofi-10-tom-high.flac",
+   "11": "kits/lofi/lofi-11-tom-floor.flac",
+   "12": "kits/lofi/lofi-12-cross-stick.flac",
+   "13": "kits/lofi/lofi-13-ride.flac",
+   "14": "kits/lofi/lofi-14-ride-bell.flac",
+   "15": "kits/lofi/lofi-15-crash.flac",
+   "16": "kits/lofi/lofi-16-crash-sizzle.flac",
+   "17": "kits/lofi/lofi-17-hat-half.flac",
+   "18": "kits/lofi/lofi-18-snare-ghost.flac",
+   "19": "kits/lofi/lofi-19-cowbell.flac",
+   "2": "kits/lofi/lofi-02-kick-snares.flac",
+   "20": "kits/lofi/lofi-20-tambourine.flac",
+   "21": "kits/lofi/lofi-21-shaker.flac",
+   "22": "kits/lofi/lofi-22-claves.flac",
+   "23": "kits/lofi/lofi-23-conga.flac",
+   "24": "kits/lofi/lofi-24-bongo.flac",
+   "3": "kits/lofi/lofi-03-snare.flac",
+   "4": "kits/lofi/lofi-04-rimshot.flac",
+   "5": "kits/lofi/lofi-05-clap.flac",
+   "6": "kits/lofi/lofi-06-hat-closed.flac",
+   "7": "kits/lofi/lofi-07-hat-open.flac",
+   "8": "kits/lofi/lofi-08-hat-pedal.flac",
+   "9": "kits/lofi/lofi-09-tom-low.flac"
+  },
+  "room": {
+   "1": "kits/room/room-01-kick.flac",
+   "10": "kits/room/room-10-tom-high.flac",
+   "11": "kits/room/room-11-tom-floor.flac",
+   "12": "kits/room/room-12-cross-stick.flac",
+   "13": "kits/room/room-13-ride.flac",
+   "14": "kits/room/room-14-ride-bell.flac",
+   "15": "kits/room/room-15-crash.flac",
+   "16": "kits/room/room-16-crash-sizzle.flac",
+   "17": "kits/room/room-17-hat-half.flac",
+   "18": "kits/room/room-18-snare-ghost.flac",
+   "19": "kits/room/room-19-cowbell.flac",
+   "2": "kits/room/room-02-kick-snares.flac",
+   "20": "kits/room/room-20-tambourine.flac",
+   "21": "kits/room/room-21-shaker.flac",
+   "22": "kits/room/room-22-claves.flac",
+   "23": "kits/room/room-23-conga.flac",
+   "24": "kits/room/room-24-bongo.flac",
+   "3": "kits/room/room-03-snare.flac",
+   "4": "kits/room/room-04-rimshot.flac",
+   "5": "kits/room/room-05-clap.flac",
+   "6": "kits/room/room-06-hat-closed.flac",
+   "7": "kits/room/room-07-hat-open.flac",
+   "8": "kits/room/room-08-hat-pedal.flac",
+   "9": "kits/room/room-09-tom-low.flac"
+  },
+  "tight": {
+   "1": "kits/tight/tight-01-kick.flac",
+   "10": "kits/tight/tight-10-tom-high.flac",
+   "11": "kits/tight/tight-11-tom-floor.flac",
+   "12": "kits/tight/tight-12-cross-stick.flac",
+   "13": "kits/tight/tight-13-ride.flac",
+   "14": "kits/tight/tight-14-ride-bell.flac",
+   "15": "kits/tight/tight-15-crash.flac",
+   "16": "kits/tight/tight-16-crash-sizzle.flac",
+   "17": "kits/tight/tight-17-hat-half.flac",
+   "18": "kits/tight/tight-18-snare-ghost.flac",
+   "19": "kits/tight/tight-19-cowbell.flac",
+   "2": "kits/tight/tight-02-kick-snares.flac",
+   "20": "kits/tight/tight-20-tambourine.flac",
+   "21": "kits/tight/tight-21-shaker.flac",
+   "22": "kits/tight/tight-22-claves.flac",
+   "23": "kits/tight/tight-23-conga.flac",
+   "24": "kits/tight/tight-24-bongo.flac",
+   "3": "kits/tight/tight-03-snare.flac",
+   "4": "kits/tight/tight-04-rimshot.flac",
+   "5": "kits/tight/tight-05-clap.flac",
+   "6": "kits/tight/tight-06-hat-closed.flac",
+   "7": "kits/tight/tight-07-hat-open.flac",
+   "8": "kits/tight/tight-08-hat-pedal.flac",
+   "9": "kits/tight/tight-09-tom-low.flac"
+  }
+ },
+ "version": 1
+}
