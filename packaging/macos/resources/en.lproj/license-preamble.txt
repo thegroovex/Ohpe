@@ -1,0 +1,12 @@
+Ohpe – designed by groovex
+Copyright (C) groovex and Ohpe contributors
+
+Ohpe is free software: you can redistribute it and/or modify it under the terms of the GNU Affero
+General Public License as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version. Ohpe is distributed in the hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. The complete licence text follows. Source code:
+https://github.com/thegroovex/Ohpe – third-party components: THIRD-PARTY.md in the source code.
+
+-------------------------------------------------------------------------------------------------
+

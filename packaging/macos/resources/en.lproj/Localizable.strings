@@ -1,0 +1,7 @@
+/* Ohpe installer - English */
+"CHOICE_APP_TITLE" = "Standalone app";
+"CHOICE_APP_DESC" = "The Ohpe app with audio and MIDI device selection. Installed to /Applications.";
+"CHOICE_VST3_TITLE" = "VST3 plug-in";
+"CHOICE_VST3_DESC" = "Ohpe as a VST3 instrument for your music software. Installed to /Library/Audio/Plug-Ins/VST3.";
+"CHOICE_AU_TITLE" = "Audio Unit";
+"CHOICE_AU_DESC" = "Ohpe as an Audio Unit instrument. Installed to /Library/Audio/Plug-Ins/Components.";

@@ -1,0 +1,54 @@
+#!/bin/bash
+# Ohpe - designed by groovex
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# postinstall for one component package of the Ohpe installer (generated from postinstall.in by
+# packaging/macos/build-installer.sh; @BUNDLE@ is the installed bundle relative to the target
+# volume, @KIND@ is app, vst3 or au).
+#
+# Makes the freshly installed, unsigned bundle runnable without Gatekeeper trouble:
+#   1. removes the quarantine attribute,
+#   2. ad-hoc signs the bundle (Apple Silicon refuses to run unsigned code) - skipped when the
+#      bundle already carries a valid Developer ID signature, so a properly signed release is
+#      never downgraded,
+#   3. for the Audio Unit: restarts the Audio Unit registry so hosts see the new version.
+# Never fails the installation: every step only logs a warning on error.
+
+BUNDLE_REL="@BUNDLE@"
+KIND="@KIND@"
+TARGET_VOLUME="${3:-/}"
+TARGET_VOLUME="${TARGET_VOLUME%/}"
+BUNDLE="${TARGET_VOLUME}/${BUNDLE_REL}"
+
+log() { echo "Ohpe postinstall ($KIND): $*"; }
+
+case "$BUNDLE" in
+    */Applications/Ohpe.app|*/Library/Audio/Plug-Ins/VST3/Ohpe.vst3|*/Library/Audio/Plug-Ins/Components/Ohpe.component) ;;
+    *) log "unexpected path '$BUNDLE' - nothing done"; exit 0 ;;
+esac
+
+if [ ! -d "$BUNDLE" ] || [ -L "$BUNDLE" ]; then
+    log "'$BUNDLE' not found - nothing done"
+    exit 0
+fi
+
+/usr/bin/xattr -dr com.apple.quarantine "$BUNDLE" 2>/dev/null || true
+log "quarantine attribute removed from $BUNDLE"
+
+if /usr/bin/codesign --verify --strict "$BUNDLE" >/dev/null 2>&1 \
+   && /usr/bin/codesign -dv "$BUNDLE" 2>&1 | /usr/bin/grep -q '^Authority=Developer ID Application'; then
+    log "Developer ID signature found - kept"
+else
+    if /usr/bin/codesign --force --deep -s - "$BUNDLE" >/dev/null 2>&1; then
+        log "ad-hoc signed $BUNDLE"
+    else
+        log "warning: ad-hoc signing failed for $BUNDLE"
+    fi
+fi
+
+if [ "$KIND" = "au" ]; then
+    /usr/bin/killall -9 AudioComponentRegistrar >/dev/null 2>&1 || true
+    log "Audio Unit registry restarted"
+fi
+
+exit 0

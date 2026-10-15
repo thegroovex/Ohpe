@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ohpe - designed by groovex | SPDX-License-Identifier: AGPL-3.0-or-later
+     productbuild distribution for the Ohpe installer; @VERSION@ is replaced by
+     packaging/macos/build-installer.sh. Choice titles are keys into <lang>.lproj/Localizable.strings. -->
+<installer-gui-script minSpecVersion="2">
+    <title>Ohpe</title>
+    <welcome file="welcome.html" mime-type="text/html"/>
+    <license file="license.txt" mime-type="text/plain"/>
+    <readme file="readme.html" mime-type="text/html"/>
+    <options customize="always" require-scripts="false" hostArchitectures="arm64,x86_64"/>
+    <domains enable_anywhere="false" enable_currentUserHome="false" enable_localSystem="true"/>
+    <volume-check>
+        <allowed-os-versions>
+            <os-version min="11.0"/>
+        </allowed-os-versions>
+    </volume-check>
+    <choices-outline>
+        <line choice="app"/>
+        <line choice="vst3"/>
+        <line choice="au"/>
+    </choices-outline>
+    <choice id="app" visible="true" start_selected="true" title="CHOICE_APP_TITLE" description="CHOICE_APP_DESC">
+        <pkg-ref id="com.groovex.ohpe.app"/>
+    </choice>
+    <choice id="vst3" visible="true" start_selected="true" title="CHOICE_VST3_TITLE" description="CHOICE_VST3_DESC">
+        <pkg-ref id="com.groovex.ohpe.vst3"/>
+    </choice>
+    <choice id="au" visible="true" start_selected="true" title="CHOICE_AU_TITLE" description="CHOICE_AU_DESC">
+        <pkg-ref id="com.groovex.ohpe.au"/>
+    </choice>
+    <pkg-ref id="com.groovex.ohpe.app" version="@VERSION@" onConclusion="none">ohpe-app.pkg</pkg-ref>
+    <pkg-ref id="com.groovex.ohpe.vst3" version="@VERSION@" onConclusion="none">ohpe-vst3.pkg</pkg-ref>
+    <pkg-ref id="com.groovex.ohpe.au" version="@VERSION@" onConclusion="none">ohpe-au.pkg</pkg-ref>
+</installer-gui-script>
