@@ -1,0 +1,61 @@
+OHPE FÜR macOS - BITTE ZUERST LESEN
+===================================
+
+Inhalt dieses Disk-Images
+-------------------------
+  Ohpe-Installer.pkg            installiert Ohpe (du wählst die Teile aus):
+                                  - Standalone-App  -> /Programme (/Applications)
+                                  - VST3-Plug-in    -> /Library/Audio/Plug-Ins/VST3
+                                  - Audio Unit      -> /Library/Audio/Plug-Ins/Components
+  Ohpe Gatekeeper Fix.command   macht ein installiertes Ohpe startbar, falls macOS es noch blockiert
+  Uninstall Ohpe.command        entfernt Ohpe wieder (deine eigenen Presets bleiben, wenn du willst)
+  LICENSE.txt                   GNU Affero General Public License v3.0 oder neuer
+
+Voraussetzungen: macOS 11 oder neuer, Apple Silicon oder Intel (Universal-Binaries).
+
+
+1. Installer öffnen (er ist nicht von Apple signiert)
+-----------------------------------------------------
+Ohpe ist freie Software, und dieser Installer ist nicht mit einer Apple-Developer-ID signiert.
+Beim ersten Doppelklick meldet macOS deshalb, er "kann nicht geöffnet werden" bzw. stamme von
+einem "nicht verifizierten Entwickler". Nutze EINEN dieser Wege - alle sind sicher und betreffen
+nur diese eine Datei:
+
+  a) Im Finder mit rechter Maustaste (oder Ctrl-Klick) auf "Ohpe-Installer.pkg" -> Öffnen -> Öffnen.
+
+  b) Oder Systemeinstellungen -> Datenschutz & Sicherheit öffnen, nach unten zur Meldung über
+     "Ohpe-Installer.pkg" scrollen, "Dennoch öffnen" klicken und bestätigen.
+
+  c) Oder im Terminal (die pkg vorher in den Ordner Downloads kopieren):
+         xattr -d com.apple.quarantine ~/Downloads/Ohpe-Installer.pkg
+     danach die pkg wie gewohnt doppelklicken.
+
+Dann dem Installer folgen. Unter "Anpassen" kannst du App, VST3 und Audio Unit einzeln an- oder
+abwählen.
+
+
+2. Was der Installer für Gatekeeper erledigt
+--------------------------------------------
+Nach dem Kopieren erledigt der Installer automatisch:
+  - entfernt das Quarantäne-Attribut von installierter App und Plug-ins,
+  - signiert sie "ad hoc" auf deinem Mac, damit Apple-Silicon-Macs sie ausführen,
+  - startet das Audio-Unit-Verzeichnis neu, damit deine Musiksoftware die AU findet.
+Meist ist danach nichts weiter nötig. Starte deine Musiksoftware nach der Installation neu.
+
+
+3. Falls macOS Ohpe trotzdem blockiert
+--------------------------------------
+"Ohpe Gatekeeper Fix.command" doppelklicken. Das Skript fragt nach deinem Administrator-Passwort
+und wiederholt die Schritte oben für jede installierte Ohpe-Kopie. Beliebig oft ausführbar.
+Falls macOS auch die .command-Datei blockiert: rechte Maustaste -> Öffnen -> Öffnen, oder im
+Terminal ausführen:   bash "/Volumes/Ohpe/Ohpe Gatekeeper Fix.command"
+
+
+4. Deinstallieren
+-----------------
+"Uninstall Ohpe.command" doppelklicken (gleicher Tipp wie oben, falls macOS blockiert). Es entfernt
+App, beide Plug-ins und die Installationsbelege. Deine eigenen Presets in
+~/Library/Application Support/groovex/Ohpe bleiben erhalten, außer du stimmst dem Löschen zu.
+
+
+Mehr: https://github.com/thegroovex/Ohpe  (docs/de/INSTALLATION.md)
