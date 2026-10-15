@@ -12,7 +12,11 @@ add_library(ohpe_core STATIC
     fx/Delay.cpp
     fx/Reverb.cpp
     seq/StepSequencer.cpp
-    midi/MidiMap.cpp)
+    midi/MidiMap.cpp
+    # 0.2.0 package C: tape, insert effects
+    tape/TapeMachine.cpp
+    fx/InsertEffects.cpp
+    fx/InsertSlot.cpp)
 
 target_include_directories(ohpe_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ohpe_core PUBLIC nlohmann_json::nlohmann_json)

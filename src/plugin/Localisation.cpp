@@ -87,6 +87,14 @@ const std::map<juce::String, juce::String>& table()
         { "Reset to default state", "Auf Grundzustand zurücksetzen" },
         { "Close", "Schließen" },
         { "designed by groovex", "designed by groovex" },
+        // 0.2.0 package C: tape bounce / export
+        { "The tape is empty - nothing to export.", "Das Band ist leer - nichts zu exportieren." },
+        { "Could not create the export folder.", "Der Export-Ordner konnte nicht angelegt werden." },
+        { "Could not write the file:", "Die Datei konnte nicht geschrieben werden:" },
+        { "Export tape ...", "Band exportieren ..." },
+        { "Master and stems (24-bit WAV)", "Master und Stems (24-Bit-WAV)" },
+        { "Tape exported", "Band exportiert" },
+        { "Audio input", "Audioeingang" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;

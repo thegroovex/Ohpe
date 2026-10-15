@@ -37,11 +37,12 @@ float renderNote (OhpeProcessor& p, int blocks, int busForPeak, bool sendNote = 
 void pump() { juce::MessageManager::getInstance()->runDispatchLoopUntil (120); }
 } // namespace
 
-TEST_CASE ("processor: buses are main + 8 aux stereo outputs, MIDI in, no audio input")
+TEST_CASE ("processor: buses are main + 8 aux stereo outputs, MIDI in, one audio input (off by default)")
 {
     OhpeProcessor p;
     CHECK (p.getBusCount (false) == 1 + numAuxOutputs);
-    CHECK (p.getBusCount (true) == 0);
+    CHECK (p.getBusCount (true) == 1); // 0.2: tape recording input
+    CHECK_FALSE (p.getBus (true, 0)->isEnabled());
     CHECK (p.acceptsMidi());
     CHECK (p.getBus (false, 0)->isEnabled());
     CHECK_FALSE (p.getBus (false, 1)->isEnabled()); // aux off by default in hosts

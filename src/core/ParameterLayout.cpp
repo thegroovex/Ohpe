@@ -45,5 +45,10 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     }
 
     // ---- append new parameters below this line (phase 2+), never above ------------------
+
+    // ---- 0.2.0: mixer dynamics, tape machine, part 1 FX slot (package C) ---------------
+    mixer.registerDynamicsParams (reg);
+    TapeMachine::registerParams (reg);
+    InsertSlot::registerParams (reg, parts[0]->prefix() + "fx.", "part1/fx");
 }
 } // namespace ohpe

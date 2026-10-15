@@ -14,7 +14,8 @@ namespace ohpe
 
     - Parameters: one host parameter per registry entry, same order, ID = registry ID
       (append-only, so host automation stays valid across versions).
-    - Buses: main stereo output + 8 aux stereo outputs (multi-out), MIDI in. In a plug-in the
+    - Buses: main stereo output + 8 aux stereo outputs (multi-out), MIDI in, and (0.2) one
+      stereo audio input for tape recording (off by default). In a plug-in the
       aux outputs are off until the host enables them; in the standalone app all are on.
     - MIDI learn: armMidiLearn(id) -> next CC / note is assigned on the audio thread; a timer
       on the message thread stores it in the map (notifies listeners via ChangeBroadcaster).
@@ -80,6 +81,7 @@ public:
 
 private:
     void timerCallback() override;
+    void captureInput (juce::AudioBuffer<float>& buffer, int numSamples); ///< 0.2: input bus -> core
     void syncHostParametersFromRegistry();
     void pullHostParametersIntoRegistry();
 
@@ -90,6 +92,7 @@ private:
     std::unique_ptr<std::atomic<float>[]> lastPushed; ///< plain value last copied host -> registry (audio + message thread)
     std::vector<MidiEvent> midiScratch;
     juce::AudioBuffer<float> scratch;
+    juce::AudioBuffer<float> inputScratch; ///< 0.2: input bus copy for tape recording
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OhpeProcessor)
 };
