@@ -74,8 +74,10 @@ pass "EN + DE welcome, readme, licence"
 step "payload files"
 check_payload() { # check_payload component.pkg expected-path
     pkgutil --payload-files "$1" > "$TMP/payload.txt"
-    grep -qx "$2" "$TMP/payload.txt" || fail "$2 not in payload of $1"
-    grep -qx "$2/Contents/MacOS/Ohpe" "$TMP/payload.txt" || fail "$2 binary not in payload of $1"
+    local rel="${2#./}"
+    sed -e 's#^\./##' -e 's#^/##' "$TMP/payload.txt" > "$TMP/payload-rel.txt"
+    grep -qxF "$rel" "$TMP/payload-rel.txt" || { cat "$TMP/payload.txt"; fail "$2 not in payload of $1"; }
+    grep -qxF "$rel/Contents/MacOS/Ohpe" "$TMP/payload-rel.txt" || fail "$2 binary not in payload of $1"
     pass "$(basename "$1") installs $2 ($(wc -l < "$TMP/payload.txt" | tr -d ' ') entries)"
 }
 COMP="build/installer/components"
