@@ -94,16 +94,23 @@ TEST_CASE ("cluster: spread widens the stereo image, one voice stays centred")
     CHECK (sideRatio (7, 1.0f) > 0.05);
 }
 
-TEST_CASE ("cluster: low aliasing on a bright high stack")
+TEST_CASE ("cluster: band-limited - no aliasing on bright high notes, any shape")
 {
-    ClusterEngine e;
-    kit::prepare (e);
-    single (e);
-    e.noteOn (91, 1.0f);
-    auto out = renderEngine (e, 8192 + 16384);
-    const double db = kit::inharmonicDb (out.l, sampleRate, dsp::midiToHz (91.0f));
-    CAPTURE (db);
-    CHECK (db < -35.0);
+    for (int note : { 79, 91, 100 })
+        for (float shape : { 0.0f, 0.25f, 1.0f })
+        {
+            ClusterEngine e;
+            kit::prepare (e);
+            single (e);
+            e.setParam (cluster::Shape, shape);
+            e.noteOn (note, 1.0f);
+            auto out = renderEngine (e, 8192 + 16384);
+            const double db = kit::inharmonicDb (out.l, sampleRate, dsp::midiToHz ((float) note));
+            CAPTURE (note);
+            CAPTURE (shape);
+            CAPTURE (db);
+            CHECK (db < -80.0);
+        }
 }
 
 TEST_CASE ("cluster: macro ranges, every macro changes the sound")

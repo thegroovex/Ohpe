@@ -55,7 +55,7 @@ private:
     // string
     std::vector<float> line, burst;
     int mask = 0, writePos = 0;
-    float apX1 = 0.0f, apY1 = 0.0f, lpState = 0.0f, hpState = 0.0f;
+    float apX1 = 0.0f, apY1 = 0.0f, lpState = 0.0f, hpState = 0.0f, toneState = 0.0f;
     // mallet
     float modeY1[numModes] {}, modeY2[numModes] {};
     int malletPos = 0, malletLength = 0;

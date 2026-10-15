@@ -47,8 +47,8 @@ void Voice::start (int midiNote, float vel, bool legato, const VoiceCommon& c) n
     if (! wasActive)
     {
         rnd.seed ((uint32_t) (midiNote * 7919 + 101));
-        osc[0].reset (0.0f);
-        for (int k = 1; k < maxStack; ++k) osc[k].reset (rnd.next01()); // free phases: no flanging attack
+        phase[0] = 0.0f;
+        for (int k = 1; k < maxStack; ++k) phase[k] = rnd.next01(); // free phases: no flanging attack
         for (int k = 0; k < maxStack; ++k) driftValue[k] = driftTarget[k] = 0.0f;
         filterL.reset();
         filterR.reset();
@@ -109,6 +109,25 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         filterL.set (cutoff, 0.92f * p.resonance);
         filterR.set (cutoff, 0.92f * p.resonance);
 
+        // oscillator shape: saw -> square -> narrowing pulse = frames 3 .. 7 of the Classic table,
+        // read from per-octave band-limited copies (no aliasing even for high, wide stacks)
+        const float fpos = 3.0f + 4.0f * dsp::clamp01 (p.shape);
+        const int fr = std::min ((int) fpos, wavetable::Bank::numFrames - 2);
+        const float ff = fpos - (float) fr;
+        const float* tabA[maxStack][2];
+        const float* tabB[maxStack][2];
+        float lt[maxStack], inc[maxStack];
+        for (int k = 0; k < count; ++k)
+        {
+            inc[k] = std::min (0.45f, freq[k] / sr);
+            int la, lb;
+            wavetable::pickLevels (inc[k], la, lb, lt[k]);
+            tabA[k][0] = bank->frame (wavetable::Classic, fr, la);
+            tabA[k][1] = bank->frame (wavetable::Classic, fr + 1, la);
+            tabB[k][0] = bank->frame (wavetable::Classic, fr, lb);
+            tabB[k][1] = bank->frame (wavetable::Classic, fr + 1, lb);
+        }
+
         float panL, panR;
         lfoPan (c, panL, panR);
         const float gain = 0.3f * velocityGain (c) * lfoAmp (c);
@@ -118,7 +137,13 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
             float sL = 0.0f, sR = 0.0f;
             for (int k = 0; k < count; ++k)
             {
-                const float v = osc[k].next (freq[k], sr, p.shape);
+                const float ph = phase[k];
+                const float a0 = wavetable::readLinear (tabA[k][0], ph), a1 = wavetable::readLinear (tabA[k][1], ph);
+                const float b0 = wavetable::readLinear (tabB[k][0], ph), b1 = wavetable::readLinear (tabB[k][1], ph);
+                const float va = a0 + ff * (a1 - a0), vb = b0 + ff * (b1 - b0);
+                const float v = va + lt[k] * (vb - va);
+                phase[k] += inc[k];
+                if (phase[k] >= 1.0f) phase[k] -= 1.0f;
                 sL += v * gL[k];
                 sR += v * gR[k];
             }
@@ -136,14 +161,19 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
 ClusterEngine::ClusterEngine()
 {
-    for (auto& v : voices) v.shared = &shared;
+    const auto& bank = wavetable::Bank::get();
+    for (auto& v : voices)
+    {
+        v.shared = &shared;
+        v.bank = &bank;
+    }
 }
 
 std::vector<ParamDescriptor> ClusterEngine::getParamDescriptors() const
 {
     using namespace pd;
     std::vector<ParamDescriptor> d;
-    d.push_back (continuous ("detune", "Detune", "Verstimmung", 0.0f, 1.0f, 0.3f));
+    d.push_back (continuous ("detune", "Detune", "Verstimmung", 0.0f, 1.0f, 0.45f));
     d.push_back (continuous ("spread", "Spread", "Breite", 0.0f, 1.0f, 0.6f));
     d.push_back (continuous ("tone", "Tone", "Klang", 0.0f, 1.0f, 0.7f));
     d.push_back (choice ("chord", "Chord", "Akkord",

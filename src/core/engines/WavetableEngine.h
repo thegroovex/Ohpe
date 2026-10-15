@@ -41,6 +41,7 @@ public:
     static constexpr int size = 2048;          ///< samples per frame
     static constexpr int numLevels = 10;       ///< level k holds harmonics 1 .. 512 >> k
     static constexpr int stride = size + 1;    ///< one guard sample for interpolation
+    static constexpr int maxHarmonics = 512;   ///< harmonics in level 0 (every level >= 4x oversampled)
 
     static const Bank& get();
 
@@ -53,6 +54,24 @@ private:
     Bank();
     std::vector<float> data;
 };
+
+/** Linear interpolated read of one frame at phase 0..1. */
+inline float readLinear (const float* t, float phase) noexcept
+{
+    const float x = phase * (float) Bank::size;
+    const int i = std::min ((int) x, Bank::size - 1);
+    const float f = x - (float) i;
+    return t[i] + f * (t[i + 1] - t[i]);
+}
+
+/** Mip level pair + crossfade so the highest harmonic stays below Nyquist at `speed` (cycles per sample). */
+inline void pickLevels (float speed, int& a, int& b, float& t) noexcept
+{
+    const float kf = std::log2 (std::max (1.0e-9f, (float) Bank::maxHarmonics * speed / 0.48f));
+    a = std::clamp ((int) std::ceil (kf), 0, Bank::numLevels - 1);
+    b = std::min (a + 1, Bank::numLevels - 1);
+    t = std::clamp (kf - (float) (a - 1), 0.0f, 1.0f);
+}
 
 struct Shared
 {

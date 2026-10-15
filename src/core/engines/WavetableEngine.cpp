@@ -10,7 +10,7 @@ namespace wavetable
 {
 namespace
 {
-constexpr int maxHarmonics = 512; ///< harmonics in mip level 0 (keeps every level >= 4x oversampled)
+constexpr int maxHarmonics = Bank::maxHarmonics;
 
 /** In-place iterative radix-2 FFT; sign = +1 for the inverse direction (no scaling). */
 void fft (std::vector<std::complex<double>>& x, int sign)
@@ -183,14 +183,6 @@ Bank::Bank()
 
 namespace
 {
-inline float readLinear (const float* t, float phase) noexcept
-{
-    const float x = phase * (float) Bank::size;
-    const int i = std::min ((int) x, Bank::size - 1);
-    const float f = x - (float) i;
-    return t[i] + f * (t[i + 1] - t[i]);
-}
-
 /** Smooth, periodic phase distortion (p -> p - c / (2 pi m) sin (2 pi m p)), applied twice; slope <= (1 + c)^2. */
 inline float warpPhase (float p, float c, float m, const float* sine) noexcept
 {
@@ -204,14 +196,6 @@ inline float warpPhase (float p, float c, float m, const float* sine) noexcept
     return p;
 }
 
-/** Mip level pair + crossfade so the highest harmonic stays below Nyquist at `speed` (cycles per sample). */
-inline void pickLevels (float speed, int& a, int& b, float& t) noexcept
-{
-    const float kf = std::log2 (std::max (1.0e-9f, (float) maxHarmonics * speed / 0.48f));
-    a = std::clamp ((int) std::ceil (kf), 0, Bank::numLevels - 1);
-    b = std::min (a + 1, Bank::numLevels - 1);
-    t = std::clamp (kf - (float) (a - 1), 0.0f, 1.0f);
-}
 } // namespace
 
 void Voice::prepare (float sampleRate) noexcept
@@ -274,7 +258,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
         // unison: centre + two detuned side oscillators
         const float sideGain = 0.75f * std::min (1.0f, p.unison * 3.0f);
-        const float cents = 2.0f + 23.0f * p.unison * p.unison;
+        const float cents = 3.0f + 30.0f * p.unison * std::sqrt (p.unison);
         const float ratio = std::pow (2.0f, cents / 1200.0f);
         const float freq[3] = { f0, f0 / ratio, f0 * ratio };
         const int numOsc = sideGain > 0.0f ? 3 : 1;

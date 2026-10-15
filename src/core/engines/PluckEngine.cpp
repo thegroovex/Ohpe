@@ -40,7 +40,7 @@ void Voice::clearState() noexcept
 {
     if (! line.empty()) std::memset (line.data(), 0, sizeof (float) * line.size());
     writePos = 0;
-    apX1 = apY1 = lpState = hpState = 0.0f;
+    apX1 = apY1 = lpState = hpState = toneState = 0.0f;
     for (int m = 0; m < numModes; ++m) modeY1[m] = modeY2[m] = 0.0f;
     malletPos = malletLength = 0;
     body1.reset();
@@ -119,7 +119,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         // ---- string loop: N (integer) + all-pass + loss filter (one-pole low-pass and a DC blocker at
         //      f0 / 20, which lets the fundamental keep its decay time even when the string is dark)
         //      = exactly one period at f0; loop gain set from the decay time, capped below 1 at every harmonic
-        const float fc = std::min (0.45f * sr, f0 * (2.0f + 40.0f * bright * bright));
+        const float fc = std::min (0.45f * sr, f0 * (6.0f + 40.0f * bright * bright));
         const float a = std::exp (-dsp::twoPi * fc / sr);
         const float hp = std::exp (-dsp::twoPi * f0 * 0.05f / sr);
         const float hpGain = 0.5f * (1.0f + hp);
@@ -138,6 +138,8 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         const float T = std::tan ((1.0f - d) * w0 * 0.5f);
         const float eta = std::clamp (T / (sw - cw * T), -0.99f, 0.99f);
         const float t60 = stringT60 (p.damping, f0);
+        // dark settings also close a gentle output low-pass, so the tone darkens without killing the sustain
+        const float toneA = std::exp (-dsp::twoPi * std::min (0.45f * sr, f0 * (2.5f + 80.0f * bright * bright)) / sr);
         const float loopGain = std::min (std::pow (0.001f, 1.0f / (f0 * t60)) / std::abs (h1), 0.99995f / maxMag);
 
         // ---- mallet modes
@@ -163,8 +165,10 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         const float bodyK = 2.0f - 1.96f * 0.8f; // ~ normalises the band-pass peak gain
         const float bodyAmt = dsp::clamp01 (p.body);
 
+        // strings sit slightly across the stereo field by pitch (low left, high right), unless the LFO pans
         float panL, panR;
-        lfoPan (c, panL, panR);
+        if (c.lfoDest == LfoDest::Pan) lfoPan (c, panL, panR);
+        else dsp::panGains (std::clamp (((float) note - 60.0f) / 48.0f, -1.0f, 1.0f) * 0.3f, panL, panR);
         const float gain = 0.45f * velocityGain (c) * lfoAmp (c);
 
         for (int i = 0; i < n; ++i)
@@ -180,7 +184,8 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
                 lpState = dsp::flush ((1.0f - a) * ap + a * lpState);
                 hpState = dsp::flush (hpGain * (lpState - lpPrev) + hp * hpState);
                 line[(size_t) (writePos & mask)] = dsp::flush (hpState * loopGain);
-                x += wString * s;
+                toneState = dsp::flush ((1.0f - toneA) * s + toneA * toneState);
+                x += wString * toneState;
             }
             ++writePos;
             if (doMallet)

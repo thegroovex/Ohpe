@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../dsp/Filters.h"
-#include "../dsp/Oscillators.h"
+#include "WavetableEngine.h"
 #include "PolyEngine.h"
 
 namespace ohpe
@@ -39,7 +39,7 @@ int chordInterval (int shape, int slot) noexcept;
 
 struct Shared
 {
-    float detune = 0.3f, spread = 0.6f, tone = 0.7f;
+    float detune = 0.45f, spread = 0.6f, tone = 0.7f;
     int chord = Unison, stackVoices = 7;
     float shape = 0.0f, sideLevel = 0.7f, resonance = 0.1f, keyTrack = 0.5f, drift = 0.2f;
 };
@@ -48,6 +48,7 @@ class Voice : public VoiceBase
 {
 public:
     const Shared* shared = nullptr;
+    const wavetable::Bank* bank = nullptr; ///< band-limited saw / square / pulse frames (mipmapped)
 
     void prepare (float sampleRate) noexcept;
     void start (int note, float vel, bool legato, const VoiceCommon& c) noexcept;
@@ -56,7 +57,7 @@ public:
     void render (float* l, float* r, int n, const VoiceCommon& c) noexcept;
 
 private:
-    dsp::MorphOsc osc[maxStack];
+    float phase[maxStack] {};
     float driftValue[maxStack] {}, driftTarget[maxStack] {};
     dsp::Svf filterL, filterR;
     float cutoffOct = -1.0f;
