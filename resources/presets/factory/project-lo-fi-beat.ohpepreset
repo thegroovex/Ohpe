@@ -113,7 +113,7 @@
     "p4.analog.reso": 0.05,
     "p4.analog.oscmix": 0.0,
     "p4.analog.sub": 0.0,
-    "p4.analog.noise": 0.1,
+    "p4.analog.noise": 0.16,
     "p4.analog.ftype": 3,
     "p4.analog.drive": 0.6,
     "p4.analog.keytrack": 0.0,
@@ -130,7 +130,7 @@
     "p4.mod.amt": 0.0,
     "p4.velsens": 0.0,
     "p4.voices": 1,
-    "p4.gain": 15.9,
+    "p4.gain": 19.5,
     "seq.orbit.on": 1,
     "seq.orbit.drums": 0,
     "seq.orbit.part": 1,
@@ -179,16 +179,16 @@
     "seq.euclid.r2.vel": 92,
     "seq.euclid.r3.vel": 52,
     "seq.euclid.r4.vel": 30,
-    "mix.ch1.vol": -1,
+    "mix.ch1.vol": 1,
     "mix.ch1.senda": 0.0,
     "mix.ch1.sendb": 0.12,
-    "mix.ch2.vol": -2,
+    "mix.ch2.vol": -5,
     "mix.ch2.senda": 0.0,
     "mix.ch2.sendb": 0.0,
     "mix.ch3.vol": -60,
     "mix.ch3.senda": 0.0,
     "mix.ch3.sendb": 0.0,
-    "mix.ch4.vol": -4,
+    "mix.ch4.vol": -15,
     "mix.ch4.senda": 0.0,
     "mix.ch4.sendb": 0.0,
     "mix.ch5.vol": 0,
@@ -214,7 +214,7 @@
         {
           "i": 0,
           "on": true,
-          "note": 29,
+          "note": 41,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -223,7 +223,7 @@
         {
           "i": 1,
           "on": true,
-          "note": 29,
+          "note": 41,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -232,7 +232,7 @@
         {
           "i": 2,
           "on": true,
-          "note": 29,
+          "note": 41,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -241,7 +241,7 @@
         {
           "i": 3,
           "on": true,
-          "note": 29,
+          "note": 41,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -250,7 +250,7 @@
         {
           "i": 4,
           "on": true,
-          "note": 29,
+          "note": 41,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -259,7 +259,7 @@
         {
           "i": 5,
           "on": true,
-          "note": 29,
+          "note": 41,
           "vel": 104,
           "gate": 0.8,
           "prob": 100,
@@ -268,7 +268,7 @@
         {
           "i": 7,
           "on": true,
-          "note": 29,
+          "note": 41,
           "vel": 78,
           "gate": 1.0,
           "prob": 100,
@@ -277,7 +277,7 @@
         {
           "i": 8,
           "on": true,
-          "note": 29,
+          "note": 41,
           "vel": 78,
           "gate": 0.8,
           "prob": 100,
@@ -286,7 +286,7 @@
         {
           "i": 10,
           "on": true,
-          "note": 36,
+          "note": 48,
           "vel": 92,
           "gate": 1.0,
           "prob": 100,
@@ -295,7 +295,7 @@
         {
           "i": 11,
           "on": true,
-          "note": 36,
+          "note": 48,
           "vel": 92,
           "gate": 1.0,
           "prob": 100,
@@ -304,7 +304,7 @@
         {
           "i": 12,
           "on": true,
-          "note": 36,
+          "note": 48,
           "vel": 92,
           "gate": 0.8,
           "prob": 100,
@@ -313,7 +313,7 @@
         {
           "i": 14,
           "on": true,
-          "note": 33,
+          "note": 45,
           "vel": 82,
           "gate": 1.0,
           "prob": 100,
@@ -322,7 +322,7 @@
         {
           "i": 15,
           "on": true,
-          "note": 33,
+          "note": 45,
           "vel": 82,
           "gate": 0.8,
           "prob": 100,
@@ -331,7 +331,7 @@
         {
           "i": 16,
           "on": true,
-          "note": 34,
+          "note": 46,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -340,7 +340,7 @@
         {
           "i": 17,
           "on": true,
-          "note": 34,
+          "note": 46,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -349,7 +349,7 @@
         {
           "i": 18,
           "on": true,
-          "note": 34,
+          "note": 46,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -358,7 +358,7 @@
         {
           "i": 19,
           "on": true,
-          "note": 34,
+          "note": 46,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -367,7 +367,7 @@
         {
           "i": 20,
           "on": true,
-          "note": 34,
+          "note": 46,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -376,7 +376,7 @@
         {
           "i": 21,
           "on": true,
-          "note": 34,
+          "note": 46,
           "vel": 104,
           "gate": 0.8,
           "prob": 100,
@@ -385,7 +385,7 @@
         {
           "i": 23,
           "on": true,
-          "note": 34,
+          "note": 46,
           "vel": 78,
           "gate": 1.0,
           "prob": 100,
@@ -394,7 +394,7 @@
         {
           "i": 24,
           "on": true,
-          "note": 34,
+          "note": 46,
           "vel": 78,
           "gate": 0.8,
           "prob": 100,
@@ -403,7 +403,7 @@
         {
           "i": 26,
           "on": true,
-          "note": 29,
+          "note": 41,
           "vel": 92,
           "gate": 1.0,
           "prob": 100,
@@ -412,7 +412,7 @@
         {
           "i": 27,
           "on": true,
-          "note": 29,
+          "note": 41,
           "vel": 92,
           "gate": 1.0,
           "prob": 100,
@@ -421,7 +421,7 @@
         {
           "i": 28,
           "on": true,
-          "note": 29,
+          "note": 41,
           "vel": 92,
           "gate": 0.8,
           "prob": 100,
@@ -430,7 +430,7 @@
         {
           "i": 30,
           "on": true,
-          "note": 38,
+          "note": 50,
           "vel": 82,
           "gate": 1.0,
           "prob": 100,
@@ -439,7 +439,7 @@
         {
           "i": 31,
           "on": true,
-          "note": 38,
+          "note": 50,
           "vel": 82,
           "gate": 0.8,
           "prob": 100,
@@ -448,7 +448,7 @@
         {
           "i": 32,
           "on": true,
-          "note": 39,
+          "note": 51,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -457,7 +457,7 @@
         {
           "i": 33,
           "on": true,
-          "note": 39,
+          "note": 51,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -466,7 +466,7 @@
         {
           "i": 34,
           "on": true,
-          "note": 39,
+          "note": 51,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -475,7 +475,7 @@
         {
           "i": 35,
           "on": true,
-          "note": 39,
+          "note": 51,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -484,7 +484,7 @@
         {
           "i": 36,
           "on": true,
-          "note": 39,
+          "note": 51,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -493,7 +493,7 @@
         {
           "i": 37,
           "on": true,
-          "note": 39,
+          "note": 51,
           "vel": 104,
           "gate": 0.8,
           "prob": 100,
@@ -502,7 +502,7 @@
         {
           "i": 39,
           "on": true,
-          "note": 39,
+          "note": 51,
           "vel": 78,
           "gate": 1.0,
           "prob": 100,
@@ -511,7 +511,7 @@
         {
           "i": 40,
           "on": true,
-          "note": 39,
+          "note": 51,
           "vel": 78,
           "gate": 0.8,
           "prob": 100,
@@ -520,7 +520,7 @@
         {
           "i": 42,
           "on": true,
-          "note": 34,
+          "note": 46,
           "vel": 92,
           "gate": 1.0,
           "prob": 100,
@@ -529,7 +529,7 @@
         {
           "i": 43,
           "on": true,
-          "note": 34,
+          "note": 46,
           "vel": 92,
           "gate": 1.0,
           "prob": 100,
@@ -538,7 +538,7 @@
         {
           "i": 44,
           "on": true,
-          "note": 34,
+          "note": 46,
           "vel": 92,
           "gate": 0.8,
           "prob": 100,
@@ -547,7 +547,7 @@
         {
           "i": 46,
           "on": true,
-          "note": 35,
+          "note": 47,
           "vel": 82,
           "gate": 1.0,
           "prob": 100,
@@ -556,7 +556,7 @@
         {
           "i": 47,
           "on": true,
-          "note": 35,
+          "note": 47,
           "vel": 82,
           "gate": 0.8,
           "prob": 100,
@@ -565,7 +565,7 @@
         {
           "i": 48,
           "on": true,
-          "note": 36,
+          "note": 48,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -574,7 +574,7 @@
         {
           "i": 49,
           "on": true,
-          "note": 36,
+          "note": 48,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -583,7 +583,7 @@
         {
           "i": 50,
           "on": true,
-          "note": 36,
+          "note": 48,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -592,7 +592,7 @@
         {
           "i": 51,
           "on": true,
-          "note": 36,
+          "note": 48,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -601,7 +601,7 @@
         {
           "i": 52,
           "on": true,
-          "note": 36,
+          "note": 48,
           "vel": 104,
           "gate": 1.0,
           "prob": 100,
@@ -610,7 +610,7 @@
         {
           "i": 53,
           "on": true,
-          "note": 36,
+          "note": 48,
           "vel": 104,
           "gate": 0.8,
           "prob": 100,
@@ -619,7 +619,7 @@
         {
           "i": 55,
           "on": true,
-          "note": 36,
+          "note": 48,
           "vel": 78,
           "gate": 1.0,
           "prob": 100,
@@ -628,7 +628,7 @@
         {
           "i": 56,
           "on": true,
-          "note": 36,
+          "note": 48,
           "vel": 78,
           "gate": 0.8,
           "prob": 100,
@@ -637,7 +637,7 @@
         {
           "i": 58,
           "on": true,
-          "note": 31,
+          "note": 43,
           "vel": 92,
           "gate": 1.0,
           "prob": 100,
@@ -646,7 +646,7 @@
         {
           "i": 59,
           "on": true,
-          "note": 31,
+          "note": 43,
           "vel": 92,
           "gate": 1.0,
           "prob": 100,
@@ -655,7 +655,7 @@
         {
           "i": 60,
           "on": true,
-          "note": 31,
+          "note": 43,
           "vel": 92,
           "gate": 0.8,
           "prob": 100,
@@ -664,7 +664,7 @@
         {
           "i": 62,
           "on": true,
-          "note": 28,
+          "note": 40,
           "vel": 82,
           "gate": 1.0,
           "prob": 100,
@@ -673,7 +673,7 @@
         {
           "i": 63,
           "on": true,
-          "note": 28,
+          "note": 40,
           "vel": 82,
           "gate": 0.8,
           "prob": 100,

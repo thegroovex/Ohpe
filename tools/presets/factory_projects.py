@@ -172,7 +172,7 @@ def lane_parts(*parts):
 #    with chromatic approach notes. ii - V - I - V/ii in E-flat: Fm9 - Bb13 - Ebmaj9 - C7#9. Dark master: low-pass
 #    at 4.2 kHz, tape saturation, little reverb.
 LOFI_VOICINGS = [(56, 63, 67), (56, 62, 67), (55, 62, 65), (52, 58, 63)]  # Fm9 (Ab Eb G), Bb13 (Ab D G), Ebmaj9 (G D F), C7#9 (E Bb Eb)
-LOFI_ROOTS = [(29, 36, 33), (34, 29, 38), (39, 34, 35), (36, 31, 28)]       # (root, fifth below / above, approach to the next root)
+LOFI_ROOTS = [(41, 48, 45), (46, 41, 50), (51, 46, 47), (48, 43, 40)]       # (root, fifth below / above, approach to the next root)
 
 
 def lofi_bass_bar(root, fifth, approach):
@@ -203,7 +203,7 @@ LOFI = project(
     {"seq.euclid.on": 1, "seq.euclid.drums": 1, "seq.euclid.rate": RATE["1/16"], "seq.euclid.gate": 0.5, "seq.euclid.vel": 100,
      "seq.euclid.swing": 0.5, "seq.euclid.human": 0.4},
     rings([(16, 3, 0, KICK), (16, 2, 4, SNARE), (16, 8, 0, HAT), (16, 4, 13, HAT)]), ring_vel(112, 92, 52, 30),
-    mixer(ch1=(-1, 0.0, 0.12), ch2=(-2, 0.0, 0.0), ch3=(-60, 0.0, 0.0), ch4=(-4, 0.0, 0.0), ch5=(0, 0.0, 0.05), master=0),
+    mixer(ch1=(1, 0.0, 0.12), ch2=(-5, 0.0, 0.0), ch3=(-60, 0.0, 0.0), ch4=(-15, 0.0, 0.0), ch5=(0, 0.0, 0.05), master=0),
     {"mix.ch1.eqhi": -5, "mix.ch5.eqhi": -4, "mix.master.tapesat": 0.4, "mix.master.lowpass": 4200,
      "fxb.reverb.size": 0.35, "fxb.reverb.damping": 0.75,
      "mix.master.comp": 1, "mix.master.comp.thresh": -16, "mix.master.comp.ratio": 2.0},
@@ -403,7 +403,7 @@ LOFIKIT = project(
     part(1, "Dusty Keys"), part(2, "Mellow Lofi Bass"), part(3, "Music Box"), part(4, "Vinyl Crackle"),
     {"seq.orbit.on": 1, "seq.orbit.drums": 1, "seq.orbit.gate": 1.0, "seq.orbit.swing": 0.5, "seq.orbit.human": 0.35},
     lanes([16, 16, 16, 1], ["1/16", "1/16", "1/16", "1/4"]), lane_parts(0, 0, 0, 4),
-    mixer(ch1=(-2, 0.0, 0.12), ch2=(-2, 0.0, 0.0), ch3=(-60, 0.0, 0.0), ch4=(-4, 0.0, 0.0), ch5=(0, 0.0, 0.05), master=0),
+    mixer(ch1=(-2, 0.0, 0.12), ch2=(-2, 0.0, 0.0), ch3=(-60, 0.0, 0.0), ch4=(-15, 0.0, 0.0), ch5=(0, 0.0, 0.05), master=0),
     {"mix.ch5.eqhi": -4, "mix.master.tapesat": 0.4, "mix.master.lowpass": 4500, "fxb.reverb.size": 0.35, "fxb.reverb.damping": 0.75,
      "mix.master.comp": 1, "mix.master.comp.thresh": -16, "mix.master.comp.ratio": 2.0},
     orbit=lane_steps(0, LK_KICK) + lane_steps(1, LK_SNARE) + lane_steps(2, LK_HATS) + lane_steps(3, [(60, 90)]))
@@ -442,7 +442,7 @@ BOOMKIT = project(
     lanes([16, 16, 16, 16], ["1/16", "1/16", "1/16", "1/32"]),
     {"seq.euclid.on": 1, "seq.euclid.part": 1, "seq.euclid.rate": RATE["1/4"], "seq.euclid.gate": 1.0, "seq.euclid.vel": 80},
     rings([(8, 1, 0, 60), (8, 1, 4, 56)]),
-    mixer(ch1=(-9, 0.1, 0.4), ch2=(1, 0.0, 0.0), ch3=(-60, 0, 0), ch4=(-60, 0, 0), ch5=(-1, 0.0, 0.05), master=-1),
+    mixer(ch1=(-9, 0.1, 0.4), ch2=(1, 0.0, 0.0), ch3=(-60, 0, 0), ch4=(-60, 0, 0), ch5=(-1, 0.0, 0.05), master=-3),
     {"fxb.reverb.size": 0.8, "fxb.reverb.damping": 0.5, "mix.master.comp": 1, "mix.master.comp.thresh": -14, "mix.master.comp.ratio": 2.0},
     sequencer={"steps": BK_BASS, "lengths": {"1": 32}},
     orbit=lane_steps(0, BK_KICK) + lane_steps(1, BK_SNARE) + lane_steps(2, BK_HATS) + lane_steps(3, BK_ROLL))

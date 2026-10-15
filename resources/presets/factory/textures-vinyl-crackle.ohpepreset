@@ -18,7 +18,7 @@
     "analog.reso": 0.05,
     "analog.oscmix": 0.0,
     "analog.sub": 0.0,
-    "analog.noise": 0.1,
+    "analog.noise": 0.16,
     "analog.ftype": 3,
     "analog.drive": 0.6,
     "analog.keytrack": 0.0,
@@ -33,8 +33,14 @@
     "mod.s": 1.0,
     "mod.r": 0.5,
     "mod.amt": 0.0,
+    "fx.type": 4,
+    "fx.filterdrive.cutoff": 8000,
+    "fx.filterdrive.reso": 0.0,
+    "fx.filterdrive.drive": 0.0,
+    "fx.filterdrive.mode": 0,
+    "fx.filterdrive.mix": 1.0,
     "velsens": 0.0,
     "voices": 1,
-    "gain": 15.9
+    "gain": 19.5
   }
 }
