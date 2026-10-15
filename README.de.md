@@ -74,6 +74,17 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 
 Ausführlich: [Bedienung](docs/de/BEDIENUNG.md).
 
+## Installation auf dem Mac
+
+Jeder Pull Request und jeder manuelle CI-Lauf baut einen macOS-Installer – Artefakt
+**Ohpe-macOS-Installer** am Lauf (*Actions → CI*). Das Disk-Image enthält `Ohpe-Installer.pkg`
+(Standalone-App, VST3 und Audio Unit, einzeln wählbar; universell für Apple Silicon und Intel,
+ab macOS 11), ein Gatekeeper-Fix-Skript, ein Deinstallations-Skript und Hinweise auf Deutsch und
+Englisch. Die pkg ist nicht von Apple signiert: per **Rechtsklick → Öffnen** starten (oder
+*Systemeinstellungen → Datenschutz & Sicherheit → Dennoch öffnen*). Der Installer entfernt danach
+das Quarantäne-Attribut von App und Plug-ins und signiert sie ad hoc, damit Apple Silicon sie
+ausführt. Ausführlich: [Installation auf dem Mac](docs/de/INSTALLATION.md).
+
 ## Bauen
 
 Voraussetzungen: CMake ≥ 3.22, ein C++17-Compiler (Xcode 15+, Visual Studio 2022, GCC 11+ /
@@ -97,6 +108,7 @@ Alle Tests laufen mit `scripts/test-all.sh` – siehe [Mitwirken](docs/de/MITWIR
 
 * Engines: [Wavetable](docs/de/engines/wavetable.md), [Zupfen](docs/de/engines/pluck.md),
   [Cluster](docs/de/engines/cluster.md), [Grain, Vokal, Sampler und Drum-Kit](docs/de/GRAIN-VOKAL-SAMPLER-DRUM.md)
+* [Installation auf dem Mac](docs/de/INSTALLATION.md) – Installer, Gatekeeper-Fix, Deinstallation, Signieren
 * [Bedienung](docs/de/BEDIENUNG.md) – Display, Parts, Profiansicht, Schritt-Locks, Tape- und Drum-Seite
 * [Werksklänge](docs/de/FACTORY-SOUNDS.md) – alle Presets nach Kategorie, Drum-Kits, aufgenommene Instrumente
 * [Preset-Bibliothek](docs/de/PRESETS.md) – Stöbern, Speichern, MIDI, Dateiformat

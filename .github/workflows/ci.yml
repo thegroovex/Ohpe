@@ -2,8 +2,8 @@ name: CI
 
 # Every push to main: Linux build with all tests and pluginval.
 # Every pull request and every manual run (Actions -> CI -> Run workflow): additionally macOS
-# universal (app, AU incl. auval -strict, VST3) and Windows (app, VST3), with their artefacts
-# attached to the run - so a pull request is checked on all three platforms before it is merged.
+# universal (app, AU incl. auval -strict, VST3, plus the pkg/DMG installer, installed and tested
+# on the runner) and Windows (app, VST3), with their artefacts attached to the run - so a pull request is checked on all three platforms before it is merged.
 
 on:
   push:
@@ -100,6 +100,58 @@ jobs:
         with:
           name: Ohpe-macOS-universal (unsigned)
           path: dist/*.zip
+
+      # ---------------------------------------------------------------- macOS installer
+      # Signing and notarisation are optional: they run only when the repository secrets below
+      # are set (docs/en/INSTALL.md, "Signing and notarisation"); otherwise the pkg is unsigned
+      # and its postinstall script ad-hoc signs the installed bundles.
+      - name: Import signing certificates (optional)
+        env:
+          MACOS_CERTIFICATES_P12: ${{ secrets.MACOS_CERTIFICATES_P12 }}
+          MACOS_CERTIFICATES_PASSWORD: ${{ secrets.MACOS_CERTIFICATES_PASSWORD }}
+        run: |
+          if [ -z "$MACOS_CERTIFICATES_P12" ]; then
+            echo "No MACOS_CERTIFICATES_P12 secret - building an unsigned installer."
+            exit 0
+          fi
+          KC="$RUNNER_TEMP/ohpe-signing.keychain-db"
+          KC_PASS="$(uuidgen)"
+          echo "$MACOS_CERTIFICATES_P12" | base64 --decode > "$RUNNER_TEMP/certs.p12"
+          security create-keychain -p "$KC_PASS" "$KC"
+          security set-keychain-settings -lut 21600 "$KC"
+          security unlock-keychain -p "$KC_PASS" "$KC"
+          security import "$RUNNER_TEMP/certs.p12" -k "$KC" -P "$MACOS_CERTIFICATES_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/productbuild -T /usr/bin/pkgbuild
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KC_PASS" "$KC" >/dev/null
+          security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
+          rm -f "$RUNNER_TEMP/certs.p12"
+          security find-identity -v "$KC"
+          echo "OHPE_KEYCHAIN=$KC" >> "$GITHUB_ENV"
+
+      - name: Build installer (pkg + DMG)
+        env:
+          OHPE_SIGN_APP_IDENTITY: ${{ secrets.MACOS_SIGN_APP_IDENTITY }}
+          OHPE_SIGN_INSTALLER_IDENTITY: ${{ secrets.MACOS_SIGN_INSTALLER_IDENTITY }}
+          OHPE_NOTARY_APPLE_ID: ${{ secrets.MACOS_NOTARY_APPLE_ID }}
+          OHPE_NOTARY_TEAM_ID: ${{ secrets.MACOS_NOTARY_TEAM_ID }}
+          OHPE_NOTARY_PASSWORD: ${{ secrets.MACOS_NOTARY_PASSWORD }}
+        run: packaging/macos/build-installer.sh --out dist-installer
+
+      - name: Validate installer (install, files, auval, Gatekeeper fix, uninstall)
+        run: packaging/macos/validate-installer.sh dist-installer
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ohpe-macOS-Installer
+          path: |
+            dist-installer/*.dmg
+            dist-installer/SHA256SUMS.txt
+          if-no-files-found: error
+
+      - name: Remove signing keychain
+        if: always()
+        run: |
+          if [ -n "${OHPE_KEYCHAIN:-}" ]; then security delete-keychain "$OHPE_KEYCHAIN" || true; fi
 
   windows:
     name: Windows (app, VST3)

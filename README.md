@@ -72,6 +72,16 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 
 Full guide: [playing the interface](docs/en/USER-INTERFACE.md).
 
+## Installing on macOS
+
+Every pull request and manual CI run builds a macOS installer – artifact **Ohpe-macOS-Installer**
+on the run (*Actions → CI*). The disk image holds `Ohpe-Installer.pkg` (standalone app, VST3 and
+Audio Unit, each selectable; universal for Apple Silicon and Intel, macOS 11+), a Gatekeeper fix
+script, an uninstaller and a read-me in English and German. The pkg is not signed by Apple: open it
+with **right-click → Open** (or *System Settings → Privacy & Security → Open Anyway*). The installer
+then removes the quarantine flag from the installed app and plug-ins and signs them ad hoc so
+Apple Silicon runs them. Full guide: [installing on macOS](docs/en/INSTALL.md).
+
 ## Building
 
 Requirements: CMake ≥ 3.22, a C++17 compiler (Xcode 15+, Visual Studio 2022, GCC 11+ / Clang 14+),
@@ -93,6 +103,7 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 
 * Engines: [Wavetable](docs/en/engines/wavetable.md), [Pluck](docs/en/engines/pluck.md),
   [Cluster](docs/en/engines/cluster.md), [Grain, Vocal, Sampler and drum kit](docs/en/GRAIN-VOCAL-SAMPLER-DRUM.md)
+* [Installing on macOS](docs/en/INSTALL.md) – installer, Gatekeeper fix, uninstall, signing
 * [Playing the interface](docs/en/USER-INTERFACE.md) – display, parts, pro view, step locks, tape and drum pages
 * [Factory sounds](docs/en/FACTORY-SOUNDS.md) – every preset by category, drum kits, recorded instruments
 * [Preset library](docs/en/PRESETS.md) – browsing, saving, MIDI, file format
