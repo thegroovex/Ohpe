@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Fifth Cloud",
+  "author": "groovex",
+  "tags": [
+    "Pads"
+  ],
+  "engine": "cluster",
+  "comment": "Open fifths with slow drift: cinematic and neutral.",
+  "params": {
+    "engine": 6,
+    "cluster.detune": 0.18,
+    "cluster.spread": 0.8,
+    "cluster.tone": 0.42,
+    "cluster.chord": 2,
+    "cluster.stack": 5,
+    "cluster.shape": 0.2,
+    "cluster.side": 0.6,
+    "cluster.reso": 0.08,
+    "cluster.keytrack": 0.5,
+    "cluster.drift": 0.45,
+    "amp.a": 1.2,
+    "amp.d": 2.0,
+    "amp.s": 0.9,
+    "amp.r": 2.5,
+    "mod.a": 1.5,
+    "mod.d": 2.0,
+    "mod.s": 0.7,
+    "mod.r": 2.0,
+    "mod.amt": 0.12,
+    "fx.type": 6,
+    "fx.reverb.size": 0.75,
+    "fx.reverb.damping": 0.5,
+    "fx.reverb.predelay": 0.03,
+    "fx.reverb.mix": 0.28,
+    "voices": 10,
+    "gain": 3.4
+  }
+}

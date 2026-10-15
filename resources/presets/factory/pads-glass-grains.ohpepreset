@@ -1,0 +1,42 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Glass Grains",
+  "author": "groovex",
+  "tags": [
+    "Pads",
+    "Textures"
+  ],
+  "engine": "grain",
+  "comment": "Grains of a singing wine glass (CC0 recording), slowly scanned.",
+  "params": {
+    "engine": 4,
+    "grain.pos": 0.45,
+    "grain.size": 220,
+    "grain.density": 24,
+    "grain.spray": 0.25,
+    "grain.pitch": 0,
+    "grain.reverse": 0.2,
+    "grain.spread": 0.85,
+    "grain.scan": 0.05,
+    "grain.tone": 0.75,
+    "grain.inst": 8,
+    "amp.a": 1.0,
+    "amp.d": 2.0,
+    "amp.s": 0.9,
+    "amp.r": 2.5,
+    "mod.a": 0.5,
+    "mod.d": 2.0,
+    "mod.s": 0.6,
+    "mod.r": 2.0,
+    "mod.amt": 0.05,
+    "fx.type": 6,
+    "fx.reverb.size": 0.7,
+    "fx.reverb.damping": 0.5,
+    "fx.reverb.predelay": 0.03,
+    "fx.reverb.mix": 0.25,
+    "voices": 10,
+    "gain": 10.6
+  }
+}

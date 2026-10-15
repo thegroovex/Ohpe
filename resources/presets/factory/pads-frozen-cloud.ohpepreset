@@ -1,0 +1,37 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Frozen Cloud",
+  "author": "groovex",
+  "tags": [
+    "Pads",
+    "Textures"
+  ],
+  "engine": "grain",
+  "comment": "Granular freeze of the built-in harmonic texture.",
+  "params": {
+    "engine": 4,
+    "grain.pos": 0.4,
+    "grain.size": 180,
+    "grain.density": 30,
+    "grain.spray": 0.2,
+    "grain.pitch": 0,
+    "grain.reverse": 0.1,
+    "grain.spread": 0.8,
+    "grain.scan": 0.02,
+    "grain.tone": 0.7,
+    "grain.inst": 0,
+    "amp.a": 1.2,
+    "amp.d": 2.0,
+    "amp.s": 0.9,
+    "amp.r": 2.5,
+    "mod.a": 0.5,
+    "mod.d": 2.0,
+    "mod.s": 0.6,
+    "mod.r": 2.0,
+    "mod.amt": 0.05,
+    "voices": 10,
+    "gain": 2.4
+  }
+}

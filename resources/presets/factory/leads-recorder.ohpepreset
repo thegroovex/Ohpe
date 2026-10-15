@@ -1,0 +1,39 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Recorder",
+  "author": "groovex",
+  "tags": [
+    "Leads"
+  ],
+  "engine": "sampler",
+  "comment": "Recorded alto recorder, looped, with light vibrato.",
+  "params": {
+    "engine": 7,
+    "sampler.inst": 7,
+    "sampler.tone": 1.0,
+    "sampler.loop": 1,
+    "amp.a": 0.03,
+    "amp.d": 0.3,
+    "amp.s": 1.0,
+    "amp.r": 0.18,
+    "mod.a": 0.001,
+    "mod.d": 0.3,
+    "mod.s": 1.0,
+    "mod.r": 0.2,
+    "mod.amt": 0.0,
+    "lfo.rate": 5.2,
+    "lfo.depth": 0.05,
+    "lfo.shape": 0,
+    "lfo.dest": 0,
+    "fx.type": 6,
+    "fx.reverb.size": 0.55,
+    "fx.reverb.damping": 0.5,
+    "fx.reverb.predelay": 0.02,
+    "fx.reverb.mix": 0.2,
+    "voices": 4,
+    "velsens": 0.4,
+    "gain": 0.7
+  }
+}

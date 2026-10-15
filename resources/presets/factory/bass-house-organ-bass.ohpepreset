@@ -1,0 +1,35 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "House Organ Bass",
+  "author": "groovex",
+  "tags": [
+    "Bass"
+  ],
+  "engine": "analog",
+  "comment": "Hollow square with an octave-down second oscillator; short and punchy.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.48,
+    "analog.detune": 0.03,
+    "analog.cutoff": 330,
+    "analog.reso": 0.28,
+    "analog.osc2oct": -1,
+    "analog.oscmix": 0.3,
+    "analog.sub": 0.25,
+    "analog.drive": 0.2,
+    "analog.keytrack": 0.5,
+    "amp.a": 0.003,
+    "amp.d": 0.42,
+    "amp.s": 0.55,
+    "amp.r": 0.08,
+    "mod.a": 0.002,
+    "mod.d": 0.18,
+    "mod.s": 0.1,
+    "mod.r": 0.1,
+    "mod.amt": 0.35,
+    "voices": 1,
+    "gain": 16.6
+  }
+}

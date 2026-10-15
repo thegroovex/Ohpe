@@ -1,0 +1,40 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Glass Pluck",
+  "author": "groovex",
+  "tags": [
+    "Plucks"
+  ],
+  "engine": "wavetable",
+  "comment": "Glass table pluck with a bell-like sparkle.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 4,
+    "wavetable.pos": 0.6,
+    "wavetable.warp": 0.0,
+    "wavetable.tone": 0.55,
+    "wavetable.unison": 0.1,
+    "wavetable.sub": 0.0,
+    "wavetable.reso": 0.05,
+    "wavetable.keytrack": 0.6,
+    "wavetable.envpos": -0.4,
+    "amp.a": 0.003,
+    "amp.d": 0.9,
+    "amp.s": 0.0,
+    "amp.r": 0.5,
+    "mod.a": 0.002,
+    "mod.d": 0.3,
+    "mod.s": 0.0,
+    "mod.r": 0.3,
+    "mod.amt": 0.3,
+    "fx.type": 6,
+    "fx.reverb.size": 0.6,
+    "fx.reverb.damping": 0.5,
+    "fx.reverb.predelay": 0.02,
+    "fx.reverb.mix": 0.22,
+    "voices": 12,
+    "gain": 12.7
+  }
+}

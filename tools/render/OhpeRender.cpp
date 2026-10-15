@@ -6,10 +6,10 @@
 // embedded FLAC files (tools/samples/build_samples.py --wav-cache DIR writes them).
 //
 //   ohpe_render [--out DIR] [--bank resources/samples/bank.json --wavdir DIR] [--part N]
-//               [--seconds S] [--bpm B] preset.ohpepreset ...
+//               [--seconds S] [--bpm B] [--limit] preset.ohpepreset ...
 //
 // Part presets play the phrase of their main category (render::phraseFor); project presets run
-// their sequencers for --seconds (default 16).
+// their sequencers for --seconds (default 16). The master limiter is off, so peaks are honest (--limit keeps a project's limiter, as heard).
 
 #include "OhpeCore.h"
 #include "preset/Preset.h"
@@ -155,6 +155,7 @@ int main (int argc, char** argv)
     fs::path out, bankFile, wavdir;
     int part = 0;
     double seconds = 16.0, bpm = 100.0;
+    bool limiter = false;
     std::vector<std::string> files;
     for (int i = 1; i < argc; ++i)
     {
@@ -166,6 +167,7 @@ int main (int argc, char** argv)
         else if (a == "--part") part = std::clamp (std::stoi (next()) - 1, 0, Core::numParts - 1);
         else if (a == "--seconds") seconds = std::stod (next());
         else if (a == "--bpm") bpm = std::stod (next());
+        else if (a == "--limit") limiter = true;
         else files.push_back (a);
     }
     const auto bank = loadBank (bankFile, wavdir);
@@ -187,7 +189,7 @@ int main (int argc, char** argv)
         core->prepare (48000.0, 256);
         for (const auto& [pad, s] : bank.studio) core->drumKit().setFactorySample (pad, s);
         const bool project = p.meta.kind == preset::Kind::Project;
-        const auto audio = project ? render::renderProject (*core, p, seconds) : render::renderPart (*core, p, part, bpm);
+        const auto audio = project ? render::renderProject (*core, p, seconds, limiter) : render::renderPart (*core, p, part, bpm);
         const auto m = render::measure (audio);
         if (! out.empty()) writeWav (out / (base (file) + ".wav"), audio);
 

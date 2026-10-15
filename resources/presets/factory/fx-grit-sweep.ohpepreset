@@ -1,0 +1,35 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Grit Sweep",
+  "author": "groovex",
+  "tags": [
+    "FX"
+  ],
+  "engine": "wavetable",
+  "comment": "Noisy Grit table opening over two seconds.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 5,
+    "wavetable.pos": 0.7,
+    "wavetable.warp": 0.4,
+    "wavetable.tone": 0.35,
+    "wavetable.unison": 0.5,
+    "wavetable.sub": 0.0,
+    "wavetable.reso": 0.35,
+    "wavetable.keytrack": 0.3,
+    "wavetable.envpos": 0.5,
+    "amp.a": 1.5,
+    "amp.d": 1.0,
+    "amp.s": 0.9,
+    "amp.r": 1.5,
+    "mod.a": 2.0,
+    "mod.d": 1.0,
+    "mod.s": 1.0,
+    "mod.r": 1.5,
+    "mod.amt": 0.45,
+    "voices": 6,
+    "gain": 19.4
+  }
+}

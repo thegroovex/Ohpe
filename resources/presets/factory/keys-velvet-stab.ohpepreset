@@ -1,0 +1,39 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Velvet Stab",
+  "author": "groovex",
+  "tags": [
+    "Keys"
+  ],
+  "engine": "analog",
+  "comment": "Short filtered chord stab for house and disco.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.4,
+    "analog.detune": 0.18,
+    "analog.cutoff": 750,
+    "analog.reso": 0.2,
+    "analog.oscmix": 0.5,
+    "analog.sub": 0.0,
+    "analog.drive": 0.2,
+    "analog.keytrack": 0.5,
+    "amp.a": 0.003,
+    "amp.d": 0.6,
+    "amp.s": 0.18,
+    "amp.r": 0.3,
+    "mod.a": 0.002,
+    "mod.d": 0.3,
+    "mod.s": 0.0,
+    "mod.r": 0.2,
+    "mod.amt": 0.32,
+    "fx.type": 6,
+    "fx.reverb.size": 0.5,
+    "fx.reverb.damping": 0.5,
+    "fx.reverb.predelay": 0.01,
+    "fx.reverb.mix": 0.2,
+    "voices": 14,
+    "gain": 13.7
+  }
+}

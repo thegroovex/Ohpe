@@ -1,0 +1,35 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Mallet Keys",
+  "author": "groovex",
+  "tags": [
+    "Keys",
+    "Plucks"
+  ],
+  "engine": "pluck",
+  "comment": "Physically modelled wooden bars; soft mallet.",
+  "params": {
+    "engine": 3,
+    "pluck.material": 1.0,
+    "pluck.damping": 0.45,
+    "pluck.bright": 0.72,
+    "pluck.body": 0.35,
+    "pluck.excite": 0.55,
+    "pluck.pickpos": 0.2,
+    "pluck.bodysize": 0.5,
+    "amp.a": 0.002,
+    "amp.d": 1.6,
+    "amp.s": 0.0,
+    "amp.r": 0.4,
+    "mod.a": 0.001,
+    "mod.d": 0.3,
+    "mod.s": 0.0,
+    "mod.r": 0.2,
+    "mod.amt": 0.1,
+    "voices": 14,
+    "velsens": 0.6,
+    "gain": 3.2
+  }
+}

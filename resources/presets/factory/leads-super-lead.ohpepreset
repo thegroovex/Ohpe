@@ -1,0 +1,43 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Super Lead",
+  "author": "groovex",
+  "tags": [
+    "Leads"
+  ],
+  "engine": "cluster",
+  "comment": "Seven-saw unison lead: festival size.",
+  "params": {
+    "engine": 6,
+    "cluster.detune": 0.32,
+    "cluster.spread": 0.75,
+    "cluster.tone": 0.58,
+    "cluster.chord": 0,
+    "cluster.stack": 7,
+    "cluster.shape": 0.0,
+    "cluster.side": 0.7,
+    "cluster.reso": 0.1,
+    "cluster.keytrack": 0.6,
+    "cluster.drift": 0.15,
+    "amp.a": 0.004,
+    "amp.d": 0.4,
+    "amp.s": 0.9,
+    "amp.r": 0.2,
+    "mod.a": 0.002,
+    "mod.d": 0.4,
+    "mod.s": 0.6,
+    "mod.r": 0.2,
+    "mod.amt": 0.15,
+    "fx.type": 5,
+    "fx.delay.time": 0.45,
+    "fx.delay.feedback": 0.28,
+    "fx.delay.tone": 0.5,
+    "fx.delay.pingpong": 1,
+    "fx.delay.mix": 0.18,
+    "voices": 1,
+    "glide": 0.03,
+    "gain": 11.4
+  }
+}

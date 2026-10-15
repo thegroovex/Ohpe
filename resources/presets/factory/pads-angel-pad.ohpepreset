@@ -1,0 +1,39 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Angel Pad",
+  "author": "groovex",
+  "tags": [
+    "Pads",
+    "Vocal"
+  ],
+  "engine": "vocal",
+  "comment": "High 'oo' voices morphing slowly towards 'ah'.",
+  "params": {
+    "engine": 5,
+    "vocal.vowel": 3.6,
+    "vocal.formant": 2.0,
+    "vocal.breath": 0.3,
+    "vocal.tension": 0.4,
+    "vocal.vibdepth": 0.18,
+    "vocal.vibrate": 5.2,
+    "vocal.jitter": 0.2,
+    "amp.a": 1.2,
+    "amp.d": 2.0,
+    "amp.s": 0.9,
+    "amp.r": 2.5,
+    "mod.a": 2.5,
+    "mod.d": 3.0,
+    "mod.s": 0.3,
+    "mod.r": 2.0,
+    "mod.amt": -0.4,
+    "fx.type": 6,
+    "fx.reverb.size": 0.8,
+    "fx.reverb.damping": 0.45,
+    "fx.reverb.predelay": 0.03,
+    "fx.reverb.mix": 0.3,
+    "voices": 12,
+    "gain": 8.8
+  }
+}

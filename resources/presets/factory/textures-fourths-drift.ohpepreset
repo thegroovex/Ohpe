@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Fourths Drift",
+  "author": "groovex",
+  "tags": [
+    "Textures",
+    "Pads"
+  ],
+  "engine": "cluster",
+  "comment": "Stacked fourths with heavy drift: an unresolved haze.",
+  "params": {
+    "engine": 6,
+    "cluster.detune": 0.25,
+    "cluster.spread": 0.9,
+    "cluster.tone": 0.38,
+    "cluster.chord": 11,
+    "cluster.stack": 4,
+    "cluster.shape": 0.5,
+    "cluster.side": 0.5,
+    "cluster.reso": 0.1,
+    "cluster.keytrack": 0.5,
+    "cluster.drift": 0.8,
+    "amp.a": 1.5,
+    "amp.d": 2.0,
+    "amp.s": 0.9,
+    "amp.r": 3.0,
+    "mod.a": 1.0,
+    "mod.d": 2.0,
+    "mod.s": 1.0,
+    "mod.r": 2.0,
+    "mod.amt": 0.0,
+    "lfo.rate": 0.07,
+    "lfo.depth": 0.2,
+    "lfo.shape": 0,
+    "lfo.dest": 1,
+    "voices": 8,
+    "gain": 4.5
+  }
+}

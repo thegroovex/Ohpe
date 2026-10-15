@@ -1,0 +1,36 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Filter Kick",
+  "author": "groovex",
+  "tags": [
+    "Drums"
+  ],
+  "engine": "analog",
+  "comment": "Kick from a self-oscillating ladder swept down by the envelope. Play around C1-C2.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.5,
+    "analog.detune": 0.0,
+    "analog.cutoff": 55,
+    "analog.reso": 0.97,
+    "analog.oscmix": 0.0,
+    "analog.sub": 0.0,
+    "analog.noise": 0.0,
+    "analog.drive": 0.4,
+    "analog.keytrack": 0.0,
+    "amp.a": 0.001,
+    "amp.d": 0.38,
+    "amp.s": 0.0,
+    "amp.r": 0.1,
+    "mod.a": 0.001,
+    "mod.d": 0.07,
+    "mod.s": 0.0,
+    "mod.r": 0.1,
+    "mod.amt": 0.7,
+    "velsens": 0.5,
+    "voices": 2,
+    "gain": 17.4
+  }
+}

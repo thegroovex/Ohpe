@@ -1,0 +1,33 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Vibraphone",
+  "author": "groovex",
+  "tags": [
+    "Keys"
+  ],
+  "engine": "sampler",
+  "comment": "Recorded vibraphone with a gentle motor tremolo.",
+  "params": {
+    "engine": 7,
+    "sampler.inst": 3,
+    "sampler.tone": 1.0,
+    "amp.a": 0.001,
+    "amp.d": 3.0,
+    "amp.s": 0.0,
+    "amp.r": 0.8,
+    "mod.a": 0.001,
+    "mod.d": 0.3,
+    "mod.s": 0.0,
+    "mod.r": 0.2,
+    "mod.amt": 0.0,
+    "lfo.rate": 4.8,
+    "lfo.depth": 0.2,
+    "lfo.shape": 0,
+    "lfo.dest": 2,
+    "voices": 14,
+    "velsens": 0.7,
+    "gain": 1.9
+  }
+}

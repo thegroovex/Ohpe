@@ -82,7 +82,7 @@ inline Phrase phraseFor (const std::string& category)
             const int n = seq[(size_t) (i % 8)] + (arp && (i / 8) % 2 == 1 ? 12 : 0);
             p.notes.push_back ({ i * 0.25, arp ? 0.14 : 0.22, n, (i % 4 == 0) ? 112 : 88 + (i * 7) % 16 });
         }
-        p.tail = 2.5;
+        p.tail = 3.0;
     }
     else if (category == "Drums")
     {
@@ -162,13 +162,15 @@ inline Audio renderCore (Core& core, std::vector<std::pair<int64_t, MidiEvent>> 
 
 /**
     Loads a part preset into part `partIndex` of a freshly prepared core and plays the phrase of
-    its category on the part's MIDI channel. `beatsLimit` shortens the phrase (tests).
+    its category on the part's MIDI channel. `beatsLimit` shortens the phrase (tests). The master
+    limiter is switched off, so peaks show what the preset really does.
 */
 inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0, double bpm = 100.0, double beatsLimit = 1.0e9,
                          double tailLimit = 1.0e9)
 {
     preset::applyPart (p, core.params(), partIndex);
     core.params().set ("tempo", (float) bpm);
+    core.params().set ("mix.master.limit", 0.0f); // measure the preset itself, not the master limiter
     const auto phrase = phraseFor (primaryCategory (p.meta));
     const double sr = core.sampleRate();
     const double spb = 60.0 / bpm * sr;
@@ -187,10 +189,11 @@ inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0,
     return renderCore (core, std::move (ev), total);
 }
 
-/** Loads a project preset and lets its sequencers run for `seconds`. */
-inline Audio renderProject (Core& core, const preset::Preset& p, double seconds)
+/** Loads a project preset and lets its sequencers run for `seconds` (limiter off: measurement). */
+inline Audio renderProject (Core& core, const preset::Preset& p, double seconds, bool limiter = true)
 {
     preset::applyProject (p, core);
+    if (! limiter) core.params().set ("mix.master.limit", 0.0f);
     core.params().set ("seq.run", 1.0f);
     return renderCore (core, {}, (int64_t) std::llround (seconds * core.sampleRate()));
 }

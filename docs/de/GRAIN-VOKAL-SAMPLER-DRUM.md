@@ -100,6 +100,21 @@ Pro Pad: **Quelle** (*Sample* / *Synth*), **Synth-Modell**, **Stimmung** (±24 H
 und Pads derselben Choke-Gruppe schneiden sich ab – geschlossene, halboffene, Pedal- und offene
 Hi-Hat (Pads 6, 7, 8, 17) teilen sich Gruppe 1. Note-Offs werden ignoriert.
 
+## Werksinstrumente und Drum-Kits (0.4)
+
+* **Instrument** (`pN.sampler.inst`): Der Sampler spielt eines von zehn aufgenommenen Instrumenten
+  (Kalimba, Marimba, Vibrafon, Glockenspiel, Harfe, Cembalo, Blockflöte, Klangglas, Zither,
+  gestrichenes Metall) statt seines eingebauten Keys-Klangs, solange kein eigenes Sample geladen ist.
+  Blockflöte, Klangglas und gestrichenes Metall haben Loop-Punkte: *Loop* auf *Vorwärts* stellen für
+  endlose Töne.
+* **Instrument** (`pN.grain.inst`): Die Grain-Engine granuliert einen Ton des gewählten Instruments
+  statt ihrer eingebauten Textur (ein geladenes Sample oder die Tape-Quelle haben Vorrang). Bei
+  gezupften und angeschlagenen Instrumenten *Position* nahe am Anfang lassen, wo der Ton am lautesten ist.
+* **Drum-Kit** (`drum.kit`): Studio (das ursprüngliche Kit), Trocken, Raum, Lo-Fi oder Hybrid. Alle
+  Kits haben dieselbe Pad-Belegung; eigene Pad-Samples haben immer Vorrang.
+
+Details und Quellen: [FACTORY-SOUNDS.md](FACTORY-SOUNDS.md), [THIRD-PARTY.md](../../THIRD-PARTY.md).
+
 ## Samples laden
 
 Samples werden im Plug-in von der Festplatte geladen (WAV, AIFF, FLAC und Ogg Vorbis): ein Sample

@@ -155,6 +155,10 @@ public:
         static constexpr const char* tapeUndo = "tape.edit.undo";
         static constexpr const char* tapeRedo = "tape.edit.redo";
         static constexpr const char* tapeRtz = "tape.edit.rtz";
+        // 0.4 (package F): a sequencer can play the drum kit instead of its target part
+        static constexpr const char* stepDrums = "seq.step.drums";
+        static constexpr const char* euclidDrums = "seq.euclid.drums";
+        static constexpr const char* orbitDrums = "seq.orbit.drums";
     };
 
 private:
@@ -184,7 +188,7 @@ private:
     void pullSequencerParams (SeqBinding& b) noexcept;
     Transport makeTransport (const Transport& host, const MidiEvent* midi, int numMidi, int numSamples) noexcept;
     void routeLive (const MidiEvent& e) noexcept;
-    void routeGenerated (const MidiEvent& e, bool shape) noexcept;
+    void routeGenerated (const MidiEvent& e, bool shape, bool toDrums = false) noexcept;
     void addRouted (const MidiEvent& e, int part) noexcept;
     void dispatch (const RoutedEvent& e) noexcept;
     void pullPhase2Params() noexcept;
@@ -222,6 +226,7 @@ private:
     std::array<PartRouting, numParts> routing {};
     std::array<MpeInput, numParts> mpeIn {};
     std::array<NoteShaper, numParts> liveShaper {}, seqShaper {};
+    int stepDrumsIndex = -1, euclidDrumsIndex = -1, orbitDrumsIndex = -1; ///< 0.4: sequencers -> drum kit
     int syncSourceIndex = -1, syncSmoothIndex = -1, clockOutIndex = -1, notesOutIndex = -1, keyRootIndex = -1, keyScaleIndex = -1;
     bool arpWasOn = false;
     int arpLastPart = 0;

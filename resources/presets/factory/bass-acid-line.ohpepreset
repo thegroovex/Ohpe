@@ -1,0 +1,37 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Acid Line",
+  "author": "groovex",
+  "tags": [
+    "Bass",
+    "Leads"
+  ],
+  "engine": "analog",
+  "comment": "Squelchy resonant saw with accent-friendly velocity and a short glide.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.0,
+    "analog.detune": 0.0,
+    "analog.cutoff": 170,
+    "analog.reso": 0.78,
+    "analog.oscmix": 0.0,
+    "analog.sub": 0.0,
+    "analog.drive": 0.55,
+    "analog.keytrack": 0.45,
+    "amp.a": 0.003,
+    "amp.d": 0.3,
+    "amp.s": 0.9,
+    "amp.r": 0.05,
+    "mod.a": 0.002,
+    "mod.d": 0.2,
+    "mod.s": 0.0,
+    "mod.r": 0.1,
+    "mod.amt": 0.52,
+    "voices": 1,
+    "glide": 0.06,
+    "velsens": 0.55,
+    "gain": 12.9
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Analog Arp",
+  "author": "groovex",
+  "tags": [
+    "Arp",
+    "Plucks"
+  ],
+  "engine": "analog",
+  "comment": "Resonant square blips with a ping-pong delay.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.45,
+    "analog.detune": 0.05,
+    "analog.cutoff": 900,
+    "analog.reso": 0.35,
+    "analog.oscmix": 0.3,
+    "analog.sub": 0.0,
+    "analog.drive": 0.3,
+    "analog.keytrack": 0.6,
+    "amp.a": 0.003,
+    "amp.d": 0.2,
+    "amp.s": 0.0,
+    "amp.r": 0.1,
+    "mod.a": 0.002,
+    "mod.d": 0.12,
+    "mod.s": 0.0,
+    "mod.r": 0.1,
+    "mod.amt": 0.45,
+    "fx.type": 5,
+    "fx.delay.time": 0.45,
+    "fx.delay.feedback": 0.35,
+    "fx.delay.tone": 0.45,
+    "fx.delay.pingpong": 1,
+    "fx.delay.mix": 0.24,
+    "voices": 8,
+    "gain": 20.6
+  }
+}

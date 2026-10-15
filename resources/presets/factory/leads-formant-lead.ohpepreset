@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Formant Lead",
+  "author": "groovex",
+  "tags": [
+    "Leads",
+    "Vocal"
+  ],
+  "engine": "wavetable",
+  "comment": "Vowel-like lead that opens up with the envelope.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 2,
+    "wavetable.pos": 0.2,
+    "wavetable.warp": 0.1,
+    "wavetable.tone": 0.7,
+    "wavetable.unison": 0.2,
+    "wavetable.sub": 0.0,
+    "wavetable.reso": 0.05,
+    "wavetable.keytrack": 0.6,
+    "wavetable.envpos": 0.4,
+    "amp.a": 0.01,
+    "amp.d": 0.5,
+    "amp.s": 0.85,
+    "amp.r": 0.2,
+    "mod.a": 0.05,
+    "mod.d": 0.6,
+    "mod.s": 0.4,
+    "mod.r": 0.3,
+    "mod.amt": 0.2,
+    "lfo.rate": 5.2,
+    "lfo.depth": 0.05,
+    "lfo.shape": 0,
+    "lfo.dest": 0,
+    "voices": 1,
+    "glide": 0.06,
+    "gain": 14.0
+  }
+}

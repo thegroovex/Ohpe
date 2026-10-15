@@ -1,0 +1,30 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Bowed Metal",
+  "author": "groovex",
+  "tags": [
+    "Pads",
+    "Textures"
+  ],
+  "engine": "sampler",
+  "comment": "Bowed vibraphone recordings (CC0), looped: glassy and eerie.",
+  "params": {
+    "engine": 7,
+    "sampler.inst": 10,
+    "sampler.tone": 0.9,
+    "sampler.loop": 1,
+    "amp.a": 0.7,
+    "amp.d": 1.5,
+    "amp.s": 0.9,
+    "amp.r": 2.0,
+    "mod.a": 0.5,
+    "mod.d": 1.0,
+    "mod.s": 1.0,
+    "mod.r": 1.0,
+    "mod.amt": 0.0,
+    "voices": 12,
+    "gain": -4.1
+  }
+}

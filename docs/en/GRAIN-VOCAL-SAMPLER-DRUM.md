@@ -98,6 +98,20 @@ Per pad: **Source** (*Sample* / *Synth*), **Synth Model**, **Tune** (±24 semito
 darkens it. Every pad is monophonic, and pads of the same choke group cut each other – the closed,
 half-open, pedal and open hi-hats (pads 6, 7, 8, 17) share group 1. Note-offs are ignored.
 
+## Factory instruments and drum kits (0.4)
+
+* **Instrument** (`pN.sampler.inst`): the Sampler plays one of ten recorded instruments (kalimba,
+  marimba, vibraphone, glockenspiel, harp, harpsichord, recorder, singing glass, zither, bowed metal)
+  instead of its built-in keys tone while no sample of your own is loaded. Recorder, singing glass and
+  bowed metal have loop points: set *Loop* to *Forward* for endless notes.
+* **Instrument** (`pN.grain.inst`): the Grain engine granulates one note of the chosen instrument
+  instead of its built-in texture (a loaded sample or the tape source still wins). For plucked and
+  struck instruments keep *Position* near the start, where the note is loudest.
+* **Drum Kit** (`drum.kit`): Studio (the original kit), Tight, Room, Lo-Fi or Hybrid. All kits use
+  the same pad layout; your own pad samples always win.
+
+Details and sources: [FACTORY-SOUNDS.md](FACTORY-SOUNDS.md), [THIRD-PARTY.md](../../THIRD-PARTY.md).
+
 ## Loading samples
 
 Samples are loaded from disk in the plug-in (WAV, AIFF, FLAC and Ogg Vorbis): one sample for the

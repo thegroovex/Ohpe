@@ -1,0 +1,40 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Harmonic Organ",
+  "author": "groovex",
+  "tags": [
+    "Keys"
+  ],
+  "engine": "wavetable",
+  "comment": "Additive Harmonic table: a soft, slightly breathy organ.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 1,
+    "wavetable.pos": 0.55,
+    "wavetable.warp": 0.0,
+    "wavetable.tone": 0.62,
+    "wavetable.unison": 0.2,
+    "wavetable.sub": 0.25,
+    "wavetable.reso": 0.0,
+    "wavetable.keytrack": 0.5,
+    "wavetable.envpos": 0.0,
+    "amp.a": 0.01,
+    "amp.d": 0.2,
+    "amp.s": 1.0,
+    "amp.r": 0.12,
+    "mod.a": 0.001,
+    "mod.d": 0.2,
+    "mod.s": 1.0,
+    "mod.r": 0.1,
+    "mod.amt": 0.0,
+    "lfo.rate": 5.8,
+    "lfo.depth": 0.02,
+    "lfo.shape": 0,
+    "lfo.dest": 0,
+    "voices": 16,
+    "velsens": 0.2,
+    "gain": 0.2
+  }
+}

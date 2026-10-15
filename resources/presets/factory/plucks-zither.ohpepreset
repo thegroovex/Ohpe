@@ -1,0 +1,28 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Zither",
+  "author": "groovex",
+  "tags": [
+    "Plucks"
+  ],
+  "engine": "sampler",
+  "comment": "Recorded zither: shimmering plucked strings (CC0).",
+  "params": {
+    "engine": 7,
+    "sampler.inst": 9,
+    "sampler.tone": 1.0,
+    "amp.a": 0.001,
+    "amp.d": 2.6,
+    "amp.s": 0.0,
+    "amp.r": 0.8,
+    "mod.a": 0.001,
+    "mod.d": 0.3,
+    "mod.s": 0.0,
+    "mod.r": 0.2,
+    "mod.amt": 0.0,
+    "voices": 14,
+    "gain": 5.9
+  }
+}

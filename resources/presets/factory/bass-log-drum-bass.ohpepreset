@@ -1,0 +1,29 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Log Drum Bass",
+  "author": "groovex",
+  "tags": [
+    "Bass"
+  ],
+  "engine": "sampler",
+  "comment": "Low marimba bars played as a bass: woody, round and short.",
+  "params": {
+    "engine": 7,
+    "sampler.inst": 2,
+    "sampler.tone": 0.62,
+    "amp.a": 0.001,
+    "amp.d": 0.9,
+    "amp.s": 0.0,
+    "amp.r": 0.2,
+    "mod.a": 0.001,
+    "mod.d": 0.3,
+    "mod.s": 0.0,
+    "mod.r": 0.2,
+    "mod.amt": 0.2,
+    "velsens": 0.6,
+    "voices": 4,
+    "gain": 10.6
+  }
+}

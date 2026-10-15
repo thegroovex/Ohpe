@@ -1,0 +1,35 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Backwards Kalimba",
+  "author": "groovex",
+  "tags": [
+    "Textures",
+    "FX"
+  ],
+  "engine": "sampler",
+  "comment": "The kalimba played in reverse: swells that end in a pluck.",
+  "params": {
+    "engine": 7,
+    "sampler.inst": 1,
+    "sampler.tone": 0.85,
+    "sampler.reverse": 1,
+    "amp.a": 0.001,
+    "amp.d": 3.0,
+    "amp.s": 1.0,
+    "amp.r": 0.25,
+    "mod.a": 0.001,
+    "mod.d": 0.3,
+    "mod.s": 1.0,
+    "mod.r": 0.2,
+    "mod.amt": 0.0,
+    "fx.type": 6,
+    "fx.reverb.size": 0.7,
+    "fx.reverb.damping": 0.5,
+    "fx.reverb.predelay": 0.02,
+    "fx.reverb.mix": 0.25,
+    "voices": 10,
+    "gain": 14.9
+  }
+}

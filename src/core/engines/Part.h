@@ -30,6 +30,8 @@ public:
     void registerCommonParams (ParamRegistry& reg) const;
     /** Registers the parameters of one engine type (no-op for unimplemented types). */
     void registerEngineParams (ParamRegistry& reg, EngineType type) const;
+    /** 0.4: common parameters added later ("gain"), registered at the end of the layout. */
+    void registerLateCommonParams (ParamRegistry& reg) const;
     /** 0.4: registers the engine's late parameters (ISynthEngine::firstLateParam() onwards). */
     void registerLateEngineParams (ParamRegistry& reg, EngineType type) const;
     /** Resolves parameter indices; call after the registry is frozen. */
@@ -79,8 +81,10 @@ private:
         numCommon
     };
     std::array<int, numCommon> commonIndex {};
+    int gainIndex = -1;  ///< 0.4: "pN.gain" (dB), multiplies the part volume
     VoiceCommon common;
-    float volume = 0.8f, bendRange = 2.0f, tune = 0.0f, bend = 0.0f;
+    float dcX[2] = { 0.0f, 0.0f }, dcY[2] = { 0.0f, 0.0f }, dcCoeff = 0.9993f; ///< 0.4: DC blocker (about 5 Hz)
+    float volume = 0.8f, gainFactor = 1.0f, bendRange = 2.0f, tune = 0.0f, bend = 0.0f;
     bool sustain = false;
     std::array<bool, 128> sustained {};
     int polyphony = 8;

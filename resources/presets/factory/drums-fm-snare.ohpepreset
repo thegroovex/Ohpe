@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "FM Snare",
+  "author": "groovex",
+  "tags": [
+    "Drums"
+  ],
+  "engine": "fm",
+  "comment": "Feedback noise plus a body tone: a crisp digital snare.",
+  "params": {
+    "engine": 0,
+    "fm.algo": 2,
+    "fm.modratio": 1.0,
+    "fm.index": 0.7,
+    "fm.feedback": 1.0,
+    "fm.op1ratio": 1,
+    "fm.op2ratio": 2.3,
+    "fm.op3ratio": 1.6,
+    "fm.op4ratio": 3.7,
+    "fm.op1level": 0.8,
+    "fm.op2level": 0.9,
+    "fm.op3level": 0.6,
+    "fm.op4level": 0.9,
+    "fm.op5level": 0.7,
+    "fm.op6level": 1.0,
+    "amp.a": 0.001,
+    "amp.d": 0.16,
+    "amp.s": 0.0,
+    "amp.r": 0.12,
+    "mod.a": 0.001,
+    "mod.d": 0.06,
+    "mod.s": 0.3,
+    "mod.r": 0.1,
+    "mod.amt": 0.6,
+    "velsens": 0.6,
+    "voices": 4,
+    "gain": 17.6
+  }
+}

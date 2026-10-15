@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Octave Lead",
+  "author": "groovex",
+  "tags": [
+    "Leads"
+  ],
+  "engine": "cluster",
+  "comment": "Octave-stacked pulses with a quick filter blip.",
+  "params": {
+    "engine": 6,
+    "cluster.detune": 0.08,
+    "cluster.spread": 0.5,
+    "cluster.tone": 0.55,
+    "cluster.chord": 1,
+    "cluster.stack": 3,
+    "cluster.shape": 0.6,
+    "cluster.side": 0.6,
+    "cluster.reso": 0.15,
+    "cluster.keytrack": 0.6,
+    "cluster.drift": 0.1,
+    "amp.a": 0.003,
+    "amp.d": 0.35,
+    "amp.s": 0.85,
+    "amp.r": 0.15,
+    "mod.a": 0.002,
+    "mod.d": 0.25,
+    "mod.s": 0.5,
+    "mod.r": 0.2,
+    "mod.amt": 0.25,
+    "lfo.rate": 5.6,
+    "lfo.depth": 0.05,
+    "lfo.shape": 0,
+    "lfo.dest": 0,
+    "voices": 1,
+    "glide": 0.05,
+    "gain": 9.9
+  }
+}

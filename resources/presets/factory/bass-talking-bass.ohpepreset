@@ -1,0 +1,36 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Talking Bass",
+  "author": "groovex",
+  "tags": [
+    "Bass"
+  ],
+  "engine": "wavetable",
+  "comment": "Formant table swept by the envelope: a vowel 'wow' on every note.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 2,
+    "wavetable.pos": 0.1,
+    "wavetable.warp": 0.0,
+    "wavetable.tone": 0.55,
+    "wavetable.unison": 0.0,
+    "wavetable.sub": 0.5,
+    "wavetable.reso": 0.1,
+    "wavetable.keytrack": 0.4,
+    "wavetable.envpos": 0.45,
+    "amp.a": 0.003,
+    "amp.d": 0.4,
+    "amp.s": 0.75,
+    "amp.r": 0.08,
+    "mod.a": 0.002,
+    "mod.d": 0.35,
+    "mod.s": 0.1,
+    "mod.r": 0.15,
+    "mod.amt": 0.25,
+    "voices": 1,
+    "glide": 0.03,
+    "gain": 10.2
+  }
+}

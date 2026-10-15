@@ -1,0 +1,38 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Breath Texture",
+  "author": "groovex",
+  "tags": [
+    "Textures",
+    "Vocal"
+  ],
+  "engine": "vocal",
+  "comment": "Nearly unvoiced breath through slowly moving vowels.",
+  "params": {
+    "engine": 5,
+    "vocal.vowel": 2.0,
+    "vocal.formant": 0.0,
+    "vocal.breath": 0.9,
+    "vocal.tension": 0.3,
+    "vocal.vibdepth": 0.0,
+    "vocal.vibrate": 5.0,
+    "vocal.jitter": 0.5,
+    "amp.a": 1.0,
+    "amp.d": 1.5,
+    "amp.s": 0.9,
+    "amp.r": 2.0,
+    "mod.a": 0.5,
+    "mod.d": 1.0,
+    "mod.s": 1.0,
+    "mod.r": 1.0,
+    "mod.amt": 0.0,
+    "lfo.rate": 0.15,
+    "lfo.depth": 0.5,
+    "lfo.shape": 1,
+    "lfo.dest": 1,
+    "voices": 8,
+    "gain": 6.7
+  }
+}

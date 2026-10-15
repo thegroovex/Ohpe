@@ -3,6 +3,7 @@
 #include "Part.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 
 namespace ohpe
@@ -49,6 +50,15 @@ void Part::registerCommonParams (ParamRegistry& reg) const
                  { "Tonhöhe", "Klangfarbe", "Pegel", "Panorama" }, 0));
 }
 
+void Part::registerLateCommonParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    auto d = continuous (id ("gain"), "Part " + std::to_string (number) + " Gain", "Part " + std::to_string (number) + " Gain",
+                         -24.0f, 24.0f, 0.0f, ParamUnit::Decibel);
+    d.group = "part" + std::to_string (number);
+    reg.add (std::move (d));
+}
+
 void Part::registerEngineParams (ParamRegistry& reg, EngineType type) const
 {
     const auto& eng = engines[(size_t) type];
@@ -91,6 +101,7 @@ void Part::bind (const ParamRegistry& reg)
                                             "mod.amt", "lfo.rate", "lfo.depth", "lfo.shape", "lfo.dest" };
     for (int i = 0; i < numCommon; ++i)
         commonIndex[(size_t) i] = reg.indexOf (id (names[i]));
+    gainIndex = reg.indexOf (id ("gain"));
 
     for (int t = 0; t < numEngineTypes; ++t)
     {
@@ -114,6 +125,7 @@ void Part::prepare (double sampleRate, int maxBlockSize)
         if (e != nullptr) e->prepare (sampleRate, maxBlockSize);
     for (auto& s : slots)
         for (auto& v : s.lastValue) v = NAN;
+    dcCoeff = 1.0f - (float) (2.0 * 3.14159265358979 * 5.0 / sampleRate);
     reset();
 }
 
@@ -124,6 +136,7 @@ void Part::reset() noexcept
     sustain = false;
     sustained.fill (false);
     bend = 0.0f;
+    dcX[0] = dcX[1] = dcY[0] = dcY[1] = 0.0f;
 }
 
 void Part::pullParams (const ParamSnapshot& s) noexcept
@@ -136,6 +149,7 @@ void Part::pullParams (const ParamSnapshot& s) noexcept
         current = newType;
     }
     volume = v (cVolume);
+    gainFactor = gainIndex >= 0 ? std::pow (10.0f, s[gainIndex] / 20.0f) : 1.0f;
     polyphony = s.getInt (commonIndex[cVoices]);
     tune = v (cTune) + v (cFine) * 0.01f;
     bendRange = v (cBendRange);
@@ -229,7 +243,23 @@ void Part::render (float* l, float* r, int numSamples) noexcept
     for (auto& e : engines)
         if (e != nullptr && e->activeVoiceCount() > 0)
             e->render (l, r, numSamples);
-    for (int i = 0; i < numSamples; ++i) { l[i] *= volume; r[i] *= volume; }
+    // 0.4: a gentle DC blocker (one pole at ~5 Hz): pulse shapes and asymmetric waves must not
+    // push a DC offset into the mix
+    const float g = volume * gainFactor;
+    float* ch[2] = { l, r };
+    for (int c = 0; c < 2; ++c)
+    {
+        float x1 = dcX[c], y1 = dcY[c];
+        for (int i = 0; i < numSamples; ++i)
+        {
+            const float x = ch[c][i];
+            y1 = x - x1 + dcCoeff * y1;
+            x1 = x;
+            ch[c][i] = y1 * g;
+        }
+        dcX[c] = x1;
+        dcY[c] = (std::abs (y1) < 1.0e-20f) ? 0.0f : y1; // no denormals in silence
+    }
 }
 
 int Part::activeVoiceCount() const noexcept

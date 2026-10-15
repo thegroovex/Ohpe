@@ -1,0 +1,39 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Super Stack",
+  "author": "groovex",
+  "tags": [
+    "Pads"
+  ],
+  "engine": "cluster",
+  "comment": "Seven detuned saws per key, wide and lush.",
+  "params": {
+    "engine": 6,
+    "cluster.detune": 0.28,
+    "cluster.spread": 0.9,
+    "cluster.tone": 0.45,
+    "cluster.chord": 0,
+    "cluster.stack": 7,
+    "cluster.shape": 0.0,
+    "cluster.side": 0.7,
+    "cluster.reso": 0.1,
+    "cluster.keytrack": 0.5,
+    "cluster.drift": 0.3,
+    "amp.a": 0.7,
+    "amp.d": 1.5,
+    "amp.s": 0.85,
+    "amp.r": 1.8,
+    "mod.a": 0.8,
+    "mod.d": 2.0,
+    "mod.s": 0.6,
+    "mod.r": 1.5,
+    "mod.amt": 0.15,
+    "fx.type": 1,
+    "fx.chorus.rate": 0.3,
+    "fx.chorus.depth": 0.4,
+    "fx.chorus.mix": 0.25,
+    "gain": 6.5
+  }
+}

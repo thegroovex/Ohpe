@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Minor Stab",
+  "author": "groovex",
+  "tags": [
+    "Keys"
+  ],
+  "engine": "cluster",
+  "comment": "One finger plays a minor-seventh chord stab; detuned and punchy.",
+  "params": {
+    "engine": 6,
+    "cluster.detune": 0.15,
+    "cluster.spread": 0.7,
+    "cluster.tone": 0.48,
+    "cluster.chord": 8,
+    "cluster.stack": 4,
+    "cluster.shape": 0.05,
+    "cluster.side": 0.7,
+    "cluster.reso": 0.15,
+    "cluster.keytrack": 0.5,
+    "cluster.drift": 0.1,
+    "amp.a": 0.003,
+    "amp.d": 0.65,
+    "amp.s": 0.0,
+    "amp.r": 0.3,
+    "mod.a": 0.002,
+    "mod.d": 0.28,
+    "mod.s": 0.0,
+    "mod.r": 0.2,
+    "mod.amt": 0.35,
+    "fx.type": 6,
+    "fx.reverb.size": 0.6,
+    "fx.reverb.damping": 0.5,
+    "fx.reverb.predelay": 0.02,
+    "fx.reverb.mix": 0.22,
+    "voices": 6,
+    "gain": 8.2
+  }
+}

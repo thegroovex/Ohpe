@@ -50,6 +50,9 @@ Core::Core()
     syncSmoothIndex = registry.indexOf (Ids::syncSmoothing);
     clockOutIndex = registry.indexOf (Ids::clockOut);
     notesOutIndex = registry.indexOf (Ids::notesOut);
+    stepDrumsIndex = registry.indexOf (Ids::stepDrums);
+    euclidDrumsIndex = registry.indexOf (Ids::euclidDrums);
+    orbitDrumsIndex = registry.indexOf (Ids::orbitDrums);
     keyRootIndex = registry.indexOf (Ids::keyRoot);
     keyScaleIndex = registry.indexOf (Ids::keyScale);
 
@@ -163,8 +166,16 @@ void Core::routeLive (const MidiEvent& e) noexcept
     }
 }
 
-void Core::routeGenerated (const MidiEvent& e, bool shape) noexcept
+void Core::routeGenerated (const MidiEvent& e, bool shape, bool toDrums) noexcept
 {
+    if (toDrums) // 0.4: the sequencer plays the drum kit (notes = pads from "drum.base")
+    {
+        auto d = e;
+        d.status = (uint8_t) ((d.status & 0xf0) | ((drumChannel - 1) & 0x0f));
+        addRouted (d, drumPart);
+        if (notesOutOn) midiOut.add (d);
+        return;
+    }
     // sequencer events address their part by channel (1..4)
     const int p = std::clamp (e.channel(), 1, numParts) - 1;
     auto emit = [&] (const MidiEvent& x) {
@@ -345,9 +356,11 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     orbit.process (tr, numSamples, orbitOut);
     arpOut.clear();
     arp.process (tr, numSamples, arpOut);
-    for (const auto& e : seqOut.events) routeGenerated (e, true);
-    for (const auto& e : euclidOut.events) routeGenerated (e, true);
-    for (const auto& e : orbitOut.events) routeGenerated (e, true);
+    const bool stepToDrums = snapshot.getBool (stepDrumsIndex), euclidToDrums = snapshot.getBool (euclidDrumsIndex),
+               orbitToDrums = snapshot.getBool (orbitDrumsIndex);
+    for (const auto& e : seqOut.events) routeGenerated (e, true, stepToDrums);
+    for (const auto& e : euclidOut.events) routeGenerated (e, true, euclidToDrums);
+    for (const auto& e : orbitOut.events) routeGenerated (e, true, orbitToDrums);
     for (const auto& e : arpOut.events) routeGenerated (e, false); // already shaped on the way in
 
     // stable sort by time (insertion sort: lists are short and mostly ordered)

@@ -1,0 +1,36 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Fat Saw Bass",
+  "author": "groovex",
+  "tags": [
+    "Bass"
+  ],
+  "engine": "analog",
+  "comment": "Two detuned saws and a sub through the ladder filter; big but not boomy.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.05,
+    "analog.detune": 0.2,
+    "analog.cutoff": 380,
+    "analog.reso": 0.22,
+    "analog.osc2oct": 0,
+    "analog.oscmix": 0.5,
+    "analog.sub": 0.4,
+    "analog.drive": 0.4,
+    "analog.keytrack": 0.4,
+    "amp.a": 0.003,
+    "amp.d": 0.4,
+    "amp.s": 0.8,
+    "amp.r": 0.09,
+    "mod.a": 0.002,
+    "mod.d": 0.3,
+    "mod.s": 0.25,
+    "mod.r": 0.15,
+    "mod.amt": 0.38,
+    "voices": 1,
+    "velsens": 0.45,
+    "gain": 16.0
+  }
+}

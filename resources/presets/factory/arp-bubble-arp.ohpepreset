@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Bubble Arp",
+  "author": "groovex",
+  "tags": [
+    "Arp"
+  ],
+  "engine": "analog",
+  "comment": "Narrow pulse through a resonant filter: bubbly and round.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.75,
+    "analog.detune": 0.0,
+    "analog.cutoff": 1100,
+    "analog.reso": 0.5,
+    "analog.oscmix": 0.0,
+    "analog.sub": 0.15,
+    "analog.ftype": 1,
+    "analog.drive": 0.15,
+    "analog.keytrack": 0.6,
+    "amp.a": 0.003,
+    "amp.d": 0.15,
+    "amp.s": 0.0,
+    "amp.r": 0.08,
+    "mod.a": 0.002,
+    "mod.d": 0.08,
+    "mod.s": 0.0,
+    "mod.r": 0.08,
+    "mod.amt": 0.35,
+    "fx.type": 5,
+    "fx.delay.time": 0.3,
+    "fx.delay.feedback": 0.3,
+    "fx.delay.tone": 0.5,
+    "fx.delay.pingpong": 1,
+    "fx.delay.mix": 0.2,
+    "voices": 8,
+    "gain": 15.8
+  }
+}

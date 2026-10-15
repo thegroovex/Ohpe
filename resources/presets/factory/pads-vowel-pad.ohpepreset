@@ -1,0 +1,42 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Vowel Pad",
+  "author": "groovex",
+  "tags": [
+    "Pads"
+  ],
+  "engine": "wavetable",
+  "comment": "Formant table drifting between vowels; slow attack.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 2,
+    "wavetable.pos": 0.3,
+    "wavetable.warp": 0.05,
+    "wavetable.tone": 0.6,
+    "wavetable.unison": 0.45,
+    "wavetable.sub": 0.1,
+    "wavetable.reso": 0.05,
+    "wavetable.keytrack": 0.5,
+    "wavetable.envpos": 0.35,
+    "amp.a": 1.1,
+    "amp.d": 1.5,
+    "amp.s": 0.85,
+    "amp.r": 2.0,
+    "mod.a": 1.5,
+    "mod.d": 2.0,
+    "mod.s": 0.6,
+    "mod.r": 2.0,
+    "mod.amt": 0.15,
+    "lfo.rate": 0.12,
+    "lfo.depth": 0.2,
+    "lfo.shape": 1,
+    "lfo.dest": 1,
+    "fx.type": 1,
+    "fx.chorus.rate": 0.35,
+    "fx.chorus.depth": 0.5,
+    "fx.chorus.mix": 0.35,
+    "gain": 10.6
+  }
+}

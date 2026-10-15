@@ -895,3 +895,10 @@ p3.grain.inst
 p4.sampler.inst
 p4.grain.inst
 drum.kit
+seq.step.drums
+seq.euclid.drums
+seq.orbit.drums
+p1.gain
+p2.gain
+p3.gain
+p4.gain

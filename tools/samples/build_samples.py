@@ -477,8 +477,8 @@ def build_instruments(cache):
             else:
                 m = finish(stereo(m), secs, INST_RATE, 0.35, start=start)[:, 0]
                 ls = le = -1
-            # loudness reference: RMS of the first 400 ms (loud layer only for matching)
-            ref = np.sqrt(np.mean(m[:int(0.4 * INST_RATE)] ** 2))
+            # loudness reference: RMS of the first 400 ms, of the loop for sustained sounds
+            ref = np.sqrt(np.mean((m[ls:le] if loop else m[:int(0.4 * INST_RATE)]) ** 2))
             rendered.append([note, f, vlo, vhi, m, ls, le, ref])
         # level-match zones (top velocity layer per note), keep layer differences, then one peak normalisation
         top = {}
@@ -486,8 +486,10 @@ def build_instruments(cache):
             if r[3] == 127: top[r[0]] = r[7]
         med = float(np.median(list(top.values())))
         for r in rendered:
-            g = med / top[r[0]]
-            g = min(max(g, db(-6)), db(6))
+            if r[3] == 127:
+                g = min(max(med / top[r[0]], db(-9)), db(9))
+            else:  # softer velocity layer: 7 dB below the matched top layer of its note
+                g = med * db(-7.0) / max(1e-9, r[7])
             r[4] = r[4] * g
         peak = max(np.max(np.abs(r[4])) for r in rendered)
         roots = sorted(set(midi(r[0]) for r in rendered))

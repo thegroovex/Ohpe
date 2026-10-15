@@ -47,6 +47,16 @@ set_target_properties(ohpe_drumkit PROPERTIES POSITION_INDEPENDENT_CODE ON)
 list(APPEND OHPE_JUCE_MODULES ohpe_drumkit)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/FactoryKit.cpp)
 
+# 0.4 (package F): factory sample bank - Sampler / Grain instruments and the drum kits Tight, Room,
+# Lo-Fi, Hybrid (CC0 recordings, see THIRD-PARTY.md; built by tools/samples/build_samples.py)
+file(GLOB_RECURSE OHPE_SAMPLE_FILES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/resources/samples/*.flac)
+juce_add_binary_data(ohpe_samples
+    HEADER_NAME OhpeSamples.h
+    NAMESPACE OhpeSamples
+    SOURCES ${CMAKE_SOURCE_DIR}/resources/samples/bank.json ${OHPE_SAMPLE_FILES})
+set_target_properties(ohpe_samples PROPERTIES POSITION_INDEPENDENT_CODE ON)
+list(APPEND OHPE_JUCE_MODULES ohpe_samples)
+
 # 0.3 (package E): pro view, preset library browser, preset manager and the factory preset bank.
 # Package F (factory sounds) only adds *.ohpepreset files to resources/presets/factory; they are
 # embedded as binary data (namespace OhpePresets) and appear in the library's factory bank.
@@ -134,4 +144,10 @@ endif()
 # ---------------------------------------------------------------- 0.3 package E: UI, preset library
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/UiLibraryTests.cpp)
+endif()
+
+# ---------------------------------------------------------------- 0.4 package F: factory sounds
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/FactorySoundTests.cpp)
+    target_include_directories(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tools)
 endif()
