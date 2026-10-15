@@ -188,7 +188,7 @@ def lofi_lane(k):
 
 LOFI_PADS = {"drum.pad1.tone": 0.24, "drum.pad1.tune": -1, "drum.pad1.decay": 0.55,   # kick: muffled and round
              "drum.pad3.tone": 0.33, "drum.pad3.level": 0.8, "drum.pad3.decay": 0.42,  # snare: soft
-             "drum.pad6.tone": 0.3, "drum.pad6.level": 0.62}                           # hats: dull and quiet
+             "drum.pad6.tone": 0.3, "drum.pad6.level": 0.7}                            # hats: dull, a little louder
 LOFI = project(
     "Lo-Fi Beat", ["Drums", "Keys", "Bass"],
     "Classic lo-fi hip-hop at 78 BPM with a lazy, heavy swing: muffled kick, soft snare and quiet shuffled hats on the Lo-Fi kit (Euclid), "
@@ -202,8 +202,8 @@ LOFI = project(
     lanes([16, 16, 16, 1], ["1/4", "1/4", "1/4", "1/4"]), lane_parts(0, 0, 0, 4),
     {"seq.euclid.on": 1, "seq.euclid.drums": 1, "seq.euclid.rate": RATE["1/16"], "seq.euclid.gate": 0.5, "seq.euclid.vel": 100,
      "seq.euclid.swing": 0.5, "seq.euclid.human": 0.4},
-    rings([(16, 3, 0, KICK), (16, 2, 4, SNARE), (16, 8, 0, HAT), (16, 4, 13, HAT)]), ring_vel(112, 92, 52, 30),
-    mixer(ch1=(1, 0.0, 0.12), ch2=(-5, 0.0, 0.0), ch3=(-60, 0.0, 0.0), ch4=(-15, 0.0, 0.0), ch5=(0, 0.0, 0.05), master=0),
+    rings([(16, 3, 0, KICK), (16, 2, 4, SNARE), (16, 8, 0, HAT), (16, 4, 13, HAT)]), ring_vel(112, 92, 60, 36),
+    mixer(ch1=(1, 0.0, 0.12), ch2=(-7, 0.0, 0.0), ch3=(-60, 0.0, 0.0), ch4=(-15, 0.0, 0.0), ch5=(0, 0.0, 0.05), master=0),
     {"mix.ch1.eqhi": -5, "mix.ch5.eqhi": -4, "mix.master.tapesat": 0.4, "mix.master.lowpass": 4200,
      "fxb.reverb.size": 0.35, "fxb.reverb.damping": 0.75,
      "mix.master.comp": 1, "mix.master.comp.thresh": -16, "mix.master.comp.ratio": 2.0},
