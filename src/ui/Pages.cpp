@@ -4,6 +4,9 @@
 
 #include <cmath>
 
+#include <algorithm>
+#include <cctype>
+
 namespace ohpe::ui
 {
 namespace

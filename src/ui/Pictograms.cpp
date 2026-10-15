@@ -4,6 +4,8 @@
 
 #include "Palette.h"
 
+#include <cmath>
+
 namespace ohpe::ui
 {
 namespace

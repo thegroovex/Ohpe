@@ -25,8 +25,12 @@ Useful variables: `OHPE_JUCE_PATH` (local JUCE 8.0.15), `OHPE_CMAKE_ARGS="-DOHPE
 (much faster local links), `OHPE_CORE_ONLY=1` (core tests only). On headless Linux the GUI
 steps run under `xvfb-run` automatically.
 
-Never push a red build. CI runs the same script on Linux for every push; a manual run of the
-CI workflow additionally builds macOS universal (app, AU incl. `auval`, VST3) and Windows.
+Never push a red build. CI runs the same script on Linux for every push to main; every pull
+request (and a manual run of the CI workflow) additionally builds and tests macOS universal (app,
+AU incl. `auval -strict`, VST3) and Windows. Merge only when all three are green.
+
+Factory presets are `*.ohpepreset` files in `resources/presets/factory/` (embedded at build time);
+the format is described in [docs/en/PRESETS.md](docs/en/PRESETS.md).
 
 ## Rules
 

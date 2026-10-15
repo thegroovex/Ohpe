@@ -6,6 +6,9 @@
 #include "plugin/Localisation.h"
 #include "plugin/ParameterBridge.h"
 
+#include <algorithm>
+#include <cmath>
+
 namespace ohpe::ui
 {
 using i18n::tr;

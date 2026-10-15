@@ -5,6 +5,8 @@
 #include "Palette.h"
 #include "plugin/Localisation.h"
 
+#include <algorithm>
+
 namespace ohpe::ui
 {
 using i18n::tr;
@@ -163,7 +165,12 @@ void LibraryBrowser::selectRow (int row)
     list.selectRow (row);
 }
 
-void LibraryBrowser::setSearchText (const juce::String& text) { search.setText (text, true); }
+void LibraryBrowser::setSearchText (const juce::String& text)
+{
+    search.setText (text, false);
+    presets.filter.text = text.toStdString();
+    rebuild();
+}
 
 void LibraryBrowser::toggleTag (const juce::String& tag)
 {
