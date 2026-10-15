@@ -8,3 +8,4 @@ out/
 compile_commands.json
 /pluginval*
 Testing/
+__pycache__/
