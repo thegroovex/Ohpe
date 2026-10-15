@@ -88,39 +88,77 @@ void fm (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juce:
 
 void wavetable (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juce::Colour ink, float lw)
 {
-    for (int k = 0; k < 4; ++k)
+    // stacked frames: position morphs the front wave sine -> pulse, warp bends it, tone softens the
+    // back frames, unison fans out extra outlines
+    const float pos = s.macro[0], warp = s.macro[1], tone = s.macro[2], unison = s.macro[3];
+    const int layers = s.large ? 4 : 3;
+    for (int k = layers - 1; k >= 0; --k)
     {
         juce::Path p;
-        const float off = (float) k * r.getHeight() * 0.12f;
-        for (int i = 0; i <= 32; ++i)
+        const float off = (float) k * r.getHeight() * 0.11f;
+        const float morph = juce::jlimit (0.0f, 1.0f, pos + 0.12f * (float) k);
+        for (int i = 0; i <= 48; ++i)
         {
-            const float x = (float) i / 32.0f;
-            const float y = std::sin (x * 2.0f * pi) * (1.0f - 0.2f * k) + (float) k * 0.15f * std::sin (x * 6.0f * pi + s.time);
-            const auto px = r.getX() + r.getWidth() * (0.1f + 0.75f * x) + off;
-            const auto py = r.getCentreY() + off - y * r.getHeight() * 0.18f - r.getHeight() * 0.12f;
+            const float x = (float) i / 48.0f;
+            const float ph = x - warp * 0.14f * std::sin (2.0f * pi * x); // bent phase
+            const float sine = std::sin (ph * 2.0f * pi);
+            const float pulse = std::tanh (sine * (1.0f + 9.0f * morph)) / std::tanh (1.0f + 9.0f * morph);
+            float y = sine + (pulse - sine) * morph;
+            if (s.large) y += 0.06f * std::sin (x * 8.0f * pi + s.time * 2.0f) * (float) k;
+            const auto px = r.getX() + r.getWidth() * (0.08f + 0.72f * x) + off;
+            const auto py = r.getCentreY() + off - y * r.getHeight() * (0.16f + 0.04f * s.energy) - r.getHeight() * 0.1f;
             if (i == 0) p.startNewSubPath (px, py); else p.lineTo (px, py);
         }
-        g.setColour (ink.withAlpha (1.0f - 0.2f * (float) k));
-        g.strokePath (p, juce::PathStrokeType (lw * 0.7f));
+        const float alpha = k == 0 ? 1.0f : (0.25f + 0.5f * tone) * (1.0f - 0.18f * (float) k);
+        g.setColour ((k == 0 ? accent (0, s, ink) : ink).withAlpha (alpha));
+        g.strokePath (p, juce::PathStrokeType (lw * (k == 0 ? 0.9f : 0.6f)));
+        if (k == 0 && unison > 0.05f)
+            for (int u = -1; u <= 1; u += 2)
+            {
+                g.setColour (accent (3, s, ink).withAlpha (0.35f * unison));
+                g.strokePath (p, juce::PathStrokeType (lw * 0.4f),
+                              juce::AffineTransform::translation ((float) u * unison * lw * 2.5f, (float) -u * unison * lw));
+            }
     }
 }
 
 void pluck (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juce::Colour ink, float lw)
 {
-    juce::Path p;
-    const float decay = std::exp (-std::fmod (s.time, 1.6f) * 3.0f);
-    for (int i = 0; i <= 40; ++i)
+    // a string between two pegs; material turns it into a struck bar, damping shortens the ringing,
+    // brightness adds wiggles, body grows the sound box underneath
+    const float material = s.macro[0], damping = s.macro[1], bright = s.macro[2], body = s.macro[3];
+    const float period = 0.6f + 2.2f * (1.0f - damping);
+    const float decay = std::exp (-std::fmod (s.time, period) * (1.5f + 6.0f * damping));
+    const float cy = r.getCentreY() - r.getHeight() * 0.08f;
+    if (body > 0.05f)
     {
-        const float x = (float) i / 40.0f;
-        const float y = std::sin (x * pi) * std::sin (s.time * 30.0f) * decay * r.getHeight() * 0.25f;
-        const auto px = r.getX() + x * r.getWidth(), py = r.getCentreY() + y;
+        const float bw = r.getWidth() * (0.35f + 0.4f * body), bh = r.getHeight() * (0.12f + 0.2f * body);
+        g.setColour (accent (3, s, ink).withAlpha (0.35f + 0.3f * body));
+        g.drawRoundedRectangle (juce::Rectangle<float> (bw, bh).withCentre ({ r.getCentreX(), cy + r.getHeight() * 0.22f + bh * 0.5f }), bh * 0.4f, lw * 0.6f);
+    }
+    juce::Path p;
+    for (int i = 0; i <= 48; ++i)
+    {
+        const float x = (float) i / 48.0f;
+        const float wobble = std::sin (x * pi) + bright * 0.35f * std::sin (x * 3.0f * pi) * std::sin (s.time * 47.0f);
+        const float y = wobble * std::sin (s.time * 30.0f) * decay * r.getHeight() * 0.22f * (1.0f - 0.6f * material);
+        const auto px = r.getX() + x * r.getWidth(), py = cy + y;
         if (i == 0) p.startNewSubPath (px, py); else p.lineTo (px, py);
     }
     g.setColour (ink);
-    g.strokePath (p, juce::PathStrokeType (lw));
-    g.fillEllipse (r.getX() - lw, r.getCentreY() - lw, lw * 2, lw * 2);
-    g.fillEllipse (r.getRight() - lw, r.getCentreY() - lw, lw * 2, lw * 2);
-    g.fillRoundedRectangle (r.getX() + r.getWidth() * 0.62f, r.getY() + r.getHeight() * 0.1f, lw * 2.0f, r.getHeight() * 0.25f, lw);
+    g.strokePath (p, juce::PathStrokeType (lw * (1.0f + 1.8f * material)));
+    g.fillEllipse (r.getX() - lw, cy - lw, lw * 2, lw * 2);
+    g.fillEllipse (r.getRight() - lw, cy - lw, lw * 2, lw * 2);
+    // pick (string) or mallet head (bar)
+    g.setColour (accent (0, s, ink));
+    const float hx = r.getX() + r.getWidth() * 0.62f;
+    if (material < 0.5f)
+        g.fillRoundedRectangle (hx, r.getY() + r.getHeight() * 0.06f, lw * 2.0f, r.getHeight() * 0.22f, lw);
+    else
+    {
+        g.drawLine (hx + lw, r.getY() + r.getHeight() * 0.02f, hx + lw, cy - lw * 3.0f, lw * 0.8f);
+        g.fillEllipse (hx - lw * 0.8f, cy - lw * 4.6f, lw * 3.6f, lw * 3.6f);
+    }
 }
 
 void grain (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juce::Colour ink, float lw)
@@ -153,17 +191,28 @@ void vocal (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, ju
 
 void cluster (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juce::Colour ink, float lw)
 {
-    for (int k = 0; k < 5; ++k)
+    // a stack of saw teeth: chord sets how many rows and how far apart, detune jitters them,
+    // spread fans them out sideways, tone fades the upper rows
+    const float detune = s.macro[0], spread = s.macro[1], tone = s.macro[2], chord = s.macro[3];
+    const int rows = 3 + (int) std::round (chord * 4.0f);
+    const float gap = r.getHeight() * (0.07f + 0.06f * chord);
+    for (int k = 0; k < rows; ++k)
     {
         juce::Path p;
-        const float y0 = r.getY() + r.getHeight() * (0.2f + 0.14f * (float) k);
-        for (int i = 0; i <= 5; ++i)
+        const float centred = (float) k - 0.5f * (float) (rows - 1);
+        const float y0 = r.getCentreY() + centred * gap;
+        const float fan = 1.0f + 0.25f * spread * std::abs (centred) / (float) rows;
+        const float jitter = std::sin (s.time * (1.0f + 0.7f * (float) k) + (float) k) * lw * (0.3f + 2.5f * detune);
+        const float w = r.getWidth() * 0.8f * fan;
+        const float x0 = r.getCentreX() - w * 0.5f + centred * spread * lw * 1.5f;
+        for (int i = 0; i < 5; ++i)
         {
-            const float x = r.getX() + r.getWidth() * (float) i / 5.0f + std::sin (s.time + (float) k) * lw;
-            p.startNewSubPath (x, y0 + r.getHeight() * 0.1f);
-            p.lineTo (x + r.getWidth() / 5.0f * 0.9f, y0);
+            const float x = x0 + w * (float) i / 5.0f + jitter;
+            p.startNewSubPath (x, y0 + gap * 0.7f);
+            p.lineTo (x + w / 5.0f * 0.92f, y0);
         }
-        g.setColour (ink.withAlpha (1.0f - 0.15f * (float) k));
+        const float alpha = 1.0f - (1.0f - tone) * 0.7f * (float) k / (float) rows;
+        g.setColour ((k == rows / 2 ? accent (3, s, ink) : ink).withAlpha (alpha));
         g.strokePath (p, juce::PathStrokeType (lw * 0.6f));
     }
 }

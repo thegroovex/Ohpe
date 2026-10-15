@@ -45,5 +45,10 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     }
 
     // ---- append new parameters below this line (phase 2+), never above ------------------
+
+    // ---- 0.2.0: part 1 engines Wavetable, Pluck, Cluster --------------------------------
+    parts[0]->registerEngineParams (reg, EngineType::Wavetable);
+    parts[0]->registerEngineParams (reg, EngineType::Pluck);
+    parts[0]->registerEngineParams (reg, EngineType::Cluster);
 }
 } // namespace ohpe
