@@ -30,6 +30,8 @@ public:
     void registerCommonParams (ParamRegistry& reg) const;
     /** Registers the parameters of one engine type (no-op for unimplemented types). */
     void registerEngineParams (ParamRegistry& reg, EngineType type) const;
+    /** 0.4: registers the engine's late parameters (ISynthEngine::firstLateParam() onwards). */
+    void registerLateEngineParams (ParamRegistry& reg, EngineType type) const;
     /** Resolves parameter indices; call after the registry is frozen. */
     void bind (const ParamRegistry& reg);
 

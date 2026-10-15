@@ -886,3 +886,12 @@ tape.edit.splice
 tape.edit.undo
 tape.edit.redo
 tape.edit.rtz
+p1.sampler.inst
+p1.grain.inst
+p2.sampler.inst
+p2.grain.inst
+p3.sampler.inst
+p3.grain.inst
+p4.sampler.inst
+p4.grain.inst
+drum.kit

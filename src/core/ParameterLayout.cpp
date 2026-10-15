@@ -157,5 +157,13 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
         add (toggle (Core::Ids::tapeRedo, "Tape Redo", "Tape Wiederholen", false));
         add (toggle (Core::Ids::tapeRtz, "Tape Return to Zero", "Tape zum Anfang", false));
     }
+
+    // ---- 0.4 (package F): factory instruments (Sampler, Grain) per part, factory drum kits --
+    for (auto& p : parts)
+    {
+        p->registerLateEngineParams (reg, EngineType::Sampler);
+        p->registerLateEngineParams (reg, EngineType::Grain);
+    }
+    drum::DrumKit::registerLateParams (reg);
 }
 } // namespace ohpe

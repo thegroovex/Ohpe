@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Part.h"
 
+#include <algorithm>
 #include <cstring>
 
 namespace ohpe
@@ -55,8 +56,28 @@ void Part::registerEngineParams (ParamRegistry& reg, EngineType type) const
         return;
     const std::string enginePrefix = idPrefix + engineTypeInfo (type).id + ".";
     const auto group = "part" + std::to_string (number) + "/" + engineTypeInfo (type).id;
-    for (auto d : eng->getParamDescriptors())
+    const auto list = eng->getParamDescriptors();
+    const int late = std::min ((int) list.size(), eng->firstLateParam());
+    for (int i = 0; i < late; ++i)
     {
+        auto d = list[(size_t) i];
+        d.id = enginePrefix + d.id;
+        d.group = group;
+        reg.add (std::move (d));
+    }
+}
+
+void Part::registerLateEngineParams (ParamRegistry& reg, EngineType type) const
+{
+    const auto& eng = engines[(size_t) type];
+    if (eng == nullptr)
+        return;
+    const std::string enginePrefix = idPrefix + engineTypeInfo (type).id + ".";
+    const auto group = "part" + std::to_string (number) + "/" + engineTypeInfo (type).id;
+    const auto list = eng->getParamDescriptors();
+    for (int i = std::min ((int) list.size(), eng->firstLateParam()); i < (int) list.size(); ++i)
+    {
+        auto d = list[(size_t) i];
         d.id = enginePrefix + d.id;
         d.group = group;
         reg.add (std::move (d));

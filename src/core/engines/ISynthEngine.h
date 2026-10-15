@@ -76,6 +76,14 @@ public:
     virtual EngineInfo info() const noexcept = 0;
     virtual std::vector<ParamDescriptor> getParamDescriptors() const = 0;
 
+    /**
+        0.4: index of the first descriptor that was added after the engine's parameters were
+        first registered. Those "late" parameters are registered in a later append-only block
+        (Part::registerLateEngineParams) so the global parameter order never changes. Default:
+        none.
+    */
+    virtual int firstLateParam() const noexcept { return 1 << 20; }
+
     virtual void prepare (double sampleRate, int maxBlockSize) = 0;
     virtual void reset() noexcept = 0;
 

@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "GrainEngine.h"
 
+#include "../sample/FactoryBank.h"
+
 #include <cmath>
 
 namespace ohpe
@@ -26,8 +28,10 @@ void Voice::start (int midiNote, float vel, bool legato, const VoiceCommon& c) n
         scanOffset = 0.0;
         untilNext = 0.0;
     }
-    source = shared->activeSource();
+    source = shared->activeSource (sourceRoot);
 }
+
+const IAudioRegion* Shared::factorySource (int instrument, int& root) noexcept { return factory::grainSource (instrument, root); }
 
 void Voice::kill() noexcept
 {
@@ -55,7 +59,7 @@ void Voice::spawn (const IAudioRegion& src, float pitch) noexcept
     const auto frames = (double) src.numFrames();
     if (frames < 4.0) return;
     const double srcRate = src.sampleRate();
-    const double ratio = std::pow (2.0, (double) (pitch - (float) rootNote + p.pitch) / 12.0) * srcRate / (double) sr;
+    const double ratio = std::pow (2.0, (double) (pitch - (float) sourceRoot + p.pitch) / 12.0) * srcRate / (double) sr;
     g->length = std::max (16, (int) (p.sizeMs * 0.001f * sr));
 
     double centre = (double) p.position * frames + scanOffset * srcRate;
@@ -75,12 +79,14 @@ void Voice::spawn (const IAudioRegion& src, float pitch) noexcept
 void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) noexcept
 {
     const Shared& p = *shared;
-    const IAudioRegion* src = p.activeSource();
+    int root = rootNote;
+    const IAudioRegion* src = p.activeSource (root);
     if (src != source)
     {
         for (auto& g : grains) g.active = false; // never read a replaced source
         source = src;
     }
+    sourceRoot = root;
 
     int done = 0;
     while (done < numSamples && isActive())
@@ -158,6 +164,7 @@ GrainEngine::GrainEngine()
     source.set (builtInTone);
     shared.sample = &source;
     shared.tapeRegion = &tapeRegion;
+    shared.userLoaded = &userLoaded;
     for (auto& v : voices) v.shared = &shared;
 }
 
@@ -175,6 +182,8 @@ std::vector<ParamDescriptor> GrainEngine::getParamDescriptors() const
     d.push_back (continuous ("scan", "Scan Speed", "Scan-Tempo", -2.0f, 2.0f, 0.1f));
     d.push_back (choice ("source", "Source", "Quelle", { "Sample", "Tape" }, { "Sample", "Tape" }, 0));
     d.push_back (continuous ("tone", "Tone", "Klang", 0.0f, 1.0f, 1.0f));
+    // 0.4 (late parameter, see firstLateParam())
+    d.push_back (choice ("inst", "Instrument", "Instrument", factory::instrumentNamesEn(), factory::instrumentNamesDe(), 0));
     return d;
 }
 
@@ -193,6 +202,7 @@ void GrainEngine::setParam (int i, float v) noexcept
         case Scan: shared.scan = std::clamp (v, -2.0f, 2.0f); break;
         case Source: shared.source = std::clamp ((int) v, 0, (int) SourceTape); break;
         case Tone: shared.tone = dsp::clamp01 (v); break;
+        case Instrument: shared.instrument = std::clamp ((int) std::lround (v), 0, factory::numInstruments - 1); break;
         default: break;
     }
 }
@@ -200,6 +210,7 @@ void GrainEngine::setParam (int i, float v) noexcept
 void GrainEngine::setSample (SamplePtr s)
 {
     userSample = s;
+    userLoaded.store (s != nullptr, std::memory_order_release);
     source.set (s != nullptr ? std::move (s) : builtInTone);
 }
 } // namespace ohpe

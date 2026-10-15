@@ -26,6 +26,7 @@ enum Param
 {
     Position = 0, Size, Density, Spray, // macros 1-4
     Pitch, ReverseProb, Spread, Scan, Source, Tone,
+    Instrument, // 0.4: factory instrument as source (late parameter)
     numParams
 };
 
@@ -41,14 +42,28 @@ struct Shared
     int source = SourceSample;
     const RtShared<SampleData>* sample = nullptr;
     const std::atomic<const IAudioRegion*>* tapeRegion = nullptr;
+    int instrument = 0;                        ///< 0.4: factory instrument (0 = built-in texture)
+    const std::atomic<bool>* userLoaded = nullptr; ///< 0.4: a user sample is loaded (it wins)
 
-    /** The region the voices read this block (tape region if selected and set, else the sample). */
-    const IAudioRegion* activeSource() const noexcept
+    /**
+        The region the voices read this block: the tape region if selected and set, else the user
+        sample, else the factory instrument (0.4) if chosen and loaded, else the built-in texture.
+        `root` receives the key that plays the region at its original pitch.
+    */
+    const IAudioRegion* activeSource (int& root) const noexcept
     {
+        root = rootNote;
         if (source == SourceTape && tapeRegion != nullptr)
             if (const auto* t = tapeRegion->load (std::memory_order_acquire)) return t;
+        if (instrument > 0 && (userLoaded == nullptr || ! userLoaded->load (std::memory_order_acquire)))
+        {
+            int r = rootNote;
+            if (const auto* f = factorySource (instrument, r)) { root = r; return f; }
+        }
         return sample != nullptr ? sample->get() : nullptr;
     }
+    const IAudioRegion* activeSource() const noexcept { int r; return activeSource (r); }
+    static const IAudioRegion* factorySource (int instrument, int& root) noexcept;
 };
 
 class Voice : public VoiceBase
@@ -75,6 +90,7 @@ private:
 
     std::array<Grain, (size_t) maxGrains> grains {};
     const IAudioRegion* source = nullptr;
+    int sourceRoot = rootNote;  ///< key that plays the source at its original pitch
     double scanOffset = 0.0;  ///< seconds the scan has moved the position
     double untilNext = 0.0;   ///< samples until the next grain
     dsp::Random rng;
@@ -88,6 +104,7 @@ public:
     GrainEngine();
     EngineInfo info() const noexcept override { return { "grain", "Grain", "Grain", "grain" }; }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
+    int firstLateParam() const noexcept override { return grain::Instrument; }
     void setParam (int localIndex, float value) noexcept override;
 
     /** Message thread: the sample to granulate (nullptr = built-in tone). */
@@ -109,5 +126,6 @@ private:
     RtShared<SampleData> source;
     SamplePtr builtInTone, userSample;
     std::atomic<const IAudioRegion*> tapeRegion { nullptr };
+    std::atomic<bool> userLoaded { false };
 };
 } // namespace ohpe

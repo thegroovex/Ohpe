@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "DrumKit.h"
 
+#include "../sample/FactoryBank.h"
+
 #include <cmath>
 #include <cstring>
 
@@ -108,11 +110,32 @@ void DrumKit::registerParams (ParamRegistry& reg)
     }
 }
 
+std::vector<ParamDescriptor> DrumKit::lateParamDescriptors()
+{
+    using namespace pd;
+    return { choice ("kit", "Drum Kit", "Drum-Kit", factory::kitNamesEn(), factory::kitNamesDe(), 0) };
+}
+
+void DrumKit::registerLateParams (ParamRegistry& reg)
+{
+    for (auto d : lateParamDescriptors())
+    {
+        d.id = std::string (prefix) + d.id;
+        d.group = "drum";
+        reg.add (std::move (d));
+    }
+}
+
 void DrumKit::bind (const ParamRegistry& reg)
 {
     paramIndex.clear();
     lastValue.clear();
     for (const auto& d : paramDescriptors())
+    {
+        paramIndex.push_back (reg.indexOf (std::string (prefix) + d.id));
+        lastValue.push_back (NAN);
+    }
+    for (const auto& d : lateParamDescriptors())
     {
         paramIndex.push_back (reg.indexOf (std::string (prefix) + d.id));
         lastValue.push_back (NAN);
@@ -135,6 +158,7 @@ void DrumKit::setParam (int i, float v) noexcept
 {
     if (i == 0) { volume = dsp::clamp01 (v); return; }
     if (i == 1) { base = std::clamp ((int) std::lround (v), 0, 127); return; }
+    if (i == kitParamIndex) { kit.store (std::clamp ((int) std::lround (v), 0, factory::numKits - 1), std::memory_order_relaxed); return; }
     const int p = (i - 2) / numPadParams;
     if (p < 0 || p >= numPads) return;
     auto& s = pads[(size_t) p];
@@ -199,7 +223,7 @@ void DrumKit::triggerPad (int p, float velocity) noexcept
             for (auto& v : voices)
                 if (target == nullptr || v.startOrder() < target->startOrder()) target = &v;
     }
-    target->trigger (p, s, velocity, samples[(size_t) p].get(), ++counter);
+    target->trigger (p, s, velocity, padSampleRt (p), ++counter);
 }
 
 void DrumKit::allNotesOff (bool hard) noexcept
@@ -217,7 +241,7 @@ void DrumKit::render (float* l, float* r, int numSamples) noexcept
     std::memset (r, 0, sizeof (float) * (size_t) numSamples);
     for (auto& v : voices)
         if (v.isActive())
-            v.render (l, r, numSamples, v.padIndex() >= 0 ? samples[(size_t) v.padIndex()].get() : nullptr);
+            v.render (l, r, numSamples, v.padIndex() >= 0 ? padSampleRt (v.padIndex()) : nullptr);
     for (int i = 0; i < numSamples; ++i) { l[i] *= volume; r[i] *= volume; }
 }
 
@@ -235,9 +259,19 @@ bool DrumKit::isPadSounding (int p) const noexcept
     return false;
 }
 
+const SampleData* DrumKit::padSampleRt (int p) const noexcept
+{
+    // 0.4: the selected factory kit, unless the user loaded a sample onto the pad
+    const int k0 = kit.load (std::memory_order_relaxed);
+    if (k0 > 0 && ! userSet[(size_t) p].load (std::memory_order_acquire))
+        if (const auto* k = factory::kitSample (k0, p)) return k;
+    return samples[(size_t) p].get();
+}
+
 void DrumKit::publish (int p)
 {
     const auto& u = userSamples[(size_t) p];
+    userSet[(size_t) p].store (u != nullptr, std::memory_order_release);
     samples[(size_t) p].set (u != nullptr ? u : factorySamples[(size_t) p]);
 }
 
@@ -259,5 +293,12 @@ void DrumKit::setFactorySample (int p, SamplePtr s)
 
 SamplePtr DrumKit::factorySample (int p) const { return p >= 0 && p < numPads ? factorySamples[(size_t) p] : nullptr; }
 
-SamplePtr DrumKit::effectiveSample (int p) const { return p >= 0 && p < numPads ? samples[(size_t) p].owner() : nullptr; }
+SamplePtr DrumKit::effectiveSample (int p) const
+{
+    if (p < 0 || p >= numPads) return nullptr;
+    const int k0 = kit.load (std::memory_order_relaxed);
+    if (k0 > 0 && userSamples[(size_t) p] == nullptr)
+        if (auto k = factory::kitSampleOwner (k0, p)) return k;
+    return samples[(size_t) p].owner();
+}
 } // namespace ohpe::drum

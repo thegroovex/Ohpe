@@ -56,3 +56,6 @@ target_sources(ohpe_core PRIVATE
 target_sources(ohpe_core PRIVATE
     preset/Preset.cpp
     preset/PresetLibrary.cpp)
+
+# 0.4 (package F): factory sample bank (instruments, drum kits)
+target_sources(ohpe_core PRIVATE sample/FactoryBank.cpp)
