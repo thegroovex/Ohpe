@@ -303,8 +303,9 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
             // the whole voice of the part: engine, envelopes, LFO and pitch
             const auto ids = modeParams (Mode::Synth, core, ctx);
             ParamGroup macros { "Macros", 0, {} }, engine { "Engine", 0, {} };
-            for (size_t i = 0; i < ids.size(); ++i) (i < 4 ? macros : engine).ids.push_back (ids[i]);
-            groups.push_back (macros);
+            for (size_t i = 0; i < ids.size(); ++i)
+                if (! ids[i].empty()) (i < 4 ? macros : engine).ids.push_back (ids[i]);
+            if (! macros.ids.empty()) groups.push_back (macros);
             if (! engine.ids.empty()) groups.push_back (engine);
             addPages (Mode::Envelope, ctx);
             addPages (Mode::Lfo, ctx);

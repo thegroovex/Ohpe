@@ -351,11 +351,12 @@ void LibraryBrowser::paint (juce::Graphics& g)
         g.setColour (colour::displayDim);
         g.setFont (labelFont (u * 1.3f));
         g.drawText (i18n::upper (tr ("Tags")), juce::Rectangle<float> (r.getX(), r.getY() + u * 10.6f, r.getWidth(), u * 2.0f), juce::Justification::centredLeft, true);
-        const float tw = (r.getWidth() - u * 0.6f) / 2.0f, th = u * 2.6f;
+        // three columns, so every category tag fits above the part / project switch
+        const float tw = (r.getWidth() - u * 1.0f) / 3.0f, th = u * 2.6f;
         for (size_t i = 0; i < cats.size(); ++i)
         {
             const auto key = juce::String (cats[i].key);
-            chip (g, { r.getX() + (tw + u * 0.6f) * (float) (i % 2), r.getY() + u * 12.8f + (th + u * 0.4f) * (float) (i / 2), tw, th },
+            chip (g, { r.getX() + (tw + u * 0.5f) * (float) (i % 3), r.getY() + u * 12.8f + (th + u * 0.4f) * (float) (i / 3), tw, th },
                   categoryLabel (cats[i]), saveTags.contains (key), colour::encoder ((int) i), [this, key] {
                       if (saveTags.contains (key)) saveTags.removeString (key);
                       else saveTags.add (key);
