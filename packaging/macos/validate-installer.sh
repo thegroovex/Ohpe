@@ -97,11 +97,20 @@ check_payload "$COMP/ohpe-vst3.pkg" "./Library/Audio/Plug-Ins/VST3/Ohpe.vst3"
 check_payload "$COMP/ohpe-au.pkg"   "./Library/Audio/Plug-Ins/Components/Ohpe.component"
 
 step "choices"
-installer -showChoicesXML -pkg "$PKG" > "$TMP/choices.xml"
-for c in app vst3 au; do
-    grep -q "<string>$c</string>" "$TMP/choices.xml" || fail "choice '$c' missing"
-done
-pass "choices app, vst3, au selectable"
+if installer -showChoicesXML -pkg "$PKG" -target / > "$TMP/choices.xml" 2> "$TMP/choices.err"; then
+    for c in app vst3 au; do
+        grep -q "<string>$c</string>" "$TMP/choices.xml" || { cat "$TMP/choices.xml"; fail "choice '$c' missing"; }
+    done
+    pass "choices app, vst3, au selectable (installer -showChoicesXML)"
+else
+    # some installer versions refuse -showChoicesXML here; the Distribution file says the same,
+    # and the AU-only install below exercises the choices for real
+    echo "note: installer -showChoicesXML failed:"; cat "$TMP/choices.err" "$TMP/choices.xml"
+    for c in app vst3 au; do
+        grep -q "<choice id=\"$c\"" "$TMP/expanded/Distribution" || fail "choice '$c' missing in Distribution"
+    done
+    pass "choices app, vst3, au present in Distribution"
+fi
 
 # ------------------------------------------------------------------ DMG
 step "disk image"
