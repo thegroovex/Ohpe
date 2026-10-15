@@ -37,7 +37,14 @@ float renderNote (OhpeProcessor& p, int blocks, int busForPeak, bool sendNote = 
     return peak;
 }
 
-void pump() { juce::MessageManager::getInstance()->runDispatchLoopUntil (120); }
+/** Runs the message loop until done() holds (at most about two seconds): the processor's 20 Hz
+    timer can be late on a busy CI machine. */
+template <typename Done>
+void pumpUntil (Done done)
+{
+    for (int i = 0; i < 100 && ! done(); ++i)
+        juce::MessageManager::getInstance()->runDispatchLoopUntil (20);
+}
 } // namespace
 
 TEST_CASE ("processor: buses are main + 8 aux stereo outputs, MIDI in, one audio input (off by default)")
@@ -147,7 +154,7 @@ TEST_CASE ("processor: MIDI learn bridge and host notification")
     juce::MidiBuffer midi;
     midi.addEvent (juce::MidiMessage::controllerEvent (2, 21, 10), 0);
     p.processBlock (buffer, midi);
-    pump(); // timer stores the learned control
+    pumpUntil ([&] { return p.core().midiMap().isMapped ("p1.analog.reso"); }); // timer stores the learned control
     CHECK (p.core().midiMap().isMapped ("p1.analog.reso"));
     CHECK (p.describeMidiMapping ("p1.analog.reso") == "CC 21 / Ch 2");
     CHECK (p.learningParamId().isEmpty());
