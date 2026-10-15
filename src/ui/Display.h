@@ -3,49 +3,117 @@
 #pragma once
 
 #include "Pages.h"
+#include "Widgets.h"
 #include "plugin/PluginProcessor.h"
 
+#include <array>
 #include <functional>
 
 namespace ohpe::ui
 {
 /**
     The central display: mode header, the animated pictogram character of the current engine /
-    mode, the four encoder values in their colours and a context strip (voices, steps, mixer).
+    mode, the four encoder rows in their colours and a context strip (voices, steps, mixer,
+    tape tracks, drum pads) with soft keys.
+
+    0.3: the parameter bars are controls themselves - drag a bar (right / up = more; Shift, Cmd
+    or Ctrl = fine), click on a bar to jump, double-click to reset, right-click for MIDI learn.
 */
 class Display : public juce::Component
 {
 public:
     explicit Display (OhpeProcessor& p);
 
-    void setMode (Mode m, int page, int numPagesInMode, const std::vector<juce::String>& encoderIds);
-    void setMixerChannel (int ch) { mixerChannel = ch; repaint(); }
+    struct SoftKey
+    {
+        int id = 0;
+        juce::String label; ///< translated
+        bool enabled = true;
+        bool active = false;
+    };
+
+    void setMode (Mode m, int page, int numPagesInMode, const std::vector<juce::String>& encoderIds, const juce::String& pageTitle = {});
+    void setVirtuals (const std::array<VirtualPtr, 4>& v) { virtuals = v; repaint(); }
+    void setContext (const PageContext& c) { ctx = c; repaint(); }
+    void setMixerChannel (int ch) { ctx.mixerChannel = ch; repaint(); }
     void setStepPage (int p) { stepPage = p; repaint(); }
+    void setLockStep (int step) { lockStep = step; repaint(); } ///< -1 = no step selected
+    void setSoftKeys (std::vector<SoftKey> keys) { softKeys = std::move (keys); repaint(); }
+    void setStatus (const juce::String& text) { status = text; repaint(); }
+    void flash (const juce::String& message); ///< short message on the hint line
     void tick (float seconds); ///< advances the animation (called by the editor's timer)
 
     std::function<void (int delta)> onPageChange;
-    std::function<void (int step)> onStepClicked;
+    std::function<void (int step)> onStepClicked;   ///< toggle
+    std::function<void (int step)> onStepSelected;  ///< Shift-click / right-click: edit + lock
     std::function<void (int page)> onStepPageClicked;
     std::function<void (int channel)> onChannelClicked;
+    std::function<void (SeqView view)> onSeqViewClicked;
+    std::function<void (int track)> onTrackClicked;
+    std::function<void (int pad)> onPadClicked;
+    std::function<void (int id)> onSoftKey;
+    std::function<void()> onLockBadgeClicked;
 
     void paint (juce::Graphics& g) override;
     void mouseDown (const juce::MouseEvent& e) override;
+    void mouseDrag (const juce::MouseEvent& e) override;
+    void mouseUp (const juce::MouseEvent& e) override;
+    void mouseDoubleClick (const juce::MouseEvent& e) override;
+
+    // layout (also used by tests)
+    juce::Rectangle<float> rowArea (int i) const;
+    juce::Rectangle<float> barArea (int i) const;
+    juce::Rectangle<float> stepCell (int i) const;
+    juce::Rectangle<float> softKeyArea (int index) const;
+    juce::Rectangle<float> padCell (int pad) const;
+    juce::Rectangle<float> trackLane (int track) const;
+    juce::Rectangle<float> seqTab (int view) const;
 
 private:
     juce::Rectangle<float> headerArea() const;
     juce::Rectangle<float> stripArea() const;
-    juce::Rectangle<float> stepCell (int i) const;
+    juce::Rectangle<float> midArea() const;
+    juce::Rectangle<float> rowsArea() const;
+    juce::Rectangle<float> captionArea() const;
     juce::Rectangle<float> stepPageTab (int i) const;
     juce::Rectangle<float> channelCell (int i) const;
     juce::Rectangle<float> pageArrow (bool right) const;
+    juce::Rectangle<float> softKeyRow() const;
+    bool hasSoftKeys() const noexcept { return ! softKeys.empty(); }
 
-    void paintRows (juce::Graphics& g, juce::Rectangle<float> area);
+    void paintRows (juce::Graphics& g);
     void paintStrip (juce::Graphics& g, juce::Rectangle<float> area);
+    void paintStepStrip (juce::Graphics& g, juce::Rectangle<float> area);
+    void paintSeqViewStrip (juce::Graphics& g, juce::Rectangle<float> area);
+    void paintTapeStrip (juce::Graphics& g, juce::Rectangle<float> area);
+    void paintDrumStrip (juce::Graphics& g, juce::Rectangle<float> area);
+    void paintSoftKeys (juce::Graphics& g);
+    void paintHint (juce::Graphics& g, juce::Rectangle<float> area, const juce::String& text);
+    void updateTapeOverview();
+
+    int rowAt (juce::Point<float> p) const;
+    float rowValue (int row) const;
+    void setRowValue (int row, float norm);
+    void resetRow (int row);
 
     OhpeProcessor& proc;
     Mode mode = Mode::Synth;
-    int page = 0, pages = 1, mixerChannel = 0, stepPage = 0;
+    PageContext ctx;
+    int page = 0, pages = 1, stepPage = 0, lockStep = -1;
     std::vector<juce::String> ids;
+    std::array<VirtualPtr, 4> virtuals {};
+    juce::String pageTitle, status, flashText;
+    float flashTime = 0.0f;
+    std::vector<SoftKey> softKeys;
     float time = 0.0f, energy = 0.0f;
+
+    int dragRow = -1;
+    BarDrag drag;
+
+    // tape overview (peaks per track over the used length), refreshed about twice a second
+    static constexpr int overviewPoints = 96;
+    std::array<std::array<float, overviewPoints>, TapeMachine::numTracks> overview {};
+    int64_t overviewFrames = 0;
+    float overviewAge = 1.0e9f;
 };
 } // namespace ohpe::ui

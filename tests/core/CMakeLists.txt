@@ -35,3 +35,5 @@ target_link_libraries(ohpe_param_dump PRIVATE ohpe_core)
 target_sources(ohpe_core_tests PRIVATE TapeTests.cpp FxTests.cpp AllocationTests.cpp)
 # 0.2 (package D): sequencers, scale / chord, timing, MIDI clock, MPE, parts
 target_sources(ohpe_core_tests PRIVATE SeqMidiTests.cpp)
+# 0.3 (package E): presets and the library
+target_sources(ohpe_core_tests PRIVATE PresetTests.cpp)

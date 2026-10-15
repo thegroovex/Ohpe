@@ -1,8 +1,9 @@
 name: CI
 
-# Every push and pull request: Linux build with all tests and pluginval.
-# Manual run (Actions -> CI -> Run workflow): additionally macOS universal (app, AU, VST3)
-# and Windows (app, VST3), with their artefacts attached to the run.
+# Every push to main: Linux build with all tests and pluginval.
+# Every pull request and every manual run (Actions -> CI -> Run workflow): additionally macOS
+# universal (app, AU incl. auval -strict, VST3) and Windows (app, VST3), with their artefacts
+# attached to the run - so a pull request is checked on all three platforms before it is merged.
 
 on:
   push:
@@ -50,7 +51,7 @@ jobs:
 
   macos:
     name: macOS universal (app, AU, VST3)
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request'
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
@@ -102,7 +103,7 @@ jobs:
 
   windows:
     name: Windows (app, VST3)
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request'
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4

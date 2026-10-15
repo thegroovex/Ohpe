@@ -142,6 +142,19 @@ public:
         static constexpr const char* notesOut = "sync.notesout";
         static constexpr const char* keyRoot = "key.root";
         static constexpr const char* keyScale = "key.scale";
+        // 0.3 (package E): remote controls (MIDI-mappable UI functions, see docs/en/PRESETS.md)
+        static constexpr const char* libOpen = "lib.open";
+        static constexpr const char* libPrev = "lib.prev";
+        static constexpr const char* libNext = "lib.next";
+        static constexpr const char* editPart = "ui.part";
+        static constexpr const char* tapeEditTrack = "tape.edit.track";
+        static constexpr const char* tapeLift = "tape.edit.lift";
+        static constexpr const char* tapeCut = "tape.edit.cut";
+        static constexpr const char* tapeDrop = "tape.edit.drop";
+        static constexpr const char* tapeSplice = "tape.edit.splice";
+        static constexpr const char* tapeUndo = "tape.edit.undo";
+        static constexpr const char* tapeRedo = "tape.edit.redo";
+        static constexpr const char* tapeRtz = "tape.edit.rtz";
     };
 
 private:

@@ -26,9 +26,12 @@ Nützliche Variablen: `OHPE_JUCE_PATH` (lokales JUCE 8.0.15), `OHPE_CMAKE_ARGS="
 (viel schnelleres Linken lokal), `OHPE_CORE_ONLY=1` (nur Kern-Tests). Unter Linux ohne Bildschirm
 laufen die GUI-Schritte automatisch mit `xvfb-run`.
 
-Nie einen roten Build pushen. Die CI führt bei jedem Push dasselbe Skript unter Linux aus; ein
-manueller Lauf des CI-Workflows baut zusätzlich macOS Universal (App, AU inkl. `auval`, VST3)
-und Windows.
+Nie einen roten Build pushen. Die CI führt bei jedem Push auf main dasselbe Skript unter Linux
+aus; jeder Pull Request (und ein manueller Lauf des CI-Workflows) baut und testet zusätzlich macOS
+Universal (App, AU inkl. `auval -strict`, VST3) und Windows. Erst mergen, wenn alle drei grün sind.
+
+Werks-Presets sind `*.ohpepreset`-Dateien in `resources/presets/factory/` (werden beim Bauen
+eingebettet); das Format steht in [PRESETS.md](PRESETS.md).
 
 ## Regeln
 

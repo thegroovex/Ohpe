@@ -1,0 +1,20 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Nylon Pluck",
+  "author": "groovex",
+  "tags": [
+    "Plucks"
+  ],
+  "engine": "pluck",
+  "comment": "Placeholder for testing the library; the real factory sounds follow in a later version.",
+  "params": {
+    "engine": 3,
+    "pluck.material": 0.0,
+    "pluck.damping": 0.45,
+    "pluck.bright": 0.5,
+    "pluck.body": 0.55,
+    "amp.r": 0.5
+  }
+}

@@ -1,0 +1,295 @@
+// Ohpe - designed by groovex
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// 0.3 (package E): preset format, part / project round-trip, library filtering.
+#include "OhpeCore.h"
+#include "model/StateSerializer.h"
+#include "preset/Preset.h"
+#include "preset/PresetLibrary.h"
+
+#include <doctest/doctest.h>
+
+#include <algorithm>
+#include <cmath>
+
+using namespace ohpe;
+
+namespace
+{
+std::vector<std::string> allIds (const ParamRegistry& reg)
+{
+    std::vector<std::string> ids;
+    for (int i = 0; i < reg.size(); ++i) ids.push_back (reg.descriptor (i).id);
+    return ids;
+}
+
+void scramble (ParamRegistry& reg, const std::string& prefix, float norm)
+{
+    for (int i = 0; i < reg.size(); ++i)
+        if (reg.descriptor (i).id.compare (0, prefix.size(), prefix) == 0) reg.setNormalised (i, norm);
+}
+
+preset::Entry entry (const std::string& name, std::vector<std::string> tags, const std::string& engine, bool factory, int rating = 0,
+                     bool fav = false, int64_t modified = 0)
+{
+    preset::Entry e;
+    e.uid = (factory ? "factory:" : "user:") + name;
+    e.meta.name = name;
+    e.meta.tags = std::move (tags);
+    e.meta.engine = engine;
+    e.factory = factory;
+    e.rating = rating;
+    e.favourite = fav;
+    e.modified = modified;
+    return e;
+}
+} // namespace
+
+TEST_CASE ("preset: part preset round-trip (save -> JSON -> load into another part)")
+{
+    Core a;
+    auto& reg = a.params();
+    reg.set ("p1.engine", (float) EngineType::FM);
+    scramble (reg, "p1.", 0.73f);
+    reg.set ("p1.engine", (float) EngineType::FM);
+    preset::Meta meta;
+    meta.name = "Glas Tasten";
+    meta.author = "groovex";
+    meta.tags = { "Keys", "bright" };
+    const auto p = preset::capturePart (reg, 0, meta);
+    CHECK (p.meta.engine == "fm");
+    CHECK (p.params.count ("engine") == 1);
+    CHECK (p.params.count ("p1.engine") == 0); // local IDs
+    const auto json = preset::toJson (p);
+
+    preset::Preset back;
+    std::string err;
+    REQUIRE (preset::fromJson (json, back, &err));
+    CHECK (back.meta.name == "Glas Tasten");
+    CHECK (back.meta.author == "groovex");
+    CHECK (back.meta.tags == std::vector<std::string> { "Keys", "bright" });
+    CHECK (back.meta.kind == preset::Kind::Part);
+    CHECK (back.meta.version == preset::formatVersion);
+
+    Core b;
+    const int ch3 = (int) b.params().get ("p3.midich");
+    const auto r = preset::applyPart (back, b.params(), 2);
+    REQUIRE (r.ok);
+    int fxOnlyInPart1 = 0; // the FX slot exists for part 1 only (0.2): those IDs are unknown in part 3
+    for (int i = 0; i < reg.size(); ++i)
+        if (reg.descriptor (i).id.rfind ("p1.fx.", 0) == 0) ++fxOnlyInPart1;
+    CHECK (r.unknown == fxOnlyInPart1);
+    for (int i = 0; i < reg.size(); ++i)
+    {
+        const auto& id = reg.descriptor (i).id;
+        if (id.rfind ("p1.", 0) != 0 || id == "p1.midich" || b.params().indexOf ("p3." + id.substr (3)) < 0) continue;
+        CAPTURE (id);
+        CHECK (b.params().get ("p3." + id.substr (3)) == doctest::Approx (reg.get (i)));
+    }
+    CHECK ((int) b.params().get ("p3.midich") == ch3); // setup value stays
+    // the other parts are untouched
+    CHECK (b.params().get ("p1.analog.cutoff") == b.params().descriptor (b.params().indexOf ("p1.analog.cutoff")).defaultValue);
+}
+
+TEST_CASE ("preset: sparse part presets reset the rest of the part to defaults")
+{
+    Core c;
+    auto& reg = c.params();
+    scramble (reg, "p2.", 0.9f);
+    preset::Preset p;
+    p.meta.name = "Sparse";
+    p.params["engine"] = (float) EngineType::Analog;
+    p.params["analog.cutoff"] = 800.0f;
+    p.params["does.not.exist"] = 1.0f;
+    const auto r = preset::applyPart (p, reg, 1);
+    CHECK (r.ok);
+    CHECK (r.applied == 2);
+    CHECK (r.unknown == 1);
+    CHECK (reg.get ("p2.analog.cutoff") == doctest::Approx (800.0f));
+    const int i = reg.indexOf ("p2.analog.reso");
+    CHECK (reg.get (i) == reg.descriptor (i).defaultValue);
+}
+
+TEST_CASE ("preset: version-1 presets (state::savePreset) load as part presets")
+{
+    Core a;
+    a.params().set ("p1.engine", (float) EngineType::Wavetable);
+    a.params().set ("p1.wavetable.pos", 0.8f);
+    const auto v1 = state::savePreset (a.params(), "p1.", "Old");
+    preset::Preset p;
+    REQUIRE (preset::fromJson (v1, p));
+    CHECK (p.meta.version == 1);
+    CHECK (p.meta.kind == preset::Kind::Part);
+    CHECK (p.meta.engine == "wavetable");
+    CHECK (p.meta.name == "Old");
+    Core b;
+    REQUIRE (preset::applyPart (p, b.params(), 0).ok);
+    CHECK (b.params().get ("p1.wavetable.pos") == doctest::Approx (0.8f));
+}
+
+TEST_CASE ("preset: project preset round-trip with patterns; MIDI map, remote and sync stay")
+{
+    Core a;
+    auto& reg = a.params();
+    for (int i = 0; i < reg.size(); ++i)
+        reg.setNormalised (i, reg.descriptor (i).toNormalised (reg.descriptor (i).defaultValue) > 0.5f ? 0.25f : 0.75f);
+    StepSequencer::Step s;
+    s.on = true;
+    s.note = 52;
+    s.locks[0] = { reg.indexOf ("p1.analog.cutoff"), 0.3f };
+    a.stepSequencer().setStep (5, s);
+    preset::Meta meta;
+    meta.name = "Song";
+    meta.tags = { "Arp" };
+    const auto json = preset::toJson (preset::captureProject (a, meta, { { "samples", "{\"x\":1}" } }));
+
+    Core b;
+    MidiMapping m;
+    m.paramId = "tempo";
+    m.number = 20;
+    b.midiMap().add (m);
+    b.params().set ("sync.src", 1.0f);
+    b.params().set ("ui.part", 3.0f);
+    preset::Preset p;
+    REQUIRE (preset::fromJson (json, p));
+    CHECK (p.meta.kind == preset::Kind::Project);
+    REQUIRE (preset::applyProject (p, b).ok);
+    for (int i = 0; i < reg.size(); ++i)
+    {
+        const auto& id = reg.descriptor (i).id;
+        if (preset::isExcludedFromProject (id)) continue;
+        CAPTURE (id);
+        CHECK (b.params().get (i) == doctest::Approx (reg.get (i)));
+    }
+    CHECK (b.params().get ("sync.src") == 1.0f);
+    CHECK (b.params().get ("ui.part") == 3.0f);
+    CHECK (b.midiMap().mappings().size() == 1);
+    const auto got = b.stepSequencer().getStep (5);
+    CHECK (got.on);
+    CHECK (got.note == 52);
+    CHECK (got.locks[0].paramIndex == reg.indexOf ("p1.analog.cutoff"));
+    CHECK (got.locks[0].normValue == doctest::Approx (0.3f));
+    CHECK (b.stateSection ("samples").find ("\"x\"") != std::string::npos);
+    // a part preset is refused by applyProject and vice versa
+    preset::Preset part;
+    CHECK_FALSE (preset::applyProject (part, b).ok);
+    CHECK_FALSE (preset::applyPart (p, b.params(), 0).ok);
+}
+
+TEST_CASE ("preset: loading presets never alters the parameter IDs")
+{
+    Core c;
+    const auto before = allIds (c.params());
+    preset::Preset p;
+    p.params["engine"] = 3.0f;
+    p.params["brand.new.param"] = 0.5f;
+    preset::applyPart (p, c.params(), 0);
+    preset::Preset q;
+    q.meta.kind = preset::Kind::Project;
+    q.params["p9.unknown"] = 1.0f;
+    preset::applyProject (q, c);
+    CHECK (allIds (c.params()) == before);
+    CHECK (c.params().indexOf ("brand.new.param") < 0);
+    // remote controls exist and are excluded from project presets
+    for (const char* id : { "lib.open", "lib.prev", "lib.next", "ui.part", "tape.edit.track", "tape.edit.lift", "tape.edit.cut",
+                            "tape.edit.drop", "tape.edit.splice", "tape.edit.undo", "tape.edit.redo", "tape.edit.rtz" })
+    {
+        CAPTURE (id);
+        CHECK (c.params().indexOf (id) >= 0);
+        CHECK (preset::isExcludedFromProject (id));
+    }
+}
+
+TEST_CASE ("preset: malformed documents are rejected")
+{
+    preset::Preset p;
+    std::string err;
+    CHECK_FALSE (preset::fromJson ("not json", p, &err));
+    CHECK_FALSE (preset::fromJson ("{\"format\":\"ohpe-state\"}", p, &err));
+    CHECK_FALSE (preset::fromJson ("[1,2]", p, &err));
+    CHECK (preset::fromJson ("{\"format\":\"ohpe-preset\",\"tags\":[1,\"Bass\",\"\"],\"params\":{\"a\":\"x\",\"b\":2}}", p, &err));
+    CHECK (p.meta.tags == std::vector<std::string> { "Bass" });
+    CHECK (p.params.size() == 1);
+}
+
+TEST_CASE ("preset library: tag, engine, bank, favourite, rating and text filters")
+{
+    std::vector<preset::Entry> e;
+    e.push_back (entry ("Deep Bass", { "Bass" }, "analog", true, 3));
+    e.push_back (entry ("Glass Keys", { "Keys", "Plucks" }, "fm", true, 5, true));
+    e.push_back (entry ("Slow Pad", { "Pads", "Textures" }, "wavetable", false, 0, false, 200));
+    e.push_back (entry ("Choir", { "Vocal", "Pads" }, "vocal", false, 4, true, 100));
+    e[3].meta.author = "Lieke";
+
+    auto names = [&] (const preset::Filter& f) {
+        std::vector<std::string> r;
+        for (int i : preset::filterAndSort (e, f)) r.push_back (e[(size_t) i].meta.name);
+        return r;
+    };
+    preset::Filter f;
+    CHECK (names (f) == std::vector<std::string> { "Choir", "Deep Bass", "Glass Keys", "Slow Pad" });
+    f.tags = { "Pads" };
+    CHECK (names (f) == std::vector<std::string> { "Choir", "Slow Pad" });
+    f.tags = { "Bass", "Keys" }; // any of the selected tags
+    CHECK (names (f) == std::vector<std::string> { "Deep Bass", "Glass Keys" });
+    f.tags.clear();
+    f.engine = "fm";
+    CHECK (names (f) == std::vector<std::string> { "Glass Keys" });
+    f.engine.clear();
+    f.bank = preset::Bank::User;
+    CHECK (names (f) == std::vector<std::string> { "Choir", "Slow Pad" });
+    f.bank = preset::Bank::Factory;
+    CHECK (names (f) == std::vector<std::string> { "Deep Bass", "Glass Keys" });
+    f.bank = preset::Bank::All;
+    f.favouritesOnly = true;
+    CHECK (names (f) == std::vector<std::string> { "Choir", "Glass Keys" });
+    f.favouritesOnly = false;
+    f.minRating = 4;
+    CHECK (names (f) == std::vector<std::string> { "Choir", "Glass Keys" });
+    f.minRating = 0;
+    f.text = "PAD slow";
+    CHECK (names (f) == std::vector<std::string> { "Slow Pad" });
+    f.text = "lieke";
+    CHECK (names (f) == std::vector<std::string> { "Choir" });
+    f.text = "flächen"; // German category name
+    CHECK (names (f) == std::vector<std::string> { "Choir", "Slow Pad" });
+    f.text = "FLÄCHEN";
+    CHECK (names (f).size() == 2);
+    f.text = "zupfen"; // German engine name not present -> nothing
+    CHECK (names (f).empty());
+    f.text.clear();
+    f.sort = preset::Sort::Rating;
+    CHECK (names (f) == std::vector<std::string> { "Glass Keys", "Choir", "Deep Bass", "Slow Pad" });
+    f.sort = preset::Sort::Newest;
+    CHECK (names (f).front() == "Slow Pad");
+    f.sort = preset::Sort::Engine;
+    CHECK (names (f) == std::vector<std::string> { "Deep Bass", "Glass Keys", "Choir", "Slow Pad" });
+    CHECK (preset::usedTags (e) == std::vector<std::string> { "Bass", "Keys", "Pads", "Plucks", "Textures", "Vocal" });
+}
+
+TEST_CASE ("preset library: user data (favourites, ratings) round-trip")
+{
+    preset::UserData d;
+    d.author = "groovex";
+    d.set ("factory:a", true, 3);
+    d.set ("user:b.ohpepreset", false, 9); // clamped
+    d.set ("user:c", false, 0);            // nothing to keep
+    preset::UserData back;
+    REQUIRE (back.fromJson (d.toJson()));
+    CHECK (back.author == "groovex");
+    CHECK (back.items.size() == 2);
+    std::vector<preset::Entry> e { entry ("a", {}, "", true), entry ("b.ohpepreset", {}, "", false) };
+    back.applyTo (e);
+    CHECK (e[0].favourite);
+    CHECK (e[0].rating == 3);
+    CHECK_FALSE (e[1].favourite);
+    CHECK (e[1].rating == 5);
+    CHECK_FALSE (back.fromJson ("{}"));
+}
+
+TEST_CASE ("preset: safe file names")
+{
+    CHECK (preset::safeFileName ("Bass/Lead: 1?") == "Bass_Lead_ 1_");
+    CHECK (preset::safeFileName ("  ..  ") == "Preset");
+    CHECK (preset::safeFileName ("Flächen") == "Flächen");
+    CHECK (preset::safeFileName (std::string (100, 'a')).size() == 80);
+}

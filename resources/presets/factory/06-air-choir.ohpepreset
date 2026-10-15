@@ -1,0 +1,23 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Air Choir",
+  "author": "groovex",
+  "tags": [
+    "Vocal",
+    "Pads"
+  ],
+  "engine": "vocal",
+  "comment": "Placeholder for testing the library; the real factory sounds follow in a later version.",
+  "params": {
+    "engine": 5,
+    "vocal.vowel": 1.5,
+    "vocal.formant": -2,
+    "vocal.breath": 0.35,
+    "vocal.tension": 0.4,
+    "amp.a": 0.6,
+    "amp.s": 0.9,
+    "amp.r": 1.8
+  }
+}

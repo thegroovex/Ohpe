@@ -138,5 +138,24 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
         for (auto type : { EngineType::Wavetable, EngineType::Pluck, EngineType::Cluster,
                            EngineType::Grain, EngineType::Vocal, EngineType::Sampler })
             parts[i]->registerEngineParams (reg, type);
+
+    // ---- 0.3 (package E): remote controls --------------------------------------------------
+    // Momentary triggers and selectors for UI functions, so every function can be MIDI-mapped:
+    // a trigger fires when its value rises to "on" (CC >= 64). Not part of presets.
+    {
+        auto add = [&] (ParamDescriptor d) { d.group = "remote"; reg.add (std::move (d)); };
+        add (toggle (Core::Ids::libOpen, "Library", "Bibliothek", false));
+        add (toggle (Core::Ids::libPrev, "Previous Preset", "Vorheriges Preset", false));
+        add (toggle (Core::Ids::libNext, "Next Preset", "Nächstes Preset", false));
+        add (integer (Core::Ids::editPart, "Edit Part", "Bearbeiteter Part", 1, Core::numParts, 1));
+        add (integer (Core::Ids::tapeEditTrack, "Tape Edit Track", "Tape-Bearbeitungsspur", 1, TapeMachine::numTracks, 1));
+        add (toggle (Core::Ids::tapeLift, "Tape Lift", "Tape Heben", false));
+        add (toggle (Core::Ids::tapeCut, "Tape Cut", "Tape Schneiden", false));
+        add (toggle (Core::Ids::tapeDrop, "Tape Drop", "Tape Einsetzen", false));
+        add (toggle (Core::Ids::tapeSplice, "Tape Splice", "Tape Einfügen", false));
+        add (toggle (Core::Ids::tapeUndo, "Tape Undo", "Tape Rückgängig", false));
+        add (toggle (Core::Ids::tapeRedo, "Tape Redo", "Tape Wiederholen", false));
+        add (toggle (Core::Ids::tapeRtz, "Tape Return to Zero", "Tape zum Anfang", false));
+    }
 }
 } // namespace ohpe

@@ -20,6 +20,17 @@ juce::AudioProcessor::BusesProperties OhpeProcessor::makeBuses()
     return b;
 }
 
+namespace
+{
+const char* const* triggerIds()
+{
+    static const char* const ids[] = { Core::Ids::libOpen, Core::Ids::libPrev, Core::Ids::libNext, Core::Ids::tapeLift,
+                                       Core::Ids::tapeCut, Core::Ids::tapeDrop, Core::Ids::tapeSplice, Core::Ids::tapeUndo,
+                                       Core::Ids::tapeRedo, Core::Ids::tapeRtz };
+    return ids;
+}
+} // namespace
+
 OhpeProcessor::OhpeProcessor()
     : AudioProcessor (makeBuses()),
       apvts (*this, nullptr, "OhpeParameters", createParameterLayout (ohpeCore.params()))
@@ -38,6 +49,14 @@ OhpeProcessor::OhpeProcessor()
     syncSourceParam = reg.indexOf (Core::Ids::syncSource);
     tempoParam = reg.indexOf (Core::Ids::tempo);
     uiState = juce::var (new juce::DynamicObject());
+    // 0.3: remote controls (order = triggerIds below)
+    for (int t = 0; t < numTriggers; ++t)
+    {
+        triggerParam[(size_t) t] = reg.indexOf (triggerIds()[t]);
+        triggerLast[(size_t) t] = 0.0f;
+        triggerPresses[(size_t) t].store (0);
+    }
+    presetManager = std::make_unique<PresetManager> (*this);
     startTimerHz (20);
 }
 
@@ -166,6 +185,9 @@ void OhpeProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBu
     while (ohpeCore.midiMapper().popChange (change))
         if (auto* p = parameter (change.paramIndex))
         {
+            if (change.normValue >= 0.5f) // 0.3: a MIDI press on a remote trigger
+                for (int t = 0; t < numTriggers; ++t)
+                    if (triggerParam[(size_t) t] == change.paramIndex) triggerPresses[(size_t) t].fetch_add (1);
             lastPushed[(size_t) change.paramIndex].store (reg.descriptor (change.paramIndex).fromNormalised (change.normValue), std::memory_order_relaxed);
             p->setValueNotifyingHost (change.normValue);
         }
@@ -208,6 +230,58 @@ void OhpeProcessor::timerCallback()
     if (ohpeCore.midiMapper().applyPendingLearns (ohpeCore.midiMap()))
         sendChangeMessage();
     samples.timerTick();
+    pollRemoteControls();
+}
+
+void OhpeProcessor::pollRemoteControls()
+{
+    const auto& reg = ohpeCore.params();
+    for (int t = 0; t < numTriggers; ++t)
+    {
+        const int idx = triggerParam[(size_t) t];
+        if (idx < 0) continue;
+        // host / UI value (not yet seen by an audio block when the host is stopped)
+        const float v = rawValues[(size_t) idx]->load (std::memory_order_relaxed);
+        int presses = triggerPresses[(size_t) t].exchange (0);
+        if (presses == 0 && v >= 0.5f && triggerLast[(size_t) t] < 0.5f) presses = 1; // rising edge
+        triggerLast[(size_t) t] = juce::jmax (v, reg.get (idx));
+        if (presses > 0) triggerLast[(size_t) t] = 1.0f;
+        for (int k = 0; k < juce::jmin (presses, 8); ++k)
+        {
+            const juce::String id (triggerIds()[t]);
+            if (id == Core::Ids::libOpen) libraryToggles.fetch_add (1);
+            else if (id == Core::Ids::libPrev) presetManager->step (-1);
+            else if (id == Core::Ids::libNext) presetManager->step (1);
+            else runTapeEdit (triggerIds()[t]);
+        }
+    }
+}
+
+bool OhpeProcessor::runTapeEdit (const char* triggerId)
+{
+    auto& reg = ohpeCore.params();
+    auto& tape = ohpeCore.tape();
+    const int track = juce::jlimit (0, TapeMachine::numTracks - 1, (int) std::lround (reg.get (Core::Ids::tapeEditTrack)) - 1);
+    const double in = reg.get ("tape.loopin"), out = reg.get ("tape.loopout");
+    const double at = tape.sampleRate() > 0.0 ? (double) tape.positionFrames() / tape.sampleRate() : 0.0;
+    const juce::String id (triggerId);
+    bool ok = false;
+    if (id == Core::Ids::tapeLift) ok = tape.lift (track, juce::jmin (in, out), juce::jmax (in, out));
+    else if (id == Core::Ids::tapeCut) ok = tape.cut (track, juce::jmin (in, out), juce::jmax (in, out));
+    else if (id == Core::Ids::tapeDrop) ok = tape.drop (track, at);
+    else if (id == Core::Ids::tapeSplice) ok = tape.splice (track, at);
+    else if (id == Core::Ids::tapeUndo) ok = tape.undo();
+    else if (id == Core::Ids::tapeRedo) ok = tape.redo();
+    else if (id == Core::Ids::tapeRtz) { tape.locate (0.0); ok = true; }
+    sendChangeMessage();
+    return ok;
+}
+
+void OhpeProcessor::editRegistry (const std::function<void (Core&)>& fn)
+{
+    pullHostParametersIntoRegistry();
+    fn (ohpeCore);
+    syncHostParametersFromRegistry();
 }
 
 void OhpeProcessor::armMidiLearn (const juce::String& paramId)

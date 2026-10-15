@@ -4,6 +4,8 @@
 
 #include "Palette.h"
 
+#include <cmath>
+
 namespace ohpe::ui
 {
 namespace
@@ -163,23 +165,50 @@ void pluck (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, ju
 
 void grain (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juce::Colour ink, float lw)
 {
-    juce::Random rnd (7);
-    for (int i = 0; i < 22; ++i)
+    // a cloud of grains: position moves the cloud through the sample, size = grain size,
+    // density = number of grains, spray scatters them
+    const float pos = s.macro[0], size = s.macro[1], density = s.macro[2], spray = s.macro[3];
+    const int count = s.large ? 8 + (int) (density * 40.0f) : 12;
+    const float cx = r.getX() + r.getWidth() * (0.15f + 0.7f * pos);
+    if (s.large)
     {
-        const float bx = rnd.nextFloat(), by = rnd.nextFloat(), sp = 0.2f + rnd.nextFloat();
-        const float x = std::fmod (bx + s.time * 0.05f * sp, 1.0f);
-        const float y = by + 0.05f * std::sin (s.time * sp * 3.0f + (float) i);
-        const float sz = lw * (1.0f + 2.0f * rnd.nextFloat());
-        g.setColour (ink.withAlpha (0.4f + 0.6f * rnd.nextFloat()));
-        g.fillEllipse (r.getX() + x * r.getWidth(), r.getY() + juce::jlimit (0.05f, 0.9f, y) * r.getHeight(), sz, sz);
+        // the "sample" as a faint baseline with the read window
+        g.setColour (ink.withAlpha (0.25f));
+        g.drawLine (r.getX(), r.getBottom() - lw, r.getRight(), r.getBottom() - lw, lw * 0.5f);
+        g.setColour (accent (0, s, ink));
+        g.fillRect (cx - lw, r.getBottom() - lw * 3.0f, lw * 2.0f, lw * 4.0f);
+    }
+    juce::Random rnd (7);
+    for (int i = 0; i < count; ++i)
+    {
+        const float bx = rnd.nextFloat() - 0.5f, by = rnd.nextFloat() - 0.5f, sp = 0.2f + rnd.nextFloat();
+        const float scatter = 0.12f + 0.75f * spray;
+        float x = cx + bx * r.getWidth() * scatter + std::sin (s.time * sp * 1.7f + (float) i) * lw * 2.0f;
+        float y = r.getCentreY() - r.getHeight() * 0.08f + by * r.getHeight() * (0.2f + 0.6f * spray)
+                  + 0.04f * r.getHeight() * std::sin (s.time * sp * 3.0f + (float) i);
+        if (! s.large) { x = r.getX() + (bx + 0.5f) * r.getWidth(); y = r.getY() + (by + 0.5f) * r.getHeight(); }
+        const float sz = lw * (s.large ? (0.8f + 3.2f * size) * (0.6f + 0.6f * rnd.nextFloat()) : 1.0f + 2.0f * rnd.nextFloat());
+        const float life = 0.5f + 0.5f * std::sin (s.time * (1.0f + 2.0f * density) * sp + (float) i * 1.3f);
+        g.setColour ((i % 5 == 0 ? accent (2, s, ink) : ink).withAlpha (s.large ? 0.25f + 0.75f * life : 0.4f + 0.6f * rnd.nextFloat()));
+        g.fillEllipse (x - sz * 0.5f, y - sz * 0.5f, sz, sz);
     }
 }
 
 void vocal (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juce::Colour ink, float lw)
 {
-    const float open = 0.15f + 0.35f * (0.5f + 0.5f * std::sin (s.time * 4.0f));
-    const auto c = r.getCentre();
-    const float w = r.getWidth() * 0.38f, h = r.getHeight() * open;
+    // a singing face: the vowel shapes the mouth (a e i o u), formant moves it up / down,
+    // breath blows little puffs, tension raises the brows
+    const float vowel = s.macro[0], formant = s.macro[1], breath = s.macro[2], tension = s.macro[3];
+    const auto c = r.getCentre().translated (0, (0.5f - formant) * r.getHeight() * 0.12f);
+    const float sing = s.large ? 0.75f + 0.25f * std::sin (s.time * 4.0f) * (0.3f + s.energy) : 1.0f;
+    // vowel 0..1 over a, e, i, o, u: width and opening of the mouth
+    const float widths[] = { 0.34f, 0.40f, 0.44f, 0.24f, 0.16f };
+    const float opens[] = { 0.36f, 0.22f, 0.10f, 0.30f, 0.20f };
+    const float vp = juce::jlimit (0.0f, 3.999f, vowel * 4.0f);
+    const int vi = (int) vp;
+    const float vf = vp - (float) vi;
+    const float w = r.getWidth() * (widths[vi] + (widths[vi + 1] - widths[vi]) * vf);
+    const float h = r.getHeight() * (opens[vi] + (opens[vi + 1] - opens[vi]) * vf) * sing;
     juce::Path mouth;
     mouth.startNewSubPath (c.x - w, c.y);
     mouth.quadraticTo (c.x, c.y - h, c.x + w, c.y);
@@ -187,6 +216,22 @@ void vocal (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, ju
     g.setColour (ink);
     g.strokePath (mouth, juce::PathStrokeType (lw));
     eyes (g, { c.x, c.y - r.getHeight() * 0.33f }, lw * 1.5f, s.time, ink);
+    if (s.large)
+    {
+        g.setColour (accent (3, s, ink));
+        const float brow = r.getHeight() * (0.42f + 0.08f * tension);
+        for (int k = -1; k <= 1; k += 2)
+            g.drawLine (c.x + (float) k * lw * 3.2f, c.y - brow + (float) k * tension * lw, c.x + (float) k * lw * 0.9f,
+                        c.y - brow - (float) k * tension * lw, lw * 0.6f);
+        g.setColour (accent (2, s, ink).withAlpha (0.6f));
+        const int puffs = (int) (breath * 6.0f);
+        for (int i = 0; i < puffs; ++i)
+        {
+            const float ph = std::fmod (s.time * 0.8f + (float) i / (float) juce::jmax (1, puffs), 1.0f);
+            const float px = c.x + w + ph * r.getWidth() * 0.35f, py = c.y + std::sin (ph * 6.0f + (float) i) * lw * 2.0f;
+            g.fillEllipse (px, py, lw * (1.0f - ph) * 2.0f, lw * (1.0f - ph) * 2.0f);
+        }
+    }
 }
 
 void cluster (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juce::Colour ink, float lw)
@@ -219,17 +264,41 @@ void cluster (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, 
 
 void sampler (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juce::Colour ink, float lw)
 {
+    // a waveform: start marker, tone darkens the tail, loop start / end bracket the loop
+    const float start = s.macro[0], tone = s.macro[1], loopStart = s.macro[2], loopEnd = s.macro[3];
     juce::Random rnd (3);
-    g.setColour (ink);
-    const int bars = 24;
+    const int bars = s.large ? 40 : 24;
     for (int i = 0; i < bars; ++i)
     {
-        const float h = r.getHeight() * (0.1f + 0.5f * rnd.nextFloat()) * (i % 6 == 0 ? 1.2f : 1.0f);
-        const float x = r.getX() + r.getWidth() * (float) i / bars;
-        g.fillRect (x, r.getCentreY() - h * 0.5f, r.getWidth() / bars * 0.55f, h);
+        const float x01 = (float) i / (float) bars;
+        const float env = s.large ? std::exp (-x01 * 2.2f) * 0.8f + 0.2f : 1.0f;
+        const float h = r.getHeight() * (0.1f + 0.5f * rnd.nextFloat()) * env * (i % 6 == 0 ? 1.2f : 1.0f);
+        const float x = r.getX() + r.getWidth() * x01;
+        const bool played = x01 >= start;
+        g.setColour (ink.withAlpha (s.large ? (played ? 1.0f - 0.6f * (1.0f - tone) * x01 : 0.25f) : 1.0f));
+        g.fillRect (x, r.getCentreY() - h * 0.5f, r.getWidth() / (float) bars * 0.55f, h);
     }
-    const float head = std::fmod (s.time * 0.25f, 1.0f);
-    g.drawLine (r.getX() + head * r.getWidth(), r.getY(), r.getX() + head * r.getWidth(), r.getBottom(), lw * 0.7f);
+    if (s.large)
+    {
+        auto marker = [&] (float pos01, juce::Colour c, float hFrac) {
+            const float x = r.getX() + r.getWidth() * pos01;
+            g.setColour (c);
+            g.drawLine (x, r.getCentreY() - r.getHeight() * hFrac, x, r.getCentreY() + r.getHeight() * hFrac, lw * 0.7f);
+        };
+        marker (start, accent (0, s, ink), 0.42f);
+        const float ls = juce::jmin (loopStart, loopEnd), le = juce::jmax (loopStart, loopEnd);
+        if (le > ls)
+        {
+            g.setColour (accent (2, s, ink).withAlpha (0.18f));
+            g.fillRect (r.getX() + r.getWidth() * ls, r.getY() + r.getHeight() * 0.12f, r.getWidth() * (le - ls), r.getHeight() * 0.76f);
+            marker (ls, accent (2, s, ink), 0.38f);
+            marker (le, accent (3, s, ink), 0.38f);
+        }
+        const float span = juce::jmax (0.05f, 1.0f - start);
+        const float head = start + std::fmod (s.time * 0.25f, 1.0f) * span;
+        g.setColour (ink);
+        g.drawLine (r.getX() + head * r.getWidth(), r.getY(), r.getX() + head * r.getWidth(), r.getBottom(), lw * 0.5f);
+    }
 }
 
 void envelope (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juce::Colour ink, float lw)
@@ -340,14 +409,41 @@ void tape (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juc
 
 void drum (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juce::Colour ink, float lw)
 {
-    const float hit = std::exp (-std::fmod (s.time * 2.0f, 1.0f) * 6.0f);
-    const auto c = r.getCentre();
-    const float w = r.getWidth() * 0.32f * (1.0f + 0.06f * hit), h = r.getHeight() * 0.18f;
+    // a drum: model (kick, snare, hat ...) changes its shape, tune its size, decay how long the
+    // skin rings, tone the brightness of the strike flash
+    const float model = s.macro[0], tune = s.macro[1], decay = s.macro[2], tone = s.macro[3];
+    const float period = s.large ? 0.5f + decay : 1.0f;
+    const float hit = std::exp (-std::fmod (s.time, period) * (s.large ? 3.0f + 8.0f * (1.0f - decay) : 6.0f));
+    const auto c = r.getCentre().translated (0, r.getHeight() * 0.08f);
+    const float scale = s.large ? 0.75f + 0.5f * (1.0f - tune) : 1.0f;
+    const bool cymbal = s.large && std::lround (model * 5.0f) == 2; // synth model "Hat"
+    const float w = r.getWidth() * 0.32f * scale * (1.0f + 0.06f * hit), h = r.getHeight() * 0.18f * scale;
     g.setColour (ink);
-    g.drawEllipse (c.x - w, c.y - h * 1.6f, w * 2, h * 2, lw * 0.7f);
-    g.drawLine (c.x - w, c.y - h * 0.6f, c.x - w, c.y + h * 1.4f, lw * 0.7f);
-    g.drawLine (c.x + w, c.y - h * 0.6f, c.x + w, c.y + h * 1.4f, lw * 0.7f);
-    g.drawLine (c.x - w * 0.6f, c.y - h * 2.8f - hit * h, c.x - w * 0.1f, c.y - h * 1.0f, lw * 0.8f);
+    if (cymbal)
+    {
+        g.drawEllipse (c.x - w, c.y - h * 0.5f - hit * lw * 2.0f, w * 2.0f, h * 0.7f, lw * 0.7f);
+        g.drawLine (c.x, c.y, c.x, c.y + h * 2.0f, lw * 0.6f);
+    }
+    else
+    {
+        const float depth = s.large ? 0.6f + 1.4f * (1.0f - model) : 1.4f; // kick deep, perc shallow
+        g.drawEllipse (c.x - w, c.y - h * 1.6f, w * 2, h * 2, lw * 0.7f);
+        g.drawLine (c.x - w, c.y - h * 0.6f, c.x - w, c.y - h * 0.6f + h * depth * 1.4f, lw * 0.7f);
+        g.drawLine (c.x + w, c.y - h * 0.6f, c.x + w, c.y - h * 0.6f + h * depth * 1.4f, lw * 0.7f);
+        g.drawLine (c.x - w * 0.6f, c.y - h * 2.8f - hit * h, c.x - w * 0.1f, c.y - h * 1.0f, lw * 0.8f);
+    }
+    if (s.large)
+    {
+        // strike flash: rays, brighter and longer with tone
+        g.setColour (accent (3, s, ink).withAlpha (hit));
+        for (int k = 0; k < 5; ++k)
+        {
+            const float a = -pi * 0.5f + ((float) k - 2.0f) * 0.35f;
+            const float r0 = w * 0.3f, r1 = w * (0.45f + 0.5f * tone);
+            const auto o = c.translated (0, -h * 1.0f);
+            g.drawLine (o.x + std::cos (a) * r0, o.y + std::sin (a) * r0, o.x + std::cos (a) * r1, o.y + std::sin (a) * r1, lw * 0.6f);
+        }
+    }
 }
 
 void glyph (juce::Graphics& g, juce::Rectangle<float> r, Picto id, juce::Colour ink, float lw)
@@ -368,6 +464,50 @@ void glyph (juce::Graphics& g, juce::Rectangle<float> r, Picto id, juce::Colour 
                 const float a = pi + (float) i * pi / 4.0f;
                 g.fillEllipse (juce::Rectangle<float> (lw, lw).withCentre (c + juce::Point<float> (std::cos (a), -std::sin (a)) * s * 0.6f));
             }
+            break;
+        case Picto::Library:
+            // a shelf of three records, one pulled out
+            for (int i = 0; i < 3; ++i)
+            {
+                const float x = c.x - s * 1.1f + (float) i * s * 0.75f;
+                const float up = i == 2 ? s * 0.35f : 0.0f;
+                g.drawRoundedRectangle (x, c.y - s - up, s * 0.55f, s * 2.0f, lw * 0.5f, lw * 0.7f);
+            }
+            g.drawLine (c.x - s * 1.3f, c.y + s * 1.05f, c.x + s * 1.3f, c.y + s * 1.05f, lw * 0.8f);
+            break;
+        case Picto::Pro:
+            // a dense grid of sliders
+            for (int i = 0; i < 4; ++i)
+            {
+                const float x = c.x - s + (float) i * s * 0.66f;
+                g.drawLine (x, c.y - s, x, c.y + s, lw * 0.5f);
+                const float y = c.y - s + s * 2.0f * (0.25f + 0.17f * (float) ((i * 7) % 4));
+                g.fillRoundedRectangle (x - lw * 1.2f, y - lw * 0.6f, lw * 2.4f, lw * 1.2f, lw * 0.3f);
+            }
+            break;
+        case Picto::Load:
+            p.startNewSubPath (c.x, c.y + s * 0.4f);
+            p.lineTo (c.x, c.y - s);
+            p.startNewSubPath (c.x - s * 0.5f, c.y - s * 0.5f);
+            p.lineTo (c.x, c.y - s);
+            p.lineTo (c.x + s * 0.5f, c.y - s * 0.5f);
+            p.startNewSubPath (c.x - s, c.y + s * 0.3f);
+            p.lineTo (c.x - s, c.y + s);
+            p.lineTo (c.x + s, c.y + s);
+            p.lineTo (c.x + s, c.y + s * 0.3f);
+            g.strokePath (p, juce::PathStrokeType (lw * 0.8f));
+            break;
+        case Picto::Export:
+            p.startNewSubPath (c.x, c.y - s);
+            p.lineTo (c.x, c.y + s * 0.4f);
+            p.startNewSubPath (c.x - s * 0.5f, c.y - s * 0.1f);
+            p.lineTo (c.x, c.y + s * 0.4f);
+            p.lineTo (c.x + s * 0.5f, c.y - s * 0.1f);
+            p.startNewSubPath (c.x - s, c.y + s * 0.3f);
+            p.lineTo (c.x - s, c.y + s);
+            p.lineTo (c.x + s, c.y + s);
+            p.lineTo (c.x + s, c.y + s * 0.3f);
+            g.strokePath (p, juce::PathStrokeType (lw * 0.8f));
             break;
         default: break;
     }

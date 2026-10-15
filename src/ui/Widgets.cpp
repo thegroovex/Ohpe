@@ -35,6 +35,39 @@ void showControlMenu (OhpeProcessor& proc, const juce::String& paramId, juce::Co
     });
 }
 
+// ---------------------------------------------------------------- 0.3: direct manipulation
+float dragToNormalised (float startNorm, float deltaPixels, float lengthPixels, bool fine) noexcept
+{
+    if (! (lengthPixels > 1.0f)) lengthPixels = 1.0f;
+    const float v = startNorm + deltaPixels / lengthPixels * (fine ? fineFactor : 1.0f);
+    return v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
+}
+
+void BarDrag::begin (float norm, juce::Point<float> pos, bool fineMode) noexcept
+{
+    startNorm = lastNorm = norm;
+    anchor = pos;
+    fine = fineMode;
+}
+
+float BarDrag::update (juce::Point<float> pos, float lengthPixels, bool fineMode) noexcept
+{
+    if (fineMode != fine) begin (lastNorm, pos, fineMode); // switching fine control never jumps
+    const float delta = (pos.x - anchor.x) - (pos.y - anchor.y);
+    lastNorm = dragToNormalised (startNorm, delta, lengthPixels, fine);
+    return lastNorm;
+}
+
+void setParameterNormalised (OhpeProcessor& proc, const juce::String& paramId, float norm)
+{
+    if (auto* p = proc.parameter (paramId))
+    {
+        p->beginChangeGesture();
+        p->setValueNotifyingHost (juce::jlimit (0.0f, 1.0f, norm));
+        p->endChangeGesture();
+    }
+}
+
 // ---------------------------------------------------------------- Encoder
 Encoder::Encoder (OhpeProcessor& p, int i) : proc (p), index (i)
 {
@@ -44,14 +77,59 @@ Encoder::Encoder (OhpeProcessor& p, int i) : proc (p), index (i)
     knob.setPopupMenuEnabled (false);
     knob.setMouseDragSensitivity (220);
     knob.setVelocityBasedMode (false);
+    knob.setVelocityModeParameters (1.0, 1, 0.0, false); // Cmd / Ctrl mean fine control, not velocity mode
     knob.onValueChange = [this] { repaint(); };
     addAndMakeVisible (knob);
 }
 
 Encoder::~Encoder() { attachment.reset(); }
 
+void Encoder::bindVirtual (VirtualPtr v)
+{
+    if (v == nullptr)
+    {
+        if (virt != nullptr)
+        {
+            virt.reset();
+            knob.onValueChange = [this] { repaint(); };
+            const auto id = paramId;
+            paramId = {};
+            bind (id);
+        }
+        return;
+    }
+    attachment.reset();
+    virt = std::move (v);
+    paramId = virt->paramId;
+    knob.setEnabled (true);
+    knob.setNormalisableRange ({ 0.0, 1.0 });
+    knob.setValue (virt->get ? virt->get() : 0.0f, juce::dontSendNotification);
+    knob.onValueChange = [this] {
+        if (virt != nullptr && virt->set) virt->set ((float) knob.getValue());
+        repaint();
+    };
+    repaint();
+}
+
+void Encoder::refreshVirtual()
+{
+    if (virt == nullptr || ! virt->get || knob.isMouseButtonDown()) return;
+    const float v = virt->get();
+    if (std::abs ((float) knob.getValue() - v) > 1.0e-5f)
+    {
+        knob.setValue (v, juce::dontSendNotification);
+        repaint();
+    }
+}
+
 void Encoder::bind (const juce::String& id)
 {
+    if (virt != nullptr)
+    {
+        virt.reset();
+        knob.onValueChange = [this] { repaint(); };
+        paramId = {};
+    }
     if (id == paramId && (attachment != nullptr || id.isEmpty())) return;
     attachment.reset();
     paramId = id;
@@ -70,6 +148,7 @@ void Encoder::bind (const juce::String& id)
 
 float Encoder::normalisedValue() const
 {
+    if (virt != nullptr) return virt->get ? virt->get() : 0.0f;
     if (auto* p = proc.parameter (paramId)) return p->getValue();
     return 0.0f;
 }
@@ -87,7 +166,12 @@ void Encoder::paint (juce::Graphics& g)
     const int idx = proc.core().params().indexOf (paramId.toStdString());
     const bool learning = paramId.isNotEmpty() && proc.learningParamId() == paramId;
     juce::String name = "-", value;
-    if (idx >= 0)
+    if (virt != nullptr)
+    {
+        name = virt->name;
+        value = virt->text ? virt->text (normalisedValue()) : juce::String();
+    }
+    else if (idx >= 0)
     {
         const auto& d = proc.core().params().descriptor (idx);
         name = i18n::pick (d.nameEn, d.nameDe);
@@ -100,6 +184,12 @@ void Encoder::paint (juce::Graphics& g)
     g.setColour (colour::ink);
     g.setFont (monoFont (w * 0.11f));
     g.drawText (value, text.withTrimmedTop (w * 0.13f).withHeight (w * 0.13f), juce::Justification::centred, true);
+    if (virt != nullptr && virt->locked)
+    {
+        // lock marker: a small filled square in the encoder's colour (the value is a step lock)
+        g.setColour (colour::encoder (index));
+        g.fillRoundedRectangle (w * 0.05f, w * 0.03f, w * 0.08f, w * 0.08f, w * 0.015f);
+    }
     if (idx >= 0 && proc.core().midiMap().isMapped (paramId.toStdString()))
     {
         g.setColour (colour::encoder (index));
@@ -110,11 +200,26 @@ void Encoder::paint (juce::Graphics& g)
 void Encoder::Knob::mouseDown (const juce::MouseEvent& e)
 {
     if (e.mods.isPopupMenu()) { showControlMenu (owner.proc, owner.paramId, this); return; }
+    // 0.3: Shift / Cmd / Ctrl at the start of a drag = fine control
+    setMouseDragSensitivity (isFineDrag (e.mods) ? (int) (220.0f / fineFactor) : 220);
     juce::Slider::mouseDown (e);
+}
+
+void Encoder::Knob::mouseUp (const juce::MouseEvent& e)
+{
+    juce::Slider::mouseUp (e);
+    setMouseDragSensitivity (220);
 }
 
 void Encoder::Knob::mouseDoubleClick (const juce::MouseEvent&)
 {
+    if (owner.virt != nullptr)
+    {
+        if (owner.virt->reset) owner.virt->reset();
+        owner.refreshVirtual();
+        owner.repaint();
+        return;
+    }
     if (auto* p = owner.proc.parameter (owner.paramId)) p->setValueNotifyingHost (p->getDefaultValue());
 }
 

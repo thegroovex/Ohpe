@@ -1,0 +1,24 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Glass Keys",
+  "author": "groovex",
+  "tags": [
+    "Keys",
+    "Plucks"
+  ],
+  "engine": "fm",
+  "comment": "Placeholder for testing the library; the real factory sounds follow in a later version.",
+  "params": {
+    "engine": 0,
+    "fm.algo": 2,
+    "fm.modratio": 3.5,
+    "fm.index": 0.45,
+    "fm.feedback": 0.1,
+    "amp.a": 0.002,
+    "amp.d": 1.2,
+    "amp.s": 0.2,
+    "amp.r": 0.6
+  }
+}

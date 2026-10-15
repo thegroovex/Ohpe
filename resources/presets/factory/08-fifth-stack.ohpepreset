@@ -1,0 +1,22 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Fifth Stack",
+  "author": "groovex",
+  "tags": [
+    "Leads",
+    "Pads"
+  ],
+  "engine": "cluster",
+  "comment": "Placeholder for testing the library; the real factory sounds follow in a later version.",
+  "params": {
+    "engine": 6,
+    "cluster.detune": 0.35,
+    "cluster.spread": 0.7,
+    "cluster.tone": 0.6,
+    "cluster.chord": 2,
+    "amp.a": 0.05,
+    "amp.r": 0.8
+  }
+}

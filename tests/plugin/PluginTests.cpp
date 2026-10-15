@@ -231,6 +231,9 @@ TEST_CASE ("parameter value texts carry units")
     CHECK (p.parameter ("p1.analog.cutoff")->getText (p.parameter ("p1.analog.cutoff")->convertTo0to1 (2000.0f), 32) == "2.00 kHz");
     CHECK (p.parameter ("mix.ch1.vol")->getText (p.parameter ("mix.ch1.vol")->convertTo0to1 (-6.0f), 32) == "-6.0 dB");
     CHECK (p.parameter ("p1.amp.a")->getText (p.parameter ("p1.amp.a")->convertTo0to1 (0.25f), 32) == "250 ms");
+    // no stray decimals when a value is shown without any (e.g. a step lock at 98.05 Hz)
+    CHECK (p.parameter ("p1.analog.cutoff")->getText (p.parameter ("p1.analog.cutoff")->convertTo0to1 (98.0516f), 32) == "98 Hz");
+    CHECK (p.parameter ("p1.analog.reso")->getText (0.700008f, 32) == "70 %");
 }
 
 // 0.2 (package D): the host playhead drives the sequencers; Link transport hook

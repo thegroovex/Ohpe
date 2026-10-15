@@ -95,3 +95,18 @@ Anleitung: [BAND-MISCHER-FX.md](BAND-MISCHER-FX.md) · Parameter: [../PARAMETERS
   implementiert `OhpeProcessor::ExternalTransport`; `SyncSettingsPage` wählt Sync-Quelle,
   MIDI-Ausgang, Clock- / Noten-Ausgabe.
 * Leitfäden: [Sequencer](SEQUENZER.md), [MIDI](MIDI.md), [Parameter](../PARAMETERS.md).
+
+## Phase 3: Oberfläche und Preset-Bibliothek (0.3)
+
+* `src/core/preset`: Preset-Dateiformat (Version 2, Part / Projekt, Tags, Autor, Engine) und die
+  Bibliothekslogik (Filter, Sortierung, Favoriten / Bewertungen) – ohne JUCE, getestet in
+  `tests/core/PresetTests.cpp`. Format: [PRESETS.md](PRESETS.md).
+* `src/plugin/PresetManager`: Werksbank als Binärdaten aus `resources/presets/factory/*.ohpepreset`
+  (CMake-Ziel `ohpe_presets`), Benutzerordner (`OHPE_PRESET_DIR` überschreibt), Laden über
+  `OhpeProcessor::editRegistry()`, voriges / nächstes, Vorhören mit Rücksprung.
+* 12 angehängte Fernsteuer-Parameter (`lib.*`, `ui.part`, `tape.edit.*`): MIDI-Tastendrücke werden
+  im Audio-Thread gezählt, Host- / UI-Änderungen als steigende Flanke erkannt; die Aktion läuft im
+  Timer des Prozessors (auch ohne geöffneten Editor).
+* `src/ui`: ziehbare Display-Zeilen mit Feinregelung, Soft-Tasten, Sequencer-Ansichten, Tape- und
+  Drum-Seite, Profiansicht (`ProView`), Bibliothek (`LibraryBrowser`), Part-Auswahl, Drag & Drop.
+  Schritt-Locks nutzen den vorhandenen Lock-Speicher des Step-Sequencers.

@@ -47,6 +47,21 @@ set_target_properties(ohpe_drumkit PROPERTIES POSITION_INDEPENDENT_CODE ON)
 list(APPEND OHPE_JUCE_MODULES ohpe_drumkit)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/FactoryKit.cpp)
 
+# 0.3 (package E): pro view, preset library browser, preset manager and the factory preset bank.
+# Package F (factory sounds) only adds *.ohpepreset files to resources/presets/factory; they are
+# embedded as binary data (namespace OhpePresets) and appear in the library's factory bank.
+list(APPEND OHPE_PLUGIN_SOURCES
+    ${CMAKE_SOURCE_DIR}/src/ui/ProView.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/LibraryBrowser.cpp
+    ${CMAKE_SOURCE_DIR}/src/plugin/PresetManager.cpp)
+file(GLOB OHPE_FACTORY_PRESETS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/resources/presets/factory/*.ohpepreset)
+juce_add_binary_data(ohpe_presets
+    HEADER_NAME OhpePresets.h
+    NAMESPACE OhpePresets
+    SOURCES ${OHPE_FACTORY_PRESETS})
+set_target_properties(ohpe_presets PROPERTIES POSITION_INDEPENDENT_CODE ON)
+list(APPEND OHPE_JUCE_MODULES ohpe_presets)
+
 set(OHPE_FORMATS VST3 Standalone)
 if(APPLE)
     list(APPEND OHPE_FORMATS AU)
@@ -114,4 +129,9 @@ target_sources(Ohpe PRIVATE ${CMAKE_SOURCE_DIR}/src/plugin/TapeIO.cpp)
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/src/plugin/TapeIO.cpp ${CMAKE_SOURCE_DIR}/tests/plugin/TapeExportTests.cpp)
     target_sources(ohpe_screenshot PRIVATE ${CMAKE_SOURCE_DIR}/src/plugin/TapeIO.cpp)
+endif()
+
+# ---------------------------------------------------------------- 0.3 package E: UI, preset library
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/UiLibraryTests.cpp)
 endif()

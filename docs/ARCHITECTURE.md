@@ -216,3 +216,36 @@ Guide: [en/TAPE-MIXER-FX.md](en/TAPE-MIXER-FX.md) · parameters: [PARAMETERS.md]
   `OHPE_WITH_LINK`) implements `OhpeProcessor::ExternalTransport`; `SyncSettingsPage` selects
   the sync source, MIDI output, clock / note output.
 * Guides: [sequencers](en/SEQUENCERS.md), [MIDI](en/MIDI.md), [parameters](PARAMETERS.md).
+
+## Phase 3: UI and preset library (0.3)
+
+* **Presets** (`src/core/preset`, JUCE-free): `Preset.{h,cpp}` – the versioned file format
+  ("ohpe-preset" version 2, part and project kind, tags, author, engine; see
+  [en/PRESETS.md](en/PRESETS.md)), capture from / apply to the registry and the core;
+  `PresetLibrary.{h,cpp}` – library entries, filter (tags = any of, engine, bank, kind, favourites,
+  rating, text), sort, user data (favourites / ratings, `library.json`). Core tests in
+  `tests/core/PresetTests.cpp`.
+* **PresetManager** (`src/plugin`, message thread): factory bank from binary data
+  (`resources/presets/factory/*.ohpepreset` → CMake target `ohpe_presets`, namespace
+  `OhpePresets`), user folder (default `<user app data>/groovex/Ohpe/Presets`, override
+  `OHPE_PRESET_DIR`), load / save / delete, prev / next through the current view, preview with a
+  project snapshot to revert. Loading goes through `OhpeProcessor::editRegistry()`: pending host
+  values are pulled into the registry, the preset is applied, every changed value is published to
+  the host parameters.
+* **Remote controls** (12 appended parameters, group "remote"): `lib.open`, `lib.prev`, `lib.next`,
+  `ui.part`, `tape.edit.track` and the triggers `tape.edit.lift / cut / drop / splice / undo / redo /
+  rtz`. MIDI-mapped presses are counted on the audio thread (from the mapper's change queue), host
+  or UI changes are detected as rising edges; the processor's timer runs the action
+  (`pollRemoteControls()`), so they work without an open editor. Project presets exclude them.
+* **UI** (`src/ui`): `Pages` – parameters per mode / page with page titles and a `PageContext`
+  (edit part, mixer channel, sequencer view, tape track, drum pad), `proGroups()` for the pro view;
+  `Display` – draggable rows (`BarDrag`, fine control), soft keys, sequencer view tabs, Euclid /
+  Orbit rings, tape lanes with a content overview, drum pads, step lock indicators;
+  `Widgets` – `VirtualControl` (step fields and parameter locks shown on encoders and rows);
+  `ProView`, `LibraryBrowser`; `PluginEditor` – part selector, preset strip, LIBRARY / PRO keys,
+  file drag and drop (audio → Sampler / Grain / pad, `.ohpepreset` → load), export (bounce).
+* **Step locks** use the step sequencer's existing lock storage (four locks per step, saved by
+  parameter ID); nothing was added to the core for them.
+* Tests: `tests/plugin/UiLibraryTests.cpp` (factory bank validity, save / load round-trip,
+  favourites, preview / revert, MIDI remote controls, display drag and fine control, pro view,
+  part selector, step locks, tape / drum pages, library browser).
