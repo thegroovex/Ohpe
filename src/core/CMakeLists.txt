@@ -13,7 +13,23 @@ add_library(ohpe_core STATIC
     fx/Reverb.cpp
     seq/StepSequencer.cpp
     midi/MidiMap.cpp
-    # 0.2.0 package C: tape, insert effects
+    engines/WavetableEngine.cpp
+    engines/PluckEngine.cpp
+    engines/ClusterEngine.cpp)
+
+# phase 2, engines B: Grain, Vocal, Sampler, drum kit, sample model
+target_sources(ohpe_core PRIVATE
+    engines/GrainEngine.cpp
+    engines/VocalEngine.cpp
+    engines/SamplerEngine.cpp
+    drum/DrumVoice.cpp
+    drum/DrumKit.cpp
+    sample/SampleData.cpp
+    sample/Slicer.cpp
+    sample/SampleState.cpp)
+
+# 0.2.0 package C: tape, insert effects
+target_sources(ohpe_core PRIVATE
     tape/TapeMachine.cpp
     fx/InsertEffects.cpp
     fx/InsertSlot.cpp)

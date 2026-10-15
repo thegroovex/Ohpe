@@ -12,9 +12,19 @@ add_executable(ohpe_core_tests
     SequencerTests.cpp
     MidiMapTests.cpp
     StateTests.cpp
-    CoreTests.cpp)
+    CoreTests.cpp
+    WavetableEngineTests.cpp
+    PluckEngineTests.cpp
+    ClusterEngineTests.cpp)
 target_link_libraries(ohpe_core_tests PRIVATE ohpe_core doctest::doctest)
 target_compile_definitions(ohpe_core_tests PRIVATE OHPE_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+# phase 2, engines B
+target_sources(ohpe_core_tests PRIVATE
+    SampleTestHelpers.h
+    GrainEngineTests.cpp
+    VocalEngineTests.cpp
+    SamplerEngineTests.cpp
+    DrumKitTests.cpp)
 add_test(NAME core_tests COMMAND ohpe_core_tests)
 
 # parameter table dump (golden file / documentation)

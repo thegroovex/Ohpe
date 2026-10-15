@@ -191,6 +191,7 @@ void OhpeProcessor::timerCallback()
     ohpeCore.tape().housekeeping(); // 0.2: block pool for recording, finished passes -> undo steps
     if (ohpeCore.midiMapper().applyPendingLearns (ohpeCore.midiMap()))
         sendChangeMessage();
+    samples.timerTick();
 }
 
 void OhpeProcessor::armMidiLearn (const juce::String& paramId)
@@ -268,6 +269,7 @@ void OhpeProcessor::pullHostParametersIntoRegistry()
 void OhpeProcessor::getStateInformation (juce::MemoryBlock& dest)
 {
     pullHostParametersIntoRegistry();
+    samples.storeInState();
     const auto ui = juce::JSON::toString (uiState, true);
     const auto json = ohpeCore.saveState (ui.toStdString());
     dest.replaceAll (json.data(), json.size());
@@ -283,6 +285,7 @@ void OhpeProcessor::setStateInformation (const void* data, int size)
     if (! ohpeCore.loadState (json, &ui))
         return;
     tapeio::restoreTape (ohpeCore, tape, tapeSize);
+    samples.restoreFromState();
     auto parsed = juce::JSON::parse (juce::String::fromUTF8 (ui.c_str()));
     uiState = parsed.isObject() ? parsed : juce::var (new juce::DynamicObject());
     syncHostParametersFromRegistry();

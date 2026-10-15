@@ -3,6 +3,7 @@
 #pragma once
 
 #include "OhpeCore.h"
+#include "SampleLoader.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_audio_utils/juce_audio_utils.h>
@@ -55,6 +56,8 @@ public:
 
     // ---- Ohpe ----
     Core& core() noexcept { return ohpeCore; }
+    /** Sample files for the Sampler / Grain engines and drum pads (message thread). */
+    SampleLoader& sampleLoader() noexcept { return samples; }
     juce::AudioProcessorValueTreeState& state() noexcept { return apvts; }
     juce::RangedAudioParameter* parameter (const juce::String& id) const { return apvts.getParameter (id); }
     juce::RangedAudioParameter* parameter (int registryIndex) const;
@@ -86,6 +89,7 @@ private:
     void pullHostParametersIntoRegistry();
 
     Core ohpeCore;
+    SampleLoader samples { ohpeCore };
     juce::AudioProcessorValueTreeState apvts;
     std::vector<std::atomic<float>*> rawValues;
     std::vector<juce::RangedAudioParameter*> params;
