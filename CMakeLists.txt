@@ -31,6 +31,8 @@ set(JSON_Install OFF CACHE INTERNAL "")
 FetchContent_MakeAvailable(nlohmann_json)
 
 if(OHPE_BUILD_TESTS)
+    # doctest 2.4.11 still declares cmake_minimum_required(3.0), which CMake 4 rejects
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
     FetchContent_Declare(doctest
         GIT_REPOSITORY https://github.com/doctest/doctest.git
         GIT_TAG v2.4.11
