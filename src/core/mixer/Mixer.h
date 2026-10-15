@@ -63,6 +63,12 @@ public:
     /** 0.2.0 parameters (appended at the bottom of the layout): per-channel compressor-lite,
         master compressor, master tape saturation, limiter ceiling. */
     void registerDynamicsParams (ParamRegistry& reg) const;
+    /** 0.5: "fxa.delay.sync" (Off or a note value: the delay time follows the tempo), appended at the end. */
+    void registerLate05Params (ParamRegistry& reg) const;
+    /** 0.5: note lengths of the "fxa.delay.sync" choices in quarter notes (index 0 = Off -> 0). */
+    static double delaySyncBeats (int choice) noexcept;
+    /** 0.5: tempo for the synced delay (audio thread, before pullParams). */
+    void setTempo (double bpm) noexcept { tempo = bpm > 0.0 ? bpm : tempo; }
     void bind (const ParamRegistry& reg);
     void prepare (double sampleRate, int maxBlockSize);
     void reset() noexcept;
@@ -110,6 +116,8 @@ private:
     std::array<int, numMasterParams> masterIdx {};
     std::vector<int> delayIdx, reverbIdx;
     std::vector<float> delayLast, reverbLast;
+    int delaySyncIdx = -1;
+    double tempo = 120.0;
     float masterGain = 1.0f, returnA = 0.7f, returnB = 0.7f;
     bool limiterOn = true;
     float sr = 48000.0f;

@@ -26,6 +26,18 @@ std::vector<ParamDescriptor> OrbitSequencer::getParamDescriptors() const
     return d;
 }
 
+std::vector<ParamDescriptor> OrbitSequencer::getLateParamDescriptors() const
+{
+    using namespace pd;
+    auto d = seq::swingHumanDescriptors ("Orbit", "Orbit");
+    for (int l = 0; l < numLanes; ++l)
+    {
+        const auto n = std::to_string (l + 1);
+        d.push_back (integer ("l" + n + ".part", "Lane " + n + " Target Part", "Spur " + n + " Ziel-Part", 0, 4, 0));
+    }
+    return d;
+}
+
 void OrbitSequencer::prepare (double sampleRate, int)
 {
     sr = sampleRate > 0.0 ? sampleRate : 48000.0;
@@ -35,6 +47,7 @@ void OrbitSequencer::prepare (double sampleRate, int)
 void OrbitSequencer::reset() noexcept
 {
     queue.reset();
+    humaniser.reset();
     for (auto& l : lanes) l.clock.reset();
     for (auto& p : positions) p.store (-1);
     sampleClock = 0;
@@ -49,7 +62,14 @@ void OrbitSequencer::setParam (int i, float v) noexcept
         case On: on = v >= 0.5f; return;
         case Part: part = std::clamp (iv, 1, 4); return;
         case Gate: gate = v; return;
+        case Swing: swing = std::clamp (v, 0.0f, 0.75f); return;
+        case Human: human = std::clamp (v, 0.0f, 1.0f); return;
         default: break;
+    }
+    if (i >= LanePart1 && i < LanePart1 + numLanes)
+    {
+        lanes[(size_t) (i - LanePart1)].part = std::clamp (iv, 0, 4);
+        return;
     }
     const int l = (i - firstLaneParam) / numLaneParams;
     if (l < 0 || l >= numLanes) return;
@@ -122,9 +142,20 @@ void OrbitSequencer::process (const Transport& tr, int numSamples, SequencerOutp
                 const auto s = getStep (l, idx);
                 if (! s.on) return;
                 const int note = std::clamp (s.note + lane.transpose, 0, 127);
-                const int64_t t = blockStart + offset;
-                queue.schedule (t, MidiEvent::noteOn (ch, note, s.velocity));
-                queue.schedule (t + seq::gateSamples (sps, gate), MidiEvent::noteOff (ch, note));
+                const int laneCh = lane.part > 0 ? lane.part + lanePartChannelOffset : ch;
+                int vel = s.velocity;
+                const double spq = seq::stepsPerQuarter (lane.rate);
+                const int64_t t = blockStart + offset + seq::swingSamples (k, swing, sps, spq) + humaniser.apply (human, sr, vel);
+                const int64_t off = t + seq::gateSamples (sps, gate);
+                // 0.5: gate 100 % ties a step to the step before it when both play the same note (not on the drum kit)
+                const bool tieable = gate >= 0.999f && (lane.part > 0 || ! drumsMode);
+                if (tieable)
+                {
+                    const auto prev = getStep (l, (idx + lane.length - 1) % lane.length);
+                    if (prev.on && std::clamp (prev.note + lane.transpose, 0, 127) == note && queue.extendOff (laneCh, note, off)) return;
+                }
+                queue.schedule (t, MidiEvent::noteOn (laneCh, note, vel));
+                queue.schedule (off, MidiEvent::noteOff (laneCh, note));
             });
         }
     }

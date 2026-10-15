@@ -35,6 +35,7 @@ struct VoiceCommon
     int lfoShape = 0;           ///< dsp::Lfo::Shape
     LfoDest lfoDest = LfoDest::Pitch;
     float glideSeconds = 0.0f;
+    bool polyGlide = false;     ///< 0.5: with several voices, new notes glide from the nearest note just released
     float pitchOffset = 0.0f;   ///< semitones: tune + fine + pitch bend (already summed)
     float velocitySens = 0.7f;  ///< 0 = no velocity, 1 = full velocity to amp
 };

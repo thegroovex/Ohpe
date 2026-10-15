@@ -80,6 +80,21 @@ void Mixer::registerDynamicsParams (ParamRegistry& reg) const
     addM (continuous ("mix.master.ceiling", "Limiter Ceiling", "Limiter-Obergrenze", -12.0f, 0.0f, -0.3f, ParamUnit::Decibel));
 }
 
+void Mixer::registerLate05Params (ParamRegistry& reg) const
+{
+    using namespace pd;
+    auto d = choice ("fxa.delay.sync", "Delay Sync", "Delay-Sync", { "Off", "1/16", "1/8T", "1/8", "1/4T", "1/8.", "1/4", "1/4.", "1/2" },
+                     { "Aus", "1/16", "1/8T", "1/8", "1/4T", "1/8.", "1/4", "1/4.", "1/2" }, 0);
+    d.group = "fx/a";
+    reg.add (std::move (d));
+}
+
+double Mixer::delaySyncBeats (int choice) noexcept
+{
+    static constexpr double beats[] = { 0.0, 0.25, 1.0 / 3.0, 0.5, 2.0 / 3.0, 0.75, 1.0, 1.5, 2.0 };
+    return beats[(size_t) std::clamp (choice, 0, 8)];
+}
+
 void Mixer::bind (const ParamRegistry& reg)
 {
     static const char* names[numChannelParams] = { "src", "vol", "pan", "mute", "solo", "eqlo", "eqmid", "eqhi", "senda", "sendb", "out" };
@@ -96,6 +111,7 @@ void Mixer::bind (const ParamRegistry& reg)
     reverbIdx.clear();
     for (const auto& d : reverb.getParamDescriptors()) reverbIdx.push_back (reg.indexOf ("fxb.reverb." + d.id));
     delayLast.assign (delayIdx.size(), NAN);
+    delaySyncIdx = reg.indexOf ("fxa.delay.sync");
     reverbLast.assign (reverbIdx.size(), NAN);
 }
 
@@ -186,8 +202,14 @@ void Mixer::pullParams (const ParamSnapshot& s) noexcept
         const float ceilDb = s[dynIdx[MCeiling]];
         limiter.setCeiling (std::abs (ceilDb + 0.3f) < 1.0e-4f ? 0.966f : dsp::dbToGain (ceilDb));
     }
+    const double syncBeats = delaySyncIdx >= 0 ? delaySyncBeats (s.getInt (delaySyncIdx)) : 0.0;
     for (size_t i = 0; i < delayIdx.size(); ++i)
-        if (const float v = s[delayIdx[i]]; ! (v == delayLast[i])) { delayLast[i] = v; delay.setParam ((int) i, v); }
+    {
+        float v = s[delayIdx[i]];
+        if (i == (size_t) DelayEffect::Time && syncBeats > 0.0) // 0.5: synced to the tempo
+            v = (float) std::clamp (syncBeats * 60.0 / tempo, 0.01, 2.0);
+        if (! (v == delayLast[i])) { delayLast[i] = v; delay.setParam ((int) i, v); }
+    }
     for (size_t i = 0; i < reverbIdx.size(); ++i)
         if (const float v = s[reverbIdx[i]]; ! (v == reverbLast[i])) { reverbLast[i] = v; reverb.setParam ((int) i, v); }
 }

@@ -31,9 +31,13 @@ Core::Core()
         stepParamIndex.push_back (registry.indexOf (std::string (Ids::stepPrefix) + d.id));
     stepParamLast.assign (stepParamIndex.size(), NAN);
 
-    bindSequencer (euclidBinding, euclid, Ids::euclidPrefix, euclid.getParamDescriptors());
+    auto withLate = [] (std::vector<ParamDescriptor> list, const std::vector<ParamDescriptor>& late) {
+        list.insert (list.end(), late.begin(), late.end()); // 0.5: local indices continue (Swing, Human)
+        return list;
+    };
+    bindSequencer (euclidBinding, euclid, Ids::euclidPrefix, withLate (euclid.getParamDescriptors(), euclid.getLateParamDescriptors()));
     bindSequencer (arpBinding, arp, Ids::arpPrefix, arp.getParamDescriptors());
-    bindSequencer (orbitBinding, orbit, Ids::orbitPrefix, orbit.getParamDescriptors());
+    bindSequencer (orbitBinding, orbit, Ids::orbitPrefix, withLate (orbit.getParamDescriptors(), orbit.getLateParamDescriptors()));
     for (int i = 0; i < numParts; ++i)
     {
         auto& r = routing[(size_t) i];
@@ -299,6 +303,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     snapshot.pull (registry);
     for (auto& p : parts) p->pullParams (snapshot);
     drums.pullParams (snapshot);
+    mix.setTempo (bpmForUi.load (std::memory_order_relaxed));
     mix.pullParams (snapshot);
     pullPhase2Params();
     for (size_t i = 0; i < stepParamIndex.size(); ++i)
@@ -349,18 +354,30 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
 
     // 4. sequencers: their notes address parts by channel
     seqOut.clear();
+    stepSeq.setDrumsMode (snapshot.getBool (stepDrumsIndex));
     stepSeq.process (tr, numSamples, seqOut);
     euclidOut.clear();
     euclid.process (tr, numSamples, euclidOut);
+    const bool stepToDrums = snapshot.getBool (stepDrumsIndex), euclidToDrums = snapshot.getBool (euclidDrumsIndex),
+               orbitToDrums = snapshot.getBool (orbitDrumsIndex);
     orbitOut.clear();
+    orbit.setDrumsMode (orbitToDrums);
     orbit.process (tr, numSamples, orbitOut);
     arpOut.clear();
     arp.process (tr, numSamples, arpOut);
-    const bool stepToDrums = snapshot.getBool (stepDrumsIndex), euclidToDrums = snapshot.getBool (euclidDrumsIndex),
-               orbitToDrums = snapshot.getBool (orbitDrumsIndex);
     for (const auto& e : seqOut.events) routeGenerated (e, true, stepToDrums);
     for (const auto& e : euclidOut.events) routeGenerated (e, true, euclidToDrums);
-    for (const auto& e : orbitOut.events) routeGenerated (e, true, orbitToDrums);
+    for (const auto& e : orbitOut.events)
+    {
+        if (e.channel() > OrbitSequencer::lanePartChannelOffset) // 0.5: a lane with its own target part
+        {
+            auto x = e;
+            x.status = (uint8_t) ((x.status & 0xf0) | ((e.channel() - OrbitSequencer::lanePartChannelOffset - 1) & 0x0f));
+            routeGenerated (x, true, false);
+        }
+        else
+            routeGenerated (e, true, orbitToDrums);
+    }
     for (const auto& e : arpOut.events) routeGenerated (e, false); // already shaped on the way in
 
     // stable sort by time (insertion sort: lists are short and mostly ordered)

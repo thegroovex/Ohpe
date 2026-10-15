@@ -43,6 +43,7 @@ constexpr std::array<Names, numKits> kits { {
     { "room", "Room", "Raum" },
     { "lofi", "Lo-Fi", "Lo-Fi" },
     { "hybrid", "Hybrid", "Hybrid" },
+    { "boom", "Boom", "Boom" }, // 0.5: synthesised deep kick / sub kit
 } };
 
 struct Instrument

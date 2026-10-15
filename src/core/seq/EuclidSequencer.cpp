@@ -83,9 +83,22 @@ void EuclidSequencer::prepare (double sampleRate, int)
     reset();
 }
 
+std::vector<ParamDescriptor> EuclidSequencer::getLateParamDescriptors() const
+{
+    using namespace pd;
+    auto d = seq::swingHumanDescriptors ("Euclid", "Euklid");
+    for (int r = 0; r < numRings; ++r)
+    {
+        const auto n = std::to_string (r + 1);
+        d.push_back (integer ("r" + n + ".vel", "Ring " + n + " Velocity", "Ring " + n + " Anschlag", 0, 127, 0));
+    }
+    return d;
+}
+
 void EuclidSequencer::reset() noexcept
 {
     queue.reset();
+    humaniser.reset();
     clock.reset();
     sampleClock = 0;
     wasPlaying = false;
@@ -103,7 +116,14 @@ void EuclidSequencer::setParam (int i, float v) noexcept
         case Rate: rate = std::clamp (iv, 0, seq::numRates - 1); return;
         case Gate: gate = v; return;
         case Velocity: velocity = std::clamp (iv, 1, 127); return;
+        case Swing: swing = std::clamp (v, 0.0f, 0.75f); return;
+        case Human: human = std::clamp (v, 0.0f, 1.0f); return;
         default: break;
+    }
+    if (i >= RingVelocity1 && i < RingVelocity1 + numRings)
+    {
+        rings[(size_t) (i - RingVelocity1)].velocity = std::clamp (iv, 0, 127);
+        return;
     }
     const int r = (i - firstRingParam) / numRingParams;
     if (r < 0 || r >= numRings) return;
@@ -140,7 +160,7 @@ void EuclidSequencer::process (const Transport& tr, int numSamples, SequencerOut
         const int ch = std::clamp (part, 1, 16);
         clock.run (tr, seq::stepsPerQuarter (rate), sr, numSamples, [&] (long long k, int offset, double samplesPerStep) {
             position.store ((int) (((k % maxSteps) + maxSteps) % maxSteps), std::memory_order_relaxed);
-            const int64_t t = blockStart + offset;
+            const int64_t t0 = blockStart + offset + seq::swingSamples (k, swing, samplesPerStep, seq::stepsPerQuarter (rate));
             const int64_t len = seq::gateSamples (samplesPerStep, gate);
             for (int r = 0; r < numRings; ++r)
             {
@@ -149,7 +169,9 @@ void EuclidSequencer::process (const Transport& tr, int numSamples, SequencerOut
                 const int idx = (int) (((k % ring.steps) + ring.steps) % ring.steps);
                 ringPos[(size_t) r].store (idx, std::memory_order_relaxed);
                 if (((ring.mask >> idx) & 1u) == 0) continue;
-                queue.schedule (t, MidiEvent::noteOn (ch, ring.note, velocity));
+                int vel = ring.velocity > 0 ? ring.velocity : velocity;
+                const int64_t t = t0 + humaniser.apply (human, sr, vel);
+                queue.schedule (t, MidiEvent::noteOn (ch, ring.note, vel));
                 queue.schedule (t + len, MidiEvent::noteOff (ch, ring.note));
             }
         });

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <array>
+#include <cmath>
 #include <cstdint>
 
 namespace ohpe
@@ -49,6 +50,35 @@ public:
         s.held = true;
         s.sounding = true;
         return chosen;
+    }
+
+    /**
+        0.5 poly glide: like allocate(), but a note not already sounding takes the released (still
+        sounding) slot whose pitch (pitchOf(slot), semitones) is nearest, so it can glide from
+        there; with no released slot it falls back to allocate(). `stolen` is true when a sounding
+        slot is taken over (the voice then glides).
+    */
+    template <typename PitchOf>
+    int allocateNearest (int note, bool& stolen, PitchOf&& pitchOf) noexcept
+    {
+        for (int i = 0; i < polyphony; ++i)
+            if (slots[i].sounding && slots[i].note == note) return allocate (note, stolen);
+        int best = -1;
+        float bestDist = 1.0e9f;
+        for (int i = 0; i < polyphony; ++i)
+        {
+            if (! slots[i].sounding || slots[i].held) continue;
+            const float d = std::abs (pitchOf (i) - (float) note);
+            if (d < bestDist) { bestDist = d; best = i; }
+        }
+        if (best < 0) return allocate (note, stolen);
+        auto& s = slots[(size_t) best];
+        s.note = note;
+        s.age = ++clock;
+        s.held = true;
+        s.sounding = true;
+        stolen = true;
+        return best;
     }
 
     /** Marks held slots of this note as released; calls fn(slot) for each. */

@@ -32,6 +32,8 @@ public:
     void registerEngineParams (ParamRegistry& reg, EngineType type) const;
     /** 0.4: common parameters added later ("gain"), registered at the end of the layout. */
     void registerLateCommonParams (ParamRegistry& reg) const;
+    /** 0.5: "polyglide" (glide between chords with several voices), registered at the end of the layout. */
+    void registerLate05Params (ParamRegistry& reg) const;
     /** 0.4: registers the engine's late parameters (ISynthEngine::firstLateParam() onwards). */
     void registerLateEngineParams (ParamRegistry& reg, EngineType type) const;
     /** Resolves parameter indices; call after the registry is frozen. */
@@ -81,7 +83,8 @@ private:
         numCommon
     };
     std::array<int, numCommon> commonIndex {};
-    int gainIndex = -1;  ///< 0.4: "pN.gain" (dB), multiplies the part volume
+    int gainIndex = -1;
+    int polyGlideIndex = -1; ///< 0.5: "pN.polyglide"  ///< 0.4: "pN.gain" (dB), multiplies the part volume
     VoiceCommon common;
     float dcX[2] = { 0.0f, 0.0f }, dcY[2] = { 0.0f, 0.0f }, dcCoeff = 0.9993f; ///< 0.4: DC blocker (about 5 Hz)
     float volume = 0.8f, gainFactor = 1.0f, bendRange = 2.0f, tune = 0.0f, bend = 0.0f;

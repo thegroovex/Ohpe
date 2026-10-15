@@ -59,6 +59,15 @@ void Part::registerLateCommonParams (ParamRegistry& reg) const
     reg.add (std::move (d));
 }
 
+void Part::registerLate05Params (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    auto d = toggle (id ("polyglide"), "Part " + n + " Poly Glide", "Part " + n + " Poly-Glide", false);
+    d.group = "part" + n;
+    reg.add (std::move (d));
+}
+
 void Part::registerEngineParams (ParamRegistry& reg, EngineType type) const
 {
     const auto& eng = engines[(size_t) type];
@@ -102,6 +111,7 @@ void Part::bind (const ParamRegistry& reg)
     for (int i = 0; i < numCommon; ++i)
         commonIndex[(size_t) i] = reg.indexOf (id (names[i]));
     gainIndex = reg.indexOf (id ("gain"));
+    polyGlideIndex = reg.indexOf (id ("polyglide"));
 
     for (int t = 0; t < numEngineTypes; ++t)
     {
@@ -154,6 +164,7 @@ void Part::pullParams (const ParamSnapshot& s) noexcept
     tune = v (cTune) + v (cFine) * 0.01f;
     bendRange = v (cBendRange);
     common.glideSeconds = v (cGlide);
+    common.polyGlide = polyGlideIndex >= 0 && s.getBool (polyGlideIndex);
     common.velocitySens = v (cVelSens);
     common.amp = { v (cAmpA), v (cAmpD), v (cAmpS), v (cAmpR) };
     common.mod = { v (cModA), v (cModD), v (cModS), v (cModR) };

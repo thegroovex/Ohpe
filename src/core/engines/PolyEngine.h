@@ -47,6 +47,8 @@ public:
     void killBase() noexcept { ampEnv.reset(); modEnv.reset(); currentNote = -1.0f; }
     bool isActive() const noexcept { return ampEnv.isActive(); }
     int getNote() const noexcept { return note; }
+    /** The pitch the voice is gliding at now (semitones, -1 when it has never sounded). */
+    float glidePitch() const noexcept { return currentNote; }
     void setExpression (const NoteExpression& x) noexcept { expr = x; }
 
 protected:
@@ -139,7 +141,9 @@ public:
     void noteOn (int note, float velocity) noexcept override
     {
         bool stolen = false;
-        const int slot = alloc.allocate (note, stolen);
+        const bool polyGlide = common.polyGlide && common.glideSeconds > 0.0f && alloc.getPolyphony() > 1;
+        const int slot = polyGlide ? alloc.allocateNearest (note, stolen, [this] (int i) { return voices[(size_t) i].glidePitch(); })
+                                   : alloc.allocate (note, stolen);
         voices[(size_t) slot].start (note, velocity, stolen, common);
     }
 
@@ -168,6 +172,15 @@ public:
             v.render (l, r, numSamples, common);
             if (! v.isActive()) alloc.voiceFinished (i);
         }
+    }
+
+    /** Glide pitch of voice slot `i` (semitones; tests and displays), -1 when it has not sounded. */
+    float voiceGlidePitch (int i) const noexcept { return voices[(size_t) std::clamp (i, 0, ISynthEngine::maxVoices - 1)].glidePitch(); }
+    /** Note of voice slot `i` when it is active, else -1. */
+    int voiceNote (int i) const noexcept
+    {
+        const auto& v = voices[(size_t) std::clamp (i, 0, ISynthEngine::maxVoices - 1)];
+        return v.isActive() ? v.getNote() : -1;
     }
 
     int activeVoiceCount() const noexcept override

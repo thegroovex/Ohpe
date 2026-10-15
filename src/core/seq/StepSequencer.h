@@ -51,7 +51,7 @@ public:
         bool on = false;
         int note = 60;         ///< 0..127
         int velocity = 100;    ///< 1..127
-        float gate = 0.5f;     ///< fraction of the step length, 0.05..1 (1 = tie length)
+        float gate = 0.5f;     ///< fraction of the step length, 0.05..1 (1 = tie: into the next step when it plays the same note, 0.5)
         int probability = 100; ///< 0..100 %
         int ratchet = 1;       ///< 1..8 hits inside the step
         std::array<Lock, maxLocksPerStep> locks {};
@@ -96,6 +96,8 @@ public:
     int playingChainEntry() const noexcept { return playEntry.load (std::memory_order_relaxed); }
 
     void setRegistry (const ParamRegistry* r) noexcept { reg = r; }
+    /** 0.5: the core tells the sequencer when it plays the drum kit (notes to the kit are never tied). */
+    void setDrumsMode (bool drums) noexcept { drumsMode = drums; }
 
     static double stepsPerQuarter (int rateChoice) noexcept;
 
@@ -126,6 +128,8 @@ private:
 
     int length = 16, rate = R1_16, transpose = 0, channel = 1;
     float swing = 0.0f;
+    bool drumsMode = false;
+    bool extendOff (int channel, int note, int64_t time) noexcept;
     double sr = 48000.0;
     double lastStepPos = -1.0;
     int64_t sampleClock = 0;

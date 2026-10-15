@@ -34,7 +34,7 @@ std::vector<std::string> instrumentNamesEn();
 std::vector<std::string> instrumentNamesDe();
 
 /** Drum kits (append-only). 0 = the original factory kit. */
-constexpr int numKits = 5;
+constexpr int numKits = 6;
 const char* kitId (int index) noexcept;             ///< "studio", "tight" ...
 const char* kitNameEn (int index) noexcept;
 const char* kitNameDe (int index) noexcept;

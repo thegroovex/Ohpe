@@ -27,6 +27,11 @@ public:
     enum Param { On = 0, Part, Gate, firstLaneParam };
     enum LaneParam { Length = 0, Rate, Transpose, numLaneParams };
     static constexpr int numParams = firstLaneParam + numLanes * numLaneParams;
+    /** 0.5: parameters registered later (local indices continue after numParams). */
+    enum LateParam { Swing = numParams, Human, LanePart1, numAllParams = LanePart1 + numLanes };
+    /** 0.5: lanes with their own target part send on channel part + this offset (the core routes them
+        to that part, never to the drum kit). */
+    static constexpr int lanePartChannelOffset = 8;
 
     struct Step
     {
@@ -37,6 +42,9 @@ public:
 
     const char* id() const noexcept override { return "orbit"; }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
+    /** 0.5: swing, humanise and the lane targets ("seq.orbit.swing", "human", "l1.part" .. "l4.part"; 0 = the
+        Orbit target part or the drum kit), registered at the end of the layout. */
+    std::vector<ParamDescriptor> getLateParamDescriptors() const;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
     void setParam (int localIndex, float plainValue) noexcept override;
@@ -51,6 +59,8 @@ public:
     void clearPattern() noexcept;
 
     bool enabled() const noexcept { return on; }
+    /** 0.5: the core tells Orbit when it plays the drum kit (notes to the kit are never tied). */
+    void setDrumsMode (bool drums) noexcept { drumsMode = drums; }
     int targetPart() const noexcept { return part; }
     int lanePosition (int lane) const noexcept { return positions[(size_t) lane].load (std::memory_order_relaxed); }
     int laneLength (int lane) const noexcept { return lanes[(size_t) lane].length; }
@@ -61,7 +71,7 @@ private:
 
     struct Lane
     {
-        int length = maxSteps, rate = seq::R1_16, transpose = 0;
+        int length = maxSteps, rate = seq::R1_16, transpose = 0, part = 0; ///< part 0 = the Orbit target
         seq::GridClock clock;
     };
     std::array<Lane, numLanes> lanes {};
@@ -69,6 +79,9 @@ private:
     bool on = false, wasPlaying = false;
     int part = 4;
     float gate = 0.5f;
+    float swing = 0.0f, human = 0.0f;
+    bool drumsMode = false;
+    seq::Humaniser humaniser;
     double sr = 48000.0;
     int64_t sampleClock = 0;
     seq::NoteQueue queue;
