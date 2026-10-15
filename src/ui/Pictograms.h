@@ -18,7 +18,9 @@ enum class Picto
     // modes
     Synth, Envelope, Lfo, Mixer, Effects, Sequencer, Tape, Drum,
     // functions
-    Play, OctaveDown, OctaveUp, Midi
+    Play, OctaveDown, OctaveUp, Midi,
+    // 0.3
+    Library, Pro, Load, Export
 };
 
 struct PictoState
