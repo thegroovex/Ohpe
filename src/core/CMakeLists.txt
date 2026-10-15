@@ -12,7 +12,10 @@ add_library(ohpe_core STATIC
     fx/Delay.cpp
     fx/Reverb.cpp
     seq/StepSequencer.cpp
-    midi/MidiMap.cpp)
+    midi/MidiMap.cpp
+    engines/WavetableEngine.cpp
+    engines/PluckEngine.cpp
+    engines/ClusterEngine.cpp)
 
 target_include_directories(ohpe_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ohpe_core PUBLIC nlohmann_json::nlohmann_json)

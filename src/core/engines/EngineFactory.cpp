@@ -4,6 +4,9 @@
 
 #include "AnalogEngine.h"
 #include "FmEngine.h"
+#include "WavetableEngine.h"
+#include "PluckEngine.h"
+#include "ClusterEngine.h"
 
 namespace ohpe
 {
@@ -11,12 +14,12 @@ const EngineTypeInfo& engineTypeInfo (EngineType type) noexcept
 {
     static const EngineTypeInfo table[numEngineTypes] = {
         { "fm", "FM", "FM", true },
-        { "wavetable", "Wavetable", "Wavetable", false },
+        { "wavetable", "Wavetable", "Wavetable", true },
         { "analog", "Analog", "Analog", true },
-        { "pluck", "Pluck", "Pluck", false },
+        { "pluck", "Pluck", "Zupfen", true },
         { "grain", "Grain", "Grain", false },
         { "vocal", "Vocal", "Vocal", false },
-        { "cluster", "Cluster", "Cluster", false },
+        { "cluster", "Cluster", "Cluster", true },
         { "sampler", "Sampler", "Sampler", false },
     };
     const int i = (int) type;
@@ -29,6 +32,9 @@ std::unique_ptr<ISynthEngine> createEngine (EngineType type)
     {
         case EngineType::FM: return std::make_unique<FmEngine>();
         case EngineType::Analog: return std::make_unique<AnalogEngine>();
+        case EngineType::Wavetable: return std::make_unique<WavetableEngine>();
+        case EngineType::Pluck: return std::make_unique<PluckEngine>();
+        case EngineType::Cluster: return std::make_unique<ClusterEngine>();
         default: return nullptr; // phase 2: Wavetable, Pluck, Grain, Vocal, Cluster, Sampler
     }
 }
