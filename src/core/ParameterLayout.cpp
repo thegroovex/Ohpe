@@ -50,5 +50,10 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     parts[0]->registerEngineParams (reg, EngineType::Wavetable);
     parts[0]->registerEngineParams (reg, EngineType::Pluck);
     parts[0]->registerEngineParams (reg, EngineType::Cluster);
+    // ---- phase 2, engines B: Grain, Vocal, Sampler engines of part 1, drum kit ---------------
+    parts[0]->registerEngineParams (reg, EngineType::Grain);
+    parts[0]->registerEngineParams (reg, EngineType::Vocal);
+    parts[0]->registerEngineParams (reg, EngineType::Sampler);
+    drum::DrumKit::registerParams (reg);
 }
 } // namespace ohpe

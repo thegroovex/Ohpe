@@ -91,6 +91,27 @@ const std::map<juce::String, juce::String>& table()
         { "Wavetable", "Wavetable" },
         { "Pluck", "Zupfen" },
         { "Cluster", "Cluster" },
+        { "Grain", "Grain" },
+        { "Vocal", "Vokal" },
+        { "Sampler", "Sampler" },
+        // phase 2, engines B: samples, slices, drum kit
+        { "Load sample ...", "Sample laden ..." },
+        { "Clear sample", "Sample entfernen" },
+        { "Built-in sound", "Eingebauter Klang" },
+        { "Sample", "Sample" },
+        { "Zones", "Zonen" },
+        { "Slices", "Slices" },
+        { "Add zone ...", "Zone hinzufügen ..." },
+        { "Root key", "Grundton" },
+        { "Pad", "Pad" },
+        { "Choke group", "Choke-Gruppe" },
+        { "Granulate tape", "Tape granulieren" },
+        { "Vowel", "Vokal" },
+        { "The sample file was not found.", "Die Sample-Datei wurde nicht gefunden." },
+        { "The file is not a supported audio file.", "Die Datei ist keine unterstützte Audiodatei." },
+        { "The audio file is empty.", "Die Audiodatei ist leer." },
+        { "The audio file could not be read.", "Die Audiodatei konnte nicht gelesen werden." },
+        { "Some sample files are missing.", "Einige Sample-Dateien fehlen." },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;
