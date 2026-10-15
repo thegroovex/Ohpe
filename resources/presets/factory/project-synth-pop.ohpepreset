@@ -183,7 +183,7 @@
     "mix.ch5.vol": 4,
     "mix.ch5.senda": 0.0,
     "mix.ch5.sendb": 0.14,
-    "mix.master.vol": -3,
+    "mix.master.vol": -8,
     "mix.ch5.comp": 0.5,
     "fxa.delay.sync": 5,
     "fxa.delay.feedback": 0.35,
