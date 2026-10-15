@@ -83,6 +83,7 @@ void Voice::start (int midiNote, float vel, bool legato, const VoiceCommon& c) n
         noiseLp = 0.0f;
         for (auto& r : res) r.reset();
         tilt.reset();
+        air.reset();
         rng.seed ((uint32_t) (midiNote * 40503 + 7));
     }
 }
@@ -121,6 +122,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
         const float oq = 0.85f - 0.5f * p.tension;
         tilt.setCutoff (500.0f * std::pow (2.0f, p.tension * 5.0f), sr); // lax = darker, pressed = brighter
+        air.setCutoff (6500.0f * std::pow (2.0f, p.tension), sr);           // tames fizz above the formants
         const float voiced = 1.0f - 0.8f * p.breath;
         const float breathy = p.breath * 0.6f;
         float panL, panR;
@@ -147,7 +149,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
             for (int k = 0; k < numFormants; ++k) y += gains[(size_t) k] * res[(size_t) k].process (exc);
 
             modEnv.next();
-            const float out = dsp::softClip (y * 2.5f) * ampEnv.next() * gain;
+            const float out = air.lowpass (dsp::softClip (y * 2.5f)) * ampEnv.next() * gain;
             l[done + i] += out * panL;
             r[done + i] += out * panR;
         }

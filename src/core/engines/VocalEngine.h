@@ -75,7 +75,7 @@ private:
     std::array<Resonator, numFormants> res {};
     std::array<float, numFormants> gains {};
     dsp::Random rng;
-    dsp::OnePole tilt;
+    dsp::OnePole tilt, air;
 };
 } // namespace vocal
 
