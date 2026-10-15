@@ -6,6 +6,15 @@
 
 namespace ohpe
 {
+namespace
+{
+/** Fixed decimals; juce::String (v, 0) would print every significant digit instead of none. */
+juce::String fixed (float v, int places)
+{
+    return places <= 0 ? juce::String (juce::roundToInt (v)) : juce::String (v, places);
+}
+} // namespace
+
 juce::String formatValue (const ParamDescriptor& d, float v)
 {
     switch (d.kind)
@@ -26,17 +35,17 @@ juce::String formatValue (const ParamDescriptor& d, float v)
     }
     switch (d.unit)
     {
-        case ParamUnit::Hertz: return v >= 1000.0f ? juce::String (v / 1000.0f, 2) + " kHz" : juce::String (v, v < 10.0f ? 2 : 0) + " Hz";
-        case ParamUnit::Decibel: return v <= d.minValue + 0.05f && d.minValue <= -59.0f ? "-inf dB" : juce::String (v, 1) + " dB";
-        case ParamUnit::Seconds: return v < 1.0f ? juce::String (v * 1000.0f, v < 0.1f ? 1 : 0) + " ms" : juce::String (v, 2) + " s";
-        case ParamUnit::Cents: return juce::String (v, 0) + " ct";
-        case ParamUnit::Bpm: return juce::String (v, 1) + " BPM";
-        case ParamUnit::Percent: return juce::String (v * 100.0f, 0) + " %";
-        case ParamUnit::Semitones: return juce::String (v, 1) + " st";
+        case ParamUnit::Hertz: return v >= 1000.0f ? fixed (v / 1000.0f, 2) + " kHz" : fixed (v, v < 10.0f ? 2 : 0) + " Hz";
+        case ParamUnit::Decibel: return v <= d.minValue + 0.05f && d.minValue <= -59.0f ? "-inf dB" : fixed (v, 1) + " dB";
+        case ParamUnit::Seconds: return v < 1.0f ? fixed (v * 1000.0f, v < 0.1f ? 1 : 0) + " ms" : fixed (v, 2) + " s";
+        case ParamUnit::Cents: return fixed (v, 0) + " ct";
+        case ParamUnit::Bpm: return fixed (v, 1) + " BPM";
+        case ParamUnit::Percent: return fixed (v * 100.0f, 0) + " %";
+        case ParamUnit::Semitones: return fixed (v, 1) + " st";
         case ParamUnit::None: break;
     }
-    if (d.minValue >= 0.0f && d.maxValue <= 1.0f) return juce::String (v * 100.0f, 0) + " %";
-    return juce::String (v, 2);
+    if (d.minValue >= 0.0f && d.maxValue <= 1.0f) return fixed (v * 100.0f, 0) + " %";
+    return fixed (v, 2);
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout (const ParamRegistry& reg)

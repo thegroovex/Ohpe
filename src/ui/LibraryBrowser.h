@@ -42,6 +42,8 @@ public:
     void selectRow (int row);
     int numRows() const noexcept { return (int) rows.size(); }
     void setSearchText (const juce::String& text);
+    /** Re-reads the translated placeholder texts (after the UI language changed). */
+    void languageChanged();
     void toggleTag (const juce::String& tag);
     void showSavePanel (bool show);
     void setSaveFields (const juce::String& name, const juce::String& author, const juce::StringArray& tags, bool project);

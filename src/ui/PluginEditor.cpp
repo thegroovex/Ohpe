@@ -412,6 +412,7 @@ void OhpeEditor::selectLockStep (int step)
 void OhpeEditor::setLanguage (i18n::Language lang)
 {
     i18n::setCurrent (lang);
+    library.languageChanged();
     saveUiState();
     refreshKeys();
     rebindEncoders();
@@ -636,6 +637,13 @@ void OhpeEditor::rebindEncoders()
     partSelector.setPart (ctx.part);
     presetStrip.setName (proc.presets().currentName());
     repaint (scaled (30, 60, 220, 40)); // engine legend shows the part
+}
+
+void OhpeEditor::advanceAnimation (float seconds)
+{
+    display.tick (seconds);
+    // headless renders call this instead of the timer: keep the preset name current after a load
+    presetStrip.setName (proc.presets().currentName());
 }
 
 void OhpeEditor::refreshSoftKeys()
@@ -934,9 +942,9 @@ void OhpeEditor::showMidiMenu()
         const bool save = r == 1;
         self.chooser = std::make_unique<juce::FileChooser> (save ? tr ("Export MIDI map ...") : tr ("Import MIDI map ..."),
                                                             juce::File::getSpecialLocation (juce::File::userDocumentsDirectory), "*.ohpemidi");
-        const int flags = (save ? juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::warnAboutOverwriting
+        const int chooserFlags = (save ? juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::warnAboutOverwriting
                                 : juce::FileBrowserComponent::openMode) | juce::FileBrowserComponent::canSelectFiles;
-        self.chooser->launchAsync (flags, [safe, save] (const juce::FileChooser& fc) {
+        self.chooser->launchAsync (chooserFlags, [safe, save] (const juce::FileChooser& fc) {
             if (safe == nullptr) return;
             const auto f = fc.getResult();
             if (f == juce::File()) return;

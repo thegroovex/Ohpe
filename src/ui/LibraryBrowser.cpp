@@ -71,10 +71,7 @@ LibraryBrowser::LibraryBrowser (OhpeProcessor& p) : proc (p), presets (p.presets
         addChildComponent (*e);
     }
     search.setVisible (true);
-    search.setTextToShowWhenEmpty (tr ("Search"), colour::displayDim);
-    saveName.setTextToShowWhenEmpty (tr ("Name"), colour::displayDim);
-    saveAuthor.setTextToShowWhenEmpty (tr ("Author"), colour::displayDim);
-    saveFreeTags.setTextToShowWhenEmpty (tr ("More tags, comma separated"), colour::displayDim);
+    languageChanged();
     search.onTextChange = [this] {
         presets.filter.text = search.getText().toStdString();
         rebuild();
@@ -85,6 +82,15 @@ LibraryBrowser::LibraryBrowser (OhpeProcessor& p) : proc (p), presets (p.presets
 }
 
 LibraryBrowser::~LibraryBrowser() { presets.removeChangeListener (this); }
+
+void LibraryBrowser::languageChanged()
+{
+    search.setTextToShowWhenEmpty (tr ("Search"), colour::displayDim);
+    saveName.setTextToShowWhenEmpty (tr ("Name"), colour::displayDim);
+    saveAuthor.setTextToShowWhenEmpty (tr ("Author"), colour::displayDim);
+    saveFreeTags.setTextToShowWhenEmpty (tr ("More tags, comma separated"), colour::displayDim);
+    repaint();
+}
 
 float LibraryBrowser::unit() const { return (float) getWidth() / 114.0f; }
 
@@ -226,7 +232,7 @@ bool LibraryBrowser::commitSave()
 void LibraryBrowser::resized()
 {
     const float u = unit();
-    list.setBounds (juce::Rectangle<float> (u * 26.0f, u * 9.6f, u * 52.0f, (float) getHeight() - u * 11.0f).toNearestInt());
+    list.setBounds (juce::Rectangle<float> (u * 26.0f, u * 10.6f, u * 52.0f, (float) getHeight() - u * 12.0f).toNearestInt());
     list.setRowHeight (juce::jmax (12, (int) (u * 3.4f)));
     search.setBounds (juce::Rectangle<float> (u * 16.0f, u * 1.4f, u * 34.0f, u * 3.2f).toNearestInt());
     search.setFont (labelFont (u * 1.7f));
@@ -289,8 +295,11 @@ void LibraryBrowser::paint (juce::Graphics& g)
     x += u * 1.5f;
     g.setColour (colour::displayDim);
     g.setFont (labelFont (u * 1.4f));
-    g.drawText (i18n::upper (tr ("Sort")), juce::Rectangle<float> (x, y2, u * 5.0f, h2), juce::Justification::centredLeft, true);
-    x += u * 5.0f;
+    // the label is as wide as its text (SORTIEREN is much longer than SORT)
+    const auto sortLabel = i18n::upper (tr ("Sort"));
+    const float sortW = juce::jmax (u * 5.0f, juce::GlyphArrangement::getStringWidth (labelFont (u * 1.4f), sortLabel) + u * 1.0f);
+    g.drawText (sortLabel, juce::Rectangle<float> (x, y2, sortW, h2), juce::Justification::centredLeft, false);
+    x += sortW;
     const char* sorts[] = { "Name", "Rating", "Engine", "Newest" };
     for (int s = 0; s < 4; ++s)
         seg (tr (sorts[s]), u * 8.0f, (int) f.sort == s, [this, s] { presets.filter.sort = (preset::Sort) s; rebuild(); });
@@ -324,7 +333,7 @@ void LibraryBrowser::paint (juce::Graphics& g)
     // list header
     g.setColour (colour::displayDim);
     g.setFont (labelFont (u * 1.3f));
-    g.drawText (juce::String ((int) rows.size()) + " " + tr ("presets"), juce::Rectangle<float> (u * 26.0f, u * 8.2f, u * 30.0f, u * 1.4f),
+    g.drawText (juce::String ((int) rows.size()) + " " + tr ("presets"), juce::Rectangle<float> (u * 26.0f, u * 8.9f, u * 30.0f, u * 1.5f),
                 juce::Justification::centredLeft, true);
 
     // right: details or save panel

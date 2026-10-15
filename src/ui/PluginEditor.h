@@ -92,7 +92,7 @@ public:
     ui::Display& displayComponent() { return display; }
     ui::ProView& proViewComponent() { return proView; }
     ui::LibraryBrowser& libraryComponent() { return library; }
-    void advanceAnimation (float seconds) { display.tick (seconds); }
+    void advanceAnimation (float seconds);
     void softKey (int id) { onSoftKey (id); }
     bool loadAudioFile (const juce::File& f, int pad = -1);
 

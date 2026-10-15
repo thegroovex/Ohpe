@@ -107,7 +107,7 @@ juce::Rectangle<float> Display::stripArea() const
 {
     auto b = getLocalBounds().toFloat().reduced (getWidth() * 0.02f);
     float f = 0.27f;
-    if (mode == Mode::Tape) f = 0.42f;
+    if (mode == Mode::Tape) f = 0.36f;
     else if (mode == Mode::Drum) f = 0.36f;
     else if (hasSoftKeys() && mode != Mode::Sequencer) f = 0.30f;
     else if (mode == Mode::Sequencer && hasSoftKeys()) f = 0.33f;
@@ -171,6 +171,8 @@ juce::Rectangle<float> Display::softKeyArea (int index) const
     if (index < 0 || index >= (int) softKeys.size()) return {};
     auto row = softKeyRow();
     const int n = juce::jmax (4, (int) softKeys.size());
+    // the tape page keeps the left part of the row free for the time readout
+    if (mode == Mode::Tape) row = row.withTrimmedLeft (row.getWidth() * 0.24f);
     const float w = row.getWidth() / (float) n;
     // keys sit at the right end of the row
     const float x0 = row.getRight() - w * (float) softKeys.size();
@@ -683,6 +685,7 @@ void Display::paintSeqViewStrip (juce::Graphics& g, juce::Rectangle<float> s)
 
 void Display::paintTapeStrip (juce::Graphics& g, juce::Rectangle<float> s)
 {
+    juce::ignoreUnused (s);
     auto& core = proc.core();
     auto& tape = core.tape();
     const auto& reg = core.params();
@@ -740,9 +743,9 @@ void Display::paintTapeStrip (juce::Graphics& g, juce::Rectangle<float> s)
     g.fillRect (px - 1.0f, all.getY(), 2.0f, all.getHeight());
     paintSoftKeys (g);
     const auto seconds = (double) pos / sr;
-    juce::String time = juce::String ((int) seconds / 60) + ":" + juce::String ((int) seconds % 60).paddedLeft ('0', 2) + "." + juce::String ((int) (seconds * 10.0) % 10);
-    if (status.isNotEmpty()) time << "  " << status;
-    paintHint (g, softKeyRow().withWidth (juce::jmax (10.0f, softKeyArea (0).getX() - softKeyRow().getX() - 4.0f)), time);
+    juce::String clock = juce::String ((int) seconds / 60) + ":" + juce::String ((int) seconds % 60).paddedLeft ('0', 2) + "." + juce::String ((int) (seconds * 10.0) % 10);
+    if (status.isNotEmpty()) clock << "  " << status;
+    paintHint (g, softKeyRow().withWidth (juce::jmax (10.0f, softKeyArea (0).getX() - softKeyRow().getX() - 4.0f)), clock);
 }
 
 void Display::paintDrumStrip (juce::Graphics& g, juce::Rectangle<float> s)
@@ -772,7 +775,7 @@ void Display::paintDrumStrip (juce::Graphics& g, juce::Rectangle<float> s)
         g.setColour (sel ? colour::display : colour::displayText);
         g.setFont (monoFont (cell.getHeight() * 0.3f));
         g.drawText (juce::String (p + 1), cell.reduced (cell.getWidth() * 0.08f, cell.getHeight() * 0.06f), juce::Justification::topLeft);
-        g.setColour (sel ? colour::display : colour::displayDim);
+        g.setColour (sel ? colour::display : colour::displayText.withAlpha (0.72f)); // readable on the grey pad
         g.setFont (labelFont (juce::jmin (cell.getHeight() * 0.26f, cell.getWidth() * 0.2f)));
         g.drawFittedText (i18n::upper (name), cell.reduced (cell.getWidth() * 0.06f, cell.getHeight() * 0.06f).withTrimmedTop (cell.getHeight() * 0.38f).toNearestInt(),
                           juce::Justification::centredLeft, 1, 0.8f);
