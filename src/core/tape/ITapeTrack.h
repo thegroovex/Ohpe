@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
-// Phase-2 work package "tape": the eight-track tape machine (long length, varispeed, reverse,
-// loop points, lift / drop / cut / splice, unlimited undo, saturation and wow / flutter).
-// This header fixes the interface the core and the mixer will use; the implementation lives
-// in src/core/tape/. Tape tracks feed mixer sources source::tape1 .. tape1 + 7.
+// The eight-track tape machine interface (long length, varispeed, reverse, loop points,
+// lift / drop / cut / splice, unlimited undo, saturation and wow / flutter). The
+// implementation is TapeMachine (src/core/tape/TapeMachine.h). Tape tracks feed mixer
+// sources source::tape1 .. tape1 + 7.
 
 #include "../model/ParamDescriptor.h"
 
+#include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -26,11 +27,27 @@ struct TapeTransportState
     bool loopOn = false;
 };
 
+/** Record sources of a track ("tape.trN.src", append-only list). */
+namespace tapesource
+{
+constexpr int input = 0;   ///< the audio input (plug-in input bus)
+constexpr int part1 = 1;   ///< parts 1..4 -> 1..4
+constexpr int drum = 5;
+constexpr int numSources = 6;
+} // namespace tapesource
+
+/** What the tape can record from in one chunk (null = silent). Indexed by tapesource. */
+struct TapeInputs
+{
+    std::array<const float*, tapesource::numSources> left {};
+    std::array<const float*, tapesource::numSources> right {};
+};
+
 /**
-    The tape machine interface (to be implemented in phase 2).
+    The tape machine interface.
     Real-time rules as everywhere: process() never allocates; editing operations (lift, drop,
     cut, splice, undo) run on the message thread and hand the audio thread new block lists
-    lock-free.
+    without blocking it (see TapeMachine for the protocol).
 */
 class ITapeMachine
 {
@@ -42,12 +59,12 @@ public:
     virtual void prepare (double sampleRate, int maxBlockSize) = 0;
     virtual void setParam (int localIndex, float plainValue) noexcept = 0;
 
-    /** inputs: what is recorded (per armed track); outputs: per-track stereo playback (track-major). */
-    virtual void process (const float* const* inputs, float* const* trackOutputs, int numSamples) noexcept = 0;
+    /** inputs: what can be recorded; trackOutputs: 2 * numTracks pointers (L1, R1, L2, R2 ...). */
+    virtual void process (const TapeInputs& inputs, float* const* trackOutputs, int numSamples) noexcept = 0;
 
     virtual TapeTransportState transport() const noexcept = 0;
 
-    // ---- editing (message thread) ----
+    // ---- editing (message thread); times in seconds ----
     virtual bool lift (int track, double start, double end) = 0;
     virtual bool drop (int track, double at) = 0;
     virtual bool cut (int track, double start, double end) = 0;

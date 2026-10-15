@@ -43,6 +43,25 @@ Neue Engines (z. B. Wavetable), Sequencer, Effekte und die Bandmaschine docken �
 Schnittstellen an (`ISynthEngine`, `ISequencer`, `IEffect`, `ITapeMachine`). Die Schritt-für-
 Schritt-Anleitungen stehen im englischen Dokument.
 
+## Phase 2: Band, Mixer-Dynamik, FX-Slot (0.2.0)
+
+Umgesetzt in `src/core/tape/TapeMachine.*` (implementiert `ITapeMachine`; `process()` erhält
+jetzt `TapeInputs` – Eingangsbus, Parts, Drum), `src/core/fx/` (Kompressor, Bandsättigung,
+Chorus, Phaser, Bitcrusher, Filter-Drive, `InsertSlot`), im Mixer (Kompressor-lite je Kanal,
+Master-Kompressor, Bandstufe, Limiter-Obergrenze, Direkt-Einspeisung für Band-Direktausgänge)
+und in `src/plugin/TapeIO.*` (Bandaudio im Plug-in-Zustand, Offline-Export). Entscheidungen:
+
+* **Eingangsbus:** ein Stereo-/Mono-Eingang „Input“, standardmäßig aus;
+  `Core::setAudioInput()` reicht ihn für den nächsten Block an den Kern.
+* **Kern-Anbindung:** `Core::process()` ruft je Teilstück nach dem Rendern der Parts
+  `renderTapeChunk()` auf: FX-Slots → Band (Aufnahme + Wiedergabe) → Quellen `tape1 …` und
+  Direktausgänge.
+* **Message-Thread:** `TapeMachine::housekeeping()` (Plug-in-Timer, 20 Hz) füllt den
+  Blockvorrat und macht aus beendeten Aufnahmen Undo-Schritte.
+* **Speichern:** Bandaudio steckt im Plug-in-Zustand hinter dem JSON (nur Blöcke mit Audio,
+  float32); keine externen Dateien. Der Undo-Verlauf wird nicht gespeichert.
+
+Anleitung: [BAND-MISCHER-FX.md](BAND-MISCHER-FX.md) · Parameter: [../PARAMETERS.md](../PARAMETERS.md).
 ## Phase 2: Parts, Sequencer und MIDI (0.2)
 
 * **Vier Parts** (`Core::numParts = 4`, IDs `p1.*` … `p4.*`; Parts 2–4 in 0.2 angehängt). Eine
@@ -54,7 +73,12 @@ Schritt-Anleitungen stehen im englischen Dokument.
   `NoteShaper` des Parts (Skala quantisieren, Ein-Finger-Akkorde) und beim Ziel-Part des
   Arpeggiators in den `Arpeggiator`. Sequencer-Noten adressieren ihren Part über MIDI-Kanal 1–4
   (= Ziel-Part). Jedes Ereignis wird ein `RoutedEvent {event, part}`; die Liste wird nach Zeit
-  sortiert und beim Rendern an `MpeInput` → `Part` verteilt.
+  sortiert und beim Rendern an `MpeInput` → `Part` verteilt. MIDI-Kanal 10 (`Core::drumChannel`)
+  geht zusätzlich an das Drum-Kit (`RoutedEvent::part` = `Core::drumPart`); Omni-Parts
+  überspringen ihn.
+* **Band und FX-Slots mit vier Parts:** jeder Part rendert in einen eigenen Puffer, durchläuft
+  seinen `InsertSlot` (bisher hat nur Part 1 FX-Slot-Parameter; die anderen bleiben aus) und kann
+  Bandquelle sein; `renderTapeChunk()` läuft nach den Parts und dem Drum-Kit.
 * **Sequencer** (`src/core/seq`): `StepSequencer` (16 Pattern, Kette / Song-Modus),
   `EuclidSequencer`, `Arpeggiator`, `OrbitSequencer`. Gemeinsam (`SeqCommon.h`): `GridClock`
   leitet Schrittgrenzen aus der absoluten ppq-Position ab (phasenstarr, sicher bei Loops und

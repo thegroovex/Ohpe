@@ -161,6 +161,26 @@ Recording external audio needs an input bus in the plug-in (decision for phase 2
 * pluginval at strictness 5 on the VST3.
 * `scripts/test-all.sh` runs all of it; see [CONTRIBUTING.md](../CONTRIBUTING.md).
 
+## Phase 2: tape, mixer dynamics, FX slot (0.2.0)
+
+Implemented in `src/core/tape/TapeMachine.*` (implements `ITapeMachine`; `process()` now takes
+`TapeInputs` – input bus, parts, drum), `src/core/fx/` (`Compressor`, `TapeSaturator`,
+`InsertEffects` – chorus, phaser, bitcrush, filter drive – and `InsertSlot`), the mixer
+(compressor-lite per channel, master compressor, tape stage, limiter ceiling, direct feeds for
+tape direct outs) and `src/plugin/TapeIO.*` (tape audio in the plug-in state, offline bounce).
+Decisions:
+
+* **Input bus:** the plug-in has one stereo / mono input bus "Input", disabled by default;
+  `Core::setAudioInput()` hands it to the core for the next block.
+* **Core hook:** `Core::process()` calls `renderTapeChunk()` once per chunk after the parts
+  rendered: part FX slots → tape (record + playback) → sources `tape1 … tape1 + 7` and direct
+  outs. Parameters are pulled with the other modules (`pullPhase2Params()`).
+* **Message-thread duty:** `TapeMachine::housekeeping()` (plug-in timer, 20 Hz) refills the
+  block pool for recording and turns finished recording passes into undo steps.
+* **Persistence:** tape audio is embedded in the plug-in state after the JSON (sparse, float32);
+  no external files. Undo history is not saved.
+
+Guide: [en/TAPE-MIXER-FX.md](en/TAPE-MIXER-FX.md) · parameters: [PARAMETERS.md](PARAMETERS.md).
 ## Phase 2: parts, sequencers and MIDI (0.2)
 
 * **Four parts** (`Core::numParts = 4`, IDs `p1.*` … `p4.*`). Parts 2–4 were appended in 0.2.
@@ -173,6 +193,11 @@ Recording external audio needs an input bus in the plug-in (decision for phase 2
   into the `Arpeggiator`. Sequencer notes address their part by MIDI channel 1–4 (= target part)
   and pass the part's sequencer `NoteShaper`. Every event becomes a `RoutedEvent {event, part}`;
   the merged list is sorted by time and dispatched to `MpeInput` → `Part` while rendering.
+  MIDI channel 10 (`Core::drumChannel`) also goes to the drum kit (`RoutedEvent::part` =
+  `Core::drumPart`); omni parts skip it.
+* **Tape and FX slots with four parts:** every part renders into its own buffer, passes its
+  `InsertSlot` (only part 1 has FX slot parameters so far; the others stay Off) and can be a tape
+  source; `renderTapeChunk()` runs after the parts and the drum kit.
 * **Sequencers** (`src/core/seq`): `StepSequencer` (16 patterns, chain / song mode),
   `EuclidSequencer`, `Arpeggiator`, `OrbitSequencer`. Shared helpers in `SeqCommon.h`:
   `GridClock` derives step boundaries from the transport's absolute ppq (phase-locked, loop- and

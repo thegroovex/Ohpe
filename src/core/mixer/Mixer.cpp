@@ -59,12 +59,37 @@ void Mixer::registerParams (ParamRegistry& reg) const
     for (auto d : reverb.getParamDescriptors()) { d.id = "fxb.reverb." + d.id; d.group = "fx/b"; reg.add (std::move (d)); }
 }
 
+void Mixer::registerDynamicsParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    for (int ch = 0; ch < numChannels; ++ch)
+    {
+        const auto n = std::to_string (ch + 1);
+        auto d = continuous (chId (ch, "comp"), "Ch " + n + " Compressor", "Kanal " + n + " Kompressor", 0.0f, 1.0f, 0.0f);
+        d.group = "mixer/ch" + n;
+        reg.add (std::move (d));
+    }
+    auto addM = [&] (ParamDescriptor d) { d.group = "mixer/master"; reg.add (std::move (d)); };
+    addM (toggle ("mix.master.comp", "Master Compressor", "Master-Kompressor", false));
+    addM (continuous ("mix.master.comp.thresh", "Comp Threshold", "Kompressor Schwelle", -40.0f, 0.0f, -12.0f, ParamUnit::Decibel));
+    addM (continuous ("mix.master.comp.ratio", "Comp Ratio", "Kompressor Ratio", 1.0f, 20.0f, 3.0f, ParamUnit::None, 0.4f));
+    addM (continuous ("mix.master.comp.attack", "Comp Attack", "Kompressor Attack", 0.0001f, 0.1f, 0.01f, ParamUnit::Seconds, 0.4f));
+    addM (continuous ("mix.master.comp.release", "Comp Release", "Kompressor Release", 0.01f, 2.0f, 0.15f, ParamUnit::Seconds, 0.4f));
+    addM (continuous ("mix.master.comp.makeup", "Comp Makeup", "Kompressor Aufholverstärkung", 0.0f, 24.0f, 0.0f, ParamUnit::Decibel));
+    addM (continuous ("mix.master.tapesat", "Master Tape Saturation", "Master-Bandsättigung", 0.0f, 1.0f, 0.0f));
+    addM (continuous ("mix.master.ceiling", "Limiter Ceiling", "Limiter-Obergrenze", -12.0f, 0.0f, -0.3f, ParamUnit::Decibel));
+}
+
 void Mixer::bind (const ParamRegistry& reg)
 {
     static const char* names[numChannelParams] = { "src", "vol", "pan", "mute", "solo", "eqlo", "eqmid", "eqhi", "senda", "sendb", "out" };
     for (int ch = 0; ch < numChannels; ++ch)
         for (int p = 0; p < numChannelParams; ++p)
             channels[(size_t) ch].idx[(size_t) p] = reg.indexOf (chId (ch, names[p]));
+    for (int ch = 0; ch < numChannels; ++ch) channels[(size_t) ch].compIdx = reg.indexOf (chId (ch, "comp"));
+    dynIdx = { reg.indexOf ("mix.master.comp"), reg.indexOf ("mix.master.comp.thresh"), reg.indexOf ("mix.master.comp.ratio"),
+               reg.indexOf ("mix.master.comp.attack"), reg.indexOf ("mix.master.comp.release"), reg.indexOf ("mix.master.comp.makeup"),
+               reg.indexOf ("mix.master.tapesat"), reg.indexOf ("mix.master.ceiling") };
     masterIdx = { reg.indexOf ("mix.master.vol"), reg.indexOf ("mix.master.limit"), reg.indexOf ("mix.returna"), reg.indexOf ("mix.returnb") };
     delayIdx.clear();
     for (const auto& d : delay.getParamDescriptors()) delayIdx.push_back (reg.indexOf ("fxa.delay." + d.id));
@@ -86,7 +111,10 @@ void Mixer::prepare (double sampleRate, int maxBlockSize)
     {
         c.gainL.prepare (sr, 15.0f);
         c.gainR.prepare (sr, 15.0f);
+        c.comp.prepare (sr);
     }
+    masterComp.prepare (sr);
+    masterSat.prepare (sr);
     std::fill (delayLast.begin(), delayLast.end(), NAN);
     std::fill (reverbLast.begin(), reverbLast.end(), NAN);
     reset();
@@ -100,7 +128,12 @@ void Mixer::reset() noexcept
             for (auto& f : *b) f.reset();
         c.gainL.reset (0.0f);
         c.gainR.reset (0.0f);
+        c.comp.reset();
     }
+    masterComp.reset();
+    masterSat.reset();
+    numDirects = 0;
+    for (auto& r : reductions) r.store (0.0f);
     delay.reset();
     reverb.reset();
     limiter.reset();
@@ -120,6 +153,13 @@ void Mixer::pullParams (const ParamSnapshot& s) noexcept
         c.sendA = s[c.idx[SendA]];
         c.sendB = s[c.idx[SendB]];
         c.out = s.getInt (c.idx[Out]);
+        if (const float a = c.compIdx >= 0 ? dsp::clamp01 (s[c.compIdx]) : 0.0f; a != c.compAmount)
+        {
+            // compressor-lite: one amount knob -> threshold, ratio and half the makeup
+            c.compAmount = a;
+            const float thresh = -4.0f - 26.0f * a, ratio = 1.5f + 4.5f * a;
+            c.comp.set (thresh, ratio, 8.0f, 160.0f, 0.5f * -thresh * (1.0f - 1.0f / ratio));
+        }
         const float lo = s[c.idx[EqLow]], mi = s[c.idx[EqMid]], hi = s[c.idx[EqHigh]];
         if (lo != c.eqLow || mi != c.eqMid || hi != c.eqHigh || c.low[0].isFlat() != (std::abs (lo) < 0.01f))
         {
@@ -137,10 +177,25 @@ void Mixer::pullParams (const ParamSnapshot& s) noexcept
     limiterOn = s.getBool (masterIdx[MasterLimit]);
     returnA = s[masterIdx[ReturnA]];
     returnB = s[masterIdx[ReturnB]];
+    masterCompOn = dynIdx[MComp] >= 0 && s.getBool (dynIdx[MComp]);
+    if (masterCompOn)
+        masterComp.set (s[dynIdx[MThresh]], s[dynIdx[MRatio]], s[dynIdx[MAttack]] * 1000.0f, s[dynIdx[MRelease]] * 1000.0f, s[dynIdx[MMakeup]]);
+    if (dynIdx[MTapeSat] >= 0 && s[dynIdx[MTapeSat]] != masterSat.getAmount()) masterSat.setAmount (s[dynIdx[MTapeSat]]);
+    if (dynIdx[MCeiling] >= 0)
+    {
+        const float ceilDb = s[dynIdx[MCeiling]];
+        limiter.setCeiling (std::abs (ceilDb + 0.3f) < 1.0e-4f ? 0.966f : dsp::dbToGain (ceilDb));
+    }
     for (size_t i = 0; i < delayIdx.size(); ++i)
         if (const float v = s[delayIdx[i]]; ! (v == delayLast[i])) { delayLast[i] = v; delay.setParam ((int) i, v); }
     for (size_t i = 0; i < reverbIdx.size(); ++i)
         if (const float v = s[reverbIdx[i]]; ! (v == reverbLast[i])) { reverbLast[i] = v; reverb.setParam ((int) i, v); }
+}
+
+void Mixer::addDirect (const float* l, const float* r, int target) noexcept
+{
+    if (l == nullptr || r == nullptr || numDirects >= (int) directs.size()) return;
+    directs[(size_t) numDirects++] = { l, r, target };
 }
 
 void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) noexcept
@@ -184,11 +239,32 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
         }
 
         const bool eq = ! (c.low[0].isFlat() && c.mid[0].isFlat() && c.high[0].isFlat());
+        const bool comp = c.compAmount > 0.0f;
+        if (comp)
+        {
+            // EQ -> compressor-lite into the channel scratch, then the fader below
+            for (int i = 0; i < n; ++i)
+            {
+                float l = sl[i], r = sr2[i];
+                if (eq)
+                {
+                    l = c.high[0].process (c.mid[0].process (c.low[0].process (l)));
+                    r = c.high[1].process (c.mid[1].process (c.low[1].process (r)));
+                }
+                chL[(size_t) i] = l;
+                chR[(size_t) i] = r;
+            }
+            c.comp.process (chL.data(), chR.data(), n);
+            sl = chL.data();
+            sr2 = chR.data();
+        }
+        reductions[(size_t) ci].store (comp ? c.comp.gainReductionDb() : 0.0f, std::memory_order_relaxed);
+        const bool eqHere = eq && ! comp;
         float peak = 0.0f;
         for (int i = 0; i < n; ++i)
         {
             float l = sl[i], r = sr2[i];
-            if (eq)
+            if (eqHere)
             {
                 l = c.high[0].process (c.mid[0].process (c.low[0].process (l)));
                 r = c.high[1].process (c.mid[1].process (c.low[1].process (r)));
@@ -206,12 +282,53 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
         meters[(size_t) ci].store (peak, std::memory_order_relaxed);
     }
 
+    // direct feeds (tape direct outs): aux output, or the main mix when that output is disabled
+    for (int d = 0; d < numDirects; ++d)
+    {
+        const auto& f = directs[(size_t) d];
+        float* dl = masterL.data();
+        float* dr = masterR.data();
+        if (f.target > 0 && f.target <= numAuxOutputs && out.left[(size_t) f.target] != nullptr && out.right[(size_t) f.target] != nullptr)
+        {
+            dl = out.left[(size_t) f.target];
+            dr = out.right[(size_t) f.target];
+        }
+        for (int i = 0; i < n; ++i)
+        {
+            dl[i] += f.l[i];
+            dr[i] += f.r[i];
+        }
+    }
+    numDirects = 0;
+
     delay.process (sendAL.data(), sendAR.data(), n);
     reverb.process (sendBL.data(), sendBR.data(), n);
-    for (int i = 0; i < n; ++i)
+    const bool dynamics = masterCompOn || ! masterSat.isBypassed();
+    if (! dynamics)
     {
-        masterL[(size_t) i] = (masterL[(size_t) i] + sendAL[(size_t) i] * returnA + sendBL[(size_t) i] * returnB) * masterGain;
-        masterR[(size_t) i] = (masterR[(size_t) i] + sendAR[(size_t) i] * returnA + sendBR[(size_t) i] * returnB) * masterGain;
+        for (int i = 0; i < n; ++i)
+        {
+            masterL[(size_t) i] = (masterL[(size_t) i] + sendAL[(size_t) i] * returnA + sendBL[(size_t) i] * returnB) * masterGain;
+            masterR[(size_t) i] = (masterR[(size_t) i] + sendAR[(size_t) i] * returnA + sendBR[(size_t) i] * returnB) * masterGain;
+        }
+        reductions[numChannels].store (0.0f, std::memory_order_relaxed);
+    }
+    else
+    {
+        // master chain: sum -> compressor -> tape saturation -> volume -> limiter
+        for (int i = 0; i < n; ++i)
+        {
+            masterL[(size_t) i] = masterL[(size_t) i] + sendAL[(size_t) i] * returnA + sendBL[(size_t) i] * returnB;
+            masterR[(size_t) i] = masterR[(size_t) i] + sendAR[(size_t) i] * returnA + sendBR[(size_t) i] * returnB;
+        }
+        if (masterCompOn) masterComp.process (masterL.data(), masterR.data(), n);
+        masterSat.process (masterL.data(), masterR.data(), n);
+        for (int i = 0; i < n; ++i)
+        {
+            masterL[(size_t) i] *= masterGain;
+            masterR[(size_t) i] *= masterGain;
+        }
+        reductions[numChannels].store (masterCompOn ? masterComp.gainReductionDb() : 0.0f, std::memory_order_relaxed);
     }
     if (limiterOn) limiter.process (masterL.data(), masterR.data(), n);
 

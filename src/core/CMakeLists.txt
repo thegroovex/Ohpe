@@ -12,7 +12,27 @@ add_library(ohpe_core STATIC
     fx/Delay.cpp
     fx/Reverb.cpp
     seq/StepSequencer.cpp
-    midi/MidiMap.cpp)
+    midi/MidiMap.cpp
+    engines/WavetableEngine.cpp
+    engines/PluckEngine.cpp
+    engines/ClusterEngine.cpp)
+
+# phase 2, engines B: Grain, Vocal, Sampler, drum kit, sample model
+target_sources(ohpe_core PRIVATE
+    engines/GrainEngine.cpp
+    engines/VocalEngine.cpp
+    engines/SamplerEngine.cpp
+    drum/DrumVoice.cpp
+    drum/DrumKit.cpp
+    sample/SampleData.cpp
+    sample/Slicer.cpp
+    sample/SampleState.cpp)
+
+# 0.2.0 package C: tape, insert effects
+target_sources(ohpe_core PRIVATE
+    tape/TapeMachine.cpp
+    fx/InsertEffects.cpp
+    fx/InsertSlot.cpp)
 
 target_include_directories(ohpe_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ohpe_core PUBLIC nlohmann_json::nlohmann_json)

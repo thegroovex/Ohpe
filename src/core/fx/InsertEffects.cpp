@@ -1,0 +1,260 @@
+// Ohpe - designed by groovex
+// SPDX-License-Identifier: AGPL-3.0-or-later
+#include "InsertEffects.h"
+
+namespace ohpe
+{
+// ---------------------------------------------------------------- chorus
+std::vector<ParamDescriptor> ChorusEffect::getParamDescriptors() const
+{
+    using namespace pd;
+    return {
+        continuous ("rate", "Chorus Rate", "Chorus-Tempo", 0.05f, 5.0f, 0.6f, ParamUnit::Hertz, 0.5f),
+        continuous ("depth", "Chorus Depth", "Chorus-Tiefe", 0.0f, 1.0f, 0.5f),
+        continuous ("mix", "Chorus Mix", "Chorus-Mischung", 0.0f, 1.0f, 0.5f),
+    };
+}
+
+void ChorusEffect::prepare (double sampleRate, int)
+{
+    sr = (float) sampleRate;
+    const size_t len = (size_t) (0.05f * sr) + 4;
+    bufL.assign (len, 0.0f);
+    bufR.assign (len, 0.0f);
+    reset();
+}
+
+void ChorusEffect::reset() noexcept
+{
+    std::fill (bufL.begin(), bufL.end(), 0.0f);
+    std::fill (bufR.begin(), bufR.end(), 0.0f);
+    writePos = 0;
+    phase = 0.0f;
+}
+
+void ChorusEffect::setParam (int i, float v) noexcept
+{
+    switch (i)
+    {
+        case Rate: rate = v; break;
+        case Depth: depth = dsp::clamp01 (v); break;
+        case Mix: mix = dsp::clamp01 (v); break;
+        default: break;
+    }
+}
+
+void ChorusEffect::process (float* l, float* r, int n) noexcept
+{
+    if (bufL.empty()) return;
+    const int len = (int) bufL.size();
+    const float inc = rate / sr;
+    const float base = 0.012f * sr, mod = 0.008f * sr * depth;
+    auto read = [len] (const std::vector<float>& b, float rp) noexcept {
+        while (rp < 0.0f) rp += (float) len;
+        const int i0 = (int) rp % len;
+        const int i1 = (i0 + 1) % len;
+        const float f = rp - std::floor (rp);
+        return b[(size_t) i0] + (b[(size_t) i1] - b[(size_t) i0]) * f;
+    };
+    for (int i = 0; i < n; ++i)
+    {
+        bufL[(size_t) writePos] = l[i];
+        bufR[(size_t) writePos] = r[i];
+        const float a = dsp::twoPi * phase;
+        const float dl = base + mod * std::sin (a);
+        const float dr = base + mod * std::cos (a);
+        const float wl = read (bufL, (float) writePos - dl);
+        const float wr = read (bufR, (float) writePos - dr);
+        l[i] = l[i] * (1.0f - mix) + wl * mix;
+        r[i] = r[i] * (1.0f - mix) + wr * mix;
+        phase += inc;
+        if (phase >= 1.0f) phase -= 1.0f;
+        if (++writePos >= len) writePos = 0;
+    }
+}
+
+// ---------------------------------------------------------------- phaser
+std::vector<ParamDescriptor> PhaserEffect::getParamDescriptors() const
+{
+    using namespace pd;
+    return {
+        continuous ("rate", "Phaser Rate", "Phaser-Tempo", 0.05f, 8.0f, 0.4f, ParamUnit::Hertz, 0.5f),
+        continuous ("depth", "Phaser Depth", "Phaser-Tiefe", 0.0f, 1.0f, 0.7f),
+        continuous ("feedback", "Phaser Feedback", "Phaser-Feedback", 0.0f, 0.95f, 0.5f),
+        continuous ("mix", "Phaser Mix", "Phaser-Mischung", 0.0f, 1.0f, 0.5f),
+    };
+}
+
+void PhaserEffect::prepare (double sampleRate, int)
+{
+    sr = (float) sampleRate;
+    reset();
+}
+
+void PhaserEffect::reset() noexcept
+{
+    zl.fill (0.0f);
+    zr.fill (0.0f);
+    fbL = fbR = 0.0f;
+    phase = 0.0f;
+}
+
+void PhaserEffect::setParam (int i, float v) noexcept
+{
+    switch (i)
+    {
+        case Rate: rate = v; break;
+        case Depth: depth = dsp::clamp01 (v); break;
+        case Feedback: feedback = std::clamp (v, 0.0f, 0.95f); break;
+        case Mix: mix = dsp::clamp01 (v); break;
+        default: break;
+    }
+}
+
+void PhaserEffect::process (float* l, float* r, int n) noexcept
+{
+    const float inc = rate / sr;
+    for (int i = 0; i < n; ++i)
+    {
+        const float a = dsp::twoPi * phase;
+        // exponential sweep, left / right a quarter period apart
+        const float ml = 0.5f + 0.5f * std::sin (a), mr = 0.5f + 0.5f * std::cos (a);
+        const float fl = 150.0f * std::pow (33.0f, ml * depth + (1.0f - depth) * 0.3f);
+        const float fr = 150.0f * std::pow (33.0f, mr * depth + (1.0f - depth) * 0.3f);
+        const float tl = std::tan (dsp::pi * std::min (fl, sr * 0.45f) / sr);
+        const float tr = std::tan (dsp::pi * std::min (fr, sr * 0.45f) / sr);
+        const float cl = (tl - 1.0f) / (tl + 1.0f), cr = (tr - 1.0f) / (tr + 1.0f);
+
+        float xl = l[i] + fbL * feedback, xr = r[i] + fbR * feedback;
+        for (int s = 0; s < numStages; ++s)
+        {
+            const float yl = cl * xl + zl[(size_t) s];
+            zl[(size_t) s] = dsp::flush (xl - cl * yl);
+            xl = yl;
+            const float yr = cr * xr + zr[(size_t) s];
+            zr[(size_t) s] = dsp::flush (xr - cr * yr);
+            xr = yr;
+        }
+        fbL = dsp::flush (std::clamp (xl, -4.0f, 4.0f));
+        fbR = dsp::flush (std::clamp (xr, -4.0f, 4.0f));
+        l[i] = l[i] * (1.0f - 0.5f * mix) + xl * 0.5f * mix;
+        r[i] = r[i] * (1.0f - 0.5f * mix) + xr * 0.5f * mix;
+        phase += inc;
+        if (phase >= 1.0f) phase -= 1.0f;
+    }
+}
+
+// ---------------------------------------------------------------- bitcrush
+std::vector<ParamDescriptor> BitcrushEffect::getParamDescriptors() const
+{
+    using namespace pd;
+    return {
+        continuous ("bits", "Bit Depth", "Bittiefe", 1.0f, 16.0f, 8.0f),
+        continuous ("downsample", "Downsample", "Downsampling", 1.0f, 64.0f, 1.0f, ParamUnit::None, 0.4f),
+        continuous ("mix", "Bitcrush Mix", "Bitcrusher-Mischung", 0.0f, 1.0f, 1.0f),
+    };
+}
+
+void BitcrushEffect::prepare (double, int) { reset(); }
+
+void BitcrushEffect::reset() noexcept
+{
+    holdL = holdR = 0.0f;
+    counter = 1.0f;
+}
+
+void BitcrushEffect::setParam (int i, float v) noexcept
+{
+    switch (i)
+    {
+        case Bits: bits = std::clamp (v, 1.0f, 16.0f); break;
+        case Downsample: downsample = std::clamp (v, 1.0f, 64.0f); break;
+        case Mix: mix = dsp::clamp01 (v); break;
+        default: break;
+    }
+}
+
+void BitcrushEffect::process (float* l, float* r, int n) noexcept
+{
+    const float steps = std::pow (2.0f, bits - 1.0f);
+    const float step = 1.0f / downsample;
+    for (int i = 0; i < n; ++i)
+    {
+        counter += step;
+        if (counter >= 1.0f)
+        {
+            counter -= 1.0f;
+            holdL = std::round (std::clamp (l[i], -1.0f, 1.0f) * steps) / steps;
+            holdR = std::round (std::clamp (r[i], -1.0f, 1.0f) * steps) / steps;
+        }
+        l[i] = l[i] * (1.0f - mix) + holdL * mix;
+        r[i] = r[i] * (1.0f - mix) + holdR * mix;
+    }
+}
+
+// ---------------------------------------------------------------- filter drive
+std::vector<ParamDescriptor> FilterDriveEffect::getParamDescriptors() const
+{
+    using namespace pd;
+    return {
+        continuous ("cutoff", "Drive Cutoff", "Drive-Cutoff", 20.0f, 20000.0f, 2000.0f, ParamUnit::Hertz, 0.3f),
+        continuous ("reso", "Drive Resonance", "Drive-Resonanz", 0.0f, 1.0f, 0.3f),
+        continuous ("drive", "Drive", "Drive", 0.0f, 1.0f, 0.3f),
+        choice ("mode", "Drive Filter Type", "Drive-Filtertyp", { "Low-pass", "Band-pass", "High-pass" },
+                { "Tiefpass", "Bandpass", "Hochpass" }, 0),
+        continuous ("mix", "Drive Mix", "Drive-Mischung", 0.0f, 1.0f, 1.0f),
+    };
+}
+
+void FilterDriveEffect::prepare (double sampleRate, int)
+{
+    sr = (float) sampleRate;
+    svfL.prepare (sr);
+    svfR.prepare (sr);
+    cutoffSmooth.prepare (sr, 10.0f);
+    cutoffSmooth.reset (cutoff);
+    update();
+    reset();
+}
+
+void FilterDriveEffect::reset() noexcept
+{
+    svfL.reset();
+    svfR.reset();
+}
+
+void FilterDriveEffect::update() noexcept
+{
+    svfL.set (cutoffSmooth.value(), resonance * 0.85f); // Q up to ~4: drive, not self-oscillation
+    svfR.set (cutoffSmooth.value(), resonance * 0.85f);
+}
+
+void FilterDriveEffect::setParam (int i, float v) noexcept
+{
+    switch (i)
+    {
+        case Cutoff: cutoff = std::clamp (v, 20.0f, 20000.0f); break;
+        case Resonance: resonance = dsp::clamp01 (v); break;
+        case Drive: drive = dsp::clamp01 (v); break;
+        case Mode: mode = std::clamp ((int) std::lround (v), 0, 2); break;
+        case Mix: mix = dsp::clamp01 (v); break;
+        default: break;
+    }
+}
+
+void FilterDriveEffect::process (float* l, float* r, int n) noexcept
+{
+    static constexpr int modes[3] = { dsp::Svf::LowPass, dsp::Svf::BandPass, dsp::Svf::HighPass };
+    const float pre = 1.0f + drive * 15.0f;
+    const float post = 1.0f / (1.0f + drive * 2.0f);
+    cutoffSmooth.setTarget (cutoff);
+    for (int i = 0; i < n; ++i)
+    {
+        if ((i & 15) == 0) { for (int k = 0; k < 16; ++k) cutoffSmooth.next(); update(); }
+        const float wl = svfL.process (dsp::softClip (l[i] * pre), modes[mode]) * post;
+        const float wr = svfR.process (dsp::softClip (r[i] * pre), modes[mode]) * post;
+        l[i] = l[i] * (1.0f - mix) + wl * mix;
+        r[i] = r[i] * (1.0f - mix) + wr * mix;
+    }
+}
+} // namespace ohpe

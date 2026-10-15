@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
+#include "drum/DrumKit.h"
 #include "engines/Part.h"
+#include "fx/InsertSlot.h"
 #include "midi/MidiClock.h"
 #include "midi/MidiMap.h"
 #include "midi/MpeInput.h"
@@ -16,9 +18,11 @@
 #include "seq/OrbitSequencer.h"
 #include "seq/ScaleChord.h"
 #include "seq/StepSequencer.h"
+#include "tape/TapeMachine.h"
 
 #include <array>
 #include <atomic>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -56,6 +60,17 @@ public:
     OrbitSequencer& orbitSequencer() noexcept { return orbit; }
     Part& part (int index) noexcept { return *parts[(size_t) index]; }
     Mixer& mixer() noexcept { return mix; }
+    drum::DrumKit& drumKit() noexcept { return drums; }   ///< mixer source "drum", MIDI channel 10
+    TapeMachine& tape() noexcept { return tapeMachine; }             ///< 0.2: eight-track tape
+    InsertSlot& insertFx (int part) noexcept { return inserts[(size_t) part]; } ///< 0.2: FX slot of a part
+
+    /** 0.2, audio thread: the audio input for the next process() call (plug-in input bus;
+        null = silent). Valid for that one call only. */
+    void setAudioInput (const float* left, const float* right) noexcept { inputL = left; inputR = right; }
+
+    /** 0.2, offline rendering (bounce): when set, process() also copies the eight tape track
+        outputs (L1, R1, L2, R2 ...) to these buffers. Message thread, not while playing live. */
+    void setTapeCapture (const std::array<float*, 2 * TapeMachine::numTracks>* destination) noexcept { tapeCapture = destination; }
 
     void prepare (double sampleRate, int maxBlockSize);
     void reset() noexcept;
@@ -84,6 +99,22 @@ public:
     // ---- state (message thread) ----
     std::string saveState (const std::string& uiJson = {}) const;
     bool loadState (const std::string& json, std::string* uiJsonOut = nullptr);
+
+    /**
+        Extra state sections owned by modules outside the core (e.g. "samples": the sample files
+        the plug-in loaded). Stored with saveState(); loadState() replaces them with the sections
+        of the document that the core does not own itself. Message thread.
+    */
+    void setStateSection (const std::string& name, std::string json) { extraSections[name] = std::move (json); }
+    std::string stateSection (const std::string& name) const
+    {
+        const auto it = extraSections.find (name);
+        return it != extraSections.end() ? it->second : std::string();
+    }
+
+    /** MIDI channel that plays the drum kit (parts listen on their own channels, "pN.midich"). */
+    static constexpr int drumChannel = 10;
+    static constexpr int drumPart = -1;       ///< RoutedEvent::part of events for the drum kit
 
     /** Republishes the MIDI map after editing it on the message thread. */
     void midiMapChanged() { mapper.publish (map); }
@@ -143,11 +174,14 @@ private:
     void routeGenerated (const MidiEvent& e, bool shape) noexcept;
     void addRouted (const MidiEvent& e, int part) noexcept;
     void dispatch (const RoutedEvent& e) noexcept;
+    void pullPhase2Params() noexcept;
+    void renderTapeChunk (SourceBuffers& src, int pos, int len) noexcept; ///< part FX slots, tape -> sources
 
     ParamRegistry registry;
     ParamSnapshot snapshot;
     std::array<std::unique_ptr<Part>, numParts> parts;
     Mixer mix;
+    drum::DrumKit drums;
     StepSequencer stepSeq;
     EuclidSequencer euclid;
     Arpeggiator arp;
@@ -165,6 +199,8 @@ private:
     bool internalWasRunning = false;
 
     std::array<std::vector<float>, numParts> partL, partR;
+    std::vector<float> drumL, drumR;
+    std::map<std::string, std::string> extraSections;
     std::vector<ParamLockEvent> lockStorage;
     SequencerOutput seqOut, euclidOut, arpOut, orbitOut;
 
@@ -186,6 +222,14 @@ private:
 
     struct UiNote { int note; float velocity; bool on; };
     SpscQueue<UiNote, 256> uiNotes;
+
+    // ---- 0.2: tape, FX slots, audio input ----
+    TapeMachine tapeMachine;
+    std::array<InsertSlot, numParts> inserts;
+    std::array<std::vector<float>, 2 * TapeMachine::numTracks> tapeOut;
+    const float* inputL = nullptr;
+    const float* inputR = nullptr;
+    const std::array<float*, 2 * TapeMachine::numTracks>* tapeCapture = nullptr;
 
     std::atomic<int> lastNoteOn { -1 }, voicesActive { 0 };
     std::atomic<double> ppqForUi { 0.0 }, bpmForUi { 120.0 };

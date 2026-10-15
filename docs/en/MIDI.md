@@ -12,6 +12,9 @@ channel 2 and so on. `0` means **omni** (all channels). A controller on channel 
 plays part 3; set several parts to the same channel to layer them. The on-screen keyboard plays
 on channel 1.
 
+**Channel 10 plays the drum kit.** Omni parts ignore it; a part set to channel 10 (or in MPE
+mode) hears it as well, layered with the kit.
+
 The sequencers address their part directly (their *target part*), whatever its channel.
 
 | Message | Effect |

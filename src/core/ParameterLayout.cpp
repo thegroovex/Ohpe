@@ -46,6 +46,21 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
 
     // ---- append new parameters below this line (phase 2+), never above ------------------
 
+    // ---- 0.2.0: part 1 engines Wavetable, Pluck, Cluster --------------------------------
+    parts[0]->registerEngineParams (reg, EngineType::Wavetable);
+    parts[0]->registerEngineParams (reg, EngineType::Pluck);
+    parts[0]->registerEngineParams (reg, EngineType::Cluster);
+    // ---- phase 2, engines B: Grain, Vocal, Sampler engines of part 1, drum kit ---------------
+    parts[0]->registerEngineParams (reg, EngineType::Grain);
+    parts[0]->registerEngineParams (reg, EngineType::Vocal);
+    parts[0]->registerEngineParams (reg, EngineType::Sampler);
+    drum::DrumKit::registerParams (reg);
+
+    // ---- 0.2.0: mixer dynamics, tape machine, part 1 FX slot (package C) ---------------
+    mixer.registerDynamicsParams (reg);
+    TapeMachine::registerParams (reg);
+    InsertSlot::registerParams (reg, parts[0]->prefix() + "fx.", "part1/fx");
+
     // ---- 0.2.0 (package D): step patterns / song --------------------------------------
     for (auto d : stepSeq.getChainParamDescriptors())
     {
@@ -117,5 +132,11 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
         add (toggle (Core::Ids::clockOut, "MIDI Clock Out", "MIDI-Clock senden", false));
         add (toggle (Core::Ids::notesOut, "Sequencer Notes Out", "Sequencer-Noten senden", false));
     }
+
+    // ---- 0.2.0: engines Wavetable, Pluck, Cluster, Grain, Vocal, Sampler for parts 2-4 -------
+    for (size_t i = 1; i < parts.size(); ++i)
+        for (auto type : { EngineType::Wavetable, EngineType::Pluck, EngineType::Cluster,
+                           EngineType::Grain, EngineType::Vocal, EngineType::Sampler })
+            parts[i]->registerEngineParams (reg, type);
 }
 } // namespace ohpe

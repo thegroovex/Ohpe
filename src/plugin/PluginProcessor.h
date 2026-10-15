@@ -3,6 +3,7 @@
 #pragma once
 
 #include "OhpeCore.h"
+#include "SampleLoader.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_audio_utils/juce_audio_utils.h>
@@ -14,7 +15,8 @@ namespace ohpe
 
     - Parameters: one host parameter per registry entry, same order, ID = registry ID
       (append-only, so host automation stays valid across versions).
-    - Buses: main stereo output + 8 aux stereo outputs (multi-out), MIDI in. In a plug-in the
+    - Buses: main stereo output + 8 aux stereo outputs (multi-out), MIDI in, and (0.2) one
+      stereo audio input for tape recording (off by default). In a plug-in the
       aux outputs are off until the host enables them; in the standalone app all are on.
     - MIDI learn: armMidiLearn(id) -> next CC / note is assigned on the audio thread; a timer
       on the message thread stores it in the map (notifies listeners via ChangeBroadcaster).
@@ -54,6 +56,8 @@ public:
 
     // ---- Ohpe ----
     Core& core() noexcept { return ohpeCore; }
+    /** Sample files for the Sampler / Grain engines and drum pads (message thread). */
+    SampleLoader& sampleLoader() noexcept { return samples; }
     juce::AudioProcessorValueTreeState& state() noexcept { return apvts; }
     juce::RangedAudioParameter* parameter (const juce::String& id) const { return apvts.getParameter (id); }
     juce::RangedAudioParameter* parameter (int registryIndex) const;
@@ -93,16 +97,19 @@ public:
 
 private:
     void timerCallback() override;
+    void captureInput (juce::AudioBuffer<float>& buffer, int numSamples); ///< 0.2: input bus -> core
     void syncHostParametersFromRegistry();
     void pullHostParametersIntoRegistry();
 
     Core ohpeCore;
+    SampleLoader samples { ohpeCore };
     juce::AudioProcessorValueTreeState apvts;
     std::vector<std::atomic<float>*> rawValues;
     std::vector<juce::RangedAudioParameter*> params;
     std::unique_ptr<std::atomic<float>[]> lastPushed; ///< plain value last copied host -> registry (audio + message thread)
     std::vector<MidiEvent> midiScratch;
     juce::AudioBuffer<float> scratch;
+    juce::AudioBuffer<float> inputScratch; ///< 0.2: input bus copy for tape recording
     int syncSourceParam = -1, tempoParam = -1;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OhpeProcessor)

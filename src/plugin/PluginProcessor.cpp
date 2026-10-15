@@ -3,6 +3,7 @@
 #include "PluginProcessor.h"
 
 #include "ParameterBridge.h"
+#include "TapeIO.h"
 #include "ui/PluginEditor.h"
 
 namespace ohpe
@@ -14,6 +15,8 @@ juce::AudioProcessor::BusesProperties OhpeProcessor::makeBuses()
     auto b = BusesProperties().withOutput ("Main", juce::AudioChannelSet::stereo(), true);
     for (int i = 1; i <= numAuxOutputs; ++i)
         b = b.withOutput ("Out " + juce::String (i), juce::AudioChannelSet::stereo(), standalone);
+    // 0.2 (tape): audio input for recording, off until the host / user enables it
+    b = b.withInput ("Input", juce::AudioChannelSet::stereo(), false);
     return b;
 }
 
@@ -49,14 +52,16 @@ void OhpeProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     ohpeCore.prepare (sampleRate, juce::jmax (16, samplesPerBlock));
     scratch.setSize (2, juce::jmax (16, samplesPerBlock));
+    inputScratch.setSize (2, juce::jmax (16, samplesPerBlock)); // 0.2: copy of the input bus
     keyboardState.reset();
 }
 
 bool OhpeProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-    if (! layouts.inputBuses.isEmpty())
-        for (const auto& in : layouts.inputBuses)
-            if (! in.isDisabled()) return false;
+    // 0.2: one audio input bus (tape recording): disabled, mono or stereo
+    if (layouts.inputBuses.size() > 1) return false;
+    for (const auto& in : layouts.inputBuses)
+        if (! in.isDisabled() && in != juce::AudioChannelSet::mono() && in != juce::AudioChannelSet::stereo()) return false;
     if (layouts.outputBuses.isEmpty() || layouts.outputBuses[0] != juce::AudioChannelSet::stereo())
         return false;
     for (int i = 1; i < layouts.outputBuses.size(); ++i)
@@ -118,6 +123,9 @@ void OhpeProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBu
             if (syncSourceParam >= 0 && (int) std::lround (reg.get (syncSourceParam)) == Core::SyncLink)
                 ext->fill (tr, n, getSampleRate(), reg.get (tempoParam));
 
+    // 3b. 0.2: audio input (before the outputs overwrite the shared channels)
+    captureInput (buffer, n);
+
     // 4. outputs: main + aux buses (disabled buses / missing device channels -> null = fall back to main)
     OutputBuffers out;
     const int deviceChannels = deviceOutputChannels.load (std::memory_order_relaxed);
@@ -175,10 +183,31 @@ void OhpeProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBu
 }
 
 // ---------------------------------------------------------------- MIDI learn
+void OhpeProcessor::captureInput (juce::AudioBuffer<float>& buffer, int n)
+{
+    const float* inL = nullptr;
+    const float* inR = nullptr;
+    if (getBusCount (true) > 0 && getBus (true, 0)->isEnabled() && inputScratch.getNumSamples() >= n)
+    {
+        const auto in = getBusBuffer (buffer, true, 0);
+        const int chans = juce::jmin (2, in.getNumChannels());
+        for (int c = 0; c < chans; ++c) inputScratch.copyFrom (c, 0, in, c, 0, n);
+        if (chans == 1) inputScratch.copyFrom (1, 0, in, 0, 0, n);
+        if (chans > 0)
+        {
+            inL = inputScratch.getReadPointer (0);
+            inR = inputScratch.getReadPointer (1);
+        }
+    }
+    ohpeCore.setAudioInput (inL, inR);
+}
+
 void OhpeProcessor::timerCallback()
 {
+    ohpeCore.tape().housekeeping(); // 0.2: block pool for recording, finished passes -> undo steps
     if (ohpeCore.midiMapper().applyPendingLearns (ohpeCore.midiMap()))
         sendChangeMessage();
+    samples.timerTick();
 }
 
 void OhpeProcessor::armMidiLearn (const juce::String& paramId)
@@ -256,17 +285,23 @@ void OhpeProcessor::pullHostParametersIntoRegistry()
 void OhpeProcessor::getStateInformation (juce::MemoryBlock& dest)
 {
     pullHostParametersIntoRegistry();
+    samples.storeInState();
     const auto ui = juce::JSON::toString (uiState, true);
     const auto json = ohpeCore.saveState (ui.toStdString());
     dest.replaceAll (json.data(), json.size());
+    tapeio::appendTapeAudio (ohpeCore, dest); // 0.2: tape audio after the JSON (see TapeIO.h)
 }
 
 void OhpeProcessor::setStateInformation (const void* data, int size)
 {
-    const std::string json (static_cast<const char*> (data), (size_t) juce::jmax (0, size));
-    std::string ui;
+    std::string json, ui;
+    const uint8_t* tape = nullptr;
+    size_t tapeSize = 0;
+    tapeio::splitState (data, size, json, tape, tapeSize); // 0.2: JSON + optional tape audio
     if (! ohpeCore.loadState (json, &ui))
         return;
+    tapeio::restoreTape (ohpeCore, tape, tapeSize);
+    samples.restoreFromState();
     auto parsed = juce::JSON::parse (juce::String::fromUTF8 (ui.c_str()));
     uiState = parsed.isObject() ? parsed : juce::var (new juce::DynamicObject());
     syncHostParametersFromRegistry();

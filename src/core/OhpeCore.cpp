@@ -19,6 +19,9 @@ Core::Core()
 
     for (auto& p : parts) p->bind (registry);
     mix.bind (registry);
+    drums.bind (registry);
+    tapeMachine.bind (registry);
+    for (int i = 0; i < numParts; ++i) inserts[(size_t) i].bind (registry, parts[(size_t) i]->prefix() + "fx.");
     stepSeq.setRegistry (&registry);
     tempoIndex = registry.indexOf (Ids::tempo);
     seqRunIndex = registry.indexOf (Ids::seqRun);
@@ -86,7 +89,10 @@ void Core::prepare (double sampleRate, int maxBlockSize)
         partL[(size_t) i].assign ((size_t) chunk, 0.0f);
         partR[(size_t) i].assign ((size_t) chunk, 0.0f);
     }
+    drumL.assign ((size_t) chunk, 0.0f);
+    drumR.assign ((size_t) chunk, 0.0f);
     for (auto& p : parts) p->prepare (sr, chunk);
+    drums.prepare (sr, chunk);
     mix.prepare (sr, chunk);
     stepSeq.prepare (sr, maxBlock);
     euclid.prepare (sr, maxBlock);
@@ -94,6 +100,9 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     orbit.prepare (sr, maxBlock);
     clockIn.prepare (sr);
     clockGen.prepare (sr);
+    tapeMachine.prepare (sr, chunk);
+    for (auto& f : inserts) f.prepare (sr, chunk);
+    for (auto& t : tapeOut) t.assign ((size_t) chunk, 0.0f);
     std::fill (stepParamLast.begin(), stepParamLast.end(), NAN);
     for (auto* b : { &euclidBinding, &arpBinding, &orbitBinding }) std::fill (b->last.begin(), b->last.end(), NAN);
     reset();
@@ -102,7 +111,10 @@ void Core::prepare (double sampleRate, int maxBlockSize)
 void Core::reset() noexcept
 {
     for (auto& p : parts) p->reset();
+    drums.reset();
     mix.reset();
+    tapeMachine.resetDsp();
+    for (auto& f : inserts) f.reset();
     stepSeq.reset();
     euclid.reset();
     arp.reset();
@@ -133,11 +145,14 @@ void Core::addRouted (const MidiEvent& e, int part) noexcept
 
 void Core::routeLive (const MidiEvent& e) noexcept
 {
-    // keyboard / host / device MIDI: to every part listening on its channel (MPE parts listen to all)
+    // keyboard / host / device MIDI: to every part listening on its channel (MPE parts listen to all).
+    // The drum channel plays the drum kit; omni parts ignore it, a part set to that channel hears it too.
+    const bool drumCh = e.channel() == drumChannel;
+    if (drumCh) addRouted (e, drumPart);
     for (int p = 0; p < numParts; ++p)
     {
         const auto& r = routing[(size_t) p];
-        if (! (r.mpe || r.channel == 0 || r.channel == e.channel())) continue;
+        if (! (r.mpe || (r.channel == 0 && ! drumCh) || r.channel == e.channel())) continue;
         const bool toArp = arp.enabled() && arp.targetPart() == p + 1 && ! r.mpe;
         auto emit = [&] (const MidiEvent& x) {
             if (toArp && (x.isNoteOn() || x.isNoteOff())) arp.noteInput (x);
@@ -169,7 +184,8 @@ void Core::routeGenerated (const MidiEvent& e, bool shape) noexcept
 void Core::dispatch (const RoutedEvent& r) noexcept
 {
     if (r.event.isNoteOn()) lastNoteOn.store (r.event.data1, std::memory_order_relaxed);
-    mpeIn[(size_t) r.part].handle (r.event, *parts[(size_t) r.part]);
+    if (r.part == drumPart) drums.handleMidi (r.event);
+    else mpeIn[(size_t) r.part].handle (r.event, *parts[(size_t) r.part]);
 }
 
 void Core::applyLocks (const std::vector<ParamLockEvent>& locks, size_t& next, int upTo) noexcept
@@ -186,8 +202,47 @@ void Core::applyLocks (const std::vector<ParamLockEvent>& locks, size_t& next, i
     {
         snapshot.pull (registry);
         for (auto& p : parts) p->pullParams (snapshot);
+        drums.pullParams (snapshot);
         mix.pullParams (snapshot);
+        pullPhase2Params();
     }
+}
+
+void Core::pullPhase2Params() noexcept
+{
+    tapeMachine.pullParams (snapshot);
+    for (auto& f : inserts) f.pullParams (snapshot);
+}
+
+void Core::renderTapeChunk (SourceBuffers& src, int pos, int len) noexcept
+{
+    for (int p = 0; p < numParts; ++p) // FX slot of each part (Off while a part has no slot parameters)
+        inserts[(size_t) p].process (partL[(size_t) p].data(), partR[(size_t) p].data(), len);
+
+    TapeInputs tin;
+    tin.left[tapesource::input] = inputL != nullptr ? inputL + pos : nullptr;
+    tin.right[tapesource::input] = inputR != nullptr ? inputR + pos : nullptr;
+    for (int s = 0; s < 4; ++s)
+    {
+        tin.left[(size_t) (tapesource::part1 + s)] = src.left[(size_t) (source::part1 + s)];
+        tin.right[(size_t) (tapesource::part1 + s)] = src.right[(size_t) (source::part1 + s)];
+    }
+    tin.left[tapesource::drum] = src.left[(size_t) source::drum];
+    tin.right[tapesource::drum] = src.right[(size_t) source::drum];
+
+    std::array<float*, 2 * TapeMachine::numTracks> outs {};
+    for (size_t c = 0; c < outs.size(); ++c) outs[c] = tapeOut[c].data();
+    tapeMachine.process (tin, outs.data(), len);
+    for (int t = 0; t < TapeMachine::numTracks; ++t)
+    {
+        src.left[(size_t) (source::tape1 + t)] = tapeOut[(size_t) (2 * t)].data();
+        src.right[(size_t) (source::tape1 + t)] = tapeOut[(size_t) (2 * t + 1)].data();
+        if (const int target = tapeMachine.directOut (t); target > 0)
+            mix.addDirect (tapeOut[(size_t) (2 * t)].data(), tapeOut[(size_t) (2 * t + 1)].data(), target);
+    }
+    if (tapeCapture != nullptr)
+        for (size_t c = 0; c < outs.size(); ++c)
+            if (float* d = (*tapeCapture)[c]) std::memcpy (d + pos, outs[c], sizeof (float) * (size_t) len);
 }
 
 // ---------------------------------------------------------------- transport
@@ -232,7 +287,9 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     // 1. parameters for this block
     snapshot.pull (registry);
     for (auto& p : parts) p->pullParams (snapshot);
+    drums.pullParams (snapshot);
     mix.pullParams (snapshot);
+    pullPhase2Params();
     for (size_t i = 0; i < stepParamIndex.size(); ++i)
         if (const float v = snapshot[stepParamIndex[i]]; stepParamIndex[i] >= 0 && ! (v == stepParamLast[i]))
         {
@@ -324,6 +381,10 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
             src.left[(size_t) (source::part1 + p)] = partL[(size_t) p].data();
             src.right[(size_t) (source::part1 + p)] = partR[(size_t) p].data();
         }
+        drums.render (drumL.data(), drumR.data(), len);
+        src.left[(size_t) source::drum] = drumL.data();
+        src.right[(size_t) source::drum] = drumR.data();
+        renderTapeChunk (src, pos, len);
         OutputBuffers out;
         for (int o = 0; o < numOutputPairs; ++o)
         {
@@ -342,7 +403,9 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     midiOut.sortByTime();
 
     int voices = 0;
+    inputL = inputR = nullptr;
     for (auto& p : parts) voices += p->activeVoiceCount();
+    voices += drums.activeVoiceCount();
     voicesActive.store (voices, std::memory_order_relaxed);
     sampleTime += numSamples;
 }
@@ -354,7 +417,10 @@ std::string Core::saveState (const std::string& uiJson) const
     s["midimap"] = map.toJson();
     s["sequencer"] = stepSeq.toJson();
     s["orbit"] = orbit.toJson();
+    s["tape"] = tapeMachine.settingsJson();
     if (! uiJson.empty()) s["ui"] = uiJson;
+    for (const auto& [name, text] : extraSections)
+        if (! text.empty() && s.find (name) == s.end()) s[name] = text;
     return state::saveState (registry, s);
 }
 
@@ -367,6 +433,10 @@ bool Core::loadState (const std::string& json, std::string* uiJsonOut)
     mapper.publish (map);
     if (auto it = r.sections.find ("sequencer"); it != r.sections.end()) stepSeq.fromJson (it->second);
     else stepSeq.clearPattern();
+    extraSections.clear();
+    for (const auto& [name, text] : r.sections)
+        if (name != "midimap" && name != "sequencer" && name != "ui" && name != "tape" && name != "orbit") extraSections[name] = text;
+    if (auto it = r.sections.find ("tape"); it != r.sections.end()) tapeMachine.loadSettingsJson (it->second);
     if (auto it = r.sections.find ("orbit"); it != r.sections.end()) orbit.fromJson (it->second);
     else orbit.clearPattern();
     if (uiJsonOut != nullptr)

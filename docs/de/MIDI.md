@@ -12,6 +12,9 @@ Jeder Part hat einen eigenen **MIDI-Kanal** (`pN.midich`): Part 1 hört auf Kana
 Kanal 2 usw. `0` bedeutet **Omni** (alle Kanäle). Ein Controller auf Kanal 3 spielt also Part 3;
 mehrere Parts auf demselben Kanal werden geschichtet. Die Bildschirm-Tastatur spielt auf Kanal 1.
 
+**Kanal 10 spielt das Drum-Kit.** Omni-Parts ignorieren ihn; ein Part auf Kanal 10 (oder im
+MPE-Modus) hört ihn zusätzlich, geschichtet mit dem Kit.
+
 Die Sequencer sprechen ihren Part direkt an (ihren *Ziel-Part*), unabhängig von dessen Kanal.
 
 | Nachricht | Wirkung |

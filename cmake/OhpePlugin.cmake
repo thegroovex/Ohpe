@@ -30,10 +30,22 @@ set(OHPE_PLUGIN_SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/OhpeLookAndFeel.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/PluginEditor.cpp
     ${CMAKE_SOURCE_DIR}/src/standalone/AudioSettingsPage.cpp)
+# phase 2, engines B: sample files from disk
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/SampleLoader.cpp)
 
 set(OHPE_DEFINES OHPE_VERSION="${PROJECT_VERSION}" JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0 JUCE_DISPLAY_SPLASH_SCREEN=0)
 set(OHPE_JUCE_MODULES juce::juce_audio_utils juce::juce_audio_devices juce::juce_gui_extra ohpe_resources)
+
+# phase 2, engines B: factory drum kit (CC0 recordings, see THIRD-PARTY.md), embedded as FLAC
+file(GLOB OHPE_DRUMKIT_FILES ${CMAKE_SOURCE_DIR}/resources/drumkit/*.flac)
+juce_add_binary_data(ohpe_drumkit
+    HEADER_NAME OhpeDrumKit.h
+    NAMESPACE OhpeDrumKit
+    SOURCES ${OHPE_DRUMKIT_FILES})
+set_target_properties(ohpe_drumkit PROPERTIES POSITION_INDEPENDENT_CODE ON)
+list(APPEND OHPE_JUCE_MODULES ohpe_drumkit)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/FactoryKit.cpp)
 
 set(OHPE_FORMATS VST3 Standalone)
 if(APPLE)
@@ -95,4 +107,11 @@ if(OHPE_BUILD_TESTS)
     target_include_directories(ohpe_screenshot PRIVATE ${CMAKE_SOURCE_DIR}/src)
     target_compile_definitions(ohpe_screenshot PRIVATE ${OHPE_DEFINES} OHPE_NO_PLUGIN_ENTRY=1 JUCE_MODAL_LOOPS_PERMITTED=1)
     target_link_libraries(ohpe_screenshot PRIVATE ohpe_core ${OHPE_JUCE_MODULES} juce::juce_recommended_config_flags)
+endif()
+
+# ---------------------------------------------------------------- 0.2.0 package C: tape I/O (state, bounce)
+target_sources(Ohpe PRIVATE ${CMAKE_SOURCE_DIR}/src/plugin/TapeIO.cpp)
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/src/plugin/TapeIO.cpp ${CMAKE_SOURCE_DIR}/tests/plugin/TapeExportTests.cpp)
+    target_sources(ohpe_screenshot PRIVATE ${CMAKE_SOURCE_DIR}/src/plugin/TapeIO.cpp)
 endif()
