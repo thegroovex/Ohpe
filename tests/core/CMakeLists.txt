@@ -1,0 +1,22 @@
+# Core unit tests: no JUCE, build + run in seconds.
+#   cmake -S . -B build-core -G Ninja -DOHPE_BUILD_PLUGIN=OFF && cmake --build build-core && ctest --test-dir build-core
+add_executable(ohpe_core_tests
+    TestMain.cpp
+    TestHelpers.h
+    ParamRegistryTests.cpp
+    EnvelopeTests.cpp
+    AnalogEngineTests.cpp
+    FmEngineTests.cpp
+    VoiceTests.cpp
+    MixerTests.cpp
+    SequencerTests.cpp
+    MidiMapTests.cpp
+    StateTests.cpp
+    CoreTests.cpp)
+target_link_libraries(ohpe_core_tests PRIVATE ohpe_core doctest::doctest)
+target_compile_definitions(ohpe_core_tests PRIVATE OHPE_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+add_test(NAME core_tests COMMAND ohpe_core_tests)
+
+# parameter table dump (golden file / documentation)
+add_executable(ohpe_param_dump ${CMAKE_SOURCE_DIR}/tools/ParamDump.cpp)
+target_link_libraries(ohpe_param_dump PRIVATE ohpe_core)
