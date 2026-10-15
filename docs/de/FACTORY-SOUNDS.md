@@ -39,11 +39,12 @@ jedes Pattern spielt also auf jedem Kit. Eigene Pad-Samples haben immer Vorrang 
 
 | Kit | Klang | Gemacht aus |
 |---|---|---|
-| **Studio** | das ursprüngliche Kit: Nah-, Raum- und Overhead-Mikrofone pro Instrument gemischt | *Virtuosity Drums* (CC0) |
+| **Studio** | das ursprüngliche Kit: Nah-, Raum- und Overhead-Mikrofone pro Instrument gemischt; seit 0.5 mit druckvolleren Kicks (kürzeres Nachklingen, weniger Pappe, Schlägelklick, kurze gestimmte Sub-Schicht) | *Virtuosity Drums* (CC0), Ohpes eigene Bearbeitung |
 | **Trocken** (Tight) | trocken und kurz: Nahmikrofone, abgedämpfte Toms, kurze Becken, ein aufgenommenes Händeklatschen | *Virtuosity Drums*, VCSL-Claps (CC0) |
 | **Raum** (Room) | groß und live: Raum- und Overhead-Mikrofone, lange Ausklänge, geschichteter Clap mit kurzem Raum | *Virtuosity Drums*, VCSL-Claps (CC0) |
-| **Lo-Fi** | das Vintage-Mikrofon der Quelle, bandbegrenzt, gesättigt und grob quantisiert | *Virtuosity Drums*, VCSL-Claps (CC0) |
+| **Lo-Fi** | trockene Nahmikrofone (0.5; vorher das raumlastige Vintage-Mikrofon der Quelle) mit gewichtiger Kick, dann bandbegrenzt, gesättigt und auf 12 Bit quantisiert – staubig, aber druckvoll | *Virtuosity Drums*, VCSL-Claps (CC0) |
 | **Hybrid** | elektronische Kick, Toms, Hats, Cowbell, Claves und Congas von Ohpe synthetisiert, mit akustischen Transienten, echten Becken und Claps geschichtet | Ohpes eigene Synthese, *Virtuosity Drums*, VCSL (CC0) |
+| **Boom** (0.5) | jedes Pad synthetisiert: eine tiefe Sub-Kick mit Tonhöhenhüllkurve auf Pad 1 (C2), eine lange, angezerrte Sub-Kick auf Pad 2 (Cis2) – mit *Tune* und *Decay* des Pads stimmen und kürzen –, eine druckvolle Snare, ein knackiger geschichteter Clap, geschlossene / offene / Pedal-Hats, Cowbell, Rim, Toms und Percussion | Ohpes eigene Synthese (keine Aufnahmen) |
 
 ## Aufgenommene Instrumente
 
@@ -90,20 +91,27 @@ Werkzeuge, für Mitwirkende:
 ## Preset-Liste
 
 <!-- presets:begin -->
-### Bass (16)
+### Bass (23)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
-| Acid Line | Analog | Leads | Schmatzender, resonanter Sägezahn mit Akzent über die Anschlagstärke und kurzem Glide. |
+| Acid Line | Analog | Leads | Schmatzender, resonanter Sägezahn mit Sub für Gewicht, Akzent über die Anschlagstärke und kurzem Glide. |
+| Bounce Bass | Analog | – | Heller, druckvoller Sägezahn-Bass für hüpfende Oktav-Achtel. |
+| Dirty Sub | Analog | – | Sub, ins Ladder-Filter gefahren: knurrende Obertöne, die auch auf kleinen Lautsprechern hörbar bleiben. |
 | Fat Saw Bass | Analog | – | Zwei verstimmte Sägezähne und ein Sub durch das Ladder-Filter; groß, aber nicht dröhnend. |
 | Grit Bass | Wavetable | – | Knurrende Grit-Tabelle mit Hüllkurven-Sweep; aggressiv, aber kontrolliert. |
 | Growl FM Bass | FM | – | FM-Bass mit Feedback-Kante und langsamem Klangfarben-LFO. |
 | House Organ Bass | Analog | – | Hohles Rechteck mit zweitem Oszillator eine Oktave tiefer; kurz und druckvoll. |
+| Lofi Bass | Analog | – | Runder, warmer Bass: weicher Rechteck-Körper über kräftigem Sinus-Sub, sanft angezerrt. |
 | Log Drum Bass | Sampler | – | Tiefe Marimba-Stäbe als Bass: holzig, rund und kurz. |
+| Long Sub | Analog | – | Tiefer, lang ausklingender Sub, der zwischen überlappenden Noten gleitet (Glide); weicher Klick im Anschlag. |
 | Punch FM Bass | FM | – | Solider digitaler Bass mit hellem Anschlag und sauberem Sinus-Körper. |
+| Punch Sub | Analog | – | Kurzer, druckvoller Sub mit knackigem Filterklick; rastet mit der Kick ein. |
 | Reese Drift | Analog | – | Breite, verstimmte Sägezähne, die langsam gegeneinander schweben; dunkel und bewegt. |
+| Rolling Bass | Analog | – | Straffer, angezerrter Techno-Bass für rollende Sechzehntel: kurzer Filter-Snap, solider Sub. |
 | Round Sub | Analog | – | Warmes Rechteck mit Sub-Oszillator und weichem Filter-Blip; passt unter alles. |
 | Rubber Bass | Analog | Zupfer | Federnder gezupfter Bass: schneller Filterverlauf, runder Sub. |
+| Sine Slide | FM | – | Fast reiner Sinus-Sub mit langem Glide für gleitende Basslinien. |
 | Slap FM Bass | FM | – | Perkussiver FM-Bass: der Index schnappt zu wie eine geslappte Saite. |
 | Table Sub | Wavetable | – | Fast-Sinus-Wavetable-Bass mit Sub; reiner Tiefbass mit etwas Kante. |
 | Talking Bass | Wavetable | – | Formant-Tabelle, von der Hüllkurve gefahren: ein Vokal-„Wow“ auf jeder Note. |
@@ -111,13 +119,15 @@ Werkzeuge, für Mitwirkende:
 | Upright Pluck | Zupfen | Zupfer | Gezupfte Saite mit großem Holzkorpus: ein akustischer Bass. |
 | Wobble Bass | Analog | FX | Filter-Wobble auf einem angezerrten Sägezahn-Stapel; LFO-Tempo nach Geschmack. |
 
-### Tasten (16)
+### Tasten (19)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
 | Cluster Organ | Cluster | – | Oktav-Stapel weicher Rechtecke: eine kitschige Combo-Orgel. |
 | Digital EP | FM | – | Helleres E-Piano, das bei hartem Anschlag mehr bellt. |
 | Drawbar Organ | FM | – | Additive Orgel: sechs Sinus-Zugriegel, sanftes Vibrato, Rotor-artiger Chorus. |
+| Dub Stab | Analog | Flächen | Dunkler, verstimmter Akkord-Stab, dessen Filter langsam auf- und zugeht; mit Delay und Hall spielen. |
+| Dusty EP | FM | – | Warmes E-Piano mit Band-Wow und -Flutter (langsames Tonhöhen-LFO) und Chorus; für Lo-Fi-Akkorde gemacht. |
 | FM Vibes | FM | Zupfer | Weiche metallische Klangstäbe mit Tremolo. |
 | Funk Clav | FM | Zupfer | Knackige Clavinet-artige Tasten; kurz und synkopiert spielen. |
 | Glass Keys | Wavetable | – | Glockige Glass-Tabelle, die beim Ausklingen dunkler wird. |
@@ -127,12 +137,13 @@ Werkzeuge, für Mitwirkende:
 | Marimba | Sampler | Zupfer | Aufgenommene Marimba mit zwei Anschlagstufen. |
 | Minor Stab | Cluster | – | Ein Finger spielt einen Moll-Septakkord-Stab; verstimmt und druckvoll. |
 | Music Box | Sampler | Zupfer | Glockenspiel, weich gefiltert zur Spieluhr; Wiegenlieder und Spielzeug-Melodien. |
+| Pop Brass | Analog | Flächen | Üppiges, verstimmtes Poly-Brass mit kurzem Anschwellen und Chorus: klassische Synth-Pop-Akkorde. |
 | Soft Brass | Analog | Flächen | Polyphones Blech: langsames Filter-Anschwellen auf verstimmten Sägezähnen. |
 | Tine Piano | FM | – | E-Piano: weicher Körper und glockiger Zungen-Anteil, der mit der Taste verklingt. Chorus im FX-Slot. |
 | Velvet Stab | Analog | – | Kurzer gefilterter Akkord-Stab für House und Disco. |
 | Vibraphone | Sampler | – | Aufgenommenes Vibrafon mit sanftem Motor-Tremolo. |
 
-### Flächen (16)
+### Flächen (22)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
@@ -140,20 +151,26 @@ Werkzeuge, für Mitwirkende:
 | Angel Pad | Vocal | Vokal | Hohe „Uh“-Stimmen, die langsam zu „Ah“ wandern. |
 | Bowed Haze | Grain | – | Körner eines gestrichenen Vibrafons: ein weicher metallischer Schein. |
 | Bowed Metal | Sampler | Texturen | Gestrichenes Vibrafon (CC0-Aufnahmen), geloopt: gläsern und unheimlich. |
+| Brass Slide | Analog | Tasten | Anschwellendes Poly-Brass mit schnellem Portamento zwischen den Akkorden. |
 | Breath Choir Pad | Vocal | Vokal | Luftiger „Ah“-Chor mit viel Atem. |
 | Crystal FM Pad | FM | – | Fünf leicht verstimmte Sinus-Träger mit einem gemeinsamen Modulator. |
+| Crystal Slide | FM | – | Schimmernde FM-Fläche: verstimmte Sinus-Träger, die zwischen Akkorden gleiten. |
+| Drift Stack | Cluster | Texturen | Verstimmte Sägezahn-Stapel, die langsam von Akkord zu Akkord driften. |
 | Fifth Cloud | Cluster | – | Offene Quinten mit langsamer Drift: filmisch und neutral. |
 | Frozen Cloud | Grain | Texturen | Granulares Einfrieren der eingebauten harmonischen Textur. |
+| Glass Glide | Wavetable | Texturen | Breite Glas-Fläche mit langsamen, verträumten Gleitern zwischen den Akkorden. |
 | Glass Grains | Grain | Texturen | Körner eines singenden Weinglases (CC0-Aufnahme), langsam abgetastet. |
 | Glass Shimmer | Wavetable | Texturen | Glass-Tabelle mit breitem Unisono: luftige, glitzernde Fläche. |
+| Glide Strings | Analog | – | Ensemble-Streicher, deren Akkorde ineinander gleiten (Poly-Glide); Legato-Akkordwechsel. |
 | Harmonic Swell | Wavetable | – | Obertöne blühen auf, während die Fläche anschwillt. |
 | Night Drive | Analog | Texturen | Dunkle resonante Fläche, die mit einem langsamen Filter-LFO atmet. |
+| Slide Choir | Vocal | Vokal | Luftiger Ah-Chor; jede Stimme gleitet zum nächsten Akkord. |
 | Super Stack | Cluster | – | Sieben verstimmte Sägezähne pro Taste, breit und üppig. |
 | Sus Horizon | Cluster | – | Sus2-Stapel, die sich nie auflösen; Ambient-Teppiche. |
 | Vowel Pad | Wavetable | – | Formant-Tabelle, die zwischen Vokalen treibt; langsamer Einsatz. |
 | Warm Strings | Analog | – | Ensemble-Streicher: verstimmte Sägezähne, eine Oktave höher, sanfter Chorus. |
 
-### Leads (13)
+### Leads (14)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
@@ -163,6 +180,7 @@ Werkzeuge, für Mitwirkende:
 | Formant Lead | Wavetable | Vokal | Vokalartiges Lead, das sich mit der Hüllkurve öffnet. |
 | Hot Wire | Analog | – | Angezerrter, resonanter Sägezahn für rockige Soli. |
 | Octave Lead | Cluster | – | Oktav-gestapelte Pulse mit kurzem Filter-Blip. |
+| Pop Lead | Analog | – | Heller Sägezahn plus Oktav-Rechteck mit Vibrato: ein klarer, singender Synth-Pop-Lead. |
 | Recorder | Sampler | – | Aufgenommene Altblockflöte, geloopt, mit leichtem Vibrato. |
 | Saw Unison Lead | Wavetable | – | Classic-Tabelle in Sägezahn-Stellung mit breitem Unisono. |
 | Sine Whistle | FM | – | Fast reiner Sinus mit einem Hauch Modulation; zarte Melodien. |
@@ -189,7 +207,7 @@ Werkzeuge, für Mitwirkende:
 | Table Pluck | Wavetable | – | Wavetable-Pluck: heller Sägezahn-Frame, der schnell schließt. |
 | Zither | Sampler | – | Aufgenommene Zither: schimmernde gezupfte Saiten (CC0). |
 
-### Drums (10)
+### Drums (11)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
@@ -199,6 +217,7 @@ Werkzeuge, für Mitwirkende:
 | Filter Kick | Analog | – | Kick aus einem selbstoszillierenden Ladder-Filter, von der Hüllkurve nach unten gefahren. Um C1–C2 spielen. |
 | Metal Hat FM | FM | – | Unharmonisches FM-Rauschen: geschlossene und offene Hats je nach Tastenlänge. |
 | Noise Snare | Analog | – | Bandpass-Rauschen und Ton: eine elektronische Snare. |
+| Sub Kick | Analog | Bass | Stimmbare tiefe Kick: ein selbstoszillierendes Filter, auf die Taste gestimmt und von oben heruntergezogen; langer Boom, angezerrt. |
 | Tick Hat | Analog | – | Hochpass-Rauschen als Tick für Hi-Hat-Muster. |
 | Tuned Tom | Zupfen | – | Modellierter, trommelartiger Stab mit großem Korpus; in Oktaven spielen. |
 | Wood Block | Zupfen | – | Harter Schlägel auf einem kurzen Holzstab. |
@@ -219,7 +238,7 @@ Werkzeuge, für Mitwirkende:
 | Stutter Glitch | Grain | – | Winzige, spärliche Körner: glitchiges Stottern aus der Marimba. |
 | Table Scanner | Wavetable | Texturen | Digital-Tabelle, von einem langsamen LFO gefahren: robotische Bewegung. |
 
-### Arp (8)
+### Arp (9)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
@@ -230,6 +249,7 @@ Werkzeuge, für Mitwirkende:
 | Formant Arp | Wavetable | Vokal | Vokal-Blips für sprechende Sequenzen. |
 | Glock Arp | Sampler | Tasten | Aufgenommenes Glockenspiel für funkelnde Arpeggien (CC0). |
 | Pizzicato Arp | Zupfen | Zupfer | Kurze gezupfte Saiten für Ostinati. |
+| Sparkle Bell | FM | Zupfer | Kurze, helle FM-Glocke für funkelnde Arpeggios über Akkorden. |
 | Table Arp | Wavetable | – | Wavetable-Sequenzklang: die Position springt mit jeder Note. |
 
 ### Texturen (10)
@@ -260,17 +280,18 @@ Werkzeuge, für Mitwirkende:
 | Talking Synth | Vocal | Leads | Der LFO wandert durch die Vokale: ein sprechendes Lead. |
 | Vowel Morph | Vocal | – | Jede Note singt „Ih“ und öffnet sich mit der Hüllkurve zu „Ah“. |
 
-### Projekte / Demo-Patterns (7)
+### Projekte / Demo-Patterns (8)
 
 | Name | Kategorien | Beschreibung |
 |---|---|---|
-| Lo-Fi Beat | Drums, Tasten | Geswingter Boom-Bap auf dem Lo-Fi-Kit (Step-Sequenzer → Drums), E-Piano-Akkorde aus Orbit, ein Euklid-Bass. Play drücken. |
-| Techno Groove | Drums, Bass | Four-on-the-floor auf dem Hybrid-Kit aus Orbit (eine 12-Step-Rim-Spur driftet dagegen), eine Euklid-Acid-Linie und Offbeat-Stabs. |
-| Ambient Drift | Flächen, Texturen | Langsame Quinten-Fläche, eine generative Kalimba aus vier Orbit-Spuren mit 5, 7, 11 und 16 Steps, spärliche Klangglas-Töne aus Euklid. Ohne Drums. |
-| Synth-Pop | Drums, Zupfer | Groove auf dem Tight-Kit aus Orbit, ein Oktav-Bass über Am–F–C–G (64-Step-Pattern) und ein Euklid-Glas-Pluck. Part 4 ist eine Streicherfläche zum Mitspielen. |
+| Lo-Fi Beat | Drums, Tasten, Bass | Geswingter, humanisierter Boom-Bap mit Ghost Notes auf dem trockenen Lo-Fi-Kit (Orbit-Spuren 1–3), ein runder Bass auf Orbit-Spur 4, staubige E-Piano-Septakkorde aus dem Step-Sequenzer (Ein-Finger-Akkorde, gebunden), Shaker aus Euklid. Play drücken. |
+| Techno Groove | Drums, Bass | Treibender Four-on-the-floor auf dem Hybrid-Kit aus Orbit (Claps auf 2 und 4, Rims, akzentuierte 16tel-Hats, offene Offbeat-Hat), ein rollender Bass aus dem Step-Sequenzer und dunkle Septakkord-Stabs aus Euklid mit langsam wanderndem Filter und synchronisiertem punktiertem Achtel-Delay. |
+| Ambient Drift | Flächen, Texturen | Langsame Quinten-Fläche, eine generative Kalimba aus vier Orbit-Spuren mit 5, 7, 11 und 16 Steps mit tempo-synchronem punktiertem Achtel-Delay, spärliche Klangglas-Töne aus Euklid. Ohne Drums. |
+| Synth-Pop | Drums, Bass, Leads | Heller Four-on-the-floor auf dem Trocken-Kit aus Euklid (Snare und Clap auf 2 und 4, Achtel-Hats), ein hüpfender Oktav-Bass, üppiges Poly-Brass und ein funkelndes Arpeggio aus drei Orbit-Spuren über Am–F–C–G und eine Lead-Melodie aus dem Step-Sequenzer. |
 | Euclid Polyrhythm | Drums, Arp | Vier Euklid-Ringe mit 8, 12, 16 und 9 Steps auf dem Room-Kit, eine Marimba aus Orbit-Spuren mit 5, 6, 7 und 8 Steps und ein Orgelpunkt-Bass. |
 | Arp Sequence | Arp, Drums | Ein 64-Step-Arpeggio über Am, Fmaj7, G und Em auf einem A-Orgelpunkt, Studio-Kit-Drums aus Orbit. Der Arpeggiator ist auf Part 3 gelatcht: Akkorde spielen. |
 | Deep House | Drums, Bass, Tasten | Geshuffelte Hats und eine tiefe Kick auf dem Tight-Kit (Orbit), ein synkopierter Orgel-Bass (Step-Sequenzer) und Euklid-Akkord-Stabs. |
+| Sub & Glide | Flächen, Bass, Drums | Septakkorde, die ineinander gleiten (Glide Strings, Poly-Glide), ein langer gleitender Sub auf Orbit-Spur 1 und ein Halftime-Beat auf dem Boom-Kit aus den Orbit-Spuren 2–4, funkelnde Glocken aus Euklid. Cm7 – Abmaj7 – Ebmaj7 – Bb7. |
 
-**Engines:** FM 20, Wavetable 20, Analog 25, Zupfen 9, Grain 11, Vocal 11, Cluster 11, Sampler 13
+**Engines:** FM 24, Wavetable 21, Analog 37, Zupfen 9, Grain 11, Vocal 12, Cluster 12, Sampler 13
 <!-- presets:end -->

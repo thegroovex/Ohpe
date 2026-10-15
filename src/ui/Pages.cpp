@@ -114,7 +114,7 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
         }
         case Mode::Envelope:
             return { p + "amp.a", p + "amp.d", p + "amp.s", p + "amp.r", p + "mod.a", p + "mod.d", p + "mod.s", p + "mod.r",
-                     p + "mod.amt", p + "velsens", p + "glide", p + "voices" };
+                     p + "mod.amt", p + "velsens", p + "glide", p + "voices", p + "polyglide", "", "", "" };
         case Mode::Lfo:
             return { p + "lfo.rate", p + "lfo.depth", p + "lfo.shape", p + "lfo.dest", p + "tune", p + "fine", p + "bend", p + "vol",
                      p + "midich", p + "quant", p + "chord", "key.root", "key.scale", p + "mpe", p + "mpe.bend", p + "mpe.press",
@@ -129,17 +129,35 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
         }
         case Mode::Effects:
         {
-            Ids ids { "fxa.delay.time", "fxa.delay.feedback", "fxa.delay.tone", "fxa.delay.pingpong",
-                      "fxb.reverb.size", "fxb.reverb.damping", "fxb.reverb.predelay", "mix.returnb" };
+            Ids ids { "fxa.delay.time", "fxa.delay.sync", "fxa.delay.feedback", "fxa.delay.tone",
+                      "fxb.reverb.size", "fxb.reverb.damping", "fxb.reverb.predelay", "mix.returnb",
+                      "fxa.delay.pingpong", "", "", "" };
             for (const auto& id : padded (fxSlotParams (core, partIndex))) ids.push_back (id);
             return ids;
         }
         case Mode::Sequencer:
             switch (ctx.seqView)
             {
-                case SeqView::Euclid: return padded (withPrefix (core, Core::Ids::euclidPrefix));
+                case SeqView::Euclid:
+                {
+                    // 0.5: settings, groove (velocity, swing, humanise, drums), the rings, the ring velocities
+                    const std::string e = Core::Ids::euclidPrefix;
+                    Ids ids { e + "on", e + "part", e + "rate", e + "gate", e + "vel", e + "swing", e + "human", e + "drums" };
+                    for (int r = 1; r <= 4; ++r)
+                        for (const char* k : { "steps", "pulses", "rot", "note" }) ids.push_back (e + "r" + std::to_string (r) + "." + k);
+                    for (int r = 1; r <= 4; ++r) ids.push_back (e + "r" + std::to_string (r) + ".vel");
+                    return ids;
+                }
                 case SeqView::Arp: return padded (withPrefix (core, Core::Ids::arpPrefix));
-                case SeqView::Orbit: return padded (withPrefix (core, Core::Ids::orbitPrefix));
+                case SeqView::Orbit:
+                {
+                    // 0.5: settings, groove (swing, humanise), then each lane with its target part
+                    const std::string o = Core::Ids::orbitPrefix;
+                    Ids ids { o + "on", o + "part", o + "gate", o + "drums", o + "swing", o + "human", "", "" };
+                    for (int l = 1; l <= 4; ++l)
+                        for (const char* k : { "len", "rate", "transpose", "part" }) ids.push_back (o + "l" + std::to_string (l) + "." + k);
+                    return ids;
+                }
                 case SeqView::Sync:
                     return { Core::Ids::tempo, Core::Ids::seqRun, Core::Ids::syncSource, Core::Ids::syncSmoothing,
                              Core::Ids::clockOut, Core::Ids::notesOut, "", "" };
@@ -175,14 +193,14 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
         case Mode::Envelope: t = { "Amp Envelope", "Mod Envelope", "Voice" }; break;
         case Mode::Lfo: t = { "LFO", "Pitch & Level", "MIDI & Key", "Scale & MPE", "MPE" }; break;
         case Mode::Mixer: t = { "Channel", "EQ & Output", "Source & Dynamics", "Master", "Master Compressor", "Master Output" }; break;
-        case Mode::Effects: t = { "Delay (Send A)", "Reverb (Send B)", "FX Slot" }; break;
+        case Mode::Effects: t = { "Delay (Send A)", "Reverb (Send B)", "Delay (Send A)", "FX Slot" }; break;
         case Mode::Sequencer:
             switch (ctx.seqView)
             {
                 case SeqView::Step: t = { "Pattern", "Transport", "Song" }; break;
-                case SeqView::Euclid: t = { "Euclid", "Ring 1", "Ring 2", "Ring 3", "Ring 4" }; break;
+                case SeqView::Euclid: t = { "Euclid", "Groove", "Ring 1", "Ring 2", "Ring 3", "Ring 4", "Ring Velocity" }; break;
                 case SeqView::Arp: t = { "Arp", "Arp" }; break;
-                case SeqView::Orbit: t = { "Orbit", "Lanes", "Lanes", "Lanes", "Lanes" }; break;
+                case SeqView::Orbit: t = { "Orbit", "Groove", "Lane 1", "Lane 2", "Lane 3", "Lane 4" }; break;
                 case SeqView::Sync: t = { "Tempo & Sync", "MIDI Out" }; break;
                 case SeqView::numViews: break;
             }
@@ -195,7 +213,7 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
     if (m == Mode::Synth)
         for (size_t i = 1; i < t.size(); ++i) t[i] = "Engine";
     if (m == Mode::Effects)
-        for (size_t i = 3; i < t.size(); ++i) t[i] = "FX Slot";
+        for (size_t i = 4; i < t.size(); ++i) t[i] = "FX Slot";
     t.resize ((size_t) pages);
     return t;
 }
@@ -249,21 +267,23 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
             auto c = ctx;
             if (ctx.seqView == SeqView::Euclid)
             {
-                groups.push_back ({ "Euclid", 0, { "seq.euclid.on", "seq.euclid.part", "seq.euclid.rate", "seq.euclid.gate", "seq.euclid.vel" } });
+                groups.push_back ({ "Euclid", 0, { "seq.euclid.on", "seq.euclid.part", "seq.euclid.rate", "seq.euclid.gate", "seq.euclid.vel",
+                                                   "seq.euclid.swing", "seq.euclid.human", "seq.euclid.drums" } });
                 for (int r = 1; r <= 4; ++r)
                 {
                     const auto rp = "seq.euclid.r" + std::to_string (r) + ".";
-                    groups.push_back ({ "Ring", r, { rp + "steps", rp + "pulses", rp + "rot", rp + "note" } });
+                    groups.push_back ({ "Ring", r, { rp + "steps", rp + "pulses", rp + "rot", rp + "note", rp + "vel" } });
                 }
                 return groups;
             }
             if (ctx.seqView == SeqView::Orbit)
             {
-                groups.push_back ({ "Orbit", 0, { "seq.orbit.on", "seq.orbit.part", "seq.orbit.gate" } });
+                groups.push_back ({ "Orbit", 0, { "seq.orbit.on", "seq.orbit.part", "seq.orbit.gate", "seq.orbit.swing", "seq.orbit.human",
+                                                  "seq.orbit.drums" } });
                 for (int l = 1; l <= 4; ++l)
                 {
                     const auto lp = "seq.orbit.l" + std::to_string (l) + ".";
-                    groups.push_back ({ "Lane", l, { lp + "len", lp + "rate", lp + "transpose" } });
+                    groups.push_back ({ "Lane", l, { lp + "len", lp + "rate", lp + "transpose", lp + "part" } });
                 }
                 return groups;
             }

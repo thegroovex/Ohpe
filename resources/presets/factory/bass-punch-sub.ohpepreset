@@ -1,0 +1,35 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Punch Sub",
+  "author": "groovex",
+  "tags": [
+    "Bass"
+  ],
+  "engine": "analog",
+  "comment": "Short, punchy sub with a snappy filter click; locks in with the kick.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.5,
+    "analog.detune": 0.0,
+    "analog.cutoff": 380,
+    "analog.reso": 0.1,
+    "analog.oscmix": 0.0,
+    "analog.sub": 0.35,
+    "analog.drive": 0.5,
+    "analog.keytrack": 1.0,
+    "amp.a": 0.003,
+    "amp.d": 0.32,
+    "amp.s": 0.0,
+    "amp.r": 0.07,
+    "mod.a": 0.002,
+    "mod.d": 0.045,
+    "mod.s": 0.0,
+    "mod.r": 0.05,
+    "mod.amt": 0.75,
+    "voices": 1,
+    "velsens": 0.5,
+    "gain": 13.7
+  }
+}

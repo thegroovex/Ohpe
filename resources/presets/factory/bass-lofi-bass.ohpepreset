@@ -1,0 +1,37 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Lofi Bass",
+  "author": "groovex",
+  "tags": [
+    "Bass"
+  ],
+  "engine": "analog",
+  "comment": "Round, warm bass: a soft square body over a strong sine sub, gently driven.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.35,
+    "analog.detune": 0.03,
+    "analog.cutoff": 420,
+    "analog.reso": 0.08,
+    "analog.osc2oct": 0,
+    "analog.oscmix": 0.0,
+    "analog.sub": 0.25,
+    "analog.drive": 0.45,
+    "analog.keytrack": 0.5,
+    "amp.a": 0.004,
+    "amp.d": 0.7,
+    "amp.s": 0.65,
+    "amp.r": 0.12,
+    "mod.a": 0.002,
+    "mod.d": 0.16,
+    "mod.s": 0.15,
+    "mod.r": 0.1,
+    "mod.amt": 0.22,
+    "voices": 1,
+    "glide": 0.03,
+    "velsens": 0.4,
+    "gain": 10.2
+  }
+}

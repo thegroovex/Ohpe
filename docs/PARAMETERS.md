@@ -269,7 +269,7 @@ Appended after `tape.edit.rtz`. Guides: [English](en/FACTORY-SOUNDS.md) · [Deut
 | ID | English | Deutsch | Range | Default |
 |---|---|---|---|---|
 | `p1.sampler.inst`, `p1.grain.inst` … `p4.sampler.inst`, `p4.grain.inst` | Instrument | Instrument | Built-in, Kalimba, Marimba, Vibraphone, Glockenspiel, Harp, Harpsichord, Recorder, Singing Glass, Zither, Bowed Metal | Built-in |
-| `drum.kit` | Drum Kit | Drum-Kit | Studio, Tight, Room, Lo-Fi, Hybrid | Studio |
+| `drum.kit` | Drum Kit | Drum-Kit | Studio, Tight, Room, Lo-Fi, Hybrid, Boom (0.5: the list grows at the end) | Studio |
 | `seq.step.drums` | Step Seq to Drums | Step-Sequenzer an Drums | off / on | off |
 | `seq.euclid.drums` | Euclid to Drums | Euklid an Drums | off / on | off |
 | `seq.orbit.drums` | Orbit to Drums | Orbit an Drums | off / on | off |
@@ -277,3 +277,22 @@ Appended after `tape.edit.rtz`. Guides: [English](en/FACTORY-SOUNDS.md) · [Deut
 
 Order: `p1.sampler.inst`, `p1.grain.inst`, `p2.sampler.inst`, `p2.grain.inst`, … `p4.grain.inst`,
 `drum.kit`, `seq.step.drums`, `seq.euclid.drums`, `seq.orbit.drums`, `p1.gain` … `p4.gain`.
+
+## 0.5 – sound revision 1: groove, poly glide, synced delay
+
+Appended after `p4.gain` (index 900 onwards). Guides: [English](en/SEQUENCERS.md) · [Deutsch](de/SEQUENZER.md),
+delay sync: [English](en/TAPE-MIXER-FX.md) · [Deutsch](de/BAND-MISCHER-FX.md).
+
+| # | ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|---|
+| 900 | `seq.orbit.swing` | Orbit Swing | Orbit Swing | 0–75 % (off-beat sixteenths late by swing ÷ 2 of a sixteenth) | 0 % |
+| 901 | `seq.orbit.human` | Orbit Humanise | Orbit Humanisieren | 0–100 % (up to 10 ms late, velocity ±16) | 0 % |
+| 902 | `seq.euclid.swing` | Euclid Swing | Euklid Swing | 0–75 % | 0 % |
+| 903 | `seq.euclid.human` | Euclid Humanise | Euklid Humanisieren | 0–100 % | 0 % |
+| 904–907 | `p1.polyglide` … `p4.polyglide` | Part N Poly Glide | Part N Poly-Glide | off / on (chords glide voice by voice) | off |
+| 908–911 | `seq.euclid.r1.vel` … `seq.euclid.r4.vel` | Ring N Velocity | Ring N Anschlag | 0–127 (0 = `seq.euclid.vel`) | 0 |
+| 912–915 | `seq.orbit.l1.part` … `seq.orbit.l4.part` | Lane N Target Part | Spur N Ziel-Part | 0–4 (0 = the Orbit target / drum kit) | 0 |
+| 916 | `fxa.delay.sync` | Delay Sync | Delay-Sync | Off, 1/16, 1/8T, 1/8, 1/4T, 1/8., 1/4, 1/4., 1/2 | Off |
+
+Behaviour change in 0.5: a step-sequencer step at gate 100 % (and every Orbit step at `seq.orbit.gate`
+100 %) ties into the next step when it plays the same note (not on the drum kit).

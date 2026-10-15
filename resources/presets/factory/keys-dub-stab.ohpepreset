@@ -1,0 +1,40 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Dub Stab",
+  "author": "groovex",
+  "tags": [
+    "Keys",
+    "Pads"
+  ],
+  "engine": "analog",
+  "comment": "Dark detuned chord stab whose filter drifts slowly open and shut; give it delay and reverb.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.05,
+    "analog.detune": 0.22,
+    "analog.cutoff": 700,
+    "analog.reso": 0.3,
+    "analog.oscmix": 0.5,
+    "analog.sub": 0.0,
+    "analog.drive": 0.35,
+    "analog.keytrack": 0.5,
+    "amp.a": 0.003,
+    "amp.d": 0.5,
+    "amp.s": 0.25,
+    "amp.r": 0.45,
+    "mod.a": 0.002,
+    "mod.d": 0.25,
+    "mod.s": 0.0,
+    "mod.r": 0.2,
+    "mod.amt": 0.32,
+    "lfo.rate": 0.06,
+    "lfo.depth": 0.4,
+    "lfo.shape": 1,
+    "lfo.dest": 1,
+    "voices": 12,
+    "velsens": 0.5,
+    "gain": 15.2
+  }
+}

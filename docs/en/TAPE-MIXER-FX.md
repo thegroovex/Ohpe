@@ -77,6 +77,9 @@ recording.
 * **Limiter** (`mix.master.limit`) with an adjustable **ceiling** (`mix.master.ceiling`,
   default −0.3 dBFS as in 0.1).
 * Gain reduction is readable for meters: `Mixer::gainReduction (channel)`, master = 8.
+* **Delay sync** (0.5, `fxa.delay.sync`): Off, 1/16, 1/8T, 1/8, 1/4T, 1/8., 1/4, 1/4., 1/2. Any
+  setting but Off sets the send delay's time from the tempo (host, Link or internal) and overrides
+  `fxa.delay.time` (at most 2 s).
 
 With every new control at its default the mixer is bit-identical to 0.1.
 

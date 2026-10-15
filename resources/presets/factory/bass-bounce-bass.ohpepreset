@@ -1,0 +1,35 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Bounce Bass",
+  "author": "groovex",
+  "tags": [
+    "Bass"
+  ],
+  "engine": "analog",
+  "comment": "Bright, punchy saw bass for octave-bouncing eighths.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.1,
+    "analog.detune": 0.12,
+    "analog.cutoff": 520,
+    "analog.reso": 0.2,
+    "analog.oscmix": 0.5,
+    "analog.sub": 0.1,
+    "analog.drive": 0.35,
+    "analog.keytrack": 0.5,
+    "amp.a": 0.003,
+    "amp.d": 0.25,
+    "amp.s": 0.5,
+    "amp.r": 0.06,
+    "mod.a": 0.002,
+    "mod.d": 0.12,
+    "mod.s": 0.1,
+    "mod.r": 0.08,
+    "mod.amt": 0.42,
+    "voices": 1,
+    "velsens": 0.5,
+    "gain": 23.2
+  }
+}

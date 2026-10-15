@@ -1,0 +1,39 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Sine Slide",
+  "author": "groovex",
+  "tags": [
+    "Bass"
+  ],
+  "engine": "fm",
+  "comment": "Nearly pure sine sub with a long glide for sliding bass lines.",
+  "params": {
+    "engine": 0,
+    "fm.algo": 2,
+    "fm.modratio": 1.0,
+    "fm.index": 0.05,
+    "fm.op1ratio": 1,
+    "fm.op2ratio": 1,
+    "fm.op1level": 1.0,
+    "fm.op2level": 0.5,
+    "fm.op3level": 0.0,
+    "fm.op4level": 0.0,
+    "fm.op5level": 0.0,
+    "fm.op6level": 0.0,
+    "amp.a": 0.004,
+    "amp.d": 0.6,
+    "amp.s": 0.92,
+    "amp.r": 0.18,
+    "mod.a": 0.002,
+    "mod.d": 0.12,
+    "mod.s": 0.2,
+    "mod.r": 0.1,
+    "mod.amt": 0.6,
+    "voices": 1,
+    "glide": 0.16,
+    "velsens": 0.3,
+    "gain": 13.9
+  }
+}

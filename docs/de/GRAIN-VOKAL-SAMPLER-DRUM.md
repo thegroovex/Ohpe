@@ -110,8 +110,9 @@ Hi-Hat (Pads 6, 7, 8, 17) teilen sich Gruppe 1. Note-Offs werden ignoriert.
 * **Instrument** (`pN.grain.inst`): Die Grain-Engine granuliert einen Ton des gewählten Instruments
   statt ihrer eingebauten Textur (ein geladenes Sample oder die Tape-Quelle haben Vorrang). Bei
   gezupften und angeschlagenen Instrumenten *Position* nahe am Anfang lassen, wo der Ton am lautesten ist.
-* **Drum-Kit** (`drum.kit`): Studio (das ursprüngliche Kit), Trocken, Raum, Lo-Fi oder Hybrid. Alle
-  Kits haben dieselbe Pad-Belegung; eigene Pad-Samples haben immer Vorrang.
+* **Drum-Kit** (`drum.kit`): Studio (das ursprüngliche Kit), Trocken, Raum, Lo-Fi, Hybrid oder Boom
+  (0.5: synthetisches Kit mit tiefer Sub-Kick). Alle Kits haben dieselbe Pad-Belegung; eigene
+  Pad-Samples haben immer Vorrang.
 
 Details und Quellen: [FACTORY-SOUNDS.md](FACTORY-SOUNDS.md), [THIRD-PARTY.md](../../THIRD-PARTY.md).
 
