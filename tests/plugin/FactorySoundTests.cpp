@@ -46,7 +46,7 @@ TEST_CASE ("factory sounds: every drum kit plays every pad")
         {
             CAPTURE (kit);
             CAPTURE (pad);
-            if (kit > 0) CHECK (core.drumKit().effectiveSample (pad) != nullptr);
+            if (kit > 0) CHECK ((core.drumKit().effectiveSample (pad) != nullptr));
             core.drumKit().allNotesOff (true);
             const auto a = render::renderCore (core, { { 0, MidiEvent::noteOn (10, 36 + pad, 110) } }, 7200);
             const auto m = render::measure (a);
