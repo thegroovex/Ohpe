@@ -26,7 +26,7 @@
     "fm.op6level": 0.0,
     "amp.a": 0.003,
     "amp.d": 2.0,
-    "amp.s": 0.15,
+    "amp.s": 0.25,
     "amp.r": 0.4,
     "mod.a": 0.002,
     "mod.d": 0.8,
@@ -38,7 +38,7 @@
     "fx.chorus.depth": 0.3,
     "fx.chorus.mix": 0.3,
     "voices": 14,
-    "velsens": 0.85,
-    "gain": 10.5
+    "velsens": 0.7,
+    "gain": 9.9
   }
 }

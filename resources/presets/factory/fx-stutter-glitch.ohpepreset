@@ -13,7 +13,7 @@
     "engine": 4,
     "grain.pos": 0.02,
     "grain.size": 45,
-    "grain.density": 14,
+    "grain.density": 22,
     "grain.spray": 0.12,
     "grain.pitch": 0,
     "grain.reverse": 0.3,
@@ -35,6 +35,6 @@
     "lfo.shape": 4,
     "lfo.dest": 3,
     "voices": 6,
-    "gain": 4.8
+    "gain": 4.7
   }
 }

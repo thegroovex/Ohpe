@@ -37,14 +37,14 @@
     "mod.r": 0.1,
     "mod.amt": 0.0,
     "fx.type": 4,
-    "fx.filterdrive.cutoff": 5500,
+    "fx.filterdrive.cutoff": 8500,
     "fx.filterdrive.reso": 0.1,
     "fx.filterdrive.drive": 0.0,
-    "fx.filterdrive.mode": 2,
+    "fx.filterdrive.mode": 1,
     "fx.filterdrive.mix": 1.0,
     "velsens": 0.7,
     "voices": 4,
     "tune": -12,
-    "gain": 13.0
+    "gain": 24.0
   }
 }

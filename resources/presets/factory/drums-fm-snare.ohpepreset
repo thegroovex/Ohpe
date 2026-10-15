@@ -26,7 +26,7 @@
     "fm.op5level": 0.7,
     "fm.op6level": 1.0,
     "amp.a": 0.001,
-    "amp.d": 0.16,
+    "amp.d": 0.19,
     "amp.s": 0.0,
     "amp.r": 0.12,
     "mod.a": 0.001,
@@ -34,8 +34,14 @@
     "mod.s": 0.3,
     "mod.r": 0.1,
     "mod.amt": 0.6,
+    "fx.type": 4,
+    "fx.filterdrive.cutoff": 14000,
+    "fx.filterdrive.reso": 0.0,
+    "fx.filterdrive.drive": 0.06,
+    "fx.filterdrive.mode": 0,
+    "fx.filterdrive.mix": 0.8,
     "velsens": 0.6,
     "voices": 4,
-    "gain": 17.6
+    "gain": 17.8
   }
 }

@@ -21,16 +21,22 @@
     "analog.drive": 0.1,
     "analog.keytrack": 0.0,
     "amp.a": 0.001,
-    "amp.d": 0.05,
+    "amp.d": 0.08,
     "amp.s": 0.0,
-    "amp.r": 0.04,
+    "amp.r": 0.05,
     "mod.a": 0.001,
     "mod.d": 0.05,
     "mod.s": 0.0,
     "mod.r": 0.05,
     "mod.amt": 0.0,
+    "fx.type": 4,
+    "fx.filterdrive.cutoff": 13000,
+    "fx.filterdrive.reso": 0.0,
+    "fx.filterdrive.drive": 0.12,
+    "fx.filterdrive.mode": 0,
+    "fx.filterdrive.mix": 1.0,
     "velsens": 0.7,
     "voices": 4,
-    "gain": 17.0
+    "gain": 22.4
   }
 }

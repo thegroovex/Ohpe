@@ -17,11 +17,11 @@
     "analog.reso": 0.2,
     "analog.oscmix": 0.5,
     "analog.sub": 0.0,
-    "analog.drive": 0.2,
+    "analog.drive": 0.5,
     "analog.keytrack": 0.5,
-    "amp.a": 0.003,
+    "amp.a": 0.004,
     "amp.d": 0.6,
-    "amp.s": 0.18,
+    "amp.s": 0.4,
     "amp.r": 0.3,
     "mod.a": 0.002,
     "mod.d": 0.3,
@@ -34,6 +34,6 @@
     "fx.reverb.predelay": 0.01,
     "fx.reverb.mix": 0.2,
     "voices": 14,
-    "gain": 13.7
+    "gain": 11.7
   }
 }

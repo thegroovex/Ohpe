@@ -13,10 +13,10 @@
   "params": {
     "engine": 3,
     "pluck.material": 1.0,
-    "pluck.damping": 0.45,
-    "pluck.bright": 0.72,
+    "pluck.damping": 0.42,
+    "pluck.bright": 0.6,
     "pluck.body": 0.35,
-    "pluck.excite": 0.55,
+    "pluck.excite": 0.45,
     "pluck.pickpos": 0.2,
     "pluck.bodysize": 0.5,
     "amp.a": 0.002,
@@ -28,8 +28,14 @@
     "mod.s": 0.0,
     "mod.r": 0.2,
     "mod.amt": 0.1,
+    "fx.type": 4,
+    "fx.filterdrive.cutoff": 15000,
+    "fx.filterdrive.reso": 0.0,
+    "fx.filterdrive.drive": 0.05,
+    "fx.filterdrive.mode": 0,
+    "fx.filterdrive.mix": 0.7,
     "voices": 14,
     "velsens": 0.6,
-    "gain": 3.2
+    "gain": 3.8
   }
 }

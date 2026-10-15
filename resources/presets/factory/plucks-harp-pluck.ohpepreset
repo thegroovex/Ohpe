@@ -13,9 +13,9 @@
     "engine": 3,
     "pluck.material": 0.0,
     "pluck.damping": 0.18,
-    "pluck.bright": 0.42,
+    "pluck.bright": 0.32,
     "pluck.body": 0.3,
-    "pluck.excite": 0.35,
+    "pluck.excite": 0.28,
     "pluck.pickpos": 0.3,
     "pluck.bodysize": 0.4,
     "amp.a": 0.002,
@@ -34,6 +34,6 @@
     "fx.reverb.mix": 0.22,
     "voices": 14,
     "velsens": 0.6,
-    "gain": 12.5
+    "gain": 12.2
   }
 }

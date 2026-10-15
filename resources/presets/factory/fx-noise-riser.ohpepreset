@@ -18,7 +18,7 @@
     "analog.sub": 0.0,
     "analog.noise": 1.0,
     "analog.ftype": 2,
-    "analog.drive": 0.2,
+    "analog.drive": 0.45,
     "analog.keytrack": 0.2,
     "amp.a": 3.5,
     "amp.d": 1.0,
@@ -34,6 +34,6 @@
     "lfo.shape": 0,
     "lfo.dest": 3,
     "voices": 4,
-    "gain": 19.2
+    "gain": 18.6
   }
 }

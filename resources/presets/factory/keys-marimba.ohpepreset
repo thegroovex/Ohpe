@@ -23,8 +23,14 @@
     "mod.s": 0.0,
     "mod.r": 0.2,
     "mod.amt": 0.0,
+    "fx.type": 4,
+    "fx.filterdrive.cutoff": 15000,
+    "fx.filterdrive.reso": 0.0,
+    "fx.filterdrive.drive": 0.05,
+    "fx.filterdrive.mode": 0,
+    "fx.filterdrive.mix": 0.7,
     "voices": 14,
     "velsens": 0.5,
-    "gain": 4.7
+    "gain": 4.9
   }
 }

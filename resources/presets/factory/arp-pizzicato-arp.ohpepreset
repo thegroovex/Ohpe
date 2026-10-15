@@ -13,7 +13,7 @@
   "params": {
     "engine": 3,
     "pluck.material": 0.0,
-    "pluck.damping": 0.5,
+    "pluck.damping": 0.45,
     "pluck.bright": 0.32,
     "pluck.body": 0.6,
     "pluck.excite": 0.4,
@@ -28,7 +28,13 @@
     "mod.s": 0.0,
     "mod.r": 0.1,
     "mod.amt": 0.1,
+    "fx.type": 4,
+    "fx.filterdrive.cutoff": 15000,
+    "fx.filterdrive.reso": 0.0,
+    "fx.filterdrive.drive": 0.05,
+    "fx.filterdrive.mode": 0,
+    "fx.filterdrive.mix": 0.7,
     "voices": 10,
-    "gain": 13.6
+    "gain": 13.8
   }
 }

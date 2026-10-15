@@ -18,10 +18,10 @@
     "analog.reso": 0.35,
     "analog.oscmix": 0.3,
     "analog.sub": 0.0,
-    "analog.drive": 0.3,
+    "analog.drive": 0.5,
     "analog.keytrack": 0.6,
     "amp.a": 0.003,
-    "amp.d": 0.2,
+    "amp.d": 0.24,
     "amp.s": 0.0,
     "amp.r": 0.1,
     "mod.a": 0.002,
@@ -36,6 +36,6 @@
     "fx.delay.pingpong": 1,
     "fx.delay.mix": 0.24,
     "voices": 8,
-    "gain": 20.6
+    "gain": 20.2
   }
 }

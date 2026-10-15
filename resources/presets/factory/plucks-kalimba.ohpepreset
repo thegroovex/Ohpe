@@ -13,7 +13,7 @@
   "params": {
     "engine": 7,
     "sampler.inst": 1,
-    "sampler.tone": 1.0,
+    "sampler.tone": 0.78,
     "amp.a": 0.001,
     "amp.d": 2.8,
     "amp.s": 0.0,
@@ -29,6 +29,6 @@
     "fx.reverb.predelay": 0.02,
     "fx.reverb.mix": 0.18,
     "voices": 12,
-    "gain": 7.5
+    "gain": 9.2
   }
 }
