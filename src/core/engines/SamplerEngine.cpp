@@ -180,7 +180,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
 SamplerEngine::SamplerEngine()
 {
-    builtInTone = sample::makeHarmonicTone (48000.0, 60.0f, 3.0f, 1.2f, 10);
+    builtInTone = sample::makeKeysTone (48000.0, 60.0f, 4.0f);
     shared.map = &map;
     for (auto& v : voices) v.shared = &shared;
     publish ({}, 0.5f);

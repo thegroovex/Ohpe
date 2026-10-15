@@ -4,8 +4,8 @@
 
 Phase 2 adds three engines for the synth part (selected with **Engine**, `p1.engine`) and the
 **drum kit**, which has its own mixer channel. All of them sound right away: without loaded samples
-the Grain and Sampler engines use a built-in harmonic tone and the drum kit is fully synthetic.
-Ohpe ships no audio samples. Every parameter is listed in [PARAMETERS.md](../PARAMETERS.md).
+the Grain engine granulates a built-in evolving pad texture, the Sampler plays a built-in
+electric-piano-like keys tone, and the drum kit plays its factory recordings. Every parameter is listed in [PARAMETERS.md](../PARAMETERS.md).
 
 ## Grain
 
@@ -21,7 +21,7 @@ Granular synthesis: every voice sprays short, softly windowed grains read from a
 | **Reverse Chance** | share of grains that play backwards |
 | **Stereo Spread** | random panning of the grains |
 | **Scan Speed** | moves the position while a note is held (1 = real time, negative = backwards) |
-| **Source** | *Sample* (the loaded file or the built-in tone) or *Tape* (a tape region, see below) |
+| **Source** | *Sample* (the loaded file or the built-in pad texture) or *Tape* (a tape region, see below) |
 | **Tone** | low-pass brightness; the mod envelope and the LFO target *Timbre* move it |
 
 The played note transposes relative to **C4 (MIDI 60)**: C4 plays the source at its original pitch.
@@ -70,27 +70,38 @@ Changing *Slice Sensitivity* re-slices the sample.
 ## Drum kit
 
 24 pads, played on **MIDI channel 10** (pad 1 = `drum.base`, default C2 = 36, then one pad per
-semitone). The kit plays on mixer channel 5 (source *Drum*). Each pad is a synthetic drum model or a
-sample:
+semitone). The kit plays on mixer channel 5 (source *Drum*).
 
-| Type | Sound |
+**Real recordings first.** The factory kit is a recorded acoustic kit (CC0 recordings of a real drum
+set, see [THIRD-PARTY.md](../../THIRD-PARTY.md)): kick, snare, rimshot, cross-stick, ghost note,
+closed / half-open / pedal / open hi-hat, three toms, ride, ride bell, crash, sizzle crash, cowbell,
+tambourine, shaker, claves, conga and bongo. Close, room-style and overhead microphones are mixed
+per piece, and every hit is humanised a little (±4 cents, ±0.4 dB); soft hits are darker, like a
+real drum. Load your own sample onto any pad to replace the recording; clearing it brings the
+recording back.
+
+**Synth models.** Every pad also has a synthetic drum model, used when the pad has no sample (pad 5,
+the clap) or when **Source** is set to *Synth*:
+
+| Model | Sound |
 |---|---|
-| Kick | sine with a pitch sweep and a click; *Tone* adds click and drive |
-| Snare | two tuned body tones plus filtered noise; *Tone* sets the noise colour |
-| Hat | six inharmonic square oscillators and noise, high-passed; *Decay* makes it closed or open |
+| Kick | sine with a pitch sweep and a click |
+| Snare | two tuned body tones plus filtered noise |
+| Hat | six inharmonic square oscillators and noise, high-passed |
 | Clap | three noise bursts and a tail through a band-pass |
 | Tom | sine with a short pitch drop and a stick noise |
-| Perc | two-operator FM blip (rim, bell, woodblock); *Tone* sets the modulator ratio |
-| Sample | the pad's sample at the pad's tune; *Decay* = 1 plays it to the end |
+| Perc | two-operator FM blip (rim, bell, woodblock) |
 
-Per pad: **Tune** (±24 semitones), **Decay**, **Level**, **Pan**, **Tone** and **Choke Group**
-(0 = none, 1 – 8). Every pad is monophonic, and pads of the same choke group cut each other – in the
-factory kit the closed, open and pedal hats (pads 6 – 8) share group 1. Note-offs are ignored.
+Per pad: **Source** (*Sample* / *Synth*), **Synth Model**, **Tune** (±24 semitones), **Decay**,
+**Level**, **Pan**, **Tone** and **Choke Group** (0 = none, 1 – 8). *Decay* and *Tone* are centred:
+0.5 is the natural sound; with samples, *Decay* below 0.5 shortens the hit and *Tone* below 0.5
+darkens it. Every pad is monophonic, and pads of the same choke group cut each other – the closed,
+half-open, pedal and open hi-hats (pads 6, 7, 8, 17) share group 1. Note-offs are ignored.
 
 ## Loading samples
 
 Samples are loaded from disk in the plug-in (WAV, AIFF, FLAC and Ogg Vorbis): one sample for the
-whole keyboard, additional multisample zones, the grain source, or a sample per drum pad (the pad
-switches to type *Sample*). Ohpe saves the **paths** of the loaded files with the project, not the
+whole keyboard, additional multisample zones, the grain source, or a sample per drum pad (it
+replaces the pad's factory recording). Ohpe saves the **paths** of the loaded files with the project, not the
 audio; when a project is opened again the files are reloaded. Files that were moved or deleted are
-skipped and that engine or pad uses its built-in sound.
+skipped and that engine or pad uses its built-in sound or factory recording.

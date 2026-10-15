@@ -154,7 +154,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
 GrainEngine::GrainEngine()
 {
-    builtInTone = sample::makeHarmonicTone (48000.0, (float) grain::rootNote, 4.0f, 6.0f, 8);
+    builtInTone = sample::makePadTexture (48000.0, (float) grain::rootNote, 6.0f);
     source.set (builtInTone);
     shared.sample = &source;
     shared.tapeRegion = &tapeRegion;
@@ -166,13 +166,13 @@ std::vector<ParamDescriptor> GrainEngine::getParamDescriptors() const
     using namespace pd;
     std::vector<ParamDescriptor> d;
     d.push_back (continuous ("pos", "Position", "Position", 0.0f, 1.0f, 0.3f, ParamUnit::Percent));
-    d.push_back (continuous ("size", "Grain Size", "Korngröße", 5.0f, 500.0f, 80.0f, ParamUnit::None, 0.5f));
-    d.push_back (continuous ("density", "Density", "Dichte", 1.0f, 100.0f, 20.0f, ParamUnit::Hertz, 0.5f));
-    d.push_back (continuous ("spray", "Spray", "Streuung", 0.0f, 1.0f, 0.1f));
+    d.push_back (continuous ("size", "Grain Size", "Korngröße", 5.0f, 500.0f, 120.0f, ParamUnit::None, 0.5f));
+    d.push_back (continuous ("density", "Density", "Dichte", 1.0f, 100.0f, 24.0f, ParamUnit::Hertz, 0.5f));
+    d.push_back (continuous ("spray", "Spray", "Streuung", 0.0f, 1.0f, 0.15f));
     d.push_back (continuous ("pitch", "Grain Pitch", "Korn-Tonhöhe", -24.0f, 24.0f, 0.0f, ParamUnit::Semitones));
     d.push_back (continuous ("reverse", "Reverse Chance", "Rückwärts-Anteil", 0.0f, 1.0f, 0.0f, ParamUnit::Percent));
-    d.push_back (continuous ("spread", "Stereo Spread", "Stereobreite", 0.0f, 1.0f, 0.5f));
-    d.push_back (continuous ("scan", "Scan Speed", "Scan-Tempo", -2.0f, 2.0f, 0.0f));
+    d.push_back (continuous ("spread", "Stereo Spread", "Stereobreite", 0.0f, 1.0f, 0.6f));
+    d.push_back (continuous ("scan", "Scan Speed", "Scan-Tempo", -2.0f, 2.0f, 0.1f));
     d.push_back (choice ("source", "Source", "Quelle", { "Sample", "Tape" }, { "Sample", "Tape" }, 0));
     d.push_back (continuous ("tone", "Tone", "Klang", 0.0f, 1.0f, 1.0f));
     return d;

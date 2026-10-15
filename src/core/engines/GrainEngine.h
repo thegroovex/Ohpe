@@ -36,8 +36,8 @@ constexpr int rootNote = 60;  ///< the note that plays the source at its origina
 
 struct Shared
 {
-    float position = 0.3f, sizeMs = 80.0f, density = 20.0f, spray = 0.1f;
-    float pitch = 0.0f, reverseProb = 0.0f, spread = 0.5f, scan = 0.0f, tone = 1.0f;
+    float position = 0.3f, sizeMs = 120.0f, density = 24.0f, spray = 0.15f;
+    float pitch = 0.0f, reverseProb = 0.0f, spread = 0.6f, scan = 0.1f, tone = 1.0f;
     int source = SourceSample;
     const RtShared<SampleData>* sample = nullptr;
     const std::atomic<const IAudioRegion*>* tapeRegion = nullptr;

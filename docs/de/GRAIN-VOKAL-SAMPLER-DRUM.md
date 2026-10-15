@@ -3,9 +3,9 @@
 *Deutsch · English: [../en/GRAIN-VOCAL-SAMPLER-DRUM.md](../en/GRAIN-VOCAL-SAMPLER-DRUM.md)*
 
 Phase 2 bringt drei Engines für den Synth-Part (Auswahl mit **Engine**, `p1.engine`) und das
-**Drum-Kit**, das einen eigenen Mixer-Kanal hat. Alle klingen sofort: Ohne geladene Samples nutzen
-Grain und Sampler einen eingebauten harmonischen Klang, und das Drum-Kit ist vollständig
-synthetisch. Ohpe liefert keine Audio-Samples mit. Alle Parameter stehen in
+**Drum-Kit**, das einen eigenen Mixer-Kanal hat. Alle klingen sofort: Ohne geladene Samples granuliert
+Grain eine eingebaute, sich langsam bewegende Flächen-Textur, der Sampler spielt einen eingebauten
+E-Piano-artigen Keys-Klang, und das Drum-Kit spielt seine Werks-Aufnahmen. Alle Parameter stehen in
 [PARAMETERS.md](../PARAMETERS.md).
 
 ## Grain
@@ -22,7 +22,7 @@ Granularsynthese: Jede Stimme verstreut kurze, weich gefensterte Körner (Grains
 | **Rückwärts-Anteil** | Anteil der Körner, die rückwärts spielen |
 | **Stereobreite** | zufälliges Panorama der Körner |
 | **Scan-Tempo** | bewegt die Position, solange eine Note gehalten wird (1 = Echtzeit, negativ = rückwärts) |
-| **Quelle** | *Sample* (geladene Datei oder eingebauter Klang) oder *Tape* (ein Tape-Bereich, siehe unten) |
+| **Quelle** | *Sample* (geladene Datei oder eingebaute Flächen-Textur) oder *Tape* (ein Tape-Bereich, siehe unten) |
 | **Klang** | Tiefpass-Helligkeit; Mod-Hüllkurve und LFO-Ziel *Klangfarbe* bewegen sie |
 
 Die gespielte Note transponiert relativ zu **C4 (MIDI 60)**: C4 spielt die Quelle in Originaltonhöhe.
@@ -71,28 +71,39 @@ nächste beginnt. Eine Änderung der *Slice-Empfindlichkeit* schneidet das Sampl
 ## Drum-Kit
 
 24 Pads auf **MIDI-Kanal 10** (Pad 1 = `drum.base`, Standard C2 = 36, dann ein Pad pro Halbton).
-Das Kit spielt auf Mixer-Kanal 5 (Quelle *Drum*). Jedes Pad ist ein synthetisches Drum-Modell oder
-ein Sample:
+Das Kit spielt auf Mixer-Kanal 5 (Quelle *Drum*).
 
-| Typ | Klang |
+**Echte Aufnahmen zuerst.** Das Werks-Kit ist ein aufgenommenes akustisches Schlagzeug
+(CC0-Aufnahmen eines echten Drumsets, siehe [THIRD-PARTY.md](../../THIRD-PARTY.md)): Bassdrum,
+Snare, Rimshot, Cross-Stick, Ghost-Note, geschlossene / halboffene / Pedal- / offene Hi-Hat, drei
+Toms, Ride, Ride-Glocke, Crash, Sizzle-Crash, Kuhglocke, Tamburin, Shaker, Claves, Conga und Bongo.
+Nah-, Raum- und Overhead-Mikrofone sind pro Instrument gemischt, jeder Schlag wird leicht
+humanisiert (±4 Cent, ±0,4 dB), und leise Schläge klingen dunkler – wie bei einer echten Trommel.
+Ein eigenes Sample auf einem Pad ersetzt die Aufnahme; wird es entfernt, kommt die Aufnahme zurück.
+
+**Synth-Modelle.** Jedes Pad hat zusätzlich ein synthetisches Drum-Modell. Es spielt, wenn das Pad
+kein Sample hat (Pad 5, Klatschen) oder **Quelle** auf *Synth* steht:
+
+| Modell | Klang |
 |---|---|
-| Bassdrum | Sinus mit Tonhöhen-Sweep und Klick; *Klangfarbe* gibt Klick und Sättigung dazu |
-| Snare | zwei gestimmte Kesseltöne plus gefiltertes Rauschen; *Klangfarbe* färbt das Rauschen |
-| Hi-Hat | sechs unharmonische Rechteck-Oszillatoren und Rauschen, hochpassgefiltert; *Abklingen* macht sie geschlossen oder offen |
+| Bassdrum | Sinus mit Tonhöhen-Sweep und Klick |
+| Snare | zwei gestimmte Kesseltöne plus gefiltertes Rauschen |
+| Hi-Hat | sechs unharmonische Rechteck-Oszillatoren und Rauschen, hochpassgefiltert |
 | Klatschen | drei Rauschstöße und eine Fahne durch einen Bandpass |
 | Tom | Sinus mit kurzem Tonhöhenabfall und Stockgeräusch |
-| Perkussion | Zwei-Operator-FM-Klang (Rim, Glocke, Holzblock); *Klangfarbe* bestimmt das Modulator-Verhältnis |
-| Sample | das Sample des Pads in der Stimmung des Pads; *Abklingen* = 1 spielt es bis zum Ende |
+| Perkussion | Zwei-Operator-FM-Klang (Rim, Glocke, Holzblock) |
 
-Pro Pad: **Stimmung** (±24 Halbtöne), **Abklingen**, **Pegel**, **Panorama**, **Klangfarbe** und
-**Choke-Gruppe** (0 = keine, 1 – 8). Jedes Pad ist monofon, und Pads derselben Choke-Gruppe
-schneiden sich gegenseitig ab – im Werks-Kit teilen sich geschlossene, offene und Pedal-Hi-Hat
-(Pads 6 – 8) die Gruppe 1. Note-Offs werden ignoriert.
+Pro Pad: **Quelle** (*Sample* / *Synth*), **Synth-Modell**, **Stimmung** (±24 Halbtöne),
+**Abklingen**, **Pegel**, **Panorama**, **Klangfarbe** und **Choke-Gruppe** (0 = keine, 1 – 8).
+*Abklingen* und *Klangfarbe* sind mittig: 0,5 ist der natürliche Klang; bei Samples kürzt
+*Abklingen* unter 0,5 den Schlag, *Klangfarbe* unter 0,5 macht ihn dunkler. Jedes Pad ist monofon,
+und Pads derselben Choke-Gruppe schneiden sich ab – geschlossene, halboffene, Pedal- und offene
+Hi-Hat (Pads 6, 7, 8, 17) teilen sich Gruppe 1. Note-Offs werden ignoriert.
 
 ## Samples laden
 
 Samples werden im Plug-in von der Festplatte geladen (WAV, AIFF, FLAC und Ogg Vorbis): ein Sample
 für die ganze Tastatur, weitere Multisample-Zonen, die Grain-Quelle oder ein Sample pro Drum-Pad
-(das Pad schaltet auf Typ *Sample*). Ohpe speichert die **Pfade** der geladenen Dateien mit dem
+(es ersetzt die Werks-Aufnahme des Pads). Ohpe speichert die **Pfade** der geladenen Dateien mit dem
 Projekt, nicht das Audio; beim erneuten Öffnen werden die Dateien neu geladen. Verschobene oder
-gelöschte Dateien werden übersprungen, und die Engine oder das Pad nutzt ihren eingebauten Klang.
+gelöschte Dateien werden übersprungen, und die Engine oder das Pad nutzt ihren eingebauten Klang bzw. die Werks-Aufnahme.

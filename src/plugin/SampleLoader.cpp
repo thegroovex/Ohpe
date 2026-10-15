@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "SampleLoader.h"
 
+#include "FactoryKit.h"
 #include "engines/GrainEngine.h"
 #include "engines/SamplerEngine.h"
 
@@ -22,7 +23,11 @@ GrainEngine* grainOf (Core& core, int part)
 }
 } // namespace
 
-SampleLoader::SampleLoader (Core& c) : core (c) { formats.registerBasicFormats(); }
+SampleLoader::SampleLoader (Core& c) : core (c)
+{
+    formats.registerBasicFormats();
+    factorykit::load (core); // the recorded factory drum kit
+}
 
 juce::String SampleLoader::filePatterns() const { return formats.getWildcardForAllFormats(); }
 
@@ -105,7 +110,7 @@ bool SampleLoader::loadDrumPad (int pad, const juce::File& file)
     auto s = decode (file);
     if (s == nullptr) return false;
     core.drumKit().setPadSample (pad, std::move (s));
-    core.params().set ("drum.pad" + std::to_string (pad + 1) + ".type", (float) drum::PadType::Sample);
+    core.params().set ("drum.pad" + std::to_string (pad + 1) + ".src", (float) drum::PadSource::Sample);
     return true;
 }
 

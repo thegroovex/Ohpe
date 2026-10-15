@@ -25,6 +25,7 @@ struct GrainRig
         e.setParam (grain::Size, 100.0f);
         e.setParam (grain::Density, 20.0f);
         e.setParam (grain::Position, 0.4f);
+        e.setParam (grain::Scan, 0.0f);
     }
 };
 

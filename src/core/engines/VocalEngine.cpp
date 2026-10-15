@@ -78,6 +78,7 @@ void Voice::start (int midiNote, float vel, bool legato, const VoiceCommon& c) n
         phase = 0.0;
         lastFlow = 0.0f;
         vibPhase = 0.0f;
+        vibFade = 0.0f;
         jitterValue = 0.0f;
         noiseLp = 0.0f;
         for (auto& r : res) r.reset();
@@ -104,7 +105,8 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         vibPhase += dsp::twoPi * p.vibratoRate * (float) n / sr;
         if (vibPhase > dsp::twoPi) vibPhase -= dsp::twoPi;
         jitterValue += (rng.nextBipolar() - jitterValue) * 0.05f; // slow random walk
-        pitch += p.vibratoDepth * 0.5f * std::sin (vibPhase) + p.jitter * 0.3f * jitterValue;
+        vibFade = std::min (1.0f, vibFade + (float) n / (0.45f * sr)); // vibrato sets in after the attack
+        pitch += vibFade * p.vibratoDepth * 0.5f * std::sin (vibPhase) + p.jitter * 0.3f * jitterValue;
         const double inc = std::min (0.45, (double) dsp::midiToHz (pitch) / (double) sr);
 
         float vowel = p.vowel + c.modEnvAmount * modEnv.getLevel() * 2.0f;

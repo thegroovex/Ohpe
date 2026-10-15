@@ -42,60 +42,79 @@ void DrumVoice::trigger (int padIndex, const PadSettings& s, float velocity, con
     gainL *= g * 1.41421356f;
     gainR *= g * 1.41421356f;
 
-    const float k = dsp::semitonesToRatio (settings.tune);
-    const float d = dsp::clamp01 (settings.decay);
-    const float tone = dsp::clamp01 (settings.tone);
+    sample = nullptr;
+    sampleMode = settings.source == PadSource::Sample && padSample != nullptr && padSample->numFrames() >= 2;
     amp = 1.0f;
     amp2 = 1.0f;
     pitchEnv = 1.0f;
-    sample = nullptr;
+    const float d = dsp::clamp01 (settings.decay);
+
+    if (sampleMode)
+    {
+        // a little humanising per hit: +-4 cents, +-0.4 dB
+        const float cents = 4.0f * noise.nextBipolar();
+        const float gainVar = dsp::dbToGain (0.4f * noise.nextBipolar());
+        gainL *= gainVar;
+        gainR *= gainVar;
+        sample = padSample;
+        rate = (double) dsp::semitonesToRatio (settings.tune + cents * 0.01f) * sample->sampleRate() / (double) sr;
+        pos = 0.0;
+        ampCoeff = d >= 0.5f ? 1.0f : coeffFor (0.02f + 3.0f * (d / 0.5f) * (d / 0.5f));
+        // tone below 0.5 darkens; soft hits are darker, like a real drum
+        float cutoff = settings.tone < 0.5f ? 200.0f * std::pow (2.0f, settings.tone * 2.0f * 6.6f) : 20000.0f;
+        cutoff *= std::pow (2.0f, -(1.0f - vel) * 2.5f);
+        sampleFilter = cutoff < 18000.0f;
+        lp.setCutoff (cutoff, sr);
+        lp2.setCutoff (cutoff, sr);
+        active = true;
+        return;
+    }
+
+    // synth model: the pad's own voicing plus the tune / decay / tone parameters
+    const float k = dsp::semitonesToRatio (settings.tune + settings.modelTune);
+    const float dm = std::pow (4.0f, 2.0f * d - 1.0f);           // decay 0..1 -> 0.25x .. 4x
+    const float md = dsp::clamp01 (settings.modelDecay);
+    settings.tone = dsp::clamp01 (settings.modelTone + settings.tone - 0.5f);
+    const float tone = settings.tone;
+    auto decayFor = [&] (float seconds) { return coeffFor (seconds * dm); };
 
     switch (settings.type)
     {
         case PadType::Kick:
             baseFreq = 48.0f * k;
-            ampCoeff = coeffFor (0.12f + d * 1.6f);
+            ampCoeff = decayFor (0.12f + md * 1.6f);
             amp2Coeff = coeffFor (0.004f);                 // click
             pitchCoeff = coeffFor (0.04f + 0.1f * (1.0f - tone));
             break;
         case PadType::Snare:
             baseFreq = 185.0f * k;
-            ampCoeff = coeffFor (0.06f + d * 0.4f);       // body
-            amp2Coeff = coeffFor (0.08f + d * 0.7f);      // snares (noise)
+            ampCoeff = decayFor (0.06f + md * 0.4f);       // body
+            amp2Coeff = decayFor (0.08f + md * 0.7f);      // snares (noise)
             pitchCoeff = coeffFor (0.02f);
             hp.set (1200.0f + tone * 4000.0f, 0.1f);
             break;
         case PadType::Hat:
             baseFreq = 330.0f * k;
-            ampCoeff = coeffFor (0.02f + d * d * 1.6f);
+            ampCoeff = decayFor (0.02f + md * md * 1.6f);
             hp.set (6000.0f + 3000.0f * tone, 0.2f);
             bp.set (9000.0f + 2000.0f * tone, 0.3f);
             break;
         case PadType::Clap:
             baseFreq = 1100.0f * k;
             ampCoeff = coeffFor (0.009f);                  // each burst
-            amp2Coeff = coeffFor (0.08f + d * 0.8f);      // tail
+            amp2Coeff = decayFor (0.08f + md * 0.8f);      // tail
             bp.set (baseFreq * (0.8f + 0.8f * tone), 0.45f);
             break;
         case PadType::Tom:
             baseFreq = 105.0f * k;
-            ampCoeff = coeffFor (0.12f + d * 1.3f);
+            ampCoeff = decayFor (0.12f + md * 1.3f);
             amp2Coeff = coeffFor (0.01f);
             pitchCoeff = coeffFor (0.08f);
             break;
         case PadType::Perc:
             baseFreq = 420.0f * k;
-            ampCoeff = coeffFor (0.04f + d * 0.8f);
-            amp2Coeff = coeffFor (0.01f + d * 0.15f);     // FM index
-            break;
-        case PadType::Sample:
-            sample = padSample;
-            if (sample == nullptr || sample->numFrames() < 2) { kill(); return; }
-            rate = (double) k * sample->sampleRate() / (double) sr;
-            pos = 0.0;
-            ampCoeff = d >= 0.999f ? 1.0f : coeffFor (0.03f + d * d * 6.0f);
-            lp.setCutoff (200.0f * std::pow (2.0f, tone * 13.3f), sr);
-            lp2.setCutoff (200.0f * std::pow (2.0f, tone * 13.3f), sr);
+            ampCoeff = decayFor (0.04f + md * 0.8f);
+            amp2Coeff = decayFor (0.01f + md * 0.15f);     // FM index
             break;
         case PadType::numTypes: kill(); return;
     }
@@ -204,7 +223,7 @@ float DrumVoice::nextSynth() noexcept
 void DrumVoice::render (float* l, float* r, int numSamples, const SampleData* currentSample) noexcept
 {
     if (! active) return;
-    if (settings.type == PadType::Sample && currentSample != sample)
+    if (sampleMode && currentSample != sample)
     {
         kill(); // the pad's sample was replaced: never read a retired one
         return;
@@ -212,11 +231,18 @@ void DrumVoice::render (float* l, float* r, int numSamples, const SampleData* cu
     for (int i = 0; i < numSamples; ++i)
     {
         float a, b;
-        if (settings.type == PadType::Sample)
+        if (sampleMode)
         {
             const int64_t frames = sample->numFrames();
-            a = lp.lowpass (readHermite (sample->channel (0), frames, pos)) * amp;
-            b = sample->numChannels() > 1 ? lp2.lowpass (readHermite (sample->channel (1), frames, pos)) * amp : a;
+            a = readHermite (sample->channel (0), frames, pos);
+            b = sample->numChannels() > 1 ? readHermite (sample->channel (1), frames, pos) : a;
+            if (sampleFilter)
+            {
+                a = lp.lowpass (a);
+                b = lp2.lowpass (b);
+            }
+            a *= amp;
+            b *= amp;
             pos += rate;
             amp *= ampCoeff;
             if (pos >= (double) frames) amp = 0.0f;
@@ -234,8 +260,8 @@ void DrumVoice::render (float* l, float* r, int numSamples, const SampleData* cu
         ++t;
 
         bool silent = amp < 1.0e-4f;
-        if (settings.type == PadType::Clap) silent = t > (int64_t) (0.03f * sr) && amp2 < 1.0e-4f;
-        else if (settings.type == PadType::Snare) silent = std::max (amp, amp2) < 1.0e-4f;
+        if (! sampleMode && settings.type == PadType::Clap) silent = t > (int64_t) (0.03f * sr) && amp2 < 1.0e-4f;
+        else if (! sampleMode && settings.type == PadType::Snare) silent = std::max (amp, amp2) < 1.0e-4f;
         if (silent) { kill(); return; }
     }
 }

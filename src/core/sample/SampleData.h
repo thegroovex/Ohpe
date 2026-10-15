@@ -142,5 +142,9 @@ namespace sample
 {
 /** Built-in sounds (message thread): a decaying harmonic tone at MIDI note `rootNote`, `seconds` long. */
 SamplePtr makeHarmonicTone (double rate, float rootNote, float seconds, float decaySeconds, int numHarmonics);
+/** Built-in Sampler sound: an electric-piano-like keys tone (tine bell, warm body, hammer). */
+SamplePtr makeKeysTone (double rate, float rootNote, float seconds);
+/** Built-in Grain source: a slowly evolving, chorused harmonic pad texture (stereo). */
+SamplePtr makePadTexture (double rate, float rootNote, float seconds);
 } // namespace sample
 } // namespace ohpe

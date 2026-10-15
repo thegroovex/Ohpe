@@ -15,12 +15,16 @@
 namespace ohpe::drum
 {
 /**
-    The drum kit: 24 pads, each a synthetic drum model (kick, snare, hat, clap, tom, perc) or a
-    sample, with tune / decay / level / pan / tone and a choke group. The default kit is fully
-    synthetic, so it sounds without any samples.
+    The drum kit: 24 pads. Each pad plays a sample - the user's, else the factory kit's recorded
+    sample - or, without one (or with source = Synth), its synthetic drum model (kick, snare, hat,
+    clap, tom, perc). Per pad: tune / decay / level / pan / tone and a choke group.
+
+    The core has no files: the plug-in hands the factory recordings in with setFactorySample()
+    and user samples with setPadSample(). Without any samples (core tests) every pad still sounds
+    through its model.
 
     Parameters: "drum.vol", "drum.base" (MIDI note of pad 1), then per pad
-    "drum.padN.{type,tune,decay,level,pan,choke,tone}" (N = 1..24). The list is append-only.
+    "drum.padN.{src,type,tune,decay,level,pan,choke,tone}" (N = 1..24). Append-only.
 
     Notes: pad = note - base. Every pad is monophonic (a new hit chokes its previous one);
     pads with the same choke group (1..8) cut each other. Note-offs are ignored (one-shots).
@@ -36,7 +40,7 @@ public:
     static constexpr int numChokeGroups = 8;
     static constexpr const char* prefix = "drum.";
 
-    enum PadParam { pType = 0, pTune, pDecay, pLevel, pPan, pChoke, pTone, numPadParams };
+    enum PadParam { pSource = 0, pType, pTune, pDecay, pLevel, pPan, pChoke, pTone, numPadParams };
 
     DrumKit();
 
@@ -46,6 +50,8 @@ public:
     static void registerParams (ParamRegistry& reg);
     /** The factory setting of one pad (the default kit). */
     static PadSettings defaultPad (int pad) noexcept;
+    /** Short English name of a factory pad ("kick", "open hat" ...). */
+    static const char* defaultPadName (int pad) noexcept;
 
     void bind (const ParamRegistry& reg);
     void prepare (double sampleRate, int maxBlockSize);
@@ -68,13 +74,22 @@ public:
     int baseNote() const noexcept { return base; }
 
     // ---- message thread ----
-    /** Assigns a sample to a pad (nullptr clears it). The pad plays it when its type is Sample. */
+    /** The user's sample for a pad (nullptr = back to the factory sample, if any). */
     void setPadSample (int pad, SamplePtr sample);
+    /** The user's sample of a pad (nullptr = none). */
     SamplePtr padSample (int pad) const;
+    /** The factory kit's recording for a pad (plug-in, at start-up). */
+    void setFactorySample (int pad, SamplePtr sample);
+    SamplePtr factorySample (int pad) const;
+    /** The sample the pad plays now (user, else factory; nullptr = model). */
+    SamplePtr effectiveSample (int pad) const;
 
 private:
     std::array<PadSettings, numPads> pads {};
-    std::array<RtShared<SampleData>, numPads> samples;
+    void publish (int pad);
+
+    std::array<RtShared<SampleData>, numPads> samples; ///< effective sample per pad (audio side)
+    std::array<SamplePtr, numPads> userSamples, factorySamples;
     std::array<DrumVoice, numVoices> voices;
     float volume = 0.8f;
     int base = 36;

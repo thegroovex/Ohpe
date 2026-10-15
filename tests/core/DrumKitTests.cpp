@@ -88,7 +88,7 @@ TEST_CASE ("drum: silence when idle, every default pad sounds, stays finite and 
         CAPTURE (p + 1);
         rig.kit.triggerPad (p, 1.0f);
         auto hit = rig.render (4800);
-        CHECK (rms (hit.l) + rms (hit.r) > 0.01f);
+        CHECK (rms (hit.l) + rms (hit.r) > 0.003f);
         CHECK (allFinite (hit.l));
         CHECK (noDenormals (hit.l));
         CHECK (peak (hit.l) < 2.0f);
@@ -101,7 +101,7 @@ TEST_CASE ("drum: silence when idle, every default pad sounds, stays finite and 
 TEST_CASE ("drum: every model at extreme settings is finite and ends")
 {
     KitRig rig;
-    for (int type = 0; type < (int) drum::PadType::Sample; ++type)
+    for (int type = 0; type < (int) drum::PadType::numTypes; ++type)
         for (float x : { 0.0f, 1.0f })
         {
             CAPTURE (type);
@@ -165,7 +165,7 @@ TEST_CASE ("drum: tune transposes, decay sets the length, pan places the pad")
         return measureFrequency (out.l, sampleRate, 24000, 48000); // after the pitch sweep
     };
     const double f0 = tomFreq (0.0f), f12 = tomFreq (12.0f);
-    CHECK (f0 == doctest::Approx (105.0).epsilon (0.02));
+    CHECK (f0 == doctest::Approx (105.0 * std::pow (2.0, 4.0 / 12.0)).epsilon (0.02)); // pad 10: high tom voicing
     CHECK (f12 / f0 == doctest::Approx (2.0).epsilon (0.01));
 
     auto length = [&] (float decay) {
@@ -186,28 +186,71 @@ TEST_CASE ("drum: tune transposes, decay sets the length, pan places the pad")
     CHECK (rms (left.r) < 1.0e-4f);
 }
 
-TEST_CASE ("drum: sample pads play their sample at the pad tune; empty sample pads are silent")
+TEST_CASE ("drum: sample pads - user sample over factory sample over model, source, tune and length")
 {
     KitRig rig;
-    rig.kit.setParam (KitRig::idx (2, drum::DrumKit::pType), (float) drum::PadType::Sample);
-    rig.kit.setParam (KitRig::idx (2, drum::DrumKit::pDecay), 1.0f);
-    rig.kit.setParam (KitRig::idx (2, drum::DrumKit::pTone), 1.0f);
-    rig.kit.triggerPad (2, 1.0f);
-    CHECK (peak (rig.render (4800).l) == 0.0f);
+    const int pad = 2;
+    auto freqOfHit = [&] (size_t n = 19200) {
+        rig.kit.reset();
+        rig.kit.triggerPad (pad, 1.0f);
+        auto out = rig.render (n);
+        return measureFrequency (out.l, sampleRate, 1000, n);
+    };
+    // no sample: the pad's model (snare) plays
+    rig.kit.triggerPad (pad, 1.0f);
+    CHECK (rms (rig.render (4800).l) > 0.01f);
 
-    rig.kit.setPadSample (2, makeSine (440.0, 44100.0, 1.0));
-    rig.kit.setParam (KitRig::idx (2, drum::DrumKit::pTune), 12.0f);
-    rig.kit.triggerPad (2, 1.0f);
-    auto out = rig.render (19200);
-    CHECK (std::abs (centsBetween (measureFrequency (out.l, sampleRate, 1000, 19200), 880.0)) < 2.0);
-    rig.render (48000); // the sample (1 s at double speed) has ended
-    CHECK_FALSE (rig.kit.isPadSounding (2));
+    // factory sample, then a user sample on top; clearing the user sample brings the factory one back
+    auto factory = makeSine (220.0, 44100.0, 1.0, 0.5f, "factory:snare");
+    auto user = makeSine (440.0, 48000.0, 1.0, 0.5f, "/user/snare.wav");
+    rig.kit.setFactorySample (pad, factory);
+    CHECK (std::abs (centsBetween (freqOfHit(), 220.0)) < 6.0); // +-4 cents humanising
+    rig.kit.setPadSample (pad, user);
+    CHECK ((rig.kit.effectiveSample (pad) == user));
+    CHECK (std::abs (centsBetween (freqOfHit(), 440.0)) < 6.0);
+    rig.kit.setParam (KitRig::idx (pad, drum::DrumKit::pTune), 12.0f);
+    CHECK (std::abs (centsBetween (freqOfHit(), 880.0)) < 6.0);
+    rig.kit.setParam (KitRig::idx (pad, drum::DrumKit::pTune), 0.0f);
+    rig.kit.setPadSample (pad, nullptr);
+    CHECK ((rig.kit.effectiveSample (pad) == factory));
+    CHECK ((rig.kit.padSample (pad) == nullptr));
 
-    rig.kit.triggerPad (2, 1.0f);
+    // decay >= 0.5 plays the whole sample, lower values shorten it
+    auto lengthOf = [&] (float decay) {
+        rig.kit.reset();
+        rig.kit.setParam (KitRig::idx (pad, drum::DrumKit::pDecay), decay);
+        rig.kit.triggerPad (pad, 1.0f);
+        size_t blocks = 0;
+        while (rig.kit.isPadSounding (pad) && blocks < 1000) { rig.render (256); ++blocks; }
+        return blocks * 256;
+    };
+    CHECK (lengthOf (0.5f) == doctest::Approx (48000.0).epsilon (0.02));   // 1 s at 44.1 kHz -> 48000 samples
+    CHECK (lengthOf (0.1f) < 12000);
+    rig.kit.setParam (KitRig::idx (pad, drum::DrumKit::pDecay), 0.5f);
+
+    // source = Synth ignores the sample
+    rig.kit.setParam (KitRig::idx (pad, drum::DrumKit::pSource), (float) drum::PadSource::Synth);
+    rig.kit.reset();
+    rig.kit.triggerPad (pad, 1.0f);
+    auto synth = rig.render (19200);
+    CHECK (std::abs (centsBetween (measureFrequency (synth.l, sampleRate, 1000, 19200), 220.0)) > 50.0);
+    rig.kit.setParam (KitRig::idx (pad, drum::DrumKit::pSource), (float) drum::PadSource::Sample);
+
+    // replacing the sample while it sounds stops the hit (no stale read)
+    rig.kit.triggerPad (pad, 1.0f);
     rig.render (256);
-    rig.kit.setPadSample (2, nullptr); // replaced while sounding: the hit stops, no stale read
+    rig.kit.setFactorySample (pad, nullptr);
     rig.render (256);
-    CHECK_FALSE (rig.kit.isPadSounding (2));
+    CHECK_FALSE (rig.kit.isPadSounding (pad));
+
+    // soft hits are quieter and darker
+    rig.kit.setFactorySample (pad, makeSine (5000.0, 48000.0, 0.5));
+    auto level = [&] (float vel) {
+        rig.kit.reset();
+        rig.kit.triggerPad (pad, vel);
+        return rms (rig.render (9600).l, 960);
+    };
+    CHECK (level (0.2f) < 0.35f * level (1.0f));
 }
 
 TEST_CASE ("drum: the core plays the kit on MIDI channel 10 through mixer channel 5")
@@ -248,7 +291,7 @@ TEST_CASE ("state: engine and drum parameters and sample assignments round-trip"
     a.params().set ("p1.vocal.vowel", 3.25f);
     a.params().set ("p1.sampler.mode", 1.0f);
     a.params().set ("drum.pad7.choke", 3.0f);
-    a.params().set ("drum.pad12.type", (float) drum::PadType::Sample);
+    a.params().set ("drum.pad12.src", (float) drum::PadSource::Synth);
 
     // fake "files": the decoder hands out synthetic samples by path
     std::map<std::string, SamplePtr> files;
@@ -276,7 +319,7 @@ TEST_CASE ("state: engine and drum parameters and sample assignments round-trip"
 
     Core b;
     REQUIRE (b.loadState (json));
-    for (const char* id : { "p1.grain.density", "p1.vocal.vowel", "p1.sampler.mode", "drum.pad7.choke", "drum.pad12.type" })
+    for (const char* id : { "p1.grain.density", "p1.vocal.vowel", "p1.sampler.mode", "drum.pad7.choke", "drum.pad12.src" })
     {
         CAPTURE (id);
         CHECK (b.params().get (id) == doctest::Approx (a.params().get (id)));

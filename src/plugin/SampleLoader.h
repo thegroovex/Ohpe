@@ -21,6 +21,7 @@ namespace ohpe
 class SampleLoader
 {
 public:
+    /** Also loads the factory drum kit recordings into the pads. */
     explicit SampleLoader (Core& core);
 
     /** File patterns for a file chooser, e.g. "*.wav;*.aif;*.aiff;*.flac;*.ogg". */
@@ -35,7 +36,7 @@ public:
     bool addSamplerZone (const juce::File& file, int keyLo, int keyHi, int rootKey, int velLo = 1, int velHi = 127, int part = 0);
     /** The sample the Grain engine of part `part` granulates. */
     bool loadGrainSample (const juce::File& file, int part = 0);
-    /** A sample for drum pad `pad` (0-based); switches the pad's type to Sample. */
+    /** A sample for drum pad `pad` (0-based), over the factory sample; sets the pad source to Sample. */
     bool loadDrumPad (int pad, const juce::File& file);
 
     void clearSampler (int part = 0);

@@ -10,6 +10,7 @@
 #include "plugin/Localisation.h"
 #include "plugin/ParameterBridge.h"
 #include "plugin/PluginProcessor.h"
+#include "plugin/FactoryKit.h"
 #include "engines/GrainEngine.h"
 #include "engines/SamplerEngine.h"
 #include "standalone/AudioSettingsPage.h"
@@ -224,6 +225,42 @@ TEST_CASE ("parameter value texts carry units")
     CHECK (p.parameter ("p1.amp.a")->getText (p.parameter ("p1.amp.a")->convertTo0to1 (0.25f), 32) == "250 ms");
 }
 
+TEST_CASE ("factory drum kit: recordings on the pads, played on MIDI channel 10")
+{
+    OhpeProcessor p;
+    CHECK (factorykit::numRecordings() == 23);
+    int withRecording = 0;
+    for (int pad = 0; pad < drum::DrumKit::numPads; ++pad)
+        if (auto s = p.core().drumKit().factorySample (pad))
+        {
+            ++withRecording;
+            CHECK (s->numFrames() > 4800);
+            CHECK (s->peak() > 0.5f);
+            CHECK (juce::String (s->path()).startsWith ("factory:"));
+        }
+    CHECK (withRecording == 23);
+    CHECK ((p.core().drumKit().factorySample (4) == nullptr)); // pad 5 (clap) uses its synth model
+
+    p.prepareToPlay (48000.0, 512);
+    juce::AudioBuffer<float> buffer (p.getTotalNumOutputChannels(), 512);
+    juce::MidiBuffer midi;
+    midi.addEvent (juce::MidiMessage::noteOn (10, 36, (juce::uint8) 120), 0);
+    float pk = 0.0f;
+    for (int b = 0; b < 20; ++b)
+    {
+        buffer.clear();
+        p.processBlock (buffer, midi);
+        midi.clear();
+        pk = juce::jmax (pk, buffer.getMagnitude (0, 0, 512));
+    }
+    CHECK (pk > 0.2f);
+
+    // factory samples are not stored in the state (only user files are)
+    juce::MemoryBlock state;
+    p.getStateInformation (state);
+    CHECK_FALSE (state.toString().contains ("factory:"));
+}
+
 TEST_CASE ("sample loader: WAV / AIFF / FLAC decode, engines and pads, sample paths in the state")
 {
     auto dir = juce::File::getSpecialLocation (juce::File::tempDirectory).getChildFile ("ohpe-sample-test-" + juce::String (juce::Random::getSystemRandom().nextInt (1000000)));
@@ -265,7 +302,7 @@ TEST_CASE ("sample loader: WAV / AIFF / FLAC decode, engines and pads, sample pa
     CHECK (loader.loadSamplerSample (wav, 69));
     CHECK (loader.loadGrainSample (flac));
     CHECK (loader.loadDrumPad (3, aif));
-    CHECK (p.core().params().get ("drum.pad4.type") == (float) drum::PadType::Sample);
+    CHECK (p.core().params().get ("drum.pad4.src") == (float) drum::PadSource::Sample);
 
     // the sampler plays the WAV
     p.prepareToPlay (48000.0, 512);

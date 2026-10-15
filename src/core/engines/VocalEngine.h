@@ -71,7 +71,7 @@ private:
 
     double phase = 0.0;
     float lastFlow = 0.0f;
-    float vibPhase = 0.0f, jitterValue = 0.0f, noiseLp = 0.0f;
+    float vibPhase = 0.0f, vibFade = 0.0f, jitterValue = 0.0f, noiseLp = 0.0f;
     std::array<Resonator, numFormants> res {};
     std::array<float, numFormants> gains {};
     dsp::Random rng;

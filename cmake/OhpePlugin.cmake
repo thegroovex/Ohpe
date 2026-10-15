@@ -37,6 +37,16 @@ set(OHPE_DEFINES OHPE_VERSION="${PROJECT_VERSION}" JUCE_WEB_BROWSER=0 JUCE_USE_C
     JUCE_VST3_CAN_REPLACE_VST2=0 JUCE_DISPLAY_SPLASH_SCREEN=0)
 set(OHPE_JUCE_MODULES juce::juce_audio_utils juce::juce_audio_devices juce::juce_gui_extra ohpe_resources)
 
+# phase 2, engines B: factory drum kit (CC0 recordings, see THIRD-PARTY.md), embedded as FLAC
+file(GLOB OHPE_DRUMKIT_FILES ${CMAKE_SOURCE_DIR}/resources/drumkit/*.flac)
+juce_add_binary_data(ohpe_drumkit
+    HEADER_NAME OhpeDrumKit.h
+    NAMESPACE OhpeDrumKit
+    SOURCES ${OHPE_DRUMKIT_FILES})
+set_target_properties(ohpe_drumkit PROPERTIES POSITION_INDEPENDENT_CODE ON)
+list(APPEND OHPE_JUCE_MODULES ohpe_drumkit)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/FactoryKit.cpp)
+
 set(OHPE_FORMATS VST3 Standalone)
 if(APPLE)
     list(APPEND OHPE_FORMATS AU)
