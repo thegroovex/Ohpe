@@ -1,0 +1,129 @@
+name: CI
+
+# Every push and pull request: Linux build with all tests and pluginval.
+# Manual run (Actions -> CI -> Run workflow): additionally macOS universal (app, AU, VST3)
+# and Windows (app, VST3), with their artefacts attached to the run.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux (tests + pluginval)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libasound2-dev libfreetype-dev libfontconfig1-dev \
+            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxext-dev libgl1-mesa-dev \
+            xvfb xauth fonts-dejavu-core
+
+      - name: Get pluginval
+        run: |
+          curl -fsSL -o pluginval.zip https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Linux.zip
+          unzip -q pluginval.zip -d pluginval-bin
+          chmod +x pluginval-bin/pluginval
+
+      - name: Build and test everything
+        env:
+          PLUGINVAL: ${{ github.workspace }}/pluginval-bin/pluginval
+          OHPE_REQUIRE_PLUGINVAL: "1"
+        run: scripts/test-all.sh
+
+      - name: Upload pluginval log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pluginval-log-linux
+          path: build/pluginval
+          if-no-files-found: ignore
+
+  macos:
+    name: macOS universal (app, AU, VST3)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja
+        run: brew install ninja
+
+      - name: Configure (arm64 + x86_64)
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Tests (core, processor/editor, VST3 host)
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Check universal binaries
+        run: |
+          lipo -info build/Ohpe_artefacts/Release/Standalone/Ohpe.app/Contents/MacOS/Ohpe
+          lipo -info build/Ohpe_artefacts/Release/VST3/Ohpe.vst3/Contents/MacOS/Ohpe
+          lipo -info build/Ohpe_artefacts/Release/AU/Ohpe.component/Contents/MacOS/Ohpe
+          for f in build/Ohpe_artefacts/Release/Standalone/Ohpe.app/Contents/MacOS/Ohpe \
+                   build/Ohpe_artefacts/Release/VST3/Ohpe.vst3/Contents/MacOS/Ohpe \
+                   build/Ohpe_artefacts/Release/AU/Ohpe.component/Contents/MacOS/Ohpe; do
+            lipo "$f" -verify_arch arm64 x86_64
+          done
+
+      - name: Validate the Audio Unit (auval)
+        run: |
+          mkdir -p ~/Library/Audio/Plug-Ins/Components
+          cp -R build/Ohpe_artefacts/Release/AU/Ohpe.component ~/Library/Audio/Plug-Ins/Components/
+          killall -9 AudioComponentRegistrar || true
+          sleep 2
+          auval -a | grep -i ohpe || true
+          auval -strict -v aumu Ohpe Grvx
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cd build/Ohpe_artefacts/Release
+          ditto -c -k --keepParent Standalone/Ohpe.app "$GITHUB_WORKSPACE/dist/Ohpe-macOS-app.zip"
+          ditto -c -k --keepParent VST3/Ohpe.vst3 "$GITHUB_WORKSPACE/dist/Ohpe-macOS-VST3.zip"
+          ditto -c -k --keepParent AU/Ohpe.component "$GITHUB_WORKSPACE/dist/Ohpe-macOS-AU.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ohpe-macOS-universal (unsigned)
+          path: dist/*.zip
+
+  windows:
+    name: Windows (app, VST3)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Tests (core, processor/editor, VST3 host)
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Compress-Archive -Path build/Ohpe_artefacts/Release/Standalone/Ohpe.exe -DestinationPath dist/Ohpe-Windows-app.zip
+          Compress-Archive -Path build/Ohpe_artefacts/Release/VST3/Ohpe.vst3 -DestinationPath dist/Ohpe-Windows-VST3.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ohpe-Windows-x64 (unsigned)
+          path: dist/*.zip
