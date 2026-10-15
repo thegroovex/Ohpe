@@ -1,0 +1,42 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Boom Click",
+  "author": "groovex",
+  "tags": [
+    "Boom",
+    "Bass"
+  ],
+  "engine": "analog",
+  "comment": "Sine sub with a bright click on the attack, so the boom cuts through on small speakers.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.5,
+    "analog.detune": 0.0,
+    "analog.cutoff": 260,
+    "analog.reso": 0.05,
+    "analog.oscmix": 0.0,
+    "analog.sub": 1.0,
+    "analog.noise": 0.35,
+    "analog.drive": 0.45,
+    "analog.keytrack": 1.0,
+    "analog.osclevel": 0.0,
+    "amp.a": 0.003,
+    "amp.d": 2.2,
+    "amp.s": 0.0,
+    "amp.r": 0.3,
+    "mod.a": 0.002,
+    "mod.d": 0.012,
+    "mod.s": 0.0,
+    "mod.r": 0.02,
+    "mod.amt": 0.9,
+    "pitchenv.amt": 12,
+    "pitchenv.time": 0.03,
+    "pitchenv.curve": 0.8,
+    "voices": 1,
+    "velsens": 0.3,
+    "tune": 12,
+    "gain": 0.0
+  }
+}

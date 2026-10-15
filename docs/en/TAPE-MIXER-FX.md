@@ -12,7 +12,7 @@ part, a stereo audio input in the plug-in and an offline bounce of the tape to W
  (parts 2-4, drum) │           │   input / part)   └─ direct out → Out 1..8            │
                    └─ mixer channel 1 ─────────────────────────────────────────────────┘
  channel: source → EQ → compressor-lite → fader / pan → Main or Out N (+ sends A / B)
- master:  sum + returns → compressor → tape saturation → volume → limiter (ceiling) → Main
+ master:  sum + returns → compressor → tape saturation → volume → low-pass → limiter (ceiling) → Main
 ```
 
 ## Tape machine
@@ -74,6 +74,8 @@ recording.
 * **Master compressor** (`mix.master.comp` on / off, threshold, ratio, attack, release,
   make-up), stereo-linked, soft knee.
 * **Master tape saturation** (`mix.master.tapesat`, 0 = off).
+* **Master low-pass** (0.6, `mix.master.lowpass`, 500 Hz … 20 kHz, 12 dB/octave; 20 kHz = off): after
+  the volume, before the limiter – darkens the whole mix, e.g. 4–5 kHz for lo-fi.
 * **Limiter** (`mix.master.limit`) with an adjustable **ceiling** (`mix.master.ceiling`,
   default −0.3 dBFS as in 0.1).
 * Gain reduction is readable for meters: `Mixer::gainReduction (channel)`, master = 8.

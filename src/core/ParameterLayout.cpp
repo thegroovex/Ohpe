@@ -202,5 +202,10 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     addLateSeq (reg, EuclidSequencer().getLateParamDescriptors(), 2, 6, Core::Ids::euclidPrefix, "sequencer/euclid");
     addLateSeq (reg, OrbitSequencer().getLateParamDescriptors(), 2, 6, Core::Ids::orbitPrefix, "sequencer/orbit");
     mixer.registerLate05Params (reg);
+
+    // ---- 0.6: glide mode / timing and pitch envelope per part, Analog osc level + crackle, master low-pass --
+    for (auto& p : parts) p->registerLate06Params (reg);
+    for (auto& p : parts) p->registerLateEngineParams (reg, EngineType::Analog);
+    mixer.registerLate06Params (reg);
 }
 } // namespace ohpe

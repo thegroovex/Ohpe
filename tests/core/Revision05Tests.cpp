@@ -276,7 +276,7 @@ TEST_CASE ("0.5: Orbit lanes with their own target part; gate 100 % ties equal n
         }
     }
     CHECK (partNotes == 1);
-    CHECK (firstOff == 18000); // three sixteenths at 120 BPM
+    CHECK (firstOff == 18001); // three sixteenths at 120 BPM (+ the one-sample legato overlap of gate 100 %, 0.6)
     CHECK (drumHits == 4);
 }
 
@@ -319,7 +319,7 @@ TEST_CASE ("0.5: step gate 100 % ties equal notes; a different note or a shorter
         if (e.data1 == 62 && e.isNoteOn()) on62.push_back (t);
     }
     CHECK (on60 == std::vector<long long> { 0 });
-    CHECK (off60 == std::vector<long long> { 18000 });
+    CHECK (off60 == std::vector<long long> { 18001 }); // 0.6: gate 100 % overlaps the next note by one sample (legato)
     CHECK (on62 == std::vector<long long> { 18000, 30000 }); // step 3 (100 %) ties into step 4 (50 %), step 5 is a new note
     seq.setDrumsMode (true); // on the drum kit every step plays
     seq.reset();

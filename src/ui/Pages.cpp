@@ -110,6 +110,10 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             if (auto* e = part.engine (type))
                 for (const auto& d : e->getParamDescriptors())
                     ids.push_back (p + engineTypeInfo (type).id + "." + d.id);
+            // 0.6: every engine ends with the portamento page and the pitch-envelope page
+            ids = padded (ids);
+            for (const char* k : { "glide", "glide.mode", "glide.rate", "polyglide", "pitchenv.amt", "pitchenv.time", "pitchenv.curve", "voices" })
+                ids.push_back (p + k);
             return ids;
         }
         case Mode::Envelope:
@@ -125,7 +129,8 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             return { c + "vol", c + "pan", c + "senda", c + "sendb", c + "eqlo", c + "eqmid", c + "eqhi", c + "out",
                      c + "src", c + "mute", c + "solo", c + "comp", "mix.master.vol", "mix.returna", "mix.returnb", "mix.master.limit",
                      "mix.master.comp", "mix.master.comp.thresh", "mix.master.comp.ratio", "mix.master.comp.attack",
-                     "mix.master.comp.release", "mix.master.comp.makeup", "mix.master.ceiling", "mix.master.tapesat" };
+                     "mix.master.comp.release", "mix.master.comp.makeup", "mix.master.ceiling", "mix.master.tapesat",
+                     "mix.master.lowpass", "", "", "" };
         }
         case Mode::Effects:
         {
@@ -192,7 +197,7 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
         case Mode::Synth: t = { "Macros" }; break;
         case Mode::Envelope: t = { "Amp Envelope", "Mod Envelope", "Voice" }; break;
         case Mode::Lfo: t = { "LFO", "Pitch & Level", "MIDI & Key", "Scale & MPE", "MPE" }; break;
-        case Mode::Mixer: t = { "Channel", "EQ & Output", "Source & Dynamics", "Master", "Master Compressor", "Master Output" }; break;
+        case Mode::Mixer: t = { "Channel", "EQ & Output", "Source & Dynamics", "Master", "Master Compressor", "Master Output", "Master Filter" }; break;
         case Mode::Effects: t = { "Delay (Send A)", "Reverb (Send B)", "Delay (Send A)", "FX Slot" }; break;
         case Mode::Sequencer:
             switch (ctx.seqView)
@@ -211,7 +216,10 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
     }
     while ((int) t.size() < pages) t.push_back (t.empty() ? std::string ("Page") : t.back());
     if (m == Mode::Synth)
+    {
         for (size_t i = 1; i < t.size(); ++i) t[i] = "Engine";
+        if (t.size() >= 3) { t[t.size() - 2] = "Glide"; t[t.size() - 1] = "Pitch Envelope"; } // 0.6
+    }
     if (m == Mode::Effects)
         for (size_t i = 4; i < t.size(); ++i) t[i] = "FX Slot";
     t.resize ((size_t) pages);

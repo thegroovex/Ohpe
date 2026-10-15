@@ -277,7 +277,9 @@ void StepSequencer::triggerStep (int pattern, int stepIndex, int offset, double 
     const int note = std::clamp (s.note + transpose, 0, 127);
     const int hits = std::clamp (s.ratchet, 1, 8);
     const double hitLen = samplesPerStep / hits;
-    const double gateLen = std::max (16.0, hitLen * std::clamp ((double) s.gate, 0.05, 1.0) - (s.gate >= 1.0f ? 0.0 : 1.0));
+    // 0.6: a single hit at gate 100 % ends one sample after the next step starts - a different note there
+    // overlaps it (legato: mono parts glide in glide mode Legato)
+    const double gateLen = std::max (16.0, hitLen * std::clamp ((double) s.gate, 0.05, 1.0) - (s.gate >= 1.0f ? (hits == 1 ? -1.0 : 0.0) : 1.0));
     const int ch = std::clamp (channel, 1, 16);
 
     // 0.5: a step at gate 100 % ties into the next step when that plays the same note (unless the

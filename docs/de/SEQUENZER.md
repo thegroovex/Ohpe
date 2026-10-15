@@ -111,6 +111,31 @@ dort – Akkorde gleiten Stimme für Stimme ineinander (die *gleitenden* Fläche
 losgelassene Stimmen (erster Akkord oder zu gehaltenen hinzugefügte Noten) beginnen Noten auf ihrer
 eigenen Tonhöhe.
 
+## Portamento und Tonhöhen-Hüllkurve (0.6)
+
+Alle melodischen Engines teilen dasselbe Portamento und dieselbe Tonhöhen-Hüllkurve; beide liegen für
+jede Engine auf den letzten beiden Seiten des **Synth**-Modus (*Glide*, *Tonhöhen-Hüllkurve*).
+
+| Parameter | Wirkung |
+|---|---|
+| **Glide** (`pN.glide`, 0 … 2 s) | Portamento-Zeit. 0 = aus. |
+| **Glide-Modus** (`pN.glide.mode`) | **Auto** (Standard, wie vor 0.6): eine Note gleitet, solange die vorige noch klingt (auch im Release). **Legato**: eine Note gleitet nur, solange eine andere Taste gehalten wird; mit einer Stimme laufen die Hüllkurven weiter (echtes Legato), abgesetzte Noten beginnen neu. **Immer**: jede Note gleitet von der zuletzt gespielten, auch nach einer Pause. |
+| **Glide-Timing** (`pN.glide.rate`) | **Feste Zeit**: jedes Gleiten dauert die Glide-Zeit. **Feste Rate**: die Glide-Zeit gilt je Oktave – kleine Schritte kommen schnell an, große Sprünge gleiten länger. |
+| **Poly-Glide** (`pN.polyglide`) | Akkorde gleiten Stimme für Stimme (siehe oben). |
+| **Tonhöhen-Hüllkurve Menge** (`pN.pitchenv.amt`, −24 … +24 Halbtöne) | Jede neue Note beginnt so weit entfernt und gleitet in ihre Tonhöhe: negativ = **steigt** von unten, positiv = **fällt** von oben. 0 = aus. |
+| **Tonhöhen-Hüllkurve Zeit** (`pN.pitchenv.time`, 5 ms … 4 s) | Wie lange das Gleiten dauert. |
+| **Tonhöhen-Hüllkurve Kurve** (`pN.pitchenv.curve`) | 0 = linear, 1 = schneller Start, langsames Ankommen. |
+
+**Mono-Notenpriorität (0.6):** mit einer Stimme kehrt das Loslassen der neuesten Taste zur vorigen,
+noch gehaltenen Taste zurück – legato, zurückgleitend. **MIDI:** CC 65 schaltet Portamento aus / an,
+CC 5 setzt die Glide-Zeit (siehe [MIDI.md](MIDI.md)). **Sequencer:** ein Step mit Gate 100 %
+(Step-Sequenzer, Orbit) endet jetzt ein Sample nach dem Beginn des nächsten Steps; eine *andere*
+nächste Note überlappt ihn also – Mono-Parts im Glide-Modus *Legato* gleiten genau dort.
+
+Die Werksklänge enthalten *steigende* und *fallende* Flächen und Synths (Rise Strings, Rise Choir,
+Rise Glass, Rise Warmth, Rise Bloom, Fall Haze, Rise Lead, Scoop Keys, Rise Bass, Zip Pluck, Fall Lead)
+und Portamento-Leads und -Bässe (Legato Glide Lead, Portamento Square, Glide Sine Bass, Glide Poly Synth).
+
 ## Skalen- und Akkord-Modus
 
 * **Tonart** (`key.root`) und **Skala** (`key.scale`: chromatisch, Dur, Moll, Kirchentonarten,

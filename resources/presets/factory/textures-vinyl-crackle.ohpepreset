@@ -1,0 +1,40 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Vinyl Crackle",
+  "author": "groovex",
+  "tags": [
+    "Textures",
+    "FX"
+  ],
+  "engine": "analog",
+  "comment": "Record crackle and soft hiss (Analog engine: oscillators off, crackle and noise on); hold a note under a beat.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.5,
+    "analog.detune": 0.0,
+    "analog.cutoff": 700,
+    "analog.reso": 0.05,
+    "analog.oscmix": 0.0,
+    "analog.sub": 0.0,
+    "analog.noise": 0.1,
+    "analog.ftype": 3,
+    "analog.drive": 0.6,
+    "analog.keytrack": 0.0,
+    "analog.osclevel": 0.0,
+    "analog.crackle": 0.75,
+    "amp.a": 0.08,
+    "amp.d": 0.5,
+    "amp.s": 1.0,
+    "amp.r": 0.6,
+    "mod.a": 0.001,
+    "mod.d": 0.5,
+    "mod.s": 1.0,
+    "mod.r": 0.5,
+    "mod.amt": 0.0,
+    "velsens": 0.0,
+    "voices": 1,
+    "gain": 15.9
+  }
+}

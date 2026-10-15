@@ -89,6 +89,14 @@ void Mixer::registerLate05Params (ParamRegistry& reg) const
     reg.add (std::move (d));
 }
 
+void Mixer::registerLate06Params (ParamRegistry& reg) const
+{
+    using namespace pd;
+    auto d = continuous ("mix.master.lowpass", "Master Low-Pass", "Master-Tiefpass", 500.0f, 20000.0f, 20000.0f, ParamUnit::Hertz, 0.3f);
+    d.group = "mixer/master";
+    reg.add (std::move (d));
+}
+
 double Mixer::delaySyncBeats (int choice) noexcept
 {
     static constexpr double beats[] = { 0.0, 0.25, 1.0 / 3.0, 0.5, 2.0 / 3.0, 0.75, 1.0, 1.5, 2.0 };
@@ -105,6 +113,7 @@ void Mixer::bind (const ParamRegistry& reg)
     dynIdx = { reg.indexOf ("mix.master.comp"), reg.indexOf ("mix.master.comp.thresh"), reg.indexOf ("mix.master.comp.ratio"),
                reg.indexOf ("mix.master.comp.attack"), reg.indexOf ("mix.master.comp.release"), reg.indexOf ("mix.master.comp.makeup"),
                reg.indexOf ("mix.master.tapesat"), reg.indexOf ("mix.master.ceiling") };
+    lowpassIdx = reg.indexOf ("mix.master.lowpass");
     masterIdx = { reg.indexOf ("mix.master.vol"), reg.indexOf ("mix.master.limit"), reg.indexOf ("mix.returna"), reg.indexOf ("mix.returnb") };
     delayIdx.clear();
     for (const auto& d : delay.getParamDescriptors()) delayIdx.push_back (reg.indexOf ("fxa.delay." + d.id));
@@ -131,6 +140,8 @@ void Mixer::prepare (double sampleRate, int maxBlockSize)
     }
     masterComp.prepare (sr);
     masterSat.prepare (sr);
+    for (auto& f : masterLp) f.prepare (sr);
+    lowpassHz = 20000.0f;
     std::fill (delayLast.begin(), delayLast.end(), NAN);
     std::fill (reverbLast.begin(), reverbLast.end(), NAN);
     reset();
@@ -148,6 +159,7 @@ void Mixer::reset() noexcept
     }
     masterComp.reset();
     masterSat.reset();
+    for (auto& f : masterLp) f.reset();
     numDirects = 0;
     for (auto& r : reductions) r.store (0.0f);
     delay.reset();
@@ -196,6 +208,11 @@ void Mixer::pullParams (const ParamSnapshot& s) noexcept
     masterCompOn = dynIdx[MComp] >= 0 && s.getBool (dynIdx[MComp]);
     if (masterCompOn)
         masterComp.set (s[dynIdx[MThresh]], s[dynIdx[MRatio]], s[dynIdx[MAttack]] * 1000.0f, s[dynIdx[MRelease]] * 1000.0f, s[dynIdx[MMakeup]]);
+    if (lowpassIdx >= 0 && s[lowpassIdx] != lowpassHz)
+    {
+        lowpassHz = s[lowpassIdx];
+        for (auto& f : masterLp) f.set (lowpassHz, 0.12f);
+    }
     if (dynIdx[MTapeSat] >= 0 && s[dynIdx[MTapeSat]] != masterSat.getAmount()) masterSat.setAmount (s[dynIdx[MTapeSat]]);
     if (dynIdx[MCeiling] >= 0)
     {
@@ -352,6 +369,12 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
         }
         reductions[numChannels].store (masterCompOn ? masterComp.gainReductionDb() : 0.0f, std::memory_order_relaxed);
     }
+    if (lowpassHz < 19900.0f) // 0.6: master low-pass (dark, dusty mixes)
+        for (int i = 0; i < n; ++i)
+        {
+            masterL[(size_t) i] = masterLp[0].process (masterL[(size_t) i], dsp::Svf::LowPass);
+            masterR[(size_t) i] = masterLp[1].process (masterR[(size_t) i], dsp::Svf::LowPass);
+        }
     if (limiterOn) limiter.process (masterL.data(), masterR.data(), n);
 
     float peak = 0.0f;

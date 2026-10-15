@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Rise Choir",
+  "author": "groovex",
+  "tags": [
+    "Pads",
+    "Vocal"
+  ],
+  "engine": "vocal",
+  "comment": "Airy 'ah' choir that scoops up a fourth into every chord.",
+  "params": {
+    "engine": 5,
+    "vocal.vowel": 0.0,
+    "vocal.formant": 0.0,
+    "vocal.breath": 0.3,
+    "vocal.tension": 0.42,
+    "vocal.vibdepth": 0.14,
+    "vocal.vibrate": 5.0,
+    "vocal.jitter": 0.25,
+    "amp.a": 0.45,
+    "amp.d": 1.5,
+    "amp.s": 0.9,
+    "amp.r": 1.5,
+    "mod.a": 0.5,
+    "mod.d": 2.0,
+    "mod.s": 0.5,
+    "mod.r": 1.5,
+    "mod.amt": 0.0,
+    "fx.type": 1,
+    "fx.chorus.rate": 0.35,
+    "fx.chorus.depth": 0.5,
+    "fx.chorus.mix": 0.4,
+    "pitchenv.amt": -5,
+    "pitchenv.time": 0.45,
+    "pitchenv.curve": 0.5,
+    "voices": 10,
+    "gain": 5.6
+  }
+}

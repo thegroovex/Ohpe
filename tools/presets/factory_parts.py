@@ -115,6 +115,19 @@ def sm(**kw):
     return out
 
 
+def pitchenv(amount, time, curve=0.5):
+    """0.6 pitch envelope: notes start `amount` semitones away (negative = below: they rise) and arrive after `time`."""
+    return {"pitchenv.amt": amount, "pitchenv.time": time, "pitchenv.curve": curve}
+
+
+GLIDE_MODE = {"auto": 0, "legato": 1, "always": 2}
+
+
+def porta(time, mode="auto", rate="time"):
+    """0.6 portamento: glide time, mode (auto / legato / always), constant time or constant rate (time per octave)."""
+    return {"glide": time, "glide.mode": GLIDE_MODE[mode], "glide.rate": 0 if rate == "time" else 1}
+
+
 MONO = {"voices": 1}
 
 PRESETS = [
@@ -170,16 +183,16 @@ PRESETS = [
     P("Log Drum Bass", ["Bass"], "sampler", "Low marimba bars played as a bass: woody, round and short.",
       sm(inst="marimba", tone=0.62), amp(0.001, 0.9, 0.0, 0.2), mod(0.001, 0.3, 0.0, 0.2, 0.2), drive(5000, 0.0, 0.06, 0, 0.7), velsens=0.6, voices=4),
     # 0.5: deep sub basses
-    P("Long Sub", ["Bass"], "analog", "Deep, long-decaying sub that slides between overlapping notes (glide); a soft click on the attack.",
+    P("Long Sub", ["Bass", "Boom"], "analog", "Deep, long-decaying sub that slides between overlapping notes (glide); a soft click on the attack.",
       an(shape=0.5, detune=0.0, cutoff=430, reso=0.05, oscmix=0.0, sub=0.15, drive=0.35, keytrack=1.0),
       amp(0.002, 2.6, 0.0, 0.35), mod(0.001, 0.06, 0.0, 0.1, 0.3), MONO, glide=0.11, velsens=0.35),
-    P("Dirty Sub", ["Bass"], "analog", "Sub driven into the ladder filter: growling harmonics that stay audible on small speakers.",
+    P("Dirty Sub", ["Bass", "Boom"], "analog", "Sub driven into the ladder filter: growling harmonics that stay audible on small speakers.",
       an(shape=0.3, detune=0.04, cutoff=620, reso=0.2, oscmix=0.0, sub=0.4, drive=0.9, keytrack=1.0),
       amp(0.002, 1.8, 0.4, 0.2), mod(0.001, 0.3, 0.15, 0.15, 0.3), MONO, glide=0.07, velsens=0.4),
-    P("Punch Sub", ["Bass"], "analog", "Short, punchy sub with a snappy filter click; locks in with the kick.",
+    P("Punch Sub", ["Bass", "Boom"], "analog", "Short, punchy sub with a snappy filter click; locks in with the kick.",
       an(shape=0.5, detune=0.0, cutoff=380, reso=0.1, oscmix=0.0, sub=0.35, drive=0.5, keytrack=1.0),
       amp(0.001, 0.32, 0.0, 0.07), mod(0.001, 0.045, 0.0, 0.05, 0.75), MONO, velsens=0.5),
-    P("Sine Slide", ["Bass"], "fm", "Nearly pure sine sub with a long glide for sliding bass lines.",
+    P("Sine Slide", ["Bass", "Boom"], "fm", "Nearly pure sine sub with a long glide for sliding bass lines.",
       fm(algo=2, modratio=1.0, index=0.05, op1ratio=1, op2ratio=1, op1level=1.0, op2level=0.5, op3level=0.0, op4level=0.0,
          op5level=0.0, op6level=0.0),
       amp(0.004, 0.6, 0.92, 0.18), mod(0.001, 0.12, 0.2, 0.1, 0.6), MONO, glide=0.16, velsens=0.3),
@@ -419,7 +432,7 @@ PRESETS = [
     P("Filter Kick", ["Drums"], "analog", "Kick from a self-oscillating ladder swept down by the envelope. Play around C1-C2.",
       an(shape=0.5, detune=0.0, cutoff=55, reso=0.97, oscmix=0.0, sub=0.0, noise=0.0, drive=0.4, keytrack=0.0),
       amp(0.001, 0.38, 0.0, 0.1), mod(0.001, 0.07, 0.0, 0.1, 0.7), velsens=0.5, voices=2),
-    P("Sub Kick", ["Drums", "Bass"], "analog", "Tunable deep kick: a self-oscillating filter tuned to the key, swept down from above; long boom, driven.",
+    P("Sub Kick", ["Drums", "Bass", "Boom"], "analog", "Tunable deep kick: a self-oscillating filter tuned to the key, swept down from above; long boom, driven.",
       an(shape=0.5, detune=0.0, cutoff=261.6, reso=0.97, oscmix=0.0, sub=0.0, noise=0.0, drive=0.6, keytrack=1.0),
       amp(0.001, 1.2, 0.0, 0.25), mod(0.001, 0.05, 0.0, 0.1, 0.55), velsens=0.4, voices=2),
     P("Noise Snare", ["Drums"], "analog", "Band-passed noise and tone: an electronic snare.",
@@ -573,4 +586,95 @@ PRESETS = [
     P("Formant Voices", ["Vocal", "Pads"], "wavetable", "Formant wavetable with unison: synthetic choir.",
       wt(table="formant", pos=0.05, warp=0.0, tone=0.62, unison=0.55, sub=0.0, reso=0.05, keytrack=0.5, envpos=0.0),
       amp(0.4, 1.0, 0.9, 1.2), mod(0.5, 1.0, 1.0, 1.0, 0.0), lfo(5.0, 0.03), chorus(0.4, 0.5, 0.35), voices=12),
+
+    # ================================================================ 0.6 (sound revision 2)
+    # Lo-fi
+    P("Dusty Keys", ["Keys"], "fm", "Mellow, dark electric piano for lo-fi chords: strong tape wow on the pitch, a bit-reduced edge, soft attack.",
+      fm(algo=2, modratio=1.0, index=0.17, op1ratio=1, op2ratio=1, op3ratio=1, op4ratio=14, op5ratio=1, op6ratio=1,
+         op1level=1.0, op2level=0.55, op3level=0.6, op4level=0.04, op5level=0.0, op6level=0.0),
+      amp(0.006, 3.4, 0.25, 0.6), mod(0.001, 1.6, 0.2, 0.5, 0.45), lfo(0.55, 0.075, "sine", "pitch"), crush(11, 3, 0.4),
+      voices=14, velsens=0.55),
+    P("Vinyl Crackle", ["Textures", "FX"], "analog", "Record crackle and soft hiss (Analog engine: oscillators off, crackle and noise on); hold a note under a beat.",
+      an(shape=0.5, detune=0.0, cutoff=700, reso=0.05, oscmix=0.0, sub=0.0, noise=0.1, ftype=3, drive=0.6, keytrack=0.0,
+         osclevel=0.0, crackle=0.75),
+      amp(0.08, 0.5, 1.0, 0.6), mod(0.001, 0.5, 1.0, 0.5, 0.0), velsens=0.0, voices=1),
+    P("Mellow Lofi Bass", ["Bass"], "analog", "Warm, round bass: a soft, low-passed body over a sine sub with gentle saturation and a hint of glide.",
+      an(shape=0.25, detune=0.0, cutoff=300, reso=0.05, osc2oct=0, oscmix=0.0, sub=0.85, drive=0.42, keytrack=0.6, osclevel=0.45),
+      amp(0.006, 0.9, 0.7, 0.14), mod(0.001, 0.2, 0.1, 0.1, 0.12), MONO, velsens=0.35, **porta(0.035, "legato")),
+
+    # Rise / fall slides: the 0.6 pitch envelope - every new note slides into its pitch
+    P("Rise Strings", ["Pads"], "analog", "Ensemble strings whose notes rise an octave up into the chord on every new note.",
+      an(shape=0.0, detune=0.3, cutoff=1500, reso=0.08, osc2oct=1, oscmix=0.35, sub=0.0, drive=0.1, keytrack=0.6),
+      amp(0.35, 1.0, 0.9, 1.3), mod(0.4, 1.0, 0.8, 1.0, 0.06), lfo(5.0, 0.02), chorus(0.45, 0.55, 0.45), pitchenv(-12, 0.7, 0.55), voices=10),
+    P("Rise Choir", ["Pads", "Vocal"], "vocal", "Airy 'ah' choir that scoops up a fourth into every chord.",
+      vo(vowel=0.0, formant=0.0, breath=0.3, tension=0.42, vibdepth=0.14, vibrate=5.0, jitter=0.25),
+      amp(0.45, 1.5, 0.9, 1.5), mod(0.5, 2.0, 0.5, 1.5, 0.0), chorus(0.35, 0.5, 0.4), pitchenv(-5, 0.45, 0.5), voices=10),
+    P("Rise Glass", ["Pads", "Textures"], "wavetable", "Wide glass pad: each note glides up a fifth into place, dreamy and slow.",
+      wt(table="glass", pos=0.45, warp=0.12, tone=0.6, unison=0.6, sub=0.0, reso=0.0, keytrack=0.6, envpos=0.12),
+      amp(0.6, 1.5, 0.85, 2.0), mod(1.0, 2.0, 0.5, 2.0, 0.12), lfo(0.2, 0.12, "sine", "timbre"), reverb(0.8, 0.4, 0.03, 0.3),
+      pitchenv(-7, 0.9, 0.6), voices=10),
+    P("Rise Warmth", ["Pads"], "cluster", "Soft detuned saw stack whose notes lean up a whole tone into the chord.",
+      cl(detune=0.22, spread=0.8, tone=0.38, chord="unison", stack=5, shape=0.0, side=0.7, reso=0.08, keytrack=0.5, drift=0.3),
+      amp(0.7, 1.5, 0.85, 1.8), mod(0.8, 2.0, 0.6, 1.5, 0.1), chorus(0.3, 0.4, 0.25), pitchenv(-2, 0.6, 0.4), voices=10),
+    P("Rise Bloom", ["Pads"], "fm", "Shimmering FM pad blooming up from an octave below; long and bright.",
+      fm(algo=5, modratio=1.0, index=0.1, op1ratio=1.0, op2ratio=1.003, op3ratio=2.0, op4ratio=0.997, op5ratio=3.0,
+         op6ratio=1.0, op1level=1.0, op2level=0.9, op3level=0.4, op4level=0.9, op5level=0.15, op6level=0.8),
+      amp(0.5, 2.0, 0.85, 2.0), mod(1.5, 2.0, 0.6, 2.0, 0.25), lfo(0.25, 0.2, "sine", "timbre"), chorus(0.3, 0.45, 0.35),
+      pitchenv(-12, 1.2, 0.7), voices=10),
+    P("Fall Haze", ["Pads", "FX"], "wavetable", "Hazy pad whose notes sink a fifth from above into the chord.",
+      wt(table="harmonic", pos=0.35, warp=0.1, tone=0.5, unison=0.5, sub=0.0, reso=0.0, keytrack=0.6, envpos=0.1),
+      amp(0.4, 1.5, 0.85, 1.8), mod(0.8, 2.0, 0.5, 1.5, 0.1), chorus(0.35, 0.5, 0.35), pitchenv(7, 0.8, 0.6), voices=10),
+    P("Rise Lead", ["Leads"], "analog", "Saw lead that swoops up an octave into every note; a dotted delay behind it.",
+      an(shape=0.0, detune=0.12, cutoff=1600, reso=0.25, oscmix=0.5, sub=0.1, drive=0.3, keytrack=0.6),
+      amp(0.004, 0.4, 0.85, 0.15), mod(0.001, 0.4, 0.4, 0.2, 0.28), lfo(5.4, 0.04), delay(0.45, 0.3, 0.5, 1, 0.2),
+      pitchenv(-12, 0.14, 0.7), MONO),
+    P("Scoop Keys", ["Keys"], "fm", "Electric piano where every note scoops up a whole tone: soulful, a little lazy.",
+      fm(algo=2, modratio=1.0, index=0.26, op1ratio=1, op2ratio=1, op3ratio=1, op4ratio=14, op5ratio=1, op6ratio=1,
+         op1level=1.0, op2level=0.55, op3level=0.7, op4level=0.1, op5level=0.0, op6level=0.0),
+      amp(0.002, 2.6, 0.15, 0.45), mod(0.001, 1.1, 0.2, 0.4, 0.75), chorus(0.5, 0.4, 0.35), pitchenv(-2, 0.09, 0.6), voices=14, velsens=0.7),
+    P("Rise Bass", ["Bass"], "analog", "Driven bass that slides up a fifth into every note; great for syncopated lines.",
+      an(shape=0.1, detune=0.06, cutoff=480, reso=0.18, oscmix=0.3, sub=0.4, drive=0.5, keytrack=0.5),
+      amp(0.002, 0.45, 0.6, 0.08), mod(0.001, 0.15, 0.1, 0.1, 0.4), pitchenv(-7, 0.08, 0.6), MONO, velsens=0.5),
+    P("Zip Pluck", ["Plucks"], "wavetable", "Bright pluck with a fast upward zip into the note.",
+      wt(table="digital", pos=0.3, warp=0.2, tone=0.65, unison=0.2, sub=0.0, reso=0.15, keytrack=0.5, envpos=0.3),
+      amp(0.002, 0.35, 0.0, 0.25), mod(0.001, 0.2, 0.0, 0.2, 0.5), pitchenv(-12, 0.05, 0.8), delay(0.375, 0.3, 0.5, 1, 0.18), voices=10),
+    P("Fall Lead", ["Leads", "FX"], "analog", "Square lead that drops a fifth from above into every note.",
+      an(shape=0.48, detune=0.08, cutoff=1900, reso=0.15, osc2oct=1, oscmix=0.3, sub=0.0, drive=0.25, keytrack=0.6),
+      amp(0.004, 0.4, 0.85, 0.2), mod(0.001, 0.4, 0.5, 0.2, 0.2), lfo(5.2, 0.04), pitchenv(7, 0.18, 0.6), MONO),
+
+    # Portamento showcase (0.6: glide modes and timing)
+    P("Legato Glide Lead", ["Leads"], "analog", "Mono saw lead with legato portamento: overlapping notes glide, detached notes do not retrigger a slide.",
+      an(shape=0.0, detune=0.14, cutoff=1500, reso=0.25, oscmix=0.5, sub=0.15, drive=0.3, keytrack=0.6),
+      amp(0.005, 0.4, 0.85, 0.18), mod(0.001, 0.5, 0.5, 0.2, 0.25), lfo(5.3, 0.04), delay(0.45, 0.25, 0.5, 1, 0.16),
+      MONO, **porta(0.12, "legato")),
+    P("Portamento Square", ["Leads"], "analog", "Hollow square that always glides, at a constant rate: big jumps slide longer than small steps.",
+      an(shape=0.5, detune=0.06, cutoff=2100, reso=0.15, osc2oct=1, oscmix=0.25, sub=0.0, drive=0.25, keytrack=0.6),
+      amp(0.004, 0.4, 0.85, 0.2), mod(0.001, 0.4, 0.5, 0.2, 0.2), lfo(5.5, 0.035), MONO, **porta(0.09, "always", "rate")),
+    P("Glide Sine Bass", ["Bass"], "fm", "Pure sine bass with legato glide for sliding bass lines; detached notes stay clean.",
+      fm(algo=2, modratio=1.0, index=0.04, op1ratio=1, op2ratio=1, op1level=1.0, op2level=0.45, op3level=0.0, op4level=0.0,
+         op5level=0.0, op6level=0.0),
+      amp(0.004, 0.7, 0.9, 0.15), mod(0.001, 0.12, 0.2, 0.1, 0.5), MONO, velsens=0.3, **porta(0.09, "legato")),
+    P("Glide Poly Synth", ["Keys", "Leads"], "analog", "Poly synth whose chords always slide from the chord before (poly glide).",
+      an(shape=0.15, detune=0.2, cutoff=1800, reso=0.15, oscmix=0.5, sub=0.0, drive=0.2, keytrack=0.6),
+      amp(0.02, 0.8, 0.8, 0.4), mod(0.01, 0.6, 0.4, 0.3, 0.25), chorus(0.5, 0.5, 0.35), voices=8, polyglide=1, **porta(0.16, "always")),
+
+    # Boom: deep tuned kicks and sub basses (sine sub with a pitch dive)
+    P("Boom Long Sub", ["Boom", "Bass"], "analog", "Long, tuned sine sub with a quick pitch dive on the attack; rings out for seconds.",
+      an(shape=0.5, detune=0.0, cutoff=500, reso=0.0, oscmix=0.0, sub=1.0, drive=0.3, keytrack=1.0, osclevel=0.0),
+      amp(0.001, 3.2, 0.0, 0.5), mod(0.001, 0.05, 0.0, 0.1, 0.2), pitchenv(12, 0.07, 0.8), MONO, velsens=0.3, tune=12,
+      **porta(0.06, "legato")),
+    P("Boom Distorted", ["Boom", "Bass"], "analog", "Sine sub driven hard into the ladder filter and the FX slot: a growling, distorted boom.",
+      an(shape=0.5, detune=0.0, cutoff=900, reso=0.15, oscmix=0.0, sub=1.0, drive=1.0, keytrack=1.0, osclevel=0.15),
+      amp(0.001, 2.4, 0.0, 0.35), mod(0.001, 0.08, 0.0, 0.1, 0.25), pitchenv(12, 0.06, 0.8), drive(2600, 0.1, 0.7, 0, 1.0),
+      MONO, velsens=0.3, tune=12),
+    P("Boom Kick Bass", ["Boom", "Drums", "Bass"], "analog", "Short boom: a two-octave pitch dive into a tuned sine - kick and bass in one.",
+      an(shape=0.5, detune=0.0, cutoff=700, reso=0.0, oscmix=0.0, sub=1.0, drive=0.5, keytrack=1.0, osclevel=0.0),
+      amp(0.001, 0.55, 0.0, 0.12), mod(0.001, 0.03, 0.0, 0.05, 0.3), pitchenv(24, 0.045, 0.9), MONO, velsens=0.45, tune=12),
+    P("Boom Slide", ["Boom", "Bass"], "analog", "Long sine sub made for trap-style slides: overlap notes and it glides (legato, constant time).",
+      an(shape=0.5, detune=0.0, cutoff=600, reso=0.0, oscmix=0.0, sub=1.0, drive=0.45, keytrack=1.0, osclevel=0.0),
+      amp(0.001, 3.6, 0.0, 0.4), mod(0.001, 0.05, 0.0, 0.1, 0.2), pitchenv(7, 0.05, 0.8), MONO, velsens=0.25, tune=12,
+      **porta(0.13, "legato")),
+    P("Boom Click", ["Boom", "Bass"], "analog", "Sine sub with a bright click on the attack, so the boom cuts through on small speakers.",
+      an(shape=0.5, detune=0.0, cutoff=260, reso=0.05, oscmix=0.0, sub=1.0, noise=0.35, drive=0.45, keytrack=1.0, osclevel=0.0),
+      amp(0.001, 2.2, 0.0, 0.3), mod(0.001, 0.012, 0.0, 0.02, 0.9), pitchenv(12, 0.03, 0.8), MONO, velsens=0.3, tune=12),
 ]

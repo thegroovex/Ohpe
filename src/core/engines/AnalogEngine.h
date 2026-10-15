@@ -18,6 +18,7 @@ enum Param
 {
     Shape = 0, Detune, Cutoff, Resonance, // macros 1-4
     Osc2Octave, OscMix, Sub, Noise, FilterType, Drive, KeyTrack,
+    OscLevel, Crackle, // 0.6 (late parameters, registered at the end of the layout)
     numParams
 };
 
@@ -28,6 +29,8 @@ struct Shared
     float shape = 0.2f, detune = 0.15f, cutoff = 3000.0f, resonance = 0.2f;
     float osc2Octave = 0.0f, oscMix = 0.5f, sub = 0.0f, noise = 0.0f, drive = 0.2f, keyTrack = 0.5f;
     int filterType = LadderLP;
+    float oscLevel = 1.0f; ///< 0.6: level of the two oscillators (0 = noise / sub / crackle only)
+    float crackle = 0.0f;  ///< 0.6: vinyl-style crackle (sparse random clicks) into the filter
 };
 
 class Voice : public VoiceBase
@@ -47,6 +50,8 @@ private:
     dsp::Ladder ladder;
     dsp::Svf svf;
     dsp::Random noise;
+    dsp::Random crackleRng;
+    float crackleState = 0.0f, crackleDust = 0.0f, crackleLp = 0.0f; ///< 0.6: decaying click (pop) and fine dust
 };
 } // namespace analog
 
@@ -57,6 +62,8 @@ public:
     EngineInfo info() const noexcept override { return { "analog", "Analog", "Analog", "analog" }; }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void setParam (int localIndex, float value) noexcept override;
+    /** 0.6: "osclevel" and "crackle" were added later (registered in the 0.6 block). */
+    int firstLateParam() const noexcept override { return analog::OscLevel; }
 
     const analog::Shared& getShared() const noexcept { return shared; }
 

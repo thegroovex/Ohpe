@@ -165,37 +165,50 @@ def lane_parts(*parts):
 
 
 # ---------------------------------------------------------------------------------------------
-# 1. Lo-Fi Beat (0.5 rework): Orbit lanes 1-3 -> Lo-Fi kit (swung, humanised, ghost notes), Orbit lane 4 ->
-#    round bass, step sequencer -> dusty electric piano chords (one-finger sevenths, tied), Euclid -> shaker
-#    and a second-bar kick on the kit. Dbmaj7 | Cm7 in F minor.
-DB2, C2_L, AB1, EB2, G1_L, BB1 = 37, 36, 32, 39, 31, 34
-LOFI_KICK = [(KICK, 118), None, None, None, None, None, (KICK, 82), None, None, None, (KICK, 104), None, None, None, None, None]
-LOFI_SNARE = [None, None, None, None, (SNARE, 112), None, None, (GHOST, 34), None, (GHOST, 26), None, None,
-              (SNARE, 106), None, None, (GHOST, 40)]
-LOFI_HATS = [(HAT, 74), None, (HAT, 46), (HAT, 24), (HAT, 66), None, (HAT, 44), None, (HAT, 70), None, (HAT, 48), None,
-             (HAT, 64), (HAT, 28), (OPENHAT, 40), None]
-LOFI_BASS = [(DB2, 100), (DB2, 90), (DB2, 90), None, (DB2, 92), None, (AB1, 86), (C2_L, 84),
-             (C2_L, 100), (C2_L, 90), (C2_L, 90), None, (C2_L, 90), (EB2, 84), (G1_L, 86), (C2_L, 82)]
-LOFI_KEYS = held([(49, 6, 86), None, (49, 2, 70), None, (49, 5, 80), None,
-                  (48, 6, 84), None, (48, 2, 68), None, (48, 4, 78), None], last_gate=0.85) + [
-    {"i": 31, "on": True, "note": 49, "vel": 72, "gate": 1.0, "prob": 100, "ratchet": 1}]  # pushed into the next bar (tied)
+# 1. Lo-Fi Beat (0.6 rebuild): classic lo-fi hip-hop at 78 BPM with a lazy, heavy swing.
+#    Euclid -> the Lo-Fi kit (muffled kick on 1, the "and" of 2 and the "a" of 3, soft snare on 2 and 4, quiet
+#    shuffled hats on two rings with different velocities), Orbit lanes 1-3 -> rootless jazz voicings on Dusty Keys
+#    (one bar each, tied), Orbit lane 4 -> a held note on Vinyl Crackle, step sequencer -> Mellow Lofi Bass on the roots
+#    with chromatic approach notes. ii - V - I - V/ii in E-flat: Fm9 - Bb13 - Ebmaj9 - C7#9. Dark master: low-pass
+#    at 4.2 kHz, tape saturation, little reverb.
+LOFI_VOICINGS = [(56, 63, 67), (56, 62, 67), (55, 62, 65), (52, 58, 63)]  # Fm9 (Ab Eb G), Bb13 (Ab D G), Ebmaj9 (G D F), C7#9 (E Bb Eb)
+LOFI_ROOTS = [(29, 36, 33), (34, 29, 38), (39, 34, 35), (36, 31, 28)]       # (root, fifth below / above, approach to the next root)
+
+
+def lofi_bass_bar(root, fifth, approach):
+    return [(root, 6, 104), None, (root, 2, 78), None, (fifth, 3, 92), None, (approach, 2, 82)]
+
+
+def lofi_lane(k):
+    cells = []
+    for v in LOFI_VOICINGS:
+        cells += [(v[k], 78 - 4 * k)] * 4  # one bar, tied (gate 100 %)
+    return cells
+
+
+LOFI_PADS = {"drum.pad1.tone": 0.24, "drum.pad1.tune": -1, "drum.pad1.decay": 0.55,   # kick: muffled and round
+             "drum.pad3.tone": 0.33, "drum.pad3.level": 0.8, "drum.pad3.decay": 0.42,  # snare: soft
+             "drum.pad6.tone": 0.3, "drum.pad6.level": 0.62}                           # hats: dull and quiet
 LOFI = project(
     "Lo-Fi Beat", ["Drums", "Keys", "Bass"],
-    "Swung, humanised boom-bap with ghost notes on the dry Lo-Fi kit (Orbit lanes 1-3), a round bass on Orbit lane 4, "
-    "dusty electric-piano sevenths from the step sequencer (one-finger chords, tied), shaker from Euclid. Press Play.",
-    {"tempo": 86, "drum.kit": KITS["lofi"], "key.root": 5, "key.scale": 2,
-     "seq.step.channel": 1, "seq.step.rate": STEP_RATE["1/16"], "seq.step.length": 32, "seq.step.swing": 0.32},
-    part(1, "Dusty EP", chord=CHORD["seventh"]), part(2, "Lofi Bass"), part(3, "Music Box"), part(4, "Breath Choir Pad"),
-    {"seq.orbit.on": 1, "seq.orbit.drums": 1, "seq.orbit.gate": 1.0, "seq.orbit.swing": 0.32, "seq.orbit.human": 0.3},
-    lanes([16, 16, 16, 16], ["1/16", "1/16", "1/16", "1/8"]), lane_parts(0, 0, 0, 2),
-    {"seq.euclid.on": 1, "seq.euclid.drums": 1, "seq.euclid.rate": RATE["1/16"], "seq.euclid.gate": 0.5, "seq.euclid.vel": 40,
-     "seq.euclid.swing": 0.32, "seq.euclid.human": 0.45},
-    rings([(16, 4, 2, SHAKER), (32, 1, 30, KICK)]), ring_vel(30, 70),
-    mixer(ch1=(0, 0.0, 0.16), ch2=(-5, 0.0, 0.0), ch3=(-8, 0.15, 0.3), ch4=(-10, 0, 0.35), ch5=(1, 0.0, 0.03), master=-3),
-    {"mix.master.tapesat": 0.12,
-     "fxb.reverb.size": 0.45, "fxb.reverb.damping": 0.7},
-    sequencer={"steps": LOFI_KEYS, "lengths": {"1": 32}},
-    orbit=lane_steps(0, LOFI_KICK) + lane_steps(1, LOFI_SNARE) + lane_steps(2, LOFI_HATS) + lane_steps(3, LOFI_BASS))
+    "Classic lo-fi hip-hop at 78 BPM with a lazy, heavy swing: muffled kick, soft snare and quiet shuffled hats on the Lo-Fi kit (Euclid), "
+    "rootless ninth voicings on Dusty Keys with strong tape wow (Orbit lanes 1-3), a warm round bass on the roots (step sequencer), "
+    "vinyl crackle (Orbit lane 4). Fm9 - Bb13 - Ebmaj9 - C7#9; dark master (low-pass, tape saturation). Press Play.",
+    {"tempo": 78, "drum.kit": KITS["lofi"], "key.root": 3, "key.scale": 0,
+     "seq.step.channel": 2, "seq.step.rate": STEP_RATE["1/16"], "seq.step.length": 64, "seq.step.swing": 0.5},
+    LOFI_PADS,
+    part(1, "Dusty Keys"), part(2, "Mellow Lofi Bass"), part(3, "Music Box"), part(4, "Vinyl Crackle"),
+    {"seq.orbit.on": 1, "seq.orbit.drums": 0, "seq.orbit.part": 1, "seq.orbit.gate": 1.0, "seq.orbit.human": 0.2},
+    lanes([16, 16, 16, 1], ["1/4", "1/4", "1/4", "1/4"]), lane_parts(0, 0, 0, 4),
+    {"seq.euclid.on": 1, "seq.euclid.drums": 1, "seq.euclid.rate": RATE["1/16"], "seq.euclid.gate": 0.5, "seq.euclid.vel": 100,
+     "seq.euclid.swing": 0.5, "seq.euclid.human": 0.4},
+    rings([(16, 3, 0, KICK), (16, 2, 4, SNARE), (16, 8, 0, HAT), (16, 4, 13, HAT)]), ring_vel(112, 92, 52, 30),
+    mixer(ch1=(-1, 0.0, 0.12), ch2=(-2, 0.0, 0.0), ch3=(-60, 0.0, 0.0), ch4=(-4, 0.0, 0.0), ch5=(0, 0.0, 0.05), master=0),
+    {"mix.ch1.eqhi": -5, "mix.ch5.eqhi": -4, "mix.master.tapesat": 0.4, "mix.master.lowpass": 4200,
+     "fxb.reverb.size": 0.35, "fxb.reverb.damping": 0.75,
+     "mix.master.comp": 1, "mix.master.comp.thresh": -16, "mix.master.comp.ratio": 2.0},
+    sequencer={"steps": held([n for r in LOFI_ROOTS for n in lofi_bass_bar(*r)], last_gate=0.8), "lengths": {"1": 64}},
+    orbit=lane_steps(0, lofi_lane(0)) + lane_steps(1, lofi_lane(1)) + lane_steps(2, lofi_lane(2)) + lane_steps(3, [(60, 90)]))
 
 # ---------------------------------------------------------------------------------------------
 # 2. Techno Groove (0.5 rework): Orbit -> Hybrid kit (four-on-the-floor, claps and rims, accented 16th hats,
@@ -357,7 +370,7 @@ SG_KICK = [(KICK, 120) if i in (0, 10) else None for i in range(16)]
 SG_SNARE = [((SNARE, 112) if i == 8 else (CLAP, 70) if i == 15 else None) for i in range(16)]
 SG_HATS = [(HAT, (78 if i % 4 == 0 else 52 if i % 2 == 0 else 34)) for i in range(16)]
 SUBGLIDE = project(
-    "Sub & Glide", ["Pads", "Bass", "Drums"],
+    "Sub & Glide", ["Pads", "Bass", "Drums", "Boom"],
     "Seventh chords that slide into each other (Glide Strings, poly glide), a long sliding sub on Orbit lane 1 and a half-time beat "
     "on the Boom kit from Orbit lanes 2-4, sparkle bells from Euclid. Cm7 - Abmaj7 - Ebmaj7 - Bb7.",
     {"tempo": 80, "drum.kit": KITS["boom"], "key.root": 0, "key.scale": 2,
@@ -373,4 +386,65 @@ SUBGLIDE = project(
     sequencer={"steps": SG_CHORDS, "lengths": {"1": 16}},
     orbit=lane_steps(0, SG_SUB) + lane_steps(1, SG_KICK) + lane_steps(2, SG_SNARE) + lane_steps(3, SG_HATS))
 
-PROJECTS = [LOFI, TECHNO, AMBIENT, SYNTHPOP, POLY, ARP, HOUSE, SUBGLIDE]
+# ---------------------------------------------------------------------------------------------
+# 9. Lofi Kit (0.6): the Lo-Fi kit dialled in for lo-fi hip-hop (muffled kick, soft snare, dull hats, rim and ghost
+#    notes on Orbit with velocity variation), vinyl crackle on part 4, dark master. A starting point for your own beats.
+LK_KICK = [(KICK, 112), None, None, None, None, None, (KICK, 78), None, None, None, None, (KICK, 96), None, None, None, None]
+LK_SNARE = [None, None, None, None, (SNARE, 100), None, None, (GHOST, 30), None, (GHOST, 24), None, None,
+            (SNARE, 94), None, (RIM, 40), None]
+LK_HATS = [(HAT, 64), None, (HAT, 34), (HAT, 22), (HAT, 58), None, (HAT, 38), (HAT, 18), (HAT, 62), None, (HAT, 30), None,
+           (HAT, 56), (HAT, 26), (HAT, 40), (HAT, 20)]
+LOFIKIT = project(
+    "Lofi Kit", ["Drums"],
+    "The Lo-Fi kit set up for lo-fi hip-hop: muffled, round kick, soft snare with ghost notes and a rim, dull shuffled hats with "
+    "velocity variation (Orbit, lazy swing), vinyl crackle on part 4 (Orbit lane 4) and a dark master. Play your own keys on part 1.",
+    {"tempo": 80, "drum.kit": KITS["lofi"], "key.root": 3, "key.scale": 0},
+    LOFI_PADS,
+    part(1, "Dusty Keys"), part(2, "Mellow Lofi Bass"), part(3, "Music Box"), part(4, "Vinyl Crackle"),
+    {"seq.orbit.on": 1, "seq.orbit.drums": 1, "seq.orbit.gate": 1.0, "seq.orbit.swing": 0.5, "seq.orbit.human": 0.35},
+    lanes([16, 16, 16, 1], ["1/16", "1/16", "1/16", "1/4"]), lane_parts(0, 0, 0, 4),
+    mixer(ch1=(-2, 0.0, 0.12), ch2=(-2, 0.0, 0.0), ch3=(-60, 0.0, 0.0), ch4=(-4, 0.0, 0.0), ch5=(0, 0.0, 0.05), master=0),
+    {"mix.ch5.eqhi": -4, "mix.master.tapesat": 0.4, "mix.master.lowpass": 4500, "fxb.reverb.size": 0.35, "fxb.reverb.damping": 0.75,
+     "mix.master.comp": 1, "mix.master.comp.thresh": -16, "mix.master.comp.ratio": 2.0},
+    orbit=lane_steps(0, LK_KICK) + lane_steps(1, LK_SNARE) + lane_steps(2, LK_HATS) + lane_steps(3, [(60, 90)]))
+
+# ---------------------------------------------------------------------------------------------
+# 10. Boom Kit (0.6): the synthesised Boom kit in a half-time trap-style beat (Orbit, rolling hats), Boom Slide on the
+#     step sequencer with overlapping notes that glide (legato portamento), a dark Rise Glass pad from Euclid. C minor.
+BK_KICK = [(KICK, 124) if i in (0, 7, 10) else None for i in range(16)]
+BK_SNARE = [(CLAP, 110) if i == 8 else None for i in range(16)]
+BK_HATS = [(HAT, 70 if i % 4 == 0 else 46) for i in range(16)]
+BK_HATS[14] = (HAT, 40)
+BK_ROLL = [None] * 12 + [(HAT, 38), (HAT, 44), (HAT, 52), (HAT, 60)]
+def slides(notes):
+    """Step-sequencer steps from (note, steps, vel, slide): tied over its steps; slide = the last step at gate 100 %
+    overlaps the next note (legato: Boom Slide glides into it), otherwise it ends at 90 %."""
+    out, i = [], 0
+    for note, length, vel, slide in notes:
+        for k in range(length):
+            last = k == length - 1
+            out.append({"i": i + k, "on": True, "note": note, "vel": vel, "gate": 1.0 if (not last or slide) else 0.9,
+                        "prob": 100, "ratchet": 1})
+        i += length
+    return out
+
+
+BK_BASS = slides([(36, 6, 110, False), (36, 1, 96, True), (43, 3, 104, True), (41, 2, 100, False), (39, 4, 104, False),  # C, slide up to G, F
+                  (36, 7, 110, False), (34, 3, 100, True), (36, 2, 104, True), (31, 4, 108, False)])                   # C, Bb, slide C, down to G
+BOOMKIT = project(
+    "Boom Kit", ["Drums", "Bass", "Boom"],
+    "The synthesised Boom kit in a half-time beat with rolling hats (Orbit), Boom Slide on the step sequencer - overlapping "
+    "notes glide (legato portamento) - and a dark pad that rises into its chord (Rise Glass, Euclid). C minor, 70 BPM.",
+    {"tempo": 70, "drum.kit": KITS["boom"], "key.root": 0, "key.scale": 2,
+     "seq.step.channel": 2, "seq.step.rate": STEP_RATE["1/16"], "seq.step.length": 32},
+    part(1, "Rise Glass", chord=CHORD["seventh"]), part(2, "Boom Slide"), part(3, "Sparkle Bell"), part(4, "Vinyl Crackle"),
+    {"seq.orbit.on": 1, "seq.orbit.drums": 1, "seq.orbit.gate": 0.6, "seq.orbit.human": 0.1},
+    lanes([16, 16, 16, 16], ["1/16", "1/16", "1/16", "1/32"]),
+    {"seq.euclid.on": 1, "seq.euclid.part": 1, "seq.euclid.rate": RATE["1/4"], "seq.euclid.gate": 1.0, "seq.euclid.vel": 80},
+    rings([(8, 1, 0, 60), (8, 1, 4, 56)]),
+    mixer(ch1=(-9, 0.1, 0.4), ch2=(1, 0.0, 0.0), ch3=(-60, 0, 0), ch4=(-60, 0, 0), ch5=(-1, 0.0, 0.05), master=-1),
+    {"fxb.reverb.size": 0.8, "fxb.reverb.damping": 0.5, "mix.master.comp": 1, "mix.master.comp.thresh": -14, "mix.master.comp.ratio": 2.0},
+    sequencer={"steps": BK_BASS, "lengths": {"1": 32}},
+    orbit=lane_steps(0, BK_KICK) + lane_steps(1, BK_SNARE) + lane_steps(2, BK_HATS) + lane_steps(3, BK_ROLL))
+
+PROJECTS = [LOFI, TECHNO, AMBIENT, SYNTHPOP, POLY, ARP, HOUSE, SUBGLIDE, LOFIKIT, BOOMKIT]

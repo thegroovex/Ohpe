@@ -309,8 +309,11 @@ void LibraryBrowser::paint (juce::Graphics& g)
     g.setColour (colour::displayDim);
     g.setFont (labelFont (u * 1.4f));
     g.drawText (i18n::upper (tr ("Categories")), left.withHeight (u * 2.2f), juce::Justification::centredLeft, true);
-    const float cw = (left.getWidth() - u * 0.6f) / 2.0f, ch = u * 2.8f;
     const auto& cats = preset::categories();
+    // 0.6: the chips share the column with the engine chips; they shrink when the categories need more rows
+    const float catRows = (float) ((cats.size() + 1) / 2), engineRows = (float) ((numEngineTypes + 2) / 2);
+    const float cw = (left.getWidth() - u * 0.6f) / 2.0f,
+                ch = juce::jmin (u * 2.8f, (left.getHeight() - u * 5.8f) / (catRows + engineRows) - u * 0.5f);
     for (size_t i = 0; i < cats.size(); ++i)
     {
         const auto key = std::string (cats[i].key);
@@ -318,7 +321,7 @@ void LibraryBrowser::paint (juce::Graphics& g)
         chip (g, { left.getX() + (cw + u * 0.6f) * (float) (i % 2), left.getY() + u * 2.4f + (ch + u * 0.5f) * (float) (i / 2), cw, ch },
               categoryLabel (cats[i]), on, colour::encoder ((int) i), [this, key] { toggleTag (str (key)); });
     }
-    const float ey = left.getY() + u * 2.4f + (ch + u * 0.5f) * 5.0f + u * 1.0f;
+    const float ey = left.getY() + u * 2.4f + (ch + u * 0.5f) * catRows + u * 1.0f;
     g.setColour (colour::displayDim);
     g.drawText (i18n::upper (tr ("Engine")), juce::Rectangle<float> (left.getX(), ey, left.getWidth(), u * 2.2f), juce::Justification::centredLeft, true);
     for (int t = -1; t < numEngineTypes; ++t)

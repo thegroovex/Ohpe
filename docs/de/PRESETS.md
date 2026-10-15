@@ -11,7 +11,7 @@ Display; die Klaviatur bleibt spielbar, so kannst du Klänge beim Stöbern anspi
 
 | Bereich | Funktion |
 |---|---|
-| **Kategorien** (links) | Bass, Tasten, Flächen, Leads, Zupfer, Drums, FX, Arp, Texturen, Vokal. Eine oder mehrere wählen: die Liste zeigt Presets, die **einen** der gewählten Tags tragen. |
+| **Kategorien** (links) | Bass, Tasten, Flächen, Leads, Zupfer, Drums, FX, Arp, Texturen, Vokal, Boom (0.6: tiefe gestimmte Kicks und Sub-Bässe). Eine oder mehrere wählen: die Liste zeigt Presets, die **einen** der gewählten Tags tragen. |
 | **Engine** (links) | Nur Presets einer Engine (oder *Alle*). |
 | **Suchen** (oben) | Wörter werden in Name, Autor, Tags, Engine und Kommentar gesucht (Groß-/Kleinschreibung egal; deutsche und englische Kategorie- und Engine-Namen gehen). Alle Wörter müssen passen. |
 | **Alle / Werk / Eigene** | Welche Bank: die eingebauten Werks-Presets, deine eigenen oder beide. |
@@ -70,7 +70,7 @@ der [englischen Fassung](../en/PRESETS.md#file-format-version-2); kurz:
   als Part-Presets.
 * `kind`: `"part"` (ein Part) oder `"project"` (das ganze Instrument).
 * `name`, `author`, `comment`, `tags` (Liste; die Kategorien sind feste englische Schlüssel `Bass`,
-  `Keys`, `Pads`, `Leads`, `Plucks`, `Drums`, `FX`, `Arp`, `Textures`, `Vocal` – die Oberfläche
+  `Keys`, `Pads`, `Leads`, `Plucks`, `Drums`, `FX`, `Arp`, `Textures`, `Vocal`, `Boom` – die Oberfläche
   übersetzt sie; alles andere ist ein freier Tag), `engine` (Engine-ID).
 * `params`: Werte als **Klartextwerte** (Einheit wie im Display). Part-Presets ohne Part-Präfix
   (`"analog.cutoff"`), Projekt-Presets mit vollen IDs.

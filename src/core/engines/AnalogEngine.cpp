@@ -25,6 +25,8 @@ void Voice::start (int midiNote, float vel, bool legato, const VoiceCommon& c) n
         ladder.reset();
         svf.reset();
         noise.seed ((uint32_t) (midiNote * 7919 + 1));
+        crackleRng.seed ((uint32_t) (midiNote * 104729 + 7));
+        crackleState = crackleDust = crackleLp = 0.0f;
     }
 }
 
@@ -60,13 +62,31 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         lfoPan (c, panL, panR);
         const float gain = 0.3f * velocityGain (c) * lfoAmp (c);
         const float drive = 1.0f + p.drive * 4.0f;
-        const float mix1 = 1.0f - p.oscMix, mix2 = p.oscMix;
+        const float mix1 = (1.0f - p.oscMix) * p.oscLevel, mix2 = p.oscMix * p.oscLevel;
+        // 0.6 crackle: pops (rare, louder) and dust (frequent, tiny), both as short decaying clicks
+        const float popChance = p.crackle > 0.0f ? (3.0f + 22.0f * p.crackle) / sr : 0.0f;
+        const float dustChance = p.crackle > 0.0f ? (40.0f + 260.0f * p.crackle) / sr : 0.0f;
+        const float popLevel = 2.2f * std::sqrt (p.crackle), dustLevel = 0.35f * std::sqrt (p.crackle);
 
         for (int i = 0; i < n; ++i)
         {
             float x = mix1 * osc1.next (f1, sr, p.shape) + mix2 * osc2.next (f2, sr, p.shape);
             x += p.sub * subOsc.next (fSub, sr);
             x += p.noise * noise.nextBipolar();
+            if (popChance > 0.0f)
+            {
+                crackleState *= 0.55f;
+                crackleDust *= 0.3f;
+                if (crackleRng.next01() < popChance)
+                {
+                    const float a = crackleRng.next01();
+                    crackleState += (crackleRng.next01() < 0.5f ? -1.0f : 1.0f) * popLevel * (0.25f + 0.75f * a * a);
+                }
+                if (crackleRng.next01() < dustChance)
+                    crackleDust += (crackleRng.next01() < 0.5f ? -1.0f : 1.0f) * dustLevel * crackleRng.next01();
+                crackleLp += 0.55f * (crackleState + crackleDust - crackleLp); // soften the edges (~6 kHz)
+                x += crackleLp;
+            }
             x *= 0.7f;
             float y;
             switch (p.filterType)
@@ -107,6 +127,9 @@ std::vector<ParamDescriptor> AnalogEngine::getParamDescriptors() const
                          { "Ladder TP", "SVF TP", "SVF BP", "SVF HP" }, 0));
     d.push_back (continuous ("drive", "Drive", "Drive", 0.0f, 1.0f, 0.2f));
     d.push_back (continuous ("keytrack", "Key Track", "Key-Tracking", 0.0f, 1.0f, 0.5f));
+    // 0.6 (late): oscillator level and vinyl crackle
+    d.push_back (continuous ("osclevel", "Osc Level", "Osz.-Pegel", 0.0f, 1.0f, 1.0f));
+    d.push_back (continuous ("crackle", "Crackle", "Knistern", 0.0f, 1.0f, 0.0f));
     return d;
 }
 
@@ -126,6 +149,8 @@ void AnalogEngine::setParam (int i, float v) noexcept
         case FilterType: shared.filterType = (int) v; break;
         case Drive: shared.drive = v; break;
         case KeyTrack: shared.keyTrack = v; break;
+        case OscLevel: shared.oscLevel = v; break;
+        case Crackle: shared.crackle = v; break;
         default: break;
     }
 }

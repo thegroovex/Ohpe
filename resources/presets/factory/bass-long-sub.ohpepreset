@@ -5,7 +5,8 @@
   "name": "Long Sub",
   "author": "groovex",
   "tags": [
-    "Bass"
+    "Bass",
+    "Boom"
   ],
   "engine": "analog",
   "comment": "Deep, long-decaying sub that slides between overlapping notes (glide); a soft click on the attack.",

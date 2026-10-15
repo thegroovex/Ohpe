@@ -5,7 +5,8 @@
   "name": "Dirty Sub",
   "author": "groovex",
   "tags": [
-    "Bass"
+    "Bass",
+    "Boom"
   ],
   "engine": "analog",
   "comment": "Sub driven into the ladder filter: growling harmonics that stay audible on small speakers.",

@@ -146,9 +146,10 @@ void OrbitSequencer::process (const Transport& tr, int numSamples, SequencerOutp
                 int vel = s.velocity;
                 const double spq = seq::stepsPerQuarter (lane.rate);
                 const int64_t t = blockStart + offset + seq::swingSamples (k, swing, sps, spq) + humaniser.apply (human, sr, vel);
-                const int64_t off = t + seq::gateSamples (sps, gate);
                 // 0.5: gate 100 % ties a step to the step before it when both play the same note (not on the drum kit)
                 const bool tieable = gate >= 0.999f && (lane.part > 0 || ! drumsMode);
+                // 0.6: ... and overlaps a different next note by one sample (legato)
+                const int64_t off = t + seq::gateSamples (sps, gate) + (tieable ? 1 : 0);
                 if (tieable)
                 {
                     const auto prev = getStep (l, (idx + lane.length - 1) % lane.length);

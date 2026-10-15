@@ -5,7 +5,8 @@
   "name": "Sine Slide",
   "author": "groovex",
   "tags": [
-    "Bass"
+    "Bass",
+    "Boom"
   ],
   "engine": "fm",
   "comment": "Nearly pure sine sub with a long glide for sliding bass lines.",

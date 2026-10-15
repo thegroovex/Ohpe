@@ -107,6 +107,31 @@ chord takes over the voice of the nearest note just released and slides from the
 into each other voice by voice (the *sliding* pads of the factory bank). Without released voices
 (the first chord, or notes added to held ones) notes start on their own pitch.
 
+## Portamento and pitch envelope (0.6)
+
+Every melodic engine shares the same portamento and pitch envelope; both sit on the last two pages of
+the **Synth** mode (*Glide*, *Pitch Envelope*) for every engine.
+
+| Parameter | What it does |
+|---|---|
+| **Glide** (`pN.glide`, 0 … 2 s) | Portamento time. 0 = off. |
+| **Glide Mode** (`pN.glide.mode`) | **Auto** (default, as before 0.6): a note glides while the previous note still sounds (also in its release). **Legato**: a note glides only while another key is held; with one voice the envelopes keep running (true legato), detached notes start fresh. **Always**: every note glides from the last note played, even after silence. |
+| **Glide Timing** (`pN.glide.rate`) | **Constant Time**: every glide takes the Glide time. **Constant Rate**: the Glide time is per octave – small steps arrive quickly, big jumps slide longer. |
+| **Poly Glide** (`pN.polyglide`) | Chords glide voice by voice (see above). |
+| **Pitch Env Amount** (`pN.pitchenv.amt`, −24 … +24 semitones) | Every new note starts this far away and slides into its pitch: negative = **rises** from below, positive = **falls** from above. 0 = off. |
+| **Pitch Env Time** (`pN.pitchenv.time`, 5 ms … 4 s) | How long the slide takes. |
+| **Pitch Env Curve** (`pN.pitchenv.curve`) | 0 = linear, 1 = fast start and a slow arrival. |
+
+**Mono note priority (0.6):** with one voice, releasing the newest key returns to the previous key
+still held, legato and gliding back. **MIDI:** CC 65 switches portamento off / on, CC 5 sets the
+glide time (see [MIDI.md](MIDI.md)). **Sequencers:** a step at gate 100 % (step sequencer, Orbit)
+now ends one sample after the next step starts, so a *different* next note overlaps it – mono parts
+in glide mode *Legato* glide exactly there.
+
+The factory bank has *rise* and *fall* pads and synths (Rise Strings, Rise Choir, Rise Glass, Rise
+Warmth, Rise Bloom, Fall Haze, Rise Lead, Scoop Keys, Rise Bass, Zip Pluck, Fall Lead) and portamento
+leads and basses (Legato Glide Lead, Portamento Square, Glide Sine Bass, Glide Poly Synth).
+
 ## Scale and chord mode
 
 * **Key** (`key.root`) and **Scale** (`key.scale`: chromatic, major, minor, the church modes,
