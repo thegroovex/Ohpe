@@ -293,3 +293,148 @@ TEST_CASE ("preset: safe file names")
     CHECK (preset::safeFileName ("Flächen") == "Flächen");
     CHECK (preset::safeFileName (std::string (100, 'a')).size() == 80);
 }
+
+// ------------------------------------------------------------------ 0.7: arp blocks in part presets
+namespace
+{
+preset::Preset arpPreset()
+{
+    preset::Preset p;
+    p.meta.name = "Test Arp";
+    p.meta.tags = { "Arp" };
+    p.params["engine"] = (float) EngineType::Analog;
+    p.params["analog.cutoff"] = 900.0f;
+    p.arp = std::map<std::string, float> { { "mode", 2.0f }, { "oct", 2.0f }, { "gate", 0.45f }, { "rate", 2.0f }, { "latch", 1.0f } };
+    return p;
+}
+} // namespace
+
+TEST_CASE ("preset arp: a part preset with an arp block switches the arp on for the part it loads into")
+{
+    Core c;
+    auto& reg = c.params();
+    REQUIRE (reg.get ("seq.arp.on") == 0.0f);
+    REQUIRE ((int) reg.get ("seq.arp.part") == 3);
+    reg.set ("seq.arp.mode", 4.0f);
+    const auto r = preset::applyPart (arpPreset(), reg, 0);
+    REQUIRE (r.ok);
+    CHECK (r.arpApplied);
+    CHECK (reg.get ("seq.arp.on") == 1.0f);
+    CHECK ((int) reg.get ("seq.arp.part") == 1);
+    CHECK ((int) reg.get ("seq.arp.mode") == 2);
+    CHECK ((int) reg.get ("seq.arp.oct") == 2);
+    CHECK (reg.get ("seq.arp.gate") == doctest::Approx (0.45f));
+    CHECK ((int) reg.get ("seq.arp.rate") == 2);
+    CHECK (reg.get ("seq.arp.latch") == 1.0f);
+    CHECK (reg.get ("p1.analog.cutoff") == doctest::Approx (900.0f));
+
+    // into part 4: the arp follows; unlisted keys return to their defaults
+    auto p = arpPreset();
+    p.arp->erase ("oct");
+    preset::applyPart (p, reg, 3);
+    CHECK ((int) reg.get ("seq.arp.part") == 4);
+    CHECK ((int) reg.get ("seq.arp.oct") == 1);
+
+    // the core really arpeggiates part 4: a short key press keeps playing (latch), while the same
+    // sound loaded without its arp is silent long after the key was released
+    auto lateSound = [] (Core& core) {
+        core.prepare (48000.0, 256);
+        std::vector<float> l (256), rr (256);
+        int late = 0;
+        for (int b = 0; b < 240; ++b)
+        {
+            OutputBuffers out;
+            out.left[0] = l.data();
+            out.right[0] = rr.data();
+            Transport tr;
+            MidiEvent ev = b == 0 ? MidiEvent::noteOn (4, 60, 100) : MidiEvent::noteOff (4, 60);
+            core.process (out, 256, b <= 1 ? &ev : nullptr, b <= 1 ? 1 : 0, tr);
+            float peak = 0.0f;
+            for (float s : l) peak = std::max (peak, std::abs (s));
+            if (b >= 160 && peak > 1.0e-4f) ++late;
+        }
+        return late;
+    };
+    CHECK (lateSound (c) > 0);
+    Core silent;
+    preset::PartOptions soundOnly;
+    soundOnly.arp = false;
+    preset::applyPart (p, silent.params(), 3, soundOnly);
+    CHECK (lateSound (silent) == 0);
+}
+
+TEST_CASE ("preset arp: part presets without arp block leave the arpeggiator untouched")
+{
+    Core c;
+    auto& reg = c.params();
+    reg.set ("seq.arp.on", 1.0f);
+    reg.set ("seq.arp.part", 2.0f);
+    reg.set ("seq.arp.mode", 3.0f);
+    reg.set ("seq.arp.gate", 0.8f);
+    const auto before = preset::arpSnapshot (reg);
+    preset::Preset plain;
+    plain.params["engine"] = (float) EngineType::FM;
+    for (int part = 0; part < Core::numParts; ++part)
+    {
+        const auto r = preset::applyPart (plain, reg, part);
+        CHECK (r.ok);
+        CHECK_FALSE (r.arpApplied);
+        CHECK_FALSE (r.arpReleased);
+        CHECK (preset::arpSnapshot (reg) == before);
+    }
+    // releaseArp only acts on the part the arp plays
+    preset::PartOptions release;
+    release.releaseArp = true;
+    CHECK_FALSE (preset::applyPart (plain, reg, 0, release).arpReleased);
+    CHECK (reg.get ("seq.arp.on") == 1.0f);
+    const auto r = preset::applyPart (plain, reg, 1, release);
+    CHECK (r.arpReleased);
+    CHECK (reg.get ("seq.arp.on") == 0.0f);
+    CHECK ((int) reg.get ("seq.arp.mode") == 3); // only switched off, the settings stay
+
+    // arp = false (level measurements): the sound loads, the arp block is ignored
+    Core d;
+    preset::PartOptions soundOnly;
+    soundOnly.arp = false;
+    CHECK_FALSE (preset::applyPart (arpPreset(), d.params(), 0, soundOnly).arpApplied);
+    CHECK (d.params().get ("seq.arp.on") == 0.0f);
+}
+
+TEST_CASE ("preset arp: the arp block round-trips through JSON and through capturePart")
+{
+    const auto json = preset::toJson (arpPreset());
+    CHECK (json.find ("\"arp\"") != std::string::npos);
+    preset::Preset back;
+    REQUIRE (preset::fromJson (json, back));
+    REQUIRE (back.arp.has_value());
+    CHECK (*back.arp == *arpPreset().arp);
+
+    // capture: the arp belongs to the part it plays
+    Core c;
+    preset::applyPart (back, c.params(), 1);
+    const auto cap2 = preset::capturePart (c.params(), 1, {});
+    REQUIRE (cap2.arp.has_value());
+    CHECK (cap2.arp->at ("on") == 1.0f);
+    CHECK (cap2.arp->at ("mode") == 2.0f);
+    CHECK (cap2.arp->count ("part") == 0);
+    CHECK_FALSE (preset::capturePart (c.params(), 0, {}).arp.has_value());
+    c.params().set ("seq.arp.on", 0.0f);
+    CHECK_FALSE (preset::capturePart (c.params(), 1, {}).arp.has_value());
+
+    // without arp block nothing is written; booleans and unknown keys are accepted / ignored
+    preset::Preset plain;
+    plain.params["engine"] = 0.0f;
+    CHECK (preset::toJson (plain).find ("\"arp\"") == std::string::npos);
+    preset::Preset q;
+    REQUIRE (preset::fromJson (R"({"format":"ohpe-preset","version":2,"kind":"part","params":{"engine":2},
+                                   "arp":{"on":true,"latch":false,"part":4,"rate":1,"bogus":3}})", q));
+    REQUIRE (q.arp.has_value());
+    CHECK (q.arp->at ("on") == 1.0f);
+    CHECK (q.arp->at ("latch") == 0.0f);
+    CHECK (q.arp->count ("part") == 0);
+    CHECK (q.arp->count ("bogus") == 0);
+    // project presets carry the arp in their parameters, an "arp" block there is ignored
+    preset::Preset proj;
+    REQUIRE (preset::fromJson (R"({"format":"ohpe-preset","version":2,"kind":"project","params":{},"arp":{"on":1}})", proj));
+    CHECK_FALSE (proj.arp.has_value());
+}

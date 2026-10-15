@@ -37,5 +37,13 @@
     "fx.delay.mix": 0.2,
     "voices": 8,
     "gain": 15.3
+  },
+  "arp": {
+    "on": 1,
+    "mode": 2,
+    "oct": 2,
+    "gate": 0.55,
+    "rate": 2,
+    "latch": 1
   }
 }

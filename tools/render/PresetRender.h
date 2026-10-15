@@ -168,7 +168,9 @@ inline Audio renderCore (Core& core, std::vector<std::pair<int64_t, MidiEvent>> 
 inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0, double bpm = 100.0, double beatsLimit = 1.0e9,
                          double tailLimit = 1.0e9)
 {
-    preset::applyPart (p, core.params(), partIndex);
+    preset::PartOptions opt;
+    opt.arp = false; // measure the sound itself: the phrase plays the notes, not the arpeggiator
+    preset::applyPart (p, core.params(), partIndex, opt);
     core.params().set ("tempo", (float) bpm);
     core.params().set ("mix.master.limit", 0.0f); // measure the preset itself, not the master limiter
     const auto phrase = phraseFor (primaryCategory (p.meta));

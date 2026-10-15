@@ -437,3 +437,92 @@ TEST_CASE ("editor 0.3: tape and drum pages, library browser")
     e.showLibrary (false);
     e.setLanguage (i18n::Language::English);
 }
+
+// ------------------------------------------------------------------ 0.7: arp presets
+namespace
+{
+int entryIndex (const PresetManager& pm, const std::string& name)
+{
+    for (int i = 0; i < (int) pm.entries().size(); ++i)
+        if (pm.entries()[(size_t) i].meta.name == name) return i;
+    return -1;
+}
+float plain (OhpeProcessor& p, const char* id) { return p.core().params().get (id); }
+} // namespace
+
+TEST_CASE ("library: Arp presets switch the arpeggiator on for their part; plain presets leave it alone")
+{
+    OhpeProcessor p;
+    TempFolder tmp;
+    auto& pm = p.presets();
+    pm.setUserFolder (tmp.dir);
+    const int arp = entryIndex (pm, "Analog Arp"), plainSound = entryIndex (pm, "Round Sub");
+    REQUIRE (arp >= 0);
+    REQUIRE (plainSound >= 0);
+    REQUIRE (plain (p, "seq.arp.on") == 0.0f);
+
+    // every factory part preset tagged Arp carries an arp block
+    for (const auto& e : pm.entries())
+    {
+        if (e.meta.kind != preset::Kind::Part || std::find (e.meta.tags.begin(), e.meta.tags.end(), "Arp") == e.meta.tags.end()) continue;
+        CAPTURE (e.meta.name);
+        preset::Preset parsed;
+        REQUIRE (preset::fromJson (pm.read (e), parsed));
+        CHECK (parsed.arp.has_value());
+    }
+
+    // "Analog Arp" into part 1: arp on, aimed at part 1, host parameters follow
+    REQUIRE (pm.load (arp, 0));
+    CHECK (plain (p, "seq.arp.on") == 1.0f);
+    CHECK ((int) plain (p, "seq.arp.part") == 1);
+    CHECK (plain (p, "seq.arp.latch") == 1.0f);
+    CHECK (p.parameter ("seq.arp.on")->getValue() == doctest::Approx (1.0f));
+    CHECK (p.parameter ("seq.arp.part")->getValue() == doctest::Approx (0.0f)); // 1 of 1..4
+    CHECK (pm.arpPresetPart() == 0);
+
+    // a plain preset into another part: the arp stays
+    REQUIRE (pm.load (plainSound, 1));
+    CHECK (plain (p, "seq.arp.on") == 1.0f);
+    CHECK ((int) plain (p, "seq.arp.part") == 1);
+
+    // a plain preset into the arp's part: the arp the preset switched on goes off again
+    REQUIRE (pm.load (plainSound, 0));
+    CHECK (plain (p, "seq.arp.on") == 0.0f);
+    CHECK (pm.arpPresetPart() == -1);
+
+    // ... but not once the user changed the arp: then it is the user's arp
+    REQUIRE (pm.load (arp, 2));
+    CHECK ((int) plain (p, "seq.arp.part") == 3);
+    p.parameter ("seq.arp.mode")->setValueNotifyingHost (p.parameter ("seq.arp.mode")->convertTo0to1 (1.0f));
+    p.editRegistry ([] (Core&) {}); // host value -> registry
+    CHECK (pm.arpPresetPart() == -1);
+    REQUIRE (pm.load (plainSound, 2));
+    CHECK (plain (p, "seq.arp.on") == 1.0f);
+
+    // an arp switched on by hand is never touched by plain presets
+    REQUIRE (pm.load (plainSound, 3));
+    p.parameter ("seq.arp.part")->setValueNotifyingHost (p.parameter ("seq.arp.part")->convertTo0to1 (4.0f));
+    REQUIRE (pm.load (plainSound, 3));
+    CHECK (plain (p, "seq.arp.on") == 1.0f);
+    CHECK ((int) plain (p, "seq.arp.part") == 4);
+
+    // saving a part the arp plays keeps its arp in the user preset
+    REQUIRE (pm.load (arp, 1));
+    preset::Meta meta;
+    meta.name = "My Arp";
+    const auto file = pm.save (meta, false, 1);
+    REQUIRE (file.existsAsFile());
+    preset::Preset saved;
+    REQUIRE (preset::fromJson (file.loadFileAsString().toStdString(), saved));
+    REQUIRE (saved.arp.has_value());
+    CHECK (saved.arp->at ("on") == 1.0f);
+
+    // preview + revert restores the arp as it was
+    pm.load (plainSound, 1); // arp off again (preset-owned)
+    REQUIRE (plain (p, "seq.arp.on") == 0.0f);
+    pm.beginPreview (0);
+    pm.load (arp, 0);
+    CHECK (plain (p, "seq.arp.on") == 1.0f);
+    pm.revertPreview();
+    CHECK (plain (p, "seq.arp.on") == 0.0f);
+}

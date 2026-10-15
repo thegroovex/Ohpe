@@ -74,6 +74,11 @@ public:
 
     int editPart() const; ///< 0-based part of "ui.part"
 
+    /** Part (0-based) whose arpeggiator a part preset's arp block switched on and that nobody has
+        changed since, or -1. A part preset without arp block loaded into that part switches the
+        arp off again. Not saved: after reopening a project the arp counts as set by hand. */
+    int arpPresetPart() const;
+
 private:
     void saveUserData();
     void loadUserData();
@@ -85,5 +90,9 @@ private:
     int currentIndex = -1;
     std::optional<preset::Preset> previewBackup;
     int previewPart = 0, previewIndex = -1;
+    int arpOwner = -1;              ///< part whose arp a preset switched on (-1 none)
+    std::vector<float> arpByPreset; ///< arp values right after that preset loaded
+    int previewArpOwner = -1;
+    std::vector<float> previewArpByPreset;
 };
 } // namespace ohpe

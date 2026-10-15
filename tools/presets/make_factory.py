@@ -30,6 +30,7 @@ def slug(name):
 def doc(p, kind):
     return {"format": "ohpe-preset", "version": 2, "kind": kind, "name": p["name"], "author": "groovex",
             "tags": p["tags"], "engine": p["engine"], "comment": p["comment"], "params": p["params"],
+            **({"arp": p["arp"]} if kind == "part" and p.get("arp") else {}),
             **({"sections": p["sections"]} if p.get("sections") else {})}
 
 

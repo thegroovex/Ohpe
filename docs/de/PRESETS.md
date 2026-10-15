@@ -74,6 +74,8 @@ der [englischen Fassung](../en/PRESETS.md#file-format-version-2); kurz:
   übersetzt sie; alles andere ist ein freier Tag), `engine` (Engine-ID).
 * `params`: Werte als **Klartextwerte** (Einheit wie im Display). Part-Presets ohne Part-Präfix
   (`"analog.cutoff"`), Projekt-Presets mit vollen IDs.
+* `arp` (nur Part-Presets, optional, 0.7): Arpeggiator-Einstellungen, die zum Klang gehören –
+  siehe [Arp-Block](#arp-block).
 * `sections` (nur Projekte): `"sequencer"`, `"orbit"` und optional `"samples"`.
 
 Regeln beim Laden: nicht genannte Parameter gehen auf ihren Standardwert; unbekannte IDs werden
@@ -81,12 +83,47 @@ ignoriert; der MIDI-Kanal eines Parts bleibt; Projekt-Presets lassen Fernsteueru
 `ui.*`, `tape.edit.*`) und Sync-Einstellungen (`sync.*`) unberührt; MIDI-Map und Bandaudio sind nie
 Teil eines Presets; Laden ändert nie die Parameterliste.
 
+### Arp-Block
+
+Der Arpeggiator ist global (`seq.arp.*`, ein Arp, der einen Part spielt). Ein **Part**-Preset kann
+die Arp-Einstellungen seines Klangs in einem optionalen Objekt `"arp"` mitbringen:
+
+| Schlüssel | Parameter | Werte |
+|---|---|---|
+| `on` | `seq.arp.on` | `1` (Standard, wenn der Block da ist) oder `0`; `true` / `false` gehen auch |
+| `mode` | `seq.arp.mode` | `0` Aufwärts, `1` Abwärts, `2` Auf/Ab, `3` Zufall, `4` Wie gespielt, `5` Akkord |
+| `oct` | `seq.arp.oct` | Oktaven `1`–`4` |
+| `gate` | `seq.arp.gate` | `0.05`–`1.0` (Notenlänge als Anteil eines Schritts) |
+| `rate` | `seq.arp.rate` | `0` 1/4, `1` 1/8, `2` 1/16, `3` 1/32, `4` 1/4T, `5` 1/8T, `6` 1/16T, `7` 1/32T, `8` 1/4., `9` 1/8., `10` 1/16. |
+| `latch` | `seq.arp.latch` | `1` / `0` |
+
+Was beim Laden eines Part-Presets in Part *N* passiert:
+
+* **Mit Arp-Block:** der Arpeggiator geht an und spielt Part *N* (`seq.arp.on` = 1,
+  `seq.arp.part` = *N*) mit den genannten Einstellungen; nicht genannte Schlüssel gehen auf ihren
+  Standardwert. Einen Schlüssel `part` gibt es nicht – Ziel ist immer der Part, in den das Preset
+  lädt. Wie jede andere Parameteränderung beim Laden ist das eine Änderung, die der Host sieht.
+* **Ohne Arp-Block:** der Arpeggiator bleibt, wie er ist – mit einer Ausnahme: hat der Arp-Block
+  eines Presets den Arp für Part *N* eingeschaltet und wurde der Arp seitdem nicht verändert, dann
+  schaltet ein Preset ohne Arp-Block in Part *N* ihn wieder aus (die Einstellungen bleiben). Ein von
+  Hand eingerichteter, nach dem Laden veränderter oder einen anderen Part spielender Arp wird nie
+  angefasst. Ohpe merkt sich nur bis zum Schließen des Instruments, welches Preset den Arp
+  eingeschaltet hat; in einem wieder geöffneten Projekt gilt der Arp als von Hand eingestellt.
+* Projekt-Presets haben den Arp in ihren `params` (`seq.arp.*`); ein `"arp"`-Block dort wird
+  ignoriert.
+* *Preset speichern → Dieser Part* schreibt den Arp-Block, wenn der Arp an ist und diesen Part
+  spielt – ein gespeicherter Arp-Klang lädt mit seinem Arp.
+
+Die Werks-Arp-Presets sind gehalten (Latch): eine Taste (oder einen Akkord) einmal drücken, das
+Arpeggio läuft weiter; die nächste Taste oder der nächste Akkord ohne gehaltene Taste beginnt ein
+neues. Zum Anhalten *Halten* oder den Arp auf der Sequenzer-Seite ausschalten.
+
 ### Werksbank
 
 Die Werks-Presets sind die `*.ohpepreset`-Dateien in
 [`resources/presets/factory/`](../../resources/presets/factory). Sie werden als Binärdaten in
 Plug-in und App eingebettet (CMake-Ziel `ohpe_presets`, Namensraum `OhpePresets`) und sind
 schreibgeschützt. Neue Werksklänge: Dateien dort ablegen und CMake neu ausführen. Die Werksbank
-enthält 120 Part-Presets und 7 Projekt-Presets – siehe [FACTORY-SOUNDS.md](FACTORY-SOUNDS.md). Sie
+enthält 162 Part-Presets und 10 Projekt-Presets – siehe [FACTORY-SOUNDS.md](FACTORY-SOUNDS.md). Sie
 werden von `tools/presets/make_factory.py` erzeugt; der Plug-in-Test rendert jedes davon und prüft
 Pegel, Spitzen und Spektrum.

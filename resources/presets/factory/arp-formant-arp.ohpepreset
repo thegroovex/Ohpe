@@ -32,5 +32,13 @@
     "mod.amt": 0.2,
     "voices": 8,
     "gain": 19.7
+  },
+  "arp": {
+    "on": 1,
+    "mode": 0,
+    "oct": 2,
+    "gate": 0.6,
+    "rate": 2,
+    "latch": 1
   }
 }
