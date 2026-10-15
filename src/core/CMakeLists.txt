@@ -28,6 +28,12 @@ target_sources(ohpe_core PRIVATE
     sample/Slicer.cpp
     sample/SampleState.cpp)
 
+# 0.2.0 package C: tape, insert effects
+target_sources(ohpe_core PRIVATE
+    tape/TapeMachine.cpp
+    fx/InsertEffects.cpp
+    fx/InsertSlot.cpp)
+
 target_include_directories(ohpe_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ohpe_core PUBLIC nlohmann_json::nlohmann_json)
 target_compile_features(ohpe_core PUBLIC cxx_std_17)

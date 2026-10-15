@@ -42,3 +42,23 @@ mit Plug-in-Hosts, der Standalone-App und dem Bildschirm.
 Neue Engines (z. B. Wavetable), Sequencer, Effekte und die Bandmaschine docken über
 Schnittstellen an (`ISynthEngine`, `ISequencer`, `IEffect`, `ITapeMachine`). Die Schritt-für-
 Schritt-Anleitungen stehen im englischen Dokument.
+
+## Phase 2: Band, Mixer-Dynamik, FX-Slot (0.2.0)
+
+Umgesetzt in `src/core/tape/TapeMachine.*` (implementiert `ITapeMachine`; `process()` erhält
+jetzt `TapeInputs` – Eingangsbus, Parts, Drum), `src/core/fx/` (Kompressor, Bandsättigung,
+Chorus, Phaser, Bitcrusher, Filter-Drive, `InsertSlot`), im Mixer (Kompressor-lite je Kanal,
+Master-Kompressor, Bandstufe, Limiter-Obergrenze, Direkt-Einspeisung für Band-Direktausgänge)
+und in `src/plugin/TapeIO.*` (Bandaudio im Plug-in-Zustand, Offline-Export). Entscheidungen:
+
+* **Eingangsbus:** ein Stereo-/Mono-Eingang „Input“, standardmäßig aus;
+  `Core::setAudioInput()` reicht ihn für den nächsten Block an den Kern.
+* **Kern-Anbindung:** `Core::process()` ruft je Teilstück nach dem Rendern der Parts
+  `renderTapeChunk()` auf: FX-Slots → Band (Aufnahme + Wiedergabe) → Quellen `tape1 …` und
+  Direktausgänge.
+* **Message-Thread:** `TapeMachine::housekeeping()` (Plug-in-Timer, 20 Hz) füllt den
+  Blockvorrat und macht aus beendeten Aufnahmen Undo-Schritte.
+* **Speichern:** Bandaudio steckt im Plug-in-Zustand hinter dem JSON (nur Blöcke mit Audio,
+  float32); keine externen Dateien. Der Undo-Verlauf wird nicht gespeichert.
+
+Anleitung: [BAND-MISCHER-FX.md](BAND-MISCHER-FX.md) · Parameter: [../PARAMETERS.md](../PARAMETERS.md).

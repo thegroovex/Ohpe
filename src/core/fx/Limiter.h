@@ -16,10 +16,12 @@ public:
         gain = 1.0f;
     }
     void reset() noexcept { gain = 1.0f; }
+    /** Ceiling as linear gain (default 0.966 = -0.3 dBFS). */
+    void setCeiling (float linear) noexcept { ceiling = std::clamp (linear, 0.05f, 1.0f); }
+    float getCeiling() const noexcept { return ceiling; }
 
     void process (float* l, float* r, int n) noexcept
     {
-        constexpr float ceiling = 0.966f; // -0.3 dBFS
         for (int i = 0; i < n; ++i)
         {
             const float peak = std::max (std::abs (l[i]), std::abs (r[i]));
@@ -33,6 +35,6 @@ public:
     float currentGain() const noexcept { return gain; }
 
 private:
-    float release = 0.999f, gain = 1.0f;
+    float release = 0.999f, gain = 1.0f, ceiling = 0.966f; // -0.3 dBFS
 };
 } // namespace ohpe

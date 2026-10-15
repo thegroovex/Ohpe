@@ -55,5 +55,9 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     parts[0]->registerEngineParams (reg, EngineType::Vocal);
     parts[0]->registerEngineParams (reg, EngineType::Sampler);
     drum::DrumKit::registerParams (reg);
+    // ---- 0.2.0: mixer dynamics, tape machine, part 1 FX slot (package C) ---------------
+    mixer.registerDynamicsParams (reg);
+    TapeMachine::registerParams (reg);
+    InsertSlot::registerParams (reg, parts[0]->prefix() + "fx.", "part1/fx");
 }
 } // namespace ohpe

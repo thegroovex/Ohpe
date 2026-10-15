@@ -3,9 +3,11 @@
 #pragma once
 
 #include "../dsp/Biquad.h"
+#include "../fx/Compressor.h"
 #include "../fx/Delay.h"
 #include "../fx/Limiter.h"
 #include "../fx/Reverb.h"
+#include "../fx/TapeSaturator.h"
 #include "../model/ParamRegistry.h"
 #include "../model/ParamSnapshot.h"
 
@@ -58,6 +60,9 @@ public:
     static constexpr int numChannels = 8;
 
     void registerParams (ParamRegistry& reg) const;
+    /** 0.2.0 parameters (appended at the bottom of the layout): per-channel compressor-lite,
+        master compressor, master tape saturation, limiter ceiling. */
+    void registerDynamicsParams (ParamRegistry& reg) const;
     void bind (const ParamRegistry& reg);
     void prepare (double sampleRate, int maxBlockSize);
     void reset() noexcept;
@@ -65,6 +70,16 @@ public:
 
     /** Mixes sources into the outputs (which are overwritten). numSamples <= maxBlockSize. */
     void process (const SourceBuffers& in, const OutputBuffers& out, int numSamples) noexcept;
+
+    /**
+        Audio thread, before process(): adds a stereo signal straight to an output for the next
+        process() call only (tape direct outs). target 1..8 = aux output; a disabled aux output
+        (or target 0) falls back to the main mix (before master dynamics). Up to 16 per block.
+    */
+    void addDirect (const float* left, const float* right, int target) noexcept;
+
+    /** Gain reduction in dB (>= 0): channel 0..7, master compressor = 8. Any thread. */
+    float gainReduction (int index) const noexcept { return reductions[(size_t) index].load (std::memory_order_relaxed); }
 
     /** Peak meters (0..1+), channel 0..7 and master = 8. Readable from any thread. */
     float meter (int index) const noexcept { return meters[(size_t) index].load (std::memory_order_relaxed); }
@@ -84,7 +99,12 @@ private:
         float eqLow = 0.0f, eqMid = 0.0f, eqHigh = 0.0f;
         std::array<dsp::Biquad, 2> low, mid, high;
         dsp::Smoother gainL, gainR;
+        int compIdx = -1;
+        float compAmount = 0.0f;
+        Compressor comp;
     };
+    enum DynParam { MComp = 0, MThresh, MRatio, MAttack, MRelease, MMakeup, MTapeSat, MCeiling, numDynParams };
+    struct Direct { const float* l; const float* r; int target; };
 
     std::array<Channel, numChannels> channels;
     std::array<int, numMasterParams> masterIdx {};
@@ -97,6 +117,13 @@ private:
     DelayEffect delay;
     ReverbEffect reverb;
     Limiter limiter;
+    std::array<int, numDynParams> dynIdx {};
+    bool masterCompOn = false;
+    Compressor masterComp;
+    TapeSaturator masterSat;
+    std::array<Direct, 16> directs {};
+    int numDirects = 0;
+    std::array<std::atomic<float>, numChannels + 1> reductions {};
     std::vector<float> chL, chR, sendAL, sendAR, sendBL, sendBR, masterL, masterR;
     std::array<std::atomic<float>, numChannels + 1> meters {};
 };

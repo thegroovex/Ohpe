@@ -112,6 +112,14 @@ const std::map<juce::String, juce::String>& table()
         { "The audio file is empty.", "Die Audiodatei ist leer." },
         { "The audio file could not be read.", "Die Audiodatei konnte nicht gelesen werden." },
         { "Some sample files are missing.", "Einige Sample-Dateien fehlen." },
+        // 0.2.0 package C: tape bounce / export
+        { "The tape is empty - nothing to export.", "Das Band ist leer - nichts zu exportieren." },
+        { "Could not create the export folder.", "Der Export-Ordner konnte nicht angelegt werden." },
+        { "Could not write the file:", "Die Datei konnte nicht geschrieben werden:" },
+        { "Export tape ...", "Band exportieren ..." },
+        { "Master and stems (24-bit WAV)", "Master und Stems (24-Bit-WAV)" },
+        { "Tape exported", "Band exportiert" },
+        { "Audio input", "Audioeingang" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;

@@ -160,3 +160,24 @@ Recording external audio needs an input bus in the plug-in (decision for phase 2
 * `tests/plugin` – processor, editor, localisation, VST3 host test.
 * pluginval at strictness 5 on the VST3.
 * `scripts/test-all.sh` runs all of it; see [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+## Phase 2: tape, mixer dynamics, FX slot (0.2.0)
+
+Implemented in `src/core/tape/TapeMachine.*` (implements `ITapeMachine`; `process()` now takes
+`TapeInputs` – input bus, parts, drum), `src/core/fx/` (`Compressor`, `TapeSaturator`,
+`InsertEffects` – chorus, phaser, bitcrush, filter drive – and `InsertSlot`), the mixer
+(compressor-lite per channel, master compressor, tape stage, limiter ceiling, direct feeds for
+tape direct outs) and `src/plugin/TapeIO.*` (tape audio in the plug-in state, offline bounce).
+Decisions:
+
+* **Input bus:** the plug-in has one stereo / mono input bus "Input", disabled by default;
+  `Core::setAudioInput()` hands it to the core for the next block.
+* **Core hook:** `Core::process()` calls `renderTapeChunk()` once per chunk after the parts
+  rendered: part FX slots → tape (record + playback) → sources `tape1 … tape1 + 7` and direct
+  outs. Parameters are pulled with the other modules (`pullPhase2Params()`).
+* **Message-thread duty:** `TapeMachine::housekeeping()` (plug-in timer, 20 Hz) refills the
+  block pool for recording and turns finished recording passes into undo steps.
+* **Persistence:** tape audio is embedded in the plug-in state after the JSON (sparse, float32);
+  no external files. Undo history is not saved.
+
+Guide: [en/TAPE-MIXER-FX.md](en/TAPE-MIXER-FX.md) · parameters: [PARAMETERS.md](PARAMETERS.md).

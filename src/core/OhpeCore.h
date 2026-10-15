@@ -4,6 +4,7 @@
 
 #include "drum/DrumKit.h"
 #include "engines/Part.h"
+#include "fx/InsertSlot.h"
 #include "midi/MidiMap.h"
 #include "mixer/Mixer.h"
 #include "model/Events.h"
@@ -11,6 +12,7 @@
 #include "model/ParamSnapshot.h"
 #include "model/SpscQueue.h"
 #include "seq/StepSequencer.h"
+#include "tape/TapeMachine.h"
 
 #include <array>
 #include <atomic>
@@ -49,6 +51,16 @@ public:
     Part& part (int index) noexcept { return *parts[(size_t) index]; }
     Mixer& mixer() noexcept { return mix; }
     drum::DrumKit& drumKit() noexcept { return drums; }   ///< mixer source "drum", MIDI channel 10
+    TapeMachine& tape() noexcept { return tapeMachine; }             ///< 0.2: eight-track tape
+    InsertSlot& insertFx (int part) noexcept { return inserts[(size_t) part]; } ///< 0.2: FX slot of a part
+
+    /** 0.2, audio thread: the audio input for the next process() call (plug-in input bus;
+        null = silent). Valid for that one call only. */
+    void setAudioInput (const float* left, const float* right) noexcept { inputL = left; inputR = right; }
+
+    /** 0.2, offline rendering (bounce): when set, process() also copies the eight tape track
+        outputs (L1, R1, L2, R2 ...) to these buffers. Message thread, not while playing live. */
+    void setTapeCapture (const std::array<float*, 2 * TapeMachine::numTracks>* destination) noexcept { tapeCapture = destination; }
 
     void prepare (double sampleRate, int maxBlockSize);
     void reset() noexcept;
@@ -103,6 +115,8 @@ public:
 private:
     void applyLocks (const std::vector<ParamLockEvent>& locks, size_t& next, int upTo) noexcept;
     void dispatch (const MidiEvent& e) noexcept;
+    void pullPhase2Params() noexcept;
+    void renderTapeChunk (SourceBuffers& src, int pos, int len) noexcept; ///< part FX slots, tape -> sources
 
     ParamRegistry registry;
     ParamSnapshot snapshot;
@@ -130,6 +144,14 @@ private:
 
     struct UiNote { int note; float velocity; bool on; };
     SpscQueue<UiNote, 256> uiNotes;
+
+    // ---- 0.2: tape, FX slots, audio input ----
+    TapeMachine tapeMachine;
+    std::array<InsertSlot, numParts> inserts;
+    std::array<std::vector<float>, 2 * TapeMachine::numTracks> tapeOut;
+    const float* inputL = nullptr;
+    const float* inputR = nullptr;
+    const std::array<float*, 2 * TapeMachine::numTracks>* tapeCapture = nullptr;
 
     std::atomic<int> lastNoteOn { -1 }, voicesActive { 0 };
     std::atomic<double> ppqForUi { 0.0 };
