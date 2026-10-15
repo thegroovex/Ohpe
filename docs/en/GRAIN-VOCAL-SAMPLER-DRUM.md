@@ -2,7 +2,7 @@
 
 *English · Deutsch: [../de/GRAIN-VOKAL-SAMPLER-DRUM.md](../de/GRAIN-VOKAL-SAMPLER-DRUM.md)*
 
-Phase 2 adds three engines for the synth part (selected with **Engine**, `p1.engine`) and the
+Phase 2 adds three engines for every part (selected with **Engine**, `pN.engine`) and the
 **drum kit**, which has its own mixer channel. All of them sound right away: without loaded samples
 the Grain engine granulates a built-in evolving pad texture, the Sampler plays a built-in
 electric-piano-like keys tone, and the drum kit plays its factory recordings. Every parameter is listed in [PARAMETERS.md](../PARAMETERS.md).
