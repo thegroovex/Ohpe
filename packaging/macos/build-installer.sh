@@ -120,7 +120,9 @@ for entry in "${COMPONENTS[@]}"; do
     i=0
     while /usr/libexec/PlistBuddy -c "Print :$i" "$plist" >/dev/null 2>&1; do
         # always install to the fixed folder - never "relocate" onto a copy found elsewhere
-        /usr/libexec/PlistBuddy -c "Set :$i:BundleIsRelocatable false" "$plist"
+        # (plug-in entries have no such key yet, so delete + add instead of set)
+        /usr/libexec/PlistBuddy -c "Delete :$i:BundleIsRelocatable" "$plist" >/dev/null 2>&1 || true
+        /usr/libexec/PlistBuddy -c "Add :$i:BundleIsRelocatable bool false" "$plist"
         /usr/libexec/PlistBuddy -c "Set :$i:BundleOverwriteAction upgrade" "$plist" 2>/dev/null || true
         i=$((i + 1))
     done
