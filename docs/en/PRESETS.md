@@ -11,7 +11,7 @@ the keyboard stays playable, so you can audition sounds while you browse.
 
 | Area | What it does |
 |---|---|
-| **Categories** (left) | Bass, Keys, Pads, Leads, Plucks, Drums, FX, Arp, Textures, Vocal. Select one or several: the list shows presets that carry **any** of the selected tags. |
+| **Categories** (left) | Bass, Keys, Pads, Leads, Plucks, Drums, FX, Arp, Textures, Vocal, Boom (0.6: deep tuned kicks and sub basses). Select one or several: the list shows presets that carry **any** of the selected tags. |
 | **Engine** (left) | Only presets for one engine (or *All*). |
 | **Search** (top) | Words are matched against name, author, tags, engine and comment (case does not matter; German category and engine names work too). All words must match. |
 | **All / Factory / User** | Which bank: the built-in factory presets, your own presets, or both. |
@@ -86,7 +86,7 @@ A preset is one UTF-8 JSON file with the extension `.ohpepreset`:
 | `version` | `2`. Version-1 files (written by `state::savePreset`, without `kind` / `tags` / `engine`, with a `prefix` field) load as part presets. |
 | `kind` | `"part"` – one part's sound; `"project"` – the whole instrument. Missing = part. |
 | `name`, `author`, `comment` | text (UTF-8) |
-| `tags` | list of strings. The **categories** `Bass`, `Keys`, `Pads`, `Leads`, `Plucks`, `Drums`, `FX`, `Arp`, `Textures`, `Vocal` are fixed English keys (append-only; the UI translates them). Any other string is a free tag. A preset may carry several. |
+| `tags` | list of strings. The **categories** `Bass`, `Keys`, `Pads`, `Leads`, `Plucks`, `Drums`, `FX`, `Arp`, `Textures`, `Vocal`, `Boom` (0.6) are fixed English keys (append-only; the UI translates them). Any other string is a free tag. A preset may carry several. |
 | `engine` | engine ID of a part preset (`fm`, `wavetable`, `analog`, `pluck`, `grain`, `vocal`, `cluster`, `sampler`); for a project the engine of part 1. Used by the engine filter. Derived from `params.engine` when missing. |
 | `params` | parameter values as **plain values** (the unit shown on the display: Hz, seconds, dB …). Part presets use IDs **without** the part prefix (`"analog.cutoff"`, not `"p1.analog.cutoff"`), so they load into any part. Project presets use full IDs. |
 | `sections` | project presets only: `"sequencer"` (step patterns, chain, parameter locks), `"orbit"` (Orbit steps) and optionally `"samples"` (paths of loaded sample files). |

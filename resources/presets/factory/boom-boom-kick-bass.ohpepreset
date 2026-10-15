@@ -1,0 +1,42 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Boom Kick Bass",
+  "author": "groovex",
+  "tags": [
+    "Boom",
+    "Drums",
+    "Bass"
+  ],
+  "engine": "analog",
+  "comment": "Short boom: a two-octave pitch dive into a tuned sine - kick and bass in one.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.5,
+    "analog.detune": 0.0,
+    "analog.cutoff": 700,
+    "analog.reso": 0.0,
+    "analog.oscmix": 0.0,
+    "analog.sub": 1.0,
+    "analog.drive": 0.5,
+    "analog.keytrack": 1.0,
+    "analog.osclevel": 0.0,
+    "amp.a": 0.003,
+    "amp.d": 0.55,
+    "amp.s": 0.0,
+    "amp.r": 0.12,
+    "mod.a": 0.002,
+    "mod.d": 0.03,
+    "mod.s": 0.0,
+    "mod.r": 0.05,
+    "mod.amt": 0.3,
+    "pitchenv.amt": 24,
+    "pitchenv.time": 0.045,
+    "pitchenv.curve": 0.9,
+    "voices": 1,
+    "velsens": 0.45,
+    "tune": 12,
+    "gain": 13.5
+  }
+}

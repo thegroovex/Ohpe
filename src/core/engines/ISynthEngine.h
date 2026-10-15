@@ -25,6 +25,8 @@ enum class LfoDest { Pitch = 0, Timbre, Amp, Pan, numDests };
     Settings shared by all engines of a part: envelopes, LFO, glide, bend. The part fills this
     from its common parameters each block and hands it to the active engine.
 */
+enum GlideMode { GlideAuto = 0, GlideLegato, GlideAlways };
+
 struct VoiceCommon
 {
     dsp::AdsrParams amp;        ///< amplitude envelope
@@ -35,6 +37,15 @@ struct VoiceCommon
     int lfoShape = 0;           ///< dsp::Lfo::Shape
     LfoDest lfoDest = LfoDest::Pitch;
     float glideSeconds = 0.0f;
+    bool polyGlide = false;     ///< 0.5: with several voices, new notes glide from the nearest note just released
+    /** 0.6 glide mode: Auto = glide while the previous note still sounds (as before 0.6); Legato = glide only
+        while another key is held (mono: the envelopes are not retriggered); Always = glide from the previous
+        note even after silence. */
+    int glideMode = 0;
+    bool glideConstantRate = false; ///< 0.6: false = the glide takes `glideSeconds`, true = `glideSeconds` per octave
+    float pitchEnvAmount = 0.0f;    ///< 0.6: semitones the pitch starts away from the note (-24..+24, 0 = off)
+    float pitchEnvTime = 0.25f;     ///< 0.6: seconds until the pitch has arrived at the note
+    float pitchEnvCurve = 0.5f;     ///< 0.6: 0 = linear, 1 = fast start, slow arrival
     float pitchOffset = 0.0f;   ///< semitones: tune + fine + pitch bend (already summed)
     float velocitySens = 0.7f;  ///< 0 = no velocity, 1 = full velocity to amp
 };

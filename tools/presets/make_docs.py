@@ -12,9 +12,9 @@ sys.path.insert(0, HERE)
 import factory_parts, factory_projects  # noqa: E402
 from comments_de import DE  # noqa: E402
 
-CATS = ["Bass", "Keys", "Pads", "Leads", "Plucks", "Drums", "FX", "Arp", "Textures", "Vocal"]
+CATS = ["Bass", "Keys", "Pads", "Leads", "Plucks", "Drums", "FX", "Arp", "Textures", "Vocal", "Boom"]
 CAT_DE = {"Bass": "Bass", "Keys": "Tasten", "Pads": "Flächen", "Leads": "Leads", "Plucks": "Zupfer", "Drums": "Drums",
-          "FX": "FX", "Arp": "Arp", "Textures": "Texturen", "Vocal": "Vokal"}
+          "FX": "FX", "Arp": "Arp", "Textures": "Texturen", "Vocal": "Vokal", "Boom": "Boom"}
 ENG = {"fm": ("FM", "FM"), "wavetable": ("Wavetable", "Wavetable"), "analog": ("Analog", "Analog"), "pluck": ("Pluck", "Zupfen"),
        "grain": ("Grain", "Grain"), "vocal": ("Vocal", "Vocal"), "cluster": ("Cluster", "Cluster"), "sampler": ("Sampler", "Sampler")}
 
@@ -25,11 +25,13 @@ def table(lang):
     parts = factory_parts.PRESETS
     for cat in CATS:
         rows = [p for p in parts if p["tags"][0] == cat]
+        if cat == "Boom":  # 0.6: the Boom section lists every preset tagged Boom, wherever its main category is
+            rows = [p for p in parts if "Boom" in p["tags"]]
         out.append("### %s (%d)\n" % (CAT_DE[cat] if de else cat, len(rows)))
         out.append("| Name | Engine | %s | %s |" % ("Weitere Kategorien" if de else "Also in", "Beschreibung" if de else "Description"))
         out.append("|---|---|---|---|")
         for p in sorted(rows, key=lambda p: p["name"]):
-            also = ", ".join(CAT_DE[t] if de else t for t in p["tags"][1:]) or "–"
+            also = ", ".join(CAT_DE[t] if de else t for t in p["tags"] if t != cat) or "–"
             text = DE[p["name"]] if de else p["comment"]
             out.append("| %s | %s | %s | %s |" % (p["name"], ENG[p["engine"]][1 if de else 0], also, text))
         out.append("")

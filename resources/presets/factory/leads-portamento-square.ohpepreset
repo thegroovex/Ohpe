@@ -1,0 +1,42 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Portamento Square",
+  "author": "groovex",
+  "tags": [
+    "Leads"
+  ],
+  "engine": "analog",
+  "comment": "Hollow square that always glides, at a constant rate: big jumps slide longer than small steps.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.5,
+    "analog.detune": 0.06,
+    "analog.cutoff": 2100,
+    "analog.reso": 0.15,
+    "analog.osc2oct": 1,
+    "analog.oscmix": 0.25,
+    "analog.sub": 0.0,
+    "analog.drive": 0.25,
+    "analog.keytrack": 0.6,
+    "amp.a": 0.004,
+    "amp.d": 0.4,
+    "amp.s": 0.85,
+    "amp.r": 0.2,
+    "mod.a": 0.002,
+    "mod.d": 0.4,
+    "mod.s": 0.5,
+    "mod.r": 0.2,
+    "mod.amt": 0.2,
+    "lfo.rate": 5.5,
+    "lfo.depth": 0.035,
+    "lfo.shape": 0,
+    "lfo.dest": 0,
+    "voices": 1,
+    "glide": 0.09,
+    "glide.mode": 2,
+    "glide.rate": 1,
+    "gain": 9.0
+  }
+}

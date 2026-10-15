@@ -13,6 +13,21 @@
 
 namespace ohpe
 {
+namespace
+{
+/** Registers descriptors [from, to) of a sequencer's late list (local indices continue after numParams). */
+void addLateSeq (ParamRegistry& reg, const std::vector<ParamDescriptor>& list, size_t from, size_t to, const char* prefix, const char* group)
+{
+    for (size_t i = from; i < std::min (to, list.size()); ++i)
+    {
+        auto d = list[i];
+        d.id = std::string (prefix) + d.id;
+        d.group = group;
+        reg.add (std::move (d));
+    }
+}
+} // namespace
+
 void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<Part>, Core::numParts>& parts, const Mixer& mixer,
                            const StepSequencer& stepSeq)
 {
@@ -176,5 +191,21 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
 
     // ---- 0.4 (package F): part gain in dB (level matching of presets, on top of the volume) --
     for (auto& p : parts) p->registerLateCommonParams (reg);
+
+    // ---- 0.5: swing / humanise for Orbit and Euclid, poly glide per part ----------------------
+    {
+        addLateSeq (reg, OrbitSequencer().getLateParamDescriptors(), 0, 2, Core::Ids::orbitPrefix, "sequencer/orbit");
+        addLateSeq (reg, EuclidSequencer().getLateParamDescriptors(), 0, 2, Core::Ids::euclidPrefix, "sequencer/euclid");
+    }
+    for (auto& p : parts) p->registerLate05Params (reg);
+    // seq.euclid.rN.vel (0 = the Euclid Velocity), seq.orbit.lN.part (0 = the Orbit target), synced delay
+    addLateSeq (reg, EuclidSequencer().getLateParamDescriptors(), 2, 6, Core::Ids::euclidPrefix, "sequencer/euclid");
+    addLateSeq (reg, OrbitSequencer().getLateParamDescriptors(), 2, 6, Core::Ids::orbitPrefix, "sequencer/orbit");
+    mixer.registerLate05Params (reg);
+
+    // ---- 0.6: glide mode / timing and pitch envelope per part, Analog osc level + crackle, master low-pass --
+    for (auto& p : parts) p->registerLate06Params (reg);
+    for (auto& p : parts) p->registerLateEngineParams (reg, EngineType::Analog);
+    mixer.registerLate06Params (reg);
 }
 } // namespace ohpe

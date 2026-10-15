@@ -95,6 +95,18 @@ public:
         return false;
     }
 
+    /** 0.5 (ties): moves the pending note-off of this channel / note to `time`; false when there is none. */
+    bool extendOff (int channel, int note, int64_t time) noexcept
+    {
+        for (auto& p : pending)
+            if (p.used && p.event.isNoteOff() && p.event.channel() == channel && p.event.data1 == note)
+            {
+                p.time = std::max (p.time, time);
+                return true;
+            }
+        return false;
+    }
+
     /** Moves every pending note-off to `time` and drops pending note-ons (stop / all off). */
     void releaseAll (int64_t time) noexcept
     {
@@ -150,6 +162,67 @@ private:
     std::array<Pending, capacity> pending {};
     std::array<int, 16 * 128> refs {};
 };
+
+/**
+    0.5: swing delay of step k of a grid with `spq` steps per quarter: notes on the off-beat sixteenths
+    move late by swing / 2 of a sixteenth (0.75 = 3/8), as on drum machines. Grids at 1/8 or slower
+    never land on an off-beat sixteenth, so a whole groove swings together.
+*/
+inline int64_t swingSamples (long long k, float swing, double samplesPerStep, double spq) noexcept
+{
+    if (swing <= 0.0f || spq <= 0.0) return 0;
+    const double pos16 = (double) k * 4.0 / spq;
+    const double r = std::round (pos16);
+    if (std::abs (pos16 - r) > 1.0e-6 || (((long long) r) & 1) == 0) return 0;
+    const double samplesPer16th = samplesPerStep * spq / 4.0;
+    return (int64_t) std::llround (std::clamp ((double) swing, 0.0, 0.75) * 0.5 * samplesPer16th);
+}
+
+/**
+    0.5: humanise for generated notes: at amount 1 a note starts up to 10 ms late and its velocity
+    moves by up to +-16. Deterministic (fixed seed after reset), audio thread, no allocation.
+*/
+class Humaniser
+{
+public:
+    static constexpr double maxLateSeconds = 0.010;
+    static constexpr float maxVelocity = 16.0f;
+
+    void reset() noexcept { rng = Xorshift {}; }
+
+    /** Returns the extra delay in samples and varies `velocity` (1..127) in place. */
+    int64_t apply (float amount, double sampleRate, int& velocity) noexcept
+    {
+        if (amount <= 0.0f) return 0;
+        const float late = next01();
+        const float vel = next01() * 2.0f - 1.0f;
+        velocity = std::clamp ((int) std::lround ((float) velocity + vel * amount * maxVelocity), 1, 127);
+        return (int64_t) std::llround (late * amount * maxLateSeconds * sampleRate);
+    }
+
+private:
+    struct Xorshift
+    {
+        uint32_t state = 0x9e3779b9u;
+    };
+    float next01() noexcept
+    {
+        auto& s = rng.state;
+        s ^= s << 13;
+        s ^= s >> 17;
+        s ^= s << 5;
+        return (float) (s >> 8) * (1.0f / 16777216.0f);
+    }
+    Xorshift rng;
+};
+
+/** 0.5: the late "swing" and "human" parameters of the Orbit and Euclid sequencers. */
+inline std::vector<ParamDescriptor> swingHumanDescriptors (const std::string& en, const std::string& de)
+{
+    using namespace pd;
+    return { continuous ("swing", en + " Swing", de + " Swing", 0.0f, 0.75f, 0.0f, ParamUnit::Percent),
+             continuous ("human", en + " Humanise", de + " Humanisieren", 0.0f, 1.0f, 0.0f, ParamUnit::Percent) };
+}
 
 /** Gate length in samples for a step: fraction of the step, at least 16 samples, ends 1 sample early unless tied. */
 inline int64_t gateSamples (double samplesPerStep, float gate) noexcept

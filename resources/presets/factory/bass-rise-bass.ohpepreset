@@ -1,0 +1,38 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Rise Bass",
+  "author": "groovex",
+  "tags": [
+    "Bass"
+  ],
+  "engine": "analog",
+  "comment": "Driven bass that slides up a fifth into every note; great for syncopated lines.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.1,
+    "analog.detune": 0.06,
+    "analog.cutoff": 480,
+    "analog.reso": 0.18,
+    "analog.oscmix": 0.3,
+    "analog.sub": 0.4,
+    "analog.drive": 0.5,
+    "analog.keytrack": 0.5,
+    "amp.a": 0.003,
+    "amp.d": 0.45,
+    "amp.s": 0.6,
+    "amp.r": 0.08,
+    "mod.a": 0.002,
+    "mod.d": 0.15,
+    "mod.s": 0.1,
+    "mod.r": 0.1,
+    "mod.amt": 0.4,
+    "pitchenv.amt": -7,
+    "pitchenv.time": 0.08,
+    "pitchenv.curve": 0.6,
+    "voices": 1,
+    "velsens": 0.5,
+    "gain": 17.3
+  }
+}

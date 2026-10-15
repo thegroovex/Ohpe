@@ -30,6 +30,10 @@ chooses the **edit part**: the engine keys, Synth, Envelope, LFO and the FX slot
 library (part presets load there) and the on-screen keyboard (it plays on the part's MIDI channel)
 follow it. The display shows the edit part as a yellow badge (P1–P4). MIDI: *Edit Part* (`ui.part`).
 
+**Synth mode** (0.6): after the engine's own pages come two pages every engine shares – **Glide**
+(time, mode, timing, poly glide) and **Pitch Envelope** (amount, time, curve, voices). See
+[SEQUENCERS.md](SEQUENCERS.md#portamento-and-pitch-envelope-06).
+
 ## Samples for the Sampler and Grain engines
 
 With the Sampler or Grain engine on the edit part, the display shows **Load sample** and

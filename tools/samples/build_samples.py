@@ -2,7 +2,8 @@
 # Ohpe - designed by groovex
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
-Builds the factory sample bank (0.4, package F): the drum kits Tight, Room, Lo-Fi and Hybrid and
+Builds the factory sample bank (0.4, package F; 0.5: punchier kicks, a dry Lo-Fi kit, the synthesised
+Boom kit, the Studio kit's kicks): the drum kits Tight, Room, Lo-Fi, Hybrid and Boom and
 the Sampler / Grain instruments, from public-domain (CC0) recordings, plus Ohpe's own synthesised
 drum layers (hybrid kit). Writes resources/samples/** (16-bit FLAC) and resources/samples/bank.json.
 
@@ -169,9 +170,9 @@ def room_tail(x, rate, secs=0.6, level_db=-14.0):
     wet = np.stack([signal.fftconvolve(x[:, c], ir[:, c]) for c in range(2)], axis=1)
     return fit(x, len(wet)) + wet * db(level_db)
 
-def lofi(x, rate, cutoff=7000, bits=10, drive=1.8):
+def lofi(x, rate, cutoff=7000, bits=10, drive=1.8, hp_f=45):
     """Lo-fi treatment: band-limit, soft saturation, coarse quantisation, gentle wobble."""
-    y = lp(hp(x, 45, rate), cutoff, rate, order=4)
+    y = lp(hp(x, hp_f, rate), cutoff, rate, order=4)
     y = np.tanh(y * drive / max(1e-9, np.max(np.abs(y)))) / np.tanh(drive)
     q = 2 ** (bits - 1)
     y = np.round(y * q + RNG.uniform(-0.5, 0.5, y.shape)) / q
@@ -227,6 +228,105 @@ def synth_click(rate, f, decay, length=0.3):
     n = int(length * rate)
     return stereo(np.sin(2 * np.pi * f * np.arange(n) / rate) * env_exp(n, rate, decay))
 
+# ------------------------------------------------------------------ 0.5: kick punch (recorded kicks) and the Boom kit
+def peak_cut(x, lo, hi, rate, amount):
+    """Scoops a band (boxiness) by `amount` (0..1) of its band-passed content."""
+    return x - amount * bp(x, lo, hi, rate)
+
+def punch_kick(x, rate, decay=0.22, hold=0.03, sub_db=-4.0, sub_f0=150.0, sub_f1=50.0, box=0.5, click=0.6, drive=1.4):
+    """Turns a ringing recorded kick into a punchy one: the resonance is shortened after `hold`,
+    the 250-600 Hz box is scooped, the beater click is lifted and a short pitched sine sub (a pitch
+    envelope from sub_f0 to sub_f1) adds weight at 45-90 Hz. Ohpe's own processing."""
+    x = x[onset(x):]
+    n = len(x)
+    t = np.arange(n) / rate
+    env = np.where(t < hold, 1.0, np.exp(-(t - hold) * 6.9 / decay))
+    y = x * env[:, None]
+    y = peak_cut(y, 250, 600, rate, box)
+    y = y + click * hp(y, 2500, rate) * np.exp(-t / 0.012)[:, None]
+    p = np.max(np.abs(y))
+    sub = fit(stereo(sweep_sine(rate, sub_f0, sub_f1, 0.03, decay * 1.1, n / rate)), n)
+    y = y / p + db(sub_db) * sub
+    return np.tanh(drive * y) / np.tanh(drive)
+
+def boom_kick(rate, f0=190.0, f1=47.0, pitch=0.042, decay=0.95, length=1.4, drive=1.6, click=0.3):
+    """Deep electronic kick: a sine swept from f0 to f1 with a long decay, a short click and soft
+    saturation (harmonics make the sub audible on small speakers)."""
+    n = int(length * rate)
+    t = np.arange(n) / rate
+    body = sweep_sine(rate, f0, f1, pitch, decay, length)
+    c = bp(noise(n), 1500, 7000, rate) * np.exp(-t / 0.0025) * click
+    y = np.tanh(drive * (body + c)) / np.tanh(drive)
+    fin = int(0.0004 * rate)
+    y[:fin] *= np.linspace(0, 1, fin)
+    return stereo(y)
+
+def clap_bursts(rate, length=0.6, bursts=4, spacing=0.0105, tail=0.16, lo=900, hi=5500):
+    n = int(length * rate)
+    t = np.arange(n) / rate
+    y = np.zeros(n)
+    for b in range(bursts):
+        start = b * spacing * (1.0 + 0.15 * RNG.uniform(-1, 1))
+        dt = t - start
+        e = np.where(dt >= 0, np.exp(-np.maximum(dt, 0) / (tail if b == bursts - 1 else 0.006)), 0.0)
+        y += e * (1.0 if b == bursts - 1 else 0.8)
+    m = bp(noise(n), lo, hi, rate, order=2) * y
+    l = m + 0.25 * bp(noise(n), lo, hi, rate) * y
+    r = m + 0.25 * bp(noise(n), lo, hi, rate) * y
+    return np.stack([l, r], axis=1)
+
+def boom_snare(rate, length=0.55, tone=185.0, decay=0.17, snap=0.9):
+    n = int(length * rate)
+    t = np.arange(n) / rate
+    body = sweep_sine(rate, tone * 1.6, tone, 0.012, 0.11, length) + 0.45 * sweep_sine(rate, tone * 2.4, tone * 2.1, 0.01, 0.07, length)
+    nz = bp(noise(n), 1500, 10000, rate) * (0.55 * np.exp(-t / 0.012) * snap + np.exp(-t * 6.9 / decay))
+    y = np.tanh(1.5 * (0.8 * body + 0.75 * nz)) / np.tanh(1.5)
+    return stereo(y)
+
+def boom_shaker(rate, length=0.3, attack=0.012, decay=0.07):
+    n = int(length * rate)
+    t = np.arange(n) / rate
+    e = np.minimum(t / attack, 1.0) * np.exp(-np.maximum(t - attack, 0) / decay)
+    return np.stack([hp(noise(n), 5500, rate, 4) * e, hp(noise(n), 5500, rate, 4) * e], axis=1)
+
+def boom_tamb(rate, length=0.5):
+    n = int(length * rate)
+    jingle = synth_metal(rate, length, 0.22, 5000, 15000, [1830.0, 2410.0, 3170.0, 4350.0])
+    t = np.arange(n) / rate
+    shake = stereo(hp(noise(n), 7000, rate) * np.exp(-t / 0.05))
+    return mix(jingle, 0.6 * shake)
+
+def boom_special(key, rate, secs):
+    """Pads of the Boom kit: all synthesised by Ohpe (no recordings)."""
+    n = int(secs * rate)
+    t = np.arange(n) / rate
+    if key == "bm-kick": return boom_kick(rate)
+    if key == "bm-longsub": return boom_kick(rate, 150.0, 41.0, 0.06, 2.1, secs, 2.6, 0.18)
+    if key == "bm-snare": return boom_snare(rate)
+    if key == "bm-ghost": return 0.5 * boom_snare(rate, 0.3, 200.0, 0.08, 0.5)
+    if key == "bm-rim": return mix(synth_click(rate, 1720, 0.01) * 0.8, synth_click(rate, 520, 0.018) * 0.6,
+                                   stereo(bp(noise(int(0.3 * rate)), 2000, 8000, rate) * env_exp(int(0.3 * rate), rate, 0.006) * 0.4))
+    if key == "bm-clap": return clap_bursts(rate, secs)
+    if key in ("bm-hat-c", "bm-hat-o", "bm-hat-p", "bm-hat-h"):
+        decay = {"bm-hat-c": 0.05, "bm-hat-o": 0.42, "bm-hat-p": 0.07, "bm-hat-h": 0.16}[key]
+        m = synth_metal(rate, secs, decay, 7000, 16000)
+        return mix(m, 0.35 * stereo(hp(noise(n), 8000, rate) * env_exp(n, rate, decay * 0.8)))
+    if key == "bm-tom-l": return synth_tom(rate, 105, 68, 0.55)
+    if key == "bm-tom-h": return synth_tom(rate, 165, 115, 0.4)
+    if key == "bm-tom-f": return synth_tom(rate, 82, 52, 0.75, 1.2)
+    if key == "bm-xstick": return mix(synth_click(rate, 1250, 0.02) * 0.8, synth_click(rate, 2900, 0.006) * 0.5)
+    if key == "bm-ride": return synth_metal(rate, secs, 1.4, 3500, 14000, [327.0, 471.0, 619.0, 838.0, 1014.0, 1237.0])
+    if key == "bm-bell": return mix(synth_metal(rate, secs, 1.1, 2000, 9000, [523.0, 788.0, 1103.0]), 0.5 * synth_click(rate, 2350, 0.5, secs))
+    if key == "bm-crash": return mix(synth_metal(rate, secs, 1.5, 3500, 16000), stereo(hp(noise(n), 4000, rate) * env_exp(n, rate, 1.3) * 0.7))
+    if key == "bm-sizzle": return mix(synth_metal(rate, secs, 2.0, 5000, 16000), stereo(hp(noise(n), 6000, rate) * env_exp(n, rate, 1.8) * 0.5))
+    if key == "bm-cowbell": return synth_cowbell(rate, secs)
+    if key == "bm-tamb": return boom_tamb(rate, secs)
+    if key == "bm-shaker": return boom_shaker(rate, secs)
+    if key == "bm-claves": return synth_click(rate, 2500, 0.03, secs)
+    if key == "bm-conga": return mix(stereo(sweep_sine(rate, 250, 196, 0.02, 0.25, secs)), 0.3 * synth_click(rate, 900, 0.006, secs))
+    if key == "bm-bongo": return mix(stereo(sweep_sine(rate, 410, 330, 0.015, 0.16, secs)), 0.3 * synth_click(rate, 1500, 0.005, secs))
+    raise KeyError(key)
+
 # ------------------------------------------------------------------ kits
 # Every kit has the same pad layout as the original kit (patterns play on any kit).
 PADS = ["01-kick", "02-kick-snares", "03-snare", "04-rimshot", "05-clap", "06-hat-closed", "07-hat-open", "08-hat-pedal",
@@ -240,7 +340,8 @@ def kit_tight():
     M = lambda piece, art, vl, rr=1: [(vd("mid", piece, art, vl, rr), 0)]
     T = lambda piece, art, vl: [(vd("mid", piece, art, vl), 0)]
     return {
-        "01-kick": (K("kick_snoff", 4), 0.55), "02-kick-snares": (K("kick_snon", 3), 0.6),
+        "01-kick": ({"src": K("kick_snoff", 4), "punch": dict(decay=0.26, sub_db=-5.0)}, 0.55),
+        "02-kick-snares": ({"src": K("kick_snon", 3), "punch": dict(decay=0.3, sub_db=-6.0)}, 0.6),
         "03-snare": (S("snare_center", 24), 0.45), "04-rimshot": (S("snare_rimshot", 10), 0.5),
         "05-clap": ([(vcsl(CLAPS + "SoloClap_vl3.wav"), 0), (vcsl(CLAPS + "SoloClap_vl4.wav"), -3, 7)], 0.35),
         "06-hat-closed": (M("hh", "hh_closed", 3), 0.25), "07-hat-open": (M("hh", "hh_open", 3), 1.1),
@@ -261,7 +362,8 @@ def kit_room():
     R = lambda piece, art, vl, rr=1: [(vd("room", piece, art, vl, rr), 0), (vd("oh", piece, art, vl, rr), -3)]
     T = lambda piece, art, vl: [(vd("room", piece, art, vl), 0), (vd("oh", piece, art, vl), -3)]
     return {
-        "01-kick": (K("kick_snoff", 3), 1.4), "02-kick-snares": (K("kick_snon", 4), 1.5),
+        "01-kick": ({"src": K("kick_snoff", 3), "punch": dict(decay=0.45, hold=0.05, sub_db=-6.0, box=0.35, click=0.4)}, 1.4),
+        "02-kick-snares": ({"src": K("kick_snon", 4), "punch": dict(decay=0.5, hold=0.05, sub_db=-7.0, box=0.35, click=0.4)}, 1.5),
         "03-snare": (S("snare_center", 22), 1.6), "04-rimshot": (S("snare_rimshot", 10), 1.6),
         "05-clap": ("room-clap", 1.1),
         "06-hat-closed": (R("hh", "hh_closed", 3), 0.6), "07-hat-open": (R("hh", "hh_open", 3), 2.4),
@@ -277,22 +379,38 @@ def kit_room():
     }
 
 def kit_lofi():
-    L = lambda piece, art, vl, rr=None: [(vd("lofi", piece, art, vl, rr), 0)]
+    # 0.5: built from the close and mid mics (dry, punchy) and dusted afterwards (lofi()), instead of
+    # the source's room-heavy lo-fi mic
+    K = lambda art, vl: [(vd("kickmic", "kick", art, vl, 1), 0), (vd("mid", "kick", art, vl, 1), -10)]
+    S = lambda art, vl: [(vd("snaremic", "snare", art, vl), 0), (vd("mid", "snare", art, vl), -8)]
+    M = lambda piece, art, vl, rr=1: [(vd("mid", piece, art, vl, rr), 0)]
+    T = lambda piece, art, vl: [(vd("mid", piece, art, vl), 0)]
     return {
-        "01-kick": (L("kick", "kick_snoff", 3, 1), 0.8), "02-kick-snares": (L("kick", "kick_snon", 4, 1), 0.9),
-        "03-snare": (L("snare", "snare_center", 20), 0.8), "04-rimshot": (L("snare", "snare_rimshot", 10), 0.8),
-        "05-clap": ([(vcsl(CLAPS + "Clap_rr2.wav"), 0), (vcsl(CLAPS + "Clap_rr4.wav"), -2, 11)], 0.6),
-        "06-hat-closed": (L("hh", "hh_closed", 3, 1), 0.3), "07-hat-open": (L("hh", "hh_open", 3, 1), 1.4),
-        "08-hat-pedal": (L("hh", "hh_pedal", 2, 1), 0.4), "09-tom-low": (L("ltom", "ltom_center", 12), 1.2),
-        "10-tom-high": (L("htom", "htom_center", 12), 1.1), "11-tom-floor": (L("ltom", "ltom_center", 14), 1.3),
-        "12-cross-stick": (L("snare", "snare_crossstick", 12), 0.5), "13-ride": (L("ride", "ride_ride", 2, 1), 2.0),
-        "14-ride-bell": (L("ride", "ride_bell", 2, 1), 1.8), "15-crash": (L("crash", "crash_crash", 2, 1), 2.2),
-        "16-crash-sizzle": (L("crash", "crash_sizzle", 2, 1), 2.2), "17-hat-half": (L("hh", "hh_half", 3, 1), 0.7),
-        "18-snare-ghost": (L("snare", "snare_center", 7), 0.5), "19-cowbell": ([(perc("cowbell"), 0)], 0.5),
+        "01-kick": ({"src": K("kick_snoff", 3), "punch": dict(decay=0.3, sub_db=-3.0, sub_f0=120.0, sub_f1=52.0, click=0.3)}, 0.6),
+        "02-kick-snares": ({"src": K("kick_snon", 4), "punch": dict(decay=0.34, sub_db=-4.0, sub_f0=120.0, sub_f1=50.0, click=0.3)}, 0.7),
+        "03-snare": (S("snare_center", 20), 0.4), "04-rimshot": (S("snare_rimshot", 10), 0.4),
+        "05-clap": ([(vcsl(CLAPS + "Clap_rr2.wav"), 0), (vcsl(CLAPS + "Clap_rr4.wav"), -2, 11)], 0.45),
+        "06-hat-closed": (M("hh", "hh_closed", 3), 0.22), "07-hat-open": (M("hh", "hh_open", 3), 0.9),
+        "08-hat-pedal": (M("hh", "hh_pedal", 2), 0.3), "09-tom-low": (T("ltom", "ltom_muted", 12), 0.6),
+        "10-tom-high": (T("htom", "htom_center", 11), 0.6), "11-tom-floor": (T("ltom", "ltom_halfopen", 12), 0.8),
+        "12-cross-stick": (S("snare_crossstick", 12), 0.3), "13-ride": (M("ride", "ride_ride", 2), 1.6),
+        "14-ride-bell": (M("ride", "ride_bell", 2), 1.4), "15-crash": (M("crash", "crash_crash", 2), 1.8),
+        "16-crash-sizzle": (M("crash", "crash_sizzle", 2), 1.8), "17-hat-half": (M("hh", "hh_half", 3), 0.5),
+        "18-snare-ghost": (S("snare_center", 6), 0.3), "19-cowbell": ([(perc("cowbell"), 0)], 0.5),
         "20-tambourine": ([(perc("tambourine"), 0)], 0.6), "21-shaker": ([(perc("shaker"), 0)], 0.4),
         "22-claves": ([(perc("claves"), 0)], 0.3), "23-conga": ([(perc("conga"), 0)], 0.6),
         "24-bongo": ([(perc("bongo"), 0)], 0.5),
     }
+
+def kit_boom():
+    """0.5: the Boom kit - every pad synthesised by Ohpe: a deep sub kick with a pitch envelope on
+    pad 1, a long distorted sub kick on pad 2 (tune and decay them per pad), punchy snare, crisp clap."""
+    keys = ["bm-kick", "bm-longsub", "bm-snare", "bm-rim", "bm-clap", "bm-hat-c", "bm-hat-o", "bm-hat-p", "bm-tom-l",
+            "bm-tom-h", "bm-tom-f", "bm-xstick", "bm-ride", "bm-bell", "bm-crash", "bm-sizzle", "bm-hat-h", "bm-ghost",
+            "bm-cowbell", "bm-tamb", "bm-shaker", "bm-claves", "bm-conga", "bm-bongo"]
+    secs = [1.4, 2.4, 0.5, 0.25, 0.6, 0.18, 0.9, 0.25, 0.9, 0.7, 1.2, 0.3, 2.2, 1.8, 2.4, 2.6, 0.45, 0.3,
+            0.5, 0.5, 0.3, 0.2, 0.5, 0.4]
+    return {pad: (k, s) for pad, k, s in zip(PADS, keys, secs)}
 
 def kit_hybrid():
     return {
@@ -359,31 +477,41 @@ def special(cache, key, rate, secs):
     if key == "hy-bongo": return mix(stereo(sweep_sine(rate, 420, 340, 0.015, 0.15, 0.5)), 0.3 * synth_click(rate, 1400, 0.005, 0.5))
     raise KeyError(key)
 
-KITS = {"tight": kit_tight, "room": kit_room, "lofi": kit_lofi, "hybrid": kit_hybrid}
+KITS = {"tight": kit_tight, "room": kit_room, "lofi": kit_lofi, "hybrid": kit_hybrid, "boom": kit_boom}
 
 def kit_sources(defs):
     out = []
     for spec, _ in defs.values():
+        if isinstance(spec, dict):
+            spec = spec["src"]
         if isinstance(spec, list):
             out += [s[0] for s in spec]
     return out
 
 def build_kit(cache, kit, defs):
+    global RNG
+    RNG = np.random.default_rng(20261015 + sum(map(ord, kit)))  # 0.5: every kit has its own noise
     files = {}
     d = os.path.join(OUT, "kits", kit)
     os.makedirs(d, exist_ok=True)
     for pad, (spec, secs) in defs.items():
         rate = KIT_RATE
-        if isinstance(spec, str):
+        if isinstance(spec, str) and spec.startswith("bm-"):
+            x = boom_special(spec, rate, secs)
+            x = finish(x, secs, rate, 0.25, start=0)
+        elif isinstance(spec, str):
             x = special(cache, spec, rate, secs)
             x = finish(x, secs, rate, 0.3, start=0 if spec.startswith("hy-") else None)
+        elif isinstance(spec, dict):
+            x = punch_kick(mixsrc(cache, spec["src"], rate), rate, **spec["punch"])
+            x = finish(x, secs, rate, 0.3, start=0)
         else:
             x = mixsrc(cache, spec, rate)
             x = finish(x, secs, rate, 0.35)
         if kit == "lofi":
-            x = lofi(x, rate)
+            x = lofi(x, rate, cutoff=9000, bits=12, drive=1.5, hp_f=28)
             x = finish(x, secs, rate, 0.2, start=0)
-        mono = kit in ("lofi",) or pad in ("01-kick", "02-kick-snares") and kit == "hybrid"
+        mono = kit in ("lofi",) or pad in ("01-kick", "02-kick-snares") and kit in ("hybrid", "boom")
         if mono:
             x = stereo(np.mean(x, axis=1))
         x = normalise(x, -1.0)
@@ -391,6 +519,22 @@ def build_kit(cache, kit, defs):
         write_flac(os.path.join(d, name), x, rate, mono)
         files[str(int(pad[:2]))] = "kits/%s/%s" % (kit, name)
     return files
+
+# 0.5: the Studio kit (resources/drumkit, tools/drumkit/build_kit.py) gets punchier kicks: the same
+# Virtuosity Drums sources, then punch_kick() - the recorded kicks rang like open toms
+STUDIO_KICKS = {
+    "01-kick": ([(vd("kickmic", "kick", "kick_snoff", 3, 1), 0), (vd("mid", "kick", "kick_snoff", 3, 1), -4),
+                 (vd("oh", "kick", "kick_snoff", 3, 1), -10)], dict(decay=0.32, hold=0.035, sub_db=-5.0), 1.2),
+    "02-kick-snares": ([(vd("kickmic", "kick", "kick_snon", 4, 1), 0), (vd("mid", "kick", "kick_snon", 4, 1), -4),
+                        (vd("oh", "kick", "kick_snon", 4, 1), -10)], dict(decay=0.36, hold=0.035, sub_db=-6.0), 1.2),
+}
+
+def build_studio_kicks(cache):
+    rate = 48000
+    for name, (src, punch, secs) in STUDIO_KICKS.items():
+        x = punch_kick(mixsrc(cache, src, rate), rate, **punch)
+        x = normalise(finish(x, secs, rate, 0.3, start=0), -1.0)
+        write_flac(os.path.join(ROOT, "resources", "drumkit", name + ".flac"), x, rate)
 
 # ------------------------------------------------------------------ instruments
 NOTE = {"C": 0, "C#": 1, "D": 2, "D#": 3, "E": 4, "F": 5, "F#": 6, "G": 7, "G#": 8, "A": 9, "A#": 10, "B": 11}
@@ -539,11 +683,13 @@ def main():
     sources = []
     if a.only != "instruments":
         sources += sum((kit_sources(d) for d in kit_defs.values()), []) + HYBRID_SOURCES + ROOM_CLAP
+        sources += sum(([s[0] for s in v[0]] for v in STUDIO_KICKS.values()), [])
     if a.only != "kits":
         sources += inst_sources(instrument_defs())
     fetch_all(a.cache, sources)
     if a.only != "instruments":
         bank["kits"] = {k: build_kit(a.cache, k, d) for k, d in kit_defs.items()}
+        build_studio_kicks(a.cache)
     if a.only != "kits":
         bank["instruments"] = build_instruments(a.cache)
     with open(bank_path, "w") as f:

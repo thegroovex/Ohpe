@@ -743,6 +743,32 @@
   ]
  },
  "kits": {
+  "boom": {
+   "1": "kits/boom/boom-01-kick.flac",
+   "10": "kits/boom/boom-10-tom-high.flac",
+   "11": "kits/boom/boom-11-tom-floor.flac",
+   "12": "kits/boom/boom-12-cross-stick.flac",
+   "13": "kits/boom/boom-13-ride.flac",
+   "14": "kits/boom/boom-14-ride-bell.flac",
+   "15": "kits/boom/boom-15-crash.flac",
+   "16": "kits/boom/boom-16-crash-sizzle.flac",
+   "17": "kits/boom/boom-17-hat-half.flac",
+   "18": "kits/boom/boom-18-snare-ghost.flac",
+   "19": "kits/boom/boom-19-cowbell.flac",
+   "2": "kits/boom/boom-02-kick-snares.flac",
+   "20": "kits/boom/boom-20-tambourine.flac",
+   "21": "kits/boom/boom-21-shaker.flac",
+   "22": "kits/boom/boom-22-claves.flac",
+   "23": "kits/boom/boom-23-conga.flac",
+   "24": "kits/boom/boom-24-bongo.flac",
+   "3": "kits/boom/boom-03-snare.flac",
+   "4": "kits/boom/boom-04-rimshot.flac",
+   "5": "kits/boom/boom-05-clap.flac",
+   "6": "kits/boom/boom-06-hat-closed.flac",
+   "7": "kits/boom/boom-07-hat-open.flac",
+   "8": "kits/boom/boom-08-hat-pedal.flac",
+   "9": "kits/boom/boom-09-tom-low.flac"
+  },
   "hybrid": {
    "1": "kits/hybrid/hybrid-01-kick.flac",
    "10": "kits/hybrid/hybrid-10-tom-high.flac",

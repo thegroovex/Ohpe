@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../dsp/Biquad.h"
+#include "../dsp/Filters.h"
 #include "../fx/Compressor.h"
 #include "../fx/Delay.h"
 #include "../fx/Limiter.h"
@@ -63,6 +64,14 @@ public:
     /** 0.2.0 parameters (appended at the bottom of the layout): per-channel compressor-lite,
         master compressor, master tape saturation, limiter ceiling. */
     void registerDynamicsParams (ParamRegistry& reg) const;
+    /** 0.5: "fxa.delay.sync" (Off or a note value: the delay time follows the tempo), appended at the end. */
+    void registerLate05Params (ParamRegistry& reg) const;
+    /** 0.6: "mix.master.lowpass" (master low-pass filter, 20 kHz = off). */
+    void registerLate06Params (ParamRegistry& reg) const;
+    /** 0.5: note lengths of the "fxa.delay.sync" choices in quarter notes (index 0 = Off -> 0). */
+    static double delaySyncBeats (int choice) noexcept;
+    /** 0.5: tempo for the synced delay (audio thread, before pullParams). */
+    void setTempo (double bpm) noexcept { tempo = bpm > 0.0 ? bpm : tempo; }
     void bind (const ParamRegistry& reg);
     void prepare (double sampleRate, int maxBlockSize);
     void reset() noexcept;
@@ -110,6 +119,8 @@ private:
     std::array<int, numMasterParams> masterIdx {};
     std::vector<int> delayIdx, reverbIdx;
     std::vector<float> delayLast, reverbLast;
+    int delaySyncIdx = -1;
+    double tempo = 120.0;
     float masterGain = 1.0f, returnA = 0.7f, returnB = 0.7f;
     bool limiterOn = true;
     float sr = 48000.0f;
@@ -121,6 +132,9 @@ private:
     bool masterCompOn = false;
     Compressor masterComp;
     TapeSaturator masterSat;
+    int lowpassIdx = -1;               ///< 0.6
+    float lowpassHz = 20000.0f;
+    std::array<dsp::Svf, 2> masterLp;  ///< 0.6: master low-pass (12 dB/oct.), bypassed at 20 kHz
     std::array<Direct, 16> directs {};
     int numDirects = 0;
     std::array<std::atomic<float>, numChannels + 1> reductions {};

@@ -1,0 +1,43 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Rise Warmth",
+  "author": "groovex",
+  "tags": [
+    "Pads"
+  ],
+  "engine": "cluster",
+  "comment": "Soft detuned saw stack whose notes lean up a whole tone into the chord.",
+  "params": {
+    "engine": 6,
+    "cluster.detune": 0.22,
+    "cluster.spread": 0.8,
+    "cluster.tone": 0.38,
+    "cluster.chord": 0,
+    "cluster.stack": 5,
+    "cluster.shape": 0.0,
+    "cluster.side": 0.7,
+    "cluster.reso": 0.08,
+    "cluster.keytrack": 0.5,
+    "cluster.drift": 0.3,
+    "amp.a": 0.7,
+    "amp.d": 1.5,
+    "amp.s": 0.85,
+    "amp.r": 1.8,
+    "mod.a": 0.8,
+    "mod.d": 2.0,
+    "mod.s": 0.6,
+    "mod.r": 1.5,
+    "mod.amt": 0.1,
+    "fx.type": 1,
+    "fx.chorus.rate": 0.3,
+    "fx.chorus.depth": 0.4,
+    "fx.chorus.mix": 0.25,
+    "pitchenv.amt": -2,
+    "pitchenv.time": 0.6,
+    "pitchenv.curve": 0.4,
+    "voices": 10,
+    "gain": 7.5
+  }
+}

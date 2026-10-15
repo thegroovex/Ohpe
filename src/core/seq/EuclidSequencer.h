@@ -25,6 +25,8 @@ public:
     enum Param { On = 0, Part, Rate, Gate, Velocity, firstRingParam };
     enum RingParam { Steps = 0, Pulses, Rotation, Note, numRingParams };
     static constexpr int numParams = firstRingParam + numRings * numRingParams;
+    /** 0.5: parameters registered later (local indices continue after numParams). */
+    enum LateParam { Swing = numParams, Human, RingVelocity1, numAllParams = RingVelocity1 + numRings };
 
     /** Bjorklund pattern as a bit mask (bit i = step i hits), first step always a hit when pulses > 0. */
     static uint32_t pattern (int steps, int pulses) noexcept;
@@ -33,6 +35,9 @@ public:
 
     const char* id() const noexcept override { return "euclid"; }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
+    /** 0.5: swing, humanise and the ring velocities ("seq.euclid.swing", "human", "r1.vel" .. "r4.vel"; a ring
+        velocity of 0 follows "seq.euclid.vel"), registered at the end of the layout. */
+    std::vector<ParamDescriptor> getLateParamDescriptors() const;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
     void setParam (int localIndex, float plainValue) noexcept override;
@@ -51,13 +56,15 @@ public:
 private:
     struct Ring
     {
-        int steps = 16, pulses = 0, rotation = 0, note = 36;
+        int steps = 16, pulses = 0, rotation = 0, note = 36, velocity = 0; ///< velocity 0 = the global one
         uint32_t mask = 0;
     };
     void rebuild (Ring& r) noexcept { r.mask = rotated (pattern (r.steps, r.pulses), r.steps, r.rotation); }
 
     std::array<Ring, numRings> rings {};
     bool on = false;
+    float swing = 0.0f, human = 0.0f;
+    seq::Humaniser humaniser;
     int part = 1, rate = seq::R1_16, velocity = 100;
     float gate = 0.5f;
     double sr = 48000.0;

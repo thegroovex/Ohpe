@@ -21,7 +21,9 @@ The sequencers address their part directly (their *target part*), whatever its c
 |---|---|
 | Note on / off | plays the part (through scale / chord mode and the arpeggiator, if active) |
 | Pitch bend | bends the part (range `pN.bend`) |
+| CC 5 | portamento time (0.6): overrides the part's Glide time (0 … 2 s) until `pN.glide` itself changes |
 | CC 64 | sustain |
+| CC 65 | portamento off (< 64) / on (≥ 64, the default) (0.6) |
 | CC 74 | timbre (target `pN.mpe.timbre`) for all notes of the part |
 | Channel pressure | pressure (target `pN.mpe.press`) for all notes of the part |
 | CC 120 / 123 | all sound off / all notes off |

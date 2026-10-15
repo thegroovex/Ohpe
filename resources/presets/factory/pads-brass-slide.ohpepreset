@@ -1,0 +1,41 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Brass Slide",
+  "author": "groovex",
+  "tags": [
+    "Pads",
+    "Keys"
+  ],
+  "engine": "analog",
+  "comment": "Swelling poly brass with quick portamento between chords.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.0,
+    "analog.detune": 0.22,
+    "analog.cutoff": 600,
+    "analog.reso": 0.12,
+    "analog.oscmix": 0.5,
+    "analog.sub": 0.0,
+    "analog.drive": 0.3,
+    "analog.keytrack": 0.6,
+    "amp.a": 0.08,
+    "amp.d": 0.8,
+    "amp.s": 0.85,
+    "amp.r": 0.5,
+    "mod.a": 0.12,
+    "mod.d": 0.7,
+    "mod.s": 0.5,
+    "mod.r": 0.4,
+    "mod.amt": 0.4,
+    "lfo.rate": 5.2,
+    "lfo.depth": 0.02,
+    "lfo.shape": 0,
+    "lfo.dest": 0,
+    "voices": 8,
+    "glide": 0.18,
+    "polyglide": 1,
+    "gain": 5.9
+  }
+}

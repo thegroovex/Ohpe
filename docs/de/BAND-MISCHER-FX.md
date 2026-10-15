@@ -12,7 +12,7 @@ einen Stereo-Audioeingang im Plug-in und den Offline-Export des Bands als WAV-Da
  (Parts 2-4, Drum) │           │   Eingang / Part) └─ Direktausgang → Out 1..8        │
                    └─ Mixer-Kanal 1 ──────────────────────────────────────────────────┘
  Kanal:  Quelle → EQ → Kompressor-lite → Fader / Panorama → Haupt oder Out N (+ Sends A / B)
- Master: Summe + Returns → Kompressor → Bandsättigung → Lautstärke → Limiter (Obergrenze) → Haupt
+ Master: Summe + Returns → Kompressor → Bandsättigung → Lautstärke → Tiefpass → Limiter (Obergrenze) → Haupt
 ```
 
 ## Bandmaschine
@@ -77,9 +77,14 @@ Aufnahme werden Schnitte abgelehnt (Rückgabe `false`).
 * **Master-Kompressor** (`mix.master.comp` an / aus, Schwelle, Ratio, Attack, Release,
   Aufholverstärkung), Stereo-gekoppelt, weiches Knie.
 * **Master-Bandsättigung** (`mix.master.tapesat`, 0 = aus).
+* **Master-Tiefpass** (0.6, `mix.master.lowpass`, 500 Hz … 20 kHz, 12 dB/Oktave; 20 kHz = aus): nach
+  der Lautstärke, vor dem Limiter – macht den ganzen Mix dunkler, z. B. 4–5 kHz für Lo-Fi.
 * **Limiter** (`mix.master.limit`) mit einstellbarer **Obergrenze** (`mix.master.ceiling`,
   Standard −0,3 dBFS wie in 0.1).
 * Die Pegelreduktion ist für Anzeigen lesbar: `Mixer::gainReduction (Kanal)`, Master = 8.
+* **Delay-Sync** (0.5, `fxa.delay.sync`): Aus, 1/16, 1/8T, 1/8, 1/4T, 1/8., 1/4, 1/4., 1/2. Jede
+  Einstellung außer Aus setzt die Zeit des Send-Delays aus dem Tempo (Host, Link oder intern) und
+  ersetzt `fxa.delay.time` (höchstens 2 s).
 
 Stehen alle neuen Regler auf ihrem Standard, klingt der Mixer bit-genau wie in 0.1.
 

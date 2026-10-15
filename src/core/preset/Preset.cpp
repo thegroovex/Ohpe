@@ -28,6 +28,7 @@ const std::vector<Category>& categories()
     static const std::vector<Category> list = {
         { "Bass", "Bass" },     { "Keys", "Tasten" }, { "Pads", "Flächen" }, { "Leads", "Leads" },        { "Plucks", "Zupfer" },
         { "Drums", "Drums" },   { "FX", "FX" },       { "Arp", "Arp" },       { "Textures", "Texturen" }, { "Vocal", "Vokal" },
+        { "Boom", "Boom" }, // 0.6: deep tuned kicks and sub basses
     };
     return list;
 }

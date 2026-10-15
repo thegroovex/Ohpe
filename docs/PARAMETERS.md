@@ -269,7 +269,7 @@ Appended after `tape.edit.rtz`. Guides: [English](en/FACTORY-SOUNDS.md) · [Deut
 | ID | English | Deutsch | Range | Default |
 |---|---|---|---|---|
 | `p1.sampler.inst`, `p1.grain.inst` … `p4.sampler.inst`, `p4.grain.inst` | Instrument | Instrument | Built-in, Kalimba, Marimba, Vibraphone, Glockenspiel, Harp, Harpsichord, Recorder, Singing Glass, Zither, Bowed Metal | Built-in |
-| `drum.kit` | Drum Kit | Drum-Kit | Studio, Tight, Room, Lo-Fi, Hybrid | Studio |
+| `drum.kit` | Drum Kit | Drum-Kit | Studio, Tight, Room, Lo-Fi, Hybrid, Boom (0.5: the list grows at the end) | Studio |
 | `seq.step.drums` | Step Seq to Drums | Step-Sequenzer an Drums | off / on | off |
 | `seq.euclid.drums` | Euclid to Drums | Euklid an Drums | off / on | off |
 | `seq.orbit.drums` | Orbit to Drums | Orbit an Drums | off / on | off |
@@ -277,3 +277,48 @@ Appended after `tape.edit.rtz`. Guides: [English](en/FACTORY-SOUNDS.md) · [Deut
 
 Order: `p1.sampler.inst`, `p1.grain.inst`, `p2.sampler.inst`, `p2.grain.inst`, … `p4.grain.inst`,
 `drum.kit`, `seq.step.drums`, `seq.euclid.drums`, `seq.orbit.drums`, `p1.gain` … `p4.gain`.
+
+## 0.5 – sound revision 1: groove, poly glide, synced delay
+
+Appended after `p4.gain` (index 900 onwards). Guides: [English](en/SEQUENCERS.md) · [Deutsch](de/SEQUENZER.md),
+delay sync: [English](en/TAPE-MIXER-FX.md) · [Deutsch](de/BAND-MISCHER-FX.md).
+
+| # | ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|---|
+| 900 | `seq.orbit.swing` | Orbit Swing | Orbit Swing | 0–75 % (off-beat sixteenths late by swing ÷ 2 of a sixteenth) | 0 % |
+| 901 | `seq.orbit.human` | Orbit Humanise | Orbit Humanisieren | 0–100 % (up to 10 ms late, velocity ±16) | 0 % |
+| 902 | `seq.euclid.swing` | Euclid Swing | Euklid Swing | 0–75 % | 0 % |
+| 903 | `seq.euclid.human` | Euclid Humanise | Euklid Humanisieren | 0–100 % | 0 % |
+| 904–907 | `p1.polyglide` … `p4.polyglide` | Part N Poly Glide | Part N Poly-Glide | off / on (chords glide voice by voice) | off |
+| 908–911 | `seq.euclid.r1.vel` … `seq.euclid.r4.vel` | Ring N Velocity | Ring N Anschlag | 0–127 (0 = `seq.euclid.vel`) | 0 |
+| 912–915 | `seq.orbit.l1.part` … `seq.orbit.l4.part` | Lane N Target Part | Spur N Ziel-Part | 0–4 (0 = the Orbit target / drum kit) | 0 |
+| 916 | `fxa.delay.sync` | Delay Sync | Delay-Sync | Off, 1/16, 1/8T, 1/8, 1/4T, 1/8., 1/4, 1/4., 1/2 | Off |
+
+Behaviour change in 0.5: a step-sequencer step at gate 100 % (and every Orbit step at `seq.orbit.gate`
+100 %) ties into the next step when it plays the same note (not on the drum kit).
+
+## 0.6 – sound revision 2: portamento, pitch envelope, crackle, master low-pass
+
+Appended after `fxa.delay.sync` (index 917 onwards). Guides: portamento and pitch envelope
+[English](en/SEQUENCERS.md) · [Deutsch](de/SEQUENZER.md), master low-pass
+[English](en/TAPE-MIXER-FX.md) · [Deutsch](de/BAND-MISCHER-FX.md), crackle / Boom / lo-fi
+[English](en/FACTORY-SOUNDS.md) · [Deutsch](de/FACTORY-SOUNDS.md).
+
+| # | ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|---|
+| 917, 922, 927, 932 | `p1.glide.mode` … `p4.glide.mode` | Part N Glide Mode | Part N Glide-Modus | Auto, Legato, Always (DE: Auto, Legato, Immer) | Auto |
+| 918, 923, 928, 933 | `p1.glide.rate` … `p4.glide.rate` | Part N Glide Timing | Part N Glide-Timing | Constant Time, Constant Rate (DE: Feste Zeit, Feste Rate) | Constant Time |
+| 919, 924, 929, 934 | `p1.pitchenv.amt` … `p4.pitchenv.amt` | Part N Pitch Env Amount | Part N Tonhöhen-Hüllkurve Menge | −24 … +24 semitones (negative = rise from below) | 0 |
+| 920, 925, 930, 935 | `p1.pitchenv.time` … `p4.pitchenv.time` | Part N Pitch Env Time | Part N Tonhöhen-Hüllkurve Zeit | 0.005 … 4 s | 0.25 s |
+| 921, 926, 931, 936 | `p1.pitchenv.curve` … `p4.pitchenv.curve` | Part N Pitch Env Curve | Part N Tonhöhen-Hüllkurve Kurve | 0 (linear) … 1 (fast start) | 0.5 |
+| 937, 939, 941, 943 | `p1.analog.osclevel` … `p4.analog.osclevel` | Osc Level | Osz.-Pegel | 0 … 1 (0 = noise / sub / crackle only) | 1 |
+| 938, 940, 942, 944 | `p1.analog.crackle` … `p4.analog.crackle` | Crackle | Knistern | 0 … 1 (vinyl-style clicks into the filter) | 0 |
+| 945 | `mix.master.lowpass` | Master Low-Pass | Master-Tiefpass | 500 … 20000 Hz (20 kHz = off) | 20000 |
+
+Order: the five glide / pitch-envelope parameters of part 1, then parts 2, 3, 4; then
+`p1.analog.osclevel`, `p1.analog.crackle`, … `p4.analog.crackle`; then `mix.master.lowpass`.
+
+Behaviour changes in 0.6: with one voice, releasing the newest key returns to the previous key still
+held (legato). A step-sequencer or Orbit step at gate 100 % ends one sample after the next step
+starts, so a different next note overlaps it (legato). MIDI CC 65 switches portamento off / on and
+CC 5 sets the glide time of the part on that channel.

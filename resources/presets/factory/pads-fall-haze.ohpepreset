@@ -1,0 +1,43 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Fall Haze",
+  "author": "groovex",
+  "tags": [
+    "Pads",
+    "FX"
+  ],
+  "engine": "wavetable",
+  "comment": "Hazy pad whose notes sink a fifth from above into the chord.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 1,
+    "wavetable.pos": 0.35,
+    "wavetable.warp": 0.1,
+    "wavetable.tone": 0.5,
+    "wavetable.unison": 0.5,
+    "wavetable.sub": 0.0,
+    "wavetable.reso": 0.0,
+    "wavetable.keytrack": 0.6,
+    "wavetable.envpos": 0.1,
+    "amp.a": 0.4,
+    "amp.d": 1.5,
+    "amp.s": 0.85,
+    "amp.r": 1.8,
+    "mod.a": 0.8,
+    "mod.d": 2.0,
+    "mod.s": 0.5,
+    "mod.r": 1.5,
+    "mod.amt": 0.1,
+    "fx.type": 1,
+    "fx.chorus.rate": 0.35,
+    "fx.chorus.depth": 0.5,
+    "fx.chorus.mix": 0.35,
+    "pitchenv.amt": 7,
+    "pitchenv.time": 0.8,
+    "pitchenv.curve": 0.6,
+    "voices": 10,
+    "gain": 8.5
+  }
+}

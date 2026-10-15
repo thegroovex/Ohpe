@@ -80,6 +80,29 @@ void Mixer::registerDynamicsParams (ParamRegistry& reg) const
     addM (continuous ("mix.master.ceiling", "Limiter Ceiling", "Limiter-Obergrenze", -12.0f, 0.0f, -0.3f, ParamUnit::Decibel));
 }
 
+void Mixer::registerLate05Params (ParamRegistry& reg) const
+{
+    using namespace pd;
+    auto d = choice ("fxa.delay.sync", "Delay Sync", "Delay-Sync", { "Off", "1/16", "1/8T", "1/8", "1/4T", "1/8.", "1/4", "1/4.", "1/2" },
+                     { "Aus", "1/16", "1/8T", "1/8", "1/4T", "1/8.", "1/4", "1/4.", "1/2" }, 0);
+    d.group = "fx/a";
+    reg.add (std::move (d));
+}
+
+void Mixer::registerLate06Params (ParamRegistry& reg) const
+{
+    using namespace pd;
+    auto d = continuous ("mix.master.lowpass", "Master Low-Pass", "Master-Tiefpass", 500.0f, 20000.0f, 20000.0f, ParamUnit::Hertz, 0.3f);
+    d.group = "mixer/master";
+    reg.add (std::move (d));
+}
+
+double Mixer::delaySyncBeats (int choice) noexcept
+{
+    static constexpr double beats[] = { 0.0, 0.25, 1.0 / 3.0, 0.5, 2.0 / 3.0, 0.75, 1.0, 1.5, 2.0 };
+    return beats[(size_t) std::clamp (choice, 0, 8)];
+}
+
 void Mixer::bind (const ParamRegistry& reg)
 {
     static const char* names[numChannelParams] = { "src", "vol", "pan", "mute", "solo", "eqlo", "eqmid", "eqhi", "senda", "sendb", "out" };
@@ -90,12 +113,14 @@ void Mixer::bind (const ParamRegistry& reg)
     dynIdx = { reg.indexOf ("mix.master.comp"), reg.indexOf ("mix.master.comp.thresh"), reg.indexOf ("mix.master.comp.ratio"),
                reg.indexOf ("mix.master.comp.attack"), reg.indexOf ("mix.master.comp.release"), reg.indexOf ("mix.master.comp.makeup"),
                reg.indexOf ("mix.master.tapesat"), reg.indexOf ("mix.master.ceiling") };
+    lowpassIdx = reg.indexOf ("mix.master.lowpass");
     masterIdx = { reg.indexOf ("mix.master.vol"), reg.indexOf ("mix.master.limit"), reg.indexOf ("mix.returna"), reg.indexOf ("mix.returnb") };
     delayIdx.clear();
     for (const auto& d : delay.getParamDescriptors()) delayIdx.push_back (reg.indexOf ("fxa.delay." + d.id));
     reverbIdx.clear();
     for (const auto& d : reverb.getParamDescriptors()) reverbIdx.push_back (reg.indexOf ("fxb.reverb." + d.id));
     delayLast.assign (delayIdx.size(), NAN);
+    delaySyncIdx = reg.indexOf ("fxa.delay.sync");
     reverbLast.assign (reverbIdx.size(), NAN);
 }
 
@@ -115,6 +140,8 @@ void Mixer::prepare (double sampleRate, int maxBlockSize)
     }
     masterComp.prepare (sr);
     masterSat.prepare (sr);
+    for (auto& f : masterLp) f.prepare (sr);
+    lowpassHz = 20000.0f;
     std::fill (delayLast.begin(), delayLast.end(), NAN);
     std::fill (reverbLast.begin(), reverbLast.end(), NAN);
     reset();
@@ -132,6 +159,7 @@ void Mixer::reset() noexcept
     }
     masterComp.reset();
     masterSat.reset();
+    for (auto& f : masterLp) f.reset();
     numDirects = 0;
     for (auto& r : reductions) r.store (0.0f);
     delay.reset();
@@ -180,14 +208,25 @@ void Mixer::pullParams (const ParamSnapshot& s) noexcept
     masterCompOn = dynIdx[MComp] >= 0 && s.getBool (dynIdx[MComp]);
     if (masterCompOn)
         masterComp.set (s[dynIdx[MThresh]], s[dynIdx[MRatio]], s[dynIdx[MAttack]] * 1000.0f, s[dynIdx[MRelease]] * 1000.0f, s[dynIdx[MMakeup]]);
+    if (lowpassIdx >= 0 && s[lowpassIdx] != lowpassHz)
+    {
+        lowpassHz = s[lowpassIdx];
+        for (auto& f : masterLp) f.set (lowpassHz, 0.12f);
+    }
     if (dynIdx[MTapeSat] >= 0 && s[dynIdx[MTapeSat]] != masterSat.getAmount()) masterSat.setAmount (s[dynIdx[MTapeSat]]);
     if (dynIdx[MCeiling] >= 0)
     {
         const float ceilDb = s[dynIdx[MCeiling]];
         limiter.setCeiling (std::abs (ceilDb + 0.3f) < 1.0e-4f ? 0.966f : dsp::dbToGain (ceilDb));
     }
+    const double syncBeats = delaySyncIdx >= 0 ? delaySyncBeats (s.getInt (delaySyncIdx)) : 0.0;
     for (size_t i = 0; i < delayIdx.size(); ++i)
-        if (const float v = s[delayIdx[i]]; ! (v == delayLast[i])) { delayLast[i] = v; delay.setParam ((int) i, v); }
+    {
+        float v = s[delayIdx[i]];
+        if (i == (size_t) DelayEffect::Time && syncBeats > 0.0) // 0.5: synced to the tempo
+            v = (float) std::clamp (syncBeats * 60.0 / tempo, 0.01, 2.0);
+        if (! (v == delayLast[i])) { delayLast[i] = v; delay.setParam ((int) i, v); }
+    }
     for (size_t i = 0; i < reverbIdx.size(); ++i)
         if (const float v = s[reverbIdx[i]]; ! (v == reverbLast[i])) { reverbLast[i] = v; reverb.setParam ((int) i, v); }
 }
@@ -330,6 +369,12 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
         }
         reductions[numChannels].store (masterCompOn ? masterComp.gainReductionDb() : 0.0f, std::memory_order_relaxed);
     }
+    if (lowpassHz < 19900.0f) // 0.6: master low-pass (dark, dusty mixes)
+        for (int i = 0; i < n; ++i)
+        {
+            masterL[(size_t) i] = masterLp[0].process (masterL[(size_t) i], dsp::Svf::LowPass);
+            masterR[(size_t) i] = masterLp[1].process (masterR[(size_t) i], dsp::Svf::LowPass);
+        }
     if (limiterOn) limiter.process (masterL.data(), masterR.data(), n);
 
     float peak = 0.0f;

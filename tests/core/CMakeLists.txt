@@ -43,5 +43,9 @@ target_include_directories(ohpe_render PRIVATE ${CMAKE_SOURCE_DIR}/tools)
 target_link_libraries(ohpe_render PRIVATE ohpe_core)
 # 0.4 (package F): factory sample bank, sequencers -> drums, part gain, factory presets render
 target_sources(ohpe_core_tests PRIVATE FactorySoundTests.cpp)
+# 0.5 (sound revision 1): Orbit / Euclid swing and humanise, poly glide, the Boom kit
+target_sources(ohpe_core_tests PRIVATE Revision05Tests.cpp)
+# 0.6 (sound revision 2): portamento, pitch envelope, crackle, master low-pass, Boom category
+target_sources(ohpe_core_tests PRIVATE Revision06Tests.cpp)
 target_include_directories(ohpe_core_tests PRIVATE ${CMAKE_SOURCE_DIR}/tools)
 target_compile_definitions(ohpe_core_tests PRIVATE OHPE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")

@@ -16,7 +16,7 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 
 # loudness targets (active RMS, dBFS) per main category; the window allowed is -18 ... -12 dBFS
 TARGET = {"Bass": -14.5, "Keys": -16.0, "Pads": -16.5, "Leads": -15.0, "Plucks": -16.0, "Drums": -15.0, "FX": -16.5,
-          "Arp": -16.0, "Textures": -17.0, "Vocal": -16.0}
+          "Arp": -16.0, "Textures": -17.0, "Vocal": -16.0, "Boom": -14.5}
 
 
 def main():

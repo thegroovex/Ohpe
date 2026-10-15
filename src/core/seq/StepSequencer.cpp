@@ -249,6 +249,17 @@ void StepSequencer::schedule (int64_t time, const MidiEvent& e) noexcept
     // full: drop (a note-off is never dropped silently in practice: 256 slots >> 64 steps x 8 ratchets / block)
 }
 
+bool StepSequencer::extendOff (int ch, int note, int64_t time) noexcept
+{
+    for (auto& p : pending)
+        if (p.used && p.event.isNoteOff() && p.event.channel() == ch && p.event.data1 == note)
+        {
+            p.time = std::max (p.time, time);
+            return true;
+        }
+    return false;
+}
+
 void StepSequencer::triggerStep (int pattern, int stepIndex, int offset, double samplesPerStep, int64_t blockStart, SequencerOutput& out) noexcept
 {
     position.store (stepIndex, std::memory_order_relaxed);
@@ -263,13 +274,26 @@ void StepSequencer::triggerStep (int pattern, int stepIndex, int offset, double 
                 out.addLock ({ offset, l.paramIndex, reg->descriptor (l.paramIndex).fromNormalised (l.normValue), false });
 
     if (! s.on) return;
-    if (s.probability < 100 && rng.next01() * 100.0f >= (float) s.probability) return;
-
     const int note = std::clamp (s.note + transpose, 0, 127);
     const int hits = std::clamp (s.ratchet, 1, 8);
     const double hitLen = samplesPerStep / hits;
-    const double gateLen = std::max (16.0, hitLen * std::clamp ((double) s.gate, 0.05, 1.0) - (s.gate >= 1.0f ? 0.0 : 1.0));
+    // 0.6: a single hit at gate 100 % ends one sample after the next step starts - a different note there
+    // overlaps it (legato: mono parts glide in glide mode Legato)
+    const double gateLen = std::max (16.0, hitLen * std::clamp ((double) s.gate, 0.05, 1.0) - (s.gate >= 1.0f ? (hits == 1 ? -1.0 : 0.0) : 1.0));
     const int ch = std::clamp (channel, 1, 16);
+
+    // 0.5: a step at gate 100 % ties into the next step when that plays the same note (unless the
+    // sequencer plays the drum kit): the note continues and ends with the next step's gate
+    if (! drumsMode && hits == 1)
+    {
+        const int len = lengthOf (pattern);
+        const Step prev = getStep (pattern, (stepIndex + len - 1) % len);
+        if (prev.on && prev.gate >= 1.0f && prev.ratchet <= 1 && std::clamp (prev.note + transpose, 0, 127) == note
+            && extendOff (ch, note, blockStart + offset + (int64_t) std::llround (gateLen)))
+            return;
+    }
+    if (s.probability < 100 && rng.next01() * 100.0f >= (float) s.probability) return;
+
     for (int h = 0; h < hits; ++h)
     {
         const int64_t t = blockStart + offset + (int64_t) std::llround (h * hitLen);

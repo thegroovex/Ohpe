@@ -30,6 +30,9 @@ The 64-step sequencer from 0.1 now holds **16 patterns**.
   repeats*, looping. The song position is taken from the transport, so a host loop or a jump
   lands on the right pattern and step.
 * Patterns, lengths and the chain are saved with the state. Patterns from 0.1 open as pattern 1.
+* **Ties (0.5):** a step at gate 100 % ties into the next step when that step plays the same note –
+  the note is held instead of struck again and ends with the next step's gate. Chains of 100 % steps
+  hold a note (or a one-finger chord) for as long as you like. Not on the drum kit (pads are one-shots).
 
 ## Euclid
 
@@ -44,6 +47,8 @@ lengths form a polymeter: rings of 3 and 4 steps meet every 12 steps.
 | `seq.euclid.rate` | 1/4 … 1/32, triplets, dotted | shared grid of all rings |
 | `seq.euclid.gate`, `.vel` | 5–100 %, 1–127 | note length, velocity |
 | `seq.euclid.rN.steps / .pulses / .rot / .note` | per ring 1–4 | |
+| `seq.euclid.rN.vel` (0.5) | 0–127 | velocity of one ring; 0 = `seq.euclid.vel` (accents: loud kick, soft hats) |
+| `seq.euclid.swing`, `.human` (0.5) | 0–75 %, 0–100 % | swing and humanise, see below |
 
 Examples: 3 pulses in 8 steps `x..x..x.`, 5 in 8 `x.xx.xx.`, 7 in 16 `x..x.x.x..x.x.x.`.
 
@@ -67,6 +72,24 @@ playing into one part. Every lane has its own steps (note, velocity). Lanes drif
 other and meet again after the least common multiple of their lengths – long, evolving
 patterns from a few steps.
 
+* **Lane target** (`seq.orbit.lN.part`, 0.5): 0 = the Orbit target part (or the drum kit); 1–4 = this
+  lane plays that part, never the kit. With the drums switched on, lanes 1–3 can play the kit while
+  lane 4 plays a bass line – one sequencer for a whole groove.
+* **Ties** (0.5): at **Gate** 100 % (`seq.orbit.gate`) a step that repeats the note of the step before
+  it continues that note (held, not struck again) – sustained bass notes and chords. Lanes playing the
+  drum kit are never tied.
+* **Swing** and **Humanise** (`seq.orbit.swing`, `seq.orbit.human`, 0.5), see below.
+
+## Swing and humanise (0.5)
+
+* **Swing** (`seq.orbit.swing`, `seq.euclid.swing`, 0–75 %) moves every note on an off-beat
+  sixteenth late by swing ÷ 2 of a sixteenth – the same amount as the step sequencer's
+  `seq.step.swing` (30 % ≈ a 57 % shuffle, 75 % = 3/8 of a sixteenth). Lanes and grids at 1/8 or
+  slower never land on an off-beat sixteenth, so all parts of a groove swing together.
+* **Humanise** (`seq.orbit.human`, `seq.euclid.human`, 0–100 %): at 100 % a note starts up to 10 ms
+  late and its velocity moves by up to ±16. The variation is repeatable (it starts the same way every
+  time the sequencer is reset), so a bounce sounds like what you heard.
+
 ## Sequencers playing the drum kit (0.4)
 
 The step sequencer, Euclid and Orbit can play the **drum kit** instead of their target part:
@@ -75,6 +98,39 @@ The step sequencer, Euclid and Orbit can play the **drum kit** instead of their 
 MIDI channel 10; scale quantise and chords do not apply. Orbit makes a drum machine with one lane
 per drum and its own length per lane; Euclid plays four polyrhythmic drums. The factory project
 presets use both – see [FACTORY-SOUNDS.md](FACTORY-SOUNDS.md).
+
+## Poly glide (0.5)
+
+**Glide** (`pN.glide`) slides the pitch from note to note. With one voice (mono) every new note
+slides from the last. With **Poly Glide** (`pN.polyglide`) on and several voices, every note of a new
+chord takes over the voice of the nearest note just released and slides from there – chords glide
+into each other voice by voice (the *sliding* pads of the factory bank). Without released voices
+(the first chord, or notes added to held ones) notes start on their own pitch.
+
+## Portamento and pitch envelope (0.6)
+
+Every melodic engine shares the same portamento and pitch envelope; both sit on the last two pages of
+the **Synth** mode (*Glide*, *Pitch Envelope*) for every engine.
+
+| Parameter | What it does |
+|---|---|
+| **Glide** (`pN.glide`, 0 … 2 s) | Portamento time. 0 = off. |
+| **Glide Mode** (`pN.glide.mode`) | **Auto** (default, as before 0.6): a note glides while the previous note still sounds (also in its release). **Legato**: a note glides only while another key is held; with one voice the envelopes keep running (true legato), detached notes start fresh. **Always**: every note glides from the last note played, even after silence. |
+| **Glide Timing** (`pN.glide.rate`) | **Constant Time**: every glide takes the Glide time. **Constant Rate**: the Glide time is per octave – small steps arrive quickly, big jumps slide longer. |
+| **Poly Glide** (`pN.polyglide`) | Chords glide voice by voice (see above). |
+| **Pitch Env Amount** (`pN.pitchenv.amt`, −24 … +24 semitones) | Every new note starts this far away and slides into its pitch: negative = **rises** from below, positive = **falls** from above. 0 = off. |
+| **Pitch Env Time** (`pN.pitchenv.time`, 5 ms … 4 s) | How long the slide takes. |
+| **Pitch Env Curve** (`pN.pitchenv.curve`) | 0 = linear, 1 = fast start and a slow arrival. |
+
+**Mono note priority (0.6):** with one voice, releasing the newest key returns to the previous key
+still held, legato and gliding back. **MIDI:** CC 65 switches portamento off / on, CC 5 sets the
+glide time (see [MIDI.md](MIDI.md)). **Sequencers:** a step at gate 100 % (step sequencer, Orbit)
+now ends one sample after the next step starts, so a *different* next note overlaps it – mono parts
+in glide mode *Legato* glide exactly there.
+
+The factory bank has *rise* and *fall* pads and synths (Rise Strings, Rise Choir, Rise Glass, Rise
+Warmth, Rise Bloom, Fall Haze, Rise Lead, Scoop Keys, Rise Bass, Zip Pluck, Fall Lead) and portamento
+leads and basses (Legato Glide Lead, Portamento Square, Glide Sine Bass, Glide Poly Synth).
 
 ## Scale and chord mode
 

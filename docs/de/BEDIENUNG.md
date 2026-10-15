@@ -31,6 +31,10 @@ FX-Slot, die Bibliothek (Part-Presets laden dorthin) und die Bildschirm-Klaviatu
 dem MIDI-Kanal des Parts) folgen ihr. Das Display zeigt den Part als gelbes Schild (P1–P4).
 MIDI: *Bearbeiteter Part* (`ui.part`).
 
+**Synth-Modus** (0.6): nach den Seiten der Engine folgen zwei Seiten, die alle Engines teilen –
+**Glide** (Zeit, Modus, Timing, Poly-Glide) und **Tonhöhen-Hüllkurve** (Menge, Zeit, Kurve, Stimmen).
+Siehe [SEQUENZER.md](SEQUENZER.md#portamento-und-tonhöhen-hüllkurve-06).
+
 ## Samples für Sampler und Grain
 
 Ist auf dem bearbeiteten Part die Sampler- oder Grain-Engine gewählt, zeigt das Display

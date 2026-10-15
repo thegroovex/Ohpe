@@ -1,0 +1,43 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Drift Stack",
+  "author": "groovex",
+  "tags": [
+    "Pads",
+    "Textures"
+  ],
+  "engine": "cluster",
+  "comment": "Detuned saw stacks drifting slowly from chord to chord.",
+  "params": {
+    "engine": 6,
+    "cluster.detune": 0.25,
+    "cluster.spread": 0.85,
+    "cluster.tone": 0.42,
+    "cluster.chord": 0,
+    "cluster.stack": 5,
+    "cluster.shape": 0.0,
+    "cluster.side": 0.7,
+    "cluster.reso": 0.08,
+    "cluster.keytrack": 0.5,
+    "cluster.drift": 0.35,
+    "amp.a": 0.9,
+    "amp.d": 1.5,
+    "amp.s": 0.85,
+    "amp.r": 2.0,
+    "mod.a": 0.8,
+    "mod.d": 2.0,
+    "mod.s": 0.6,
+    "mod.r": 1.5,
+    "mod.amt": 0.12,
+    "fx.type": 1,
+    "fx.chorus.rate": 0.3,
+    "fx.chorus.depth": 0.4,
+    "fx.chorus.mix": 0.25,
+    "voices": 8,
+    "glide": 0.7,
+    "polyglide": 1,
+    "gain": 6.8
+  }
+}

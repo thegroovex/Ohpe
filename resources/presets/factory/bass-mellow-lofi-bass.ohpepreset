@@ -1,0 +1,40 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Mellow Lofi Bass",
+  "author": "groovex",
+  "tags": [
+    "Bass"
+  ],
+  "engine": "analog",
+  "comment": "Warm, round bass: a soft, low-passed body over a sine sub with gentle saturation and a hint of glide.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.25,
+    "analog.detune": 0.0,
+    "analog.cutoff": 300,
+    "analog.reso": 0.05,
+    "analog.osc2oct": 0,
+    "analog.oscmix": 0.0,
+    "analog.sub": 0.85,
+    "analog.drive": 0.42,
+    "analog.keytrack": 0.6,
+    "analog.osclevel": 0.45,
+    "amp.a": 0.006,
+    "amp.d": 0.9,
+    "amp.s": 0.7,
+    "amp.r": 0.14,
+    "mod.a": 0.002,
+    "mod.d": 0.2,
+    "mod.s": 0.1,
+    "mod.r": 0.1,
+    "mod.amt": 0.12,
+    "voices": 1,
+    "velsens": 0.35,
+    "glide": 0.035,
+    "glide.mode": 1,
+    "glide.rate": 0,
+    "gain": 8.3
+  }
+}

@@ -1,0 +1,663 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "project",
+  "name": "Boom Kit",
+  "author": "groovex",
+  "tags": [
+    "Drums",
+    "Bass",
+    "Boom"
+  ],
+  "engine": "wavetable",
+  "comment": "The synthesised Boom kit in a half-time beat with rolling hats (Orbit), Boom Slide on the step sequencer - overlapping notes glide (legato portamento) - and a dark pad that rises into its chord (Rise Glass, Euclid). C minor, 70 BPM.",
+  "params": {
+    "tempo": 70,
+    "drum.kit": 5,
+    "key.root": 0,
+    "key.scale": 2,
+    "seq.step.channel": 2,
+    "seq.step.rate": 2,
+    "seq.step.length": 32,
+    "p1.engine": 1,
+    "p1.wavetable.table": 4,
+    "p1.wavetable.pos": 0.45,
+    "p1.wavetable.warp": 0.12,
+    "p1.wavetable.tone": 0.6,
+    "p1.wavetable.unison": 0.6,
+    "p1.wavetable.sub": 0.0,
+    "p1.wavetable.reso": 0.0,
+    "p1.wavetable.keytrack": 0.6,
+    "p1.wavetable.envpos": 0.12,
+    "p1.amp.a": 0.6,
+    "p1.amp.d": 1.5,
+    "p1.amp.s": 0.85,
+    "p1.amp.r": 2.0,
+    "p1.mod.a": 1.0,
+    "p1.mod.d": 2.0,
+    "p1.mod.s": 0.5,
+    "p1.mod.r": 2.0,
+    "p1.mod.amt": 0.12,
+    "p1.lfo.rate": 0.2,
+    "p1.lfo.depth": 0.12,
+    "p1.lfo.shape": 0,
+    "p1.lfo.dest": 1,
+    "p1.fx.type": 6,
+    "p1.fx.reverb.size": 0.8,
+    "p1.fx.reverb.damping": 0.4,
+    "p1.fx.reverb.predelay": 0.03,
+    "p1.fx.reverb.mix": 0.3,
+    "p1.pitchenv.amt": -7,
+    "p1.pitchenv.time": 0.9,
+    "p1.pitchenv.curve": 0.6,
+    "p1.voices": 10,
+    "p1.gain": 7.2,
+    "p1.chord": 2,
+    "p2.engine": 2,
+    "p2.analog.shape": 0.5,
+    "p2.analog.detune": 0.0,
+    "p2.analog.cutoff": 600,
+    "p2.analog.reso": 0.0,
+    "p2.analog.oscmix": 0.0,
+    "p2.analog.sub": 1.0,
+    "p2.analog.drive": 0.45,
+    "p2.analog.keytrack": 1.0,
+    "p2.analog.osclevel": 0.0,
+    "p2.amp.a": 0.003,
+    "p2.amp.d": 3.6,
+    "p2.amp.s": 0.0,
+    "p2.amp.r": 0.4,
+    "p2.mod.a": 0.002,
+    "p2.mod.d": 0.05,
+    "p2.mod.s": 0.0,
+    "p2.mod.r": 0.1,
+    "p2.mod.amt": 0.2,
+    "p2.pitchenv.amt": 7,
+    "p2.pitchenv.time": 0.05,
+    "p2.pitchenv.curve": 0.8,
+    "p2.voices": 1,
+    "p2.velsens": 0.25,
+    "p2.tune": 12,
+    "p2.glide": 0.13,
+    "p2.glide.mode": 1,
+    "p2.glide.rate": 0,
+    "p2.gain": 9.6,
+    "p3.engine": 0,
+    "p3.fm.algo": 2,
+    "p3.fm.modratio": 1.0,
+    "p3.fm.index": 0.3,
+    "p3.fm.op1ratio": 1,
+    "p3.fm.op2ratio": 4,
+    "p3.fm.op3ratio": 2,
+    "p3.fm.op4ratio": 9,
+    "p3.fm.op1level": 1.0,
+    "p3.fm.op2level": 0.55,
+    "p3.fm.op3level": 0.25,
+    "p3.fm.op4level": 0.12,
+    "p3.fm.op5level": 0.0,
+    "p3.fm.op6level": 0.0,
+    "p3.amp.a": 0.003,
+    "p3.amp.d": 0.45,
+    "p3.amp.s": 0.0,
+    "p3.amp.r": 0.3,
+    "p3.mod.a": 0.002,
+    "p3.mod.d": 0.15,
+    "p3.mod.s": 0.0,
+    "p3.mod.r": 0.15,
+    "p3.mod.amt": 1.0,
+    "p3.voices": 10,
+    "p3.velsens": 0.6,
+    "p3.gain": 20.5,
+    "p4.engine": 2,
+    "p4.analog.shape": 0.5,
+    "p4.analog.detune": 0.0,
+    "p4.analog.cutoff": 700,
+    "p4.analog.reso": 0.05,
+    "p4.analog.oscmix": 0.0,
+    "p4.analog.sub": 0.0,
+    "p4.analog.noise": 0.16,
+    "p4.analog.ftype": 3,
+    "p4.analog.drive": 0.6,
+    "p4.analog.keytrack": 0.0,
+    "p4.analog.osclevel": 0.0,
+    "p4.analog.crackle": 0.75,
+    "p4.amp.a": 0.08,
+    "p4.amp.d": 0.5,
+    "p4.amp.s": 1.0,
+    "p4.amp.r": 0.6,
+    "p4.mod.a": 0.001,
+    "p4.mod.d": 0.5,
+    "p4.mod.s": 1.0,
+    "p4.mod.r": 0.5,
+    "p4.mod.amt": 0.0,
+    "p4.velsens": 0.0,
+    "p4.voices": 1,
+    "p4.gain": 19.5,
+    "seq.orbit.on": 1,
+    "seq.orbit.drums": 1,
+    "seq.orbit.gate": 0.6,
+    "seq.orbit.human": 0.1,
+    "seq.orbit.l1.len": 16,
+    "seq.orbit.l1.rate": 2,
+    "seq.orbit.l1.transpose": 0,
+    "seq.orbit.l2.len": 16,
+    "seq.orbit.l2.rate": 2,
+    "seq.orbit.l2.transpose": 0,
+    "seq.orbit.l3.len": 16,
+    "seq.orbit.l3.rate": 2,
+    "seq.orbit.l3.transpose": 0,
+    "seq.orbit.l4.len": 16,
+    "seq.orbit.l4.rate": 3,
+    "seq.orbit.l4.transpose": 0,
+    "seq.euclid.on": 1,
+    "seq.euclid.part": 1,
+    "seq.euclid.rate": 0,
+    "seq.euclid.gate": 1.0,
+    "seq.euclid.vel": 80,
+    "seq.euclid.r1.steps": 8,
+    "seq.euclid.r1.pulses": 1,
+    "seq.euclid.r1.rot": 0,
+    "seq.euclid.r1.note": 60,
+    "seq.euclid.r2.steps": 8,
+    "seq.euclid.r2.pulses": 1,
+    "seq.euclid.r2.rot": 4,
+    "seq.euclid.r2.note": 56,
+    "seq.euclid.r3.pulses": 0,
+    "seq.euclid.r4.pulses": 0,
+    "mix.ch1.vol": -9,
+    "mix.ch1.senda": 0.1,
+    "mix.ch1.sendb": 0.4,
+    "mix.ch2.vol": 1,
+    "mix.ch2.senda": 0.0,
+    "mix.ch2.sendb": 0.0,
+    "mix.ch3.vol": -60,
+    "mix.ch3.senda": 0,
+    "mix.ch3.sendb": 0,
+    "mix.ch4.vol": -60,
+    "mix.ch4.senda": 0,
+    "mix.ch4.sendb": 0,
+    "mix.ch5.vol": -1,
+    "mix.ch5.senda": 0.0,
+    "mix.ch5.sendb": 0.05,
+    "mix.master.vol": -3,
+    "fxb.reverb.size": 0.8,
+    "fxb.reverb.damping": 0.5,
+    "mix.master.comp": 1,
+    "mix.master.comp.thresh": -14,
+    "mix.master.comp.ratio": 2.0,
+    "seq.run": 0
+  },
+  "sections": {
+    "sequencer": {
+      "format": "ohpe-step-pattern",
+      "version": 1,
+      "steps": [
+        {
+          "i": 0,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 1,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 2,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 3,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 4,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 5,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 0.9,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 6,
+          "on": true,
+          "note": 36,
+          "vel": 96,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 7,
+          "on": true,
+          "note": 43,
+          "vel": 104,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 8,
+          "on": true,
+          "note": 43,
+          "vel": 104,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 9,
+          "on": true,
+          "note": 43,
+          "vel": 104,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 10,
+          "on": true,
+          "note": 41,
+          "vel": 100,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 11,
+          "on": true,
+          "note": 41,
+          "vel": 100,
+          "gate": 0.9,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 12,
+          "on": true,
+          "note": 39,
+          "vel": 104,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 13,
+          "on": true,
+          "note": 39,
+          "vel": 104,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 14,
+          "on": true,
+          "note": 39,
+          "vel": 104,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 15,
+          "on": true,
+          "note": 39,
+          "vel": 104,
+          "gate": 0.9,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 16,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 17,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 18,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 19,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 20,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 21,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 22,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 0.9,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 23,
+          "on": true,
+          "note": 34,
+          "vel": 100,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 24,
+          "on": true,
+          "note": 34,
+          "vel": 100,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 25,
+          "on": true,
+          "note": 34,
+          "vel": 100,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 26,
+          "on": true,
+          "note": 36,
+          "vel": 104,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 27,
+          "on": true,
+          "note": 36,
+          "vel": 104,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 28,
+          "on": true,
+          "note": 31,
+          "vel": 108,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 29,
+          "on": true,
+          "note": 31,
+          "vel": 108,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 30,
+          "on": true,
+          "note": 31,
+          "vel": 108,
+          "gate": 1.0,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 31,
+          "on": true,
+          "note": 31,
+          "vel": 108,
+          "gate": 0.9,
+          "prob": 100,
+          "ratchet": 1
+        }
+      ],
+      "lengths": {
+        "1": 32
+      }
+    },
+    "orbit": {
+      "format": "ohpe-orbit",
+      "version": 1,
+      "steps": [
+        {
+          "lane": 0,
+          "i": 0,
+          "on": true,
+          "note": 36,
+          "vel": 124
+        },
+        {
+          "lane": 0,
+          "i": 7,
+          "on": true,
+          "note": 36,
+          "vel": 124
+        },
+        {
+          "lane": 0,
+          "i": 10,
+          "on": true,
+          "note": 36,
+          "vel": 124
+        },
+        {
+          "lane": 1,
+          "i": 8,
+          "on": true,
+          "note": 40,
+          "vel": 110
+        },
+        {
+          "lane": 2,
+          "i": 0,
+          "on": true,
+          "note": 41,
+          "vel": 70
+        },
+        {
+          "lane": 2,
+          "i": 1,
+          "on": true,
+          "note": 41,
+          "vel": 46
+        },
+        {
+          "lane": 2,
+          "i": 2,
+          "on": true,
+          "note": 41,
+          "vel": 46
+        },
+        {
+          "lane": 2,
+          "i": 3,
+          "on": true,
+          "note": 41,
+          "vel": 46
+        },
+        {
+          "lane": 2,
+          "i": 4,
+          "on": true,
+          "note": 41,
+          "vel": 70
+        },
+        {
+          "lane": 2,
+          "i": 5,
+          "on": true,
+          "note": 41,
+          "vel": 46
+        },
+        {
+          "lane": 2,
+          "i": 6,
+          "on": true,
+          "note": 41,
+          "vel": 46
+        },
+        {
+          "lane": 2,
+          "i": 7,
+          "on": true,
+          "note": 41,
+          "vel": 46
+        },
+        {
+          "lane": 2,
+          "i": 8,
+          "on": true,
+          "note": 41,
+          "vel": 70
+        },
+        {
+          "lane": 2,
+          "i": 9,
+          "on": true,
+          "note": 41,
+          "vel": 46
+        },
+        {
+          "lane": 2,
+          "i": 10,
+          "on": true,
+          "note": 41,
+          "vel": 46
+        },
+        {
+          "lane": 2,
+          "i": 11,
+          "on": true,
+          "note": 41,
+          "vel": 46
+        },
+        {
+          "lane": 2,
+          "i": 12,
+          "on": true,
+          "note": 41,
+          "vel": 70
+        },
+        {
+          "lane": 2,
+          "i": 13,
+          "on": true,
+          "note": 41,
+          "vel": 46
+        },
+        {
+          "lane": 2,
+          "i": 14,
+          "on": true,
+          "note": 41,
+          "vel": 40
+        },
+        {
+          "lane": 2,
+          "i": 15,
+          "on": true,
+          "note": 41,
+          "vel": 46
+        },
+        {
+          "lane": 3,
+          "i": 12,
+          "on": true,
+          "note": 41,
+          "vel": 38
+        },
+        {
+          "lane": 3,
+          "i": 13,
+          "on": true,
+          "note": 41,
+          "vel": 44
+        },
+        {
+          "lane": 3,
+          "i": 14,
+          "on": true,
+          "note": 41,
+          "vel": 52
+        },
+        {
+          "lane": 3,
+          "i": 15,
+          "on": true,
+          "note": 41,
+          "vel": 60
+        }
+      ]
+    }
+  }
+}

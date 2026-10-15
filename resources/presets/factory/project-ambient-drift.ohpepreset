@@ -9,7 +9,7 @@
     "Textures"
   ],
   "engine": "cluster",
-  "comment": "A slow fifths pad, a generative kalimba from four Orbit lanes of 5, 7, 11 and 16 steps, sparse singing-glass tones from Euclid. No drums.",
+  "comment": "A slow fifths pad, a generative kalimba from four Orbit lanes of 5, 7, 11 and 16 steps with a tempo-synced dotted-eighth delay, sparse singing-glass tones from Euclid. No drums.",
   "params": {
     "tempo": 72,
     "seq.step.channel": 1,
@@ -133,10 +133,10 @@
     "mix.ch1.senda": 0.0,
     "mix.ch1.sendb": 0.35,
     "mix.ch2.vol": -11,
-    "mix.ch2.senda": 0.25,
-    "mix.ch2.sendb": 0.45,
+    "mix.ch2.senda": 0.5,
+    "mix.ch2.sendb": 0.4,
     "mix.ch3.vol": -8,
-    "mix.ch3.senda": 0.1,
+    "mix.ch3.senda": 0.15,
     "mix.ch3.sendb": 0.5,
     "mix.ch4.vol": -2,
     "mix.ch4.senda": 0,
@@ -145,8 +145,10 @@
     "fxb.reverb.size": 0.9,
     "fxb.reverb.damping": 0.35,
     "fxb.reverb.predelay": 0.04,
+    "fxa.delay.sync": 5,
     "fxa.delay.time": 0.625,
-    "fxa.delay.feedback": 0.45,
+    "fxa.delay.feedback": 0.4,
+    "fxa.delay.tone": 0.35,
     "seq.run": 0
   },
   "sections": {

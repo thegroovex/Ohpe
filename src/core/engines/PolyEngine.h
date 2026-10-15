@@ -29,24 +29,50 @@ public:
         lfo.prepare (sr);
     }
 
+    /**
+        0.6: how the next start() begins. glideFrom: legacyGlide = glide from this voice's own pitch when the
+        voice is taken over (as before 0.6), noGlide = jump, >= 0 = glide from this pitch (semitones).
+        retrigger = false keeps the envelopes running (mono legato).
+    */
+    static constexpr float legacyGlide = -2.0f, noGlide = -1.0f;
+    void setStartOptions (float glideFromPitch, bool retrigger) noexcept
+    {
+        glideFrom = glideFromPitch;
+        retriggerNext = retrigger;
+    }
+
     void startBase (int midiNote, float vel, bool legato, const VoiceCommon& c) noexcept
     {
         note = midiNote;
+        bool glide = false;
+        float from = currentNote;
+        if (glideFrom <= legacyGlide) glide = legato && currentNote >= 0.0f;
+        else if (glideFrom >= 0.0f) { glide = true; from = glideFrom; }
+        glide = glide && c.glideSeconds > 0.0f;
+        currentNote = glide ? from : (float) midiNote;
+        // constant rate: the glide time is per octave of distance (at least 1/24 of it)
+        glideTime = c.glideConstantRate ? c.glideSeconds * std::clamp (std::abs ((float) midiNote - from) / 12.0f, 1.0f / 24.0f, 8.0f)
+                                        : c.glideSeconds;
+        const bool retrigger = retriggerNext || ! ampEnv.isActive() || ampEnv.isReleasing();
+        glideFrom = legacyGlide;
+        retriggerNext = true;
+        if (! retrigger) return; // mono legato: same envelopes, LFO, expression and pitch envelope
         velocity = vel;
-        if (! legato || c.glideSeconds <= 0.0f || currentNote < 0.0f)
-            currentNote = (float) midiNote;
         ampEnv.setParams (c.amp);
         modEnv.setParams (c.mod);
         ampEnv.noteOn();
         modEnv.noteOn();
         lfo.reset();
         expr = NoteExpression {};
+        pitchEnvPhase = 0.0f;
     }
 
     void releaseBase() noexcept { ampEnv.noteOff(); modEnv.noteOff(); }
-    void killBase() noexcept { ampEnv.reset(); modEnv.reset(); currentNote = -1.0f; }
+    void killBase() noexcept { ampEnv.reset(); modEnv.reset(); currentNote = -1.0f; pitchEnvPhase = 1.0f; }
     bool isActive() const noexcept { return ampEnv.isActive(); }
     int getNote() const noexcept { return note; }
+    /** The pitch the voice is gliding at now (semitones, -1 when it has never sounded). */
+    float glidePitch() const noexcept { return currentNote; }
     void setExpression (const NoteExpression& x) noexcept { expr = x; }
 
 protected:
@@ -55,9 +81,10 @@ protected:
     {
         ampEnv.setParams (c.amp);
         modEnv.setParams (c.mod);
-        if (c.glideSeconds > 0.0f)
+        const float glideT = c.glideConstantRate ? glideTime : c.glideSeconds;
+        if (c.glideSeconds > 0.0f && glideT > 0.0f)
         {
-            const float coeff = std::exp (-(float) n / (c.glideSeconds * sr));
+            const float coeff = std::exp (-(float) n / (glideT * sr));
             currentNote = (float) note + (currentNote - (float) note) * coeff;
         }
         else
@@ -67,6 +94,12 @@ protected:
         lfoDepth = std::clamp (c.lfoDepth + expr.lfo, 0.0f, 1.0f);
         lfoValue = lfo.advance (n) * lfoDepth;
         float pitch = currentNote + c.pitchOffset + expr.pitch;
+        if (pitchEnvPhase < 1.0f) // 0.6 pitch envelope: starts `pitchEnvAmount` away, arrives after `pitchEnvTime`
+        {
+            if (c.pitchEnvAmount != 0.0f)
+                pitch += c.pitchEnvAmount * std::pow (1.0f - pitchEnvPhase, 1.0f + 3.0f * std::clamp (c.pitchEnvCurve, 0.0f, 1.0f));
+            pitchEnvPhase = std::min (1.0f, pitchEnvPhase + (float) n / (std::max (0.001f, c.pitchEnvTime) * sr));
+        }
         if (c.lfoDest == LfoDest::Pitch) pitch += lfoValue * 2.0f; // +-2 semitones at full depth
         return pitch;
     }
@@ -91,6 +124,10 @@ protected:
     int note = -1;
     float velocity = 1.0f;
     float currentNote = -1.0f;
+    float glideTime = 0.0f;           ///< 0.6: glide time of the current note (constant rate)
+    float glideFrom = legacyGlide;    ///< 0.6: see setStartOptions()
+    bool retriggerNext = true;
+    float pitchEnvPhase = 1.0f;       ///< 0.6: 0 at note start .. 1 = arrived
     float lfoValue = 0.0f;
     float lfoDepth = 0.0f;
     NoteExpression expr; ///< per-note expression (MPE), neutral by default
@@ -122,6 +159,8 @@ public:
     {
         for (auto& v : voices) v.kill();
         alloc.resetAll();
+        heldCount = 0;
+        lastPitch = -1.0f;
     }
 
     void setCommon (const VoiceCommon& c) noexcept override { common = c; }
@@ -138,13 +177,46 @@ public:
 
     void noteOn (int note, float velocity) noexcept override
     {
+        const bool keyHeld = heldCount > 0 && ! (heldCount == 1 && held[0].note == note);
+        pushHeld (note, velocity);
         bool stolen = false;
-        const int slot = alloc.allocate (note, stolen);
-        voices[(size_t) slot].start (note, velocity, stolen, common);
+        const bool polyGlide = common.polyGlide && common.glideSeconds > 0.0f && alloc.getPolyphony() > 1;
+        const int slot = polyGlide ? alloc.allocateNearest (note, stolen, [this] (int i) { return voices[(size_t) i].glidePitch(); })
+                                   : alloc.allocate (note, stolen);
+        auto& v = voices[(size_t) slot];
+        float from = VoiceBase::legacyGlide;
+        bool retrigger = true;
+        switch (common.glideMode)
+        {
+            case GlideLegato:
+                if (! keyHeld) from = VoiceBase::noGlide;
+                retrigger = ! (keyHeld && alloc.getPolyphony() == 1);
+                break;
+            case GlideAlways:
+                if (! (stolen && v.glidePitch() >= 0.0f)) from = lastPitch >= 0.0f ? lastPitch : VoiceBase::noGlide;
+                break;
+            default: break;
+        }
+        v.setStartOptions (from, retrigger);
+        v.start (note, velocity, stolen, common);
+        lastPitch = (float) note;
     }
 
     void noteOff (int note) noexcept override
     {
+        const bool wasTop = heldCount > 0 && held[(size_t) heldCount - 1].note == note;
+        removeHeld (note);
+        // 0.6 mono: releasing the newest key returns to the previous key still held (legato, gliding back)
+        if (alloc.getPolyphony() == 1 && wasTop && heldCount > 0 && voices[0].isActive() && voices[0].getNote() == note)
+        {
+            const auto prev = held[(size_t) heldCount - 1];
+            bool stolen = false;
+            const int slot = alloc.allocate (prev.note, stolen);
+            voices[(size_t) slot].setStartOptions (VoiceBase::legacyGlide, false);
+            voices[(size_t) slot].start (prev.note, prev.velocity, true, common);
+            lastPitch = (float) prev.note;
+            return;
+        }
         alloc.release (note, [this] (int slot) { voices[(size_t) slot].release(); });
     }
 
@@ -157,6 +229,7 @@ public:
         }
         if (! hard)
             for (int n = 0; n < 128; ++n) alloc.release (n, [] (int) {});
+        heldCount = 0;
     }
 
     void render (float* l, float* r, int numSamples) noexcept override
@@ -168,6 +241,15 @@ public:
             v.render (l, r, numSamples, common);
             if (! v.isActive()) alloc.voiceFinished (i);
         }
+    }
+
+    /** Glide pitch of voice slot `i` (semitones; tests and displays), -1 when it has not sounded. */
+    float voiceGlidePitch (int i) const noexcept { return voices[(size_t) std::clamp (i, 0, ISynthEngine::maxVoices - 1)].glidePitch(); }
+    /** Note of voice slot `i` when it is active, else -1. */
+    int voiceNote (int i) const noexcept
+    {
+        const auto& v = voices[(size_t) std::clamp (i, 0, ISynthEngine::maxVoices - 1)];
+        return v.isActive() ? v.getNote() : -1;
     }
 
     int activeVoiceCount() const noexcept override
@@ -184,6 +266,29 @@ public:
     }
 
 protected:
+    /** 0.6: keys held down, oldest first (mono note priority: the newest). */
+    struct HeldKey { int note = -1; float velocity = 1.0f; };
+    void pushHeld (int note, float velocity) noexcept
+    {
+        removeHeld (note);
+        if (heldCount == (int) held.size())
+        {
+            for (int i = 1; i < heldCount; ++i) held[(size_t) i - 1] = held[(size_t) i];
+            --heldCount;
+        }
+        held[(size_t) heldCount++] = { note, velocity };
+    }
+    void removeHeld (int note) noexcept
+    {
+        int w = 0;
+        for (int i = 0; i < heldCount; ++i)
+            if (held[(size_t) i].note != note) held[(size_t) w++] = held[(size_t) i];
+        heldCount = w;
+    }
+
+    std::array<HeldKey, 16> held {};
+    int heldCount = 0;
+    float lastPitch = -1.0f; ///< 0.6: the last note started (glide mode Always)
     std::array<Voice, (size_t) ISynthEngine::maxVoices> voices;
     VoiceAllocator<ISynthEngine::maxVoices> alloc;
     VoiceCommon common;

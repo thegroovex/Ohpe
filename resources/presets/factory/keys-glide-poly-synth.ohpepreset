@@ -1,0 +1,43 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Glide Poly Synth",
+  "author": "groovex",
+  "tags": [
+    "Keys",
+    "Leads"
+  ],
+  "engine": "analog",
+  "comment": "Poly synth whose chords always slide from the chord before (poly glide).",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.15,
+    "analog.detune": 0.2,
+    "analog.cutoff": 1800,
+    "analog.reso": 0.15,
+    "analog.oscmix": 0.5,
+    "analog.sub": 0.0,
+    "analog.drive": 0.2,
+    "analog.keytrack": 0.6,
+    "amp.a": 0.02,
+    "amp.d": 0.8,
+    "amp.s": 0.8,
+    "amp.r": 0.4,
+    "mod.a": 0.01,
+    "mod.d": 0.6,
+    "mod.s": 0.4,
+    "mod.r": 0.3,
+    "mod.amt": 0.25,
+    "fx.type": 1,
+    "fx.chorus.rate": 0.5,
+    "fx.chorus.depth": 0.5,
+    "fx.chorus.mix": 0.35,
+    "voices": 8,
+    "polyglide": 1,
+    "glide": 0.16,
+    "glide.mode": 2,
+    "glide.rate": 0,
+    "gain": 19.1
+  }
+}

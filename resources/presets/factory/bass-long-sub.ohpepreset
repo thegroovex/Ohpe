@@ -1,0 +1,37 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Long Sub",
+  "author": "groovex",
+  "tags": [
+    "Bass",
+    "Boom"
+  ],
+  "engine": "analog",
+  "comment": "Deep, long-decaying sub that slides between overlapping notes (glide); a soft click on the attack.",
+  "params": {
+    "engine": 2,
+    "analog.shape": 0.5,
+    "analog.detune": 0.0,
+    "analog.cutoff": 430,
+    "analog.reso": 0.05,
+    "analog.oscmix": 0.0,
+    "analog.sub": 0.15,
+    "analog.drive": 0.35,
+    "analog.keytrack": 1.0,
+    "amp.a": 0.003,
+    "amp.d": 2.6,
+    "amp.s": 0.0,
+    "amp.r": 0.35,
+    "mod.a": 0.002,
+    "mod.d": 0.06,
+    "mod.s": 0.0,
+    "mod.r": 0.1,
+    "mod.amt": 0.3,
+    "voices": 1,
+    "glide": 0.11,
+    "velsens": 0.35,
+    "gain": 11.2
+  }
+}

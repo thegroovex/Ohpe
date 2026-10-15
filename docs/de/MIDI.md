@@ -21,7 +21,9 @@ Die Sequencer sprechen ihren Part direkt an (ihren *Ziel-Part*), unabhängig von
 |---|---|
 | Note an / aus | spielt den Part (über Skalen-/Akkord-Modus und Arpeggiator, wenn aktiv) |
 | Pitchbend | verstimmt den Part (Bereich `pN.bend`) |
+| CC 5 | Portamento-Zeit (0.6): ersetzt die Glide-Zeit des Parts (0 … 2 s), bis sich `pN.glide` selbst ändert |
 | CC 64 | Haltepedal |
+| CC 65 | Portamento aus (< 64) / an (≥ 64, Standard) (0.6) |
 | CC 74 | Timbre (Ziel `pN.mpe.timbre`) für alle Noten des Parts |
 | Kanal-Aftertouch | Druck (Ziel `pN.mpe.press`) für alle Noten des Parts |
 | CC 120 / 123 | Klang aus / alle Noten aus |

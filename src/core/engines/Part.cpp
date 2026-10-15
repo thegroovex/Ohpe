@@ -59,6 +59,32 @@ void Part::registerLateCommonParams (ParamRegistry& reg) const
     reg.add (std::move (d));
 }
 
+void Part::registerLate05Params (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    auto d = toggle (id ("polyglide"), "Part " + n + " Poly Glide", "Part " + n + " Poly-Glide", false);
+    d.group = "part" + n;
+    reg.add (std::move (d));
+}
+
+void Part::registerLate06Params (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const auto group = "part" + n;
+    auto add = [&] (ParamDescriptor d) { d.group = group; reg.add (std::move (d)); };
+    add (choice (id ("glide.mode"), "Part " + n + " Glide Mode", "Part " + n + " Glide-Modus", { "Auto", "Legato", "Always" },
+                 { "Auto", "Legato", "Immer" }, GlideAuto));
+    add (choice (id ("glide.rate"), "Part " + n + " Glide Timing", "Part " + n + " Glide-Timing", { "Constant Time", "Constant Rate" },
+                 { "Feste Zeit", "Feste Rate" }, 0));
+    add (continuous (id ("pitchenv.amt"), "Part " + n + " Pitch Env Amount", "Part " + n + " Tonhöhen-Hüllkurve Menge", -24.0f, 24.0f,
+                     0.0f, ParamUnit::Semitones));
+    add (continuous (id ("pitchenv.time"), "Part " + n + " Pitch Env Time", "Part " + n + " Tonhöhen-Hüllkurve Zeit", 0.005f, 4.0f,
+                     0.25f, ParamUnit::Seconds, 0.35f));
+    add (continuous (id ("pitchenv.curve"), "Part " + n + " Pitch Env Curve", "Part " + n + " Tonhöhen-Hüllkurve Kurve", 0.0f, 1.0f, 0.5f));
+}
+
 void Part::registerEngineParams (ParamRegistry& reg, EngineType type) const
 {
     const auto& eng = engines[(size_t) type];
@@ -102,6 +128,9 @@ void Part::bind (const ParamRegistry& reg)
     for (int i = 0; i < numCommon; ++i)
         commonIndex[(size_t) i] = reg.indexOf (id (names[i]));
     gainIndex = reg.indexOf (id ("gain"));
+    polyGlideIndex = reg.indexOf (id ("polyglide"));
+    static const char* late06[numLate06] = { "glide.mode", "glide.rate", "pitchenv.amt", "pitchenv.time", "pitchenv.curve" };
+    for (int i = 0; i < numLate06; ++i) late06Index[(size_t) i] = reg.indexOf (id (late06[i]));
 
     for (int t = 0; t < numEngineTypes; ++t)
     {
@@ -136,6 +165,8 @@ void Part::reset() noexcept
     sustain = false;
     sustained.fill (false);
     bend = 0.0f;
+    portaSwitch = true;
+    ccGlideSeconds = -1.0f;
     dcX[0] = dcX[1] = dcY[0] = dcY[1] = 0.0f;
 }
 
@@ -153,7 +184,15 @@ void Part::pullParams (const ParamSnapshot& s) noexcept
     polyphony = s.getInt (commonIndex[cVoices]);
     tune = v (cTune) + v (cFine) * 0.01f;
     bendRange = v (cBendRange);
-    common.glideSeconds = v (cGlide);
+    if (const float g = v (cGlide); g != lastGlideParam) { lastGlideParam = g; ccGlideSeconds = -1.0f; }
+    updateGlide();
+    auto late = [&] (Late06 k, float def) { return late06Index[(size_t) k] >= 0 ? s[late06Index[(size_t) k]] : def; };
+    common.glideMode = std::clamp ((int) std::lround (late (lGlideMode, 0.0f)), 0, 2);
+    common.glideConstantRate = std::lround (late (lGlideRate, 0.0f)) == 1;
+    common.pitchEnvAmount = late (lPitchEnvAmt, 0.0f);
+    common.pitchEnvTime = late (lPitchEnvTime, 0.25f);
+    common.pitchEnvCurve = late (lPitchEnvCurve, 0.5f);
+    common.polyGlide = polyGlideIndex >= 0 && s.getBool (polyGlideIndex);
     common.velocitySens = v (cVelSens);
     common.amp = { v (cAmpA), v (cAmpD), v (cAmpS), v (cAmpR) };
     common.mod = { v (cModA), v (cModD), v (cModS), v (cModR) };
@@ -231,6 +270,18 @@ void Part::handleMidi (const MidiEvent& m) noexcept
                 for (int n = 0; n < 128; ++n)
                     if (sustained[(size_t) n]) { sustained[(size_t) n] = false; noteOff (n); }
         }
+        else if (m.data1 == 65 || m.data1 == 5) // 0.6: portamento on / off, portamento time
+        {
+            if (m.data1 == 65) portaSwitch = m.data2 >= 64;
+            else
+            {
+                const float x = (float) m.data2 / 127.0f;
+                ccGlideSeconds = 2.0f * x * x; // same range as the "glide" parameter, finer at short times
+            }
+            updateGlide();
+            for (auto& e : engines)
+                if (e != nullptr) e->setCommon (common);
+        }
         else if (m.data1 == 120) allNotesOff (true);
         else if (m.data1 == 123) allNotesOff (false);
     }
@@ -260,6 +311,12 @@ void Part::render (float* l, float* r, int numSamples) noexcept
         dcX[c] = x1;
         dcY[c] = (std::abs (y1) < 1.0e-20f) ? 0.0f : y1; // no denormals in silence
     }
+}
+
+void Part::updateGlide() noexcept
+{
+    const float t = ccGlideSeconds >= 0.0f ? ccGlideSeconds : std::max (0.0f, lastGlideParam);
+    common.glideSeconds = portaSwitch ? t : 0.0f;
 }
 
 int Part::activeVoiceCount() const noexcept
