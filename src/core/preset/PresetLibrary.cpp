@@ -118,10 +118,10 @@ std::string UserData::toJson() const
     j["format"] = "ohpe-library";
     j["version"] = 1;
     j["author"] = author;
-    json items = json::object();
-    for (const auto& [uid, v] : this->items)
-        if (v.first || v.second > 0) items[uid] = { { "fav", v.first }, { "rating", v.second } };
-    j["items"] = items;
+    json list = json::object();
+    for (const auto& [uid, v] : items)
+        if (v.first || v.second > 0) list[uid] = { { "fav", v.first }, { "rating", v.second } };
+    j["items"] = list;
     return j.dump (2);
 }
 

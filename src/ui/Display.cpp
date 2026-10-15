@@ -774,7 +774,7 @@ void Display::paintDrumStrip (juce::Graphics& g, juce::Rectangle<float> s)
         g.drawText (juce::String (p + 1), cell.reduced (cell.getWidth() * 0.08f, cell.getHeight() * 0.06f), juce::Justification::topLeft);
         g.setColour (sel ? colour::display : colour::displayDim);
         g.setFont (labelFont (juce::jmin (cell.getHeight() * 0.26f, cell.getWidth() * 0.2f)));
-        g.drawFittedText (i18n::upper (name), cell.reduced (cell.getWidth() * 0.06f, cell.getHeight() * 0.06f).withTrimmedTop (cell.getHeight() * 0.38f),
+        g.drawFittedText (i18n::upper (name), cell.reduced (cell.getWidth() * 0.06f, cell.getHeight() * 0.06f).withTrimmedTop (cell.getHeight() * 0.38f).toNearestInt(),
                           juce::Justification::centredLeft, 1, 0.8f);
     }
     paintSoftKeys (g);

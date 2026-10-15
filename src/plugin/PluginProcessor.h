@@ -92,6 +92,8 @@ public:
     /** Runs a tape edit on the edit track ("tape.edit.track"); lift / cut use loop in .. out,
         drop / splice the play position. Returns false if the tape refused it. */
     bool runTapeEdit (const char* triggerId);
+    /** Handles pending remote-control presses (called by the processor's timer; public for tests). */
+    void pollRemoteControls();
 
     /** UI state stored with the session (language, mode, page). */
     juce::var uiState;
@@ -134,7 +136,6 @@ private:
     int syncSourceParam = -1, tempoParam = -1;
 
     // 0.3: remote controls
-    void pollRemoteTriggers();
     static constexpr int numTriggers = 10;
     std::array<int, numTriggers> triggerParam {};
     std::array<float, numTriggers> triggerLast {};

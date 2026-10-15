@@ -240,3 +240,24 @@ as their `p1.*` counterparts (tables above; Wavetable, Pluck and Cluster in the 
 `docs/en/engines/`). / Zuletzt angehängt: dieselben Parameter, Bereiche und Standardwerte wie bei
 `p1.*` (Tabellen oben; Wavetable, Pluck und Cluster in den Engine-Anleitungen, `docs/de/engines/`),
 für die Parts 2, 3 und 4.
+
+## Phase 3 – remote controls (0.3)
+
+Appended after `p4.sampler.slicebase`. They make UI functions MIDI-mappable and are not part of
+presets. A trigger (`off / on`) fires when it rises to "on" (CC ≥ 64 or a note); see
+[en/PRESETS.md](en/PRESETS.md) and [en/USER-INTERFACE.md](en/USER-INTERFACE.md).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `lib.open` | Library | Bibliothek | trigger | off |
+| `lib.prev` | Previous Preset | Vorheriges Preset | trigger | off |
+| `lib.next` | Next Preset | Nächstes Preset | trigger | off |
+| `ui.part` | Edit Part | Bearbeiteter Part | 1–4 | 1 |
+| `tape.edit.track` | Tape Edit Track | Tape-Bearbeitungsspur | 1–8 | 1 |
+| `tape.edit.lift` | Tape Lift | Tape Heben | trigger | off |
+| `tape.edit.cut` | Tape Cut | Tape Schneiden | trigger | off |
+| `tape.edit.drop` | Tape Drop | Tape Einsetzen | trigger | off |
+| `tape.edit.splice` | Tape Splice | Tape Einfügen | trigger | off |
+| `tape.edit.undo` | Tape Undo | Tape Rückgängig | trigger | off |
+| `tape.edit.redo` | Tape Redo | Tape Wiederholen | trigger | off |
+| `tape.edit.rtz` | Tape Return to Zero | Tape zum Anfang | trigger | off |

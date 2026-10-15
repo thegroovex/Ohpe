@@ -230,10 +230,10 @@ void OhpeProcessor::timerCallback()
     if (ohpeCore.midiMapper().applyPendingLearns (ohpeCore.midiMap()))
         sendChangeMessage();
     samples.timerTick();
-    pollRemoteTriggers();
+    pollRemoteControls();
 }
 
-void OhpeProcessor::pollRemoteTriggers()
+void OhpeProcessor::pollRemoteControls()
 {
     const auto& reg = ohpeCore.params();
     for (int t = 0; t < numTriggers; ++t)

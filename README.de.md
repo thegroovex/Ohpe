@@ -10,9 +10,11 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 
 ![Ohpe – Analog-Engine](docs/images/ohpe-analog-de.png)
 
-> **Stand: Phase 2 (0.2).** Acht Engines, vier Parts, Drum-Kit, Step-, Euklid-, Arpeggiator- und
-> Orbit-Sequencer, Bandmaschine, Mixer-Dynamik, FX-Slot, MPE und MIDI-Clock-Sync. Noch kein
-> Release: selbst bauen oder die unsignierten Builds aus einem manuellen CI-Lauf laden.
+> **Stand: Phase 3 (0.3).** Acht Engines, vier Parts, Drum-Kit, Step-, Euklid-, Arpeggiator- und
+> Orbit-Sequencer, Bandmaschine, Mixer-Dynamik, FX-Slot, MPE und MIDI-Clock-Sync – jetzt mit
+> Preset-Bibliothek, Profiansicht, direkter Bedienung im Display, Parameter-Locks auf Schritten,
+> Tape- und Drum-Kit-Seite. Noch kein Release: selbst bauen oder die unsignierten Builds aus einem
+> manuellen CI-Lauf laden. Die Werks-Presets sind Platzhalter; die echten Werksklänge folgen.
 
 ## Funktionen
 
@@ -36,26 +38,40 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 | **Multi-Out** | jeder Kanal geht auf den Hauptausgang oder auf einen eigenen Stereoausgang (8 Zusatzausgänge) – im Plug-in und in der Standalone-App |
 | **MIDI** | Kanal je Part, MPE, jeder Regler ist per MIDI-Learn zuweisbar (Rechtsklick → MIDI-Learn), Zuweisungen lassen sich exportieren / importieren; alle Parameter sind automatisierbar |
 | **Standalone-App** | Audiosystem, Gerät, Samplerate und Puffergröße wählen, Latenzanzeige, Multi-Out-Routing auf Gerätekanäle, MIDI-Eingänge |
+| **Preset-Bibliothek** | eine Taste BIBLIOTHEK: Kategorien (Bass, Tasten, Flächen, Leads, Zupfer, Drums, FX, Arp, Texturen, Vokal), Engine-Filter, Suche, Favoriten, Sterne-Bewertung, Sortierung, Werks- und eigene Bank, Vorhören durch Auswählen, Part- und Projekt-Presets, voriges / nächstes per MIDI |
+| **Direkte Bedienung** | Wertebalken im Display ziehen, Shift / Cmd / Strg für Feinregelung, Doppelklick setzt zurück; Profiansicht mit allen Parametern eines Modus auf einmal |
 | **Sprachen** | Deutsch und Englisch, jederzeit umschaltbar |
 
 ## Bilder
 
 | | |
 |---|---|
-| ![FM-Engine](docs/images/ohpe-fm-de.png) | ![Step-Sequencer](docs/images/ohpe-sequencer-de.png) |
-| FM-Engine | Step-Sequencer |
+| ![Preset-Bibliothek](docs/images/ohpe-library-de.png) | ![Profiansicht](docs/images/ohpe-pro-view-de.png) |
+| Preset-Bibliothek | Profiansicht (FM-Engine, Part 2) |
+| ![Tape-Seite](docs/images/ohpe-tape-de.png) | ![Parameter-Locks](docs/images/ohpe-step-locks-de.png) |
+| Tape-Seite | Parameter-Locks auf einem Schritt |
+| ![Drum-Kit-Seite](docs/images/ohpe-drum-de.png) | ![FM-Engine](docs/images/ohpe-fm-de.png) |
+| Drum-Kit-Seite | FM-Engine |
 | ![Mixer](docs/images/ohpe-mixer-de.png) | ![Englische Oberfläche](docs/images/ohpe-analog.png) |
 | Mixer | Englische Oberfläche |
 
 ## So spielst du Ohpe
 
-* **Engine-Tasten** (links) wählen den Klangerzeuger des Parts.
-* **Modus-Tasten** (rechts) schalten zwischen Synth, Hüllkurve, LFO, Mixer, Effekte und Sequencer.
+* Die **Part-Auswahl** (1–4, oben) wählt den Part, den du bearbeitest und spielst; die
+  **Engine-Tasten** (links) wählen seinen Klangerzeuger.
+* **Modus-Tasten** (rechts) schalten zwischen Synth, Hüllkurve, LFO, Mixer, Effekte, Sequencer,
+  Tape und Drum.
 * Die **vier Drehregler** steuern immer das, was das Display zeigt; im Synth-Modus sind es die
-  vier Makros der Engine. Doppelklick setzt einen Wert zurück, Rechtsklick öffnet MIDI-Learn.
+  vier Makros der Engine. Die **Balken im Display** lassen sich direkt ziehen (Shift / Cmd / Strg
+  = fein). Doppelklick setzt einen Wert zurück, Rechtsklick öffnet MIDI-Learn.
+* **BIBLIOTHEK** öffnet die Preset-Bibliothek, **PRO** zeigt alle Parameter des Modus auf einmal.
 * **Klaviatur**: mit der Maus oder einem MIDI-Keyboard spielen; die Oktavtasten verschieben sie.
-* **Sequencer**: Schritte antippen zum Einschalten, Start drücken (im Host folgt der Sequencer
-  dem Transport des Hosts, solange Start an ist).
+* **Sequencer**: Schritte antippen zum Einschalten, Shift-Tippen wählt einen Schritt zum
+  Bearbeiten und für Parameter-Locks, Start drücken (im Host folgt der Sequencer dem Transport des
+  Hosts, solange Start an ist).
+* Eine Audiodatei auf das Instrument ziehen lädt sie in Sampler / Grain oder auf ein Drum-Pad.
+
+Ausführlich: [Bedienung](docs/de/BEDIENUNG.md).
 
 ## Bauen
 
@@ -80,11 +96,14 @@ Alle Tests laufen mit `scripts/test-all.sh` – siehe [Mitwirken](docs/de/MITWIR
 
 * Engines: [Wavetable](docs/de/engines/wavetable.md), [Zupfen](docs/de/engines/pluck.md),
   [Cluster](docs/de/engines/cluster.md), [Grain, Vokal, Sampler und Drum-Kit](docs/de/GRAIN-VOKAL-SAMPLER-DRUM.md)
+* [Bedienung](docs/de/BEDIENUNG.md) – Display, Parts, Profiansicht, Schritt-Locks, Tape- und Drum-Seite
+* [Preset-Bibliothek](docs/de/PRESETS.md) – Stöbern, Speichern, MIDI, Dateiformat
 * [Sequencer, Parts und Skalen-Modus](docs/de/SEQUENZER.md)
 * [MIDI-Leitfaden](docs/de/MIDI.md) – Kanäle, MPE, Clock, Sync
 * [Bandmaschine, Mixer-Dynamik und FX-Slot](docs/de/BAND-MISCHER-FX.md)
 * [Parameter](docs/PARAMETERS.md) – alle Host-Parameter-IDs
 * [Architektur](docs/de/ARCHITEKTUR.md) – Kurzfassung; ausführlich auf Englisch in [ARCHITECTURE.md](docs/ARCHITECTURE.md)
+* [Gestaltung](docs/de/DESIGN.md) – Farben, Figuren, Bedienelemente
 * [Mitwirken](docs/de/MITWIRKEN.md) – Tests, Regeln, Ablauf
 
 ## Lizenz

@@ -9,9 +9,11 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 
 ![Ohpe – analog engine](docs/images/ohpe-analog.png)
 
-> **Status: phase 2 (0.2).** Eight engines, four parts, drum kit, step / Euclid / arpeggiator /
-> Orbit sequencers, tape machine, mixer dynamics, FX slot, MPE and MIDI clock sync. Not released
-> yet: build it yourself or grab the unsigned builds from a manual CI run.
+> **Status: phase 3 (0.3).** Eight engines, four parts, drum kit, step / Euclid / arpeggiator /
+> Orbit sequencers, tape machine, mixer dynamics, FX slot, MPE and MIDI clock sync – now with a
+> preset library, a pro view, direct manipulation on the display, step parameter locks, tape and
+> drum kit pages. Not released yet: build it yourself or grab the unsigned builds from a manual CI
+> run. The factory presets are placeholders; the real factory sounds follow.
 
 ## Features
 
@@ -35,26 +37,39 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **Multi-out** | every channel can go to the main output or its own stereo output (8 aux outputs) – in the plug-in and in the standalone app |
 | **MIDI** | per-part channels, MPE, every control is MIDI-learnable (right-click → MIDI Learn), maps can be exported / imported; all parameters are automatable |
 | **Standalone app** | choose audio system, device, sample rate and buffer size, latency display, multi-out routing to device channels, MIDI inputs |
+| **Preset library** | one LIBRARY key: categories (Bass, Keys, Pads, Leads, Plucks, Drums, FX, Arp, Textures, Vocal), engine filter, search, favourites, star ratings, sorting, factory and user banks, preview by selecting, part and whole-project presets, previous / next from MIDI |
+| **Direct manipulation** | drag the value bars on the display, Shift / Cmd / Ctrl for fine control, double-click to reset; pro view with every parameter of a mode at once |
 | **Languages** | English and German, switchable at any time |
 
 ## Screenshots
 
 | | |
 |---|---|
-| ![FM engine](docs/images/ohpe-fm.png) | ![Step sequencer](docs/images/ohpe-sequencer.png) |
-| FM engine | Step sequencer |
+| ![Preset library](docs/images/ohpe-library.png) | ![Pro view](docs/images/ohpe-pro-view.png) |
+| Preset library | Pro view (FM engine, part 2) |
+| ![Tape page](docs/images/ohpe-tape.png) | ![Step parameter locks](docs/images/ohpe-step-locks.png) |
+| Tape page | Step parameter locks |
+| ![Drum kit page](docs/images/ohpe-drum.png) | ![FM engine](docs/images/ohpe-fm.png) |
+| Drum kit page | FM engine |
 | ![Mixer](docs/images/ohpe-mixer.png) | ![German interface](docs/images/ohpe-analog-de.png) |
 | Mixer | German interface |
 
 ## Playing Ohpe
 
-* **Engine keys** (left) pick the sound engine of the part.
-* **Mode keys** (right) switch between Synth, Envelope, LFO, Mixer, Effects and Sequencer.
+* **Part selector** (1–4, top) chooses the part you edit and play; **engine keys** (left) pick its
+  sound engine.
+* **Mode keys** (right) switch between Synth, Envelope, LFO, Mixer, Effects, Sequencer, Tape and
+  Drum.
 * The **four encoders** always control what the display shows; in Synth mode they are the
-  engine's four macros. Double-click resets a value, right-click opens MIDI learn.
+  engine's four macros. The **bars on the display** can be dragged directly (Shift / Cmd / Ctrl =
+  fine). Double-click resets a value, right-click opens MIDI learn.
+* **LIBRARY** opens the preset library, **PRO** shows every parameter of the mode at once.
 * **Keyboard**: play with the mouse or any MIDI keyboard; the octave keys shift it.
-* **Sequencer**: tap steps to switch them on, press Play (in a host, the sequencer follows the
-  host transport while Play is on).
+* **Sequencer**: tap steps to switch them on, Shift-tap a step to edit it and lock parameters on
+  it, press Play (in a host, the sequencer follows the host transport while Play is on).
+* Drop an audio file on the instrument to load it into the Sampler / Grain engine or onto a drum pad.
+
+Full guide: [playing the interface](docs/en/USER-INTERFACE.md).
 
 ## Building
 
@@ -77,11 +92,14 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 
 * Engines: [Wavetable](docs/en/engines/wavetable.md), [Pluck](docs/en/engines/pluck.md),
   [Cluster](docs/en/engines/cluster.md), [Grain, Vocal, Sampler and drum kit](docs/en/GRAIN-VOCAL-SAMPLER-DRUM.md)
+* [Playing the interface](docs/en/USER-INTERFACE.md) – display, parts, pro view, step locks, tape and drum pages
+* [Preset library](docs/en/PRESETS.md) – browsing, saving, MIDI, file format
 * [Sequencers, parts and scale mode](docs/en/SEQUENCERS.md)
 * [MIDI guide](docs/en/MIDI.md) – channels, MPE, clock, sync
 * [Tape machine, mixer dynamics and FX slot](docs/en/TAPE-MIXER-FX.md)
 * [Parameters](docs/PARAMETERS.md) – every host parameter ID
 * [Architecture](docs/ARCHITECTURE.md) – core, plug-in shell, threading, parameters, extension points
+* [Design language](docs/DESIGN.md) – colours, characters, components
 * [Contributing](CONTRIBUTING.md) – tests, rules, workflow
 
 ## License

@@ -130,3 +130,8 @@ if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/src/plugin/TapeIO.cpp ${CMAKE_SOURCE_DIR}/tests/plugin/TapeExportTests.cpp)
     target_sources(ohpe_screenshot PRIVATE ${CMAKE_SOURCE_DIR}/src/plugin/TapeIO.cpp)
 endif()
+
+# ---------------------------------------------------------------- 0.3 package E: UI, preset library
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/UiLibraryTests.cpp)
+endif()

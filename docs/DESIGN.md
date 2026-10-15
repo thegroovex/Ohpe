@@ -1,0 +1,57 @@
+# Ohpe design language
+
+*English · Deutsch: [de/DESIGN.md](de/DESIGN.md)*
+
+Ohpe is an instrument, not a window full of widgets. Its look follows a minimalist,
+Scandinavian-industrial idea of its own: a light anodised body, graphite keys, one deep display and
+four functional colours. Code: `src/ui/Palette.h` (colours, fonts), `src/ui/Pictograms.cpp`
+(characters), `src/ui/Display.cpp`, `src/ui/ProView.cpp`, `src/ui/LibraryBrowser.cpp`.
+
+## Principles
+
+1. **One surface.** Everything sits on one aluminium plate on a 10-unit grid (1200 × 800 design
+   units, scaled uniformly). Overlays (library, pro view) lie *on* the plate like a lid, the
+   keyboard stays visible and playable.
+2. **Colour means function.** The four accents belong to the four encoders and appear only where
+   the matching value is: signal red (1), sun yellow (2), ultraviolet (3), rose (4). Red also marks
+   recording and the active mode, yellow the engine and the edit part.
+3. **The display is the only screen.** Deep "night" glass with a faint dot grid, warm paper-white
+   text. Values in a monospace face, names in Space Grotesk.
+4. **Direct manipulation.** What you see is the control: display bars, pro-view bars, steps, pads,
+   track lanes and soft keys react to the mouse; fine control is always Shift / Cmd / Ctrl.
+5. **Characters, not icons.** Each engine and mode has an animated pictogram character drawn from
+   lines and dots. On the display it reacts to the four macros of its page and to the notes being
+   played; on the keys it is a static icon in the same style.
+
+## Pictogram characters
+
+| Character | Macros (encoder 1–4) |
+|---|---|
+| Analog – wave creature | shape morphs the wave, the filter is a lowering curtain, resonance ripples |
+| FM – planets | algorithm = orbit levels, ratio = speed, index = wobble, feedback = halo |
+| Wavetable – stacked frames | position morphs the front frame, warp bends it, tone fades the back frames, unison fans out |
+| Pluck – string / bar | material, damping (ringing time), brightness (wiggles), body (sound box) |
+| Cluster – rows of teeth | detune jitters, spread fans out, tone fades upper rows, chord sets rows and spacing |
+| Grain – cloud | position moves the cloud along the sample, size = grain size, density = number of grains, spray scatters |
+| Vocal – singing face | vowel shapes the mouth (a e i o u), formant moves it, breath blows puffs, tension raises the brows |
+| Sampler – waveform | start marker, tone darkens the tail, loop start / end bracket the loop |
+| Drum – drum | model changes the shape (hat = cymbal), tune its size, decay the ringing, tone the strike flash |
+| Envelope, LFO, Mixer, Effects, Sequencer, Tape | the curve, the moving dot, faders, echoes, the running step, the turning reels |
+
+## Components
+
+| Component | Notes |
+|---|---|
+| Keys | graphite caps, pictogram, engraved legend below; active = accent dot + coloured pictogram |
+| Encoders | flat round knobs with the accent ring; small dot = MIDI-mapped; square marker = step lock |
+| Display rows | dot (square when locked) · name · value in the accent colour · bar with handle |
+| Soft keys | outlined pills at the bottom of the display; red = active |
+| Part badge | yellow pill "P1"–"P4" in the display header |
+| Pro view | dark panel, mode tabs, groups in columns with a coloured tick; bars like the display rows |
+| Library | dark panel: category chips in the accent colours, engine chips, list with stars, details / save panel |
+
+## Text
+
+English and German everywhere (`src/plugin/Localisation.cpp`, English text = key). Legends on the
+body are small caps in engraving grey; German upper case maps umlauts (`i18n::upper`). Texts that
+may be long are elided or fitted, never clipped mid-glyph.
