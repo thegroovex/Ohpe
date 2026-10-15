@@ -46,6 +46,10 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
 
     // ---- append new parameters below this line (phase 2+), never above ------------------
 
+    // ---- 0.2.0: part 1 engines Wavetable, Pluck, Cluster --------------------------------
+    parts[0]->registerEngineParams (reg, EngineType::Wavetable);
+    parts[0]->registerEngineParams (reg, EngineType::Pluck);
+    parts[0]->registerEngineParams (reg, EngineType::Cluster);
     // ---- phase 2, engines B: Grain, Vocal, Sampler engines of part 1, drum kit ---------------
     parts[0]->registerEngineParams (reg, EngineType::Grain);
     parts[0]->registerEngineParams (reg, EngineType::Vocal);

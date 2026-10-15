@@ -87,6 +87,13 @@ const std::map<juce::String, juce::String>& table()
         { "Reset to default state", "Auf Grundzustand zurücksetzen" },
         { "Close", "Schließen" },
         { "designed by groovex", "designed by groovex" },
+        // engines (phase 2)
+        { "Wavetable", "Wavetable" },
+        { "Pluck", "Zupfen" },
+        { "Cluster", "Cluster" },
+        { "Grain", "Grain" },
+        { "Vocal", "Vokal" },
+        { "Sampler", "Sampler" },
         // phase 2, engines B: samples, slices, drum kit
         { "Load sample ...", "Sample laden ..." },
         { "Clear sample", "Sample entfernen" },

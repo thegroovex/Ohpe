@@ -6,7 +6,7 @@ Note names: C4 = MIDI 60.*
 
 ## Phase 2 – Grain, Vocal, Sampler engines and drum kit
 
-Appended after `seq.step.channel` (0.1.0). The first four parameters of each engine are its macros.
+Appended after the Wavetable, Pluck and Cluster parameters (`p1.cluster.drift`). The first four parameters of each engine are its macros.
 Guides: [English](en/GRAIN-VOCAL-SAMPLER-DRUM.md) · [Deutsch](de/GRAIN-VOKAL-SAMPLER-DRUM.md).
 
 ### Grain (`p1.grain.*`)

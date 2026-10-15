@@ -12,7 +12,10 @@ add_library(ohpe_core STATIC
     fx/Delay.cpp
     fx/Reverb.cpp
     seq/StepSequencer.cpp
-    midi/MidiMap.cpp)
+    midi/MidiMap.cpp
+    engines/WavetableEngine.cpp
+    engines/PluckEngine.cpp
+    engines/ClusterEngine.cpp)
 
 # phase 2, engines B: Grain, Vocal, Sampler, drum kit, sample model
 target_sources(ohpe_core PRIVATE
