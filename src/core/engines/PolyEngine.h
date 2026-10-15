@@ -40,12 +40,14 @@ public:
         ampEnv.noteOn();
         modEnv.noteOn();
         lfo.reset();
+        expr = NoteExpression {};
     }
 
     void releaseBase() noexcept { ampEnv.noteOff(); modEnv.noteOff(); }
     void killBase() noexcept { ampEnv.reset(); modEnv.reset(); currentNote = -1.0f; }
     bool isActive() const noexcept { return ampEnv.isActive(); }
     int getNote() const noexcept { return note; }
+    void setExpression (const NoteExpression& x) noexcept { expr = x; }
 
 protected:
     /** Per control block: updates glide, LFO and envelope settings; returns the pitch in semitones. */
@@ -62,8 +64,9 @@ protected:
             currentNote = (float) note;
         lfo.setRate (c.lfoRate);
         lfo.setShape (c.lfoShape);
-        lfoValue = lfo.advance (n) * c.lfoDepth;
-        float pitch = currentNote + c.pitchOffset;
+        lfoDepth = std::clamp (c.lfoDepth + expr.lfo, 0.0f, 1.0f);
+        lfoValue = lfo.advance (n) * lfoDepth;
+        float pitch = currentNote + c.pitchOffset + expr.pitch;
         if (c.lfoDest == LfoDest::Pitch) pitch += lfoValue * 2.0f; // +-2 semitones at full depth
         return pitch;
     }
@@ -73,13 +76,14 @@ protected:
     /** Tremolo factor 1-depth .. 1 when the LFO targets the amplitude, else 1. */
     float lfoAmp (const VoiceCommon& c) const noexcept
     {
-        return c.lfoDest == LfoDest::Amp ? 1.0f - 0.5f * (lfoValue + c.lfoDepth) : 1.0f;
+        return (c.lfoDest == LfoDest::Amp ? 1.0f - 0.5f * (lfoValue + lfoDepth) : 1.0f) * expr.amp;
     }
 
     /** Pan gains (equal power, centre when the LFO does not target the pan). */
     void lfoPan (const VoiceCommon& c, float& l, float& r) const noexcept
     {
-        if (c.lfoDest == LfoDest::Pan) dsp::panGains (lfoValue, l, r);
+        const float pan = (c.lfoDest == LfoDest::Pan ? lfoValue : 0.0f) + expr.pan;
+        if (c.lfoDest == LfoDest::Pan || expr.pan != 0.0f) dsp::panGains (std::clamp (pan, -1.0f, 1.0f), l, r);
         else l = r = 0.70710678f;
     }
 
@@ -88,6 +92,8 @@ protected:
     float velocity = 1.0f;
     float currentNote = -1.0f;
     float lfoValue = 0.0f;
+    float lfoDepth = 0.0f;
+    NoteExpression expr; ///< per-note expression (MPE), neutral by default
     dsp::Adsr ampEnv, modEnv;
     dsp::Lfo lfo;
 };
@@ -169,6 +175,12 @@ public:
         int n = 0;
         for (const auto& v : voices) n += v.isActive() ? 1 : 0;
         return n;
+    }
+
+    void noteExpression (int note, const NoteExpression& x) noexcept override
+    {
+        for (auto& v : voices)
+            if (v.isActive() && (note < 0 || v.getNote() == note)) v.setExpression (x);
     }
 
 protected:

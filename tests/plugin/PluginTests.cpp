@@ -233,6 +233,68 @@ TEST_CASE ("parameter value texts carry units")
     CHECK (p.parameter ("p1.amp.a")->getText (p.parameter ("p1.amp.a")->convertTo0to1 (0.25f), 32) == "250 ms");
 }
 
+// 0.2 (package D): the host playhead drives the sequencers; Link transport hook
+namespace
+{
+struct TestPlayHead final : juce::AudioPlayHead
+{
+    double bpm = 120.0, ppq = 0.0;
+    bool playing = true;
+    juce::Optional<PositionInfo> getPosition() const override
+    {
+        PositionInfo info;
+        info.setBpm (bpm);
+        info.setPpqPosition (ppq);
+        info.setIsPlaying (playing);
+        return info;
+    }
+};
+
+struct FixedTransport final : OhpeProcessor::ExternalTransport
+{
+    int calls = 0;
+    bool fill (Transport& tr, int, double, double) noexcept override
+    {
+        ++calls;
+        tr.bpm = 100.0;
+        tr.ppqAtBlockStart = 0.0;
+        tr.playing = true;
+        tr.hostDriven = true;
+        return true;
+    }
+};
+} // namespace
+
+TEST_CASE ("processor: the host playhead drives the sequencers (ppq), the external transport only without a host")
+{
+    OhpeProcessor p;
+    p.enableAllBuses();
+    p.prepareToPlay (48000.0, 512);
+    TestPlayHead head;
+    p.setPlayHead (&head);
+    StepSequencer::Step s;
+    s.on = true;
+    s.note = 72;
+    p.core().stepSequencer().setStep (0, s);
+    p.parameter ("seq.run")->setValueNotifyingHost (1.0f);
+    head.ppq = 3.999; // the step at ppq 4 falls into the first block
+    CHECK (renderNote (p, 1, 0, false) > 0.0f);
+    CHECK (p.core().lastNote() == 72);
+    CHECK (p.core().transportPpq() == doctest::Approx (3.999));
+
+    FixedTransport ext;
+    p.externalTransport.store (&ext);
+    auto* src = p.parameter ("sync.src");
+    src->setValueNotifyingHost (src->convertTo0to1 ((float) Core::SyncLink));
+    renderNote (p, 1, 0, false);
+    CHECK (ext.calls == 0); // a host position always wins
+    p.setPlayHead (nullptr);
+    renderNote (p, 1, 0, false);
+    CHECK (ext.calls == 1);
+    CHECK (p.core().transportBpm() == doctest::Approx (100.0));
+    p.externalTransport.store (nullptr);
+}
+
 TEST_CASE ("factory drum kit: recordings on the pads, played on MIDI channel 10")
 {
     OhpeProcessor p;

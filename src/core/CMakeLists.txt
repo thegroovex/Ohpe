@@ -44,3 +44,10 @@ if(MSVC)
 else()
     target_compile_options(ohpe_core PRIVATE -Wall -Wextra -Wshadow -Wno-unused-parameter)
 endif()
+
+# 0.2 (package D): sequencers, scale / chord mode, MIDI clock, MPE
+target_sources(ohpe_core PRIVATE
+    seq/EuclidSequencer.cpp
+    seq/Arpeggiator.cpp
+    seq/OrbitSequencer.cpp
+    midi/MidiClock.cpp)

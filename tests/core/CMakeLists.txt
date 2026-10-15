@@ -33,3 +33,5 @@ target_link_libraries(ohpe_param_dump PRIVATE ohpe_core)
 
 # 0.2.0 package C: tape machine, effects / mixer dynamics, real-time allocation check
 target_sources(ohpe_core_tests PRIVATE TapeTests.cpp FxTests.cpp AllocationTests.cpp)
+# 0.2 (package D): sequencers, scale / chord, timing, MIDI clock, MPE, parts
+target_sources(ohpe_core_tests PRIVATE SeqMidiTests.cpp)

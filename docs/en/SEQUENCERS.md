@@ -1,0 +1,85 @@
+# Sequencers, parts and scale mode
+
+*English · Deutsch: [docs/de/SEQUENZER.md](../de/SEQUENZER.md)*
+
+Ohpe has **four parts** that play at the same time, each with its own engine, envelopes, LFO and
+mixer channel (part 1–4 → mixer channels 1–4 by default, each routable to Main or to its own
+stereo output). Four sequencers drive them. Every sequencer has a **target part**, so a typical
+set-up is
+
+| Part | Engine (example) | Driven by |
+|---|---|---|
+| 1 | FM | Step sequencer (`seq.step.channel` = 1) |
+| 2 | Analog | Euclid (`seq.euclid.part` = 2) |
+| 3 | FM | Arpeggiator (`seq.arp.part` = 3), played from the keyboard |
+| 4 | Analog | Orbit (`seq.orbit.part` = 4) |
+
+All sequencers run from the same transport (internal clock, host, MIDI clock or Link – see the
+[MIDI guide](MIDI.md)) and start and stop with **Sequencer Run** (`seq.run`). Their steps sit on
+absolute positions of the transport, so they stay in phase with each other and with the host,
+also across loops and jumps.
+
+## Step sequencer – patterns and song mode
+
+The 64-step sequencer from 0.1 now holds **16 patterns**.
+
+* **Pattern** (`seq.step.pattern`, 1–16) chooses the pattern that plays. A new choice waits until
+  the playing pattern has reached its end, so changes always land on the bar.
+* Each pattern can have its **own length** (or follow `seq.step.length`).
+* **Song mode** (`seq.step.song`) plays the **chain** instead: up to 64 entries of *pattern ×
+  repeats*, looping. The song position is taken from the transport, so a host loop or a jump
+  lands on the right pattern and step.
+* Patterns, lengths and the chain are saved with the state. Patterns from 0.1 open as pattern 1.
+
+## Euclid
+
+Four rings, each spreading **pulses** as evenly as possible over **steps** (1–32) with
+Bjorklund's algorithm, turned by **rotation** and playing its own **note**. Rings of different
+lengths form a polymeter: rings of 3 and 4 steps meet every 12 steps.
+
+| Parameter | Range | |
+|---|---|---|
+| `seq.euclid.on` | off / on | |
+| `seq.euclid.part` | 1–4 | target part (default 2) |
+| `seq.euclid.rate` | 1/4 … 1/32, triplets, dotted | shared grid of all rings |
+| `seq.euclid.gate`, `.vel` | 5–100 %, 1–127 | note length, velocity |
+| `seq.euclid.rN.steps / .pulses / .rot / .note` | per ring 1–4 | |
+
+Examples: 3 pulses in 8 steps `x..x..x.`, 5 in 8 `x.xx.xx.`, 7 in 16 `x..x.x.x..x.x.x.`.
+
+## Arpeggiator
+
+The notes played into the target part (keyboard, MIDI on the part's channel, one-finger chords)
+are held and played one after another.
+
+* **Mode**: Up, Down, Up/Down (turning points are not repeated), Random, As Played, Chord (all
+  held notes on every step).
+* **Octaves** 1–4, **Gate** 5–100 %, **Rate** 1/4 … 1/32 including triplets (T) and dotted (.).
+* **Latch** keeps the notes after the keys are released; the next key pressed with no key held
+  starts a new set.
+* While the transport runs the steps sit on its grid. When it is stopped the arpeggiator runs
+  free at the current tempo and starts exactly on the first key.
+
+## Orbit (polymeter)
+
+Four lanes of up to 16 steps, each with its own **length**, **rate** and **transpose**, all
+playing into one part. Every lane has its own steps (note, velocity). Lanes drift against each
+other and meet again after the least common multiple of their lengths – long, evolving
+patterns from a few steps.
+
+## Scale and chord mode
+
+* **Key** (`key.root`) and **Scale** (`key.scale`: chromatic, major, minor, the church modes,
+  harmonic and melodic minor, pentatonics, blues, whole tone) are global.
+* **Scale Quantise** (`pN.quant`) moves every note going into a part to the nearest note of the
+  scale – from the keyboard, MIDI and the sequencers.
+* **Chord** (`pN.chord`): one key plays a chord – Triad, Seventh, Sus2, Sus4, Power, Octave,
+  Sixth, Add9. In a scale the chords are diatonic (in C major a D plays D minor); with the
+  chromatic scale they use fixed major intervals. Chords feed the arpeggiator, so one finger
+  plays an arpeggiated chord.
+* A key's release always ends exactly the notes it started, even if the settings changed in
+  between.
+
+## Parameter IDs
+
+All IDs are listed in [PARAMETERS.md](../PARAMETERS.md) and by `ohpe_param_dump --markdown`.

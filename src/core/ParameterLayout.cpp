@@ -55,9 +55,88 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     parts[0]->registerEngineParams (reg, EngineType::Vocal);
     parts[0]->registerEngineParams (reg, EngineType::Sampler);
     drum::DrumKit::registerParams (reg);
+
     // ---- 0.2.0: mixer dynamics, tape machine, part 1 FX slot (package C) ---------------
     mixer.registerDynamicsParams (reg);
     TapeMachine::registerParams (reg);
     InsertSlot::registerParams (reg, parts[0]->prefix() + "fx.", "part1/fx");
+
+    // ---- 0.2.0 (package D): step patterns / song --------------------------------------
+    for (auto d : stepSeq.getChainParamDescriptors())
+    {
+        d.id = std::string (Core::Ids::stepPrefix) + d.id;
+        d.group = "sequencer/step";
+        reg.add (std::move (d));
+    }
+
+    // ---- 0.2.0 (package D): parts 2-4 (common, then engines FM and Analog) -------------
+    //      New engines: register them for EVERY part, e.g.
+    //      for (auto& p : parts) p->registerEngineParams (reg, EngineType::Wavetable);
+    for (size_t i = 1; i < parts.size(); ++i)
+    {
+        parts[i]->registerCommonParams (reg);
+        parts[i]->registerEngineParams (reg, EngineType::FM);
+        parts[i]->registerEngineParams (reg, EngineType::Analog);
+    }
+
+    // ---- 0.2.0 (package D): per-part MIDI channel, scale / chord, MPE ------------------
+    for (size_t i = 0; i < parts.size(); ++i)
+    {
+        const auto& p = *parts[i];
+        const auto n = std::to_string (i + 1);
+        const auto group = "part" + n + "/midi";
+        auto add = [&] (ParamDescriptor d) { d.group = group; reg.add (std::move (d)); };
+        add (integer (p.id ("midich"), "Part " + n + " MIDI Channel", "Part " + n + " MIDI-Kanal", 0, 16, (int) i + 1));
+        add (toggle (p.id ("quant"), "Part " + n + " Scale Quantise", "Part " + n + " Skala quantisieren", false));
+        add (choice (p.id ("chord"), "Part " + n + " Chord", "Part " + n + " Akkord", scales::chordNamesEn(), scales::chordNamesDe(), scales::Off));
+        add (toggle (p.id ("mpe"), "Part " + n + " MPE", "Part " + n + " MPE", false));
+        add (integer (p.id ("mpe.bend"), "Part " + n + " MPE Bend Range", "Part " + n + " MPE-Bend-Bereich", 0, 96, 48, ParamUnit::Semitones));
+        add (choice (p.id ("mpe.press"), "Part " + n + " Pressure Target", "Part " + n + " Druck-Ziel", MpeInput::targetNamesEn(),
+                     MpeInput::targetNamesDe(), MpeInput::Amp));
+        add (choice (p.id ("mpe.timbre"), "Part " + n + " Timbre Target", "Part " + n + " Timbre-Ziel", MpeInput::targetNamesEn(),
+                     MpeInput::targetNamesDe(), MpeInput::Timbre));
+    }
+
+    // ---- 0.2.0 (package D): key (scale / chord mode) -----------------------------------
+    {
+        auto root = choice (Core::Ids::keyRoot, "Key", "Tonart", { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" },
+                            { "C", "Cis", "D", "Dis", "E", "F", "Fis", "G", "Gis", "A", "Ais", "H" }, 0);
+        root.group = "global";
+        reg.add (root);
+        auto sc = choice (Core::Ids::keyScale, "Scale", "Skala", scales::namesEn(), scales::namesDe(), scales::Major);
+        sc.group = "global";
+        reg.add (sc);
+    }
+
+    // ---- 0.2.0 (package D): Euclid, Arp, Orbit sequencers ------------------------------
+    {
+        auto addSeq = [&] (const std::vector<ParamDescriptor>& list, const char* prefix, const char* group) {
+            for (auto d : list)
+            {
+                d.id = std::string (prefix) + d.id;
+                d.group = group;
+                reg.add (std::move (d));
+            }
+        };
+        addSeq (EuclidSequencer().getParamDescriptors(), Core::Ids::euclidPrefix, "sequencer/euclid");
+        addSeq (Arpeggiator().getParamDescriptors(), Core::Ids::arpPrefix, "sequencer/arp");
+        addSeq (OrbitSequencer().getParamDescriptors(), Core::Ids::orbitPrefix, "sequencer/orbit");
+    }
+
+    // ---- 0.2.0 (package D): tempo sync, MIDI out ---------------------------------------
+    {
+        auto add = [&] (ParamDescriptor d) { d.group = "global/sync"; reg.add (std::move (d)); };
+        add (choice (Core::Ids::syncSource, "Sync Source", "Sync-Quelle", { "Internal", "MIDI Clock", "Link" },
+                     { "Intern", "MIDI-Clock", "Link" }, Core::SyncInternal));
+        add (continuous (Core::Ids::syncSmoothing, "Clock Smoothing", "Clock-Glättung", 0.0f, 1.0f, 0.5f));
+        add (toggle (Core::Ids::clockOut, "MIDI Clock Out", "MIDI-Clock senden", false));
+        add (toggle (Core::Ids::notesOut, "Sequencer Notes Out", "Sequencer-Noten senden", false));
+    }
+
+    // ---- 0.2.0: engines Wavetable, Pluck, Cluster, Grain, Vocal, Sampler for parts 2-4 -------
+    for (size_t i = 1; i < parts.size(); ++i)
+        for (auto type : { EngineType::Wavetable, EngineType::Pluck, EngineType::Cluster,
+                           EngineType::Grain, EngineType::Vocal, EngineType::Sampler })
+            parts[i]->registerEngineParams (reg, type);
 }
 } // namespace ohpe

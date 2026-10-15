@@ -51,6 +51,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         // filter cutoff: base * key tracking * mod envelope (+-6 octaves) * LFO timbre (+-2 octaves)
         float octaves = p.keyTrack * (pitch - 60.0f) / 12.0f + c.modEnvAmount * modEnv.getLevel() * 6.0f;
         if (c.lfoDest == LfoDest::Timbre) octaves += lfoValue * 2.0f;
+        octaves += expr.timbre * 3.0f; // per-note expression (MPE)
         const float cutoff = std::clamp (p.cutoff * std::pow (2.0f, octaves), 20.0f, 20000.0f);
         if (p.filterType == LadderLP) ladder.set (cutoff, p.resonance);
         else svf.set (cutoff, p.resonance);
