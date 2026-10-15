@@ -42,3 +42,32 @@ mit Plug-in-Hosts, der Standalone-App und dem Bildschirm.
 Neue Engines (z. B. Wavetable), Sequencer, Effekte und die Bandmaschine docken über
 Schnittstellen an (`ISynthEngine`, `ISequencer`, `IEffect`, `ITapeMachine`). Die Schritt-für-
 Schritt-Anleitungen stehen im englischen Dokument.
+
+## Phase 2: Parts, Sequencer und MIDI (0.2)
+
+* **Vier Parts** (`Core::numParts = 4`, IDs `p1.*` … `p4.*`; Parts 2–4 in 0.2 angehängt). Eine
+  neue Engine wird für jeden Part registriert:
+  `for (auto& p : parts) p->registerEngineParams (reg, EngineType::X);` (nur anhängen, ganz
+  unten). Part N rendert in die Mixer-Quelle `source::part1 + N - 1`.
+* **Routing in `Core::process()`**: Live-MIDI (Bildschirm-Tastatur, Host / Gerät) geht an jeden
+  Part mit passendem Kanal (`pN.midich`, 0 = Omni; MPE-Parts nehmen alle Kanäle), durch den
+  `NoteShaper` des Parts (Skala quantisieren, Ein-Finger-Akkorde) und beim Ziel-Part des
+  Arpeggiators in den `Arpeggiator`. Sequencer-Noten adressieren ihren Part über MIDI-Kanal 1–4
+  (= Ziel-Part). Jedes Ereignis wird ein `RoutedEvent {event, part}`; die Liste wird nach Zeit
+  sortiert und beim Rendern an `MpeInput` → `Part` verteilt.
+* **Sequencer** (`src/core/seq`): `StepSequencer` (16 Pattern, Kette / Song-Modus),
+  `EuclidSequencer`, `Arpeggiator`, `OrbitSequencer`. Gemeinsam (`SeqCommon.h`): `GridClock`
+  leitet Schrittgrenzen aus der absoluten ppq-Position ab (phasenstarr, sicher bei Loops und
+  Sprüngen), `NoteQueue` plant Note-Offs mit Referenzzählung pro Note. Pattern-Daten sind
+  lock-frei (Atomics); Orbit-Schritte bilden den Zustandsabschnitt `"orbit"`, Step-Pattern und
+  Kette bleiben in `"sequencer"` (Pattern 1 im Format von 0.1).
+* **Transport** (`Core::makeTransport`): Host / Link (`Transport::hostDriven`), MIDI-Clock
+  (`MidiClockFollower`) oder interne Clock. `MidiClockGenerator` erzeugt Clock-Out;
+  `Core::midiOutput()` enthält Clock und Sequencer-Noten für den MIDI-Ausgang der Standalone-App.
+* **MPE** (`src/core/midi/MpeInput.h`): Pitchbend, Druck und Timbre pro Note werden eine
+  `NoteExpression` auf den Stimmen der Note (`ISynthEngine::noteExpression`, umgesetzt in
+  `PolyEngine` / `VoiceBase`; Engines addieren `expr.timbre` zu ihrer Helligkeitssteuerung).
+* **Standalone** (`src/standalone`): `LinkSync` (Link-Bibliothek, siehe THIRD-PARTY.md; CMake-Option `OHPE_WITH_LINK`)
+  implementiert `OhpeProcessor::ExternalTransport`; `SyncSettingsPage` wählt Sync-Quelle,
+  MIDI-Ausgang, Clock- / Noten-Ausgabe.
+* Leitfäden: [Sequencer](SEQUENZER.md), [MIDI](MIDI.md), [Parameter](../PARAMETERS.md).

@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 
 #include <cmath>
+#include <cstdlib>
 
 namespace ohpe
 {
@@ -18,6 +19,15 @@ std::vector<ParamDescriptor> StepSequencer::getParamDescriptors() const
         continuous ("swing", "Swing", "Swing", 0.0f, 0.75f, 0.0f, ParamUnit::Percent),
         integer ("transpose", "Transpose", "Transponieren", -24, 24, 0, ParamUnit::Semitones),
         integer ("channel", "Target Part", "Ziel-Part", 1, 4, 1),
+    };
+}
+
+std::vector<ParamDescriptor> StepSequencer::getChainParamDescriptors() const
+{
+    using namespace pd;
+    return {
+        integer ("pattern", "Pattern", "Pattern", 1, numPatterns, 1),
+        toggle ("song", "Song Mode", "Song-Modus", false),
     };
 }
 
@@ -48,6 +58,10 @@ void StepSequencer::reset() noexcept
     sampleClock = 0;
     wasPlaying = false;
     position.store (-1);
+    playPattern.store (-1);
+    playEntry.store (-1);
+    playingPattern = requestedPattern;
+    patternStart = 0;
 }
 
 void StepSequencer::setParam (int i, float v) noexcept
@@ -59,6 +73,8 @@ void StepSequencer::setParam (int i, float v) noexcept
         case Swing: swing = v; break;
         case Transpose: transpose = (int) v; break;
         case Channel: channel = std::clamp ((int) v, 1, 16); break;
+        case Pattern: requestedPattern = std::clamp ((int) std::lround (v) - 1, 0, numPatterns - 1); break;
+        case Song: songMode = v >= 0.5f; break;
         default: break;
     }
 }
@@ -102,24 +118,109 @@ StepSequencer::Lock StepSequencer::unpackLock (uint32_t v) noexcept
     return l;
 }
 
-StepSequencer::Step StepSequencer::getStep (int index) const noexcept
+StepSequencer::Step StepSequencer::getStep (int index) const noexcept { return getStep (editPattern.load(), index); }
+
+void StepSequencer::setStep (int index, const Step& s) noexcept { setStep (editPattern.load(), index, s); }
+
+StepSequencer::Step StepSequencer::getStep (int pattern, int index) const noexcept
 {
     Step s;
-    if (index < 0 || index >= maxSteps) return s;
-    const uint64_t v = steps[(size_t) index].load (std::memory_order_acquire);
+    if (index < 0 || index >= maxSteps || pattern < 0 || pattern >= numPatterns) return s;
+    const uint64_t v = steps[(size_t) pattern][(size_t) index].load (std::memory_order_acquire);
     if (v == 0) { s = Step {}; }
     else unpack (v, s);
     for (int k = 0; k < maxLocksPerStep; ++k)
-        s.locks[(size_t) k] = unpackLock (locks[(size_t) index][(size_t) k].load (std::memory_order_acquire));
+        s.locks[(size_t) k] = unpackLock (locks[(size_t) pattern][(size_t) index][(size_t) k].load (std::memory_order_acquire));
     return s;
 }
 
-void StepSequencer::setStep (int index, const Step& s) noexcept
+void StepSequencer::setStep (int pattern, int index, const Step& s) noexcept
 {
-    if (index < 0 || index >= maxSteps) return;
+    if (index < 0 || index >= maxSteps || pattern < 0 || pattern >= numPatterns) return;
     for (int k = 0; k < maxLocksPerStep; ++k)
-        locks[(size_t) index][(size_t) k].store (packLock (s.locks[(size_t) k]), std::memory_order_release);
-    steps[(size_t) index].store (pack (s), std::memory_order_release);
+        locks[(size_t) pattern][(size_t) index][(size_t) k].store (packLock (s.locks[(size_t) k]), std::memory_order_release);
+    steps[(size_t) pattern][(size_t) index].store (pack (s), std::memory_order_release);
+}
+
+void StepSequencer::setPatternLength (int pattern, int len) noexcept
+{
+    if (pattern >= 0 && pattern < numPatterns) patternLength[(size_t) pattern].store (std::clamp (len, 0, maxSteps));
+}
+
+int StepSequencer::getPatternLength (int pattern) const noexcept
+{
+    return pattern >= 0 && pattern < numPatterns ? patternLength[(size_t) pattern].load() : 0;
+}
+
+void StepSequencer::setChain (const std::vector<ChainEntry>& entries) noexcept
+{
+    const int n = std::min ((int) entries.size(), maxChain);
+    chainLength.store (0, std::memory_order_release); // the audio thread never reads a half-written chain
+    for (int i = 0; i < n; ++i)
+        chain[(size_t) i].store ((uint32_t) std::clamp (entries[(size_t) i].pattern, 0, numPatterns - 1)
+                                     | ((uint32_t) std::clamp (entries[(size_t) i].repeats, 1, 16) << 8),
+                                 std::memory_order_release);
+    chainLength.store (n, std::memory_order_release);
+}
+
+std::vector<StepSequencer::ChainEntry> StepSequencer::getChain() const
+{
+    std::vector<ChainEntry> c;
+    const int n = chainLength.load (std::memory_order_acquire);
+    for (int i = 0; i < n; ++i)
+    {
+        const uint32_t v = chain[(size_t) i].load (std::memory_order_acquire);
+        c.push_back ({ (int) (v & 0xff), (int) ((v >> 8) & 0xff) });
+    }
+    return c;
+}
+
+int StepSequencer::lengthOf (int pattern) const noexcept
+{
+    const int l = patternLength[(size_t) std::clamp (pattern, 0, numPatterns - 1)].load (std::memory_order_relaxed);
+    return l > 0 ? l : length;
+}
+
+void StepSequencer::locate (long long k, int& pattern, int& stepIndex) noexcept
+{
+    const int n = chainLength.load (std::memory_order_acquire);
+    if (songMode && n > 0)
+    {
+        // song: the chain loops from the song start; stateless, so loops / jumps land correctly
+        long long total = 0;
+        for (int i = 0; i < n; ++i)
+        {
+            const uint32_t v = chain[(size_t) i].load (std::memory_order_relaxed);
+            total += (long long) lengthOf ((int) (v & 0xff)) * (long long) ((v >> 8) & 0xff);
+        }
+        long long pos = total > 0 ? ((k % total) + total) % total : 0;
+        for (int i = 0; i < n; ++i)
+        {
+            const uint32_t v = chain[(size_t) i].load (std::memory_order_relaxed);
+            const int p = (int) (v & 0xff);
+            const long long span = (long long) lengthOf (p) * (long long) ((v >> 8) & 0xff);
+            if (pos < span)
+            {
+                pattern = p;
+                stepIndex = (int) (pos % lengthOf (p));
+                playEntry.store (i, std::memory_order_relaxed);
+                return;
+            }
+            pos -= span;
+        }
+    }
+    playEntry.store (-1, std::memory_order_relaxed);
+    // single pattern: a newly selected pattern starts when the playing one wraps
+    int len = lengthOf (playingPattern);
+    long long idx = (((k - patternStart) % len) + len) % len;
+    if (idx == 0 && requestedPattern != playingPattern)
+    {
+        playingPattern = requestedPattern;
+        patternStart = k;
+        len = lengthOf (playingPattern);
+    }
+    pattern = playingPattern;
+    stepIndex = (int) ((((k - patternStart) % len) + len) % len);
 }
 
 void StepSequencer::toggleStep (int index, int note) noexcept
@@ -132,7 +233,12 @@ void StepSequencer::toggleStep (int index, int note) noexcept
 
 void StepSequencer::clearPattern() noexcept
 {
-    for (int i = 0; i < maxSteps; ++i) setStep (i, Step {});
+    for (int p = 0; p < numPatterns; ++p)
+    {
+        for (int i = 0; i < maxSteps; ++i) setStep (p, i, Step {});
+        patternLength[(size_t) p].store (0);
+    }
+    chainLength.store (0);
 }
 
 // ---------------------------------------------------------------- playback
@@ -143,10 +249,11 @@ void StepSequencer::schedule (int64_t time, const MidiEvent& e) noexcept
     // full: drop (a note-off is never dropped silently in practice: 256 slots >> 64 steps x 8 ratchets / block)
 }
 
-void StepSequencer::triggerStep (int stepIndex, int offset, double samplesPerStep, int64_t blockStart, SequencerOutput& out) noexcept
+void StepSequencer::triggerStep (int pattern, int stepIndex, int offset, double samplesPerStep, int64_t blockStart, SequencerOutput& out) noexcept
 {
     position.store (stepIndex, std::memory_order_relaxed);
-    const Step s = getStep (stepIndex);
+    playPattern.store (pattern, std::memory_order_relaxed);
+    const Step s = getStep (pattern, stepIndex);
 
     // parameter locks: a new step releases the previous step's locks
     out.addLock ({ offset, -1, 0.0f, true });
@@ -186,6 +293,8 @@ void StepSequencer::process (const Transport& tr, int numSamples, SequencerOutpu
                 else p.used = false;
             out.addLock ({ 0, -1, 0.0f, true });
             position.store (-1, std::memory_order_relaxed);
+            playPattern.store (-1, std::memory_order_relaxed);
+            playEntry.store (-1, std::memory_order_relaxed);
             wasPlaying = false;
         }
     }
@@ -196,7 +305,11 @@ void StepSequencer::process (const Transport& tr, int numSamples, SequencerOutpu
         const double startPos = tr.ppqAtBlockStart * spq;
         const double endPos = startPos + numSamples / samplesPerStep;
         if (! wasPlaying || startPos < lastStepPos - 0.5 || startPos > lastStepPos + 2.0 + numSamples / samplesPerStep)
+        {
             lastStepPos = std::ceil (startPos - 1.0e-6) - 1.0; // (re)start or jump: trigger the first boundary at/after startPos
+            playingPattern = requestedPattern;
+            patternStart = 0;
+        }
         wasPlaying = true;
 
         for (double k = lastStepPos + 1.0; k < endPos - 1.0e-9; k += 1.0)
@@ -205,11 +318,11 @@ void StepSequencer::process (const Transport& tr, int numSamples, SequencerOutpu
             int offset = (int) std::floor ((k - startPos) * samplesPerStep + 0.5);
             offset = std::clamp (offset, 0, numSamples - 1);
             const long long kk = (long long) std::llround (k);
-            int stepIndex = (int) (kk % length);
-            if (stepIndex < 0) stepIndex += length;
+            int pattern = 0, stepIndex = 0;
+            locate (kk, pattern, stepIndex);
             int swingOffset = 0;
             if ((kk & 1) != 0) swingOffset = (int) std::lround (swing * 0.5 * samplesPerStep);
-            triggerStep (stepIndex, offset + swingOffset, samplesPerStep, blockStart, out);
+            triggerStep (pattern, stepIndex, offset + swingOffset, samplesPerStep, blockStart, out);
             // locks belong to the visible block
             lastStepPos = k;
         }
@@ -241,18 +354,17 @@ void StepSequencer::process (const Transport& tr, int numSamples, SequencerOutpu
 }
 
 // ---------------------------------------------------------------- JSON
-std::string StepSequencer::toJson() const
+// Version 1 format: pattern 1 in "steps" (as in 0.1); patterns 2-16 in "patterns", own pattern
+// lengths in "lengths", the song chain in "chain". Older versions read pattern 1 only.
+nlohmann::json StepSequencer::patternToJson (int p) const
 {
-    nlohmann::json j;
-    j["format"] = "ohpe-step-pattern";
-    j["version"] = 1;
     auto arr = nlohmann::json::array();
     for (int i = 0; i < maxSteps; ++i)
     {
-        const auto s = getStep (i);
+        const auto s = getStep (p, i);
         const bool hasLocks = std::any_of (s.locks.begin(), s.locks.end(), [] (const Lock& l) { return l.paramIndex >= 0; });
         // untouched steps are not written: never set (0) or reset to the default step
-        const uint64_t raw = steps[(size_t) i].load();
+        const uint64_t raw = steps[(size_t) p][(size_t) i].load();
         if (! s.on && ! hasLocks && (raw == 0 || raw == pack (Step {}))) continue;
         nlohmann::json js { { "i", i }, { "on", s.on }, { "note", s.note }, { "vel", s.velocity }, { "gate", s.gate },
                             { "prob", s.probability }, { "ratchet", s.ratchet } };
@@ -263,19 +375,15 @@ std::string StepSequencer::toJson() const
         if (! jl.empty()) js["locks"] = jl;
         arr.push_back (js);
     }
-    j["steps"] = arr;
-    return j.dump();
+    return arr;
 }
 
-bool StepSequencer::fromJson (const std::string& text)
+void StepSequencer::patternFromJson (int p, const nlohmann::json& arr)
 {
-    const auto j = nlohmann::json::parse (text, nullptr, false);
-    if (j.is_discarded() || ! j.is_object() || j.value ("format", "") != "ohpe-step-pattern")
-        return false;
-    clearPattern();
-    if (! j.contains ("steps") || ! j["steps"].is_array()) return true;
-    for (const auto& js : j["steps"])
+    if (! arr.is_array()) return;
+    for (const auto& js : arr)
     {
+        if (! js.is_object()) continue;
         const int i = js.value ("i", -1);
         if (i < 0 || i >= maxSteps) continue;
         Step s;
@@ -285,7 +393,7 @@ bool StepSequencer::fromJson (const std::string& text)
         s.gate = js.value ("gate", 0.5f);
         s.probability = js.value ("prob", 100);
         s.ratchet = js.value ("ratchet", 1);
-        if (js.contains ("locks") && reg != nullptr)
+        if (js.contains ("locks") && js["locks"].is_array() && reg != nullptr)
         {
             int k = 0;
             for (const auto& jl : js["locks"])
@@ -296,7 +404,63 @@ bool StepSequencer::fromJson (const std::string& text)
                 s.locks[(size_t) k++] = { idx, jl.value ("value", 0.0f) };
             }
         }
-        setStep (i, s);
+        setStep (p, i, s);
+    }
+}
+
+std::string StepSequencer::toJson() const
+{
+    nlohmann::json j;
+    j["format"] = "ohpe-step-pattern";
+    j["version"] = 1;
+    j["steps"] = patternToJson (0);
+    auto pats = nlohmann::json::array();
+    for (int p = 1; p < numPatterns; ++p)
+    {
+        auto arr = patternToJson (p);
+        if (! arr.empty()) pats.push_back ({ { "p", p + 1 }, { "steps", arr } });
+    }
+    if (! pats.empty()) j["patterns"] = pats;
+    auto lens = nlohmann::json::object();
+    for (int p = 0; p < numPatterns; ++p)
+        if (const int l = getPatternLength (p); l > 0) lens[std::to_string (p + 1)] = l;
+    if (! lens.empty()) j["lengths"] = lens;
+    const auto c = getChain();
+    if (! c.empty())
+    {
+        auto jc = nlohmann::json::array();
+        for (const auto& e : c) jc.push_back ({ { "p", e.pattern + 1 }, { "repeat", e.repeats } });
+        j["chain"] = jc;
+    }
+    return j.dump();
+}
+
+bool StepSequencer::fromJson (const std::string& text)
+{
+    const auto j = nlohmann::json::parse (text, nullptr, false);
+    if (j.is_discarded() || ! j.is_object() || j.value ("format", "") != "ohpe-step-pattern")
+        return false;
+    clearPattern();
+    if (j.contains ("steps")) patternFromJson (0, j["steps"]);
+    if (j.contains ("patterns") && j["patterns"].is_array())
+        for (const auto& jp : j["patterns"])
+            if (jp.is_object() && jp.contains ("steps"))
+            {
+                const int p = jp.value ("p", 0) - 1;
+                if (p >= 1 && p < numPatterns) patternFromJson (p, jp["steps"]);
+            }
+    if (j.contains ("lengths") && j["lengths"].is_object())
+        for (const auto& [k, v] : j["lengths"].items())
+        {
+            const int p = std::atoi (k.c_str()) - 1;
+            if (v.is_number_integer()) setPatternLength (p, v.get<int>());
+        }
+    if (j.contains ("chain") && j["chain"].is_array())
+    {
+        std::vector<ChainEntry> c;
+        for (const auto& e : j["chain"])
+            if (e.is_object()) c.push_back ({ e.value ("p", 1) - 1, e.value ("repeat", 1) });
+        setChain (c);
     }
     return true;
 }

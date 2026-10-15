@@ -24,7 +24,31 @@ Core::Core()
     seqRunIndex = registry.indexOf (Ids::seqRun);
     for (const auto& d : stepSeq.getParamDescriptors())
         stepParamIndex.push_back (registry.indexOf (std::string (Ids::stepPrefix) + d.id));
+    for (const auto& d : stepSeq.getChainParamDescriptors()) // local indices continue: Pattern, Song
+        stepParamIndex.push_back (registry.indexOf (std::string (Ids::stepPrefix) + d.id));
     stepParamLast.assign (stepParamIndex.size(), NAN);
+
+    bindSequencer (euclidBinding, euclid, Ids::euclidPrefix, euclid.getParamDescriptors());
+    bindSequencer (arpBinding, arp, Ids::arpPrefix, arp.getParamDescriptors());
+    bindSequencer (orbitBinding, orbit, Ids::orbitPrefix, orbit.getParamDescriptors());
+    for (int i = 0; i < numParts; ++i)
+    {
+        auto& r = routing[(size_t) i];
+        const auto& p = *parts[(size_t) i];
+        r.idxChannel = registry.indexOf (p.id ("midich"));
+        r.idxQuant = registry.indexOf (p.id ("quant"));
+        r.idxChord = registry.indexOf (p.id ("chord"));
+        r.idxMpe = registry.indexOf (p.id ("mpe"));
+        r.idxMpeBend = registry.indexOf (p.id ("mpe.bend"));
+        r.idxMpePress = registry.indexOf (p.id ("mpe.press"));
+        r.idxMpeTimbre = registry.indexOf (p.id ("mpe.timbre"));
+    }
+    syncSourceIndex = registry.indexOf (Ids::syncSource);
+    syncSmoothIndex = registry.indexOf (Ids::syncSmoothing);
+    clockOutIndex = registry.indexOf (Ids::clockOut);
+    notesOutIndex = registry.indexOf (Ids::notesOut);
+    keyRootIndex = registry.indexOf (Ids::keyRoot);
+    keyScaleIndex = registry.indexOf (Ids::keyScale);
 
     snapshot.prepare (registry);
     lockStorage.reserve (1024);
@@ -34,17 +58,44 @@ Core::Core()
     prepare (48000.0, 512);
 }
 
+void Core::bindSequencer (SeqBinding& b, ISequencer& s, const std::string& prefix, const std::vector<ParamDescriptor>& descriptors)
+{
+    b.seq = &s;
+    b.index.clear();
+    for (const auto& d : descriptors) b.index.push_back (registry.indexOf (prefix + d.id));
+    b.last.assign (b.index.size(), NAN);
+}
+
+void Core::pullSequencerParams (SeqBinding& b) noexcept
+{
+    for (size_t i = 0; i < b.index.size(); ++i)
+        if (const float v = snapshot[b.index[i]]; b.index[i] >= 0 && ! (v == b.last[i]))
+        {
+            b.last[i] = v;
+            b.seq->setParam ((int) i, v);
+        }
+}
+
 void Core::prepare (double sampleRate, int maxBlockSize)
 {
     sr = sampleRate > 0.0 ? sampleRate : 48000.0;
     maxBlock = std::max (1, maxBlockSize);
     const int chunk = std::min (maxChunk, maxBlock);
-    partL.assign ((size_t) chunk, 0.0f);
-    partR.assign ((size_t) chunk, 0.0f);
+    for (int i = 0; i < numParts; ++i)
+    {
+        partL[(size_t) i].assign ((size_t) chunk, 0.0f);
+        partR[(size_t) i].assign ((size_t) chunk, 0.0f);
+    }
     for (auto& p : parts) p->prepare (sr, chunk);
     mix.prepare (sr, chunk);
     stepSeq.prepare (sr, maxBlock);
+    euclid.prepare (sr, maxBlock);
+    arp.prepare (sr, maxBlock);
+    orbit.prepare (sr, maxBlock);
+    clockIn.prepare (sr);
+    clockGen.prepare (sr);
     std::fill (stepParamLast.begin(), stepParamLast.end(), NAN);
+    for (auto* b : { &euclidBinding, &arpBinding, &orbitBinding }) std::fill (b->last.begin(), b->last.end(), NAN);
     reset();
 }
 
@@ -53,9 +104,20 @@ void Core::reset() noexcept
     for (auto& p : parts) p->reset();
     mix.reset();
     stepSeq.reset();
+    euclid.reset();
+    arp.reset();
+    orbit.reset();
+    clockIn.reset();
+    clockGen.reset();
+    for (auto& m : mpeIn) m.reset();
+    for (auto& s : liveShaper) s.reset();
+    for (auto& s : seqShaper) s.reset();
     snapshot.clearLocks();
     internalPpq = 0.0;
     internalWasRunning = false;
+    sampleTime = 0;
+    numRouted = 0;
+    midiOut.clear();
 }
 
 void Core::queueNote (int note, float velocity, bool on) noexcept
@@ -63,11 +125,51 @@ void Core::queueNote (int note, float velocity, bool on) noexcept
     uiNotes.push ({ note, velocity, on });
 }
 
-void Core::dispatch (const MidiEvent& e) noexcept
+// ---------------------------------------------------------------- routing
+void Core::addRouted (const MidiEvent& e, int part) noexcept
 {
-    if (e.isNoteOn()) lastNoteOn.store (e.data1, std::memory_order_relaxed);
-    // phase 1: one part, omni. Later: channel N -> part N (MPE: zone -> part).
-    parts[0]->handleMidi (e);
+    if (numRouted < (int) routed.size()) routed[(size_t) numRouted++] = { e, part };
+}
+
+void Core::routeLive (const MidiEvent& e) noexcept
+{
+    // keyboard / host / device MIDI: to every part listening on its channel (MPE parts listen to all)
+    for (int p = 0; p < numParts; ++p)
+    {
+        const auto& r = routing[(size_t) p];
+        if (! (r.mpe || r.channel == 0 || r.channel == e.channel())) continue;
+        const bool toArp = arp.enabled() && arp.targetPart() == p + 1 && ! r.mpe;
+        auto emit = [&] (const MidiEvent& x) {
+            if (toArp && (x.isNoteOn() || x.isNoteOff())) arp.noteInput (x);
+            else addRouted (x, p);
+        };
+        if (r.mpe) emit (e); // MPE notes keep their channel and pitch (per-note expression)
+        else liveShaper[(size_t) p].process (e, emit);
+    }
+}
+
+void Core::routeGenerated (const MidiEvent& e, bool shape) noexcept
+{
+    // sequencer events address their part by channel (1..4)
+    const int p = std::clamp (e.channel(), 1, numParts) - 1;
+    auto emit = [&] (const MidiEvent& x) {
+        addRouted (x, p);
+        if (notesOutOn)
+        {
+            auto o = x;
+            const int ch = routing[(size_t) p].channel > 0 ? routing[(size_t) p].channel : p + 1;
+            o.status = (uint8_t) ((o.status & 0xf0) | ((ch - 1) & 0x0f));
+            midiOut.add (o);
+        }
+    };
+    if (shape) seqShaper[(size_t) p].process (e, emit);
+    else emit (e);
+}
+
+void Core::dispatch (const RoutedEvent& r) noexcept
+{
+    if (r.event.isNoteOn()) lastNoteOn.store (r.event.data1, std::memory_order_relaxed);
+    mpeIn[(size_t) r.part].handle (r.event, *parts[(size_t) r.part]);
 }
 
 void Core::applyLocks (const std::vector<ParamLockEvent>& locks, size_t& next, int upTo) noexcept
@@ -88,24 +190,29 @@ void Core::applyLocks (const std::vector<ParamLockEvent>& locks, size_t& next, i
     }
 }
 
-void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEvent* midi, int numMidi, const Transport& host) noexcept
+// ---------------------------------------------------------------- transport
+Transport Core::makeTransport (const Transport& host, const MidiEvent* midi, int numMidi, int numSamples) noexcept
 {
-    // 1. parameters for this block
-    snapshot.pull (registry);
-    for (auto& p : parts) p->pullParams (snapshot);
-    mix.pullParams (snapshot);
-    for (size_t i = 0; i < stepParamIndex.size(); ++i)
-        if (const float v = snapshot[stepParamIndex[i]]; ! (v == stepParamLast[i]))
-        {
-            stepParamLast[i] = v;
-            stepSeq.setParam ((int) i, v);
-        }
-
-    // 2. transport (host or internal clock)
     Transport tr = host;
     const bool run = snapshot.getBool (seqRunIndex);
-    if (host.hostDriven)
+    const int source = snapshot.getInt (syncSourceIndex);
+
+    // MIDI clock input is always followed (tempo display), used when selected
+    clockIn.setSmoothing (snapshot[syncSmoothIndex]);
+    for (int i = 0; i < numMidi; ++i)
+        if (midiclock::isClockMessage (midi[i])) clockIn.handle (midi[i], sampleTime + midi[i].sampleOffset);
+
+    if (host.hostDriven) // plug-in host or Link (standalone): ppq from outside
+    {
         tr.playing = host.playing && run;
+        internalWasRunning = false;
+    }
+    else if (source == SyncMidiClock)
+    {
+        tr = clockIn.transportAt (sampleTime, snapshot[tempoIndex]); // tempo parameter until the clock's tempo is known
+        tr.playing = tr.playing && run;
+        internalWasRunning = false;
+    }
     else
     {
         if (run && ! internalWasRunning) internalPpq = 0.0;
@@ -113,25 +220,87 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         tr.bpm = snapshot[tempoIndex];
         tr.playing = run;
         tr.ppqAtBlockStart = internalPpq;
+        tr.hostDriven = false;
         if (run) internalPpq += numSamples * tr.bpm / 60.0 / sr;
     }
+    return tr;
+}
+
+// ---------------------------------------------------------------- process
+void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEvent* midi, int numMidi, const Transport& host) noexcept
+{
+    // 1. parameters for this block
+    snapshot.pull (registry);
+    for (auto& p : parts) p->pullParams (snapshot);
+    mix.pullParams (snapshot);
+    for (size_t i = 0; i < stepParamIndex.size(); ++i)
+        if (const float v = snapshot[stepParamIndex[i]]; stepParamIndex[i] >= 0 && ! (v == stepParamLast[i]))
+        {
+            stepParamLast[i] = v;
+            stepSeq.setParam ((int) i, v);
+        }
+    pullSequencerParams (euclidBinding);
+    pullSequencerParams (arpBinding);
+    pullSequencerParams (orbitBinding);
+    if (arpWasOn && (! arp.enabled() || arp.targetPart() != arpLastPart)) arp.releaseAll();
+    arpWasOn = arp.enabled();
+    arpLastPart = arp.targetPart();
+
+    const int root = snapshot.getInt (keyRootIndex), scale = snapshot.getInt (keyScaleIndex);
+    for (int i = 0; i < numParts; ++i)
+    {
+        auto& r = routing[(size_t) i];
+        r.channel = std::clamp (snapshot.getInt (r.idxChannel), 0, 16);
+        r.mpe = snapshot.getBool (r.idxMpe);
+        mpeIn[(size_t) i].set (r.mpe, snapshot.getInt (r.idxMpeBend), snapshot.getInt (r.idxMpePress), snapshot.getInt (r.idxMpeTimbre));
+        const bool quant = snapshot.getBool (r.idxQuant);
+        const int chord = snapshot.getInt (r.idxChord);
+        liveShaper[(size_t) i].set (quant, chord, root, scale);
+        seqShaper[(size_t) i].set (quant, chord, root, scale);
+    }
+    clockOutOn = snapshot.getBool (clockOutIndex);
+    notesOutOn = snapshot.getBool (notesOutIndex);
+    midiOut.clear();
+
+    // 2. transport (host / Link, MIDI clock or internal clock)
+    const Transport tr = makeTransport (host, midi, numMidi, numSamples);
     ppqForUi.store (tr.ppqAtBlockStart, std::memory_order_relaxed);
+    bpmForUi.store (tr.bpm, std::memory_order_relaxed);
+    playingForUi.store (tr.playing, std::memory_order_relaxed);
 
-    // 3. sequencer events
-    seqOut.clear();
-    stepSeq.process (tr, numSamples, seqOut);
-
-    // 4. merge MIDI: on-screen keyboard (offset 0), host MIDI (minus mapped / learned), sequencer
-    merged.clear();
+    // 3. live MIDI: on-screen keyboard (offset 0), host / device MIDI minus mapped controls and
+    //    clock messages -> parts by channel (through scale / chord and the arpeggiator)
+    numRouted = 0;
     UiNote un;
     while (uiNotes.pop (un))
-        merged.add (un.on ? MidiEvent::noteOn (1, un.note, std::clamp ((int) (un.velocity * 127.0f), 1, 127), 0)
-                          : MidiEvent::noteOff (1, un.note, 0));
+        routeLive (un.on ? MidiEvent::noteOn (1, un.note, std::clamp ((int) (un.velocity * 127.0f), 1, 127), 0)
+                         : MidiEvent::noteOff (1, un.note, 0));
     for (int i = 0; i < numMidi; ++i)
-        if (! mapper.handleMidi (midi[i]))
-            merged.add (midi[i]);
-    for (const auto& e : seqOut.events) merged.add (e);
-    merged.sortByTime();
+        if (midi[i].status < 0xf0 && ! mapper.handleMidi (midi[i]))
+            routeLive (midi[i]);
+
+    // 4. sequencers: their notes address parts by channel
+    seqOut.clear();
+    stepSeq.process (tr, numSamples, seqOut);
+    euclidOut.clear();
+    euclid.process (tr, numSamples, euclidOut);
+    orbitOut.clear();
+    orbit.process (tr, numSamples, orbitOut);
+    arpOut.clear();
+    arp.process (tr, numSamples, arpOut);
+    for (const auto& e : seqOut.events) routeGenerated (e, true);
+    for (const auto& e : euclidOut.events) routeGenerated (e, true);
+    for (const auto& e : orbitOut.events) routeGenerated (e, true);
+    for (const auto& e : arpOut.events) routeGenerated (e, false); // already shaped on the way in
+
+    // stable sort by time (insertion sort: lists are short and mostly ordered)
+    for (int i = 1; i < numRouted; ++i)
+    {
+        const auto e = routed[(size_t) i];
+        int j = i - 1;
+        while (j >= 0 && routed[(size_t) j].event.sampleOffset > e.event.sampleOffset) { routed[(size_t) j + 1] = routed[(size_t) j]; --j; }
+        routed[(size_t) j + 1] = e;
+    }
 
     // 5. render in chunks split at event times
     size_t nextLock = 0;
@@ -140,19 +309,21 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     while (pos < numSamples)
     {
         applyLocks (lockStorage, nextLock, pos);
-        while (nextEvent < merged.size() && merged[nextEvent].sampleOffset <= pos)
-            dispatch (merged[nextEvent++]);
+        while (nextEvent < numRouted && routed[(size_t) nextEvent].event.sampleOffset <= pos)
+            dispatch (routed[(size_t) nextEvent++]);
 
-        int end = std::min (numSamples, pos + (int) partL.size());
-        if (nextEvent < merged.size()) end = std::min (end, std::max (pos + 1, merged[nextEvent].sampleOffset));
+        int end = std::min (numSamples, pos + (int) partL[0].size());
+        if (nextEvent < numRouted) end = std::min (end, std::max (pos + 1, routed[(size_t) nextEvent].event.sampleOffset));
         if (nextLock < lockStorage.size()) end = std::min (end, std::max (pos + 1, lockStorage[nextLock].sampleOffset));
         const int len = end - pos;
 
-        parts[0]->render (partL.data(), partR.data(), len);
-
         SourceBuffers src;
-        src.left[(size_t) source::part1] = partL.data();
-        src.right[(size_t) source::part1] = partR.data();
+        for (int p = 0; p < numParts; ++p)
+        {
+            parts[(size_t) p]->render (partL[(size_t) p].data(), partR[(size_t) p].data(), len);
+            src.left[(size_t) (source::part1 + p)] = partL[(size_t) p].data();
+            src.right[(size_t) (source::part1 + p)] = partR[(size_t) p].data();
+        }
         OutputBuffers out;
         for (int o = 0; o < numOutputPairs; ++o)
         {
@@ -162,19 +333,27 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         mix.process (src, out, len);
         pos = end;
     }
-    while (nextEvent < merged.size()) dispatch (merged[nextEvent++]);
+    while (nextEvent < numRouted) dispatch (routed[(size_t) nextEvent++]);
     applyLocks (lockStorage, nextLock, std::numeric_limits<int>::max()); // swung steps may lock after the block end
+
+    // 6. MIDI clock out (follows the transport in use)
+    if (clockOutOn) clockGen.process (tr, numSamples, midiOut);
+    else clockGen.reset();
+    midiOut.sortByTime();
 
     int voices = 0;
     for (auto& p : parts) voices += p->activeVoiceCount();
     voicesActive.store (voices, std::memory_order_relaxed);
+    sampleTime += numSamples;
 }
 
+// ---------------------------------------------------------------- state
 std::string Core::saveState (const std::string& uiJson) const
 {
     state::Sections s;
     s["midimap"] = map.toJson();
     s["sequencer"] = stepSeq.toJson();
+    s["orbit"] = orbit.toJson();
     if (! uiJson.empty()) s["ui"] = uiJson;
     return state::saveState (registry, s);
 }
@@ -188,6 +367,8 @@ bool Core::loadState (const std::string& json, std::string* uiJsonOut)
     mapper.publish (map);
     if (auto it = r.sections.find ("sequencer"); it != r.sections.end()) stepSeq.fromJson (it->second);
     else stepSeq.clearPattern();
+    if (auto it = r.sections.find ("orbit"); it != r.sections.end()) orbit.fromJson (it->second);
+    else orbit.clearPattern();
     if (uiJsonOut != nullptr)
     {
         auto it = r.sections.find ("ui");

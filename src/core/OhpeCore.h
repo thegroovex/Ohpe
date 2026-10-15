@@ -3,12 +3,18 @@
 #pragma once
 
 #include "engines/Part.h"
+#include "midi/MidiClock.h"
 #include "midi/MidiMap.h"
+#include "midi/MpeInput.h"
 #include "mixer/Mixer.h"
 #include "model/Events.h"
 #include "model/ParamRegistry.h"
 #include "model/ParamSnapshot.h"
 #include "model/SpscQueue.h"
+#include "seq/Arpeggiator.h"
+#include "seq/EuclidSequencer.h"
+#include "seq/OrbitSequencer.h"
+#include "seq/ScaleChord.h"
 #include "seq/StepSequencer.h"
 
 #include <array>
@@ -20,8 +26,9 @@
 namespace ohpe
 {
 /**
-    The whole instrument without any framework: parameter registry, parts (engines), step
-    sequencer, mixer with send effects and multi-out routing, MIDI map and learn.
+    The whole instrument without any framework: parameter registry, four parts (engines),
+    sequencers (Step with patterns / song, Euclid, Arp, Orbit), scale / chord mode, mixer with
+    send effects and multi-out routing, MIDI map and learn, MIDI clock in / out and MPE.
 
     The plug-in wrapper (src/plugin) owns one Core, forwards host parameters into params(),
     calls process() from the audio callback and saveState() / loadState() for the host.
@@ -30,7 +37,7 @@ namespace ohpe
 class Core
 {
 public:
-    static constexpr int numParts = 1;          ///< phase 1: one part (IDs "p1.*"); more parts append "p2.*" ...
+    static constexpr int numParts = 4;          ///< parts "p1.*" .. "p4.*" (p2-p4 appended in 0.2)
     static constexpr int maxChunk = 256;        ///< internal render chunk (also the event split granularity cap)
 
     Core();
@@ -44,6 +51,9 @@ public:
     MidiMapper& midiMapper() noexcept { return mapper; }
     const MidiMapper& midiMapper() const noexcept { return mapper; }
     StepSequencer& stepSequencer() noexcept { return stepSeq; }
+    EuclidSequencer& euclidSequencer() noexcept { return euclid; }
+    Arpeggiator& arpeggiator() noexcept { return arp; }
+    OrbitSequencer& orbitSequencer() noexcept { return orbit; }
     Part& part (int index) noexcept { return *parts[(size_t) index]; }
     Mixer& mixer() noexcept { return mix; }
 
@@ -57,6 +67,16 @@ public:
         sampleOffset. `host` carries the host transport when hostDriven is true.
     */
     void process (const OutputBuffers& outputs, int numSamples, const MidiEvent* midi, int numMidi, const Transport& host) noexcept;
+
+    /**
+        Audio thread, after process(): MIDI to send out (standalone MIDI output): clock ticks,
+        start / stop / continue / song position when "sync.clockout" is on, and the
+        sequencers' notes on each part's MIDI channel when "sync.notesout" is on.
+    */
+    const EventList<2048>& midiOutput() const noexcept { return midiOut; }
+
+    /** Sources of the transport when no host drives it ("sync.src"; append-only). */
+    enum SyncSource { SyncInternal = 0, SyncMidiClock, SyncLink };
 
     /** Any thread: notes from the on-screen keyboard (applied at the next block). */
     void queueNote (int note, float velocity, bool on) noexcept;
@@ -73,6 +93,8 @@ public:
     int lastNote() const noexcept { return lastNoteOn.load (std::memory_order_relaxed); }
     int activeVoices() const noexcept { return voicesActive.load (std::memory_order_relaxed); }
     double transportPpq() const noexcept { return ppqForUi.load (std::memory_order_relaxed); }
+    double transportBpm() const noexcept { return bpmForUi.load (std::memory_order_relaxed); }
+    bool transportPlaying() const noexcept { return playingForUi.load (std::memory_order_relaxed); }
 
     /** Well-known global parameter IDs. */
     struct Ids
@@ -80,17 +102,56 @@ public:
         static constexpr const char* tempo = "tempo";
         static constexpr const char* seqRun = "seq.run";
         static constexpr const char* stepPrefix = "seq.step.";
+        static constexpr const char* euclidPrefix = "seq.euclid.";
+        static constexpr const char* arpPrefix = "seq.arp.";
+        static constexpr const char* orbitPrefix = "seq.orbit.";
+        static constexpr const char* syncSource = "sync.src";
+        static constexpr const char* syncSmoothing = "sync.smooth";
+        static constexpr const char* clockOut = "sync.clockout";
+        static constexpr const char* notesOut = "sync.notesout";
+        static constexpr const char* keyRoot = "key.root";
+        static constexpr const char* keyScale = "key.scale";
     };
 
 private:
     void applyLocks (const std::vector<ParamLockEvent>& locks, size_t& next, int upTo) noexcept;
-    void dispatch (const MidiEvent& e) noexcept;
+    /** A MIDI event on its way to one part (index 0..numParts-1). */
+    struct RoutedEvent
+    {
+        MidiEvent event;
+        int part = 0;
+    };
+    /** Parameters of one sequencer, pushed into it when they change. */
+    struct SeqBinding
+    {
+        ISequencer* seq = nullptr;
+        std::vector<int> index;
+        std::vector<float> last;
+    };
+    /** Per-part MIDI settings ("pN.midich", scale / chord, MPE). */
+    struct PartRouting
+    {
+        int idxChannel = -1, idxQuant = -1, idxChord = -1, idxMpe = -1, idxMpeBend = -1, idxMpePress = -1, idxMpeTimbre = -1;
+        int channel = 1;
+        bool mpe = false;
+    };
+
+    void bindSequencer (SeqBinding& b, ISequencer& s, const std::string& prefix, const std::vector<ParamDescriptor>& descriptors);
+    void pullSequencerParams (SeqBinding& b) noexcept;
+    Transport makeTransport (const Transport& host, const MidiEvent* midi, int numMidi, int numSamples) noexcept;
+    void routeLive (const MidiEvent& e) noexcept;
+    void routeGenerated (const MidiEvent& e, bool shape) noexcept;
+    void addRouted (const MidiEvent& e, int part) noexcept;
+    void dispatch (const RoutedEvent& e) noexcept;
 
     ParamRegistry registry;
     ParamSnapshot snapshot;
     std::array<std::unique_ptr<Part>, numParts> parts;
     Mixer mix;
     StepSequencer stepSeq;
+    EuclidSequencer euclid;
+    Arpeggiator arp;
+    OrbitSequencer orbit;
     MidiMap map;
     MidiMapper mapper { registry };
 
@@ -103,16 +164,32 @@ private:
     double internalPpq = 0.0;
     bool internalWasRunning = false;
 
-    std::vector<float> partL, partR;
+    std::array<std::vector<float>, numParts> partL, partR;
     std::vector<ParamLockEvent> lockStorage;
-    SequencerOutput seqOut;
-    EventList<1024> merged;
+    SequencerOutput seqOut, euclidOut, arpOut, orbitOut;
+
+    // sequencers, routing, sync (0.2)
+    SeqBinding euclidBinding, arpBinding, orbitBinding;
+    std::array<PartRouting, numParts> routing {};
+    std::array<MpeInput, numParts> mpeIn {};
+    std::array<NoteShaper, numParts> liveShaper {}, seqShaper {};
+    int syncSourceIndex = -1, syncSmoothIndex = -1, clockOutIndex = -1, notesOutIndex = -1, keyRootIndex = -1, keyScaleIndex = -1;
+    bool arpWasOn = false;
+    int arpLastPart = 0;
+    bool clockOutOn = false, notesOutOn = false;
+    int64_t sampleTime = 0; ///< samples since prepare (clock input time base)
+    MidiClockFollower clockIn;
+    MidiClockGenerator clockGen;
+    std::array<RoutedEvent, 2048> routed {};
+    int numRouted = 0;
+    EventList<2048> midiOut;
 
     struct UiNote { int note; float velocity; bool on; };
     SpscQueue<UiNote, 256> uiNotes;
 
     std::atomic<int> lastNoteOn { -1 }, voicesActive { 0 };
-    std::atomic<double> ppqForUi { 0.0 };
+    std::atomic<double> ppqForUi { 0.0 }, bpmForUi { 120.0 };
+    std::atomic<bool> playingForUi { false };
 };
 
 /** Builds the complete, ordered parameter list (append-only, see docs/ARCHITECTURE.md). */

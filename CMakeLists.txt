@@ -52,3 +52,26 @@ endif()
 if(OHPE_BUILD_PLUGIN)
     include(cmake/OhpePlugin.cmake)
 endif()
+
+# ---------------------------------------------------------------- 0.2 (package D): tempo sync
+# Link (third-party library, GPL-2.0-or-later, see THIRD-PARTY.md) for the standalone app's
+# network tempo sync. Only the standalone app starts a Link session; the plug-in follows its host.
+option(OHPE_WITH_LINK "Build the standalone app with Link tempo sync (third-party library)" ON)
+if(OHPE_BUILD_PLUGIN)
+    target_sources(Ohpe PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/standalone/LinkSync.cpp
+        ${CMAKE_SOURCE_DIR}/src/standalone/SyncSettingsPage.cpp)
+    if(OHPE_WITH_LINK)
+        # SOURCE_SUBDIR without a CMakeLists.txt: fetch only, Link is added through its own config file
+        FetchContent_Declare(ableton_link
+            GIT_REPOSITORY https://github.com/Ableton/link.git
+            GIT_TAG Link-4.1
+            GIT_SHALLOW ON
+            GIT_SUBMODULES modules/asio-standalone
+            SOURCE_SUBDIR ohpe-fetch-only)
+        FetchContent_MakeAvailable(ableton_link)
+        include(${ableton_link_SOURCE_DIR}/AbletonLinkConfig.cmake)
+        target_link_libraries(Ohpe PRIVATE Ableton::Link)
+        target_compile_definitions(Ohpe PRIVATE OHPE_WITH_LINK=1)
+    endif()
+endif()

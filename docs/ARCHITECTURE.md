@@ -160,3 +160,34 @@ Recording external audio needs an input bus in the plug-in (decision for phase 2
 * `tests/plugin` – processor, editor, localisation, VST3 host test.
 * pluginval at strictness 5 on the VST3.
 * `scripts/test-all.sh` runs all of it; see [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+## Phase 2: parts, sequencers and MIDI (0.2)
+
+* **Four parts** (`Core::numParts = 4`, IDs `p1.*` … `p4.*`). Parts 2–4 were appended in 0.2.
+  A new engine must be registered for every part:
+  `for (auto& p : parts) p->registerEngineParams (reg, EngineType::X);` (append-only, at the
+  bottom). Part N renders into mixer source `source::part1 + N - 1`.
+* **Routing in `Core::process()`**: live MIDI (on-screen keyboard, host / device) goes to every
+  part whose channel matches (`pN.midich`, 0 = omni; MPE parts take all channels) through that
+  part's `NoteShaper` (scale quantise, one-finger chords) and, for the arpeggiator's target part,
+  into the `Arpeggiator`. Sequencer notes address their part by MIDI channel 1–4 (= target part)
+  and pass the part's sequencer `NoteShaper`. Every event becomes a `RoutedEvent {event, part}`;
+  the merged list is sorted by time and dispatched to `MpeInput` → `Part` while rendering.
+* **Sequencers** (`src/core/seq`): `StepSequencer` (16 patterns, chain / song mode),
+  `EuclidSequencer`, `Arpeggiator`, `OrbitSequencer`. Shared helpers in `SeqCommon.h`:
+  `GridClock` derives step boundaries from the transport's absolute ppq (phase-locked, loop- and
+  jump-safe), `NoteQueue` schedules note-offs with per-note reference counts. Pattern data is
+  lock-free (atomics); Orbit steps are the state section `"orbit"`, step patterns / chain stay in
+  `"sequencer"` (pattern 1 in the 0.1 format).
+* **Transport** (`Core::makeTransport`): host / Link (`Transport::hostDriven`), MIDI clock
+  (`MidiClockFollower`, `sync.src` = MIDI Clock) or the internal clock. `MidiClockGenerator`
+  produces clock out; `Core::midiOutput()` holds clock and sequencer notes for the standalone
+  MIDI output (the plug-in does not produce MIDI).
+* **MPE** (`src/core/midi/MpeInput.h`): per-note pitch bend, pressure and timbre become a
+  `NoteExpression` on the voices of a note (`ISynthEngine::noteExpression`, implemented by
+  `PolyEngine` / `VoiceBase`: pitch, LFO depth, level and pan for every engine; engines add
+  `expr.timbre` to their own brightness control).
+* **Standalone glue** (`src/standalone`): `LinkSync` (Link library, see THIRD-PARTY.md; CMake option
+  `OHPE_WITH_LINK`) implements `OhpeProcessor::ExternalTransport`; `SyncSettingsPage` selects
+  the sync source, MIDI output, clock / note output.
+* Guides: [sequencers](en/SEQUENCERS.md), [MIDI](en/MIDI.md), [parameters](PARAMETERS.md).

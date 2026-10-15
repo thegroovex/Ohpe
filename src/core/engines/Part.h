@@ -43,6 +43,8 @@ public:
     void noteOn (int note, float velocity) noexcept;
     void noteOff (int note) noexcept;
     void allNotesOff (bool hard) noexcept;
+    /** Per-note expression (MPE) for the voices playing `note` (-1 = all) in every engine. */
+    void noteExpression (int note, const NoteExpression& x) noexcept;
 
     /** Renders into l/r (overwrites). numSamples <= maxBlockSize. */
     void render (float* l, float* r, int numSamples) noexcept;

@@ -170,6 +170,12 @@ void Part::allNotesOff (bool hard) noexcept
         if (e != nullptr) e->allNotesOff (hard);
 }
 
+void Part::noteExpression (int note, const NoteExpression& x) noexcept
+{
+    for (auto& e : engines)
+        if (e != nullptr) e->noteExpression (note, x);
+}
+
 void Part::handleMidi (const MidiEvent& m) noexcept
 {
     if (m.isNoteOn()) noteOn (m.data1, (float) m.data2 / 127.0f);

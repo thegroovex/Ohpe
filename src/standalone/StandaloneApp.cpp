@@ -6,7 +6,8 @@
 // - an own "Audio Settings" page (output device, sample rate, buffer size + latency,
 //   MIDI inputs, multi-out routing of the eight mixer channels to eight stereo outputs),
 // - all 18 output channels requested from the device (main + 8 stereo aux outputs),
-// - translated menus (English / German).
+// - translated menus (English / German),
+// - tempo sync: "Sync & MIDI" page (MIDI clock in / out, MIDI output device, Link session).
 
 #include <juce_core/system/juce_TargetPlatform.h>
 
@@ -28,6 +29,8 @@
 #include "plugin/Localisation.h"
 #include "plugin/PluginProcessor.h"
 #include "standalone/AudioSettingsPage.h"
+#include "standalone/LinkSync.h"
+#include "standalone/SyncSettingsPage.h"
 #include "ui/OhpeLookAndFeel.h"
 #include "ui/Palette.h"
 
@@ -50,12 +53,19 @@ public:
         settingsButton.onClick = [this] { showMenu(); };
         juce::Component::addAndMakeVisible (settingsButton);
         resized();
+        if (auto* p = dynamic_cast<OhpeProcessor*> (getAudioProcessor()))
+            p->externalTransport.store (&link, std::memory_order_release);
         startTimer (500);
     }
 
     ~OhpeWindow() override
     {
         stopTimer();
+        if (auto* p = dynamic_cast<OhpeProcessor*> (getAudioProcessor()))
+            p->externalTransport.store (nullptr, std::memory_order_release);
+        if (pluginHolder != nullptr) pluginHolder->stopPlaying(); // no audio callback may still use the Link session
+        link.setEnabled (false);
+        syncWindow = nullptr;
         settingsWindow = nullptr;
         setLookAndFeel (nullptr);
     }
@@ -80,11 +90,29 @@ public:
         settingsWindow = o.launchAsync();
     }
 
+    void showSyncSettings()
+    {
+        if (syncWindow != nullptr) { syncWindow->toFront (true); return; }
+        auto* page = new SyncSettingsPage (getDeviceManager(), *static_cast<OhpeProcessor*> (getAudioProcessor()), link, [this] {
+            // the standalone player picks the output up immediately, not only on the next device start
+            pluginHolder->player.setMidiOutput (getDeviceManager().getDefaultMidiOutput());
+        });
+        juce::DialogWindow::LaunchOptions o;
+        o.content.setOwned (page);
+        o.dialogTitle = "Ohpe - " + tr ("Sync & MIDI");
+        o.dialogBackgroundColour = ui::colour::body;
+        o.escapeKeyTriggersCloseButton = true;
+        o.useNativeTitleBar = true;
+        o.resizable = true;
+        syncWindow = o.launchAsync();
+    }
+
 private:
     void showMenu()
     {
         juce::PopupMenu m;
         m.addItem (1, tr ("Audio Settings ..."));
+        m.addItem (5, tr ("Sync & MIDI ..."));
         m.addSeparator();
         m.addItem (2, tr ("Save state ..."));
         m.addItem (3, tr ("Load state ..."));
@@ -99,6 +127,7 @@ private:
                 case 2: safe->pluginHolder->askUserToSaveState (".ohpe"); break;
                 case 3: safe->pluginHolder->askUserToLoadState (".ohpe"); break;
                 case 4: safe->resetToDefaultState(); break;
+                case 5: safe->showSyncSettings(); break;
                 default: break;
             }
         });
@@ -111,6 +140,11 @@ private:
         {
             auto* dev = getDeviceManager().getCurrentAudioDevice();
             p->deviceOutputChannels.store (dev != nullptr ? dev->getActiveOutputChannels().countNumberOfSetBits() : 2);
+            // tempo sync: Link runs only while it is the sync source
+            const int src = (int) std::lround (p->core().params().get (Core::Ids::syncSource));
+            link.setEnabled (src == Core::SyncLink && LinkSync::available());
+            if (dev != nullptr && dev->getCurrentSampleRate() > 0.0)
+                link.setOutputLatency ((dev->getOutputLatencyInSamples() + dev->getCurrentBufferSizeSamples()) / dev->getCurrentSampleRate());
         }
         if (settingsButton.getButtonText() != tr ("Audio Settings ..."))
         {
@@ -121,7 +155,8 @@ private:
 
     ui::OhpeLookAndFeel lnf;
     juce::TextButton settingsButton;
-    juce::Component::SafePointer<juce::DialogWindow> settingsWindow;
+    juce::Component::SafePointer<juce::DialogWindow> settingsWindow, syncWindow;
+    LinkSync link;
 };
 
 class OhpeApp : public juce::JUCEApplication

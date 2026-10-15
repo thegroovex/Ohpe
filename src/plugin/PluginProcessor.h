@@ -76,6 +76,19 @@ public:
 
     juce::MidiKeyboardState keyboardState;
 
+    /**
+        Standalone tempo sync: an external transport (network tempo sync, Link) that drives the core while
+        "sync.src" is Link and no host provides a position. Set / cleared on the message thread
+        by the standalone app; fill() runs on the audio thread and must be real-time safe.
+    */
+    struct ExternalTransport
+    {
+        virtual ~ExternalTransport() = default;
+        /** Fills bpm / ppq / playing for the block (hostDriven = true); false = not available now. */
+        virtual bool fill (Transport& tr, int numSamples, double sampleRate, double tempoParam) noexcept = 0;
+    };
+    std::atomic<ExternalTransport*> externalTransport { nullptr };
+
     static BusesProperties makeBuses();
 
 private:
@@ -90,6 +103,7 @@ private:
     std::unique_ptr<std::atomic<float>[]> lastPushed; ///< plain value last copied host -> registry (audio + message thread)
     std::vector<MidiEvent> midiScratch;
     juce::AudioBuffer<float> scratch;
+    int syncSourceParam = -1, tempoParam = -1;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OhpeProcessor)
 };

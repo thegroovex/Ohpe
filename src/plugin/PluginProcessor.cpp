@@ -32,6 +32,8 @@ OhpeProcessor::OhpeProcessor()
     lastPushed.reset (new std::atomic<float>[(size_t) reg.size()]);
     for (int i = 0; i < reg.size(); ++i) lastPushed[(size_t) i].store (NAN);
     midiScratch.reserve (2048);
+    syncSourceParam = reg.indexOf (Core::Ids::syncSource);
+    tempoParam = reg.indexOf (Core::Ids::tempo);
     uiState = juce::var (new juce::DynamicObject());
     startTimerHz (20);
 }
@@ -111,6 +113,10 @@ void OhpeProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBu
             }
             tr.playing = pos->getIsPlaying();
         }
+    if (! tr.hostDriven)
+        if (auto* ext = externalTransport.load (std::memory_order_acquire))
+            if (syncSourceParam >= 0 && (int) std::lround (reg.get (syncSourceParam)) == Core::SyncLink)
+                ext->fill (tr, n, getSampleRate(), reg.get (tempoParam));
 
     // 4. outputs: main + aux buses (disabled buses / missing device channels -> null = fall back to main)
     OutputBuffers out;
@@ -156,6 +162,16 @@ void OhpeProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBu
             p->setValueNotifyingHost (change.normValue);
         }
     midi.clear();
+
+    // 6. standalone: MIDI out (clock, sequencer notes) - the standalone player sends this buffer
+    //    to the selected MIDI output after processBlock
+    if (wrapperType == wrapperType_Standalone)
+        for (const auto& e : ohpeCore.midiOutput())
+        {
+            if (e.status == midiclock::songPosition) midi.addEvent (juce::MidiMessage (e.status, e.data1, e.data2), e.sampleOffset);
+            else if (e.status >= 0xf0) midi.addEvent (juce::MidiMessage (e.status), e.sampleOffset);
+            else midi.addEvent (juce::MidiMessage (e.status, e.data1, e.data2), e.sampleOffset);
+        }
 }
 
 // ---------------------------------------------------------------- MIDI learn

@@ -40,6 +40,19 @@ struct VoiceCommon
 };
 
 /**
+    Per-note expression (MPE): set on the voices playing one note, reset to neutral when a voice
+    starts. Values are already mapped to their targets by the part's expression routing.
+*/
+struct NoteExpression
+{
+    float pitch = 0.0f;  ///< semitones added to the note (per-note pitch bend)
+    float timbre = 0.0f; ///< -1..+1 added to the engine's own brightness control
+    float amp = 1.0f;    ///< gain factor 0..2
+    float lfo = 0.0f;    ///< added to the LFO depth (0..1 in total)
+    float pan = 0.0f;    ///< -1..+1 added to the pan position
+};
+
+/**
     The interface every synth engine implements (FM, Wavetable, Analog, Pluck, Grain, Vocal,
     Cluster, Sampler ...). One engine instance plays all voices of one part.
 
@@ -76,5 +89,8 @@ public:
 
     virtual void render (float* left, float* right, int numSamples) noexcept = 0;
     virtual int activeVoiceCount() const noexcept = 0;
+
+    /** Per-note expression for every voice playing `note` (-1 = all voices). Optional. */
+    virtual void noteExpression (int note, const NoteExpression& expression) noexcept { (void) note; (void) expression; }
 };
 } // namespace ohpe

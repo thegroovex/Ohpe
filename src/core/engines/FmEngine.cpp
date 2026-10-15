@@ -86,6 +86,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         const float envShape = c.modEnvAmount >= 0.0f ? modEnv.getLevel() : 1.0f - modEnv.getLevel();
         idx *= (1.0f - envAmt) + envAmt * envShape;
         if (c.lfoDest == LfoDest::Timbre) idx *= std::max (0.0f, 1.0f + lfoValue);
+        idx *= std::max (0.0f, 1.0f + expr.timbre); // per-note expression (MPE)
         const float depth = idx * 4.0f * dsp::pi;
 
         std::array<float, numOps> inc;

@@ -20,3 +20,6 @@ add_test(NAME core_tests COMMAND ohpe_core_tests)
 # parameter table dump (golden file / documentation)
 add_executable(ohpe_param_dump ${CMAKE_SOURCE_DIR}/tools/ParamDump.cpp)
 target_link_libraries(ohpe_param_dump PRIVATE ohpe_core)
+
+# 0.2 (package D): sequencers, scale / chord, timing, MIDI clock, MPE, parts
+target_sources(ohpe_core_tests PRIVATE SeqMidiTests.cpp)
