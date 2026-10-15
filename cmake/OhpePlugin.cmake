@@ -30,6 +30,8 @@ set(OHPE_PLUGIN_SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/OhpeLookAndFeel.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/PluginEditor.cpp
     ${CMAKE_SOURCE_DIR}/src/standalone/AudioSettingsPage.cpp)
+# phase 2, engines B: sample files from disk
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/SampleLoader.cpp)
 
 set(OHPE_DEFINES OHPE_VERSION="${PROJECT_VERSION}" JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0 JUCE_DISPLAY_SPLASH_SCREEN=0)

@@ -14,6 +14,17 @@ add_library(ohpe_core STATIC
     seq/StepSequencer.cpp
     midi/MidiMap.cpp)
 
+# phase 2, engines B: Grain, Vocal, Sampler, drum kit, sample model
+target_sources(ohpe_core PRIVATE
+    engines/GrainEngine.cpp
+    engines/VocalEngine.cpp
+    engines/SamplerEngine.cpp
+    drum/DrumVoice.cpp
+    drum/DrumKit.cpp
+    sample/SampleData.cpp
+    sample/Slicer.cpp
+    sample/SampleState.cpp)
+
 target_include_directories(ohpe_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ohpe_core PUBLIC nlohmann_json::nlohmann_json)
 target_compile_features(ohpe_core PUBLIC cxx_std_17)

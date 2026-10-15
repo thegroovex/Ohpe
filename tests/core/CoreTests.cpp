@@ -82,8 +82,13 @@ TEST_CASE ("core: engine switch to FM changes the sound, releases ring out")
 
 TEST_CASE ("core: unimplemented engine slots are silent (phase 2 placeholders)")
 {
+    // the first slot that is still reserved (none left = nothing to check)
+    int reserved = -1;
+    for (int t = 0; t < numEngineTypes && reserved < 0; ++t)
+        if (! engineTypeInfo ((EngineType) t).implemented) reserved = t;
+    if (reserved < 0) return;
     CoreRig rig;
-    rig.core.params().set ("p1.engine", (float) EngineType::Grain);
+    rig.core.params().set ("p1.engine", (float) reserved);
     rig.run (20, { MidiEvent::noteOn (1, 60, 100, 0) });
     CHECK (peak (rig.recL) == 0.0f);
 }

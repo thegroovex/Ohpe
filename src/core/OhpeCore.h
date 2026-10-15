@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
+#include "drum/DrumKit.h"
 #include "engines/Part.h"
 #include "midi/MidiMap.h"
 #include "mixer/Mixer.h"
@@ -13,6 +14,7 @@
 
 #include <array>
 #include <atomic>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -46,6 +48,7 @@ public:
     StepSequencer& stepSequencer() noexcept { return stepSeq; }
     Part& part (int index) noexcept { return *parts[(size_t) index]; }
     Mixer& mixer() noexcept { return mix; }
+    drum::DrumKit& drumKit() noexcept { return drums; }   ///< mixer source "drum", MIDI channel 10
 
     void prepare (double sampleRate, int maxBlockSize);
     void reset() noexcept;
@@ -64,6 +67,21 @@ public:
     // ---- state (message thread) ----
     std::string saveState (const std::string& uiJson = {}) const;
     bool loadState (const std::string& json, std::string* uiJsonOut = nullptr);
+
+    /**
+        Extra state sections owned by modules outside the core (e.g. "samples": the sample files
+        the plug-in loaded). Stored with saveState(); loadState() replaces them with the sections
+        of the document that the core does not own itself. Message thread.
+    */
+    void setStateSection (const std::string& name, std::string json) { extraSections[name] = std::move (json); }
+    std::string stateSection (const std::string& name) const
+    {
+        const auto it = extraSections.find (name);
+        return it != extraSections.end() ? it->second : std::string();
+    }
+
+    /** MIDI channel that plays the drum kit (all other channels play part 1). */
+    static constexpr int drumChannel = 10;
 
     /** Republishes the MIDI map after editing it on the message thread. */
     void midiMapChanged() { mapper.publish (map); }
@@ -90,6 +108,7 @@ private:
     ParamSnapshot snapshot;
     std::array<std::unique_ptr<Part>, numParts> parts;
     Mixer mix;
+    drum::DrumKit drums;
     StepSequencer stepSeq;
     MidiMap map;
     MidiMapper mapper { registry };
@@ -103,7 +122,8 @@ private:
     double internalPpq = 0.0;
     bool internalWasRunning = false;
 
-    std::vector<float> partL, partR;
+    std::vector<float> partL, partR, drumL, drumR;
+    std::map<std::string, std::string> extraSections;
     std::vector<ParamLockEvent> lockStorage;
     SequencerOutput seqOut;
     EventList<1024> merged;

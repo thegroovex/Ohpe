@@ -45,5 +45,11 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     }
 
     // ---- append new parameters below this line (phase 2+), never above ------------------
+
+    // ---- phase 2, engines B: Grain, Vocal, Sampler engines of part 1, drum kit ---------------
+    parts[0]->registerEngineParams (reg, EngineType::Grain);
+    parts[0]->registerEngineParams (reg, EngineType::Vocal);
+    parts[0]->registerEngineParams (reg, EngineType::Sampler);
+    drum::DrumKit::registerParams (reg);
 }
 } // namespace ohpe
