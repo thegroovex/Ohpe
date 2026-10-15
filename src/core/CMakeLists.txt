@@ -51,3 +51,8 @@ target_sources(ohpe_core PRIVATE
     seq/Arpeggiator.cpp
     seq/OrbitSequencer.cpp
     midi/MidiClock.cpp)
+
+# 0.3 (package E): preset format and library (filter / sort / user data)
+target_sources(ohpe_core PRIVATE
+    preset/Preset.cpp
+    preset/PresetLibrary.cpp)

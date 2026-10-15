@@ -3,6 +3,7 @@
 #pragma once
 
 #include "OhpeCore.h"
+#include "PresetManager.h"
 #include "SampleLoader.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -72,6 +73,26 @@ public:
     bool exportMidiMap (const juce::File& file) const;
     bool importMidiMap (const juce::File& file);
 
+    /** 0.3: the preset library (factory + user bank). Message thread. */
+    PresetManager& presets() noexcept { return *presetManager; }
+
+    /**
+        0.3: edits the core's registry on the message thread and publishes the result to the host:
+        pending host values are pulled into the registry first, then `fn` runs, then every changed
+        value is sent to the host parameters (automation / UI follow).
+    */
+    void editRegistry (const std::function<void (Core&)>& fn);
+
+    /**
+        0.3: remote controls ("lib.*", "tape.edit.*"): MIDI-mapped presses are counted on the audio
+        thread, host / UI changes are detected as rising edges on the timer. The library key has
+        no processor-side action: the editor polls libraryToggleRequests().
+    */
+    int libraryToggleRequests() const noexcept { return libraryToggles.load(); }
+    /** Runs a tape edit on the edit track ("tape.edit.track"); lift / cut use loop in .. out,
+        drop / splice the play position. Returns false if the tape refused it. */
+    bool runTapeEdit (const char* triggerId);
+
     /** UI state stored with the session (language, mode, page). */
     juce::var uiState;
 
@@ -111,6 +132,15 @@ private:
     juce::AudioBuffer<float> scratch;
     juce::AudioBuffer<float> inputScratch; ///< 0.2: input bus copy for tape recording
     int syncSourceParam = -1, tempoParam = -1;
+
+    // 0.3: remote controls
+    void pollRemoteTriggers();
+    static constexpr int numTriggers = 10;
+    std::array<int, numTriggers> triggerParam {};
+    std::array<float, numTriggers> triggerLast {};
+    std::array<std::atomic<int>, numTriggers> triggerPresses {};
+    std::atomic<int> libraryToggles { 0 };
+    std::unique_ptr<PresetManager> presetManager;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OhpeProcessor)
 };

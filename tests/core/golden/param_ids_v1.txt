@@ -873,3 +873,16 @@ p4.sampler.reverse
 p4.sampler.mode
 p4.sampler.slicesens
 p4.sampler.slicebase
+# 0.3 (package E): remote controls (library, edit part, tape editing)
+lib.open
+lib.prev
+lib.next
+ui.part
+tape.edit.track
+tape.edit.lift
+tape.edit.cut
+tape.edit.drop
+tape.edit.splice
+tape.edit.undo
+tape.edit.redo
+tape.edit.rtz

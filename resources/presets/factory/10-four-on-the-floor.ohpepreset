@@ -1,0 +1,97 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "project",
+  "name": "Four on the Floor",
+  "author": "groovex",
+  "tags": [
+    "Drums"
+  ],
+  "engine": "analog",
+  "comment": "Placeholder for testing the library; the real factory sounds follow in a later version.",
+  "params": {
+    "tempo": 124,
+    "seq.step.channel": 10,
+    "seq.run": 0
+  },
+  "sections": {
+    "sequencer": {
+      "format": "ohpe-step-pattern",
+      "version": 1,
+      "steps": [
+        {
+          "i": 0,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 0.5,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 2,
+          "on": true,
+          "note": 42,
+          "vel": 80,
+          "gate": 0.3,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 4,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 0.5,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 6,
+          "on": true,
+          "note": 42,
+          "vel": 80,
+          "gate": 0.3,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 8,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 0.5,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 10,
+          "on": true,
+          "note": 42,
+          "vel": 80,
+          "gate": 0.3,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 12,
+          "on": true,
+          "note": 36,
+          "vel": 110,
+          "gate": 0.5,
+          "prob": 100,
+          "ratchet": 1
+        },
+        {
+          "i": 14,
+          "on": true,
+          "note": 42,
+          "vel": 80,
+          "gate": 0.3,
+          "prob": 100,
+          "ratchet": 1
+        }
+      ]
+    }
+  }
+}

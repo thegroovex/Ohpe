@@ -1,0 +1,22 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Dust Cloud",
+  "author": "groovex",
+  "tags": [
+    "Textures",
+    "FX"
+  ],
+  "engine": "grain",
+  "comment": "Placeholder for testing the library; the real factory sounds follow in a later version.",
+  "params": {
+    "engine": 4,
+    "grain.pos": 0.4,
+    "grain.size": 220,
+    "grain.density": 40,
+    "grain.spray": 0.5,
+    "amp.a": 0.8,
+    "amp.r": 2.0
+  }
+}
