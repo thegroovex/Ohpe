@@ -80,3 +80,13 @@ PRESETS_RESO = [
                                        sympathetic=0.3, width=0.9, mix=0.45, drive=0.0),
       reverb(0.6, 0.35, 0.02, 0.2), voices=10),
 ]
+
+DE_RESO = {
+    "Plucked Plate": "Ein heller Zupfer schlägt eine gestimmte Metallplatte an: glockenartige Teiltöne, die nach dem Anschlag aufblühen.",
+    "Gamelan Plate": "Kurze Schlegelschläge auf eine lange Bronzeplatte, gespreizte Teiltöne und ein schimmernder Nachklang.",
+    "Bowed Tube": "Hauchiges Rauschen streicht ein gedacktes Rohr: ein hohler, klarinettenartiger Ton, der mit dem Druck anschwillt.",
+    "Breath Bore": "Eine flüsternde Stimme, durch ein offenes Rohr geblasen: luftige Flötentöne mit weicher Kante.",
+    "Sympathetic Pad": "Eine warme Fläche weckt Resonanzsaiten, gestimmt auf den gehaltenen Akkord – sie klingen nach dem Loslassen weiter.",
+    "Drone Strings": "Gezupfter Stahl über Resonanzsaiten im Akkord: schnarrend, dröhnend, endlos nachklingend.",
+    "Glass Body Keys": "Weiche Tasten durch eine Glasplatte, auf jede Note gestimmt: ein gläserner Schimmer über dem Akkord.",
+}

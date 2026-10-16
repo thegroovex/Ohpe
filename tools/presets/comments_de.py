@@ -196,3 +196,7 @@ DE.update(DE_R3)
 from factory_parts_space_de import DE_SPACE  # noqa: E402
 
 DE.update(DE_SPACE)
+# p19: the resonator presets
+from factory_parts_reso import DE_RESO  # noqa: E402
+
+DE.update(DE_RESO)

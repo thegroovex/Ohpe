@@ -708,3 +708,38 @@ part presets (`"morph"` block) and in projects / the plug-in state (section `"mo
 
 The modulation matrix gains the sources **Morph X / Morph Y** (21, 22) and the targets **Morph X / Morph Y**
 (73, 74); the source and target choice lists grow at their end.
+
+## Resonator body (p19)
+
+Appended after the morph block (`p4.morph.ysrc`). Guide: [English](en/RESONATOR.md) · [Deutsch](de/RESONANZKOERPER.md).
+452 parameters:
+
+1. **Per-part stage** `pN.reso.*` for parts 1 – 4 (15 each, group `partN/reso`; host names "Part N …"):
+   `pN.reso.on` (Resonator / Resonanzkörper, 0 … 1, default 0) and the Resonator block below. The stage sits right
+   after the engines and the layer, before the part volume and the FX rack.
+2. **Rack type Resonator** (DE Resonanzkörper, `pN.fxK.type` / `mfxK.type` value 23, appended after Space 3D): its
+   block `<slot>resonator.*` for every slot of every rack, in the order parts 1 – 4 slots 1 – 6, then master slots
+   1 – 4 (28 × 14). FX Param 1 – 4 (matrix) = Body Tune, Material, Decay, Position.
+
+### The Resonator block (`pN.reso.*`, `<slot>resonator.*`)
+
+| Local ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `model` | Body | Körper | String, Plate, Open Tube, Closed Tube | 0 (String) |
+| `follow` | Tuning | Stimmung | Fixed, Note, Chord | 1 (Note) |
+| `tune` | Body Tune | Körper-Stimmung | -24 … 24 semitones | 0 |
+| `size` | Size | Größe | 0 … 1 | 0.5 |
+| `material` | Material | Material | 0 … 1 | 0.55 |
+| `decay` | Decay | Ausklang | 0.05 … 20 s (skew 0.3) | 2 |
+| `position` | Position | Position | 0 … 1 | 0.3 |
+| `inharm` | Inharmonicity | Inharmonizität | 0 … 1 | 0.1 |
+| `sympathetic` | Sympathetic Strings | Resonanzsaiten | 0 … 1 | 0.35 |
+| `width` | Body Width | Körper-Breite | 0 … 1 | 0.6 |
+| `drive` | Drive | Drive | 0 … 1 | 0 |
+| `mix` | Body Mix | Körper-Mischung | 0 … 1 (0 = exact bypass) | 0.5 |
+| `pressamt` | Pressure to Body | Druck auf Körper | -1 … 1 | 0.5 |
+| `slideamt` | Slide to Position | Slide auf Position | -1 … 1 | 0.5 |
+
+The modulation matrix gains the targets **Body Tune, Body Size, Body Material, Body Decay, Body Position, Body Mix**
+(75 – 80, `pN.reso.tune` … `pN.reso.mix`); the target choice list grows at its end. The FX slot type lists grow by
+**Resonator** (23).

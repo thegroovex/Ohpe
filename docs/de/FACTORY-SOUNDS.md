@@ -225,7 +225,7 @@ Werkzeuge, für Mitwirkende:
 | Wobble Bass | Analog | FX | Filter-Wobble auf einem angezerrten Sägezahn-Stapel; LFO-Tempo nach Geschmack. |
 | Wub Machine | Wavetable | MPE | Sägezahn-Stapel durch ein tempo-synchrones Achtel-Wobble-Filter, das mit jeder Note neu startet. |
 
-### Tasten (37)
+### Tasten (38)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
@@ -245,6 +245,7 @@ Werkzeuge, für Mitwirkende:
 | FM Vibes | FM | Zupfer | Weiche metallische Klangstäbe mit Tremolo. |
 | Felt Grand | Sampler | Klavier, MPE | Dunkler, weicher Flügel: Höhen abgesenkt, langsames Release und warmer Hall – intim. |
 | Funk Clav | FM | Zupfer | Knackige Clavinet-artige Tasten; kurz und synkopiert spielen. |
+| Glass Body Keys | Cluster | MPE | Weiche Tasten durch eine Glasplatte, auf jede Note gestimmt: ein gläserner Schimmer über dem Akkord. |
 | Glass Keys | Wavetable | – | Glockige Glass-Tabelle, die beim Ausklingen dunkler wird. |
 | Glide Poly Synth | Analog | Leads | Poly-Synth, dessen Akkorde immer vom vorigen Akkord herübergleiten (Poly-Glide). |
 | Halo Grand | Sampler | Hybrid, Klavier, MPE | Flügel mit Heiligenschein: seine eigene Aufnahme, eingefroren zu einer Grain-Wolke, die hinter jedem Akkord aufblüht. |
@@ -267,7 +268,7 @@ Werkzeuge, für Mitwirkende:
 | Vibraphone | Sampler | – | Aufgenommenes Vibrafon mit sanftem Motor-Tremolo. |
 | Wide Organ | Wavetable | – | Zugriegelartige Orgel mit rotierendem Stereo-Pan und kurzem Hall. |
 
-### Flächen (47)
+### Flächen (48)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
@@ -313,17 +314,19 @@ Werkzeuge, für Mitwirkende:
 | Spectral Morph | Wavetable | Hybrid, MPE | Formant-Tabelle, die unter einem gehauchten Vokal-Layer morpht, beide durch einen driftenden Kammfilter: Spektren, die ineinander schmelzen. |
 | Super Stack | Cluster | – | Sieben verstimmte Sägezähne pro Taste, breit und üppig. |
 | Sus Horizon | Cluster | – | Sus2-Stapel, die sich nie auflösen; Ambient-Teppiche. |
+| Sympathetic Pad | Analog | MPE | Eine warme Fläche weckt Resonanzsaiten, gestimmt auf den gehaltenen Akkord – sie klingen nach dem Loslassen weiter. |
 | Tidal Pad | Analog | MPE | Warme Sägezahn-Fläche, deren Filter über zwei Takte wie Gezeiten kommt und geht. |
 | Tine Bloom | Grain | Texturen, Klavier, MPE | Tine-Piano-Grains, die langsam aufblühen, mit Chorus und punktiertem Echo. |
 | Vowel Pad | Wavetable | – | Formant-Tabelle, die zwischen Vokalen treibt; langsamer Einsatz. |
 | Warm Horizon | Cluster | MPE | Weiche, breite Add9-Fläche mit sanftem Drift: warm und offen, sitzt hinter allem. |
 | Warm Strings | Analog | – | Ensemble-Streicher: verstimmte Sägezähne, eine Oktave höher, sanfter Chorus. |
 
-### Leads (33)
+### Leads (34)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
 | Binaural Lead | Wavetable | 3D, MPE | Ausdrucksstarkes Lead vor dir: Slide hebt es über deinen Kopf, Druck holt es bis ans Ohr, eine langsame Drift hält es lebendig. Für MPE-Controller und Kopfhörer. |
+| Bowed Tube | Analog | MPE | Hauchiges Rauschen streicht ein gedacktes Rohr: ein hohler, klarinettenartiger Ton, der mit dem Druck anschwillt. |
 | Breath Lead | Vocal | Hybrid, MPE | Gehauchter, gesungener Ton, verschmolzen mit einem weichen Sägezahn-Stapel: ein Lead zwischen Stimme und Synth. |
 | Chip Square Lead | Wavetable | MPE | Schmales Puls-Lead mit knusprigem Bitcrusher und schnellem Vibrato – retro, aber breit. |
 | Classic Mono Lead | Analog | – | Sägezahn-Lead mit etwas Vibrato, Glide und punktiertem Delay. |
@@ -357,14 +360,16 @@ Werkzeuge, für Mitwirkende:
 | Vox Lead | Vocal | Vokal | Synthetische Solostimme mit ausdrucksvollem Vibrato und Glide. |
 | Vox Synth Lead | Vocal | Vokal, MPE | Gesungenes Synth-Lead: ein „Ah“ mit Vibrato, verbreitert durch Haas-Spreizung, mit Delay. |
 
-### Zupfer (20)
+### Zupfer (23)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
 | Concert Harp | Sampler | – | Aufgenommene Konzertharfe (acht Töne, CC0). |
+| Drone Strings | Zupfen | MPE | Gezupfter Stahl über Resonanzsaiten im Akkord: schnarrend, dröhnend, endlos nachklingend. |
 | Echo Harp | Zupfen | MPE | Gezupfte, nylonartige Saite mit punktierten Ping-Pong-Echos und breitem Raum. |
 | FM Koto | FM | – | Gezupftes FM: heller Anschlag, der schnell weicher wird. |
 | Future Chord | Cluster | Tasten, MPE | Breiter Moll-Septakkord-Stab mit Squash und kurzem Schimmer – eine Taste, ein Akkord. |
+| Gamelan Plate | Zupfen | MPE | Kurze Schlegelschläge auf eine lange Bronzeplatte, gespreizte Teiltöne und ein schimmernder Nachklang. |
 | Glass Pluck | Wavetable | – | Glass-Tabellen-Pluck mit glockigem Funkeln. |
 | Harp Pluck | Zupfen | – | Lang klingende, harfenartige Saite mit weichem Anschlag. |
 | Kalimba | Sampler | Tasten | Aufgenommenes Daumenklavier mit schnarrenden, holzigen Zungen (CC0). |
@@ -372,6 +377,7 @@ Werkzeuge, für Mitwirkende:
 | Muted Pick | Analog | – | Kurzer, abgedämpfter Rechteck-Pluck für schnelle Linien. |
 | Nylon Guitar | Zupfen | – | Warme Nylonsaite, nahe am Schallloch gezupft. |
 | Pluck Nebula | Zupfen | Hybrid, MPE | Eine gezupfte Saite, die sich in eine Kalimba-Grain-Wolke auflöst: die Saite verklingt, die Wolke schwillt an und bleibt. |
+| Plucked Plate | Zupfen | MPE | Ein heller Zupfer schlägt eine gestimmte Metallplatte an: glockenartige Teiltöne, die nach dem Anschlag aufblühen. |
 | Poly Pluck | Analog | – | Klassischer Synth-Pluck: knackiges Filter auf einem verstimmten Sägezahn-Paar. |
 | Resonator Hit | Zupfen | Hybrid, MPE | Ein angeschlagener Metallstab, der eine kurze Grain-Resonanz und einen gestimmten Kammfilter speist: perkussiv, klingend, seltsam. |
 | Steel Drum FM | FM | Tasten | Tropische Steeldrum-Töne aus unharmonischer FM. |
@@ -450,11 +456,12 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 | Trance Gate Arp | Cluster | Leads | Supersaw-Stapel auf einem Sechzehntel-Arp über zwei Oktaven, Ping-Pong-Delay und Hall. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
 | Wide Pluck Arp | Wavetable | Zupfer | Sechsstimmiger Stereo-Pluck, auf/ab über drei Oktaven, punktiertes Ping-Pong-Delay. *Arp: Auf/Ab · 1/16 · 3 Okt. · Halten* |
 
-### Texturen (25)
+### Texturen (26)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
 | Backwards Kalimba | Sampler | FX | Die Kalimba rückwärts: Anschwellen, das in einem Zupfer endet. |
+| Breath Bore | Vocal | MPE | Eine flüsternde Stimme, durch ein offenes Rohr geblasen: luftige Flötentöne mit weicher Kante. |
 | Breath Texture | Vocal | Vokal | Fast stimmloser Atem durch langsam wandernde Vokale. |
 | Breathing Machine | Vocal | Vokal, MPE | Gehauchter Vokal-Drone, dessen Vokal sich über zwei Takte öffnet und schließt. |
 | Dark Matter | Wavetable | Flächen, MPE | Tiefe Grit-Tabelle mit kriechendem Phaser und langsam wandernder Position – bedrohlich. |
@@ -589,5 +596,5 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 | Liquid Roll | Bass, Drums, Tasten | Liquid Drum & Bass mit 174 BPM in d-Moll: rollender Beat auf dem Tight-Kit (Orbit), verträumte Tine-Piano-Septakkorde und eine warme Fläche (Orbit-Spuren 3 und 4), ein weicher, gleitender Sub (Step-Sequenzer) und gläserne Plucks aus Euklid. Play drücken. |
 | Evolving Space | Flächen, Texturen, Hybrid, 3D | Ambient mit 66 BPM in a-Moll: Evolving-Tide-Akkorde, die durch ihre Wavetable driften (Step-Sequenzer), ein generativer Flügel mit Grain-Heiligenschein aus drei Orbit-Spuren mit 5, 7 und 11 Schritten, ein Gletscher-Grain-Drone und zufällige Sternenfeld-Glocken (Euklid). Einfach laufen lassen. In 3D: die Akkorde kreisen langsam um dich, die Sternenfeld-Glocken verstreuen sich ringsum und die Drone schwingt über dir (am besten mit Kopfhörern). |
 
-**Engines:** FM 42, Wavetable 79, Analog 66, Zupfen 14, Grain 27, Vocal 19, Cluster 22, Sampler 26
+**Engines:** FM 42, Wavetable 79, Analog 68, Zupfen 17, Grain 27, Vocal 20, Cluster 23, Sampler 26
 <!-- presets:end -->

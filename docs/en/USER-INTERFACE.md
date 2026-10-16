@@ -317,6 +317,17 @@ of every preset tagged **3D**.
 
 ![The 3D badge in the display header](../images/ohpe-space-badge.png)
 
+## Body view (p19)
+
+![The Body view](../images/ohpe-reso-view.png)
+
+The fifth tab of **Effects** mode, **Body**, edits the edit part's [resonator body](RESONATOR.md): on, body model,
+tuning (Fixed / Note / Chord) and mix on the first page, then tune, size, material and decay, then position,
+inharmonicity, sympathetic strings and width, and on the last page drive and the MPE amounts (pressure, slide). The
+display draws the body – the string pair with its sympathetic strings, the plate with its moving mode pattern or the
+bore with its standing wave – with the excitation point as a yellow dot; the strip below names the model, the tuning
+and the pitch the body follows. A *Resonator* slot in the rack shows the same body in the Rack view.
+
 ## Morph view (p16)
 
 ![The Morph view](../images/ohpe-morph-view.png)
