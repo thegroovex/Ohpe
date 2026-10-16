@@ -147,6 +147,9 @@ public:
     float uiRouteValue (int slot) const noexcept { return uiValue[(size_t) slot].load (std::memory_order_relaxed); }
     float uiSourceValue (int src) const noexcept { return src >= 0 && src < numSources ? uiSource[(size_t) src].load (std::memory_order_relaxed) : 0.0f; }
     void publishUi() noexcept;
+    /** p21, any thread: stage of the part-wide amp (which = 0) / mod (1) envelope of the newest note
+        (dsp::Adsr::Stage as int: 0 idle, 1 attack, 2 decay, 3 sustain, 4 release) - the pro view's playhead. */
+    int uiEnvStage (int which) const noexcept { return uiStage[(size_t) (which & 1)].load (std::memory_order_relaxed); }
 
 private:
     struct SlotIdx { int src = -1, via = -1, dst = -1, amt = -1, curve = -1; };
@@ -180,5 +183,6 @@ private:
 
     std::array<std::atomic<float>, numSlots> uiValue {};
     std::array<std::atomic<float>, numSources> uiSource {};
+    std::array<std::atomic<int>, 2> uiStage {}; ///< p21
 };
 } // namespace ohpe::mod
