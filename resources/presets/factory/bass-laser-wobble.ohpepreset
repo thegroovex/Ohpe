@@ -65,7 +65,7 @@
     "fx3.multiband.mid": 0.0,
     "fx3.multiband.high": 0.0,
     "fx3.multiband.mix": 1.0,
-    "fx3.multiband.output": 0.0,
+    "fx3.multiband.output": 11.3,
     "mod.s1.src": 3,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,

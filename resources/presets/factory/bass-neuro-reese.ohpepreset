@@ -64,7 +64,7 @@
     "fx4.width.spread": 0.0,
     "fx4.width.haas": 12,
     "fx4.width.mono": 130,
-    "fx4.width.output": 0.0,
+    "fx4.width.output": -3.4,
     "mod.s1.src": 2,
     "mod.s1.via": 0,
     "mod.s1.dst": 47,

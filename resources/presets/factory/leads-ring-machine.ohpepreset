@@ -163,6 +163,6 @@
     "mpe.smooth": 0.04,
     "mpe.bend": 48,
     "glide": 0.03,
-    "gain": 0.0
+    "gain": 24.0
   }
 }

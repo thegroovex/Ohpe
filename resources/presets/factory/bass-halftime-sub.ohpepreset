@@ -40,7 +40,7 @@
     "fx2.width.spread": 0.0,
     "fx2.width.haas": 12,
     "fx2.width.mono": 300,
-    "fx2.width.output": 0.0,
+    "fx2.width.output": -2.9,
     "lfo.rate": 0.17,
     "lfo.depth": 0.12,
     "lfo.shape": 1,

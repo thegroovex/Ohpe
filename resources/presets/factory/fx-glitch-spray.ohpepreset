@@ -45,6 +45,6 @@
     "lfo.shape": 1,
     "lfo.dest": 1,
     "voices": 4,
-    "gain": 0.0
+    "gain": 24.0
   }
 }

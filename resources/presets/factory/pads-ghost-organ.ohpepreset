@@ -44,6 +44,6 @@
     "fx2.reverb.predelay": 0.05,
     "fx2.reverb.mix": 0.42,
     "voices": 8,
-    "gain": 0.0
+    "gain": 8.9
   }
 }

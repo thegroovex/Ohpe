@@ -65,7 +65,7 @@
     "fx3.multiband.mid": 0.0,
     "fx3.multiband.high": 0.0,
     "fx3.multiband.mix": 1.0,
-    "fx3.multiband.output": 0.0,
+    "fx3.multiband.output": 11.6,
     "fx4.type": 1,
     "fx4.chorus.rate": 0.25,
     "fx4.chorus.depth": 0.35,

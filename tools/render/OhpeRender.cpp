@@ -6,9 +6,10 @@
 // embedded FLAC files (tools/samples/build_samples.py --wav-cache DIR writes them).
 //
 //   ohpe_render [--out DIR] [--bank resources/samples/bank.json --wavdir DIR] [--part N]
-//               [--seconds S] [--bpm B] [--limit] [--hold S] preset.ohpepreset ...
+//               [--seconds S] [--bpm B] [--limit] [--hold S] [--beats N] [--tail S] preset.ohpepreset ...
 //
 // --hold S: part presets hold one note (bass, lead) or a chord for S seconds instead of their phrase (movement check).
+// --beats N / --tail S: shorten the phrase and its tail (the factory level tests render 4 beats + 1 s).
 //
 // Part presets play the phrase of their main category (render::phraseFor); project presets run
 // their sequencers for --seconds (default 16). The master limiter is off, so peaks are honest (--limit keeps a project's limiter, as heard).
@@ -156,7 +157,7 @@ int main (int argc, char** argv)
 {
     fs::path out, bankFile, wavdir;
     int part = 0;
-    double seconds = 16.0, bpm = 100.0, hold = 0.0;
+    double seconds = 16.0, bpm = 100.0, hold = 0.0, beats = 1.0e9, tail = 1.0e9;
     bool limiter = false;
     std::vector<std::string> files;
     for (int i = 1; i < argc; ++i)
@@ -171,6 +172,8 @@ int main (int argc, char** argv)
         else if (a == "--bpm") bpm = std::stod (next());
         else if (a == "--limit") limiter = true;
         else if (a == "--hold") hold = std::stod (next());
+        else if (a == "--beats") beats = std::stod (next()); // phrase limit, as the level tests render it
+        else if (a == "--tail") tail = std::stod (next());
         else files.push_back (a);
     }
     const auto bank = loadBank (bankFile, wavdir);
@@ -192,7 +195,7 @@ int main (int argc, char** argv)
         core->prepare (48000.0, 256);
         for (const auto& [pad, s] : bank.studio) core->drumKit().setFactorySample (pad, s);
         const bool project = p.meta.kind == preset::Kind::Project;
-        const auto audio = project ? render::renderProject (*core, p, seconds, limiter) : render::renderPart (*core, p, part, bpm, 1.0e9, 1.0e9, hold);
+        const auto audio = project ? render::renderProject (*core, p, seconds, limiter) : render::renderPart (*core, p, part, bpm, beats, tail, hold);
         const auto m = render::measure (audio);
         if (! out.empty()) writeWav (out / (base (file) + ".wav"), audio);
 

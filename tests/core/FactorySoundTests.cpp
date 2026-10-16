@@ -213,7 +213,7 @@ TEST_CASE ("factory presets: every preset loads and renders finite, unclipped au
         // built-in sound, which is far louder than the recording their gain is calibrated for: only
         // the numbers are checked for them here; the plug-in tests check level and peak with the bank
         const auto inst = [&] (const char* id) { const auto i = p.params.find (id); return i != p.params.end() && i->second > 0.5f; };
-        const bool recording = inst ("sampler.inst") || inst ("grain.inst");
+        const bool recording = inst ("sampler.inst") || inst ("grain.inst") || inst ("sampler.inst2") || inst ("grain.inst2"); // 0.8 keyboards
         CAPTURE (recording);
         if (! recording)
         {

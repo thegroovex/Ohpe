@@ -58,6 +58,6 @@
     "mpe.bend": 48,
     "voices": 16,
     "velsens": 0.6,
-    "gain": 0.0
+    "gain": 10.0
   }
 }

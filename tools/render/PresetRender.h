@@ -187,6 +187,7 @@ inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0,
     preset::applyPart (p, core.params(), partIndex, opt);
     core.params().set ("tempo", (float) bpm);
     core.params().set ("mix.master.limit", 0.0f); // measure the preset itself, not the master limiter
+    core.prepareEffects(); // rack slots 2-6 prepare their types lazily (the plugin does this on the message thread)
     const auto phrase = holdSeconds > 0.0 ? holdPhrase (primaryCategory (p.meta), holdSeconds * bpm / 60.0)
                                           : phraseFor (primaryCategory (p.meta));
     const double sr = core.sampleRate();
@@ -211,6 +212,7 @@ inline Audio renderProject (Core& core, const preset::Preset& p, double seconds,
 {
     preset::applyProject (p, core);
     if (! limiter) core.params().set ("mix.master.limit", 0.0f);
+    core.prepareEffects(); // lazy rack slots, as the plugin's message thread does after a preset load
     core.params().set ("seq.run", 1.0f);
     return renderCore (core, {}, (int64_t) std::llround (seconds * core.sampleRate()));
 }

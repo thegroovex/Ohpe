@@ -68,7 +68,7 @@
     "fx3.multiband.mid": 0.0,
     "fx3.multiband.high": 0.0,
     "fx3.multiband.mix": 1.0,
-    "fx3.multiband.output": 0.0,
+    "fx3.multiband.output": 12.0,
     "mod.s1.src": 2,
     "mod.s1.via": 0,
     "mod.s1.dst": 43,
@@ -115,6 +115,6 @@
     "mpe.slide": 0.08,
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
-    "gain": 0.0
+    "gain": 3.0
   }
 }

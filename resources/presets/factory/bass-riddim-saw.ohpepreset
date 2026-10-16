@@ -61,7 +61,7 @@
     "fx3.eq.p3q": 1.0,
     "fx3.eq.highfreq": 11000.0,
     "fx3.eq.highgain": -2.5,
-    "fx3.eq.output": 0.0,
+    "fx3.eq.output": -1.6,
     "mod.s1.src": 2,
     "mod.s1.via": 0,
     "mod.s1.dst": 43,

@@ -47,7 +47,7 @@
     "fx.multiband.mid": 0.0,
     "fx.multiband.high": 0.0,
     "fx.multiband.mix": 1.0,
-    "fx.multiband.output": 0.0,
+    "fx.multiband.output": 11.4,
     "fx2.type": 6,
     "fx2.reverb.size": 0.95,
     "fx2.reverb.damping": 0.4,

@@ -45,13 +45,13 @@
     "fx2.width.spread": 0.0,
     "fx2.width.haas": 12,
     "fx2.width.mono": 300,
-    "fx2.width.output": 0.0,
+    "fx2.width.output": 12.0,
     "lfo.rate": 0.17,
     "lfo.depth": 0.12,
     "lfo.shape": 1,
     "lfo.dest": 1,
     "monobass": 150.0,
     "velsens": 0.5,
-    "gain": 0.0
+    "gain": 2.9
   }
 }

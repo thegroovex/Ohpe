@@ -45,7 +45,7 @@
     "lfo.dest": 1,
     "wavetable.lfopos": 0.12,
     "voices": 8,
-    "gain": 0.0
+    "gain": 14.1
   },
   "arp": {
     "on": 1,
