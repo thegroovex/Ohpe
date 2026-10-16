@@ -333,9 +333,9 @@ juce::Rectangle<float> OhpeEditor::designArea (const char* name)
         { "langEn", 1080, 38, 36, 24 },         { "langDe", 1120, 38, 36, 24 },
         { "engineLegend", 40, 88, 200, 12 },    { "modeLegend", 968, 88, 192, 12 },
         { "overlay", 24, 104, 1152, 512 },
-        { "engineColumn", 32, 112, 208, 368 },  { "modeColumn", 960, 112, 208, 368 },
+        { "engineColumn", 32, 112, 208, 336 },  { "modeColumn", 960, 112, 208, 336 },
         { "display", 256, 112, 688, 336 },
-        { "transportPanel", 32, 496, 208, 112 }, { "octavePanel", 960, 496, 208, 112 },
+        { "transportPanel", 32, 464, 208, 144 }, { "octavePanel", 960, 464, 208, 144 },
         { "keyboardBed", 24, 624, 1152, 152 },
         { "pitchWheel", 40, 636, 40, 128 },     { "modWheel", 96, 636, 40, 128 },
         { "keyboard", 152, 632, 872, 136 },
@@ -353,25 +353,26 @@ void OhpeEditor::resized()
         const auto r = designArea (name);
         c.setBounds (scaled (r.getX(), r.getY(), r.getWidth(), r.getHeight()));
     };
-    // columns: 2 x 4 keys of 88 x 80 on an 88-unit pitch, 12 units inside the recessed panels
+    // columns: 2 x 4 keys of 88 x 72 on an 80-unit pitch, 12 units inside the recessed panels
+    const float s = (float) getWidth() / (float) designWidth;
     for (int t = 0; t < numEngineTypes; ++t)
-        engineKeys[(size_t) t]->setBounds (scaled (44.0f + 96.0f * (float) (t % 2), 124.0f + 88.0f * (float) (t / 2), 88, 80));
+        engineKeys[(size_t) t]->setBounds (scaled (44.0f + 96.0f * (float) (t % 2), 124.0f + 80.0f * (float) (t / 2), 88, 72));
     for (int m = 0; m < numModes; ++m)
-        modeKeys[(size_t) m]->setBounds (scaled (972.0f + 96.0f * (float) (m % 2), 124.0f + 88.0f * (float) (m / 2), 88, 80));
+        modeKeys[(size_t) m]->setBounds (scaled (972.0f + 96.0f * (float) (m % 2), 124.0f + 80.0f * (float) (m / 2), 88, 72));
     place (display, "display");
     // four encoders centred under the display, 168 units apart
     for (int i = 0; i < 4; ++i)
         encoders[(size_t) i]->setBounds (scaled (288.0f + 168.0f * (float) i, 460, 120, 148));
     // transport panel (bottom left): REC PLAY STOP / TO START LOOP MIDI
-    recKey.setBounds (scaled (44, 504, 60, 48));
-    playKey.setBounds (scaled (112, 504, 60, 48));
-    stopKey.setBounds (scaled (180, 504, 60, 48));
-    toStartKey.setBounds (scaled (44, 556, 60, 48));
-    loopKey.setBounds (scaled (112, 556, 60, 48));
-    midiKey.setBounds (scaled (180, 556, 60, 48));
-    // octave panel (bottom right)
-    octDownKey.setBounds (scaled (972, 508, 88, 92));
-    octUpKey.setBounds (scaled (1068, 508, 88, 92));
+    recKey.setBounds (scaled (44, 472, 60, 64));
+    playKey.setBounds (scaled (112, 472, 60, 64));
+    stopKey.setBounds (scaled (180, 472, 60, 64));
+    toStartKey.setBounds (scaled (44, 540, 60, 64));
+    loopKey.setBounds (scaled (112, 540, 60, 64));
+    midiKey.setBounds (scaled (180, 540, 60, 64));
+    // octave panel (bottom right): keys like the mode keys, centred in the panel
+    octDownKey.setBounds (scaled (972, 500, 88, 72));
+    octUpKey.setBounds (scaled (1068, 500, 88, 72));
     // header
     place (partSelector, "partSelector");
     place (presetStrip, "presetStrip");
@@ -389,6 +390,10 @@ void OhpeEditor::resized()
     place (glideKnob, "glideKnob");
     place (proView, "overlay");
     place (library, "overlay");
+    for (auto& k : engineKeys) k->setUiScale (s);
+    for (auto& k : modeKeys) k->setUiScale (s);
+    for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey, &libraryKey, &proKey, &randomKey, &saveKey })
+        k->setUiScale (s);
     background = {}; // rendered again at the next paint (at the physical pixel scale)
 }
 

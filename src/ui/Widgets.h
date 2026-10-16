@@ -106,6 +106,8 @@ public:
 
     PictoKey (Picto picto, juce::String legendEnglish);
     void setStyle (Style s) { style = s; repaint(); }
+    /** p14: the editor's scale (component pixels per design unit): legends share one size on every key. */
+    void setUiScale (float s) { if (s != uiScale) { uiScale = s; repaint(); } }
     Style getStyle() const noexcept { return style; }
 
     void setActive (bool a) { if (a != active) { active = a; repaint(); } }
@@ -126,6 +128,7 @@ private:
     Picto picto;
     juce::String legend;
     Style style = Style::Cap;
+    float uiScale = 1.0f;
     bool active = false, available = true;
     juce::Colour accent, pictoInk;
     bool hasPictoInk = false;

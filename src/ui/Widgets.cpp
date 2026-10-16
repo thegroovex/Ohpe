@@ -310,7 +310,7 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
 {
     const auto b = getLocalBounds().toFloat();
     const bool pressed = down || (active && style == Style::Cap);
-    const float legendH = juce::jmin (20.0f * b.getHeight() / 80.0f, b.getHeight() * 0.27f);
+    const float legendH = juce::jmin ((style == Style::Cap ? 18.0f : 16.0f) * uiScale, b.getHeight() * 0.4f);
     const auto legendArea = b.withTop (b.getBottom() - legendH);
     auto ink = colour::capInk;
     PictoState ps;
@@ -384,7 +384,7 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
         }
     }
     g.setColour (available ? colour::engraving : colour::engraving.withAlpha (0.45f));
-    drawFittedLegend (g, i18n::upper (tr (legend)), legendArea, juce::jmin (legendH * 0.56f, 11.0f * b.getHeight() / 80.0f));
+    drawFittedLegend (g, i18n::upper (tr (legend)), legendArea, 10.5f * uiScale);
 }
 
 // ---------------------------------------------------------------- Keyboard
