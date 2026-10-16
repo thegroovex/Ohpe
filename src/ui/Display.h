@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Pages.h"
+#include "SpaceView.h"
 #include "Visuals.h"
 #include "Widgets.h"
 #include "plugin/PluginProcessor.h"
@@ -20,7 +21,7 @@ namespace ohpe::ui
     0.3: the parameter bars are controls themselves - drag a bar (right / up = more; Shift, Cmd
     or Ctrl = fine), click on a bar to jump, double-click to reset, right-click for MIDI learn.
 */
-class Display : public juce::Component
+class Display : public juce::Component, public juce::TooltipClient
 {
 public:
     explicit Display (OhpeProcessor& p);
@@ -28,7 +29,7 @@ public:
 
     /** 0.7: what the left half of the display shows. The stereo scope also appears by itself
         on the Mid/Side FX slot pages and the master stereo pages. */
-    enum class Visual { Character = 0, Scope, Terrain, numVisuals };
+    enum class Visual { Character = 0, Scope, Terrain, Space, numVisuals }; ///< 1.0: Space = the 3D view
     void setVisual (Visual v);
     Visual visual() const noexcept { return userVisual; }
     Visual shownVisual() const;
@@ -82,6 +83,12 @@ public:
     std::function<void (int routing)> onModRoutingClicked; ///< 0.7: a line of the routing list
     std::function<void (int slot)> onFxSlotClicked;      ///< 0.7: a block of the FX chain
     std::function<void (int from, int to)> onFxSlotMoved; ///< 0.7: a block dropped on another one
+    std::function<void()> onSpaceBadgeClicked;           ///< 1.0: the 3D badge in the header (opens the Space view)
+
+    /** 1.0: tooltip of the 3D badge (TooltipClient). */
+    juce::String getTooltip() override;
+    /** 1.0: where the 3D badge is (header; tests / screenshots). */
+    juce::Rectangle<float> spaceBadgeArea() const;
 
     void paint (juce::Graphics& g) override;
     void resized() override;
@@ -119,6 +126,7 @@ private:
     int selectedViewTab() const noexcept;
     bool showsModView() const noexcept;
     bool showsRackView() const noexcept;
+    bool showsSpaceView() const noexcept; ///< 1.0: Effects mode, view Space
     juce::Rectangle<float> visualArea() const; ///< 0.7: left of the rows (routing list / FX chain)
     FxRack& shownRack() const;
     void paintRows (juce::Graphics& g);
@@ -157,6 +165,8 @@ private:
 
     // 0.7: visuals and depth
     DisplayVisuals visuals;
+    space3d::Scene spaceScene; ///< 1.0
+    juce::Rectangle<float> badgeRect; ///< 1.0: the 3D badge (header, set while painting)
     Visual userVisual = Visual::Character;
     bool animated = true;
     int lastSource = -2;

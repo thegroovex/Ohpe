@@ -76,6 +76,8 @@ list(APPEND OHPE_JUCE_MODULES ohpe_presets)
 
 # 0.7: display visuals (stereo scope, spectrum terrain)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/Visuals.cpp)
+# 1.0: the 3D space view, the headphones pictogram / 3D badge
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/SpaceView.cpp)
 
 set(OHPE_FORMATS VST3 Standalone)
 if(APPLE)

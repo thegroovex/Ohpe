@@ -369,7 +369,7 @@ TEST_CASE ("0.8: keyboard instruments and the Hybrid / Piano categories are appe
     CHECK (factory::effectiveInstrument (3, 0) == 3);
     CHECK (factory::effectiveInstrument (3, 2) == 12);
     const auto& cats = preset::categories();
-    REQUIRE (cats.size() == 13);
+    REQUIRE (cats.size() >= 13); // 1.0 appends 3D
     CHECK (std::string (cats[11].key) == "Hybrid");
     CHECK (std::string (cats[12].key) == "Piano");
 }

@@ -3,6 +3,7 @@
 #include "Pages.h"
 
 #include "ModFxViews.h"
+#include "SpaceView.h"
 
 #include <cmath>
 
@@ -137,7 +138,8 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
         }
         case Mode::Effects:
         {
-            if (ctx.fxView != modfx::FxViewSends) // 0.7: the part's FX rack / the master rack
+            if (ctx.fxView == modfx::FxViewSpace) return space3d::spaceParams (partIndex); // 1.0: the 3D stage
+            if (modfx::isRackView (ctx.fxView)) // 0.7: the part's FX rack / the master rack
                 return modfx::rackParams (core, modfx::rackPrefixes (ctx.fxView, partIndex), ctx.fxSlot);
             Ids ids { "fxa.delay.time", "fxa.delay.sync", "fxa.delay.feedback", "fxa.delay.tone",
                       "fxb.reverb.size", "fxb.reverb.damping", "fxb.reverb.predelay", "mix.returnb",
@@ -235,7 +237,9 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
             for (size_t i = g; i < t.size(); ++i) t[i] = "Layer"; // 0.8
         }
     }
-    if (m == Mode::Effects && ctx.fxView != modfx::FxViewSends)
+    if (m == Mode::Effects && ctx.fxView == modfx::FxViewSpace)
+        t = space3d::spaceTitles();
+    else if (m == Mode::Effects && modfx::isRackView (ctx.fxView))
         t = modfx::rackTitles (core, modfx::rackPrefixes (ctx.fxView, ctx.part), ctx.fxSlot);
     else if (m == Mode::Effects)
         for (size_t i = 4; i < t.size(); ++i) t[i] = "FX Slot";
@@ -368,6 +372,11 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
             };
             addRack (modfx::rackPrefixes (modfx::FxViewRack, ctx.part), "FX");
             addRack (modfx::rackPrefixes (modfx::FxViewMaster, ctx.part), "Master FX");
+            {
+                auto sp = space3d::spaceParams (ctx.part); // 1.0: the part's 3D stage and the monitoring
+                sp.erase (std::remove (sp.begin(), sp.end(), std::string()), sp.end());
+                groups.push_back ({ "3D Space", 0, sp });
+            }
             return groups;
         }
         default: addPages (m, ctx); return groups;

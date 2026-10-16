@@ -4,6 +4,8 @@
 
 #include "Palette.h"
 #include "fx/RackEffects.h"
+#include "fx/Space3D.h"
+#include "SpaceView.h"
 #include "plugin/Localisation.h"
 #include "plugin/ParameterBridge.h"
 
@@ -81,7 +83,10 @@ juce::String typeName (const Core& core, const std::string& prefix) { return cho
 } // namespace
 
 const char* lfoViewName (int v) noexcept { return v == LfoViewMod ? "Mod" : "LFO"; }
-const char* fxViewName (int v) noexcept { return v == FxViewRack ? "Rack" : v == FxViewMaster ? "Master" : "Sends"; }
+const char* fxViewName (int v) noexcept
+{
+    return v == FxViewRack ? "Rack" : v == FxViewMaster ? "Master" : v == FxViewSpace ? "3D Space" : "Sends";
+}
 
 // ------------------------------------------------------------------------------------------------- pages
 std::vector<std::string> modParams (const Core&, int part, int routing)
@@ -319,6 +324,13 @@ void paintSlotVisual (juce::Graphics& g, juce::Rectangle<float> area, Core& core
     g.setColour (colour::displayGrid.brighter (0.2f));
     g.drawRoundedRectangle (plot, 3.0f, 1.0f);
     if (type == 0 || info.id == nullptr) return;
+    if (type == InsertSlot::Space3D) // 1.0: where the slot's source is, seen from behind the listener
+    {
+        if (auto* e = static_cast<SpaceEffect*> (slot.effect (type)))
+            space3d::Scene::paintSingle (g, plot, e->uiPosition(), juce::jmin (1.0f, e->uiLevel() * 2.0f), colour::ultraviolet,
+                                         space3d::speakerMonitoring (core), (float) juce::Time::getMillisecondCounter() * 0.001f);
+        return;
+    }
     const std::string block = pre + info.id + ".";
     auto val = [&] (const char* k) { return core.params().get (block + k); };
     const std::string id = info.id;
