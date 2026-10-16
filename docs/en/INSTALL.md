@@ -163,3 +163,4 @@ ad-hoc signs bundles without one. Locally the same works with the environment va
 `OHPE_SIGN_APP_IDENTITY`, `OHPE_SIGN_INSTALLER_IDENTITY`, `OHPE_KEYCHAIN`, `OHPE_NOTARY_APPLE_ID`,
 `OHPE_NOTARY_TEAM_ID` and `OHPE_NOTARY_PASSWORD`. Secrets are not available to pull requests from
 forks, so those always build the unsigned variant.
+
