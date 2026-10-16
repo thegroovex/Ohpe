@@ -58,8 +58,14 @@ public:
     int current() const noexcept { return currentIndex; }
     juce::String currentName() const;
 
-    /** Saves the edit part (or the whole project) as a user preset. Returns the file (or none on failure). */
+    /** Saves the edit part (or the whole project) as a user preset. Returns the file (or none on failure).
+        A user preset of the same name and kind is replaced when `overwrite` is set; otherwise the new
+        one gets a free name ("Name 2", "Name 3", ...), so the list never shows two presets of one name. */
     juce::File save (const preset::Meta& meta, bool project, int part = -1, bool overwrite = false);
+    /** The file a user preset named `name` is saved to (exists if such a preset is there already). */
+    juce::File userFileFor (const std::string& name, bool project) const;
+    /** Index of the user entry stored in `file`, or -1. */
+    int indexOfFile (const juce::File& file) const;
     bool remove (int index); ///< user presets only (moves the file to the trash if possible)
 
     void setFavourite (int index, bool fav);

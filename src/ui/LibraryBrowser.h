@@ -47,7 +47,20 @@ public:
     void toggleTag (const juce::String& tag);
     void showSavePanel (bool show);
     void setSaveFields (const juce::String& name, const juce::String& author, const juce::StringArray& tags, bool project);
-    bool commitSave();
+    /** What to do when a user preset of that name exists already. */
+    enum class SaveConflict { Ask, Replace, KeepBoth };
+    /** Saves the edit part / project as a user preset and shows it in the list (filters that would
+        hide it are cleared). Returns false if nothing was saved (failure, or a name clash that is
+        asked about first: the question saves when answered). */
+    bool commitSave (SaveConflict conflict = SaveConflict::Ask);
+    juce::StringArray saveTagSelection() const { return saveTags; }
+    juce::String saveFreeTagText() const { return saveFreeTags.getText(); }
+    /** Entry shown in list row `row` (-1 if none) and the row of entry `index` (-1 if hidden). */
+    int entryAtRow (int row) const noexcept { return row >= 0 && row < (int) rows.size() ? rows[(size_t) row] : -1; }
+    int rowOfEntry (int index) const noexcept;
+    int selectedListRow() const { return list.getSelectedRow(); }
+    /** The last save message ("Saved: ..." or why it failed), shown under the list. */
+    const juce::String& statusMessage() const noexcept { return status; }
 
 private:
     // ListBoxModel
@@ -70,6 +83,7 @@ private:
     juce::Rectangle<float> rightArea() const;
     juce::Rectangle<float> topArea() const;
     int selectedEntry() const;
+    void reveal (int index); ///< makes entry `index` visible (clears filters that hide it) and selects it
 
     OhpeProcessor& proc;
     PresetManager& presets;
@@ -79,6 +93,8 @@ private:
     juce::StringArray saveTags;
     bool saveProject = false, saving = false, ignoreSelection = false;
     std::vector<Hit> hits;
+    juce::String status;
+    bool statusError = false;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LibraryBrowser)
 };
