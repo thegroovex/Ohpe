@@ -82,7 +82,7 @@ void bipolarBar (juce::Graphics& g, juce::Rectangle<float> bar, float v, juce::C
 juce::String typeName (const Core& core, const std::string& prefix) { return choiceText (core, prefix + "type"); }
 } // namespace
 
-const char* lfoViewName (int v) noexcept { return v == LfoViewMod ? "Mod" : "LFO"; }
+const char* lfoViewName (int v) noexcept { return v == LfoViewMod ? "Mod" : v == LfoViewMorph ? "Morph" : "LFO"; }
 const char* fxViewName (int v) noexcept
 {
     return v == FxViewRack ? "Rack" : v == FxViewMaster ? "Master" : v == FxViewSpace ? "3D Space" : "Sends";

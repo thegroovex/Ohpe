@@ -225,8 +225,8 @@ note (page 3). **Load** puts an audio file on the selected pad (or drag a file o
 
 ![Mod view](../images/ohpe-mod-view.png)
 
-In **LFO** mode the tabs on the display switch between **LFO** (LFO 1, as before) and **Mod**, the
-[modulation matrix](MODULATION.md) of the edit part. The Mod view lists all **16 routings** in two
+In **LFO** mode the tabs on the display switch between **LFO** (LFO 1, as before), **Mod**, the
+[modulation matrix](MODULATION.md) of the edit part, and **Morph** (the [morph pad](#morph-view-p16)). The Mod view lists all **16 routings** in two
 columns: source → target, a bar for the amount (to the right = positive, to the left = negative) and
 the routing's live value. Targets on an engine or an effect show the real parameter name ("Cutoff",
 "FX2 Hyper Detune"), so you see what moves without counting slots. Below the list a **trace** draws
@@ -292,6 +292,25 @@ headphones*. The part selector shows the same pictogram per part, the library sh
 of every preset tagged **3D**.
 
 ![The 3D badge in the display header](../images/ohpe-space-badge.png)
+
+## Morph view (p16)
+
+![The Morph view](../images/ohpe-morph-view.png)
+
+The third tab of **LFO** mode, **Morph**, shows the edit part's [morph pad](MORPH.md): four corner chips (A top
+left, B top right, C bottom left, D bottom right) in the encoder colours, the pad with the glided position, a
+soft glow from each corner as strong as its share, and the edges between the corners – solid where two corners
+morph their parameters (one sound), dotted where they cross-fade as parallel sounds (another engine or effect).
+The strip below says what the pad does right now (one sound, or how many sounds play in parallel).
+
+| Action | Result |
+|---|---|
+| Drag on the pad | moves the position (X, Y); right-click = MIDI learn |
+| Click a corner chip, or **A … D** (soft keys) | menu: **Current sound**, **Preset ▸** (any part preset of the library), **Clear corner**, **Clear all corners** |
+| Encoders, page *Morph* | Morph on, X, Y, Glide |
+| Encoders, page *Control* | X / Y Control (Off, Pressure, Slide, Mod Wheel), MPE, expression smoothing |
+
+Assigning a corner switches the morph on. An empty corner stands for the part's own sound.
 
 ## Keys and shortcuts
 

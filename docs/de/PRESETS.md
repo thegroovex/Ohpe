@@ -128,6 +128,28 @@ Die Werks-Arp-Presets sind gehalten (Latch): eine Taste (oder einen Akkord) einm
 Arpeggio läuft weiter; die nächste Taste oder der nächste Akkord ohne gehaltene Taste beginnt ein
 neues. Zum Anhalten *Halten* oder den Arp auf der Sequenzer-Seite ausschalten.
 
+### Morph-Block
+
+Ein **Part**-Preset kann die Ecken des [Morph-Pads](MORPH-RAUM.md) des Parts in einem optionalen Objekt `"morph"`
+mitbringen (p16):
+
+```json
+"morph": { "corners": [ { "name": "Glass Shimmer", "params": { "engine": 1, "wavetable.pos": 0.4 } },
+                        { "name": "Breath Choir Pad", "params": { "engine": 5 } },
+                        null,
+                        { "name": "Crystal FM Pad", "params": { "engine": 0 } } ] }
+```
+
+* Vier Einträge, Ecken A (oben links), B (oben rechts), C (unten links), D (unten rechts); `null` = die Ecke steht
+  für den eigenen Klang des Parts.
+* `params` wie die eigenen `params` des Presets: lokale IDs ohne Part-Präfix, Klarwerte, lückenhaft erlaubt
+  (fehlend = Standard). Der Morph-Block (`morph.*`) und das MIDI-Routing (`midich`, `quant`, `chord`, `mpe`,
+  `mpe.bend`, `mpe.press`, `mpe.timbre`) gehören nicht zu einer Ecke.
+* Ein Part-Preset, das in Part *N* geladen wird, setzt die Ecken von Part *N* aus dem Block; ein Part-Preset
+  **ohne** Block leert sie. *Preset speichern → Dieser Part* schreibt den Block, wenn eine Ecke belegt ist.
+* Projekte und der Plug-in-Zustand behalten die Ecken aller Parts im Abschnitt `"morph"`
+  (`{"version": 1, "parts": [ {"corners": [...]}, ... ]}`).
+
 ### Werksbank
 
 Die Werks-Presets sind die `*.ohpepreset`-Dateien in

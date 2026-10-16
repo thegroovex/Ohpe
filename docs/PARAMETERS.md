@@ -672,3 +672,21 @@ screen. Both are MIDI-learnable (right-click) and are not stored in presets.
 |---|---|---|---|---|
 | `perf.bend` | Pitch Wheel | Pitch-Rad | -1 … +1 | 0 |
 | `perf.mod` | Mod Wheel | Mod-Rad | 0 … 1 | 0 |
+
+## Morph space (p16)
+
+Appended after the performance wheels (`perf.mod`), part by part (`p1.morph.*` … `p4.morph.*`, 24 IDs). Guides:
+[English](en/MORPH.md) · [Deutsch](de/MORPH-RAUM.md). The corners themselves are not parameters: they live in
+part presets (`"morph"` block) and in projects / the plug-in state (section `"morph"`).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.morph.on` | Part N Morph | Part N Morph | Off / On | Off |
+| `pN.morph.x` | Part N Morph X | Part N Morph X | 0 … 1 (left … right) | 0.5 |
+| `pN.morph.y` | Part N Morph Y | Part N Morph Y | 0 … 1 (bottom … top) | 0.5 |
+| `pN.morph.glide` | Part N Morph Glide | Part N Morph-Gleiten | 0 … 2 s | 0.05 |
+| `pN.morph.xsrc` | Part N Morph X Control | Part N Morph X Steuerung | Off, Pressure, Slide, Mod Wheel | Off |
+| `pN.morph.ysrc` | Part N Morph Y Control | Part N Morph Y Steuerung | Off, Pressure, Slide, Mod Wheel | Off |
+
+The modulation matrix gains the sources **Morph X / Morph Y** (21, 22) and the targets **Morph X / Morph Y**
+(72, 73); the source and target choice lists grow at their end.

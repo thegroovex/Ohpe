@@ -3,6 +3,7 @@
 #include "PluginEditor.h"
 
 #include "ModFxViews.h"
+#include "MorphView.h"
 
 #include "Palette.h"
 #include "plugin/Localisation.h"
@@ -13,6 +14,7 @@
 
 #include <cmath>
 #include <cstring>
+#include <map>
 
 namespace ohpe
 {
@@ -29,7 +31,8 @@ enum SoftKeyId
     skPadLoad = 30, skPadClear,
     skClearLocks = 40, skLockDone,
     skModPrev = 50, skModNext, skModClear,           // 0.7: matrix
-    skSlotLeft = 60, skSlotRight, skSlotClear        // 0.7: FX rack
+    skSlotLeft = 60, skSlotRight, skSlotClear,       // 0.7: FX rack
+    skCornerA = 70, skCornerB, skCornerC, skCornerD  // p16: morph corners
 };
 
 bool isAudioFile (const juce::String& path)
@@ -283,6 +286,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     // 0.7: LFO / Mod and Sends / Rack / Master views, the routing list, the FX chain
     display.onViewTabClicked = [this] (int v) { selectView (v); };
     display.onModRoutingClicked = [this] (int r) { selectModRouting (r); };
+    display.onMorphCornerClicked = [this] (int c) { showCornerMenu (c); }; // p16
     display.onFxSlotClicked = [this] (int s) { selectFxSlot (s); };
     display.onFxSlotMoved = [this] (int from, int to) { moveFxSlot (from, to); };
     display.onSpaceBadgeClicked = [this] { // 1.0: the 3D badge opens the Space view of the edit part
@@ -569,6 +573,7 @@ int& OhpeEditor::currentPage()
 {
     if (mode == Mode::Sequencer) return seqPageOf[(size_t) ctx.seqView];
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMod) return modPage;       // 0.7
+    if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMorph) return morphPage;   // p16
     if (mode == Mode::Effects && ctx.fxView != modfx::FxViewSends) return rackPage;  // 0.7 (1.0: also the Space view)
     return pageOf[(size_t) mode];
 }
@@ -1199,6 +1204,13 @@ void OhpeEditor::refreshSoftKeys()
                  { skModNext, tr ("Mod") + juce::String::fromUTF8 (" \xe2\x96\xb6") },
                  { skModClear, tr ("Clear"), std::lround (core.params().get (r + "src")) != 0 || std::lround (core.params().get (r + "dst")) != 0 } };
     }
+    else if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMorph) // p16: one key per corner (assign / clear)
+    {
+        for (int c = 0; c < MorphSpace::numCorners; ++c)
+            keys.push_back ({ skCornerA + c, juce::String (MorphSpace::cornerName (c)) + juce::String::fromUTF8 (" \xc2\xb7 ")
+                                                 + morphview::cornerTitle (core, ctx.part, c),
+                              true, core.morph().cornerSet (ctx.part, c) });
+    }
     else if (mode == Mode::Effects && modfx::isRackView (ctx.fxView)) // 0.7
     {
         const auto prefixes = modfx::rackPrefixes (ctx.fxView, ctx.part);
@@ -1256,6 +1268,10 @@ void OhpeEditor::onSoftKey (int id)
             rebindEncoders();
             return;
         }
+        case skCornerA:
+        case skCornerB:
+        case skCornerC:
+        case skCornerD: showCornerMenu (id - skCornerA); return; // p16
         case skSlotLeft: moveFxSlot (ctx.fxSlot, ctx.fxSlot - 1); return;
         case skSlotRight: moveFxSlot (ctx.fxSlot, ctx.fxSlot + 1); return;
         case skSlotClear:
@@ -1272,6 +1288,71 @@ void OhpeEditor::onSoftKey (int id)
     }
     refreshSoftKeys();
     updateVirtualFlags();
+}
+
+// ---------------------------------------------------------------- p16: morph corners
+void OhpeEditor::showCornerMenu (int corner)
+{
+    auto& core = proc.core();
+    const int part = ctx.part;
+    juce::PopupMenu m;
+    m.addSectionHeader (tr ("Corner") + " " + MorphSpace::cornerName (corner) + ": " + morphview::cornerTitle (core, part, corner));
+    m.addItem (1, tr ("Current sound") + " (" + proc.presets().currentName() + ")");
+    // part presets of the library, by their first category
+    std::map<juce::String, juce::PopupMenu> byCategory;
+    const auto& entries = proc.presets().entries();
+    for (int i = 0; i < (int) entries.size(); ++i)
+    {
+        const auto& e = entries[(size_t) i];
+        if (e.meta.kind != preset::Kind::Part) continue;
+        juce::String cat = tr ("Other");
+        for (const auto& t : e.meta.tags)
+            if (preset::isCategory (t))
+            {
+                for (const auto& c : preset::categories())
+                    if (t == c.key) cat = i18n::pick (c.key, c.nameDe);
+                break;
+            }
+        byCategory[cat].addItem (1000 + i, juce::String::fromUTF8 (e.meta.name.c_str()));
+    }
+    juce::PopupMenu library;
+    for (auto& [cat, sub] : byCategory) library.addSubMenu (cat, sub);
+    m.addSubMenu (tr ("Preset"), library);
+    m.addSeparator();
+    m.addItem (2, tr ("Clear corner"), core.morph().cornerSet (part, corner));
+    m.addItem (3, tr ("Clear all corners"), core.morph().anyCorner (part));
+    juce::Component::SafePointer<OhpeEditor> safe (this);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&display), [safe, corner] (int r) {
+        if (safe == nullptr || r == 0) return;
+        safe->assignMorphCorner (corner, r >= 1000 ? r - 1000 : r == 1 ? -1 : r == 2 ? -2 : -3);
+    });
+}
+
+void OhpeEditor::assignMorphCorner (int corner, int presetIndex)
+{
+    const int part = ctx.part;
+    bool assigned = false;
+    if (presetIndex >= 0)
+    {
+        const auto& entries = proc.presets().entries();
+        if (presetIndex >= (int) entries.size()) return;
+        preset::Preset p;
+        if (! preset::fromJson (proc.presets().read (entries[(size_t) presetIndex]), p) || p.meta.kind != preset::Kind::Part) return;
+        proc.editRegistry ([&] (Core& c) { c.morph().setCorner (part, corner, p.meta.name, p.params); });
+        assigned = true;
+    }
+    else if (presetIndex == -1)
+    {
+        const auto name = proc.presets().currentName().toStdString();
+        proc.editRegistry ([&] (Core& c) { c.morph().captureCorner (part, corner, name); });
+        assigned = true;
+    }
+    else if (presetIndex == -2) proc.core().morph().clearCorner (part, corner);
+    else proc.core().morph().clearPart (part);
+    const auto on = "p" + juce::String (part + 1) + ".morph.on";
+    if (assigned && proc.core().params().get (on.toStdString()) < 0.5f) setParamPlain (on, 1.0f);
+    refreshSoftKeys();
+    display.repaint();
 }
 
 void OhpeEditor::chooseSampleFile()

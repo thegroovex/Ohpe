@@ -147,6 +147,28 @@ The factory Arp presets are latched: press a key (or a chord) once and the arpeg
 the next key or chord pressed with no key held starts a new one. Switch *Latch* or the arp off on
 the sequencer page to stop it.
 
+### Morph block
+
+A **part** preset can carry the corners of the part's [morph pad](MORPH.md) in an optional `"morph"` object
+(p16):
+
+```json
+"morph": { "corners": [ { "name": "Glass Shimmer", "params": { "engine": 1, "wavetable.pos": 0.4 } },
+                        { "name": "Breath Choir Pad", "params": { "engine": 5 } },
+                        null,
+                        { "name": "Crystal FM Pad", "params": { "engine": 0 } } ] }
+```
+
+* Four entries, corners A (top left), B (top right), C (bottom left), D (bottom right); `null` = the corner
+  stands for the part's own sound.
+* `params` like the preset's own `params`: local IDs without the part prefix, plain values, sparse (missing =
+  default). The morph block (`morph.*`) and the MIDI routing (`midich`, `quant`, `chord`, `mpe`, `mpe.bend`,
+  `mpe.press`, `mpe.timbre`) are not part of a corner.
+* Loading a part preset into part *N* sets part *N*'s corners from the block; a part preset **without** the block
+  clears them. *Save preset → This part* writes the block when a corner is assigned.
+* Projects and the plug-in state keep the corners of all parts in the section `"morph"`
+  (`{"version": 1, "parts": [ {"corners": [...]}, ... ]}`).
+
 ### Factory bank
 
 The factory presets are the `*.ohpepreset` files in

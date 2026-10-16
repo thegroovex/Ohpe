@@ -74,7 +74,7 @@ TEST_CASE ("library: the factory bank is embedded and every factory preset is va
         CHECK (e.factory);
         CHECK (! e.meta.name.empty());
         CHECK (! e.meta.tags.empty());
-        for (const auto& t : e.meta.tags) CHECK ((preset::isCategory (t) || t == "MPE")); // factory presets: fixed categories (+ 0.8 free tag MPE)
+        for (const auto& t : e.meta.tags) CHECK ((preset::isCategory (t) || t == "MPE" || t == "Morph")); // factory presets: fixed categories (+ 0.8 free tag MPE, p16 free tag Morph)
         preset::Preset parsed;
         REQUIRE (preset::fromJson (pm.read (e), parsed));
         // every parameter a factory preset sets exists (no typos)

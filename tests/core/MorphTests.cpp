@@ -11,7 +11,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <fstream>
 #include <functional>
+#include <sstream>
 
 using namespace ohpe;
 using namespace ohpe::test;
@@ -282,11 +284,13 @@ TEST_CASE ("p16 morph: the matrix moves the pad and reads its position; off = th
     rig.set ("p1.morph.glide", 0.0f);
     rig.set ("p1.morph.x", 0.0f);
     rig.set ("p1.morph.y", 0.0f);
-    rig.set ("p1.mod.s1.src", (float) mod::SrcMacro1);
+    // (macros belong to the corners' sounds, so the wheel moves the pad here)
+    rig.set ("p1.mod.s1.src", (float) mod::SrcModWheel);
     rig.set ("p1.mod.s1.dst", (float) mod::DstMorphX);
     rig.set ("p1.mod.s1.amt", 0.5f);
-    rig.set ("p1.macro1", 1.0f);
-    rig.run (60, Rig::chord());
+    auto midi = Rig::chord();
+    midi.push_back (MidiEvent::controller (1, 1, 127, 0));
+    rig.run (60, midi);
     CHECK (rig.core.morph().uiX (0) == doctest::Approx (0.5f).epsilon (0.02));
     CHECK (rig.core.part (0).modMatrix().sourceValue (mod::SrcMorphX) == doctest::Approx (rig.core.morph().uiX (0)));
     CHECK (rig.core.part (0).modMatrix().sourceValue (mod::SrcMorphY) == doctest::Approx (0.0f));
@@ -297,4 +301,34 @@ TEST_CASE ("p16 morph: the matrix moves the pad and reads its position; off = th
     CHECK_FALSE (rig.core.morph().uiActive (0));
     CHECK (rig.core.morph().uiLanesAwake (0) == 1);
     CHECK (allFinite (rig.rec.l));
+}
+
+TEST_CASE ("p16 morph: the factory morph presets load their corners and play across the pad")
+{
+    int found = 0;
+    for (const char* name : { "morph-strings-filter", "morph-four-worlds", "morph-keys-and-bells", "morph-bass-shapes" })
+    {
+        CAPTURE (name);
+        std::ifstream f (std::string (OHPE_SOURCE_DIR) + "/resources/presets/factory/" + name + ".ohpepreset");
+        REQUIRE (f.good());
+        std::stringstream ss;
+        ss << f.rdbuf();
+        preset::Preset p;
+        REQUIRE (preset::fromJson (ss.str(), p));
+        REQUIRE (p.morph.has_value());
+        Rig rig;
+        REQUIRE (preset::applyPart (p, rig.core.params(), 0).ok);
+        preset::applyPartMorph (p, rig.core, 0);
+        for (int c = 0; c < MorphSpace::numCorners; ++c) CHECK (rig.core.morph().cornerSet (0, c));
+        if (std::string (name) == "morph-strings-filter") CHECK (rig.core.morph().numLanes (0) == 1); // one sound, interpolated
+        if (std::string (name) == "morph-four-worlds") CHECK (rig.core.morph().numLanes (0) == 4);    // four engines
+        CHECK (rig.get ("p1.morph.on") == 1.0f);
+        rig.set ("p1.morph.x", 0.5f);
+        rig.set ("p1.morph.y", 0.5f);
+        rig.run (150, Rig::chord());
+        CHECK (allFinite (rig.rec.l));
+        CHECK (peak (rig.rec.l) < 1.5f);
+        ++found;
+    }
+    CHECK (found == 4);
 }

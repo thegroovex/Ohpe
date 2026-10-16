@@ -85,6 +85,10 @@ public:
     std::function<void (int slot)> onFxSlotClicked;      ///< 0.7: a block of the FX chain
     std::function<void (int from, int to)> onFxSlotMoved; ///< 0.7: a block dropped on another one
     std::function<void()> onSpaceBadgeClicked;           ///< 1.0: the 3D badge in the header (opens the Space view)
+    std::function<void (int corner)> onMorphCornerClicked; ///< p16: a corner chip of the morph pad (assign a sound)
+    /** p16: the morph pad and a corner chip (tests / screenshots). */
+    juce::Rectangle<float> morphPadArea() const;
+    juce::Rectangle<float> morphCornerArea (int corner) const;
     /** 1.0: where the 3D badge is (header; tests / screenshots). */
     juce::Rectangle<float> spaceBadgeArea() const;
     /** p11: the transport buttons of the tape page (TransportButton) and the arm dots of the tracks. */
@@ -137,6 +141,8 @@ private:
     bool showsModView() const noexcept;
     bool showsRackView() const noexcept;
     bool showsSpaceView() const noexcept; ///< 1.0: Effects mode, view Space
+    bool showsMorphView() const noexcept; ///< p16: LFO mode, view Morph
+    void setMorphPosition (juce::Point<float> p); ///< p16: pad drag
     juce::Rectangle<float> visualArea() const; ///< 0.7: left of the rows (routing list / FX chain)
     FxRack& shownRack() const;
     void paintRows (juce::Graphics& g);
@@ -172,6 +178,7 @@ private:
 
     int dragRow = -1;
     int dragSlot = -1;              ///< 0.7: FX block being dragged
+    bool morphDrag = false;         ///< p16: dragging the morph pad
     std::vector<float> modHistory;  ///< 0.7: recent values of the selected routing
     BarDrag drag;
 
