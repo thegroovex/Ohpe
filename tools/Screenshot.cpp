@@ -6,7 +6,7 @@
 // Writes ohpe-<view>.png (English) and ohpe-<view>-de.png (German).
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
 // 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack; the Mid/Side scope,
-// the master scope view and the spectrum terrain. The
+// the master scope view and the spectrum terrain. 1.0: the 3D Space view and the 3D badge. The
 // preset library reads the user folder from OHPE_PRESET_DIR when set (otherwise the default).
 
 #include "plugin/Localisation.h"
@@ -336,6 +336,48 @@ int main (int argc, char* argv[])
             d.setVisual (ui::Display::Visual::Character);
             setPlain (p, "mfx1.type", 0.0f);
             setPlain (p, "mix.ch1.sendb", 0.0f);
+            e.selectEngine (EngineType::Analog);
+        }
+
+        // 1.0: the 3D Space view - three parts moving around the listener (circle, figure-8, random orbit), part 1 edited,
+        // binaural monitoring: the 3D badge in the header and the part selector's headphones are lit
+        {
+            setChoice (p, "space.out", "Headphones");
+            const char* paths[] = { "Circle", "Figure-8", "Random Orbit" };
+            const char* lengths[] = { "1 Bar", "2 Bars", "4 Bars" };
+            for (int part = 1; part <= 3; ++part)
+            {
+                const juce::String pre = "p" + juce::String (part) + ".space.";
+                setPlain (p, pre + "on", 1.0f);
+                setChoice (p, pre + "path", paths[part - 1]);
+                setChoice (p, pre + "pathlen", lengths[part - 1]);
+                setPlain (p, pre + "pathsize", 0.4f + 0.2f * (float) part);
+                setPlain (p, pre + "distance", 1.2f + 1.1f * (float) part);
+                setPlain (p, pre + "room", 0.3f);
+            }
+            e.selectPart (0);
+            e.selectEngine (EngineType::Wavetable);
+            e.selectMode (ui::Mode::Effects);
+            e.selectView (3); // Sends | Rack | Master | 3D Space
+            playAnimated (p, e, 2, { 48, 55 }, 1);
+            playAnimated (p, e, 2, { 64 }, 2);
+            playAnimated (p, e, 70, { 72 }, 3);
+            save (e, dir.getChildFile ("ohpe-space-view" + suffix + ".png"));
+
+            // the badge on its own page: Synth mode of the wavetable part (a long title), the headphones lit
+            e.selectMode (ui::Mode::Synth);
+            playAnimated (p, e, 12);
+            save (e, dir.getChildFile ("ohpe-space-badge" + suffix + ".png"));
+            release (p, { 48, 55 });
+            for (int part = 1; part <= 3; ++part) setPlain (p, "p" + juce::String (part) + ".space.on", 0.0f);
+            {
+                juce::AudioBuffer<float> buffer (p.getTotalNumOutputChannels(), 512);
+                juce::MidiBuffer midi;
+                midi.addEvent (juce::MidiMessage::noteOff (2, 64), 0);
+                midi.addEvent (juce::MidiMessage::noteOff (3, 72), 0);
+                p.processBlock (buffer, midi);
+            }
+            run (p, 8);
             e.selectEngine (EngineType::Analog);
         }
 
