@@ -249,3 +249,22 @@ Guide: [en/TAPE-MIXER-FX.md](en/TAPE-MIXER-FX.md) · parameters: [PARAMETERS.md]
 * Tests: `tests/plugin/UiLibraryTests.cpp` (factory bank validity, save / load round-trip,
   favourites, preview / revert, MIDI remote controls, display drag and fine control, pro view,
   part selector, step locks, tape / drum pages, library browser).
+
+## 0.8: sound revision 3
+
+* **FX types** (`src/core/fx/InsertEffects2.*`): Comb, Formant, Wobble, Tremolo, Width – self-contained
+  `IEffect` classes appended after the 0.7 rack types (`InsertSlot::firstR3Type`); their parameter blocks
+  are registered for every slot of every rack (`FxRack::registerTypeBlocks`). Synced types use
+  `IEffect::setTempo()`, retriggered ones `noteOn()`.
+* **Bass mono** (`pN.monobass`, `Part::applyBassMono`): at the end of the part's chain (after the FX rack)
+  the side signal below the frequency is removed with a 4th-order Linkwitz-Riley low-pass; 20 Hz = off.
+* **Layer engine** (`Part`, `pN.layer.*`): a second engine of the part plays every note; it is
+  rendered into its own buffer and mixed with ring / AM / fold cross-modulation. Off = bit-identical
+  to 0.7. See [en/engines/layer.md](en/engines/layer.md).
+* **Late engine parameters** (`ISynthEngine::firstLate08Param()`, `Part::registerLate08EngineParams`):
+  Wavetable unison stack / FM / LFO > position, FM velocity > index, Sampler / Grain keyboard
+  instruments (`inst2`; the bank's instrument list grew to 15, the 0.4 `inst` choice keeps its 11).
+* **Expression** (`NoteExpression`, `VoiceBase`): eight more targets (cutoff, position, FM index,
+  density, drive, vibrato, formant, layer blend), amounts per source, and gliding: a voice holds the
+  target expression and the current one; per-note pitch glides over `pN.mpe.slide` (at least 2 ms),
+  the rest over `pN.mpe.smooth`; a note's first expression applies at once.

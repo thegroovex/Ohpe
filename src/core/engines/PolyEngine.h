@@ -97,7 +97,9 @@ public:
         ampEnv.noteOn();
         modEnv.noteOn();
         lfo.reset();
-        expr = exprIn = NoteExpression {};
+        expr = exprIn = exprGlide = NoteExpression {};
+        exprFresh = true;
+        exprVibPhase = 0.0f;
         pitchEnvPhase = 0.0f;
         ampEnv.resetGain();
         if (c.modProgram != nullptr) vmod.start (midiNote, vel, *c.modProgram); // 0.7: modulation matrix (LFO 2 / 3, env 3, random)
@@ -116,9 +118,11 @@ public:
     int getNote() const noexcept { return note; }
     /** The pitch the voice is gliding at now (semitones, -1 when it has never sounded). */
     float glidePitch() const noexcept { return currentNote; }
+    /** Per-note expression; a note's first value applies at once, later ones glide (0.8: exprSmooth / exprSlide). */
     void setExpression (const NoteExpression& x) noexcept
     {
         exprIn = x;
+        if (exprFresh) exprGlide = x;
         applyVoiceMod();
     }
 
@@ -136,6 +140,8 @@ protected:
         }
         else
             currentNote = (float) note;
+        if (! exprFresh) glideExpression (c, n); // 0.8: smooth per-note bend / pressure / timbre
+        exprFresh = false;
         lfo.setRate (c.lfoRate);
         lfo.setShape (c.lfoShape);
         lfoDepth = std::clamp (c.lfoDepth + expr.lfo, 0.0f, 1.0f);
@@ -158,13 +164,19 @@ protected:
             pitchEnvPhase = std::min (1.0f, pitchEnvPhase + (float) n / (std::max (0.001f, c.pitchEnvTime) * sr));
         }
         if (c.lfoDest == LfoDest::Pitch) pitch += lfoValue * 2.0f; // +-2 semitones at full depth
+        if (expr.vibrato > 0.0f) // 0.8: per-note vibrato (MPE / aftertouch target), 5.5 Hz
+        {
+            exprVibPhase += dsp::twoPi * 5.5f * (float) n / sr;
+            if (exprVibPhase > dsp::twoPi) exprVibPhase -= dsp::twoPi;
+            pitch += std::min (1.0f, expr.vibrato) * 0.5f * std::sin (exprVibPhase);
+        }
         return pitch;
     }
 
     /** expr = the note's expression + the matrix's per-voice pan / timbre. */
     void applyVoiceMod() noexcept
     {
-        expr = exprIn;
+        expr = exprGlide;
         if (! modActive) return;
         const auto& o = vmod.output();
         expr.timbre += o.timbre;
@@ -197,12 +209,35 @@ protected:
     float pitchEnvPhase = 1.0f;       ///< 0.6: 0 at note start .. 1 = arrived
     float lfoValue = 0.0f;
     float lfoDepth = 0.0f;
-    NoteExpression expr;   ///< per-note expression (MPE) plus the matrix's per-voice pan / timbre (what engines read)
-    NoteExpression exprIn; ///< 0.7: the note's own expression (MPE input)
-    mod::VoiceMod vmod;    ///< 0.7: per-voice modulation matrix state
+    NoteExpression expr;      ///< per-note expression (MPE) plus the matrix's per-voice pan / timbre (what engines read)
+    NoteExpression exprIn;    ///< 0.7: the note's own expression (MPE input; 0.8: the value the glide moves to)
+    NoteExpression exprGlide; ///< 0.8: the note's expression as it glides (exprSmooth / exprSlide)
+    bool exprFresh = true;    ///< 0.8: the voice just started: the first expression applies at once
+    float exprVibPhase = 0.0f;
+    mod::VoiceMod vmod;       ///< 0.7: per-voice modulation matrix state
     bool modActive = false;
     ModulatedAdsr ampEnv;
     dsp::Adsr modEnv;
+
+    /** 0.8: one control block of expression glide: pitch over exprSlide (at least 2 ms), the rest over exprSmooth. */
+    void glideExpression (const VoiceCommon& c, int n) noexcept
+    {
+        auto& e = exprGlide;
+        const auto& tg = exprIn;
+        const float aPitch = 1.0f - std::exp (-(float) n / (std::max (0.002f, c.exprSlide) * sr));
+        e.pitch += (tg.pitch - e.pitch) * aPitch;
+        if (std::abs (tg.pitch - e.pitch) < 1.0e-5f) e.pitch = tg.pitch;
+        const float pitchNow = e.pitch;
+        if (c.exprSmooth <= 0.0f) { e = tg; e.pitch = pitchNow; applyVoiceMod(); return; }
+        const float a = 1.0f - std::exp (-(float) n / (c.exprSmooth * sr));
+        auto g = [a] (float& v, float t) noexcept { v += (t - v) * a; if (std::abs (t - v) < 1.0e-6f) v = t; };
+        g (e.timbre, tg.timbre); g (e.amp, tg.amp); g (e.lfo, tg.lfo); g (e.pan, tg.pan);
+        g (e.cutoff, tg.cutoff); g (e.position, tg.position); g (e.index, tg.index);
+        g (e.density, tg.density); g (e.drive, tg.drive); g (e.vibrato, tg.vibrato);
+        g (e.formant, tg.formant); g (e.blend, tg.blend);
+        e.pressure = tg.pressure; e.slide = tg.slide; e.noteBend = tg.noteBend; // raw matrix sources: never glided
+        applyVoiceMod();
+    }
     dsp::Lfo lfo;
 };
 

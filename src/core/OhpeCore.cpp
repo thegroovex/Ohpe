@@ -50,6 +50,8 @@ Core::Core()
         r.idxMpeBend = registry.indexOf (p.id ("mpe.bend"));
         r.idxMpePress = registry.indexOf (p.id ("mpe.press"));
         r.idxMpeTimbre = registry.indexOf (p.id ("mpe.timbre"));
+        r.idxPressAmt = registry.indexOf (p.id ("mpe.pressamt"));
+        r.idxTimbreAmt = registry.indexOf (p.id ("mpe.timbreamt"));
     }
     syncSourceIndex = registry.indexOf (Ids::syncSource);
     syncSmoothIndex = registry.indexOf (Ids::syncSmoothing);
@@ -218,7 +220,7 @@ void Core::dispatch (const RoutedEvent& r) noexcept
 {
     if (r.event.isNoteOn()) lastNoteOn.store (r.event.data1, std::memory_order_relaxed);
     if (r.part == drumPart) drums.handleMidi (r.event);
-    else mpeIn[(size_t) r.part].handle (r.event, *parts[(size_t) r.part]);
+    else mpeIn[(size_t) r.part].handle (r.event, *parts[(size_t) r.part]); // note starts retrigger the rack (Part::noteOn)
 }
 
 void Core::applyLocks (const std::vector<ParamLockEvent>& locks, size_t& next, int upTo) noexcept
@@ -340,7 +342,8 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         auto& r = routing[(size_t) i];
         r.channel = std::clamp (snapshot.getInt (r.idxChannel), 0, 16);
         r.mpe = snapshot.getBool (r.idxMpe);
-        mpeIn[(size_t) i].set (r.mpe, snapshot.getInt (r.idxMpeBend), snapshot.getInt (r.idxMpePress), snapshot.getInt (r.idxMpeTimbre));
+        mpeIn[(size_t) i].set (r.mpe, snapshot.getInt (r.idxMpeBend), snapshot.getInt (r.idxMpePress), snapshot.getInt (r.idxMpeTimbre),
+                               r.idxPressAmt >= 0 ? snapshot[r.idxPressAmt] : 1.0f, r.idxTimbreAmt >= 0 ? snapshot[r.idxTimbreAmt] : 1.0f);
         const bool quant = snapshot.getBool (r.idxQuant);
         const int chord = snapshot.getInt (r.idxChord);
         liveShaper[(size_t) i].set (quant, chord, root, scale);

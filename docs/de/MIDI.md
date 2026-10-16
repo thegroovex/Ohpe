@@ -25,7 +25,8 @@ Die Sequencer sprechen ihren Part direkt an (ihren *Ziel-Part*), unabhängig von
 | CC 64 | Haltepedal |
 | CC 65 | Portamento aus (< 64) / an (≥ 64, Standard) (0.6) |
 | CC 74 | Timbre (Ziel `pN.mpe.timbre`) für alle Noten des Parts |
-| Kanal-Aftertouch | Druck (Ziel `pN.mpe.press`) für alle Noten des Parts |
+| Kanal-Aftertouch | Druck (Ziel `pN.mpe.press`, Menge `pN.mpe.pressamt`) für alle Noten des Parts |
+| Polyphoner Aftertouch | Druck (gleiches Ziel, gleiche Menge) für diese eine Note (0.8 dokumentiert; ging schon immer) |
 | CC 120 / 123 | Klang aus / alle Noten aus |
 | Zugewiesene CCs und Noten | ändern ihren Parameter (MIDI-Learn) und spielen nicht |
 
@@ -42,11 +43,43 @@ Ausdruck:
 * **Timbre** (CC 74 auf dem Member-Kanal, Mitte 64) geht zum **Timbre-Ziel**
   (`pN.mpe.timbre`, Standard *Klangfarbe*).
 
-Ziele: *Aus*, *Klangfarbe* (Helligkeit der Engine: Filter-Cutoff bei Analog,
-Modulationsindex bei FM), *Pegel* (bis +6 dB), *LFO-Tiefe* (Vibrato / Tremolo pro Note),
-*Panorama*.
+Ziele: *Aus*, *Klangfarbe* (Helligkeit der Engine: Filter-Cutoff bei Analog, Wavetable, Cluster,
+Grain und Sampler, Helligkeit bei Pluck, Modulationsindex bei FM), *Pegel* (bis +6 dB),
+*LFO-Tiefe* (Vibrato / Tremolo pro Note), *Panorama* und seit 0.8:
+
+| Ziel | Was es bewegt |
+|---|---|
+| *Cutoff* | Filter / Klang der Engine, ±3 Oktaven (Pluck: Helligkeit) |
+| *Position* | Wavetable-Position, Grain-Position (± halber Bereich) |
+| *FM-Index* | Index der FM-Engine, FM-Menge der Wavetable |
+| *Grain-Dichte* | Grains pro Sekunde, ±2 Oktaven |
+| *Drive* | Analog-Drive, Sättigung pro Note in Wavetable, längeres Ausklingen in Pluck |
+| *Vibrato* | Vibrato pro Note (5,5 Hz, bis ±½ Halbton) |
+| *Formant* | Formant-Verschiebung bei Vocal (±12 Halbtöne), Warp bei Wavetable |
+| *Layer-Mischung* | Verhältnis von Haupt-Engine und Layer-Engine (für den ganzen Part: der letzte Wert) |
+
+**Mengen (0.8).** `pN.mpe.pressamt` und `pN.mpe.timbreamt` (−1 … +1, Standard +1) skalieren, was
+Druck und Timbre bewirken; eine negative Menge kehrt es um (Druck schließt das Filter, Timbre unter
+der Mitte öffnet es).
+
+**Glättung und Slides (0.8).** Pitchbends pro Note gleiten über `pN.mpe.slide` (0 … 1 s) zum neuen
+Wert – mindestens 2 ms, damit grob gestufte Controller nie „zippern“. Eine Note, die mit einem
+Bend beginnt, startet auf dieser Tonhöhe (sie gleitet nicht hinein). Druck und Timbre gleiten über
+`pN.mpe.smooth` (0 … 0,5 s, 0 = sofort, wie vor 0.8).
+
+**Portamento und Poly-Glide** arbeiten wie ohne MPE: eine neue Note gleitet von der vorigen
+(Glide-Einstellungen des Parts), ihr eigener Pitchbend kommt obendrauf.
+
+**Ohne MPE** gelten dieselben Ziele, Mengen und Glättung für Kanal-Aftertouch, polyphonen
+Aftertouch und CC 74 auf dem Kanal des Parts – eine Aftertouch-Tastatur steuert sie also auch.
 
 Stelle den Pitchbend-Bereich des Controllers auf denselben Wert wie `pN.mpe.bend`.
+
+Werks-Presets mit dem Tag **MPE** (0.8, in der Bibliothek nach „MPE“ suchen) bringen Druck- und
+Timbre-Zuordnungen, Mengen, Slide und Glättung mit, die zum Klang passen (z. B. öffnet Druck bei
+Bässen das Filter oder gibt Drive dazu, Timbre fährt bei Flächen durch die Wavetable, Druck verdichtet
+die Grain-Wolke). Sie schalten MPE nicht ein – das geschieht pro Part (`pN.mpe`), wenn ein
+MPE-Controller spielt; mit einer Aftertouch-Tastatur wirkt die Druck-Zuordnung sofort.
 
 ## Tempo und Transport
 
@@ -101,7 +134,10 @@ folgt immer seinem Host.
 | `pN.midich` | 0 (Omni) … 16 | N |
 | `pN.mpe` | aus / an | aus |
 | `pN.mpe.bend` | 0 … 96 Halbtöne | 48 |
-| `pN.mpe.press`, `pN.mpe.timbre` | Aus, Klangfarbe, Pegel, LFO-Tiefe, Panorama | Pegel, Klangfarbe |
+| `pN.mpe.press`, `pN.mpe.timbre` | Aus, Klangfarbe, Pegel, LFO-Tiefe, Panorama, Cutoff, Position, FM-Index, Grain-Dichte, Drive, Vibrato, Formant, Layer-Mischung | Pegel, Klangfarbe |
+| `pN.mpe.pressamt`, `pN.mpe.timbreamt` (0.8) | −1 … +1 | +1 |
+| `pN.mpe.smooth` (0.8) | 0 … 0,5 s | 0 |
+| `pN.mpe.slide` (0.8) | 0 … 1 s (mindestens 2 ms) | 0 |
 | `sync.src` | Intern, MIDI-Clock, Link | Intern |
 | `sync.smooth` | 0 … 1 | 0,5 |
 | `sync.clockout`, `sync.notesout` | aus / an | aus |

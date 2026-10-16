@@ -3,7 +3,7 @@
 """Factory project presets / demo patterns (0.4, package F): whole-instrument set-ups built from
 the factory part presets, with the step sequencer, Euclid and Orbit (one of them playing the
 drum kit) and the mixer's send effects. Written by make_factory.py."""
-import json, os
+import json, os, re
 
 import factory_parts
 
@@ -20,13 +20,14 @@ RATE = {"1/4": 0, "1/8": 1, "1/16": 2, "1/32": 3, "1/4T": 4, "1/8T": 5, "1/16T":
 STEP_RATE = {"1/4": 0, "1/8": 1, "1/16": 2, "1/32": 3, "1/8T": 4, "1/16T": 5}
 
 
-def part(n, preset_name, **override):
-    """Parameters of factory part preset `preset_name` for part n (1-4), with its calibrated gain."""
+def part(n, preset_name, all_fx=False, **override):
+    """Parameters of factory part preset `preset_name` for part n (1-4), with its calibrated gain.
+    all_fx (0.8): keep the FX rack of parts 2-4 too (projects before 0.8 used an FX slot on part 1 only)."""
     p = BY_NAME[preset_name]
     params = {}
     for k, v in p["params"].items():
-        if k.startswith("fx.") and n != 1:
-            continue  # the FX slot exists on part 1 only
+        if re.match(r"fx\d*\.", k) and n != 1 and not all_fx:
+            continue  # projects made before 0.8: the FX slot existed on part 1 only
         params["p%d.%s" % (n, k)] = v
     params.setdefault("p%d.gain" % n, round(LEVELS.get(preset_name, 0.0), 1))
     for k, v in override.items():
@@ -255,7 +256,7 @@ AMBIENT = project(
     {"seq.orbit.on": 1, "seq.orbit.part": 2, "seq.orbit.gate": 0.6}, lanes([5, 7, 11, 16], ["1/8", "1/8", "1/8", "1/16"]),
     {"seq.euclid.on": 1, "seq.euclid.part": 3, "seq.euclid.rate": RATE["1/8"], "seq.euclid.gate": 1.0, "seq.euclid.vel": 80},
     rings([(13, 2, 0, 67), (19, 2, 7, 72)]),
-    mixer(ch1=(6, 0.0, 0.35), ch2=(-11, 0.5, 0.4), ch3=(-8, 0.15, 0.5), ch4=(-2, 0, 0.5), master=4),
+    mixer(ch1=(6, 0.0, 0.35), ch2=(-9.6, 0.5, 0.4), ch3=(-8, 0.15, 0.5), ch4=(-2, 0, 0.5), master=4),
     {"fxb.reverb.size": 0.9, "fxb.reverb.damping": 0.35, "fxb.reverb.predelay": 0.04, "fxa.delay.sync": DELAY_SYNC["1/8."],
      "fxa.delay.time": 0.625, "fxa.delay.feedback": 0.4, "fxa.delay.tone": 0.35},
     sequencer={"steps": note_steps([(48, 90, 1.0), None, None, None, (44, 86, 1.0), None, None, None,
@@ -292,7 +293,7 @@ SYNTHPOP = project(
     rings([(16, 4, 0, KICK), (16, 2, 4, SNARE), (16, 8, 0, HAT), (16, 2, 4, CLAP)]), ring_vel(116, 106, 66, 72),
     {"seq.orbit.on": 1, "seq.orbit.part": 2, "seq.orbit.gate": 1.0}, lanes([16, 16, 16, 1], ["1/8", "1/8", "1/8", "1/4"]),
     lane_parts(2, 1, 4, 0),
-    mixer(ch1=(0, 0.1, 0.28), ch2=(-1, 0.0, 0.03), ch3=(-6.5, 0.22, 0.18), ch4=(-7, 0.35, 0.3), ch5=(4, 0.0, 0.14), master=-8),
+    mixer(ch1=(0, 0.1, 0.28), ch2=(-1, 0.0, 0.03), ch3=(-6.5, 0.22, 0.18), ch4=(-5.1, 0.35, 0.3), ch5=(4, 0.0, 0.14), master=-6.3),
     {"mix.ch5.comp": 0.5, "fxa.delay.sync": DELAY_SYNC["1/8."], "fxa.delay.feedback": 0.35, "fxa.delay.tone": 0.5,
      "fxb.reverb.size": 0.5, "fxb.reverb.damping": 0.45,
      "mix.master.comp": 1, "mix.master.comp.thresh": -15, "mix.master.comp.ratio": 2.2},
@@ -310,7 +311,7 @@ POLY = project(
     rings([(8, 3, 0, KICK), (12, 5, 2, RIM), (16, 7, 1, HAT), (9, 4, 3, CONGA)]),
     part(1, "Upright Pluck"), part(2, "Marimba"), part(3, "Kalimba"), part(4, "Sus Horizon"),
     {"seq.orbit.on": 1, "seq.orbit.part": 2, "seq.orbit.gate": 0.5}, lanes([5, 6, 7, 8], ["1/16"] * 4),
-    mixer(ch1=(-3.5, 0.0, 0.08), ch2=(-4, 0.15, 0.25), ch3=(-6, 0.2, 0.3), ch4=(-8, 0, 0.35), ch5=(0, 0.0, 0.1), master=-4.5),
+    mixer(ch1=(-3.5, 0.0, 0.08), ch2=(-4, 0.15, 0.25), ch3=(-4.6, 0.2, 0.3), ch4=(-8, 0, 0.35), ch5=(0, 0.0, 0.1), master=-4.5),
     {"fxa.delay.time": 0.388, "fxa.delay.feedback": 0.3},
     sequencer={"steps": note_steps([(38, 110), None, None, (38, 90), None, None, (45, 96), None,
                                     (38, 110), None, None, (38, 90), None, (36, 96), None, None], gate=0.6), "lengths": {"1": 16}},
@@ -334,7 +335,7 @@ ARP = project(
     part(1, "Analog Arp"), part(2, "Round Sub"), part(3, "FM Arp Bell"), part(4, "Analog Dawn"),
     {"seq.euclid.on": 1, "seq.euclid.part": 2, "seq.euclid.rate": RATE["1/8"], "seq.euclid.gate": 0.8, "seq.euclid.vel": 100},
     rings([(8, 3, 0, 33), (16, 1, 14, 45)]),
-    mixer(ch1=(-3, 0.25, 0.15), ch2=(-1, 0.0, 0.03), ch3=(-5, 0.3, 0.2), ch4=(-8, 0, 0.3), ch5=(0, 0.0, 0.08), master=-3),
+    mixer(ch1=(-3, 0.25, 0.15), ch2=(-1, 0.0, 0.03), ch3=(-3.2, 0.3, 0.2), ch4=(-8, 0, 0.3), ch5=(0, 0.0, 0.08), master=-3),
     {"fxa.delay.time": 0.375, "fxa.delay.feedback": 0.35},
     sequencer={"steps": note_steps(arp_bar([57, 60, 64, 69]) + arp_bar([57, 60, 65, 69]) + arp_bar([59, 62, 67, 71])
                                    + arp_bar([59, 64, 67, 71]), gate=0.4), "lengths": {"1": 64}},
@@ -380,7 +381,7 @@ SUBGLIDE = project(
     lanes([16, 16, 16, 16], ["1/4", "1/16", "1/16", "1/16"]), lane_parts(2, 0, 0, 0),
     {"seq.euclid.on": 1, "seq.euclid.part": 3, "seq.euclid.rate": RATE["1/16"], "seq.euclid.gate": 0.4, "seq.euclid.vel": 74},
     rings([(16, 3, 2, 79), (32, 2, 9, 84)]),
-    mixer(ch1=(-4, 0.1, 0.35), ch2=(2, 0.0, 0.0), ch3=(-8, 0.4, 0.3), ch4=(-8, 0, 0.4), ch5=(-1, 0.0, 0.06), master=-2.5),
+    mixer(ch1=(-4, 0.1, 0.35), ch2=(2, 0.0, 0.0), ch3=(-6.1, 0.4, 0.3), ch4=(-8, 0, 0.4), ch5=(-1, 0.0, 0.06), master=-2.5),
     {"fxa.delay.sync": DELAY_SYNC["1/8."], "fxa.delay.feedback": 0.4, "fxa.delay.tone": 0.45, "fxb.reverb.size": 0.8,
      "fxb.reverb.damping": 0.5, "mix.master.comp": 1, "mix.master.comp.thresh": -15, "mix.master.comp.ratio": 2.0},
     sequencer={"steps": SG_CHORDS, "lengths": {"1": 16}},
@@ -447,4 +448,116 @@ BOOMKIT = project(
     sequencer={"steps": BK_BASS, "lengths": {"1": 32}},
     orbit=lane_steps(0, BK_KICK) + lane_steps(1, BK_SNARE) + lane_steps(2, BK_HATS) + lane_steps(3, BK_ROLL))
 
-PROJECTS = [LOFI, TECHNO, AMBIENT, SYNTHPOP, POLY, ARP, HOUSE, SUBGLIDE, LOFIKIT, BOOMKIT]
+# =============================================================================================
+# 0.8 (sound revision 3): bass music and an evolving ambient piece, built from the new presets. Every part keeps
+# its FX rack (all_fx=True).
+
+# ---------------------------------------------------------------------------------------------
+# 11. Neuro Engine: neurofunk at 174 BPM in F minor. Orbit lanes 1-3 -> Hybrid kit (two-step kick, snare on 2 and 4 with
+#     ghosts, offbeat-accented hats), lane 4 -> a dark held pad (one-finger seventh chords, one note per two bars),
+#     step sequencer -> Neuro Reese (two-bar riff with rests and pick-ups), Euclid -> Growl Machine answers.
+NE_KICK = [(KICK, 124) if i in (0, 10) else None for i in range(16)]
+NE_SNARE = [(SNARE, 120) if i in (4, 12) else (GHOST, 54) if i in (7, 14) else None for i in range(16)]
+NE_HATS = [(HAT, 96 if i % 4 == 2 else 58) if i % 2 == 0 else ((HAT, 40) if i in (5, 13) else None) for i in range(16)]
+NE_PAD = [(41, 70)] * 8 + [(37, 70)] * 8  # F, Db (two bars each, lane of 16 quarter notes)
+NE_BASS = held([(29, 3, 118), None, (29, 1, 96), (29, 2, 110), None, (32, 2, 104), (29, 4, 118), None, (36, 1, 100),
+                (29, 3, 118), None, (25, 2, 110), (27, 2, 104), None, (24, 3, 112), (29, 1, 100), None], last_gate=0.85)
+NEURO = project(
+    "Neuro Engine", ["Bass", "Drums", "Hybrid"],
+    "Neurofunk at 174 BPM in F minor: a two-step beat on the Hybrid kit (Orbit), Neuro Reese riffing on the step sequencer, "
+    "Growl Machine answering from Euclid and a dark seventh-chord pad underneath. Mono low end, squashed and loud. Press Play.",
+    {"tempo": 174, "drum.kit": KITS["hybrid"], "key.root": 5, "key.scale": 2,
+     "seq.step.channel": 2, "seq.step.rate": STEP_RATE["1/16"], "seq.step.length": 32},
+    part(1, "Growl Machine", all_fx=True), part(2, "Neuro Reese", all_fx=True),
+    part(3, "Dark Matter", all_fx=True, chord=CHORD["seventh"]), part(4, "Stereo Zap", all_fx=True),
+    {"seq.orbit.on": 1, "seq.orbit.drums": 1, "seq.orbit.gate": 1.0, "seq.orbit.human": 0.05},
+    lanes([16, 16, 16, 16], ["1/16", "1/16", "1/16", "1/4"]), lane_parts(0, 0, 0, 3),
+    {"seq.euclid.on": 1, "seq.euclid.part": 1, "seq.euclid.rate": RATE["1/16"], "seq.euclid.gate": 0.4, "seq.euclid.vel": 104},
+    rings([(32, 3, 6, 41), (32, 2, 21, 44)]), ring_vel(110, 96),
+    mixer(ch1=(-4, 0.05, 0.08), ch2=(-1, 0.0, 0.0), ch3=(-10, 0.0, 0.25), ch4=(-60, 0.0, 0.0), ch5=(0, 0.0, 0.06), master=-1),
+    {"fxb.reverb.size": 0.6, "fxb.reverb.damping": 0.5, "fxa.delay.sync": DELAY_SYNC["1/8."], "fxa.delay.feedback": 0.3,
+     "mix.ch5.comp": 0.3, "mix.master.comp": 1, "mix.master.comp.thresh": -12, "mix.master.comp.ratio": 3.0},
+    sequencer={"steps": NE_BASS, "lengths": {"1": 32}},
+    orbit=lane_steps(0, NE_KICK) + lane_steps(1, NE_SNARE) + lane_steps(2, NE_HATS) + lane_steps(3, NE_PAD))
+
+# ---------------------------------------------------------------------------------------------
+# 12. Halftime Pressure: modern dubstep at 140 BPM in E minor. Orbit -> Studio kit in half time (kick on 1, snare on 3,
+#     rolling hats), step sequencer -> Wub Machine (the eighth-note wobble restarts with every note), Euclid -> Vowel Growl
+#     answers, Orbit lane 4 -> Glacier texture.
+HP_KICK = [(KICK, 124) if i in (0, 3) else None for i in range(16)]
+HP_SNARE = [(SNARE, 124) if i == 8 else (GHOST, 46) if i == 14 else None for i in range(16)]
+HP_HATS = [(HAT, 90 if i % 4 == 0 else 52) if i % 2 == 0 else ((HAT, 44) if i in (11, 13, 15) else None) for i in range(16)]
+HP_TEX = [(52, 64)] * 8 + [(48, 64)] * 8
+HP_BASS = held([(28, 6, 118), None, None, (28, 2, 104), (31, 4, 112), (26, 3, 110), None,
+                (28, 4, 118), (35, 2, 104), (33, 2, 100), (31, 4, 112), (23, 2, 112)], last_gate=0.9)
+DUBSTEP = project(
+    "Halftime Pressure", ["Bass", "Drums"],
+    "Modern dubstep at 140 BPM in E minor: half-time drums on the Studio kit (Orbit), Wub Machine on the step sequencer - its "
+    "eighth-note wobble restarts with every note - Vowel Growl answering from Euclid and a cold glass texture. Press Play.",
+    {"tempo": 140, "drum.kit": KITS["studio"], "key.root": 4, "key.scale": 2,
+     "seq.step.channel": 2, "seq.step.rate": STEP_RATE["1/16"], "seq.step.length": 32},
+    part(1, "Vowel Growl", all_fx=True), part(2, "Wub Machine", all_fx=True), part(3, "Glacier", all_fx=True),
+    part(4, "Impact Boom", all_fx=True),
+    {"seq.orbit.on": 1, "seq.orbit.drums": 1, "seq.orbit.gate": 1.0},
+    lanes([16, 16, 16, 16], ["1/16", "1/16", "1/16", "1/4"]), lane_parts(0, 0, 0, 3),
+    {"seq.euclid.on": 1, "seq.euclid.part": 1, "seq.euclid.rate": RATE["1/16"], "seq.euclid.gate": 0.45, "seq.euclid.vel": 108},
+    rings([(32, 2, 13, 40), (32, 1, 29, 43)]), ring_vel(112, 100),
+    mixer(ch1=(-4, 0.0, 0.1), ch2=(0, 0.0, 0.0), ch3=(-12, 0.0, 0.2), ch4=(-60, 0.0, 0.0), ch5=(0, 0.0, 0.08), master=-1),
+    {"fxb.reverb.size": 0.7, "fxb.reverb.damping": 0.5, "mix.master.comp": 1, "mix.master.comp.thresh": -12,
+     "mix.master.comp.ratio": 3.0},
+    sequencer={"steps": HP_BASS, "lengths": {"1": 32}},
+    orbit=lane_steps(0, HP_KICK) + lane_steps(1, HP_SNARE) + lane_steps(2, HP_HATS) + lane_steps(3, HP_TEX))
+
+# ---------------------------------------------------------------------------------------------
+# 13. Liquid Roll: liquid drum & bass at 174 BPM in D minor (Dm9 - Bbmaj7 - Gm9 - A7 voiced by the one-finger chords).
+#     Orbit lane 1 -> Tight kit kick and snare, lane 2 -> shuffling hats and ghost snares, lane 3 -> Dream Tine chords
+#     (seventh chords, one per bar), lane 4 -> Warm Horizon pad; step sequencer -> Liquid Sub; Euclid -> Wide Glass Pluck.
+LQ_KS = [(KICK, 120) if i in (0, 10) else (SNARE, 112) if i in (4, 12) else None for i in range(16)]
+LQ_HATS = [(HAT, 88) if i % 2 == 0 else (GHOST, 40) if i in (7, 15) else (HAT, 46) if i in (3, 11) else None for i in range(16)]
+LQ_CHORDS = [(62, 76)] * 4 + [(58, 74)] * 4 + [(55, 74)] * 4 + [(57, 76)] * 4   # D, Bb, G, A (seventh chords, one bar each)
+LQ_PAD = [(50, 60)] * 4 + [(46, 60)] * 4 + [(43, 60)] * 4 + [(45, 60)] * 4
+LQ_BASS = held([(38, 5, 110), None, (38, 1, 90), (45, 1, 100), (34, 5, 110), None, (34, 1, 90), (41, 1, 100),
+                (31, 5, 110), None, (31, 1, 90), (38, 1, 100), (33, 5, 110), None, (33, 1, 90), (37, 1, 100)], last_gate=0.85)
+LIQUID = project(
+    "Liquid Roll", ["Bass", "Drums", "Keys"],
+    "Liquid drum & bass at 174 BPM in D minor: a rolling beat on the Tight kit (Orbit), dreamy tine-piano seventh chords and a "
+    "warm pad (Orbit lanes 3 and 4), a smooth sliding sub (step sequencer) and glassy plucks from Euclid. Press Play.",
+    {"tempo": 174, "drum.kit": KITS["tight"], "key.root": 2, "key.scale": 2,
+     "seq.step.channel": 2, "seq.step.rate": STEP_RATE["1/8"], "seq.step.length": 32},
+    part(1, "Dream Tine", all_fx=True, chord=CHORD["seventh"]), part(2, "Liquid Sub", all_fx=True),
+    part(3, "Wide Glass Pluck", all_fx=True), part(4, "Warm Horizon", all_fx=True, chord=CHORD["seventh"]),
+    {"seq.orbit.on": 1, "seq.orbit.drums": 1, "seq.orbit.gate": 1.0, "seq.orbit.human": 0.1},
+    lanes([16, 16, 16, 16], ["1/16", "1/16", "1/4", "1/4"]), lane_parts(0, 0, 1, 4),
+    {"seq.euclid.on": 1, "seq.euclid.part": 3, "seq.euclid.rate": RATE["1/16"], "seq.euclid.gate": 0.4, "seq.euclid.vel": 84},
+    rings([(16, 5, 2, 74), (32, 3, 7, 77)]), ring_vel(84, 72),
+    mixer(ch1=(-6, 0.1, 0.2), ch2=(0, 0.0, 0.0), ch3=(-7.9, 0.25, 0.25), ch4=(-14, 0.0, 0.3), ch5=(-1, 0.0, 0.08), master=-1),
+    {"fxb.reverb.size": 0.8, "fxb.reverb.damping": 0.45, "fxa.delay.sync": DELAY_SYNC["1/8."], "fxa.delay.feedback": 0.35,
+     "mix.master.comp": 1, "mix.master.comp.thresh": -14, "mix.master.comp.ratio": 2.5},
+    sequencer={"steps": LQ_BASS, "lengths": {"1": 32}},
+    orbit=lane_steps(0, LQ_KS) + lane_steps(1, LQ_HATS) + lane_steps(2, LQ_CHORDS) + lane_steps(3, LQ_PAD))
+
+# ---------------------------------------------------------------------------------------------
+# 14. Evolving Space: ambient at 66 BPM in A minor, no drums. Step sequencer -> Evolving Tide chords (four bars each),
+#     Orbit lanes 1-3 -> Halo Grand, generative (5, 7 and 11 steps), lane 4 -> Glacier drone; Euclid -> Starfield bells.
+ES_TIDE = held([(57, 16, 80), (53, 16, 78), (48, 16, 78), (55, 16, 80)], last_gate=0.95)
+AMBIENT2 = project(
+    "Evolving Space", ["Pads", "Textures", "Hybrid"],
+    "Ambient at 66 BPM in A minor: Evolving Tide chords drifting through their wavetable (step sequencer), a generative grand "
+    "piano with a grain halo from three Orbit lanes of 5, 7 and 11 steps, a glacial grain drone and random starfield bells "
+    "(Euclid). Let it run.",
+    {"tempo": 66, "key.root": 9, "key.scale": 2, "seq.step.channel": 1, "seq.step.rate": STEP_RATE["1/4"], "seq.step.length": 64},
+    part(1, "Evolving Tide", all_fx=True, chord=CHORD["seventh"]), part(2, "Halo Grand", all_fx=True),
+    part(3, "Starfield", all_fx=True), part(4, "Glacier", all_fx=True),
+    {"seq.orbit.on": 1, "seq.orbit.part": 2, "seq.orbit.gate": 0.8, "seq.orbit.human": 0.3},
+    lanes([5, 7, 11, 16], ["1/8", "1/8", "1/8", "1/4"]), lane_parts(0, 0, 0, 4),
+    {"seq.euclid.on": 1, "seq.euclid.part": 3, "seq.euclid.rate": RATE["1/8"], "seq.euclid.gate": 0.5, "seq.euclid.vel": 70},
+    rings([(13, 2, 0, 81), (19, 3, 5, 88)]),
+    mixer(ch1=(-3, 0.0, 0.25), ch2=(-6, 0.25, 0.3), ch3=(-14, 0.2, 0.3), ch4=(-12, 0.0, 0.3), master=0),
+    {"fxb.reverb.size": 0.92, "fxb.reverb.damping": 0.4, "fxb.reverb.predelay": 0.05, "fxa.delay.sync": DELAY_SYNC["1/4."],
+     "fxa.delay.feedback": 0.45, "fxa.delay.tone": 0.35},
+    sequencer={"steps": ES_TIDE, "lengths": {"1": 64}},
+    orbit=lane_steps(0, [(69, 70), None, (72, 62), None, (76, 66)]) + lane_steps(1, [(64, 60), None, None, (67, 64), None, (71, 58), None])
+    + lane_steps(2, [(81, 52), None, None, None, (79, 50), None, None, (84, 48), None, None, None])
+    + lane_steps(3, [(45, 60)] * 16))
+
+PROJECTS = [LOFI, TECHNO, AMBIENT, SYNTHPOP, POLY, ARP, HOUSE, SUBGLIDE, LOFIKIT, BOOMKIT, NEURO, DUBSTEP, LIQUID, AMBIENT2]

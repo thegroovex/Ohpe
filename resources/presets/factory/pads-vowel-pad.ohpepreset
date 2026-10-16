@@ -37,6 +37,14 @@
     "fx.chorus.rate": 0.35,
     "fx.chorus.depth": 0.5,
     "fx.chorus.mix": 0.35,
-    "gain": 10.6
+    "gain": 10.9,
+    "fx2.type": 10,
+    "fx2.compressor.thresh": -4.0,
+    "fx2.compressor.ratio": 8.0,
+    "fx2.compressor.attack": 0.1,
+    "fx2.compressor.release": 180.0,
+    "fx2.compressor.knee": 6.0,
+    "fx2.compressor.makeup": 0.0,
+    "fx2.compressor.mix": 1.0
   }
 }

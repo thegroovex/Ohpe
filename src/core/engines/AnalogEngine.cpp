@@ -53,7 +53,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         // filter cutoff: base * key tracking * mod envelope (+-6 octaves) * LFO timbre (+-2 octaves)
         float octaves = p.keyTrack * (pitch - 60.0f) / 12.0f + c.modEnvAmount * modEnv.getLevel() * 6.0f;
         if (c.lfoDest == LfoDest::Timbre) octaves += lfoValue * 2.0f;
-        octaves += expr.timbre * 3.0f; // per-note expression (MPE)
+        octaves += (expr.timbre + expr.cutoff) * 3.0f; // per-note expression (MPE; 0.8: cutoff target)
         const float cutoff = std::clamp (p.cutoff * std::pow (2.0f, octaves), 20.0f, 20000.0f);
         if (p.filterType == LadderLP) ladder.set (cutoff, p.resonance);
         else svf.set (cutoff, p.resonance);
@@ -61,7 +61,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         float panL, panR;
         lfoPan (c, panL, panR);
         const float gain = 0.3f * velocityGain (c) * lfoAmp (c);
-        const float drive = 1.0f + p.drive * 4.0f;
+        const float drive = 1.0f + std::clamp (p.drive + expr.drive, 0.0f, 1.5f) * 4.0f; // 0.8: per-note drive
         const float mix1 = (1.0f - p.oscMix) * p.oscLevel, mix2 = p.oscMix * p.oscLevel;
         // 0.6 crackle: pops (rare, louder) and dust (frequent, tiny), both as short decaying clicks
         const float popChance = p.crackle > 0.0f ? (3.0f + 22.0f * p.crackle) / sr : 0.0f;

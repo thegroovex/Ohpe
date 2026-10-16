@@ -38,6 +38,14 @@
     "voices": 8,
     "glide": 0.7,
     "polyglide": 1,
-    "gain": 6.8
+    "gain": 7.9,
+    "fx2.type": 10,
+    "fx2.compressor.thresh": -4.0,
+    "fx2.compressor.ratio": 8.0,
+    "fx2.compressor.attack": 0.1,
+    "fx2.compressor.release": 180.0,
+    "fx2.compressor.knee": 6.0,
+    "fx2.compressor.makeup": 0.0,
+    "fx2.compressor.mix": 1.0
   }
 }

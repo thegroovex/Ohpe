@@ -118,9 +118,9 @@ TEST_CASE ("0.7: rack and matrix parameters are appended after 0.6, in their doc
     for (int s = 0; s < FxRack::numMasterSlots; ++s) CHECK (core.params().indexOf (FxRack::masterSlotPrefix (s) + "reverb.size") >= 0);
     // the matrix block ends with the last part's sequencer lane; the rack type blocks (later in 0.7) follow it
     CHECK (core.params().indexOf ("p4.seqlane") + 1 == core.params().indexOf ("p1.fx.hyper.rate"));
-    // ... and the stereo type blocks (Mid/Side) follow those
+    // ... and the stereo type blocks (Mid/Side) follow those, then the 0.8 type blocks (comb ... width, sound revision 3)
     CHECK (core.params().indexOf ("mfx4.hall.mix") + 1 == core.params().indexOf ("p1.fx.midside.width"));
-    CHECK (ids.back() == "mfx4.midside.sidetilt");
+    CHECK (core.params().indexOf ("mfx4.midside.sidetilt") + 1 == core.params().indexOf ("p1.fx.comb.freq"));
     // matrix parameters come after every rack parameter
     CHECK (core.params().indexOf ("p1.mod.s1.src") > core.params().indexOf ("mfx4.bypass"));
     // host names tell the slots apart; the 0.2 slot keeps its names

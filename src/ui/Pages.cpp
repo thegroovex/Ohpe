@@ -37,11 +37,19 @@ std::string partPrefix (int part) { return "p" + std::to_string (juce::jlimit (0
 /** FX slot parameters of the selected slot type of a part ("pN.fx.type" + that effect's block). */
 Ids fxSlotParams (const Core& core, int part)
 {
-    const auto p = partPrefix (part);
-    if (core.params().indexOf (p + "fx.type") < 0) return {};
-    Ids ids { p + "fx.type" };
-    for (const auto& id : modfx::slotEffectParams (core, p + "fx.")) ids.push_back (id); // 0.7: the block of the type's effect ID
+    const auto p = partPrefix (part) + "fx.";
+    if (core.params().indexOf (p + "type") < 0) return {};
+    Ids ids { p + "type" };
+    for (const auto& id : modfx::slotEffectParams (core, p)) ids.push_back (id); // 0.7: the block of the type's effect ID
     return ids;
+}
+
+/** 0.8: the layer page of a part (layer engine, level, tuning, cross-modulation, own envelope). */
+Ids layerParams (int part)
+{
+    const auto p = partPrefix (part) + "layer.";
+    return { p + "engine", p + "level", p + "tune", p + "fine", p + "xmode", p + "xmod", p + "width", p + "ownenv",
+             p + "a", p + "d", p + "s", p + "r" };
 }
 
 std::string mixCh (int ch) { return "mix.ch" + std::to_string (juce::jlimit (0, 7, ch) + 1) + "."; }
@@ -106,6 +114,8 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             ids = padded (ids);
             for (const char* k : { "glide", "glide.mode", "glide.rate", "polyglide", "pitchenv.amt", "pitchenv.time", "pitchenv.curve", "voices" })
                 ids.push_back (p + k);
+            if (core.params().indexOf (p + "layer.engine") >= 0) // 0.8: the layer engine pages
+                for (const auto& id : layerParams (partIndex)) ids.push_back (id);
             return ids;
         }
         case Mode::Envelope:
@@ -115,7 +125,7 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             if (ctx.lfoView == modfx::LfoViewMod) return modfx::modParams (core, partIndex, ctx.modRouting); // 0.7
             return { p + "lfo.rate", p + "lfo.depth", p + "lfo.shape", p + "lfo.dest", p + "tune", p + "fine", p + "bend", p + "vol",
                      p + "midich", p + "quant", p + "chord", "key.root", "key.scale", p + "mpe", p + "mpe.bend", p + "mpe.press",
-                     p + "mpe.timbre", "", "", "" };
+                     p + "mpe.timbre", p + "mpe.pressamt", p + "mpe.timbreamt", p + "mpe.smooth", p + "mpe.slide", "", "", "" }; // 0.8
         case Mode::Mixer:
         {
             const std::string c = mixCh (ctx.mixerChannel);
@@ -216,7 +226,14 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
     if (m == Mode::Synth)
     {
         for (size_t i = 1; i < t.size(); ++i) t[i] = "Engine";
-        if (t.size() >= 3) { t[t.size() - 2] = "Glide"; t[t.size() - 1] = "Pitch Envelope"; } // 0.6
+        const size_t layerPages = core.params().indexOf (core.part (juce::jlimit (0, Core::numParts - 1, ctx.part)).id ("layer.engine")) >= 0 ? 3 : 0;
+        if (t.size() >= 3 + layerPages)
+        {
+            const size_t g = t.size() - layerPages;
+            t[g - 2] = "Glide";
+            t[g - 1] = "Pitch Envelope"; // 0.6
+            for (size_t i = g; i < t.size(); ++i) t[i] = "Layer"; // 0.8
+        }
     }
     if (m == Mode::Effects && ctx.fxView != modfx::FxViewSends)
         t = modfx::rackTitles (core, modfx::rackPrefixes (ctx.fxView, ctx.part), ctx.fxSlot);

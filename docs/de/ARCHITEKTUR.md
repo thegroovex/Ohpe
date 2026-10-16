@@ -110,3 +110,23 @@ Anleitung: [BAND-MISCHER-FX.md](BAND-MISCHER-FX.md) · Parameter: [../PARAMETERS
 * `src/ui`: ziehbare Display-Zeilen mit Feinregelung, Soft-Tasten, Sequencer-Ansichten, Tape- und
   Drum-Seite, Profiansicht (`ProView`), Bibliothek (`LibraryBrowser`), Part-Auswahl, Drag & Drop.
   Schritt-Locks nutzen den vorhandenen Lock-Speicher des Step-Sequencers.
+
+## 0.8: Sound-Revision 3
+
+* **FX-Typen** (`src/core/fx/InsertEffects2.*`): Kammfilter, Formant, Wobble, Tremolo, Stereobreite –
+  eigenständige `IEffect`-Klassen, nach den Rack-Typen von 0.7 angehängt (`InsertSlot::firstR3Type`);
+  ihre Parameterblöcke werden für jeden Slot jedes Racks registriert (`FxRack::registerTypeBlocks`).
+  Synchronisierte Typen nutzen `IEffect::setTempo()`, neu startende `noteOn()`.
+* **Bass mono** (`pN.monobass`, `Part::applyBassMono`): am Ende der Kette des Parts (nach dem FX-Rack)
+  wird das Seitensignal unterhalb der Frequenz mit einem Linkwitz-Riley-Tiefpass 4. Ordnung entfernt;
+  20 Hz = aus.
+* **Layer-Engine** (`Part`, `pN.layer.*`): eine zweite Engine des Parts spielt jede Note; sie rendert
+  in einen eigenen Puffer und wird mit Ring- / AM- / Falt-Kreuzmodulation gemischt. Aus = bitgleich
+  zu 0.7. Siehe [engines/layer.md](engines/layer.md).
+* **Späte Engine-Parameter** (`ISynthEngine::firstLate08Param()`, `Part::registerLate08EngineParams`):
+  Wavetable-Unisono-Stapel / FM / LFO > Position, FM Anschlag > Index, Tasteninstrumente für Sampler /
+  Grain (`inst2`; die Instrumentliste der Bank wuchs auf 15, die Auswahl `inst` von 0.4 behält ihre 11).
+* **Ausdruck** (`NoteExpression`, `VoiceBase`): acht weitere Ziele (Cutoff, Position, FM-Index, Dichte,
+  Drive, Vibrato, Formant, Layer-Mischung), Mengen pro Quelle und Gleiten: eine Stimme hält den
+  Ziel-Ausdruck und den aktuellen; die Tonhöhe pro Note gleitet über `pN.mpe.slide` (mindestens 2 ms),
+  der Rest über `pN.mpe.smooth`; der erste Ausdruck einer Note gilt sofort.

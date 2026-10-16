@@ -185,7 +185,7 @@ TEST_CASE ("factory presets: every preset loads and renders finite, unclipped au
         CHECK (p.meta.author == "groovex");
         CHECK (! p.meta.comment.empty());
         REQUIRE (! p.meta.tags.empty());
-        for (const auto& t : p.meta.tags) CHECK (preset::isCategory (t));
+        for (const auto& t : p.meta.tags) CHECK ((preset::isCategory (t) || t == "MPE")); // 0.8: the free tag MPE marks MPE-ready presets
 
         Core core;
         core.prepare (48000.0, 256);
@@ -213,7 +213,7 @@ TEST_CASE ("factory presets: every preset loads and renders finite, unclipped au
         // built-in sound, which is far louder than the recording their gain is calibrated for: only
         // the numbers are checked for them here; the plug-in tests check level and peak with the bank
         const auto inst = [&] (const char* id) { const auto i = p.params.find (id); return i != p.params.end() && i->second > 0.5f; };
-        const bool recording = inst ("sampler.inst") || inst ("grain.inst");
+        const bool recording = inst ("sampler.inst") || inst ("grain.inst") || inst ("sampler.inst2") || inst ("grain.inst2"); // 0.8 keyboards
         CAPTURE (recording);
         if (! recording)
         {

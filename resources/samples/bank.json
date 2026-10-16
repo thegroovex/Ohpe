@@ -167,6 +167,388 @@
     "vlo": 1
    }
   ],
+  "grandpiano": [
+   {
+    "file": "instruments/grandpiano/grandpiano-24-v80.flac",
+    "hi": 26,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 24,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-24-v127.flac",
+    "hi": 26,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 24,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-28-v80.flac",
+    "hi": 30,
+    "le": -1,
+    "lo": 27,
+    "ls": -1,
+    "root": 28,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-28-v127.flac",
+    "hi": 30,
+    "le": -1,
+    "lo": 27,
+    "ls": -1,
+    "root": 28,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-32-v80.flac",
+    "hi": 34,
+    "le": -1,
+    "lo": 31,
+    "ls": -1,
+    "root": 32,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-32-v127.flac",
+    "hi": 34,
+    "le": -1,
+    "lo": 31,
+    "ls": -1,
+    "root": 32,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-36-v80.flac",
+    "hi": 38,
+    "le": -1,
+    "lo": 35,
+    "ls": -1,
+    "root": 36,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-36-v127.flac",
+    "hi": 38,
+    "le": -1,
+    "lo": 35,
+    "ls": -1,
+    "root": 36,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-40-v80.flac",
+    "hi": 42,
+    "le": -1,
+    "lo": 39,
+    "ls": -1,
+    "root": 40,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-40-v127.flac",
+    "hi": 42,
+    "le": -1,
+    "lo": 39,
+    "ls": -1,
+    "root": 40,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-44-v80.flac",
+    "hi": 46,
+    "le": -1,
+    "lo": 43,
+    "ls": -1,
+    "root": 44,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-44-v127.flac",
+    "hi": 46,
+    "le": -1,
+    "lo": 43,
+    "ls": -1,
+    "root": 44,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-48-v80.flac",
+    "hi": 50,
+    "le": -1,
+    "lo": 47,
+    "ls": -1,
+    "root": 48,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-48-v127.flac",
+    "hi": 50,
+    "le": -1,
+    "lo": 47,
+    "ls": -1,
+    "root": 48,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-52-v80.flac",
+    "hi": 54,
+    "le": -1,
+    "lo": 51,
+    "ls": -1,
+    "root": 52,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-52-v127.flac",
+    "hi": 54,
+    "le": -1,
+    "lo": 51,
+    "ls": -1,
+    "root": 52,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-56-v80.flac",
+    "hi": 58,
+    "le": -1,
+    "lo": 55,
+    "ls": -1,
+    "root": 56,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-56-v127.flac",
+    "hi": 58,
+    "le": -1,
+    "lo": 55,
+    "ls": -1,
+    "root": 56,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-60-v80.flac",
+    "hi": 62,
+    "le": -1,
+    "lo": 59,
+    "ls": -1,
+    "root": 60,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-60-v127.flac",
+    "hi": 62,
+    "le": -1,
+    "lo": 59,
+    "ls": -1,
+    "root": 60,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-64-v80.flac",
+    "hi": 66,
+    "le": -1,
+    "lo": 63,
+    "ls": -1,
+    "root": 64,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-64-v127.flac",
+    "hi": 66,
+    "le": -1,
+    "lo": 63,
+    "ls": -1,
+    "root": 64,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-68-v80.flac",
+    "hi": 70,
+    "le": -1,
+    "lo": 67,
+    "ls": -1,
+    "root": 68,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-68-v127.flac",
+    "hi": 70,
+    "le": -1,
+    "lo": 67,
+    "ls": -1,
+    "root": 68,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-72-v80.flac",
+    "hi": 74,
+    "le": -1,
+    "lo": 71,
+    "ls": -1,
+    "root": 72,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-72-v127.flac",
+    "hi": 74,
+    "le": -1,
+    "lo": 71,
+    "ls": -1,
+    "root": 72,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-76-v80.flac",
+    "hi": 78,
+    "le": -1,
+    "lo": 75,
+    "ls": -1,
+    "root": 76,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-76-v127.flac",
+    "hi": 78,
+    "le": -1,
+    "lo": 75,
+    "ls": -1,
+    "root": 76,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-80-v80.flac",
+    "hi": 82,
+    "le": -1,
+    "lo": 79,
+    "ls": -1,
+    "root": 80,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-80-v127.flac",
+    "hi": 82,
+    "le": -1,
+    "lo": 79,
+    "ls": -1,
+    "root": 80,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-84-v80.flac",
+    "hi": 86,
+    "le": -1,
+    "lo": 83,
+    "ls": -1,
+    "root": 84,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-84-v127.flac",
+    "hi": 86,
+    "le": -1,
+    "lo": 83,
+    "ls": -1,
+    "root": 84,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-88-v80.flac",
+    "hi": 90,
+    "le": -1,
+    "lo": 87,
+    "ls": -1,
+    "root": 88,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-88-v127.flac",
+    "hi": 90,
+    "le": -1,
+    "lo": 87,
+    "ls": -1,
+    "root": 88,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-92-v80.flac",
+    "hi": 94,
+    "le": -1,
+    "lo": 91,
+    "ls": -1,
+    "root": 92,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-92-v127.flac",
+    "hi": 94,
+    "le": -1,
+    "lo": 91,
+    "ls": -1,
+    "root": 92,
+    "vhi": 127,
+    "vlo": 81
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-96-v80.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 95,
+    "ls": -1,
+    "root": 96,
+    "vhi": 80,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/grandpiano/grandpiano-96-v127.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 95,
+    "ls": -1,
+    "root": 96,
+    "vhi": 127,
+    "vlo": 81
+   }
+  ],
   "harp": [
    {
     "file": "instruments/harp/harp-38.flac",
@@ -603,6 +985,642 @@
     "lo": 75,
     "ls": 63093,
     "root": 76,
+    "vhi": 127,
+    "vlo": 1
+   }
+  ],
+  "reedpiano": [
+   {
+    "file": "instruments/reedpiano/reedpiano-28-v84.flac",
+    "hi": 31,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 28,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-28-v127.flac",
+    "hi": 31,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 28,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-34-v84.flac",
+    "hi": 37,
+    "le": -1,
+    "lo": 32,
+    "ls": -1,
+    "root": 34,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-34-v127.flac",
+    "hi": 37,
+    "le": -1,
+    "lo": 32,
+    "ls": -1,
+    "root": 34,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-40-v84.flac",
+    "hi": 43,
+    "le": -1,
+    "lo": 38,
+    "ls": -1,
+    "root": 40,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-40-v127.flac",
+    "hi": 43,
+    "le": -1,
+    "lo": 38,
+    "ls": -1,
+    "root": 40,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-46-v84.flac",
+    "hi": 49,
+    "le": -1,
+    "lo": 44,
+    "ls": -1,
+    "root": 46,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-46-v127.flac",
+    "hi": 49,
+    "le": -1,
+    "lo": 44,
+    "ls": -1,
+    "root": 46,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-52-v84.flac",
+    "hi": 55,
+    "le": -1,
+    "lo": 50,
+    "ls": -1,
+    "root": 52,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-52-v127.flac",
+    "hi": 55,
+    "le": -1,
+    "lo": 50,
+    "ls": -1,
+    "root": 52,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-58-v84.flac",
+    "hi": 61,
+    "le": -1,
+    "lo": 56,
+    "ls": -1,
+    "root": 58,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-58-v127.flac",
+    "hi": 61,
+    "le": -1,
+    "lo": 56,
+    "ls": -1,
+    "root": 58,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-64-v84.flac",
+    "hi": 67,
+    "le": -1,
+    "lo": 62,
+    "ls": -1,
+    "root": 64,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-64-v127.flac",
+    "hi": 67,
+    "le": -1,
+    "lo": 62,
+    "ls": -1,
+    "root": 64,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-70-v84.flac",
+    "hi": 73,
+    "le": -1,
+    "lo": 68,
+    "ls": -1,
+    "root": 70,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-70-v127.flac",
+    "hi": 73,
+    "le": -1,
+    "lo": 68,
+    "ls": -1,
+    "root": 70,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-76-v84.flac",
+    "hi": 79,
+    "le": -1,
+    "lo": 74,
+    "ls": -1,
+    "root": 76,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-76-v127.flac",
+    "hi": 79,
+    "le": -1,
+    "lo": 74,
+    "ls": -1,
+    "root": 76,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-82-v84.flac",
+    "hi": 85,
+    "le": -1,
+    "lo": 80,
+    "ls": -1,
+    "root": 82,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-82-v127.flac",
+    "hi": 85,
+    "le": -1,
+    "lo": 80,
+    "ls": -1,
+    "root": 82,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-88-v84.flac",
+    "hi": 91,
+    "le": -1,
+    "lo": 86,
+    "ls": -1,
+    "root": 88,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-88-v127.flac",
+    "hi": 91,
+    "le": -1,
+    "lo": 86,
+    "ls": -1,
+    "root": 88,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-94-v84.flac",
+    "hi": 97,
+    "le": -1,
+    "lo": 92,
+    "ls": -1,
+    "root": 94,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-94-v127.flac",
+    "hi": 97,
+    "le": -1,
+    "lo": 92,
+    "ls": -1,
+    "root": 94,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-100-v84.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 98,
+    "ls": -1,
+    "root": 100,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/reedpiano/reedpiano-100-v127.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 98,
+    "ls": -1,
+    "root": 100,
+    "vhi": 127,
+    "vlo": 85
+   }
+  ],
+  "tinepiano": [
+   {
+    "file": "instruments/tinepiano/tinepiano-28-v84.flac",
+    "hi": 31,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 28,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-28-v127.flac",
+    "hi": 31,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 28,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-34-v84.flac",
+    "hi": 37,
+    "le": -1,
+    "lo": 32,
+    "ls": -1,
+    "root": 34,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-34-v127.flac",
+    "hi": 37,
+    "le": -1,
+    "lo": 32,
+    "ls": -1,
+    "root": 34,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-40-v84.flac",
+    "hi": 43,
+    "le": -1,
+    "lo": 38,
+    "ls": -1,
+    "root": 40,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-40-v127.flac",
+    "hi": 43,
+    "le": -1,
+    "lo": 38,
+    "ls": -1,
+    "root": 40,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-46-v84.flac",
+    "hi": 49,
+    "le": -1,
+    "lo": 44,
+    "ls": -1,
+    "root": 46,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-46-v127.flac",
+    "hi": 49,
+    "le": -1,
+    "lo": 44,
+    "ls": -1,
+    "root": 46,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-52-v84.flac",
+    "hi": 55,
+    "le": -1,
+    "lo": 50,
+    "ls": -1,
+    "root": 52,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-52-v127.flac",
+    "hi": 55,
+    "le": -1,
+    "lo": 50,
+    "ls": -1,
+    "root": 52,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-58-v84.flac",
+    "hi": 61,
+    "le": -1,
+    "lo": 56,
+    "ls": -1,
+    "root": 58,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-58-v127.flac",
+    "hi": 61,
+    "le": -1,
+    "lo": 56,
+    "ls": -1,
+    "root": 58,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-64-v84.flac",
+    "hi": 67,
+    "le": -1,
+    "lo": 62,
+    "ls": -1,
+    "root": 64,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-64-v127.flac",
+    "hi": 67,
+    "le": -1,
+    "lo": 62,
+    "ls": -1,
+    "root": 64,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-70-v84.flac",
+    "hi": 73,
+    "le": -1,
+    "lo": 68,
+    "ls": -1,
+    "root": 70,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-70-v127.flac",
+    "hi": 73,
+    "le": -1,
+    "lo": 68,
+    "ls": -1,
+    "root": 70,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-76-v84.flac",
+    "hi": 79,
+    "le": -1,
+    "lo": 74,
+    "ls": -1,
+    "root": 76,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-76-v127.flac",
+    "hi": 79,
+    "le": -1,
+    "lo": 74,
+    "ls": -1,
+    "root": 76,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-82-v84.flac",
+    "hi": 85,
+    "le": -1,
+    "lo": 80,
+    "ls": -1,
+    "root": 82,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-82-v127.flac",
+    "hi": 85,
+    "le": -1,
+    "lo": 80,
+    "ls": -1,
+    "root": 82,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-88-v84.flac",
+    "hi": 91,
+    "le": -1,
+    "lo": 86,
+    "ls": -1,
+    "root": 88,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-88-v127.flac",
+    "hi": 91,
+    "le": -1,
+    "lo": 86,
+    "ls": -1,
+    "root": 88,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-94-v84.flac",
+    "hi": 97,
+    "le": -1,
+    "lo": 92,
+    "ls": -1,
+    "root": 94,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-94-v127.flac",
+    "hi": 97,
+    "le": -1,
+    "lo": 92,
+    "ls": -1,
+    "root": 94,
+    "vhi": 127,
+    "vlo": 85
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-100-v84.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 98,
+    "ls": -1,
+    "root": 100,
+    "vhi": 84,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/tinepiano/tinepiano-100-v127.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 98,
+    "ls": -1,
+    "root": 100,
+    "vhi": 127,
+    "vlo": 85
+   }
+  ],
+  "uprightpiano": [
+   {
+    "file": "instruments/uprightpiano/uprightpiano-36.flac",
+    "hi": 39,
+    "le": -1,
+    "lo": 0,
+    "ls": -1,
+    "root": 36,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/uprightpiano/uprightpiano-43.flac",
+    "hi": 45,
+    "le": -1,
+    "lo": 40,
+    "ls": -1,
+    "root": 43,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/uprightpiano/uprightpiano-48.flac",
+    "hi": 51,
+    "le": -1,
+    "lo": 46,
+    "ls": -1,
+    "root": 48,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/uprightpiano/uprightpiano-55.flac",
+    "hi": 57,
+    "le": -1,
+    "lo": 52,
+    "ls": -1,
+    "root": 55,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/uprightpiano/uprightpiano-60.flac",
+    "hi": 63,
+    "le": -1,
+    "lo": 58,
+    "ls": -1,
+    "root": 60,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/uprightpiano/uprightpiano-67.flac",
+    "hi": 69,
+    "le": -1,
+    "lo": 64,
+    "ls": -1,
+    "root": 67,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/uprightpiano/uprightpiano-72.flac",
+    "hi": 75,
+    "le": -1,
+    "lo": 70,
+    "ls": -1,
+    "root": 72,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/uprightpiano/uprightpiano-79.flac",
+    "hi": 81,
+    "le": -1,
+    "lo": 76,
+    "ls": -1,
+    "root": 79,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/uprightpiano/uprightpiano-84.flac",
+    "hi": 87,
+    "le": -1,
+    "lo": 82,
+    "ls": -1,
+    "root": 84,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/uprightpiano/uprightpiano-91.flac",
+    "hi": 93,
+    "le": -1,
+    "lo": 88,
+    "ls": -1,
+    "root": 91,
+    "vhi": 127,
+    "vlo": 1
+   },
+   {
+    "file": "instruments/uprightpiano/uprightpiano-96.flac",
+    "hi": 127,
+    "le": -1,
+    "lo": 94,
+    "ls": -1,
+    "root": 96,
     "vhi": 127,
     "vlo": 1
    }

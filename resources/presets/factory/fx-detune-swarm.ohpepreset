@@ -36,6 +36,14 @@
     "lfo.shape": 0,
     "lfo.dest": 1,
     "voices": 6,
-    "gain": 7.9
+    "gain": 9.5,
+    "fx.type": 10,
+    "fx.compressor.thresh": -7.0,
+    "fx.compressor.ratio": 8.0,
+    "fx.compressor.attack": 0.1,
+    "fx.compressor.release": 180.0,
+    "fx.compressor.knee": 6.0,
+    "fx.compressor.makeup": 0.0,
+    "fx.compressor.mix": 1.0
   }
 }

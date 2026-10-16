@@ -47,6 +47,14 @@
     "pitchenv.time": 1.2,
     "pitchenv.curve": 0.7,
     "voices": 10,
-    "gain": 11.6
+    "gain": 12.0,
+    "fx2.type": 10,
+    "fx2.compressor.thresh": -4.0,
+    "fx2.compressor.ratio": 8.0,
+    "fx2.compressor.attack": 0.1,
+    "fx2.compressor.release": 180.0,
+    "fx2.compressor.knee": 6.0,
+    "fx2.compressor.makeup": 0.0,
+    "fx2.compressor.mix": 1.0
   }
 }

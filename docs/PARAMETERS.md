@@ -492,3 +492,92 @@ rack blocks ("P2 FX3 Stereo Width", "Master FX 1 Stereo Width").
 
 All defaults together are an exact (bit-identical) bypass. The modulation targets *FX k Param 1–4* of a Mid/Side slot
 are `width`, `mid`, `side`, `balance`.
+
+## 0.8 – sound revision 3: FX types, layer engine, keyboard instruments, MPE, bass mono
+
+Appended after the 0.7 block (index 4477 onwards, 1056 parameters). Guides: FX types
+[English](en/TAPE-MIXER-FX.md) · [Deutsch](de/BAND-MISCHER-FX.md), layer engine
+[English](en/engines/layer.md) · [Deutsch](de/engines/layer.md), wavetable unison / FM
+[English](en/engines/wavetable.md) · [Deutsch](de/engines/wavetable.md), keyboard instruments
+[English](en/GRAIN-VOCAL-SAMPLER-DRUM.md) · [Deutsch](de/GRAIN-VOKAL-SAMPLER-DRUM.md), MPE
+[English](en/MIDI.md) · [Deutsch](de/MIDI.md). Order of the block:
+
+1. **FX types Comb, Formant, Wobble, Tremolo, Width** (`type` 16 – 20) – their parameter blocks for every
+   slot of every rack: part 1 slots 1 – 6, parts 2, 3, 4, then the master slots (`FxRack::registerTypeBlocks`).
+2. **Layer engine** of parts 1 – 4 (`pN.layer.*`).
+3. **Late engine parameters**, per part: Wavetable (unison stack, FM, LFO > position, Env > FM), FM
+   (velocity > index), Sampler and Grain (keyboard instrument).
+4. **MPE / aftertouch** of parts 1 – 4: target amounts, expression smoothing, per-note slide.
+5. **Bass mono** of parts 1 – 4 (`pN.monobass`).
+
+`ohpe_param_dump --markdown` prints every row with its own index. N = part 1 – 4, K = slot (`fx.` = slot 1,
+`fx2.` … `fx6.`), master slots `mfx1.` … `mfx4.`.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.fxK.comb.freq`, `mfxK.comb.freq` | Comb Frequency | Kamm-Frequenz | 20 … 5000 | 300 |
+| `pN.fxK.comb.feedback`, `mfxK.comb.feedback` | Comb Feedback | Kamm-Feedback | -0.95 … 0.95 | 0.6 |
+| `pN.fxK.comb.damp`, `mfxK.comb.damp` | Comb Damping | Kamm-Dämpfung | 0 … 1 | 0.3 |
+| `pN.fxK.comb.rate`, `mfxK.comb.rate` | Comb Rate | Kamm-Tempo | 0.01 … 10 | 0.2 |
+| `pN.fxK.comb.depth`, `mfxK.comb.depth` | Comb Depth | Kamm-Tiefe | 0 … 1 | 0.3 |
+| `pN.fxK.comb.spread`, `mfxK.comb.spread` | Comb Spread | Kamm-Breite | 0 … 1 | 0.3 |
+| `pN.fxK.comb.mix`, `mfxK.comb.mix` | Comb Mix | Kamm-Mischung | 0 … 1 | 0.5 |
+| `pN.fxK.formant.vowel`, `mfxK.formant.vowel` | Vowel | Vokal | 0 … 1 | 0 |
+| `pN.fxK.formant.shift`, `mfxK.formant.shift` | Formant Shift | Formant-Verschiebung | -12 … 12 | 0 |
+| `pN.fxK.formant.reso`, `mfxK.formant.reso` | Formant Resonance | Formant-Resonanz | 0 … 1 | 0.5 |
+| `pN.fxK.formant.rate`, `mfxK.formant.rate` | Formant Rate | Formant-Tempo | 0.01 … 20 | 1 |
+| `pN.fxK.formant.sync`, `mfxK.formant.sync` | Formant Sync | Formant-Sync | Free, 1/1, 1/2, 1/4, 1/8, 1/16, 1/32, 1/2., 1/4., 1/8., 1/16., 1/2T, 1/4T, 1/8T, 1/16T, 2/1, 4/1 | 0 |
+| `pN.fxK.formant.depth`, `mfxK.formant.depth` | Formant LFO Depth | Formant-LFO-Tiefe | 0 … 1 | 0 |
+| `pN.fxK.formant.mix`, `mfxK.formant.mix` | Formant Mix | Formant-Mischung | 0 … 1 | 1 |
+| `pN.fxK.wobble.rate`, `mfxK.wobble.rate` | Wobble Rate | Wobble-Tempo | 0.05 … 20 | 2 |
+| `pN.fxK.wobble.sync`, `mfxK.wobble.sync` | Wobble Sync | Wobble-Sync | Free, 1/1, 1/2, 1/4, 1/8, 1/16, 1/32, 1/2., 1/4., 1/8., 1/16., 1/2T, 1/4T, 1/8T, 1/16T, 2/1, 4/1 | 4 |
+| `pN.fxK.wobble.shape`, `mfxK.wobble.shape` | Wobble Shape | Wobble-Form | Sine, Triangle, Saw Down, Saw Up, Square, S&H | 0 |
+| `pN.fxK.wobble.low`, `mfxK.wobble.low` | Wobble Low | Wobble tief | 30 … 8000 | 150 |
+| `pN.fxK.wobble.high`, `mfxK.wobble.high` | Wobble High | Wobble hoch | 100 … 18000 | 3000 |
+| `pN.fxK.wobble.reso`, `mfxK.wobble.reso` | Wobble Resonance | Wobble-Resonanz | 0 … 1 | 0.5 |
+| `pN.fxK.wobble.mode`, `mfxK.wobble.mode` | Wobble Filter | Wobble-Filter | Low-pass, Band-pass | 0 |
+| `pN.fxK.wobble.drive`, `mfxK.wobble.drive` | Wobble Drive | Wobble-Drive | 0 … 1 | 0.2 |
+| `pN.fxK.wobble.retrig`, `mfxK.wobble.retrig` | Wobble Retrigger | Wobble-Neustart | 0 … 1 | 1 |
+| `pN.fxK.wobble.mix`, `mfxK.wobble.mix` | Wobble Mix | Wobble-Mischung | 0 … 1 | 1 |
+| `pN.fxK.tremolo.rate`, `mfxK.tremolo.rate` | Tremolo Rate | Tremolo-Tempo | 0.05 … 20 | 4 |
+| `pN.fxK.tremolo.sync`, `mfxK.tremolo.sync` | Tremolo Sync | Tremolo-Sync | Free, 1/1, 1/2, 1/4, 1/8, 1/16, 1/32, 1/2., 1/4., 1/8., 1/16., 1/2T, 1/4T, 1/8T, 1/16T, 2/1, 4/1 | 0 |
+| `pN.fxK.tremolo.depth`, `mfxK.tremolo.depth` | Tremolo Depth | Tremolo-Tiefe | 0 … 1 | 0.5 |
+| `pN.fxK.tremolo.mode`, `mfxK.tremolo.mode` | Tremolo Mode | Tremolo-Modus | Tremolo, Autopan | 0 |
+| `pN.fxK.tremolo.shape`, `mfxK.tremolo.shape` | Tremolo Shape | Tremolo-Form | Sine, Triangle, Square | 0 |
+| `pN.fxK.width.width`, `mfxK.width.width` | Stereo Width | Stereobreite | 0 … 2 | 1 |
+| `pN.fxK.width.spread`, `mfxK.width.spread` | Stereo Spread | Stereo-Spreizung | 0 … 1 | 0 |
+| `pN.fxK.width.haas`, `mfxK.width.haas` | Spread Time | Spreizungszeit | 1 … 25 | 12 |
+| `pN.fxK.width.mono`, `mfxK.width.mono` | Mono Below | Mono unter | 20 … 500 | 20 |
+| `pN.fxK.width.output`, `mfxK.width.output` | Width Output | Breite-Ausgang | -24 … 12 | 0 |
+| `pN.layer.engine` | Layer Engine | Layer-Engine | Off, FM, Wavetable, Analog, Pluck, Grain, Vocal, Cluster, Sampler | 0 |
+| `pN.layer.level` | Layer Level | Layer-Pegel | 0 … 1 | 0.7 |
+| `pN.layer.tune` | Layer Tune | Layer-Stimmung | -24 … 24 | 0 |
+| `pN.layer.fine` | Layer Fine | Layer-Feinstimmung | -50 … 50 | 0 |
+| `pN.layer.xmode` | Cross-Mod Mode | Kreuzmod.-Art | Ring, AM, Fold | 0 |
+| `pN.layer.xmod` | Cross-Mod | Kreuzmodulation | 0 … 1 | 0 |
+| `pN.layer.width` | Layer Width | Layer-Breite | 0 … 1 | 0.5 |
+| `pN.layer.ownenv` | Layer Own Envelope | Layer eigene Hüllkurve | 0 … 1 | 0 |
+| `pN.layer.a` | Layer Attack | Layer Attack | 0.001 … 10 | 0.005 |
+| `pN.layer.d` | Layer Decay | Layer Decay | 0.001 … 10 | 0.3 |
+| `pN.layer.s` | Layer Sustain | Layer Sustain | 0 … 1 | 0.8 |
+| `pN.layer.r` | Layer Release | Layer Release | 0.001 … 10 | 0.3 |
+| `pN.wavetable.univoices` | Unison Voices | Unisono-Stimmen | 1 … 8 | 3 |
+| `pN.wavetable.uniwidth` | Unison Width | Unisono-Breite | 0 … 1 | 0.7 |
+| `pN.wavetable.fm` | FM Amount | FM-Menge | 0 … 1 | 0 |
+| `pN.wavetable.fmratio` | FM Ratio | FM-Verhältnis | 0.25 … 8 | 1 |
+| `pN.wavetable.lfopos` | LFO > Position | LFO > Position | -1 … 1 | 0 |
+| `pN.wavetable.envfm` | Env > FM | Hüllk. > FM | -1 … 1 | 0 |
+| `pN.fm.velidx` | Velocity > Index | Anschlag > Index | 0 … 1 | 0 |
+| `pN.sampler.inst2` | Keyboard Instrument | Tasteninstrument | Off, Grand Piano, Upright Piano, Tine Piano, Reed Piano | 0 |
+| `pN.grain.inst2` | Keyboard Instrument | Tasteninstrument | Off, Grand Piano, Upright Piano, Tine Piano, Reed Piano | 0 |
+| `pN.mpe.pressamt` | Pressure Amount | Druck-Menge | -1 … 1 | 1 |
+| `pN.mpe.timbreamt` | Timbre Amount | Timbre-Menge | -1 … 1 | 1 |
+| `pN.mpe.smooth` | Expression Smoothing | Ausdrucks-Glättung | 0 … 0.5 | 0 |
+| `pN.mpe.slide` | Per-Note Slide | Pro-Noten-Slide | 0 … 1 | 0 |
+| `pN.monobass` | Bass Mono Below | Bass mono unter | 20 … 400 | 20 |
+
+Behaviour changes in 0.8: `pN.fxK.type` / `mfxK.type` gain Comb, Formant, Wobble, Tremolo and Width after
+Hall (existing values keep their meaning). The MPE pressure / timbre targets (`pN.mpe.press`, `pN.mpe.timbre`)
+gain Cutoff, Position, FM Index, Grain Density, Drive, Vibrato, Formant and Layer Blend after Pan. Per-note pitch
+bend glides over `pN.mpe.slide` seconds (at least 2 ms); the other per-note expressions glide over
+`pN.mpe.smooth` seconds.

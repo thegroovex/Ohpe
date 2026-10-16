@@ -114,7 +114,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         if (c.lfoDest == LfoDest::Timbre) vowel += lfoValue * 2.0f;
         vowel += expr.timbre * 2.0f; // per-note expression / modulation matrix (0.7)
         const FormantSet fs = morphVowel (vowel);
-        const float shift = dsp::semitonesToRatio (p.formantShift);
+        const float shift = dsp::semitonesToRatio (std::clamp (p.formantShift + 12.0f * expr.formant, -24.0f, 24.0f)); // 0.8: MPE formant
         for (int k = 0; k < numFormants; ++k)
         {
             res[(size_t) k].set (fs.freq[k] * shift, fs.bandwidth[k] * std::sqrt (shift), sr);

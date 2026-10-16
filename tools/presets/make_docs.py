@@ -12,9 +12,11 @@ sys.path.insert(0, HERE)
 import factory_parts, factory_projects  # noqa: E402
 from comments_de import DE  # noqa: E402
 
-CATS = ["Bass", "Keys", "Pads", "Leads", "Plucks", "Drums", "FX", "Arp", "Textures", "Vocal", "Boom"]
+CATS = ["Bass", "Keys", "Pads", "Leads", "Plucks", "Drums", "FX", "Arp", "Textures", "Vocal", "Boom", "Hybrid", "Piano"]
+GATHER = ("Boom", "Hybrid", "Piano")  # these sections list every preset carrying the tag, wherever its main category is
 CAT_DE = {"Bass": "Bass", "Keys": "Tasten", "Pads": "Flächen", "Leads": "Leads", "Plucks": "Zupfer", "Drums": "Drums",
-          "FX": "FX", "Arp": "Arp", "Textures": "Texturen", "Vocal": "Vokal", "Boom": "Boom"}
+          "FX": "FX", "Arp": "Arp", "Textures": "Texturen", "Vocal": "Vokal", "Boom": "Boom", "Hybrid": "Hybrid",
+          "Piano": "Klavier"}
 ENG = {"fm": ("FM", "FM"), "wavetable": ("Wavetable", "Wavetable"), "analog": ("Analog", "Analog"), "pluck": ("Pluck", "Zupfen"),
        "grain": ("Grain", "Grain"), "vocal": ("Vocal", "Vocal"), "cluster": ("Cluster", "Cluster"), "sampler": ("Sampler", "Sampler")}
 
@@ -46,15 +48,15 @@ def table(lang):
     parts = factory_parts.PRESETS
     for cat in CATS:
         rows = [p for p in parts if p["tags"][0] == cat]
-        if cat == "Boom":  # 0.6: the Boom section lists every preset tagged Boom, wherever its main category is
-            rows = [p for p in parts if "Boom" in p["tags"]]
+        if cat in GATHER:  # 0.6 Boom, 0.8 Hybrid / Piano: every preset with the tag, wherever its main category is
+            rows = [p for p in parts if cat in p["tags"]]
         out.append("### %s (%d)\n" % (CAT_DE[cat] if de else cat, len(rows)))
         if cat == "Arp":
             out.append(ARP_NOTE[lang])
         out.append("| Name | Engine | %s | %s |" % ("Weitere Kategorien" if de else "Also in", "Beschreibung" if de else "Description"))
         out.append("|---|---|---|---|")
         for p in sorted(rows, key=lambda p: p["name"]):
-            also = ", ".join(CAT_DE[t] if de else t for t in p["tags"] if t != cat) or "–"
+            also = ", ".join(CAT_DE.get(t, t) if de else t for t in p["tags"] if t != cat) or "–"
             text = DE[p["name"]] if de else p["comment"]
             if p.get("arp"):
                 text += arp_text(p["arp"], de)

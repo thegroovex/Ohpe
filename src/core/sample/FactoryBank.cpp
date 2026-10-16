@@ -34,6 +34,10 @@ constexpr std::array<Names, numInstruments> instruments { {
     { "glass", "Singing Glass", "Klangglas" },
     { "zither", "Zither", "Zither" },
     { "bowedmetal", "Bowed Metal", "Gestrichenes Metall" },
+    { "grandpiano", "Grand Piano", "Flügel" },          // 0.8
+    { "uprightpiano", "Upright Piano", "Klavier" },     // 0.8
+    { "tinepiano", "Tine Piano", "Tine-Piano" },        // 0.8: Ohpe's own modelled electric piano
+    { "reedpiano", "Reed Piano", "Zungen-Piano" },      // 0.8: Ohpe's own modelled electric piano
 } };
 
 // append-only: the index is stored in presets ("drum.kit")
@@ -88,16 +92,30 @@ const Names& entry (const std::array<Names, N>& list, int index) noexcept
 const char* instrumentId (int i) noexcept { return entry (instruments, i).id; }
 const char* instrumentNameEn (int i) noexcept { return entry (instruments, i).en; }
 const char* instrumentNameDe (int i) noexcept { return entry (instruments, i).de; }
-std::vector<std::string> instrumentNamesEn()
+std::vector<std::string> instrumentNamesEn() { return instrumentNamesEn (0, numClassicInstruments); }
+std::vector<std::string> instrumentNamesDe() { return instrumentNamesDe (0, numClassicInstruments); }
+std::vector<std::string> instrumentNamesEn (int from, int to)
 {
     std::vector<std::string> v;
-    for (const auto& n : instruments) v.emplace_back (n.en);
+    for (int i = std::max (0, from); i < std::min (to, numInstruments); ++i) v.emplace_back (instruments[(size_t) i].en);
     return v;
 }
-std::vector<std::string> instrumentNamesDe()
+std::vector<std::string> instrumentNamesDe (int from, int to)
 {
     std::vector<std::string> v;
-    for (const auto& n : instruments) v.emplace_back (n.de);
+    for (int i = std::max (0, from); i < std::min (to, numInstruments); ++i) v.emplace_back (instruments[(size_t) i].de);
+    return v;
+}
+std::vector<std::string> keyboardChoiceEn()
+{
+    auto v = instrumentNamesEn (numClassicInstruments, numInstruments);
+    v.insert (v.begin(), "Off");
+    return v;
+}
+std::vector<std::string> keyboardChoiceDe()
+{
+    auto v = instrumentNamesDe (numClassicInstruments, numInstruments);
+    v.insert (v.begin(), "Aus");
     return v;
 }
 

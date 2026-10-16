@@ -599,19 +599,26 @@ std::vector<ParamDescriptor> MultibandEffect::getParamDescriptors() const
              continuous ("mix", "Multiband Mix", "Multiband Mischung", 0.0f, 1.0f, 1.0f) };
 }
 
+float MultibandEffect::downGainDb (float levelDb, float depth, float downward) noexcept
+{
+    // downward above -30 dBFS (ratio up to 1:6)
+    const float d = dsp::clamp01 (depth);
+    return levelDb > -30.0f ? -(levelDb + 30.0f) * (1.0f - 1.0f / (1.0f + 5.0f * d)) * downward : 0.0f;
+}
+
+float MultibandEffect::upGainDb (float levelDb, float depth, float upward) noexcept
+{
+    // upward below -40 dBFS (up to +30 dB, nothing under -80 dBFS)
+    if (! (levelDb < -40.0f && levelDb > -80.0f)) return 0.0f;
+    const float d = dsp::clamp01 (depth);
+    const float below = -40.0f - levelDb;                              // 0 .. 40
+    const float fadeOut = std::min (1.0f, (levelDb + 80.0f) / 10.0f); // no lift for the noise floor
+    return std::min (30.0f * d, below * 0.75f * d) * upward * fadeOut;
+}
+
 float MultibandEffect::staticGainDb (float levelDb, float depth, float upward, float downward) noexcept
 {
-    // downward above -30 dBFS (ratio up to 1:6), upward below -40 dBFS (up to +30 dB, nothing under -80 dBFS)
-    const float d = dsp::clamp01 (depth);
-    float g = 0.0f;
-    if (levelDb > -30.0f) g -= (levelDb + 30.0f) * (1.0f - 1.0f / (1.0f + 5.0f * d)) * downward;
-    if (levelDb < -40.0f && levelDb > -80.0f)
-    {
-        const float below = -40.0f - levelDb;                 // 0 .. 40
-        const float fadeOut = std::min (1.0f, (levelDb + 80.0f) / 10.0f); // no lift for the noise floor
-        g += std::min (30.0f * d, below * 0.75f * d) * upward * fadeOut;
-    }
-    return g;
+    return downGainDb (levelDb, depth, downward) + upGainDb (levelDb, depth, upward);
 }
 
 void MultibandEffect::setSplits() noexcept
@@ -638,7 +645,8 @@ void MultibandEffect::reset() noexcept
 {
     for (auto* arr : { &lowLp, &lowHp, &highLp, &highHp, &lowAp })
         for (auto& s : *arr) { s.a.reset(); s.b.reset(); }
-    env.fill (-120.0f);
+    env.fill (0.0f);
+    envFast.fill (0.0f);
     gain.fill (0.0f);
     outG.v = outG.t;
     mixG.v = mixG.t;
@@ -658,6 +666,8 @@ void MultibandEffect::setParam (int i, float v) noexcept
             atk = std::exp (-1.0f / (sr * (0.001f + 0.029f * time)));
             rel = std::exp (-1.0f / (sr * (0.03f + 0.57f * time)));
             gainA = 1.0f - std::exp (-1.0f / (sr * 0.002f));
+            gainFall = 1.0f - std::exp (-1.0f / (sr * 0.0002f));
+            fastRel = std::exp (-1.0f / (sr * 0.03f)); // slow enough not to flicker over a 40 Hz cycle
             break;
         case LowGain: bandLevel[0] = dsp::dbToGain (v); break;
         case MidGain: bandLevel[1] = dsp::dbToGain (v); break;
@@ -707,10 +717,17 @@ void MultibandEffect::process (float* l, float* r, int n) noexcept
         for (int b = 0; b < numBands; ++b)
         {
             const float pk = std::max (std::abs (band[0][(size_t) b]), std::abs (band[1][(size_t) b]));
-            const float lv = dsp::gainToDb (pk);
-            env[(size_t) b] = lv > env[(size_t) b] ? lv + (env[(size_t) b] - lv) * atk : lv + (env[(size_t) b] - lv) * rel;
-            const float target = staticGainDb (env[(size_t) b], depth, upward, downward);
-            gain[(size_t) b] += (target - gain[(size_t) b]) * gainA;
+            // 0.8: the envelopes follow the linear peak (release = a steady dB-per-second fall), not the dB value: in
+            // dB a pause drops the detector by 40 dB in 100 ms, so the next note started uncompressed (6-10 dB onset
+            // spikes). The lift follows a fast envelope (instant attack) and lets go as soon as a note starts.
+            auto& e = env[(size_t) b];
+            e = dsp::flush (pk > e ? pk + (e - pk) * atk : pk + (e - pk) * rel);
+            auto& ef = envFast[(size_t) b];
+            ef = dsp::flush (pk > ef ? pk : pk + (ef - pk) * fastRel);
+            const float target = downGainDb (dsp::gainToDb (e), depth, downward)
+                               + upGainDb (dsp::gainToDb (std::max (e, ef)), depth, upward);
+            // the gain falls within ~0.2 ms (a note after a quiet tail is not lifted by the old gain) and rises over 2 ms
+            gain[(size_t) b] += (target - gain[(size_t) b]) * (target < gain[(size_t) b] ? gainFall : gainA);
             worst[(size_t) b] = gain[(size_t) b];
             const float g = std::pow (10.0f, gain[(size_t) b] * 0.05f) * bandLevel[(size_t) b];
             outL += band[0][(size_t) b] * g;
