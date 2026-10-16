@@ -62,7 +62,9 @@ public:
     int auditioned() const noexcept { return auditionIndex; }
     int keptIndex() const noexcept { return keptTile; }
     const discover::Timeline& timeline() const noexcept { return history; }
-    discover::Genome currentSound() const;
+    discover::Genome currentSound() const { return soundOf (ids); }
+    /** The genome over any parameter IDs (breedable ones of this part only), read from the host parameters. */
+    discover::Genome soundOf (const std::vector<std::string>& over) const;
 
     // layout (tests)
     juce::Rectangle<float> knobArea (int macro) const;

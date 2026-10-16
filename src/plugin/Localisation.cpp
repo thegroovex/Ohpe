@@ -410,6 +410,15 @@ const std::map<juce::String, juce::String>& table()
         { "MIDI maps and remote controls", "MIDI-Zuordnungen und Fernsteuerung" },
         { "Preset library", "Preset-Bibliothek" },
         { "All parameters of the mode", "Alle Parameter des Modus" },
+        // p21: pro view 2.0
+        { "Discover", "Entdecken" },
+        { "Simple", "Einfach" },
+        { "Vary", "Variieren" },
+        { "Kept", "Behalten" },
+        { "Gentle", "Sanft" },
+        { "Wild", "Wild" },
+        { "History", "Verlauf" },
+        { "Algorithm", "Algorithmus" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;

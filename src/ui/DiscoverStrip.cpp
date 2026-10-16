@@ -42,13 +42,15 @@ void DiscoverStrip::setPart (int part, const std::vector<std::string>& soundIds)
     }
 }
 
-discover::Genome DiscoverStrip::currentSound() const
+discover::Genome DiscoverStrip::soundOf (const std::vector<std::string>& over) const
 {
     // read from the host parameters (what the user sees right now, also before the core caught up)
     discover::Genome g;
     const auto& reg = proc.core().params();
-    for (const auto& id : ids)
+    const std::string prefix = "p" + std::to_string (partIndex + 1) + ".";
+    for (const auto& id : over)
     {
+        if (id.rfind (prefix, 0) != 0) continue;
         const int idx = reg.indexOf (id);
         auto* q = proc.parameter (juce::String (id));
         if (idx < 0 || q == nullptr) continue;
@@ -165,9 +167,9 @@ void DiscoverStrip::cross (int fromTile, int toTile)
 void DiscoverStrip::roll (const std::vector<std::string>& onlyIds)
 {
     revertAudition();
-    auto cur = currentSound();
+    auto cur = onlyIds.empty() ? currentSound() : soundOf (onlyIds);
     if (cur.empty()) return;
-    if (history.size() == 0) history.push (cur);
+    if (history.size() == 0) history.push (currentSound());
     auto next = discover::breeder().vary (cur, juce::jmax (0.15f, strength), seed, maskFor (cur, onlyIds));
     seed += 37u;
     apply (next);
