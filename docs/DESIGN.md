@@ -57,6 +57,11 @@ fonts), `src/ui/Widgets.cpp` (keys, encoders, wheels, keyboard), `src/ui/PluginE
 | Bottom right | OCTAVE + MIDI (rev 3), mirroring the transport block - same panel, same rows, same key heights: a keyboard readout (range, octave shift; MIDI learn in red) over OCTAVE − / OCTAVE + (joined, two slots each) and MIDI (layout A); in layout B OCTAVE − / + as large keys over the readout and MIDI |
 | Keyboard row | PITCH and MOD wheels left, three-octave keyboard (C3–C6 by default); right one column: the glide mode switch (Auto / Legato / Always) under its caption PORTAMENTO, the GLIDE knob under it - both captions on one text column (x 1104), in the same typography (11 units, engraved) |
 
+Transport layouts for comparison (rev 3, while recording): A, tape deck (default) and B, large REC / PLAY:
+
+![Transport layout A](images/ohpe-transport-variant-a.png)
+![Transport layout B](images/ohpe-transport-variant-b.png)
+
 ## Pictogram characters
 
 | Character | Macros (encoder 1–4) |
