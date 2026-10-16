@@ -145,14 +145,14 @@ TEST_CASE ("p19 resonator: parameters - per-part stage, rack type in every slot,
     CHECK (InsertSlot::typeNamesEn()[(size_t) InsertSlot::Resonator] == "Resonator");
     CHECK (InsertSlot::typeNamesDe()[(size_t) InsertSlot::Resonator] == "Resonanzkörper");
     CHECK (std::string (InsertSlot::typeInfo (InsertSlot::Resonator).id) == "resonator");
-    // the block follows the p20 audio to wavetable block; the master racks' blocks end the list
+    // the block follows the p20 audio to wavetable block; the master racks' blocks end it (later blocks follow: p21)
     CHECK (reg.indexOf ("p1.reso.on") == reg.indexOf ("p4.usertable.vocal") + 1);
-    CHECK (reg.indexOf ("mfx4.resonator.slideamt") == reg.size() - 1);
+    CHECK (reg.indexOf ("mfx4.resonator.slideamt") < reg.indexOf ("p1.char.bright"));
     // matrix targets, appended after Morph Y
     const char* keys[] = { "resotune", "resosize", "resomaterial", "resodecay", "resoposition", "resomix" };
     const char* suffix[] = { "reso.tune", "reso.size", "reso.material", "reso.decay", "reso.position", "reso.mix" };
     CHECK (mod::DstResoTune == mod::DstMorphY + 1);
-    CHECK (mod::numDests == mod::DstResoMix + 1);
+    CHECK (mod::numDests > mod::DstResoMix); // p21: the character targets follow
     for (int k = 0; k < 6; ++k)
     {
         CHECK (mod::destIndexOfKey (keys[k]) == mod::DstResoTune + k);
