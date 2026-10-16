@@ -23,6 +23,9 @@ jobs:
         with:
           run-id: ${{ inputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          # only the release artefacts (Ohpe-macOS-Installer, Ohpe-Windows-x64 (unsigned), ...);
+          # CI's internal build-<os> trees and screenshots are not needed
+          pattern: Ohpe-*
           path: art
       - name: Collect files
         run: |

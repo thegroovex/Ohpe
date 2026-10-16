@@ -8,7 +8,8 @@ name: CI
 #            pluginval (strictness 5), documentation screenshots (not on pushes to main)
 #   macOS    all tests, auval -strict, plus the pkg/DMG installer (installed and tested on the runner)
 #   Windows  all tests
-# The doctest binaries run one test case per process on all cores (scripts/ci/run-tests.py).
+# The doctest binaries run one test case per process on all cores (scripts/ci/run-tests.py), and
+# the test jobs are split over several runners (matrix "shard": every process runs on exactly one).
 # Compiler output is cached with ccache, the downloaded dependencies (JUCE, Link, doctest, JSON,
 # juceaide) and pluginval with actions/cache.
 #
@@ -96,10 +97,14 @@ jobs:
 
   # ---------------------------------------------------------------------------------- Linux
   linux-core:
-    name: Linux core tests
+    name: Linux core tests (${{ matrix.shard }}/2)
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
     steps:
       - uses: actions/checkout@v4
 
@@ -112,7 +117,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-${{ runner.os }}-${{ runner.arch }}-gcc-core-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: ccache-${{ runner.os }}-${{ runner.arch }}-gcc-core-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.shard }}
           restore-keys: |
             ccache-${{ runner.os }}-${{ runner.arch }}-gcc-core-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-
             ccache-${{ runner.os }}-${{ runner.arch }}-gcc-core-
@@ -121,8 +126,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ci-timings
-          key: timings-linux-core-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: timings-linux-core-
+          key: timings-linux-core-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: timings-linux-core-${{ matrix.shard }}-
 
       - name: Configure + build (core, no JUCE)
         run: |
@@ -136,7 +141,7 @@ jobs:
         run: |
           mkdir -p .ci-timings
           python3 scripts/ci/run-tests.py --build-dir build-core --split core_tests -j "$(nproc)" \
-            --timings .ci-timings/linux-core.json
+            --shard ${{ matrix.shard }}/2 --timings .ci-timings/linux-core.json
 
   linux-build:
     name: Linux build
@@ -191,9 +196,13 @@ jobs:
           compression-level: 1
 
   linux-plugin-tests:
-    name: Linux plug-in tests (processor/editor, VST3 host)
+    name: Linux plug-in tests (${{ matrix.shard }}/2)
     needs: linux-build
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
     steps:
       - uses: actions/checkout@v4
 
@@ -214,15 +223,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ci-timings
-          key: timings-linux-plugin-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: timings-linux-plugin-
+          key: timings-linux-plugin-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: timings-linux-plugin-${{ matrix.shard }}-
 
       # core_tests: the "Linux core tests" job runs them (same sources and flags, JUCE-free build)
       - name: Plug-in tests
         run: |
           mkdir -p .ci-timings
           xvfb-run -a python3 scripts/ci/run-tests.py --build-dir build --split plugin_tests \
-            -E '^core_tests$' -j "$(nproc)" --timings .ci-timings/linux-plugin.json
+            -E '^core_tests$' -j "$(nproc)" --shard ${{ matrix.shard }}/2 --timings .ci-timings/linux-plugin.json
 
   linux-pluginval:
     name: Linux pluginval
@@ -380,9 +389,13 @@ jobs:
           compression-level: 1
 
   macos-tests:
-    name: macOS tests (core, processor/editor, VST3 host)
+    name: macOS tests (${{ matrix.shard }}/2)
     needs: macos-build
     runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
     steps:
       - uses: actions/checkout@v4
 
@@ -397,14 +410,14 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ci-timings
-          key: timings-macos-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: timings-macos-
+          key: timings-macos-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: timings-macos-${{ matrix.shard }}-
 
       - name: Tests
         run: |
           mkdir -p .ci-timings
           python3 scripts/ci/run-tests.py --build-dir build --split core_tests,plugin_tests \
-            -j "$(sysctl -n hw.ncpu)" --timings .ci-timings/macos.json
+            -j "$(sysctl -n hw.ncpu)" --shard ${{ matrix.shard }}/2 --timings .ci-timings/macos.json
 
   macos-auval:
     name: macOS auval (strict)
@@ -573,9 +586,13 @@ jobs:
           compression-level: 1
 
   windows-tests:
-    name: Windows tests (core, processor/editor, VST3 host)
+    name: Windows tests (${{ matrix.shard }}/3)
     needs: windows-build
     runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2]
     steps:
       - uses: actions/checkout@v4
 
@@ -591,15 +608,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ci-timings
-          key: timings-windows-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: timings-windows-
+          key: timings-windows-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: timings-windows-${{ matrix.shard }}-
 
       - name: Tests
         shell: bash
         run: |
           mkdir -p .ci-timings
           python scripts/ci/run-tests.py --build-dir build --split core_tests,plugin_tests \
-            -j "$NUMBER_OF_PROCESSORS" --timings .ci-timings/windows.json
+            -j "$NUMBER_OF_PROCESSORS" --shard ${{ matrix.shard }}/3 --timings .ci-timings/windows.json
 
   # ---------------------------------------------------------------------------------- result
   result:

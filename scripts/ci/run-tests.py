@@ -96,6 +96,7 @@ def main():
     ap.add_argument("-R", "--include", default="")
     ap.add_argument("-E", "--exclude", default="")
     ap.add_argument("--slices", type=int, default=8, help="processes per test case of the 'sliced' suite")
+    ap.add_argument("--shard", default="", help="i/n: run only every n-th process, starting at i (several CI runners)")
     ap.add_argument("--timeout", type=int, default=3600, help="seconds per process")
     ap.add_argument("--timings", default="", help="json file: read to schedule long test cases first, rewritten after the run")
     args = ap.parse_args()
@@ -136,6 +137,21 @@ def main():
                 print(f"{t['name']}: {len(sliced)} test cases in {args.slices} slices each", flush=True)
         else:
             jobs.append((t["name"], t, None, "", None))
+
+    expected_total = len(jobs)
+    if args.shard:
+        # The full process list is built the same way on every runner (same binaries, same
+        # arguments), so taking every n-th entry gives each process to exactly one shard.
+        si, sn = (int(x) for x in args.shard.split("/"))
+        if not (0 <= si < sn):
+            raise SystemExit(f"error: bad --shard {args.shard}")
+        jobs = [j for pos, j in enumerate(jobs) if pos % sn == si]
+        print(f"shard {si}/{sn}: {len(jobs)} of {expected_total} processes", flush=True)
+        for name in expected:
+            expected[name] = sum(1 for j in jobs if j[1]["name"] == name)
+        if not jobs:
+            print("nothing to run in this shard")
+            return 0
 
     timings = {}
     if args.timings and os.path.exists(args.timings):
