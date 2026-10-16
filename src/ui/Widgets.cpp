@@ -476,10 +476,9 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
         {
             const float side = juce::jmin (cap.getHeight(), cap.getWidth());
             const auto sign = cap.withSizeKeepingCentre (side, side).reduced (side * 0.18f);
-            if (hasLed && picto == Picto::Play && ledLevel > 0.0f && available)
-                ink = ledColour; // rev 3: the PLAY triangle lights with its bar
-            if (hasLed && picto == Picto::Record && ledLevel > 0.0f && available)
-            {   // rev 3: the REC circle glows (steady when armed, blinking while recording)
+            if (hasLed && (picto == Picto::Play || picto == Picto::Record) && ledLevel > 0.0f && available)
+            {   // rev 3: the PLAY triangle and the REC circle glow with their bar - steady when on (REC armed),
+                // breathing with the bar's level while PLAY runs / REC records (p14)
                 const auto c = sign.getCentre();
                 const float d = sign.getHeight() * 0.62f;
                 for (int i = 4; i >= 1; --i)
@@ -487,7 +486,10 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
                     g.setColour (ledColour.withAlpha (0.07f * ledLevel));
                     g.fillEllipse (juce::Rectangle<float> (d, d).withCentre (c).expanded (d * 0.13f * (float) i));
                 }
-                ink = ink.interpolatedWith (ledColour.brighter (0.25f), 0.5f * ledLevel);
+                if (picto == Picto::Play)
+                    ink = ledColour.darker (0.25f * (1.0f - ledLevel)).interpolatedWith (ledColour.brighter (0.2f), 0.5f * ledLevel);
+                else
+                    ink = ink.interpolatedWith (ledColour.brighter (0.25f), 0.5f * ledLevel);
             }
             drawPictogram (g, sign, picto, ps, ink);
         }

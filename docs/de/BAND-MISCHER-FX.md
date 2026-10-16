@@ -26,7 +26,7 @@ einen Stereo-Audioeingang im Plug-in und den Offline-Export des Bands als WAV-Da
    eine andere auf Encoder 2 wählen (*Quelle*: Eingang, Part 1–4, Drum).
 3. **REC** drücken (rote Taste unten links – oder **R** in der Standalone-App). Die gewählte Spur wird
    aufnahmebereit, die Aufnahme beginnt, Band und Sequencer laufen. Das Display zeigt **● REC**
-   blinkend und die Zeit.
+   (rot, atmend) und die Zeit.
 4. **Spielen** – auf der Klaviatur, einem MIDI-Keyboard oder mit dem Sequencer.
 5. **STOPP** drücken (oder **Leertaste**). Noch einmal **STOPP**: zurück zum Anfang. **START**: du hörst
    deine Aufnahme. **Rückgängig** im Display nimmt den ganzen Durchgang zurück.

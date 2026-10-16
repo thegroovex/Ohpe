@@ -5,8 +5,8 @@
 //   usage: ohpe_screenshot <output directory>
 // Writes ohpe-<view>.png (English) and ohpe-<view>-de.png (German).
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
-// p11: the tape page while recording (ohpe-tape-recording). p14 rev 3: the transport layouts A / B
-// (ohpe-transport-variant-a / -b).
+// p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
+// octave block while recording (ohpe-transport, 2x crop; REC and PLAY at the top of their breathing).
 // 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack; the Mid/Side scope,
 // the master scope view and the spectrum terrain. 1.0: the 3D Space view and the 3D badge. The
 // preset library reads the user folder from OHPE_PRESET_DIR when set (otherwise the default).
@@ -210,17 +210,13 @@ int main (int argc, char* argv[])
                 p.core().tape().housekeeping();
                 e.advanceAnimation (0.05f);
             }
-            for (int k = 0; k < 40 && ! e.recordKey().isActive(); ++k) e.advanceAnimation (0.05f); // REC blink "on"
+            // p14: REC and PLAY breathe while recording - shoot near the top of the pulse
+            for (int k = 0; k < 80 && e.recordKey().getLedLevel() < 0.97f; ++k) e.advanceAnimation (1.0f / 30.0f);
             save (e, dir.getChildFile ("ohpe-tape-recording" + suffix + ".png"));
-            // p14 rev 3: the two layouts of the transport block (and the octave block mirroring it) while
-            // recording, for the user to choose from - A: tape-deck row, B: large REC / PLAY keys
             {
-                const auto shown = e.transportLayout();
-                e.setTransportLayout (OhpeEditor::TransportLayout::TapeDeck);
-                save (e, dir.getChildFile ("ohpe-transport-variant-a" + suffix + ".png"));
-                e.setTransportLayout (OhpeEditor::TransportLayout::Primary);
-                save (e, dir.getChildFile ("ohpe-transport-variant-b" + suffix + ".png"));
-                e.setTransportLayout (shown);
+                const auto area = OhpeEditor::designArea ("transportPanel").getUnion (OhpeEditor::designArea ("octavePanel"))
+                                      .getUnion (OhpeEditor::designArea ("keyboardBed")).expanded (8.0f).toNearestInt();
+                save (e, dir.getChildFile ("ohpe-transport" + suffix + ".png"), 2.0f, area);
             }
             e.transport (OhpeProcessor::TransportKey::Record); // punch out
             run (p, 4);

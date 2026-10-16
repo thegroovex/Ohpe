@@ -29,19 +29,22 @@ learn, Shift / Cmd / Ctrl for fine control. They are performance controls, not p
 
 Engine, mode, transport, octave and MIDI keys carry a short **light bar** at the bottom edge of the key,
 under the pictogram. One colour language: **yellow** = what you are editing, **violet** = running or in use
-elsewhere, **red** = recording.
+elsewhere, **green** = playing, **red** = recording. A light that means "playing" or "recording" **breathes**
+gently (a soft pulse of about 1.8 s, never fully off).
 
 | Keys | Light bar |
 |---|---|
 | Engine | four segments, one per part (1 – 4, left to right): a segment lights when that part plays the engine – **yellow** for the edit part, **violet** for another part. |
-| Mode | **yellow** = the page on the display. **Violet**: SEQUENCER = the sequencer runs; TAPE = the tape plays; EFFECTS = a slot of any FX rack (a part or the master) is on; DRUM = a running sequencer plays the drum kit; LFO = a part's LFO has depth or a modulation routing is set. **Red** (blinking) on TAPE = recording. The status colour wins; the shown page keeps its sunk key. |
-| Transport | PLAY **violet** while running (the triangle lights too), REC **red** (steady = ready, blinking = recording; the circle glows), LOOP **yellow** while on. |
+| Mode | **yellow** = the page on the display. **Violet**: SEQUENCER = the sequencer runs; EFFECTS = a slot of any FX rack (a part or the master) is on; DRUM = a running sequencer plays the drum kit; LFO = a part's LFO has depth or a modulation routing is set. **Green** on TAPE = the tape plays, **red** on TAPE = recording (both breathing). The status colour wins; the shown page keeps its sunk key. |
+| Transport | PLAY **green** while running (the triangle glows too), REC **red** (steady = ready; the circle glows), LOOP **yellow** while on. While PLAY runs and REC records, bar and sign breathe. |
 | OCTAVE − / + · MIDI | OCTAVE **yellow** while the keyboard is shifted that way; MIDI **red** during MIDI learn. |
 
 Hover a key: its tooltip says what the bar means (engine keys also list the parts that use them).
 
+![Transport, keyboard row and octave block while recording](../images/ohpe-transport.png)
+
 The **readouts** next to the keys: the tape readout above the transport keys shows the state (**REC**
-red, **PLAY** violet, *TAPE*), the tape time (m:ss.t) and bar.beat; the keyboard readout in the octave
+red, **PLAY** green – both breathing while running – *TAPE*), the tape time (m:ss.t) and bar.beat; the keyboard readout in the octave
 block shows the keyboard's range (C3–C6) and its octave shift, and **MIDI LEARN** in red while a control
 waits for a MIDI message.
 
@@ -162,13 +165,13 @@ The **TRANSPORT** keys in the bottom-left panel (one row: TO START, STOP, PLAY, 
 
 | Key | Action |
 |---|---|
-| **REC** (red) | one-touch record on the tape: arms the selected track when no track is armed, switches recording on and starts the tape. Pressed while recording: punch out (the tape keeps playing). Lit while recording ready, blinking while it records. |
+| **REC** (red) | one-touch record on the tape: arms the selected track when no track is armed, switches recording on and starts the tape. Pressed while recording: punch out (the tape keeps playing). Lit while recording ready, breathing while it records. |
 | **PLAY** | starts / stops the sequencer and the tape together (*Play starts tape*, on by default; off: PLAY runs the sequencer alone) |
 | **\|◀** | tape back to the start |
 | **STOP** | stops tape, recording and sequencer; pressed again while stopped: back to the start |
 | **LOOP** | tape loop on / off; without a loop range it loops what is recorded (or four bars) |
 
-While the tape runs, every page shows **● REC 0:12.3** (blinking) or **▶ TAPE 0:12.3** in the display
+While the tape runs, every page shows **● REC 0:12.3** (red, breathing) or **▶ TAPE 0:12.3** (green) in the display
 header. In the standalone app: **Space** = PLAY, **R** = REC, **Enter / Home** = to the start, **L** =
 loop (in a plug-in the host keeps its own keys). Right-click any transport key (or a button on the
 tape page) for MIDI learn – every transport function has a trigger, see [MIDI](MIDI.md).
@@ -177,8 +180,8 @@ tape page) for MIDI learn – every transport function has a trigger, see [MIDI]
 
 ![Tape page](../images/ohpe-tape.png)
 
-The left half of the display is the **transport panel**: the state (**● REC** blinking, *REC READY*,
-*PLAY*, *STOP*), the armed tracks, the time and bar.beat, the reels (they turn with the tape) and five
+The left half of the display is the **transport panel**: the state (**● REC** breathing, *REC READY*,
+*PLAY* in green, *STOP*), the armed tracks, the time and bar.beat, the reels (they turn with the tape) and five
 buttons – **|◀ · ■ · ▶ · ● · LOOP** – plus one line that says what to do next (*Pick a track, press
 REC*). Below: the eight tracks with their content, the play position (red while recording), the loop
 region (yellow) and the **arm dots** – click a dot to arm or disarm the track, click a lane to select it.

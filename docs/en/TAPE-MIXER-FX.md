@@ -25,7 +25,7 @@ part, a stereo audio input in the plug-in and an offline bounce of the tape to W
 2. **Pick a track**: click its lane (track 1 is selected at first). Its source is *Part 1* – set
    another on encoder 2 (*Source*: input, part 1–4, drum).
 3. Press **REC** (red key, bottom left – or **R** in the standalone app). The selected track is
-   armed, recording starts and the tape and the sequencer run. The display shows **● REC** blinking
+   armed, recording starts and the tape and the sequencer run. The display shows **● REC** (red, breathing)
    and the time.
 4. **Play** – on the keyboard, a MIDI keyboard or with the sequencer.
 5. Press **STOP** (or **Space**). Press **STOP** again: back to the start. Press **PLAY**: you hear

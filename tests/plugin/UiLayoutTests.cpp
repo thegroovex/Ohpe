@@ -81,15 +81,11 @@ TEST_CASE ("editor layout: no overlapping visible components in any view, langua
             CAPTURE (width);
             e.setLanguage (lang);
             e.setSize (width, width * 2 / 3);
-            for (auto layout : { OhpeEditor::TransportLayout::Primary, OhpeEditor::TransportLayout::TapeDeck })
+            for (int m = 0; m < ui::numModes; ++m)
             {
-                e.setTransportLayout (layout); // rev 3: both variants of the transport block
-                for (int m = 0; m < ui::numModes; ++m)
-                {
-                    CAPTURE (m);
-                    e.selectMode ((ui::Mode) m);
-                    checkLayout (e);
-                }
+                CAPTURE (m);
+                e.selectMode ((ui::Mode) m);
+                checkLayout (e);
             }
             e.showLibrary (true);
             checkLayout (e);
@@ -114,16 +110,13 @@ TEST_CASE ("editor layout: wheels left, glide right of the keyboard; transport b
     CHECK (e.glideKnobComponent().getX() > kb.getRight());
     CHECK (e.glideModeSwitch().getBottom() <= e.glideKnobComponent().getY());
     // p14 rev 3: the transport block (bottom left) holds the five transport keys and the tape readout; the octave
-    // block (bottom right) mirrors it: the octave keys, MIDI and the keyboard readout - in both layouts
+    // block (bottom right) mirrors it: the octave keys, MIDI and the keyboard readout
     const auto txPanel = OhpeEditor::designArea ("transportPanel"), octPanel = OhpeEditor::designArea ("octavePanel");
     CHECK (txPanel.getWidth() == octPanel.getWidth());
     CHECK (txPanel.getHeight() == octPanel.getHeight());
     CHECK (txPanel.getY() == octPanel.getY());
     CHECK (txPanel.getX() - OhpeEditor::designArea ("housing").getX() == doctest::Approx (OhpeEditor::designArea ("housing").getRight() - octPanel.getRight()));
-    for (auto layout : { OhpeEditor::TransportLayout::TapeDeck, OhpeEditor::TransportLayout::Primary })
     {
-        CAPTURE ((int) layout);
-        e.setTransportLayout (layout);
         const float s = (float) e.getWidth() / (float) OhpeEditor::designWidth;
         auto design = [s] (juce::Component& c) { return c.getBounds().toFloat() / s; };
         for (auto* c : std::initializer_list<juce::Component*> { &e.recordKey(), &e.playTransportKey(), &e.stopTransportKey(), &e.toStartTransportKey(),
@@ -158,8 +151,7 @@ TEST_CASE ("editor layout: wheels left, glide right of the keyboard; transport b
             CHECK (bar.getCentreY() > cap.getCentreY());
         }
     }
-    // the tape-deck row: TO START STOP PLAY REC LOOP joined left to right, equal widths, one row
-    e.setTransportLayout (OhpeEditor::TransportLayout::TapeDeck);
+    // the tape-deck row (the one transport layout): TO START STOP PLAY REC LOOP joined left to right, equal widths, one row
     {
         ui::PictoKey* row[] = { &e.toStartTransportKey(), &e.stopTransportKey(), &e.playTransportKey(), &e.recordKey(), &e.loopTransportKey() };
         for (int i = 1; i < 5; ++i)
@@ -169,11 +161,6 @@ TEST_CASE ("editor layout: wheels left, glide right of the keyboard; transport b
             CHECK (std::abs (row[i]->getWidth() - row[0]->getWidth()) <= 1);
         }
     }
-    // the large keys of the Primary layout are as large as the column keys
-    e.setTransportLayout (OhpeEditor::TransportLayout::Primary);
-    CHECK (e.recordKey().getWidth() == e.engineKey (EngineType::Analog).getWidth());
-    CHECK (e.recordKey().getHeight() == e.engineKey (EngineType::Analog).getHeight());
-    CHECK (e.playTransportKey().getWidth() == e.recordKey().getWidth());
     // PORTAMENTO over GLIDE: one text column - the captions start at the same x, in the same font size
     {
         const auto sw = e.glideModeSwitch().captionArea() + e.glideModeSwitch().getPosition().toFloat();
@@ -338,7 +325,7 @@ TEST_CASE ("key LEDs: mode keys show the page in yellow and the status in violet
     CHECK (leds.mode[(size_t) Mode::Drum] == Led::Active);
     CHECK (leds.mode[(size_t) Mode::Effects] == Led::Active);
     CHECK (leds.mode[(size_t) Mode::Lfo] == Led::Active);
-    CHECK (leds.mode[(size_t) Mode::Tape] == Led::Active);
+    CHECK (leds.mode[(size_t) Mode::Tape] == Led::Play); // p14: playing = green
     CHECK (leds.mode[(size_t) Mode::Envelope] == Led::Off);
     CHECK (leds.mode[(size_t) Mode::Mixer] == Led::Off);
     // recording wins on the tape key, the status wins over the page colour
@@ -420,6 +407,16 @@ TEST_CASE ("key LEDs: the editor lights the edit part's engine and the shown mod
     CHECK (e.modeKey (ui::Mode::Envelope).getLedLevel() > 0.0f);
     CHECK (e.modeKey (ui::Mode::Envelope).getLedColour() == ui::colour::sunYellow);
     CHECK (e.modeKey (ui::Mode::Mixer).getLedLevel() == 0.0f);
+    // the breathing pulse: between 0.35 and 1, smooth, period 1.8 s
+    CHECK (ui::breath (0.0f) == doctest::Approx (0.35f));
+    CHECK (ui::breath (0.9f) == doctest::Approx (1.0f));
+    CHECK (ui::breath (1.8f) == doctest::Approx (0.35f).epsilon (0.01));
+    for (float t = 0.0f; t < 4.0f; t += 0.05f)
+    {
+        CHECK (ui::breath (t) >= 0.349f);
+        CHECK (ui::breath (t) <= 1.0f);
+        CHECK (std::abs (ui::breath (t + 1.0f / 30.0f) - ui::breath (t)) < 0.06f);
+    }
     // part 2 on another engine: its segment lights violet on that engine's key
     p.core().params().set ("p2.engine", (float) EngineType::FM);
     e.advanceAnimation (1.0f / 30.0f);
@@ -427,7 +424,7 @@ TEST_CASE ("key LEDs: the editor lights the edit part's engine and the shown mod
     CHECK (e.engineKey (EngineType::FM).getSegmentColour (1) == ui::colour::ultraviolet);
 }
 
-TEST_CASE ("transport light bars: PLAY violet while running, REC red, LOOP yellow, octave keys yellow when shifted")
+TEST_CASE ("transport light bars: PLAY green while running, REC red, LOOP yellow, octave keys yellow when shifted")
 {
     OhpeProcessor p;
     p.prepareToPlay (48000.0, 512);
@@ -440,7 +437,25 @@ TEST_CASE ("transport light bars: PLAY violet while running, REC red, LOOP yello
     p.core().params().set (Core::Ids::seqRun, 1.0f);
     e.advanceAnimation (1.0f / 30.0f);
     CHECK (e.playTransportKey().getLedLevel() > 0.0f);
-    CHECK (e.playTransportKey().getLedColour() == ui::colour::ultraviolet);
+    CHECK (e.playTransportKey().getLedColour() == ui::colour::playGreen);
+    // p14: PLAY breathes while running - a smooth pulse, never off, period about 1.8 s
+    {
+        float lo = 1.0f, hi = 0.0f, prev = e.playTransportKey().getLedLevel();
+        float maxStep = 0.0f;
+        for (int f = 0; f < 60; ++f) // two seconds at 30 frames per second
+        {
+            e.advanceAnimation (1.0f / 30.0f);
+            const float l = e.playTransportKey().getLedLevel();
+            lo = juce::jmin (lo, l);
+            hi = juce::jmax (hi, l);
+            maxStep = juce::jmax (maxStep, std::abs (l - prev));
+            prev = l;
+        }
+        CHECK (lo >= 0.3f);
+        CHECK (hi >= 0.95f);
+        CHECK (hi - lo > 0.5f);
+        CHECK (maxStep < 0.15f); // no hard blink
+    }
     p.core().params().set (Core::Ids::seqRun, 0.0f);
     p.core().params().set ("tape.loop", 1.0f);
     e.advanceAnimation (1.0f / 30.0f);

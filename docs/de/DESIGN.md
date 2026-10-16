@@ -32,8 +32,11 @@ oder tut.
   Sonnengelb (2), Ultraviolett (3), Rosé (4) – auf den Encoder-Ringen und in den Makrozeilen des
   Displays. Die Leuchtbalken der Tasten sprechen dieselbe Sprache: **Gelb = dein Fokus** (Engine des bearbeiteten
   Parts, die angezeigte Seite), **Ultraviolett = läuft / anderswo in Benutzung** (Engine eines anderen
-  Parts, laufender Sequencer, spielendes Tape, ein Effekt-Platz an, eine geroutete Modulation),
-  **Rot = Aufnahme**.
+  Parts, laufender Sequencer, ein Effekt-Platz an, eine geroutete Modulation), **Grün = spielt** (die
+  START-Taste, das spielende Tape – die einzige Funktionsfarbe neben den vier Akzenten: ein ruhiges
+  Jadegrün, `playGreen` #19A66C auf den Tasten, `playGreenLit` #3FD08E auf dem schwarzen Display),
+  **Rot = Aufnahme**. Ein laufendes Licht (START spielt, REC nimmt auf) **atmet**: ein weicher Puls von
+  etwa 1,8 s, nie ganz aus, kein hartes Blinken.
   Alles andere ist Warmweiß, Grau und Grafit.
 * **Das Display ist der einzige Bildschirm:** groß, kontrastreich, in einem dunklen Rahmen
   versenkt; tiefes Glas mit feinem Punktraster, warmweiße Schrift.
@@ -43,10 +46,16 @@ oder tut.
   Kappe, unter dem Piktogramm – unbeleuchtet ein feiner dunkler Schlitz, leuchtend eine flache Farbe mit
   weichem Schein, kein Glanzpunkt. Auf den Engine-Tasten ist der Balken in vier Segmente geteilt, eines je
   Part (1 – 4, von links): gelb = der bearbeitete Part spielt die Engine, violett = ein anderer Part.
-  START leuchtet violett (auch das Dreieck), REC rot (stetig = bereit, blinkend = Aufnahme; der Kreis
-  glüht), SCHLEIFE gelb, MIDI rot während MIDI-Learn, OKTAVE −/+ gelb, solange die Klaviatur in diese
+  START leuchtet grün (auch das Dreieck glüht), REC rot (stetig = bereit; der Kreis glüht); solange START
+  spielt und REC aufnimmt, atmen Balken und Zeichen sanft (Puls 1,8 s zwischen 35 % und 100 %, vom 30-Hz-Timer
+  des Editors getrieben und so gestuft, dass eine Taste nur bei sichtbarer Änderung neu gezeichnet wird);
+  TAPE leuchtet grün, solange das Tape spielt, rot bei Aufnahme; SCHLEIFE gelb, MIDI rot während MIDI-Learn, OKTAVE −/+ gelb, solange die Klaviatur in diese
   Richtung verschoben ist. Felder sind ins Gehäuse eingelassen. Das Glas des Displays hat Ebenen (Punktraster
   dahinter, Inhalt, Glasoberfläche) mit leichter Parallaxe. Kein Chrom.
+* **Transport, Klaviaturzeile und Oktavfeld** während der Aufnahme (2x): REC rot und START grün, beide atmend:
+
+  ![Transport, Klaviaturzeile und Oktavfeld](../images/ohpe-transport-de.png)
+
 * **Räder und Glide (p14):** PITCH- und MOD-Rad sind Grafit-Daumenräder in dunklen Schlitzen; das
   Pitch-Rad federt zur Mitte zurück, das Mod-Rad bleibt stehen; Rechtsklick = MIDI Learn. Der
   Glide-Schalter und der kleine GLIDE-Regler folgen dem bearbeiteten Part.
@@ -70,12 +79,11 @@ oder tut.
   [englischen Fassung](../DESIGN.md#pictogram-characters).
 * **Transport (p11, p14, Rev. 3):** im Feld unten links eine Tape-Anzeige (REC / START / TAPE, Zeit
   m:ss.z, Takt.Schlag) über einer segmentierten Reihe aus fünf verbundenen, gleich breiten Tasten
-  ANFANG · STOPP · START · REC · SCHLEIFE (Variante *A, Tape-Deck*); Variante *B* zum Vergleich: zwei
-  große Tasten REC / START über der Anzeige und drei kleinen Tasten ANFANG · STOPP · SCHLEIFE. Das Feld
+  ANFANG · STOPP · START · REC · SCHLEIFE (Tape-Deck). Das Feld
   unten rechts spiegelt es: Tastatur-Anzeige (Umfang, Oktavlage; MIDI-Learn rot) über OKTAVE − / + und MIDI;
   schlichte geometrische Zeichen (Kreis, Dreieck, Quadrat, Strich + Dreieck, offene Schleife mit
-  Pfeil). Der Aufnahmekreis ist immer signalrot, die Taste blinkt während der Aufnahme. Auf der
-  Tape-Seite ersetzt das Transportfeld die Spulen-Figur: Zustandsschild (rot blinkend = Aufnahme),
+  Pfeil). Der Aufnahmekreis ist immer signalrot, START leuchtet grün; beide atmen, solange sie laufen. Auf der
+  Tape-Seite ersetzt das Transportfeld die Spulen-Figur: Zustandsschild (rot atmend = Aufnahme, grün = spielt),
   aufnahmebereite Spuren in Rot, Zeit und Takt.Schlag in Monospace, Spulen, die sich mit dem Band
   drehen, fünf umrandete Tasten (gefüllt, wenn aktiv) und eine Hinweiszeile (gelb, solange keine Spur
   bereit ist).

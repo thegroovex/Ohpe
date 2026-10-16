@@ -70,8 +70,8 @@ EngineType selectedEngine (Core& core, int part = 0);
 
 // ---------------------------------------------------------------- p14: key LEDs
 /** What one key LED shows. Colours (see docs/DESIGN.md): Focus = sun yellow, Active = ultraviolet,
-    Record = signal red, Off = the dark unlit lens. */
-enum class Led { Off = 0, Focus, Active, Record };
+    Record = signal red, Play = play green (the tape is playing), Off = the dark unlit lens. */
+enum class Led { Off = 0, Focus, Active, Record, Play };
 
 /** The state the column LEDs are computed from (read from the core by ledInputs()). */
 struct LedInputs
@@ -93,7 +93,7 @@ struct KeyLeds
     /** p14 rev 3: the engine key's light bar has one segment per part: Focus = the edit part plays this
         engine, Active = another part plays it, Off = the part plays another engine. */
     std::array<std::array<Led, Core::numParts>, numEngineTypes> engineSegments {};
-    std::array<Led, numModes> mode {};                ///< Record > Active (status) > Focus (shown page) > Off
+    std::array<Led, numModes> mode {};                ///< Record > Play / Active (status) > Focus (shown page) > Off
 };
 
 KeyLeds keyLeds (const LedInputs& in) noexcept;

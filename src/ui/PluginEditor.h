@@ -136,12 +136,6 @@ public:
     ui::PictoKey& modeKey (ui::Mode m) { return *modeKeys[(size_t) m]; }
     ui::Readout& tapeReadoutComponent() { return tapeReadout; }
     ui::Readout& keysReadoutComponent() { return keysReadout; }
-    /** p14 rev 3: two layouts of the bottom-left transport block (and the octave block mirroring it), for the
-        user to choose from: TapeDeck = one segmented row of five joined keys under a readout; Primary = two
-        large keys REC / PLAY, a row with the readout and three small keys. */
-    enum class TransportLayout { TapeDeck, Primary };
-    void setTransportLayout (TransportLayout l);
-    TransportLayout transportLayout() const noexcept { return txLayout; }
     /** RANDOM: new values for the sound parameters of the edit part's engine (its Synth pages). */
     void randomiseSound (juce::int64 seed = 0);
     /** SAVE: opens the library with the save panel for the edit part. */
@@ -158,7 +152,7 @@ private:
     void renderBackground (float physicalScale);
     void bindPartControls(); ///< p14: glide switch / knob follow the edit part
     void refreshKeys();
-    void refreshTransportKeys(); ///< p11: key states (REC blinks while recording)
+    void refreshTransportKeys(); ///< p11: key states (p14: REC / PLAY breathe while running)
     void refreshLeds();          ///< p14: engine / mode key LEDs and their tooltips
     void updateOverlayVisibility(); ///< p11: hides every plate control under the library / pro view
     std::vector<juce::Component*> plateComponents();
@@ -207,7 +201,6 @@ private:
     ui::SlideSwitch glideSwitch;
     ui::MiniKnob glideKnob;
     ui::Readout tapeReadout, keysReadout; ///< p14 rev 3
-    TransportLayout txLayout = TransportLayout::TapeDeck;
     juce::Image background; ///< p14: the static housing, panels and recesses (rendered once per size)
     ui::PartSelector partSelector;
     float spatialTime = 0.0f;

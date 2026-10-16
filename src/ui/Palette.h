@@ -46,6 +46,10 @@ inline const juce::Colour signalRed { 0xffe5243b };     ///< encoder 1
 inline const juce::Colour sunYellow { 0xfff6c20f };     ///< encoder 2
 inline const juce::Colour ultraviolet { 0xff6c4cf5 };   ///< encoder 3
 inline const juce::Colour rose { 0xffff6fa5 };          ///< encoder 4
+/** p14: the one colour for "playing" (PLAY bar and triangle, the tape playing): a calm jade green, deep
+    enough to read on the light keys at 1x, a touch brighter (playGreenLit) on the black display. */
+inline const juce::Colour playGreen { 0xff19a66c };
+inline const juce::Colour playGreenLit { 0xff3fd08e };
 
 inline juce::Colour encoder (int i)
 {
@@ -68,6 +72,14 @@ inline constexpr float housing = 18.0f;
 inline constexpr float panel = 8.0f;
 inline constexpr float inset = 5.0f; ///< strips and keys inside a panel (part keys, preset strip, display glass)
 } // namespace radius
+
+/** p14: the gentle "breathing" of a running light (REC recording, PLAY playing): a smooth raised-cosine
+    pulse with a period of 1.8 s between 0.35 and 1.0 - never off, no hard edge. */
+inline float breath (float seconds) noexcept
+{
+    const float phase = std::fmod (juce::jmax (0.0f, seconds), 1.8f) / 1.8f;
+    return 0.35f + 0.65f * (0.5f - 0.5f * std::cos (phase * juce::MathConstants<float>::twoPi));
+}
 
 /** Fonts: Space Grotesk (geometric, bundled, SIL OFL) and the platform monospace for values. */
 juce::Font brandFont (float height, bool bold = true);

@@ -30,19 +30,22 @@ Shift / Cmd / Strg = fein. Sie sind Spielhilfen und gehören nicht zu Presets.
 
 Engine-, Modus-, Transport-, Oktav- und MIDI-Tasten tragen am unteren Rand der Taste, unter dem
 Piktogramm, einen kurzen **Leuchtbalken**. Eine Farbsprache: **Gelb** = was du bearbeitest,
-**Violett** = läuft oder anderswo in Benutzung, **Rot** = Aufnahme.
+**Violett** = läuft oder anderswo in Benutzung, **Grün** = spielt, **Rot** = Aufnahme. Ein Licht für
+„spielt“ oder „nimmt auf“ **atmet** sanft (ein weicher Puls von etwa 1,8 s, nie ganz aus).
 
 | Tasten | Leuchtbalken |
 |---|---|
 | Engine | vier Segmente, eines je Part (1 – 4, von links): ein Segment leuchtet, wenn dieser Part die Engine spielt – **gelb** für den bearbeiteten Part, **violett** für einen anderen Part. |
-| Modus | **Gelb** = die Seite auf dem Display. **Violett**: SEQUENCER = der Sequencer läuft; TAPE = das Tape spielt; EFFEKTE = ein Platz eines Effekt-Racks (Part oder Master) ist an; DRUM = ein laufender Sequencer spielt das Drum-Kit; LFO = der LFO eines Parts hat Tiefe oder eine Modulation ist geroutet. **Rot** (blinkend) auf TAPE = Aufnahme. Die Statusfarbe hat Vorrang; die angezeigte Seite bleibt als eingesunkene Taste sichtbar. |
-| Transport | START **violett**, solange es läuft (auch das Dreieck leuchtet), REC **rot** (stetig = bereit, blinkend = Aufnahme; der Kreis glüht), SCHLEIFE **gelb**, solange sie an ist. |
+| Modus | **Gelb** = die Seite auf dem Display. **Violett**: SEQUENCER = der Sequencer läuft; EFFEKTE = ein Platz eines Effekt-Racks (Part oder Master) ist an; DRUM = ein laufender Sequencer spielt das Drum-Kit; LFO = der LFO eines Parts hat Tiefe oder eine Modulation ist geroutet. **Grün** auf TAPE = das Tape spielt, **rot** auf TAPE = Aufnahme (beide atmend). Die Statusfarbe hat Vorrang; die angezeigte Seite bleibt als eingesunkene Taste sichtbar. |
+| Transport | START **grün**, solange es läuft (auch das Dreieck glüht), REC **rot** (stetig = bereit; der Kreis glüht), SCHLEIFE **gelb**, solange sie an ist. Solange START spielt und REC aufnimmt, atmen Balken und Zeichen. |
 | OKTAVE − / + · MIDI | OKTAVE **gelb**, solange die Klaviatur in diese Richtung verschoben ist; MIDI **rot** während MIDI-Learn. |
 
 Der Tooltip einer Taste sagt, was ihr Balken bedeutet (Engine-Tasten nennen auch die Parts, die sie benutzen).
 
+![Transport, Klaviaturzeile und Oktavfeld während der Aufnahme](../images/ohpe-transport-de.png)
+
 Die **Anzeigen** neben den Tasten: Die Tape-Anzeige über den Transport-Tasten zeigt den Zustand (**REC**
-rot, **START** violett, *TAPE*), die Bandzeit (m:ss.z) und Takt.Schlag; die Tastatur-Anzeige im Oktavfeld
+rot, **START** grün – beide atmend, solange sie laufen – *TAPE*), die Bandzeit (m:ss.z) und Takt.Schlag; die Tastatur-Anzeige im Oktavfeld
 zeigt den Umfang der Klaviatur (C3–C6) und ihre Oktavlage, und **MIDI-LEARN** in Rot, solange ein Regler
 auf eine MIDI-Nachricht wartet.
 
@@ -168,13 +171,13 @@ Die **TRANSPORT**-Tasten im Feld unten links (eine Reihe: ANFANG, STOPP, START, 
 
 | Taste | Aktion |
 |---|---|
-| **REC** (rot) | Aufnahme mit einem Druck: ist keine Spur aufnahmebereit, wird die gewählte bereit geschaltet; die Aufnahme geht an und das Band läuft los. Während der Aufnahme gedrückt: aussteigen (das Band läuft weiter). Leuchtet bei bereiter Aufnahme, blinkt während der Aufnahme. |
+| **REC** (rot) | Aufnahme mit einem Druck: ist keine Spur aufnahmebereit, wird die gewählte bereit geschaltet; die Aufnahme geht an und das Band läuft los. Während der Aufnahme gedrückt: aussteigen (das Band läuft weiter). Leuchtet bei bereiter Aufnahme, atmet während der Aufnahme. |
 | **START** | startet / stoppt Sequencer und Band zusammen (*Start startet Tape*, ab Werk an; aus: START lässt nur den Sequencer laufen) |
 | **\|◀** | Band zurück zum Anfang |
 | **STOPP** | hält Band, Aufnahme und Sequencer an; im Stillstand noch einmal gedrückt: zurück zum Anfang |
 | **SCHLEIFE** | Band-Schleife an / aus; ohne Schleifenbereich schleift sie das Aufgenommene (oder vier Takte) |
 
-Solange das Band läuft, zeigt jede Seite **● REC 0:12.3** (blinkend) oder **▶ TAPE 0:12.3** in der
+Solange das Band läuft, zeigt jede Seite **● REC 0:12.3** (rot, atmend) oder **▶ TAPE 0:12.3** (grün) in der
 Kopfzeile des Displays. In der Standalone-App: **Leertaste** = START, **R** = REC, **Enter / Pos1** =
 zum Anfang, **L** = Schleife (im Plug-in behält der Host seine Tasten). Rechtsklick auf eine
 Transport-Taste (oder eine Taste der Tape-Seite) öffnet MIDI-Learn – jede Transportfunktion hat einen
@@ -184,8 +187,8 @@ Trigger, siehe [MIDI](MIDI.md).
 
 ![Tape-Seite](../images/ohpe-tape-de.png)
 
-Die linke Hälfte des Displays ist das **Transportfeld**: der Zustand (**● REC** blinkend, *REC
-BEREIT*, *START*, *STOPP*), die aufnahmebereiten Spuren, Zeit und Takt.Schlag, die Spulen (sie drehen
+Die linke Hälfte des Displays ist das **Transportfeld**: der Zustand (**● REC** atmend, *REC
+BEREIT*, *START* in Grün, *STOPP*), die aufnahmebereiten Spuren, Zeit und Takt.Schlag, die Spulen (sie drehen
 sich mit dem Band) und fünf Tasten – **|◀ · ■ · ▶ · ● · SCHLEIFE** – dazu eine Zeile, die sagt, was als
 Nächstes zu tun ist (*Spur wählen, REC drücken*). Darunter: die acht Spuren mit ihrem Inhalt, die
 Abspielposition (rot während der Aufnahme), der Schleifenbereich (gelb) und die **Bereit-Punkte** –

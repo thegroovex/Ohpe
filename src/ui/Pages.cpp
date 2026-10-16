@@ -415,7 +415,7 @@ KeyLeds keyLeds (const LedInputs& in) noexcept
             default: break;
         }
         Led led = (Mode) m == in.page ? Led::Focus : Led::Off;
-        if (active) led = Led::Active;
+        if (active) led = (Mode) m == Mode::Tape ? Led::Play : Led::Active; // p14: playing = green
         if ((Mode) m == Mode::Tape && in.tapeRecording) led = Led::Record;
         out.mode[(size_t) m] = led;
     }
