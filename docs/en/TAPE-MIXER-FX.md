@@ -17,6 +17,40 @@ part, a stereo audio input in the plug-in and an offline bounce of the tape to W
 
 ## Tape machine
 
+### First recording in 30 seconds
+
+![Tape page while recording](../images/ohpe-tape-recording.png)
+
+1. Press **TAPE** (mode keys, right). The display shows the transport panel and the eight tracks.
+2. **Pick a track**: click its lane (track 1 is selected at first). Its source is *Part 1* – set
+   another on encoder 2 (*Source*: input, part 1–4, drum).
+3. Press **REC** (red key, bottom left – or **R** in the standalone app). The selected track is
+   armed, recording starts and the tape and the sequencer run. The display shows **● REC** blinking
+   and the time.
+4. **Play** – on the keyboard, a MIDI keyboard or with the sequencer.
+5. Press **STOP** (or **Space**). Press **STOP** again: back to the start. Press **PLAY**: you hear
+   your take. **Undo** on the display takes the whole pass back.
+
+More takes: arm another track (click its dot, or *Arm* on encoder 1) and press **REC** again; with
+*Overdub* (Transport page) a take is added to the track instead of replacing it. **REC** while the
+tape plays = punch in, **REC** again = punch out.
+
+### Transport
+
+| Key / control | What it does | MIDI trigger |
+|---|---|---|
+| **REC** | one-touch record (arms the selected track when none is armed, starts the tape); while recording: punch out | `tape.tx.rec` |
+| **PLAY** (body) | sequencer and tape start / stop together; with *Play starts tape* off only the sequencer | `tape.tx.play` |
+| **▶** (tape page) | the tape starts / stops (and the sequencer with it while *Play starts tape* is on) | `tape.tx.tplay` |
+| **STOP** | everything stops (recording ends); when already stopped: to the start | `tape.tx.stop` |
+| **\|◀** | to the start | `tape.edit.rtz` |
+| **LOOP** | loop on / off (without a range: the recorded length, or four bars) | `tape.tx.loop` |
+| arm dot / *Arm* | arms / disarms a track; the trigger works on the edit track | `tape.tx.arm` |
+| *Play starts tape* | setting, on by default: PLAY runs sequencer and tape together | `tape.tx.link` |
+
+Triggers fire on a press (CC ≥ 64), so momentary controller buttons work as transport keys. They are
+not part of presets.
+
 **Eight stereo tracks**, one shared transport. The tape is 10 minutes long by default; the
 length (10 s … 60 min) is a setting of the session (`TapeMachine::setLengthSeconds`, stored in
 the `tape` section of the state), not a parameter. Memory is only used where audio was
@@ -24,7 +58,7 @@ recorded (blocks of 4096 frames), so a long, empty tape costs almost nothing.
 
 | What | How |
 |---|---|
-| Play / record | `tape.play`, `tape.rec` (punch in / out while playing). Recording needs at least one armed track (`tape.trN.arm`). |
+| Play / record | `tape.play`, `tape.rec` (punch in / out while playing). Recording needs at least one armed track (`tape.trN.arm`); the REC key arms the selected track by itself. |
 | Source per track | `tape.trN.src`: Input (plug-in input bus), Part 1–4, Drum. |
 | Overdub / replace | `tape.overdub` on: the new take is added; off: it replaces what was there (and the old material is not heard while it is replaced). |
 | Monitoring | an armed track with source *Input* plays the input through the track (so it can be heard and routed); parts are heard on their own mixer channels. |

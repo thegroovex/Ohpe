@@ -5,6 +5,7 @@
 // sample bank; the plug-in tests render them again with the embedded recordings).
 #include "OhpeCore.h"
 #include "TestHelpers.h"
+#include "../TestSlice.h"
 #include "preset/Preset.h"
 #include "render/PresetRender.h"
 #include "sample/FactoryBank.h"
@@ -169,11 +170,13 @@ TEST_CASE ("part gain: dB on top of the part volume")
     CHECK (level (-12.0f) / ref == doctest::Approx (0.251).epsilon (0.02));
 }
 
-TEST_CASE ("factory presets: every preset loads and renders finite, unclipped audio at a sane level")
+TEST_CASE ("factory presets: every preset loads and renders finite, unclipped audio at a sane level" * doctest::test_suite ("sliced"))
 {
     const auto files = factoryFiles();
     REQUIRE (files.size() >= 100);
+    const auto slice = test::testSlice(); // CI renders the presets in several processes
     int parts = 0, projects = 0;
+    long long item = 0;
     for (const auto& file : files)
     {
         CAPTURE (file.filename().string());
@@ -187,6 +190,11 @@ TEST_CASE ("factory presets: every preset loads and renders finite, unclipped au
         REQUIRE (! p.meta.tags.empty());
         for (const auto& t : p.meta.tags) CHECK ((preset::isCategory (t) || t == "MPE")); // 0.8: the free tag MPE marks MPE-ready presets
 
+        if (! slice.has (item++))
+        {
+            ++(p.meta.kind == preset::Kind::Part ? parts : projects); // counted, rendered by another slice
+            continue;
+        }
         Core core;
         core.prepare (48000.0, 256);
         const int before = core.params().size();

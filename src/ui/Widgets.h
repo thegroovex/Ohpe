@@ -99,10 +99,13 @@ class PictoKey : public juce::Button
 public:
     PictoKey (Picto picto, juce::String legendEnglish);
 
-    void setActive (bool a) { active = a; repaint(); }
+    void setActive (bool a) { if (a != active) { active = a; repaint(); } }
+    bool isActive() const noexcept { return active; }
     void setAvailable (bool a) { available = a; repaint(); }
     void setAccent (juce::Colour c) { accent = c; repaint(); }
     void setLegend (juce::String englishText) { legend = std::move (englishText); repaint(); }
+    /** p11: the pictogram keeps this colour even when the key is not active (record = red). */
+    void setPictoColour (juce::Colour c) { pictoInk = c; hasPictoInk = true; repaint(); }
 
     std::function<void()> onSecondaryClick;
 
@@ -114,7 +117,8 @@ private:
     Picto picto;
     juce::String legend;
     bool active = false, available = true;
-    juce::Colour accent;
+    juce::Colour accent, pictoInk;
+    bool hasPictoInk = false;
 };
 
 /** Two-octave keyboard with chunky flat keys. */

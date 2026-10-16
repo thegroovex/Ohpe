@@ -17,6 +17,40 @@ einen Stereo-Audioeingang im Plug-in und den Offline-Export des Bands als WAV-Da
 
 ## Bandmaschine
 
+### Erste Aufnahme in 30 Sekunden
+
+![Tape-Seite während der Aufnahme](../images/ohpe-tape-recording-de.png)
+
+1. **TAPE** drücken (Modus-Tasten rechts). Das Display zeigt das Transportfeld und die acht Spuren.
+2. **Spur wählen**: auf ihre Zeile klicken (am Anfang ist Spur 1 gewählt). Ihre Quelle ist *Part 1* –
+   eine andere auf Encoder 2 wählen (*Quelle*: Eingang, Part 1–4, Drum).
+3. **REC** drücken (rote Taste unten links – oder **R** in der Standalone-App). Die gewählte Spur wird
+   aufnahmebereit, die Aufnahme beginnt, Band und Sequencer laufen. Das Display zeigt **● REC**
+   blinkend und die Zeit.
+4. **Spielen** – auf der Klaviatur, einem MIDI-Keyboard oder mit dem Sequencer.
+5. **STOPP** drücken (oder **Leertaste**). Noch einmal **STOPP**: zurück zum Anfang. **START**: du hörst
+   deine Aufnahme. **Rückgängig** im Display nimmt den ganzen Durchgang zurück.
+
+Weitere Aufnahmen: eine andere Spur aufnahmebereit schalten (Punkt anklicken oder *Aufnahmebereit*
+auf Encoder 1) und wieder **REC** drücken; mit *Overdub* (Seite Transport) kommt eine Aufnahme zur Spur
+hinzu, statt sie zu ersetzen. **REC** bei laufendem Band = einsteigen, **REC** noch einmal = aussteigen.
+
+### Transport
+
+| Taste / Regler | Wirkung | MIDI-Trigger |
+|---|---|---|
+| **REC** | Aufnahme mit einem Druck (schaltet die gewählte Spur bereit, wenn keine bereit ist, startet das Band); während der Aufnahme: aussteigen | `tape.tx.rec` |
+| **START** (Gehäuse) | Sequencer und Band starten / stoppen zusammen; mit *Start startet Tape* aus nur der Sequencer | `tape.tx.play` |
+| **▶** (Tape-Seite) | das Band startet / stoppt (und der Sequencer mit, solange *Start startet Tape* an ist) | `tape.tx.tplay` |
+| **STOPP** | alles hält an (die Aufnahme endet); im Stillstand: zum Anfang | `tape.tx.stop` |
+| **\|◀** | zum Anfang | `tape.edit.rtz` |
+| **SCHLEIFE** | Schleife an / aus (ohne Bereich: die aufgenommene Länge oder vier Takte) | `tape.tx.loop` |
+| Bereit-Punkt / *Aufnahmebereit* | schaltet eine Spur bereit / ab; der Trigger wirkt auf die Bearbeitungsspur | `tape.tx.arm` |
+| *Start startet Tape* | Einstellung, ab Werk an: START lässt Sequencer und Band zusammen laufen | `tape.tx.link` |
+
+Trigger lösen beim Drücken aus (CC ≥ 64), Taster am Controller arbeiten also als Transporttasten. Sie
+gehören nicht zu Presets.
+
 **Acht Stereospuren** mit gemeinsamem Laufwerk. Das Band ist standardmäßig 10 Minuten lang; die
 Länge (10 s … 60 min) ist eine Einstellung der Session (`TapeMachine::setLengthSeconds`,
 gespeichert im Abschnitt `tape` des Zustands), kein Parameter. Speicher wird nur dort belegt, wo

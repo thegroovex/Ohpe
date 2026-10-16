@@ -509,6 +509,39 @@ void glyph (juce::Graphics& g, juce::Rectangle<float> r, Picto id, juce::Colour 
             p.lineTo (c.x + s, c.y + s * 0.3f);
             g.strokePath (p, juce::PathStrokeType (lw * 0.8f));
             break;
+        // p11: tape transport - plain geometric signs, the same weight as Play
+        case Picto::Stop:
+            g.fillRoundedRectangle (juce::Rectangle<float> (s * 1.6f, s * 1.6f).withCentre (c), lw * 0.6f);
+            break;
+        case Picto::Record:
+            g.fillEllipse (juce::Rectangle<float> (s * 1.8f, s * 1.8f).withCentre (c));
+            break;
+        case Picto::ToStart:
+            g.fillRoundedRectangle (c.x - s * 0.95f, c.y - s, lw * 1.2f, s * 2.0f, lw * 0.3f);
+            p.addTriangle (c.x + s * 0.85f, c.y - s, c.x + s * 0.85f, c.y + s, c.x - s * 0.55f, c.y);
+            g.fillPath (p);
+            break;
+        case Picto::Loop:
+        {
+            // an open rounded loop with an arrow head: the tape runs round
+            const auto box = juce::Rectangle<float> (s * 2.2f, s * 1.4f).withCentre (c);
+            const float rr = box.getHeight() * 0.45f;
+            p.startNewSubPath (box.getX() + box.getWidth() * 0.62f, box.getBottom());
+            p.lineTo (box.getX() + rr, box.getBottom());
+            p.quadraticTo (box.getX(), box.getBottom(), box.getX(), box.getBottom() - rr);
+            p.lineTo (box.getX(), box.getY() + rr);
+            p.quadraticTo (box.getX(), box.getY(), box.getX() + rr, box.getY());
+            p.lineTo (box.getRight() - rr, box.getY());
+            p.quadraticTo (box.getRight(), box.getY(), box.getRight(), box.getY() + rr);
+            p.lineTo (box.getRight(), box.getBottom() - rr);
+            g.strokePath (p, juce::PathStrokeType (lw * 0.8f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+            juce::Path head;
+            // the head at the open end, pointing the way the tape runs (clockwise)
+            const float hx = box.getRight(), hy = box.getBottom() - rr, hs = s * 0.38f;
+            head.addTriangle (hx - hs, hy - hs * 0.2f, hx + hs, hy - hs * 0.2f, hx, hy + hs * 1.2f);
+            g.fillPath (head);
+            break;
+        }
         default: break;
     }
 }

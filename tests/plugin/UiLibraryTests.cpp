@@ -305,7 +305,7 @@ TEST_CASE ("editor 0.3: part selector, pages of every mode and sequencer view, p
     e.selectMode (ui::Mode::Drum);
     CHECK (e.proViewComponent().numBars() == 2 + 24 * 8);
     e.selectMode (ui::Mode::Tape);
-    CHECK (e.proViewComponent().numBars() == 6 + 3 + 4 + 8 * 4);
+    CHECK (e.proViewComponent().numBars() == 7 + 3 + 4 + 8 * 4); // p11: + "Play starts tape"
     e.setSize (1800, 1200);
     CHECK (e.proViewComponent().numColumns() >= 4);
     auto img = e.createComponentSnapshot (e.getLocalBounds());
@@ -384,10 +384,10 @@ TEST_CASE ("editor 0.3: tape and drum pages, library browser")
     std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
     auto& e = *dynamic_cast<OhpeEditor*> (ed.get());
     e.selectMode (ui::Mode::Tape);
-    CHECK (e.encoder (0).boundId() == "tape.play");
+    CHECK (e.encoder (0).boundId() == "tape.tr1.arm"); // p11: the selected track first
     e.selectTapeTrack (3);
     CHECK ((int) std::lround (p.core().params().get (Core::Ids::tapeEditTrack)) == 4);
-    CHECK (ui::modeParams (ui::Mode::Tape, p.core(), { 0, 0, ui::SeqView::Step, 3, 0 })[4] == "tape.tr4.arm");
+    CHECK (ui::modeParams (ui::Mode::Tape, p.core(), { 0, 0, ui::SeqView::Step, 3, 0 })[0] == "tape.tr4.arm");
     e.softKey (26); // return to zero
     e.advanceAnimation (0.6f);
     CHECK (e.createComponentSnapshot (e.getLocalBounds()).isValid());

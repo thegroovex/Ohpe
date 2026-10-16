@@ -2,6 +2,8 @@
 
 *designed by groovex* · [Deutsch](README.de.md)
 
+**[⬇ Download Ohpe (macOS · Windows)](https://github.com/thegroovex/Ohpe/releases)**
+
 **Ohpe** is a compact, playful synthesizer workstation for your computer: eight synth engines on
 four parts, a drum kit, four sequencers, an eight-track tape machine, an eight-channel mixer with
 dynamics and effects, and a calm, minimalist interface built around four encoders and a keyboard. It runs as a **standalone app** (macOS, Windows,
@@ -12,8 +14,8 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 > **Status: phase 4 (0.4).** Eight engines, four parts, drum kit, step / Euclid / arpeggiator /
 > Orbit sequencers, tape machine, mixer dynamics, FX slot, MPE and MIDI clock sync, preset library,
 > pro view and direct manipulation – now with the **factory sounds**: 120 part presets, 7 demo
-> projects, five drum kits and ten recorded instruments. Not released yet: build it yourself or
-> grab the unsigned builds from a manual CI run.
+> projects, five drum kits and ten recorded instruments. First preview: unsigned builds on the
+> [releases page](https://github.com/thegroovex/Ohpe/releases).
 
 ## Features
 
@@ -77,13 +79,18 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 * **Keyboard**: play with the mouse or any MIDI keyboard; the octave keys shift it.
 * **Sequencer**: tap steps to switch them on, Shift-tap a step to edit it and lock parameters on
   it, press Play (in a host, the sequencer follows the host transport while Play is on).
+* **Transport** (bottom left): **REC** records on the tape at once (it arms the selected track when
+  none is armed), **PLAY** runs the sequencer and the tape, **STOP** stops (twice = back to the
+  start), **|◀** and **LOOP**. Standalone: Space, R, Enter, L. See
+  [first recording in 30 seconds](docs/en/TAPE-MIXER-FX.md#first-recording-in-30-seconds).
 * Drop an audio file on the instrument to load it into the Sampler / Grain engine or onto a drum pad.
 
 Full guide: [playing the interface](docs/en/USER-INTERFACE.md).
 
 ## Installing on macOS
 
-Every pull request and manual CI run builds a macOS installer – artifact **Ohpe-macOS-Installer**
+Every push to main, every manual CI run and every pull request labelled `installer` builds a macOS
+installer – artifact **Ohpe-macOS-Installer**
 on the run (*Actions → CI*). The disk image holds `Ohpe-Installer.pkg` (standalone app, VST3 and
 Audio Unit, each selectable; universal for Apple Silicon and Intel, macOS 11+), a Gatekeeper fix
 script, an uninstaller and a read-me in English and German. The pkg is not signed by Apple: open it

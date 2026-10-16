@@ -93,6 +93,13 @@ MPE-Controller spielt; mit einer Aftertouch-Tastatur wirkt die Druck-Zuordnung s
 In jedem Fall starten und stoppen die Sequencer mit **Sequencer Start** (`seq.run`) – im Host
 laufen sie, solange der Host spielt *und* `seq.run` an ist.
 
+**Transport-Tasten vom Controller (p11).** Einen Taster auf *Transport Start/Stopp* (`tape.tx.play`),
+*Transport Aufnahme* (`tape.tx.rec`), *Transport Stopp* (`tape.tx.stop`), *Transport Schleife*
+(`tape.tx.loop`), *Tape Start/Stopp* (`tape.tx.tplay`), *Bearbeitungsspur aufnahmebereit*
+(`tape.tx.arm`) oder *Tape zum Anfang* (`tape.edit.rtz`) legen: Rechtsklick auf die Taste in Ohpe oder
+MIDI → *Fernsteuerung*. Sie lösen beim Drücken aus (CC ≥ 64), wie die Tasten am Gehäuse; siehe
+[Band-Transport](BAND-MISCHER-FX.md#transport).
+
 ### Host-Sync (Plug-in)
 
 Ohpe liest in jedem Block Tempo und Song-Position des Hosts und setzt jeden Schritt genau auf

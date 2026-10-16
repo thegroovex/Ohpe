@@ -3,8 +3,8 @@
 *English · Deutsch: [../de/BEDIENUNG.md](../de/BEDIENUNG.md)*
 
 Ohpe's surface: engine keys (left), the display (centre), mode keys (right), four encoders below the
-display, transport and octave keys, the keyboard. The header holds the **part selector**, the
-**preset strip** and the **LIBRARY** and **PRO** keys. Every function can be reached with the mouse
+display, the **TRANSPORT** keys (bottom left) and the octave keys, the keyboard. The header holds the
+**part selector**, the **preset strip** and the **LIBRARY**, **PRO** and **MIDI** keys. Every function can be reached with the mouse
 and – through MIDI learn – from a controller.
 
 ## Display: drag the bars
@@ -110,18 +110,42 @@ Step view:
 * **Clear locks** removes all locks of the step; **Done**, a click on the *LOCK* badge, Esc or a
   second Shift-click ends the editing.
 
+## Transport keys
+
+The **TRANSPORT** keys at the bottom left work on every page:
+
+| Key | Action |
+|---|---|
+| **REC** (red) | one-touch record on the tape: arms the selected track when no track is armed, switches recording on and starts the tape. Pressed while recording: punch out (the tape keeps playing). Lit while recording ready, blinking while it records. |
+| **PLAY** | starts / stops the sequencer and the tape together (*Play starts tape*, on by default; off: PLAY runs the sequencer alone) |
+| **\|◀** | tape back to the start |
+| **STOP** | stops tape, recording and sequencer; pressed again while stopped: back to the start |
+| **LOOP** | tape loop on / off; without a loop range it loops what is recorded (or four bars) |
+
+While the tape runs, every page shows **● REC 0:12.3** (blinking) or **▶ TAPE 0:12.3** in the display
+header. In the standalone app: **Space** = PLAY, **R** = REC, **Enter / Home** = to the start, **L** =
+loop (in a plug-in the host keeps its own keys). Right-click any transport key (or a button on the
+tape page) for MIDI learn – every transport function has a trigger, see [MIDI](MIDI.md).
+
 ## Tape page
 
 ![Tape page](../images/ohpe-tape.png)
 
-The Tape mode shows the eight tracks with their content, the play position, the loop region
-(yellow) and the armed tracks (red dot). Click a track to select it. Encoder pages:
+The left half of the display is the **transport panel**: the state (**● REC** blinking, *REC READY*,
+*PLAY*, *STOP*), the armed tracks, the time and bar.beat, the reels (they turn with the tape) and five
+buttons – **|◀ · ■ · ▶ · ● · LOOP** – plus one line that says what to do next (*Pick a track, press
+REC*). Below: the eight tracks with their content, the play position (red while recording), the loop
+region (yellow) and the **arm dots** – click a dot to arm or disarm the track, click a lane to select it.
+
+![Tape page while recording](../images/ohpe-tape-recording.png)
+
+Encoder pages:
 
 | Page | Encoders |
 |---|---|
-| Transport | Play, Record, Speed (varispeed 0.5–2×), Reverse |
 | Track | Arm, Source (input, part 1–4, drum), Level, Direct out of the selected track |
-| Loop | Loop on/off, Loop in, Loop out, Overdub |
+| Transport | Overdub, Speed (varispeed 0.5–2×), Reverse, Play starts tape |
+| Loop | Loop on/off, Loop in, Loop out |
 | Tape character | Saturation, Wow, Flutter, Hiss |
 
 Soft keys on the display:
@@ -133,11 +157,11 @@ Soft keys on the display:
 | **Drop** | places the clipboard at the play position (overwrites) |
 | **Splice** | inserts the clipboard at the play position (the rest moves back) |
 | **Undo / Redo** | unlimited undo of recordings and edits |
-| **\|◀** | back to the start of the tape |
 | **Export** | renders master + the eight tracks as **24-bit WAV** files into a folder you choose (offline, faster than real time; the live audio is not interrupted) |
 
-Every tape edit is MIDI-mappable: *Tape Edit Track* (`tape.edit.track`), *Tape Lift / Cut / Drop /
-Splice / Undo / Redo / Return to Zero* (`tape.edit.*`).
+The line left of the soft keys shows the loop range that Lift and Cut use. Every tape edit is
+MIDI-mappable: *Tape Edit Track* (`tape.edit.track`), *Tape Lift / Cut / Drop / Splice / Undo / Redo /
+Return to Zero* (`tape.edit.*`). Short guide: [first recording in 30 seconds](TAPE-MIXER-FX.md#first-recording-in-30-seconds).
 
 ## Drum kit page
 
@@ -206,6 +230,10 @@ While an effect chosen for the first time is being prepared, the display says *P
 | Key | Action |
 |---|---|
 | Esc | closes the library (cancel) or the pro view, or ends step editing |
+| Space (standalone) | PLAY / stop |
+| R (standalone) | REC: record on the tape / punch out |
+| Enter or Home (standalone) | tape to the start |
+| L (standalone) | tape loop on / off |
 | Enter (library) | keep the selected preset and close |
 | ↑ / ↓ (library) | previous / next preset in the list |
 

@@ -15,8 +15,8 @@ macOS 11 auf Macs mit Apple Silicon und Intel (alle Programmdateien sind Univers
 
 ## Wo es den Installer gibt
 
-Getaggte Releases gibt es noch nicht. Jeder Pull Request und jeder manuelle Lauf des
-**CI**-Workflows baut den Installer auf dem macOS-Runner und hängt ihn als Artefakt
+Getaggte Releases gibt es noch nicht. Jeder Push auf main, jeder manuelle Lauf des
+**CI**-Workflows und jeder Pull Request mit dem Label `installer` baut den Installer auf dem macOS-Runner und hängt ihn als Artefakt
 **Ohpe-macOS-Installer** an den Lauf: im Repository den Reiter *Actions* → *CI* → ein grüner
 Lauf → *Artifacts*. GitHub liefert Artefakte als Zip; nach dem Entpacken liegt die `.dmg` (und
 `SHA256SUMS.txt`) vor.

@@ -26,9 +26,15 @@ Nützliche Variablen: `OHPE_JUCE_PATH` (lokales JUCE 8.0.15), `OHPE_CMAKE_ARGS="
 (viel schnelleres Linken lokal), `OHPE_CORE_ONLY=1` (nur Kern-Tests). Unter Linux ohne Bildschirm
 laufen die GUI-Schritte automatisch mit `xvfb-run`.
 
-Nie einen roten Build pushen. Die CI führt bei jedem Push auf main dasselbe Skript unter Linux
-aus; jeder Pull Request (und ein manueller Lauf des CI-Workflows) baut und testet zusätzlich macOS
-Universal (App, AU inkl. `auval -strict`, VST3) und Windows. Erst mergen, wenn alle drei grün sind.
+Nie einen roten Build pushen. Die CI führt bei jedem Push auf main, jedem Pull Request und jedem
+manuellen Lauf des CI-Workflows dieselben Schritte unter Linux, macOS Universal (App, AU inkl.
+`auval -strict`, VST3) und Windows aus. Erst mergen, wenn alle drei grün sind („CI result“). Jede
+Plattform wird einmal gebaut (ccache, zwischengespeicherte Abhängigkeiten); danach laufen die Tests
+in parallelen Jobs, jeder doctest-Testfall als eigener Prozess (`scripts/ci/run-tests.py`, auch von
+`test-all.sh` benutzt). Lange Testfälle, die über viele Einträge laufen (jedes Werks-Preset …),
+tragen `doctest::test_suite ("sliced")` und werden mit `tests/TestSlice.h` aufgeteilt. Den
+macOS-Installer baut die CI auf main, bei manuellen Läufen und für Pull Requests mit dem Label
+`installer`. Pull Requests, die nur `docs/**` oder `*.md` ändern, überspringen die Builds.
 
 Werks-Presets sind `*.ohpepreset`-Dateien in `resources/presets/factory/` (werden beim Bauen
 eingebettet); das Format steht in [PRESETS.md](PRESETS.md).
