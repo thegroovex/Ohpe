@@ -41,6 +41,18 @@ jobs:
           OHPE_REQUIRE_PLUGINVAL: "1"
         run: scripts/test-all.sh
 
+      - name: Render the documentation screenshots (pull requests and manual runs)
+        if: github.event_name != 'push'
+        run: xvfb-run -a build/ohpe_screenshot_artefacts/Release/ohpe_screenshot screenshots
+
+      - name: Upload the screenshots
+        if: github.event_name != 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ohpe-screenshots
+          path: screenshots
+          if-no-files-found: error
+
       - name: Upload pluginval log
         if: failure()
         uses: actions/upload-artifact@v4
