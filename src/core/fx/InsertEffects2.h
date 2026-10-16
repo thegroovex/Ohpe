@@ -108,6 +108,14 @@ private:
     int sync = 4, shape = 0, mode = 0;
     bool retrigger = true;
     double tempo = 120.0;
+    float dcC = 0.99935f, dcX[2] = { 0.0f, 0.0f }, dcY[2] = { 0.0f, 0.0f }; ///< 0.8: DC blocker (~5 Hz) after the clipper
+    float dcBlock (float x, int c) noexcept
+    {
+        const float y = x - dcX[c] + dcC * dcY[c];
+        dcX[c] = x;
+        dcY[c] = std::abs (y) < 1.0e-20f ? 0.0f : y;
+        return y;
+    }
 };
 
 /** Tremolo or autopan (left / right opposite), free or tempo-synced. */

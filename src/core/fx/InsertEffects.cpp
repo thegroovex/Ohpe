@@ -287,6 +287,7 @@ void FilterDriveEffect::prepare (double sampleRate, int)
     svfR.prepare (sr);
     cutoffSmooth.prepare (sr, 10.0f);
     cutoffSmooth.reset (cutoff);
+    dcC = 1.0f - 2.0f * 3.14159265f * 5.0f / sr;
     update();
     reset();
 }
@@ -295,6 +296,7 @@ void FilterDriveEffect::reset() noexcept
 {
     svfL.reset();
     svfR.reset();
+    dcX[0] = dcX[1] = dcY[0] = dcY[1] = 0.0f;
 }
 
 void FilterDriveEffect::update() noexcept
@@ -325,8 +327,9 @@ void FilterDriveEffect::process (float* l, float* r, int n) noexcept
     for (int i = 0; i < n; ++i)
     {
         if ((i & 15) == 0) { for (int k = 0; k < 16; ++k) cutoffSmooth.next(); update(); }
-        const float wl = svfL.process (dsp::softClip (l[i] * pre), modes[mode]) * post;
-        const float wr = svfR.process (dsp::softClip (r[i] * pre), modes[mode]) * post;
+        // 0.8: the clipper turns asymmetric waves (saw, pulse) into a DC offset that the low-pass kept: blocked here
+        const float wl = svfL.process (dcBlock (dsp::softClip (l[i] * pre), 0), modes[mode]) * post;
+        const float wr = svfR.process (dcBlock (dsp::softClip (r[i] * pre), 1), modes[mode]) * post;
         l[i] = l[i] * (1.0f - mix) + wl * mix;
         r[i] = r[i] * (1.0f - mix) + wr * mix;
     }

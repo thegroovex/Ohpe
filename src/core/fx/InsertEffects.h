@@ -93,5 +93,13 @@ private:
     dsp::Smoother cutoffSmooth;
     float sr = 48000.0f, cutoff = 2000.0f, resonance = 0.3f, drive = 0.3f, mix = 1.0f;
     int mode = 0;
+    float dcC = 0.99935f, dcX[2] = { 0.0f, 0.0f }, dcY[2] = { 0.0f, 0.0f }; ///< 0.8: DC blocker (~5 Hz) after the clipper
+    float dcBlock (float x, int c) noexcept
+    {
+        const float y = x - dcX[c] + dcC * dcY[c];
+        dcX[c] = x;
+        dcY[c] = std::abs (y) < 1.0e-20f ? 0.0f : y;
+        return y;
+    }
 };
 } // namespace ohpe
