@@ -111,7 +111,7 @@ def report(out):
         s = stats(a)
         t = render(d, ["--seconds", "4", "--limit"])
         st = stats(t)
-        res[name] = dict(lufs=lufs(a), peak=round(s["peak"], 2), tp=round(truepeak(a[: 48000 * 12]), 2), rms=round(s["rms"], 1),
+        res[name] = dict(lufs=lufs(a), peak=round(s["peak"], 2), tp=round(truepeak(a), 2), rms=round(s["rms"], 1),
                          crest=round(s["crest"], 1), corr=round(float(s["corr"]), 2), test_active=round(st["rms"], 1))
         print("%-20s %s" % (name, res[name]), flush=True)
     json.dump(res, open(out, "w"), indent=1)
