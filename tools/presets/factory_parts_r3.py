@@ -59,7 +59,8 @@ RANK = {"filterdrive": 0, "distortion": 0, "bitcrush": 0, "comb": 0, "formant": 
         "multiband": 1, "compressor": 1, "chorus": 2, "phaser": 2, "flange": 2, "tremolo": 2, "hyper": 2, "width": 3, "midside": 3,
         "delay": 4, "echo": 4, "reverb": 5, "hall": 5}
 NONLINEAR = ("distortion", "multiband", "compressor", "filterdrive", "bitcrush")
-OUTPUT = ("distortion", "multiband", "width", "eq")  # types with an output trim (level calibration after a non-linear stage)
+OUTPUT = ("distortion", "multiband", "width", "eq", "compressor")  # types with an output trim (level calibration after a non-linear stage)
+TRIM_KEY = {"compressor": "makeup"}  # the compressor's trim is its makeup gain (0 .. 24 dB), the others' their output
 _fx_levels_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "levels_fx.json")
 FX_LEVELS = json.load(open(_fx_levels_path)) if os.path.exists(_fx_levels_path) else {}
 _OLD_FX = {3: "bitcrush"}  # 0.4 helpers used here (crush) -> rack effect
@@ -160,7 +161,7 @@ def P(name, tags, engine, comment, *dicts, **kw):
         for i, f in enumerate(ch):
             p = dict(f["params"])
             if i == cal and name in FX_LEVELS:
-                p[f["__fx__"] + ".output"] = FX_LEVELS[name]
+                p[f["__fx__"] + "." + TRIM_KEY.get(f["__fx__"], "output")] = FX_LEVELS[name]
             rest.append({slot_prefix(i) + k: v for k, v in p.items()})
     for m in motions:
         rest.append(resolve_motion(m, engine, kinds))
@@ -730,7 +731,7 @@ PRESETS_R3 = [
       arp("up", 2, 0.45, "1/16"), voices=8),
     P("Wide Pluck Arp", ["Arp", "Plucks"], "wavetable", "Six-voice stereo pluck, up / down over three octaves, dotted ping-pong delay.",
       wt(table="classic", pos=0.45, tone=0.55, unison=0.35, univoices=6, uniwidth=0.75, keytrack=0.6),
-      amp(0.002, 0.3, 0.0, 0.25), mod(0.001, 0.12, 0.0, 0.1, 0.5), dly(2, 0.45, 0.45, 0.5, 1, 0.25), rev(3, 0.7, 0.5, 0.02, 0.2),
+      amp(0.002, 0.45, 0.12, 0.25), mod(0.001, 0.12, 0.0, 0.1, 0.5), dly(2, 0.45, 0.45, 0.5, 1, 0.25), rev(3, 0.7, 0.5, 0.02, 0.2),
       arp("updown", 3, 0.5, "1/16"), voices=8),
     P("Bell Cascade Arp", ["Arp", "Keys"], "fm", "FM bells cascading down three octaves in triplets, with echoes and a bright hall.",
       fm(algo=2, modratio=1.0, index=0.35, op1ratio=1, op2ratio=3.5, op3ratio=1, op4ratio=7, op1level=1.0, op2level=0.5,
@@ -753,7 +754,7 @@ PRESETS_R3 = [
       rev(3, 0.6, 0.5, 0.02, 0.15), arp("up", 2, 0.5, "1/16T"), voices=8),
     P("Chord Stab Arp", ["Arp", "Keys"], "cluster", "Rhythmic chord stabs (chord mode, eighths) from a wide saw stack - instant house groove.",
       cl(detune=0.25, spread=0.8, tone=0.6, chord="min7", stack=3, shape=0.0, side=0.6, reso=0.15, keytrack=0.5, drift=0.1),
-      amp(0.002, 0.25, 0.0, 0.15), mod(0.001, 0.15, 0.0, 0.1, 0.45), squash(2, 0.4, 0.35, 0.4), rev(3, 0.6, 0.5, 0.02, 0.2),
+      amp(0.002, 0.35, 0.3, 0.15), mod(0.001, 0.15, 0.0, 0.1, 0.45), shaper(0, "soft", 0.5, 0.0, 12000, 1.0), squash(2, 0.4, 0.35, 0.4), comp(3, -12.0, 6.0, 0.2, 120.0, 6.0, 0.0), rev(3, 0.6, 0.5, 0.02, 0.2),
       arp("chord", 1, 0.35, "1/8"), voices=8),
     P("Random Spark Arp", ["Arp", "FX"], "fm", "Random thirty-second FM blips over four octaves through a ping-pong delay: sparks.",
       fm(algo=3, modratio=2.0, index=0.4, op1ratio=1, op2ratio=3, op3ratio=2, op4ratio=5, op1level=1.0, op2level=0.6,
@@ -796,7 +797,7 @@ PRESETS_R3 = [
     P("Starfield", ["Textures", "Keys"], "fm", "Random high FM bells drifting across the stereo field into delay and hall.",
       fm(algo=5, modratio=1.0, index=0.3, op1ratio=1, op2ratio=2.76, op3ratio=5.4, op4ratio=8.9, op1level=1.0, op2level=0.6,
          op3level=0.4, op4level=0.3, op5level=0.2, op6level=0.3),
-      amp(0.005, 2.5, 0.0, 2.5), mod(0.001, 1.0, 0.0, 1.0, 0.5), lfo(0.2, 0.7, "sh", "pan"), comp(1, -24.0, 3.0, 4.0, 160.0, 8.0, 0.0), dly(2, 0.5, 0.5, 0.6, 1, 0.3),
+      amp(0.005, 2.5, 0.0, 2.5), mod(0.001, 1.0, 0.0, 1.0, 0.5), lfo(0.2, 0.7, "sh", "pan"), comp(1, -24.0, 3.0, 4.0, 160.0, 8.0, 10.0), dly(2, 0.5, 0.5, 0.6, 1, 0.3),
       rev(3, 0.94, 0.3, 0.05, 0.45), voices=12),
     P("Infinite Hall", ["Pads"], "cluster", "Major-seventh stack in an enormous hall that never seems to end.",
       cl(detune=0.25, spread=1.0, tone=0.55, chord="maj7", stack=3, shape=0.15, side=0.7, reso=0.1, keytrack=0.4, drift=0.3),
@@ -810,8 +811,8 @@ PRESETS_R3 = [
       cl(detune=0.2, spread=1.0, tone=0.45, chord="add9", stack=3, shape=0.2, side=0.6, reso=0.05, keytrack=0.4, drift=0.35),
       amp(0.9, 2.0, 0.9, 3.0), mod(1.0, 2.0, 0.6, 2.0, 0.1), cho(1, 0.25, 0.55, 0.35), rev(3, 0.88, 0.5, 0.03, 0.34), voices=6),
     P("Night Rain", ["Textures"], "grain", "Random kalimba droplets falling into a ping-pong delay and a dark hall.",
-      gr(inst="kalimba", pos=0.3, size=80, density=30, spray=0.9, reverse=0.1, spread=1.0, scan=0.2, tone=0.6, pitch=12),
-      amp(0.05, 1.0, 0.85, 3.0), mod(0.01, 1.0, 0.5, 1.0, 0.0), dly(2, 0.36, 0.55, 0.35, 1, 0.35), rev(3, 0.9, 0.6, 0.03, 0.4),
+      gr(inst="kalimba", pos=0.3, size=110, density=55, spray=0.9, reverse=0.1, spread=1.0, scan=0.2, tone=0.6, pitch=12),
+      amp(0.05, 1.0, 0.85, 3.0), mod(0.01, 1.0, 0.5, 1.0, 0.0), comp(1, -30.0, 3.0, 3.0, 150.0, 8.0, 12.0), dly(2, 0.36, 0.55, 0.35, 1, 0.35), rev(3, 0.9, 0.6, 0.03, 0.4),
       voices=8),
     P("Ghost Organ", ["Pads", "Keys"], "wavetable", "Hollow harmonic organ with a slow autopan and a cavernous hall.",
       wt(table="harmonic", pos=0.55, tone=0.65, unison=0.2, univoices=3, keytrack=0.4, lfopos=0.15),
@@ -820,17 +821,17 @@ PRESETS_R3 = [
 
     # ================================================================ STEREO FX (7)
     P("Wide Riser", ["FX"], "analog", "Noise and saws rising over four seconds, flanged and wide, into a long hall.",
-      an(shape=0.0, detune=0.4, cutoff=300, reso=0.35, oscmix=0.5, noise=0.6, drive=0.3, keytrack=0.3),
+      an(shape=0.0, detune=0.4, cutoff=650, reso=0.35, oscmix=0.5, noise=0.6, drive=0.3, keytrack=0.3),
       amp(2.0, 1.0, 1.0, 2.0), mod(3.0, 0.5, 1.0, 1.0, 1.0), pitchenv(-12, 4.0, 0.0), flanger(2, 0.3, 0.8, 0.6, 3.0, 0.5),
-      rev(3, 0.9, 0.4, 0.04, 0.4), voices=2),
+      rev(3, 0.9, 0.4, 0.04, 0.4), eq(9, (100.0, 0.0), (300.0, 0.0, 0.7), (1200.0, 0.0, 0.7), (4500.0, 1.5, 0.7), (9000.0, 1.0), out=6.0), voices=2),
     P("Impact Boom", ["FX", "Boom"], "fm", "Sub impact with a metallic crack, squashed and thrown into a huge hall.",
-      fm(algo=4, modratio=1.0, index=0.6, feedback=0.4, op1ratio=0.5, op2ratio=1.41, op3ratio=2.7, op4ratio=3.9, op1level=1.0,
-         op2level=0.7, op3level=0.5, op4level=0.4, op5level=0.0, op6level=0.0),
-      amp(0.001, 3.0, 0.0, 2.0), mod(0.001, 0.15, 0.0, 0.2, 1.0), pitchenv(-24, 0.4, 0.8), squash(2, 0.6, 0.3, 0.5),
+      fm(algo=4, modratio=1.0, index=0.45, feedback=0.4, op1ratio=0.5, op2ratio=1.41, op3ratio=2.7, op4ratio=3.9, op1level=1.0,
+         op2level=0.7, op3level=0.3, op4level=0.2, op5level=0.0, op6level=0.0),
+      amp(0.001, 3.0, 0.2, 2.0), mod(0.001, 0.15, 0.0, 0.2, 1.0), pitchenv(-24, 0.4, 0.8), shaper(0, "soft", 0.3, 0.0, 14000, 1.0), squash(2, 0.75, 0.35, 1.0), comp(3, -14.0, 8.0, 0.2, 200.0, 6.0, 0.0),
       rev(3, 0.95, 0.4, 0.02, 0.4), voices=2),
     P("Stereo Zap", ["FX"], "wavetable", "Laser zap diving two octaves, thrown left and right by a ping-pong delay.",
       wt(table="digital", pos=0.6, tone=0.72, unison=0.3, univoices=4, uniwidth=0.75, keytrack=0.5),
-      amp(0.001, 0.45, 0.3, 0.2), comp(1, -24.0, 4.0, 3.0, 120.0, 6.0, 0.0), mod(0.001, 0.2, 0.0, 0.1, 0.5), pitchenv(24, 0.25, 0.9), dly(2, 0.25, 0.55, 0.5, 1, 0.35),
+      amp(0.001, 0.45, 0.3, 0.2), comp(1, -24.0, 4.0, 3.0, 120.0, 6.0, 14.0), mod(0.001, 0.2, 0.0, 0.1, 0.5), pitchenv(24, 0.25, 0.9), dly(2, 0.25, 0.55, 0.5, 1, 0.35),
       rev(3, 0.7, 0.5, 0.02, 0.2), voices=4),
     P("Downlifter", ["FX"], "analog", "Falling noise and saw sweep over three seconds with a jet flanger - the end of the build.",
       an(shape=0.0, detune=0.3, cutoff=6000, reso=0.3, oscmix=0.5, noise=0.5, drive=0.2, keytrack=0.3),
@@ -838,7 +839,7 @@ PRESETS_R3 = [
       rev(3, 0.85, 0.45, 0.03, 0.35), voices=2),
     P("Glitch Spray", ["FX", "Textures"], "grain", "Tiny, fast grains crushed and scattered into a stereo delay: digital spray.",
       gr(inst="glockenspiel", pos=0.2, size=12, density=90, spray=0.9, reverse=0.5, spread=0.85, scan=0.5, tone=0.55),
-      amp(0.005, 0.8, 0.6, 0.5), mod(0.01, 1.0, 0.5, 1.0, 0.0), crush(9, 3, 0.35), comp(1, -24.0, 4.0, 2.0, 90.0, 6.0, 0.0), dly(2, 0.19, 0.5, 0.5, 1, 0.3), voices=4),
+      amp(0.005, 0.8, 0.6, 0.5), mod(0.01, 1.0, 0.5, 1.0, 0.0), crush(9, 3, 0.35), comp(1, -24.0, 4.0, 2.0, 90.0, 6.0, 14.0), dly(2, 0.19, 0.5, 0.5, 1, 0.3), voices=4),
     P("Whoosh", ["FX"], "analog", "Filtered noise swept by a one-bar band-pass wobble, spread wide: a passing whoosh.",
       an(shape=0.0, detune=0.0, cutoff=12000, reso=0.0, oscmix=0.0, noise=1.0, drive=0.0, keytrack=0.0, osclevel=0.0),
       amp(0.4, 1.0, 0.9, 1.5), mod(0.01, 1.0, 0.5, 1.0, 0.0), wobble(2, "1/1", "tri", 300, 9000, 0.4, "bp", 0.0),
@@ -861,7 +862,7 @@ PRESETS_R3 = [
       voices=10),
     P("Future Chord", ["Plucks", "Keys"], "cluster", "Wide minor-seventh chord stab with squash and a short shimmer - one key, one chord.",
       cl(detune=0.25, spread=0.9, tone=0.6, chord="min7", stack=3, shape=0.05, side=0.6, reso=0.15, keytrack=0.5, drift=0.1),
-      amp(0.002, 0.6, 0.0, 0.35), mod(0.001, 0.3, 0.0, 0.2, 0.5), squash(2, 0.45, 0.35, 0.5), rev(3, 0.7, 0.45, 0.02, 0.26),
+      amp(0.002, 0.6, 0.0, 0.35), mod(0.001, 0.3, 0.0, 0.2, 0.5), shaper(0, "soft", 0.3, 0.0, 12000, 1.0), squash(2, 0.45, 0.35, 0.5), comp(3, -12.0, 6.0, 0.2, 120.0, 6.0, 0.0), rev(3, 0.7, 0.45, 0.02, 0.26),
       voices=6),
     P("Bright Poly Wide", ["Keys"], "analog", "Classic bright poly synth, chorused and widened - chords that fill the room.",
       an(shape=0.1, detune=0.2, cutoff=3200, reso=0.12, oscmix=0.5, drive=0.2, keytrack=0.6),

@@ -666,6 +666,7 @@ void MultibandEffect::setParam (int i, float v) noexcept
             atk = std::exp (-1.0f / (sr * (0.001f + 0.029f * time)));
             rel = std::exp (-1.0f / (sr * (0.03f + 0.57f * time)));
             gainA = 1.0f - std::exp (-1.0f / (sr * 0.002f));
+            gainFall = 1.0f - std::exp (-1.0f / (sr * 0.0002f));
             fastRel = std::exp (-1.0f / (sr * 0.03f)); // slow enough not to flicker over a 40 Hz cycle
             break;
         case LowGain: bandLevel[0] = dsp::dbToGain (v); break;
@@ -725,7 +726,8 @@ void MultibandEffect::process (float* l, float* r, int n) noexcept
             ef = dsp::flush (pk > ef ? pk : pk + (ef - pk) * fastRel);
             const float target = downGainDb (dsp::gainToDb (e), depth, downward)
                                + upGainDb (dsp::gainToDb (std::max (e, ef)), depth, upward);
-            gain[(size_t) b] += (target - gain[(size_t) b]) * gainA;
+            // the gain falls within ~0.2 ms (a note after a quiet tail is not lifted by the old gain) and rises over 2 ms
+            gain[(size_t) b] += (target - gain[(size_t) b]) * (target < gain[(size_t) b] ? gainFall : gainA);
             worst[(size_t) b] = gain[(size_t) b];
             const float g = std::pow (10.0f, gain[(size_t) b] * 0.05f) * bandLevel[(size_t) b];
             outL += band[0][(size_t) b] * g;

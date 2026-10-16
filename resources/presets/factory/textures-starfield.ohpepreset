@@ -45,7 +45,7 @@
     "fx.compressor.attack": 4.0,
     "fx.compressor.release": 160.0,
     "fx.compressor.knee": 8.0,
-    "fx.compressor.makeup": 0.0,
+    "fx.compressor.makeup": 20.3,
     "fx.compressor.mix": 1.0,
     "fx2.type": 5,
     "fx2.delay.time": 0.5,
@@ -66,6 +66,6 @@
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
     "voices": 12,
-    "gain": 20.9
+    "gain": 10.0
   }
 }

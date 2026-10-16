@@ -71,7 +71,7 @@
     "fx2.compressor.attack": 15.0,
     "fx2.compressor.release": 160.0,
     "fx2.compressor.knee": 6.0,
-    "fx2.compressor.makeup": 1.5,
+    "fx2.compressor.makeup": 2.0,
     "fx2.compressor.mix": 1.0,
     "fx3.type": 20,
     "fx3.tremolo.rate": 0.9,
@@ -133,6 +133,6 @@
     "mpe.smooth": 0.04,
     "mpe.bend": 48,
     "voices": 8,
-    "gain": 12.2
+    "gain": 12.8
   }
 }
