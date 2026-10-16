@@ -212,14 +212,14 @@ TEST_CASE ("discover: the genome holds the sound, not the routing; capture / app
     Core core;
     auto& reg = core.params();
     reg.set ("p2.fm.index", 0.62f);
-    const auto g = discover::capture (reg, { "p2.fm.index", "p2.fm.algo", "p2.engine", "p2.amp.r", "nope" });
+    const auto g = discover::capture (reg, { "p2.fm.index", "p2.lfo.shape", "p2.engine", "p2.amp.r", "nope" });
     REQUIRE (g.size() == 3);
     CHECK (g.genes[0].steps == 0);
-    CHECK (g.genes[1].steps == 8); // eight algorithms
+    CHECK (g.genes[1].steps == 5); // five LFO shapes
     Core other;
     discover::apply (other.params(), g);
     CHECK (other.params().get ("p2.fm.index") == doctest::Approx (0.62f).epsilon (0.001));
-    CHECK (discover::capture (other.params(), { "p2.fm.index", "p2.fm.algo", "p2.amp.r" }).distance (g) < 1.0e-4f);
+    CHECK (discover::capture (other.params(), { "p2.fm.index", "p2.lfo.shape", "p2.amp.r" }).distance (g) < 1.0e-4f);
 }
 
 TEST_CASE ("discover: siblings are deterministic, differ, respect locks; strength scales the distance; cross blends")
