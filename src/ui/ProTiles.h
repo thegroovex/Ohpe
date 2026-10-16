@@ -105,7 +105,8 @@ protected:
     std::vector<std::string> open; ///< parameters with an open gesture
 
 private:
-    uint64_t lastHash = 0;
+    uint64_t lastHash = 0, rangeHash = 0;
+    int ticks = 0;
     bool first = true;
 };
 

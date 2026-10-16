@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <map>
 
 namespace ohpe::ui::pro
 {
@@ -169,10 +170,16 @@ int destForParam (OhpeProcessor& proc, int part, const std::string& paramId)
     if (local.rfind (ep, 0) == 0)
         if (auto* e = pt.engine (type))
         {
+            // engine descriptors never change: cache the local order per engine (message thread only)
+            static std::map<std::string, int> cache;
+            const auto key = local;
+            if (const auto it = cache.find (key); it != cache.end()) return it->second;
+            int r = -1;
             const auto ds = e->getParamDescriptors();
             for (size_t i = 0; i < ds.size() && i < (size_t) mod::numEngineDests; ++i)
-                if (ds[i].id == local.substr (ep.size())) return mod::DstEngine1 + (int) i;
-            return -1;
+                if (ds[i].id == local.substr (ep.size())) { r = mod::DstEngine1 + (int) i; break; }
+            cache[key] = r;
+            return r;
         }
     for (int d = mod::DstOff + 1; d < mod::numDests; ++d)
     {
@@ -268,13 +275,24 @@ uint64_t Tile::stateHash() const
         h = mix (h, mod (id));
     }
     h = mix (h, dropHover ? 1.0f : 0.0f);
-    return h;
+    return h ^ rangeHash;
 }
 
 bool Tile::tick (float seconds)
 {
     time += seconds;
     if (! isShowing() && ! first) return false;
+    if (++ticks % 10 == 1) // the modulation ranges change only with the routings: look every third of a second
+    {
+        uint64_t r = 0x51ED27ull;
+        for (const auto& id : ids)
+            if (! id.empty())
+            {
+                const auto rg = range (id);
+                r = mix (mix (r, rg.getStart()), rg.getEnd());
+            }
+        rangeHash = r;
+    }
     const auto h = stateHash();
     if (first || h != lastHash || animating())
     {
@@ -1002,8 +1020,9 @@ private:
         const float u = unit();
         return { u * 0.8f, u * 0.5f, u * 11.0f, u * 2.0f };
     }
-    float radiusPx() const { return juce::jlimit (8.0f, 30.0f, juce::jmin ((float) getWidth() / 13.0f, (float) getHeight() / 8.0f)); }
-    /** Operators in layers: carriers at the bottom, their modulators above (by depth in the algorithm). */
+    float radiusPx() const { return juce::jlimit (8.0f, 30.0f, juce::jmin ((float) getWidth() / 10.0f, (float) getHeight() / 6.2f)); }
+    /** Operators on two rows of three slots: carriers first (bottom row, left to right), then their modulators by
+        depth, snaking back along the top row - a chain reads as a line, nothing overlaps. */
     std::array<juce::Point<float>, fm::numOps> positions() const
     {
         const auto algo = fm::morphAlgorithm (plainOf (proc, ids[0]));
@@ -1014,26 +1033,20 @@ private:
                 for (int src = 0; src < fm::numOps; ++src)
                     if (src != dst && algo.mod[dst][src] > 0.001f && depth[(size_t) dst] >= 0)
                         depth[(size_t) src] = juce::jmax (depth[(size_t) src], depth[(size_t) dst] + 1);
-        int maxDepth = 0;
-        for (auto& d : depth)
-        {
-            if (d < 0) d = 0;
-            maxDepth = juce::jmax (maxDepth, d);
-        }
+        std::array<int, fm::numOps> order { 0, 1, 2, 3, 4, 5 };
+        std::stable_sort (order.begin(), order.end(), [&] (int x, int y) {
+            const int dx = depth[(size_t) x] < 0 ? 99 : depth[(size_t) x], dy = depth[(size_t) y] < 0 ? 99 : depth[(size_t) y];
+            return dx < dy;
+        });
         const float u = unit();
-        const auto area = getLocalBounds().toFloat().reduced (radiusPx() + u * 1.2f).withTrimmedTop (u * 2.6f);
+        const auto area = getLocalBounds().toFloat().reduced (radiusPx() * 1.25f + u * 0.6f).withTrimmedTop (u * 2.4f);
         std::array<juce::Point<float>, fm::numOps> pos {};
-        for (int level = 0; level <= maxDepth; ++level)
+        for (int slot = 0; slot < fm::numOps; ++slot)
         {
-            std::vector<int> row;
-            for (int op = 0; op < fm::numOps; ++op)
-                if (depth[(size_t) op] == level) row.push_back (op);
-            const float y = maxDepth > 0 ? area.getBottom() - area.getHeight() * (float) level / (float) maxDepth : area.getCentreY();
-            for (size_t i = 0; i < row.size(); ++i)
-            {
-                const float x = area.getX() + area.getWidth() * ((float) i + 0.5f) / (float) row.size();
-                pos[(size_t) row[i]] = { x + (float) (level % 2) * u * 1.5f, y };
-            }
+            const int row = slot / 3, col = row == 0 ? slot % 3 : 2 - slot % 3;
+            const float x = area.getX() + area.getWidth() * (float) col / 2.0f;
+            const float y = row == 0 ? area.getBottom() : area.getY();
+            pos[(size_t) order[(size_t) slot]] = { x, y };
         }
         return pos;
     }
@@ -1087,8 +1100,8 @@ protected:
         const auto r = range (ids[0]);
         const int frames = wavetable::Bank::numFrames;
         const auto plot = area.withTrimmedTop (u * 1.8f);
-        const float dx = plot.getWidth() * 0.22f / (float) frames, dy = plot.getHeight() * 0.45f / (float) frames;
-        const float fw = plot.getWidth() * 0.72f, fh = plot.getHeight() * 0.42f;
+        const float dx = plot.getWidth() * 0.26f / (float) frames, dy = plot.getHeight() * 0.62f / (float) frames;
+        const float fw = plot.getWidth() * 0.66f, fh = plot.getHeight() * 0.30f;
         auto frameOrigin = [&] (float f) { return juce::Point<float> (plot.getX() + dx * f, plot.getBottom() - fh * 0.5f - dy * f); };
         const float posF = juce::jlimit (0.0f, 1.0f, pos) * (float) (frames - 1);
         // back to front
@@ -1099,7 +1112,7 @@ protected:
             juce::Path p;
             for (int i = 0; i <= 64; ++i)
             {
-                const float v = data[(size_t) (i * (wavetable::Bank::size / 64)) % wavetable::Bank::size];
+                const float v = juce::jlimit (-1.0f, 1.0f, data[(size_t) (i * (wavetable::Bank::size / 64)) % wavetable::Bank::size]);
                 const float x = o.x + fw * (float) i / 64.0f, y = o.y - v * fh * 0.5f;
                 if (i == 0) p.startNewSubPath (x, y);
                 else p.lineTo (x, y);
@@ -1118,10 +1131,10 @@ protected:
         // the glowing position plane
         const auto o = frameOrigin (posF);
         juce::Path plane;
-        plane.startNewSubPath (o.x - u * 0.3f, o.y - fh * 0.62f);
-        plane.lineTo (o.x + fw + u * 0.3f, o.y - fh * 0.62f);
-        plane.lineTo (o.x + fw + u * 0.3f, o.y + fh * 0.62f);
-        plane.lineTo (o.x - u * 0.3f, o.y + fh * 0.62f);
+        plane.startNewSubPath (o.x - u * 0.3f, o.y - fh * 0.58f);
+        plane.lineTo (o.x + fw + u * 0.3f, o.y - fh * 0.58f);
+        plane.lineTo (o.x + fw + u * 0.3f, o.y + fh * 0.58f);
+        plane.lineTo (o.x - u * 0.3f, o.y + fh * 0.58f);
         plane.closeSubPath();
         g.setColour (edit().withAlpha (0.10f));
         g.fillPath (plane);
@@ -1814,10 +1827,17 @@ void SourceChip::paint (juce::Graphics& g)
     g.fillRoundedRectangle (b, b.getHeight() * 0.5f);
     g.setColour (modc().brighter (0.3f));
     g.drawRoundedRectangle (b, b.getHeight() * 0.5f, 1.0f);
-    const auto& s = mod::sourceTable()[(size_t) src];
     g.setColour (colour::displayText);
     g.setFont (labelFont (b.getHeight() * 0.55f));
-    g.drawText (i18n::upper (i18n::pick (s.nameEn, s.nameDe)), b, juce::Justification::centred, true);
+    juce::String name;
+    switch (src)
+    {
+        case mod::SrcModEnv: name = i18n::pick ("Mod Env", "Mod-HK"); break;
+        case mod::SrcEnv3: name = i18n::pick ("Env 3", "HK 3"); break;
+        case mod::SrcModWheel: name = i18n::pick ("Wheel", "Mod-Rad"); break;
+        default: name = i18n::pick (mod::sourceTable()[(size_t) src].nameEn, mod::sourceTable()[(size_t) src].nameDe); break;
+    }
+    g.drawText (i18n::upper (name), b, juce::Justification::centred, true);
 }
 
 void SourceChip::mouseDrag (const juce::MouseEvent& e)
