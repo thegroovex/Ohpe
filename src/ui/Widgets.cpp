@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Widgets.h"
+#include "ModFxViews.h"
 
 #include "Palette.h"
 #include "plugin/Localisation.h"
@@ -189,8 +190,13 @@ void Encoder::paint (juce::Graphics& g)
     else if (idx >= 0)
     {
         const auto& d = proc.core().params().descriptor (idx);
-        name = i18n::pick (d.nameEn, d.nameDe);
-        if (auto* p = proc.parameter (paramId)) value = formatValue (d, p->convertFrom0to1 (p->getValue()));
+        name = modfx::compactName (d.id, d.nameEn, d.nameDe); // 0.7: short names in the Mod / Rack views
+        if (auto* p = proc.parameter (paramId))
+        {
+            const float plain = p->convertFrom0to1 (p->getValue());
+            value = modfx::specialValueText (proc.core(), d.id, plain);
+            if (value.isEmpty()) value = formatValue (d, plain);
+        }
     }
     // legend printed on the body: small caps, engraved grey
     g.setColour (learning ? colour::encoder (index) : colour::engraving);

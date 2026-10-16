@@ -270,6 +270,7 @@ const std::map<juce::String, juce::String>& table()
         { "Bypass", "Bypass" },
         { "Empty slot", "Leerer Slot" },
         { "Move", "Schieben" },
+        { "Type", "Typ" },
         { "Low", "Tief" },
         { "Mid", "Mitte" },
         { "High", "Hoch" },
