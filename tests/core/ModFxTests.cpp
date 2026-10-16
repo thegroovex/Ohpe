@@ -194,6 +194,63 @@ TEST_CASE ("0.7 rack: slot 1 at mix 100 % is bit-identical to the 0.2 FX slot; e
     }
 }
 
+TEST_CASE ("0.7 rack: a type whose parameter block is only partly registered keeps the defaults of the missing parameters")
+{
+    // full registry (reference) and one where every second parameter of each type block is missing
+    ParamRegistry full, part;
+    InsertSlot::registerParams (full, "p1.fx.", "part1/fx");
+    full.freeze();
+    {
+        std::vector<ParamDescriptor> keep;
+        int n = 0;
+        for (const auto& d : full.all())
+        {
+            const bool isBlockParam = d.id.rfind ("p1.fx.", 0) == 0 && d.id != "p1.fx.type";
+            if (isBlockParam && (n++ % 2) == 1) continue; // drop it: unregistered for this slot
+            keep.push_back (d);
+        }
+        part.add (keep);
+    }
+    part.freeze();
+    REQUIRE (part.size() < full.size());
+    ParamSnapshot snapFull, snapPart;
+    snapFull.prepare (full);
+    snapPart.prepare (part);
+
+    Stereo in (8192);
+    dsp::Random rng (11);
+    for (size_t i = 0; i < in.size(); ++i) { in.l[i] = 0.4f * rng.nextBipolar(); in.r[i] = 0.4f * std::sin (0.02f * (float) i); }
+
+    for (int type = InsertSlot::Off + 1; type < InsertSlot::numTypes; ++type)
+    {
+        CAPTURE (type);
+        full.resetToDefaults();
+        part.resetToDefaults();
+        full.set ("p1.fx.type", (float) type);
+        part.set ("p1.fx.type", (float) type);
+        InsertSlot a, b;
+        a.bind (full, "p1.fx.");
+        b.bind (part, "p1.fx.");
+        a.prepare (sampleRate, 256);
+        b.prepare (sampleRate, 256);
+        snapFull.pull (full);
+        snapPart.pull (part);
+        a.pullParams (snapFull);
+        b.pullParams (snapPart);
+        Stereo x = in, y = in;
+        for (size_t pos = 0; pos < in.size(); pos += 256)
+        {
+            const int n = (int) std::min<size_t> (256, in.size() - pos);
+            a.process (x.l.data() + pos, x.r.data() + pos, n);
+            b.process (y.l.data() + pos, y.r.data() + pos, n);
+        }
+        CHECK (allFinite (y.l));
+        CHECK (allFinite (y.r));
+        // a missing parameter must not be driven to 0 (or anything): it stays at the effect's own default
+        if (b.currentType() == type) CHECK (identical (x, y));
+    }
+}
+
 TEST_CASE ("0.7 rack: slot order matters, moveSlot reorders exactly; mix 0 is dry after the glide")
 {
     ParamRegistry reg;
