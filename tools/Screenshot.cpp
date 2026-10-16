@@ -298,6 +298,7 @@ int main (int argc, char* argv[])
             setPlain (p, "p1.fx.midside.side", 1.5f);
             setPlain (p, "p1.fx.midside.bassmono", 1.0f);
             setPlain (p, "p1.fx.midside.haas", 0.25f);
+            prepareRack (p); // the core sees the new type before the pages bind its block
             e.selectMode (ui::Mode::Effects);
             e.selectView (0); // sends + FX slot pages: the scope in the display's visual area
             auto& d = e.displayComponent();
