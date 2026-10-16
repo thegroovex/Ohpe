@@ -32,7 +32,6 @@
 #include "standalone/LinkSync.h"
 #include "standalone/SyncSettingsPage.h"
 #include "ui/OhpeLookAndFeel.h"
-#include "ui/PluginEditor.h"
 #include "ui/Palette.h"
 
 namespace ohpe
@@ -82,7 +81,7 @@ public:
     bool keyPressed (const juce::KeyPress& key) override
     {
         if (auto* proc = getAudioProcessor())
-            if (auto* ed = dynamic_cast<OhpeEditor*> (proc->getActiveEditor()); ed != nullptr && ed->handleShortcut (key))
+            if (auto* ed = proc->getActiveEditor(); ed != nullptr && ed->keyPressed (key)) // OhpeEditor: shortcuts, Esc
                 return true;
         return StandaloneFilterWindow::keyPressed (key);
     }
