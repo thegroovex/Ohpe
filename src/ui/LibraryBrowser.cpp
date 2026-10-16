@@ -338,7 +338,7 @@ void LibraryBrowser::paint (juce::Graphics& g)
     hits.clear();
     const float u = unit();
     const auto b = getLocalBounds().toFloat();
-    g.setColour (colour::bodyShade);
+    g.setGradientFill (juce::ColourGradient (colour::bezel, 0, b.getY(), colour::bezelLow, 0, b.getBottom(), false)); // p14: dark frame
     g.fillRoundedRectangle (b, u * 1.4f);
     g.setColour (colour::display);
     g.fillRoundedRectangle (b.reduced (u * 0.5f), u * 1.1f);

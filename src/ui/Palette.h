@@ -5,24 +5,37 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 /**
-    The Ohpe design system (see docs/DESIGN.md): light anodised-aluminium body, graphite keys,
-    a deep display, four functional accent colours - one per encoder - used sparingly.
+    The Ohpe design system (see docs/DESIGN.md): a matte warm-white housing with grey recessed column
+    panels, matte light keys, a deep black display and four functional accent colours - one per
+    encoder - used sparingly. Functional minimalism: less, but better.
 */
 namespace ohpe::ui
 {
 namespace colour
 {
-// body
-inline const juce::Colour body { 0xffd8dadd };          ///< "Alu 200" anodised light grey
-inline const juce::Colour bodyLight { 0xffe6e8ea };     ///< "Alu 100" highlight
-inline const juce::Colour bodyShade { 0xffc4c7cb };     ///< "Alu 300" grooves, shadows
-inline const juce::Colour engraving { 0xff5d6168 };     ///< printed legends on the body
-inline const juce::Colour ink { 0xff1d1f23 };           ///< strongest text
+// housing (p14: matte warm white - no metal, no texture)
+inline const juce::Colour backdrop { 0xffd3d0ca };      ///< behind the housing (window margin)
+inline const juce::Colour body { 0xffefede8 };          ///< housing, matte warm white
+inline const juce::Colour bodyLight { 0xfff8f7f3 };     ///< housing highlight (upper edge)
+inline const juce::Colour bodyShade { 0xffd6d3cc };     ///< grooves, rings, shadows
+inline const juce::Colour panel { 0xffe3e0d9 };         ///< recessed column panels
+inline const juce::Colour panelEdge { 0xffcdc9c1 };     ///< the panels' upper inner edge
+inline const juce::Colour engraving { 0xff54524e };     ///< printed legends on the housing
+inline const juce::Colour ink { 0xff1c1c1b };           ///< strongest text
+// p14: matte light keys on the housing
+inline const juce::Colour capTop { 0xfff3f1ec };
+inline const juce::Colour capBottom { 0xffe2dfd8 };
+inline const juce::Colour capEdge { 0xffc3bfb7 };
+inline const juce::Colour capInk { 0xff383735 };        ///< pictograms on the light keys
+inline const juce::Colour pill { 0xff2c2c2f };          ///< dark pill keys (LIBRARY, PRO)
+inline const juce::Colour pillTop { 0xff3d3d41 };
+inline const juce::Colour bezel { 0xff38383b };          ///< the display's dark frame (also the overlays' rim)
+inline const juce::Colour bezelLow { 0xff1f1f21 };
 // keys
 inline const juce::Colour keyDark { 0xff2a2c31 };       ///< graphite key cap
 inline const juce::Colour keyDarkTop { 0xff34373d };
-inline const juce::Colour keyLight { 0xffeef0f1 };      ///< natural keyboard key
-inline const juce::Colour keyLightPressed { 0xffcfd2d6 };
+inline const juce::Colour keyLight { 0xfff6f5f1 };      ///< natural keyboard key
+inline const juce::Colour keyLightPressed { 0xffdcd9d2 };
 // display
 inline const juce::Colour display { 0xff0c0d10 };       ///< "Night" display glass
 inline const juce::Colour displayGrid { 0xff1c1e23 };

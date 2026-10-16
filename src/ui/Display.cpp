@@ -383,7 +383,7 @@ void Display::renderLayers()
     baseLayer = juce::Image (juce::Image::ARGB, w, h, true);
     {
         juce::Graphics g (baseLayer);
-        g.setGradientFill (juce::ColourGradient (colour::bodyShade.darker (0.22f), 0, b.getY(), colour::bodyLight, 0, b.getBottom(), false));
+        g.setGradientFill (juce::ColourGradient (colour::bezelLow, 0, b.getY(), colour::bezel, 0, b.getBottom(), false)); // p14: dark frame
         g.fillRoundedRectangle (b, u * 1.6f);
         g.setColour (juce::Colours::black.withAlpha (0.18f));
         g.drawRoundedRectangle (b.reduced (0.5f), u * 1.6f, 1.0f);

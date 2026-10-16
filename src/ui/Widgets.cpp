@@ -271,41 +271,120 @@ void PictoKey::mouseUp (const juce::MouseEvent& e)
     juce::Button::mouseUp (e);
 }
 
+void drawFittedLegend (juce::Graphics& g, const juce::String& text, juce::Rectangle<float> area, float height, juce::Justification j)
+{
+    auto f = labelFont (height);
+    const float w = juce::GlyphArrangement::getStringWidth (f, text);
+    if (w > area.getWidth() && w > 0.0f) f = labelFont (juce::jmax (height * 0.7f, height * area.getWidth() / w));
+    g.setFont (f);
+    g.drawText (text, area, j, true);
+}
+
+namespace
+{
+/** Soft two-layer shadow under a rounded shape (matte objects on the housing). */
+void softShadow (juce::Graphics& g, juce::Rectangle<float> r, float radius, float lift)
+{
+    g.setColour (juce::Colours::black.withAlpha (0.05f));
+    g.fillRoundedRectangle (r.expanded (lift * 0.6f).translated (0, lift * 1.4f), radius + lift * 0.6f);
+    g.setColour (juce::Colours::black.withAlpha (0.10f));
+    g.fillRoundedRectangle (r.translated (0, lift * 0.7f), radius);
+}
+
+/** The four accent colours as one ring of four arcs (the header's round keys). */
+void fourColourRing (juce::Graphics& g, juce::Point<float> c, float radius, float width)
+{
+    const float gap = 0.10f;
+    for (int i = 0; i < 4; ++i)
+    {
+        const float a0 = juce::MathConstants<float>::pi * (-0.75f + 0.5f * (float) i) + gap, a1 = a0 + juce::MathConstants<float>::halfPi - 2.0f * gap;
+        juce::Path arc;
+        arc.addCentredArc (c.x, c.y, radius, radius, 0.0f, a0, a1, true);
+        g.setColour (colour::encoder (i));
+        g.strokePath (arc, juce::PathStrokeType (width, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+    }
+}
+} // namespace
+
 void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
 {
     const auto b = getLocalBounds().toFloat();
-    const float legendH = b.getHeight() * 0.22f;
-    auto cap = b.withTrimmedBottom (legendH).reduced (b.getWidth() * 0.04f);
-    const float r = cap.getWidth() * 0.08f;
-    // soft drop shadow on the aluminium
-    g.setColour (juce::Colours::black.withAlpha (0.18f));
-    g.fillRoundedRectangle (cap.translated (0, down ? 0.5f : cap.getHeight() * 0.04f), r);
-    if (down) cap = cap.translated (0, cap.getHeight() * 0.02f);
-    g.setGradientFill (juce::ColourGradient (colour::keyDarkTop, cap.getX(), cap.getY(), colour::keyDark, cap.getX(), cap.getBottom(), false));
-    g.fillRoundedRectangle (cap, r);
-    if (over && ! down)
-    {
-        g.setColour (juce::Colours::white.withAlpha (0.05f));
-        g.fillRoundedRectangle (cap, r);
-    }
-    PictoState s;
-    auto ink = available ? (active ? accent : colour::keyLight.withAlpha (0.85f)) : colour::keyLight.withAlpha (0.25f);
-    if (hasPictoInk && available) ink = active ? pictoInk.brighter (0.25f) : pictoInk;
-    // p11: the transport signs sit in a square of the cap's height (wide keys would shrink them to dots)
+    const bool pressed = down || (active && style == Style::Cap);
+    const float legendH = juce::jmin (20.0f * b.getHeight() / 80.0f, b.getHeight() * 0.27f);
+    const auto legendArea = b.withTop (b.getBottom() - legendH);
+    auto ink = colour::capInk;
+    PictoState ps;
     const bool transportSign = picto == Picto::Play || picto == Picto::Stop || picto == Picto::Record
-                            || picto == Picto::ToStart || picto == Picto::Loop;
-    if (transportSign)
-        drawPictogram (g, cap.withSizeKeepingCentre (cap.getHeight(), cap.getHeight()).reduced (cap.getHeight() * 0.12f), picto, s, ink);
-    else
-        drawPictogram (g, cap.reduced (cap.getWidth() * 0.2f), picto, s, ink);
-    if (active)
+                            || picto == Picto::ToStart || picto == Picto::Loop || picto == Picto::OctaveDown || picto == Picto::OctaveUp;
+
+    if (style == Style::Round)
     {
-        g.setColour (accent);
-        g.fillEllipse (cap.getRight() - cap.getWidth() * 0.16f, cap.getY() + cap.getWidth() * 0.08f, cap.getWidth() * 0.08f, cap.getWidth() * 0.08f);
+        const float d = juce::jmin (b.getWidth(), b.getHeight() - legendH) - 2.0f;
+        const auto ringBox = juce::Rectangle<float> (d, d).withCentre ({ b.getCentreX(), (b.getHeight() - legendH) * 0.5f });
+        const float ringW = juce::jmax (1.5f, d * 0.07f);
+        fourColourRing (g, ringBox.getCentre(), d * 0.5f - ringW * 0.5f, ringW);
+        auto cap = ringBox.reduced (ringW * 1.9f);
+        g.setColour (juce::Colours::black.withAlpha (0.14f));
+        g.fillEllipse (cap.translated (0, down ? 0.5f : d * 0.035f));
+        if (down) cap = cap.translated (0, d * 0.015f);
+        g.setGradientFill (juce::ColourGradient (colour::capTop, cap.getX(), cap.getY(), colour::capBottom, cap.getX(), cap.getBottom(), false));
+        g.fillEllipse (cap);
+        g.setColour (colour::capEdge);
+        g.drawEllipse (cap.reduced (0.5f), 1.0f);
+        if (over && ! down) { g.setColour (juce::Colours::white.withAlpha (0.25f)); g.fillEllipse (cap); }
+        drawPictogram (g, cap.reduced (cap.getWidth() * 0.2f), picto, ps, available ? ink : ink.withAlpha (0.3f));
+    }
+    else if (style == Style::Pill)
+    {
+        auto cap = b.withTrimmedBottom (legendH).reduced (1.0f, b.getHeight() * 0.04f);
+        const float r = cap.getHeight() * 0.5f;
+        softShadow (g, cap, r, down ? 0.6f : 2.0f);
+        if (down) cap = cap.translated (0, 1.0f);
+        g.setGradientFill (juce::ColourGradient (colour::pillTop, cap.getX(), cap.getY(), colour::pill, cap.getX(), cap.getBottom(), false));
+        g.fillRoundedRectangle (cap, r);
+        g.setColour (juce::Colours::white.withAlpha (over && ! down ? 0.10f : 0.05f));
+        g.drawRoundedRectangle (cap.reduced (0.5f), r, 1.0f);
+        const auto icon = cap.withSizeKeepingCentre (cap.getHeight(), cap.getHeight()).reduced (cap.getHeight() * 0.1f);
+        drawPictogram (g, icon, picto, ps, available ? (active ? accent : colour::keyLight.withAlpha (0.9f)) : colour::keyLight.withAlpha (0.25f));
+        if (active)
+        {
+            g.setColour (accent);
+            g.fillRoundedRectangle (juce::Rectangle<float> (cap.getHeight() * 0.5f, 2.0f).withCentre ({ cap.getCentreX(), cap.getBottom() - cap.getHeight() * 0.12f }), 1.0f);
+        }
+    }
+    else
+    {
+        auto cap = b.withTrimmedBottom (legendH + 2.0f).reduced (2.0f, 1.0f);
+        const float r = juce::jmin (cap.getWidth(), cap.getHeight()) * 0.12f;
+        softShadow (g, cap, r, pressed ? 0.8f : 2.4f);
+        if (pressed) cap = cap.translated (0, 1.0f);
+        const auto top = pressed ? colour::capBottom : colour::capTop;
+        const auto bottom = pressed ? colour::capBottom.darker (0.03f) : colour::capBottom;
+        g.setGradientFill (juce::ColourGradient (top, cap.getX(), cap.getY(), bottom, cap.getX(), cap.getBottom(), false));
+        g.fillRoundedRectangle (cap, r);
+        g.setColour (colour::capEdge);
+        g.drawRoundedRectangle (cap.reduced (0.5f), r, 1.0f);
+        if (! pressed) // a fine lit upper edge: the soft depth of a matte key
+        {
+            g.setColour (juce::Colours::white.withAlpha (0.75f));
+            g.fillRect (cap.reduced (r, 0).withHeight (1.0f).translated (0, 1.0f));
+        }
+        if (over && ! down) { g.setColour (juce::Colours::white.withAlpha (0.22f)); g.fillRoundedRectangle (cap, r); }
+        if (hasPictoInk && available) ink = pictoInk;
+        else if (! available) ink = ink.withAlpha (0.28f);
+        if (transportSign)
+            drawPictogram (g, cap.withSizeKeepingCentre (cap.getHeight(), cap.getHeight()).reduced (cap.getHeight() * 0.18f), picto, ps, ink);
+        else
+            drawPictogram (g, cap.reduced (cap.getWidth() * 0.22f, cap.getHeight() * 0.16f).translated (0, -cap.getHeight() * 0.04f), picto, ps, ink);
+        if (active) // the lit bar of the active key, in its function colour
+        {
+            g.setColour (accent);
+            g.fillRoundedRectangle (juce::Rectangle<float> (cap.getWidth() * 0.3f, juce::jmax (2.0f, cap.getHeight() * 0.05f))
+                                        .withCentre ({ cap.getCentreX(), cap.getBottom() - cap.getHeight() * 0.11f }), 1.5f);
+        }
     }
     g.setColour (available ? colour::engraving : colour::engraving.withAlpha (0.45f));
-    g.setFont (labelFont (juce::jmin (legendH * 0.62f, b.getWidth() * 0.16f)));
-    g.drawText (i18n::upper (tr (legend)), b.withTop (b.getBottom() - legendH), juce::Justification::centred, true);
+    drawFittedLegend (g, i18n::upper (tr (legend)), legendArea, juce::jmin (legendH * 0.56f, 11.0f * b.getHeight() / 80.0f));
 }
 
 // ---------------------------------------------------------------- Keyboard

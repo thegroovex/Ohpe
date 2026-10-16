@@ -542,6 +542,38 @@ void glyph (juce::Graphics& g, juce::Rectangle<float> r, Picto id, juce::Colour 
             g.fillPath (head);
             break;
         }
+        // p14: RANDOM - a die showing three, drawn as an outline with round pips
+        case Picto::Random:
+        {
+            const auto box = juce::Rectangle<float> (s * 2.0f, s * 2.0f).withCentre (c);
+            g.drawRoundedRectangle (box, s * 0.45f, lw * 0.8f);
+            const float pr = s * 0.36f;
+            for (int i = 0; i < 3; ++i)
+            {
+                const float t = (float) i / 2.0f;
+                const auto pc = juce::Point<float> (box.getX() + box.getWidth() * (0.28f + 0.44f * t), box.getY() + box.getHeight() * (0.28f + 0.44f * t));
+                g.fillEllipse (juce::Rectangle<float> (pr, pr).withCentre (pc));
+            }
+            break;
+        }
+        // p14: SAVE - a preset card with a plus: "keep this sound"
+        case Picto::Save:
+        {
+            const auto box = juce::Rectangle<float> (s * 1.7f, s * 2.1f).withCentre (c);
+            const float fold = s * 0.55f;
+            p.startNewSubPath (box.getX(), box.getY());
+            p.lineTo (box.getRight() - fold, box.getY());
+            p.lineTo (box.getRight(), box.getY() + fold);
+            p.lineTo (box.getRight(), box.getBottom());
+            p.lineTo (box.getX(), box.getBottom());
+            p.closeSubPath();
+            g.strokePath (p, juce::PathStrokeType (lw * 0.8f, juce::PathStrokeType::mitered, juce::PathStrokeType::rounded));
+            const auto pc = box.getCentre().translated (0, s * 0.12f);
+            const float a = s * 0.45f;
+            g.drawLine (pc.x - a, pc.y, pc.x + a, pc.y, lw * 0.8f);
+            g.drawLine (pc.x, pc.y - a, pc.x, pc.y + a, lw * 0.8f);
+            break;
+        }
         default: break;
     }
 }

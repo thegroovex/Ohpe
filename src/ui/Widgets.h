@@ -93,11 +93,20 @@ private:
     std::unique_ptr<juce::SliderParameterAttachment> attachment;
 };
 
-/** Chunky graphite key with a pictogram and a legend printed below. */
+/** Matte key with a pictogram and a legend printed below (p14: light square cap, dark pill or round key). */
 class PictoKey : public juce::Button
 {
 public:
+    enum class Style
+    {
+        Cap,   ///< matte light square key (engines, modes, transport, octave)
+        Pill,  ///< dark pill (LIBRARY, PRO in the header)
+        Round  ///< round key with the four-colour ring (RANDOM, SAVE in the header)
+    };
+
     PictoKey (Picto picto, juce::String legendEnglish);
+    void setStyle (Style s) { style = s; repaint(); }
+    Style getStyle() const noexcept { return style; }
 
     void setActive (bool a) { if (a != active) { active = a; repaint(); } }
     bool isActive() const noexcept { return active; }
@@ -116,15 +125,20 @@ public:
 private:
     Picto picto;
     juce::String legend;
+    Style style = Style::Cap;
     bool active = false, available = true;
     juce::Colour accent, pictoInk;
     bool hasPictoInk = false;
 };
 
-/** Two-octave keyboard with chunky flat keys. */
+/** Draws a legend in engraved small caps, shrinking the font (down to 70 %) until it fits the width. */
+void drawFittedLegend (juce::Graphics& g, const juce::String& text, juce::Rectangle<float> area, float height, juce::Justification j = juce::Justification::centred);
+
+/** p14: three-octave keyboard with matte keys. */
 class Keyboard : public juce::MidiKeyboardComponent
 {
 public:
+    static constexpr int numOctaves = 3;
     explicit Keyboard (juce::MidiKeyboardState& s);
     void setBaseOctave (int octave); ///< lowest C = 12 * (octave + 1)
     int getBaseOctave() const noexcept { return baseOctave; }
@@ -135,5 +149,86 @@ public:
 
 private:
     int baseOctave = 3;
+};
+
+/**
+    p14: performance wheel left of the keyboard - a vertical thumb wheel in a recessed slot, bound to
+    a host parameter (MIDI-learnable with a right-click). The pitch wheel springs back to the centre
+    when released; the mod wheel stays where it is left. Shift / Cmd / Ctrl = fine.
+*/
+class Wheel : public juce::Component, private juce::Timer
+{
+public:
+    Wheel (OhpeProcessor& p, juce::String paramId, juce::String legendEnglish, bool springBack);
+    void refresh();                  ///< re-reads the parameter (editor timer); repaints only on change
+    float value() const;             ///< normalised 0..1
+    bool springsBack() const noexcept { return spring; }
+    const juce::String& paramId() const noexcept { return id; }
+
+    void paint (juce::Graphics& g) override;
+    void mouseDown (const juce::MouseEvent& e) override;
+    void mouseDrag (const juce::MouseEvent& e) override;
+    void mouseUp (const juce::MouseEvent& e) override;
+    void mouseDoubleClick (const juce::MouseEvent& e) override;
+    juce::Rectangle<float> slotArea() const;
+
+private:
+    void timerCallback() override;
+    void set (float norm);
+    OhpeProcessor& proc;
+    juce::String id, legend;
+    bool spring = false, dragging = false;
+    float shown = -1.0f;
+    BarDrag drag;
+};
+
+/** p14: three-position slide switch for a choice parameter (glide mode Auto / Legato / Always). */
+class SlideSwitch : public juce::Component
+{
+public:
+    explicit SlideSwitch (OhpeProcessor& p);
+    void bind (const juce::String& paramId);
+    const juce::String& boundId() const noexcept { return id; }
+    void refresh();
+    int position() const;
+
+    void paint (juce::Graphics& g) override;
+    void mouseDown (const juce::MouseEvent& e) override;
+    juce::Rectangle<float> slotArea() const;
+    juce::Rectangle<float> labelArea (int i) const;
+
+private:
+    OhpeProcessor& proc;
+    juce::String id;
+    int shown = -1;
+};
+
+/** p14: small knob with a graphite ring and its legend + value at the right (GLIDE). */
+class MiniKnob : public juce::Component
+{
+public:
+    MiniKnob (OhpeProcessor& p, juce::String legendEnglish);
+    ~MiniKnob() override;
+    void bind (const juce::String& paramId);
+    const juce::String& boundId() const noexcept { return id; }
+    juce::Slider& slider() noexcept { return knob; }
+
+    void paint (juce::Graphics& g) override;
+    void resized() override;
+
+private:
+    class Knob : public juce::Slider
+    {
+    public:
+        explicit Knob (MiniKnob& o) : owner (o) {}
+        void mouseDown (const juce::MouseEvent& e) override;
+        void mouseUp (const juce::MouseEvent& e) override;
+        void mouseDoubleClick (const juce::MouseEvent& e) override;
+        MiniKnob& owner;
+    };
+    OhpeProcessor& proc;
+    juce::String id, legend;
+    Knob knob { *this };
+    std::unique_ptr<juce::SliderParameterAttachment> attachment;
 };
 } // namespace ohpe::ui
