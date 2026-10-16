@@ -92,12 +92,12 @@ Vec3 pathPoint (int path, double phase, float size, uint32_t seed) noexcept
             const float psi = (90.0f - 90.0f * size * std::sin (th)) * degToRad;
             return { 0.0f, std::cos (psi), std::sin (psi) };
         }
-        case PathSpiral: // climbs from below ear height to above the head in 1-4 turns, a bit closer at the top
-        {
+        case PathSpiral: // climbs from below ear height to above the head in 1-4 turns, a bit closer at the top,
+        {                // then sinks back in the last tenth of the cycle (continuous: no jump at the cycle start)
             const float u = (float) fr;
             const float turns = std::round (1.0f + 3.0f * size);
-            const float el = std::min (85.0f, -20.0f + 105.0f * u);
-            return scaled (direction (360.0f * turns * u, el), 1.0f - 0.3f * u);
+            const float h = u < 0.9f ? u / 0.9f : 0.5f + 0.5f * std::cos ((u - 0.9f) / 0.1f * pi);
+            return scaled (direction (360.0f * turns * u, -20.0f + 105.0f * h), 1.0f - 0.3f * h);
         }
         default: return { 0.0f, 1.0f, 0.0f };
     }
@@ -407,9 +407,12 @@ void SpaceEffect::control (int n) noexcept
     const float b = binauralAmt;
 
     // distance delay (Doppler): slew-limited, so the pitch shift stays within about +-12 %
+    // The limit is a radial speed of 0.12 c: a delay line read with slope s shifts the pitch by (1 - s), and a source at
+    // speed v gives s = v / (c + v) receding (pitch / 1.12) and s = -v / (c - v) approaching (pitch / 0.88).
     const float tDelay = doppler * std::max (0.0f, d - minDistance) / speedOfSound * sr;
-    const float maxStep = 0.12f * (float) n;
-    const float newDelay = fresh ? tDelay : directDelay + std::clamp (tDelay - directDelay, -maxStep, maxStep);
+    constexpr float vMax = 0.12f;
+    const float upStep = vMax / (1.0f + vMax) * (float) n, downStep = vMax / (1.0f - vMax) * (float) n;
+    const float newDelay = fresh ? tDelay : directDelay + std::clamp (tDelay - directDelay, -downStep, upStep);
     directDelay = newDelay;
 
     // low band: mono, the mean ear delay and the distance level
