@@ -217,6 +217,7 @@ void ResonatorEffect::reset() noexcept
 {
     resetState();
     mixSm = mix;
+    snapMix = true;
     bypassed = mix <= 0.0f;
     uiLevelValue.store (0.0f, std::memory_order_relaxed);
 }
@@ -459,6 +460,11 @@ void ResonatorEffect::control (int n) noexcept
 // ---------------------------------------------------------------------------------------------- audio
 void ResonatorEffect::process (float* left, float* right, int numSamples) noexcept
 {
+    if (snapMix) // parameters set after reset() (a preset, a new slot type) apply at once
+    {
+        mixSm = mix;
+        snapMix = false;
+    }
     if (mix <= 0.0f && mixSm <= 0.0f) // exact bypass: the buffer is not touched
     {
         if (! bypassed) { bypassed = true; uiLevelValue.store (0.0f, std::memory_order_relaxed); }

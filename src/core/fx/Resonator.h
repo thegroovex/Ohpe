@@ -144,7 +144,7 @@ private:
     // state
     float sr = 48000.0f;
     int countdown = 0;
-    bool fresh = true, bypassed = true;
+    bool fresh = true, bypassed = true, snapMix = true; ///< snapMix: the first block after reset() starts at the mix (no glide)
     float mixSm = 0.0f, mixCoeff = 0.01f;
     float pitchHz = 130.81f, logPitch = -1.0f, posSm = 0.3f, pressSm = 0.0f, excGain = 1.0f, dExcGain = 0.0f;
     std::array<Guide, 2> guide;
