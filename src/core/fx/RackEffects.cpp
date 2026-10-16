@@ -547,12 +547,16 @@ void CompressorEffect::prepare (double sampleRate, int)
     mixG.prepare (sr, 0.02f);
     setParam (Attack, attackMs);
     setParam (Release, releaseMs);
+    holdSamples = (int) (0.012f * sr);
+    envFall = std::exp (-1.0f / (0.02f * sr));
     reset();
 }
 
 void CompressorEffect::reset() noexcept
 {
     env = -120.0f;
+    peakEnv = 0.0f;
+    holdLeft = 0;
     grDb = 0.0f;
     makeupG.v = makeupG.t;
     mixG.v = mixG.t;
@@ -579,8 +583,14 @@ void CompressorEffect::process (float* l, float* r, int n) noexcept
     float worst = 0.0f;
     for (int i = 0; i < n; ++i)
     {
-        // stereo-linked peak detector in dB, smoothed gain computer (branching attack / release)
-        const float peak = std::max (std::abs (l[i]), std::abs (r[i]));
+        // stereo-linked peak detector, smoothed gain computer (branching attack / release). 0.8 punch pass: the
+        // detector holds a peak for 12 ms (then falls with 20 ms), so fast settings no longer follow the waveform of a
+        // bass between its peaks (gain ripple inside every cycle = distortion on the sub)
+        const float x = std::max (std::abs (l[i]), std::abs (r[i]));
+        if (x >= peakEnv) { peakEnv = x; holdLeft = holdSamples; }
+        else if (holdLeft > 0) --holdLeft;
+        else peakEnv = std::max (x, peakEnv * envFall);
+        const float peak = peakEnv;
         const float target = staticGainDb (dsp::gainToDb (peak), threshold, ratio, knee);
         const float c = target < grDb ? atkC : relC;
         grDb = target + (grDb - target) * c;

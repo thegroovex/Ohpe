@@ -69,6 +69,9 @@ public:
     void registerLate05Params (ParamRegistry& reg) const;
     /** 0.6: "mix.master.lowpass" (master low-pass filter, 20 kHz = off). */
     void registerLate06Params (ParamRegistry& reg) const;
+    /** 0.8 punch pass: sidechain ducking - a key channel (its low end: the kick) pulls the other channels down by
+        their "Ducking" amount; "mix.duck.src", "mix.duck.release", "mix.chN.duck". Append-only. */
+    void registerLate08DuckParams (ParamRegistry& reg) const;
     /** 0.7: the master FX rack (owner: the core), between the send returns and the master dynamics. */
     void setMasterRack (FxRack* rack) noexcept { masterRack = rack; }
     /** 0.5: note lengths of the "fxa.delay.sync" choices in quarter notes (index 0 = Off -> 0). */
@@ -113,6 +116,8 @@ private:
         dsp::Smoother gainL, gainR;
         int compIdx = -1;
         float compAmount = 0.0f;
+        int duckIdx = -1;      ///< 0.8
+        float duck = 0.0f;     ///< 0.8: ducking amount 0..1 (up to -24 dB on a full key hit)
         Compressor comp;
     };
     enum DynParam { MComp = 0, MThresh, MRatio, MAttack, MRelease, MMakeup, MTapeSat, MCeiling, numDynParams };
@@ -144,5 +149,9 @@ private:
     std::vector<float> chL, chR, sendAL, sendAR, sendBL, sendBR, masterL, masterR;
     std::array<std::atomic<float>, numChannels + 1> meters {};
     FxRack* masterRack = nullptr; ///< 0.7
+    // 0.8 sidechain ducking
+    int duckSrcIdx = -1, duckRelIdx = -1, duckSrc = 0;
+    float duckRelease = 0.16f, duckEnv = 0.0f, duckPeak = 0.0f, duckLp1 = 0.0f, duckLp2 = 0.0f;
+    std::vector<float> duckKey; ///< per sample: 0 (no key) .. 1 (full key hit)
 };
 } // namespace ohpe

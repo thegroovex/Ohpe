@@ -235,5 +235,8 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate08MpeParams (reg);
     // ---- 0.8: bass mono per part (side signal below the frequency removed after the FX slot) ---------------------
     for (auto& p : parts) p->registerLate08MonoParams (reg);
+    // ---- 0.8 punch pass: sidechain ducking (mixer), the chorus' ensemble parameters for every slot of every rack --
+    mixer.registerLate08DuckParams (reg);
+    FxRack::registerChorusEnsemble (reg, Core::numParts);
 }
 } // namespace ohpe

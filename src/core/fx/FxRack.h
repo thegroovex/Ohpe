@@ -52,6 +52,8 @@ public:
     static void registerMaster (ParamRegistry& reg);
     /** Parameter blocks of the types [fromType, toType) for every slot of every rack (types added later). */
     static void registerTypeBlocks (ParamRegistry& reg, int numParts, int fromType, int toType);
+    /** 0.8 punch pass: the chorus' ensemble parameters (voices, drift, spread, low cut) for every slot of every rack. */
+    static void registerChorusEnsemble (ParamRegistry& reg, int numParts);
 
     explicit FxRack (int numSlots = numPartSlots);
 

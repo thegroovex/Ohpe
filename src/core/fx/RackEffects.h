@@ -246,6 +246,8 @@ public:
 private:
     float sr = 48000.0f, threshold = -18.0f, ratio = 4.0f, attackMs = 10.0f, releaseMs = 120.0f, knee = 6.0f, env = -120.0f, grDb = 0.0f;
     float atkC = 0.0f, relC = 0.0f;
+    float peakEnv = 0.0f, envFall = 0.999f; ///< 0.8: held peak detector (12 ms hold, 20 ms fall)
+    int holdSamples = 576, holdLeft = 0;
     rackdsp::Glide makeupG, mixG;
     std::atomic<float> grUi { 0.0f };
 };
