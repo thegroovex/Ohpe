@@ -44,6 +44,17 @@ resonators.
 
 The mod envelope and the LFO target *Timbre* move the vowel position.
 
+### User formants (p20)
+
+The Vocal engine's Synth page has the soft keys **IMPORT**, **USER** and **CLEAR**, like the Wavetable
+engine ([user wavetables](engines/wavetable.md#user-wavetables-audio-to-wavetable-p20)). An imported sound
+(file, tape track, live input) is analysed by linear prediction: about every frame of the sound gives
+five formants (frequency, level, bandwidth – the five strongest peaks of the spectral envelope between
+150 Hz and 5 kHz), up to 64 formant frames. With **USER** on (`pN.usertable.vocal`) *Vowel* 0 … 4 moves
+through these formant tracks from the start to the end of the sound instead of A – E – I – O – U;
+formant shift, breath, tension and vibrato work as before. The display draws the five tracks with the
+current vowel position. The material is saved like a user wavetable (library, presets, projects).
+
 ## Sampler
 
 Plays samples across the keyboard, either as **zones** (multisampling) or as **slices**.

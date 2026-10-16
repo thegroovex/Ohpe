@@ -175,6 +175,8 @@ private:
     void loadUiState();
     void setParamPlain (const juce::String& id, float plain);
     void onSoftKey (int id);
+    void showTableImportMenu();                 ///< p20: the IMPORT soft key (file, tape track, input, library, options)
+    void importTable (const juce::File& file);  ///< p20: audio / wavetable file into the shown engine's user material
     void exportBounce();
     void chooseSampleFile();
     ui::VirtualPtr makeLockControl (const juce::String& paramId);
@@ -237,6 +239,8 @@ private:
     juce::String lastLearning;
     int libraryRequestsSeen = 0;
     int lastKeyboardChannel = 1, lastFxType = -1;
+    int userTableMessagesSeen = 0; ///< p20
+    bool userTableBusy = false;
     int modPage = 0, rackPage = 0, lastModSignature = -1; ///< 0.7
     int morphPage = 0; ///< p16
     std::array<ui::VirtualPtr, 4> virtuals {};

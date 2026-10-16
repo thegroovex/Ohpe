@@ -24,11 +24,11 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 |---|---|
 | **Analog-Engine** | zwei bandbegrenzte Oszillatoren (Wellenform-Morph, Verstimmung, Oktave, Mischung), Sub, Rauschen, Ladder- und State-Variable-Filter (TP / BP / HP), Drive, Keytracking |
 | **FM-Engine** | sechs Operatoren, acht Algorithmen mit weichem Überblenden zwischen Nachbarn, Feedback, Verhältnis und Pegel je Operator |
-| **Wavetable-Engine** | sechs eingebaute Tabellen mit je acht Frames, weiches Morphing, Warp-Modi, Unisono, Sub-Oszillator |
+| **Wavetable-Engine** | sechs eingebaute Tabellen mit je acht Frames, weiches Morphing, Warp-Modi, Unisono, Sub-Oszillator; eigene Tabellen aus jedem Klang (Klang zu Wavetable: periodensynchrone Analyse, 8–256 Frames), Single-Cycle-Sätze und eine eigene Bibliothek |
 | **Zupf-Engine (Pluck)** | Waveguide-Saite und gestimmte Mallet-Resonatoren für gezupfte und angeschlagene Klänge |
 | **Cluster-Engine** | bis zu sieben verstimmte Oszillatoren je Taste als Unisono oder Akkordform, langsamer Drift, resonanter Tiefpass |
 | **Grain-Engine** | Granularsynthese aus einem geladenen Sample, dem Band oder einer eingebauten Textur |
-| **Vokal-Engine** | Formant-Stimme mit Vokalen, Atem, Vibrato und Jitter |
+| **Vokal-Engine** | Formant-Stimme mit Vokalen, Atem, Vibrato und Jitter; Formantspuren aus eigenen Klängen |
 | **Sampler-Engine** | Tastenzonen oder automatische Slices aus WAV-, AIFF- und FLAC-Dateien, Loop-Modi, eingebauter Keys-Klang und zehn aufgenommene Werksinstrumente (Kalimba, Marimba, Vibrafon, Harfe, Cembalo, Blockflöte …) |
 | **Drum-Kit** | 24 Pads auf MIDI-Kanal 10: fünf aufgenommene Werks-Kits (Studio, Trocken, Raum, Lo-Fi, Hybrid – CC0), eigene Samples oder Synth-Modelle, Choke-Gruppen |
 | **Werksklänge** | 120 Part-Presets über alle Engines und Kategorien, im Pegel angeglichen; 7 Demo-Projekte mit allen vier Parts, den Sequenzern und dem Drum-Kit – siehe [Werksklänge](docs/de/FACTORY-SOUNDS.md) |

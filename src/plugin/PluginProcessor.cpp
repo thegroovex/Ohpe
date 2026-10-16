@@ -62,6 +62,12 @@ OhpeProcessor::OhpeProcessor()
         triggerPresses[(size_t) t].store (0);
     }
     presetManager = std::make_unique<PresetManager> (*this);
+    // p20: a finished import switches the part's user wavetable / user formants on (host automation follows)
+    userTableManager.onPublished = [this] (int part, UserTableManager::Target target) {
+        const auto id = "p" + juce::String (part + 1) + (target == UserTableManager::Target::Vocal ? ".usertable.vocal" : ".usertable.wt");
+        if (auto* prm = parameter (id)) prm->setValueNotifyingHost (1.0f);
+        sendChangeMessage();
+    };
     startTimerHz (20);
 }
 
@@ -228,6 +234,7 @@ void OhpeProcessor::captureInput (juce::AudioBuffer<float>& buffer, int n)
         }
     }
     ohpeCore.setAudioInput (inL, inR);
+    userTableManager.capture().push (inL, inR, n); // p20: recording the live input for the wavetable analysis
 }
 
 void OhpeProcessor::timerCallback()
@@ -236,6 +243,7 @@ void OhpeProcessor::timerCallback()
     if (ohpeCore.midiMapper().applyPendingLearns (ohpeCore.midiMap()))
         sendChangeMessage();
     samples.timerTick();
+    userTableManager.timerTick(); // p20
     pollRemoteControls();
     if (ohpeCore.effectsWaiting()) ohpeCore.prepareEffects(); // 0.7: FX rack slot types chosen by the host / a preset
     ohpeCore.updateMorph(); // p16: morph plans follow the part's own sound under empty corners
@@ -505,6 +513,7 @@ void OhpeProcessor::getStateInformation (juce::MemoryBlock& dest)
 {
     pullHostParametersIntoRegistry();
     samples.storeInState();
+    userTableManager.storeInState(); // p20
     const auto ui = juce::JSON::toString (uiState, true);
     const auto json = ohpeCore.saveState (ui.toStdString());
     dest.replaceAll (json.data(), json.size());
@@ -521,6 +530,7 @@ void OhpeProcessor::setStateInformation (const void* data, int size)
         return;
     tapeio::restoreTape (ohpeCore, tape, tapeSize);
     samples.restoreFromState();
+    userTableManager.restoreFromState(); // p20
     auto parsed = juce::JSON::parse (juce::String::fromUTF8 (ui.c_str()));
     uiState = parsed.isObject() ? parsed : juce::var (new juce::DynamicObject());
     syncHostParametersFromRegistry();

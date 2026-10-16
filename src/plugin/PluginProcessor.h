@@ -5,6 +5,7 @@
 #include "OhpeCore.h"
 #include "PresetManager.h"
 #include "SampleLoader.h"
+#include "UserTables.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_audio_utils/juce_audio_utils.h>
@@ -59,6 +60,8 @@ public:
     Core& core() noexcept { return ohpeCore; }
     /** Sample files for the Sampler / Grain engines and drum pads (message thread). */
     SampleLoader& sampleLoader() noexcept { return samples; }
+    /** p20: user wavetables / formant tracks (audio to wavetable). Message thread. */
+    UserTableManager& userTables() noexcept { return userTableManager; }
     juce::AudioProcessorValueTreeState& state() noexcept { return apvts; }
     juce::RangedAudioParameter* parameter (const juce::String& id) const { return apvts.getParameter (id); }
     juce::RangedAudioParameter* parameter (int registryIndex) const;
@@ -152,6 +155,7 @@ private:
 
     Core ohpeCore;
     SampleLoader samples { ohpeCore };
+    UserTableManager userTableManager { ohpeCore }; ///< p20
     juce::AudioProcessorValueTreeState apvts;
     std::vector<std::atomic<float>*> rawValues;
     std::vector<juce::RangedAudioParameter*> params;

@@ -5,6 +5,7 @@
 //   usage: ohpe_screenshot <output directory>
 // Writes ohpe-<view>.png (English) and ohpe-<view>-de.png (German).
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
+// p20: the user wavetable frame stack (ohpe-user-wavetable).
 // p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
 // octave block while recording (ohpe-transport, 2x crop; REC and PLAY at the top of their breathing).
 // 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack; the Mid/Side scope,
@@ -467,6 +468,40 @@ int main (int argc, char* argv[])
             setPlain (p, "p1.morph.y", 0.5f);
             run (p, 8);
             e.selectView (0);
+        }
+
+        // p20: a user wavetable from a sound whose harmonics evolve (analysed like an imported file), the frame stack
+        {
+            const double sr = 48000.0, hz = 110.0;
+            std::vector<float> sound ((size_t) (1.5 * sr), 0.0f);
+            for (int h = 1; h <= 60; ++h)
+                for (size_t i = 0; i < sound.size(); ++i)
+                {
+                    const double t = (double) i / (double) sound.size();
+                    const double amp = (h == 1 ? 1.0 : (h % 2 ? 1.0 : t) * std::pow (t, 0.5) / h) * std::exp (-0.002 * h * h * (1.0 - t));
+                    sound[i] += (float) (0.25 * amp * std::sin (2.0 * 3.14159265358979323846 * hz * h * (double) i / sr));
+                }
+            usertable::AnalysisOptions o;
+            o.frames = 64;
+            o.smoothing = 0.25f;
+            const auto r = usertable::analyse (sound.data(), (int64_t) sound.size(), sr, o);
+            if (r.ok)
+            {
+                usertable::setTable (p.core(), 0, usertable::Target::Wavetable, usertable::UserTable::create ("Rising Brass", r.frames, r.formants));
+                e.selectPart (0);
+                e.selectMode (ui::Mode::Synth);
+                e.selectEngine (EngineType::Wavetable);
+                setPlain (p, "p1.usertable.wt", 1.0f);
+                setPlain (p, "p1.wavetable.pos", 0.62f);
+                playAnimated (p, e, 30, { 57 });
+                e.softKey (0); // refresh the soft keys (unknown id: no action)
+                save (e, dir.getChildFile ("ohpe-user-wavetable" + suffix + ".png"));
+                release (p, { 57 });
+                usertable::setTable (p.core(), 0, usertable::Target::Wavetable, nullptr);
+                setPlain (p, "p1.usertable.wt", 0.0f);
+                setPlain (p, "p1.wavetable.pos", 0.25f);
+                run (p, 8);
+            }
         }
 
         // p18: the breeding view - two library sounds on two engines, a brood of six with thumbnails, two kept
