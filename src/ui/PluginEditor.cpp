@@ -1206,7 +1206,8 @@ void OhpeEditor::refreshSoftKeys()
     else if (mode == Mode::Synth && importsTables (shownEngine)) // p20
     {
         const bool has = usertable::tableOf (core, ctx.part, tableTarget (shownEngine)) != nullptr;
-        const bool on = core.params().get (userTableParam (ctx.part, shownEngine).toStdString()) > 0.5f;
+        const auto* prm = proc.parameter (userTableParam (ctx.part, shownEngine));
+        const bool on = prm != nullptr && prm->getValue() > 0.5f;
         keys = { { skTableImport, tr ("Import") }, { skTableUser, tr ("User"), has, on && has }, { skTableClear, tr ("Clear"), has } };
         status = usertableview::statusLine (proc, ctx.part, shownEngine);
     }
@@ -1302,7 +1303,8 @@ void OhpeEditor::onSoftKey (int id)
         case skTableUser:
         {
             const auto id = userTableParam (ctx.part, shownEngine);
-            setParamPlain (id, core.params().get (id.toStdString()) > 0.5f ? 0.0f : 1.0f);
+            const auto* prm = proc.parameter (id); // the host value (the registry follows at the next block)
+            setParamPlain (id, prm != nullptr && prm->getValue() > 0.5f ? 0.0f : 1.0f);
             break;
         }
         case skTableClear:
