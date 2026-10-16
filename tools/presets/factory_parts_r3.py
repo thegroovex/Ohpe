@@ -4,35 +4,41 @@
 growl basses), wide leads, pianos and electric pianos, thick granular sounds, full arps, evolving
 atmospheres, stereo effects and the Hybrid presets (two engines in one part with cross-modulation).
 
-They use the 0.8 additions: the new FX slot types (shaper, squash, comb, formant, flanger, wobble, tremolo,
-width), the layer engine ("layer.*"), the Wavetable unison stack / FM, the keyboard instruments and the
-MPE / aftertouch targets. Every part has one FX slot: each preset lists the effects that suit it in
-order of importance and the first one that fits (FX_ORDER, or FX_PICK per preset) goes into the slot.
+They use the 0.7 FX rack (up to six effects per part, the rack types distortion, multiband, flanger ...) and
+the 0.8 additions: the FX types comb, formant, wobble, tremolo and width, bass mono, the layer engine
+("layer.*"), the Wavetable unison stack / FM, the keyboard instruments and the MPE / aftertouch targets.
+Each preset lists its effects; P() lays them out as a chain over the rack (RANK: drive / tone, dynamics,
+modulation, width, echoes, space).
 Every preset moves when held (an LFO is added where the sound has none).
 German descriptions: comments_de_r3.py. Imported by factory_parts.py.
 """
-import json, os
+import json, math, os
 
 from factory_parts import (P as _P, ENGINES, an, fm, wt, pl, cl, gr, vo, sm, amp, mod, lfo, chorus, phaser, delay, reverb, crush,
                            drive, pitchenv, porta, arp, MONO)
 
-TYPES = {"off": 0, "chorus": 1, "phaser": 2, "bitcrush": 3, "filterdrive": 4, "delay": 5, "reverb": 6, "shaper": 7, "squash": 8,
-         "comb": 9, "formant": 10, "flanger": 11, "wobble": 12, "tremolo": 13, "width": 14}
-SYNC = {"free": 0, "1/1": 1, "1/2": 2, "1/4": 3, "1/8": 4, "1/16": 5, "1/32": 6, "1/2T": 7, "1/4T": 8, "1/8T": 9, "1/16T": 10,
-        "1/2.": 11, "1/4.": 12, "1/8.": 13, "2/1": 14, "4/1": 15}
-CURVE = {"soft": 0, "hard": 1, "fold": 2, "tube": 3, "rectify": 4, "sine": 5, "crush": 6}
+# FX slot types (InsertSlot::Type, append-only): 0.2 types, the 0.7 rack types, the 0.8 types
+TYPES = {"off": 0, "chorus": 1, "phaser": 2, "bitcrush": 3, "filterdrive": 4, "delay": 5, "reverb": 6,
+         "hyper": 7, "distortion": 8, "flange": 9, "compressor": 10, "multiband": 11, "eq": 12, "filter": 13, "echo": 14,
+         "hall": 15, "comb": 16, "formant": 17, "wobble": 18, "tremolo": 19, "width": 20}
+# sync divisions: the rack's list (RackEffects.h), the 0.8 types add 2/1 and 4/1
+SYNC = {"free": 0, "1/1": 1, "1/2": 2, "1/4": 3, "1/8": 4, "1/16": 5, "1/32": 6, "1/2.": 7, "1/4.": 8, "1/8.": 9, "1/16.": 10,
+        "1/2T": 11, "1/4T": 12, "1/8T": 13, "1/16T": 14, "2/1": 15, "4/1": 16}
+# distortion modes of the rack type (DistortionEffect::Curve)
+CURVE = {"tube": 0, "soft": 1, "hard": 2, "diode": 3, "fold": 4, "sinefold": 5, "sine": 5, "asym": 6, "rectify": 6, "crush": 7}
 WSHAPE = {"sine": 0, "tri": 1, "sawdown": 2, "sawup": 3, "square": 4, "sh": 5}
 KEYS = {"grand": 1, "upright": 2, "tine": 3, "reed": 4}  # "inst2" (0.8 keyboard instruments)
+MAX_SLOTS = 6
 
 
 def fx(slot, kind, **kw):
-    """An effect candidate for the part's FX slot ("fx."). `slot` is kept for readability (the order of a fuller
-    chain); P() picks one effect per preset."""
-    d = {"fx.type": TYPES[kind]}
+    """One effect of the part's FX rack. `slot` orders effects of the same role (see RANK); P() lays the chain out
+    over the rack's slots ("fx.", "fx2." ... "fx6.")."""
+    d = {"type": TYPES[kind]}
     for k, v in kw.items():
         if k == "sync":
             v = SYNC[v]
-        elif kind == "shaper" and k == "type":
+        elif kind == "distortion" and k == "mode":
             v = CURVE[v]
         elif kind == "wobble" and k == "shape":
             v = WSHAPE[v]
@@ -44,39 +50,40 @@ def fx(slot, kind, **kw):
             v = {"trem": 0, "pan": 1}[v]
         elif kind == "tremolo" and k == "shape":
             v = {"sine": 0, "tri": 1, "square": 2}[v]
-        d["fx." + kind + "." + k] = v
-    return {"__fx__": kind, "params": d}
+        d[kind + "." + k] = v
+    return {"__fx__": kind, "slot": slot, "params": d}
 
 
-# which effect a preset keeps, by main category (first match wins)
-FX_ORDER = {
-    "Bass": ["wobble", "formant", "comb", "squash", "shaper", "flanger", "phaser", "filterdrive", "chorus", "width", "delay"],
-    "Leads": ["delay", "reverb", "squash", "flanger", "width", "chorus", "shaper", "filterdrive", "bitcrush"],
-    "Pads": ["reverb", "flanger", "tremolo", "comb", "width", "chorus", "phaser", "delay", "wobble"],
-    "Textures": ["reverb", "comb", "flanger", "delay", "width", "chorus", "formant", "bitcrush"],
-    "Vocal": ["reverb", "formant", "width", "chorus", "delay"],
-    "Keys": ["tremolo", "reverb", "chorus", "delay", "squash", "filterdrive", "width"],
-    "Plucks": ["delay", "reverb", "width", "squash", "comb", "chorus"],
-    "Arp": ["delay", "reverb", "phaser", "squash", "width", "chorus", "shaper"],
-    "FX": ["flanger", "wobble", "delay", "reverb", "tremolo", "squash", "bitcrush", "width"],
-}
-# per-preset choice where the category order would pick the wrong one
-FX_PICK = {
-    "Classic Reese": "squash", "Phase Reese": "phaser", "Neuro Reese": "squash", "Distorted Reese": "shaper",
-    "Flanged Reese": "flanger", "Wide Reese": "squash", "Analog Reese": "phaser", "Moving Reese": "phaser",
-    "Riddim Saw": "wobble", "Tech Stab Bass": "shaper", "Grind Bass": "shaper", "Talker Bass": "squash", "Screech Bass": "shaper",
-    "Hyper Saw Lead": "squash", "Screamer Lead": "delay", "Vox Synth Lead": "delay", "Chip Square Lead": "bitcrush",
-    "Concert Grand": "reverb", "Bright Grand": "reverb", "Felt Grand": "reverb", "Upright Keys": "reverb", "Classic Tine": "chorus",
-    "Reed Keys": "filterdrive", "Dream Tine": "chorus", "FM Bark Piano": "chorus", "Neuro Arp": "squash",
-    "Tape Ghost Keys": "flanger", "Halo Grand": "reverb", "Crystal Organ": "tremolo", "Wide Organ": "tremolo",
-    "Bright Poly Wide": "chorus", "Future Chord": "reverb", "Glitch Spray": "delay", "Whoosh": "wobble", "Siren Pan": "tremolo",
-    "Wide Riser": "flanger", "Impact Boom": "reverb", "Fold Bass": "squash", "Digital Monster": "wobble", "Neuro Hybrid": "squash",
-    "Vox Reese": "formant", "Ring Machine": "delay", "Chop Pad": "reverb", "Resonator Hit": "comb", "Echo Harp": "delay",
-}
-
-FX_OUTPUT = ("shaper", "squash", "width")  # effects with an output level: calibrated there (levels_fx.json)
+# chain order: tone shaping / drive, then dynamics, modulation, width, echoes, space
+RANK = {"filterdrive": 0, "distortion": 0, "bitcrush": 0, "comb": 0, "formant": 0, "wobble": 0, "filter": 0, "eq": 0,
+        "multiband": 1, "compressor": 1, "chorus": 2, "phaser": 2, "flange": 2, "tremolo": 2, "hyper": 2, "width": 3,
+        "delay": 4, "echo": 4, "reverb": 5, "hall": 5}
+NONLINEAR = ("distortion", "multiband", "compressor", "filterdrive", "bitcrush")
+OUTPUT = ("distortion", "multiband", "width")  # types with an output trim (level calibration after a non-linear stage)
 _fx_levels_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "levels_fx.json")
 FX_LEVELS = json.load(open(_fx_levels_path)) if os.path.exists(_fx_levels_path) else {}
+_OLD_FX = {3: "bitcrush"}  # 0.4 helpers used here (crush) -> rack effect
+
+
+def slot_prefix(i):
+    return "fx." if i == 0 else "fx%d." % (i + 1)
+
+
+def chain(fxs):
+    """Lays the effects out over the rack: ordered by RANK, then the authored slot, then appearance."""
+    order = sorted(range(len(fxs)), key=lambda i: (RANK[fxs[i]["__fx__"]], fxs[i]["slot"], i))
+    return [fxs[i] for i in order][:MAX_SLOTS]
+
+
+def calib_slot(kinds):
+    """Index of the slot whose output trim carries the level calibration, or None (= the part gain): the last slot with
+    an output trim at or after the last non-linear stage, so the calibration never changes how hard a stage is driven."""
+    nl = [i for i, k in enumerate(kinds) if k in NONLINEAR]
+    if not nl:
+        return None
+    outs = [i for i, k in enumerate(kinds) if k in OUTPUT and i >= nl[-1]]
+    return outs[-1] if outs else None
+
 
 # MPE / aftertouch mappings (0.8): target names of "pN.mpe.press" / "pN.mpe.timbre"
 MPE_T = {"off": 0, "timbre": 1, "level": 2, "lfo": 3, "pan": 4, "cutoff": 5, "position": 6, "index": 7, "density": 8, "drive": 9,
@@ -127,22 +134,21 @@ NO_MPE = {"Rolling Sub", "Liquid Sub", "Step Sub", "Halftime Sub", "Click Sub", 
 
 
 def P(name, tags, engine, comment, *dicts, **kw):
-    """0.8 preset: one effect for the FX slot, movement when held, MPE mapping and tag."""
+    """0.8 preset: an FX chain over the rack, movement when held, MPE mapping and tag."""
+    dicts = [({"__fx__": _OLD_FX[d["fx.type"]], "slot": 0, "params": {k[3:]: v for k, v in d.items()}}
+              if isinstance(d, dict) and d.get("fx.type") in _OLD_FX else d) for d in dicts]
     fxs = [d for d in dicts if isinstance(d, dict) and "__fx__" in d]
     mpes = [d for d in dicts if isinstance(d, dict) and "__mpe__" in d]
     rest = [d for d in dicts if not (isinstance(d, dict) and ("__fx__" in d or "__mpe__" in d))]
     tags = list(tags)
     if fxs:
-        want = FX_PICK.get(name)
-        order = ([want] if want else []) + FX_ORDER.get(tags[0], [])
-        chosen = next((f for k in order for f in fxs if f["__fx__"] == k), fxs[0])
-        fxp = dict(chosen["params"])
-        if chosen["__fx__"] == "squash" and tags[0] == "Bass":
-            fxp["fx.squash.monolow"] = 1  # mono-safe low end under the stack
-        if chosen["__fx__"] in FX_OUTPUT and name in FX_LEVELS:
-            # level calibration after a non-linear effect: its output, not the part gain (which would change the drive)
-            fxp["fx.%s.output" % chosen["__fx__"]] = FX_LEVELS[name]
-        rest.append(fxp)
+        ch = chain(fxs)
+        cal = calib_slot([f["__fx__"] for f in ch])
+        for i, f in enumerate(ch):
+            p = dict(f["params"])
+            if i == cal and name in FX_LEVELS:
+                p[f["__fx__"] + ".output"] = FX_LEVELS[name]
+            rest.append({slot_prefix(i) + k: v for k, v in p.items()})
     merged = {}
     for d in rest:
         if "__arp__" not in d:
@@ -171,11 +177,15 @@ def P(name, tags, engine, comment, *dicts, **kw):
 
 
 def shaper(slot, curve="soft", drv=0.4, bias=0.0, tone=12000, mix=1.0, out=0.0):
-    return fx(slot, "shaper", type=curve, drive=drv, bias=bias, tone=tone, mix=mix, output=out)
+    """Waveshaping: the rack's Distortion (4x oversampled); `tone` in Hz (post low-pass)."""
+    tone01 = max(0.0, min(1.0, math.log(max(400.0, tone) / 400.0) / math.log(50.0)))
+    return fx(slot, "distortion", mode=curve, drive=drv, bias=max(-1.0, min(1.0, 2.0 * bias)), tone=round(tone01, 3), mix=mix,
+              output=out)
 
 
 def squash(slot, depth=0.5, time=0.4, up=0.6, low=0.0, mid=0.0, high=0.0, mix=1.0, out=0.0):
-    return fx(slot, "squash", depth=depth, time=time, upward=up, low=low, mid=mid, high=high, mix=mix, output=out)
+    """Three-band upward / downward compression: the rack's Multiband."""
+    return fx(slot, "multiband", depth=depth, upward=up, downward=1.0, time=time, low=low, mid=mid, high=high, mix=mix, output=out)
 
 
 def width(slot, w=1.3, spread=0.0, haas=12.0, mono=120.0, out=0.0):
@@ -194,8 +204,9 @@ def formant(slot, vowel=0.0, shift=0.0, reso=0.5, rate=1.0, sync="free", depth=0
     return fx(slot, "formant", vowel=vowel, shift=shift, reso=reso, rate=rate, sync=sync, depth=depth, mix=mix)
 
 
-def flanger(slot, rate=0.2, depth=0.7, fb=0.5, dly=2.0, mix=0.5):
-    return fx(slot, "flanger", rate=rate, depth=depth, feedback=fb, delay=dly, mix=mix)
+def flanger(slot, rate=0.2, depth=0.7, fb=0.5, dly=2.0, mix=0.5, stereo=0.25, sync="free"):
+    """The rack's Flanger (ID "flange")."""
+    return fx(slot, "flange", rate=rate, sync=sync, depth=depth, delay=dly, feedback=fb, stereo=stereo, mix=mix)
 
 
 def tremolo(slot, rate=4.0, sync="free", depth=0.5, mode="trem", shape="sine"):

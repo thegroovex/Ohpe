@@ -3,7 +3,7 @@
 """Factory project presets / demo patterns (0.4, package F): whole-instrument set-ups built from
 the factory part presets, with the step sequencer, Euclid and Orbit (one of them playing the
 drum kit) and the mixer's send effects. Written by make_factory.py."""
-import json, os
+import json, os, re
 
 import factory_parts
 
@@ -22,11 +22,11 @@ STEP_RATE = {"1/4": 0, "1/8": 1, "1/16": 2, "1/32": 3, "1/8T": 4, "1/16T": 5}
 
 def part(n, preset_name, all_fx=False, **override):
     """Parameters of factory part preset `preset_name` for part n (1-4), with its calibrated gain.
-    all_fx (0.8): keep the FX slots of parts 2-4 too (projects before 0.8 had a slot on part 1 only)."""
+    all_fx (0.8): keep the FX rack of parts 2-4 too (projects before 0.8 used an FX slot on part 1 only)."""
     p = BY_NAME[preset_name]
     params = {}
     for k, v in p["params"].items():
-        if k.startswith("fx.") and n != 1 and not all_fx:
+        if re.match(r"fx\d*\.", k) and n != 1 and not all_fx:
             continue  # projects made before 0.8: the FX slot existed on part 1 only
         params["p%d.%s" % (n, k)] = v
     params.setdefault("p%d.gain" % n, round(LEVELS.get(preset_name, 0.0), 1))
@@ -450,7 +450,7 @@ BOOMKIT = project(
 
 # =============================================================================================
 # 0.8 (sound revision 3): bass music and an evolving ambient piece, built from the new presets. Every part keeps
-# its FX slots 1-3 (all_fx=True).
+# its FX rack (all_fx=True).
 
 # ---------------------------------------------------------------------------------------------
 # 11. Neuro Engine: neurofunk at 174 BPM in F minor. Orbit lanes 1-3 -> Hybrid kit (two-step kick, snare on 2 and 4 with

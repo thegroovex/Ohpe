@@ -252,11 +252,12 @@ Guide: [en/TAPE-MIXER-FX.md](en/TAPE-MIXER-FX.md) · parameters: [PARAMETERS.md]
 
 ## 0.8: sound revision 3
 
-* **FX slot types** (`src/core/fx/InsertEffects2.*`): Shaper, Squash, Comb, Formant, Flanger, Wobble,
-  Tremolo, Width – self-contained `IEffect` classes, appended to the slot's type list; their parameter
-  blocks are registered late (`InsertSlot::registerLateParams`). `IEffect` gained `setTempo()` (the core
-  calls it every block) and `noteOn()` (a note started on the slot's part: LFO retrigger). Parts 2–4
-  got their slot (`p2.fx.*` …, appended).
+* **FX types** (`src/core/fx/InsertEffects2.*`): Comb, Formant, Wobble, Tremolo, Width – self-contained
+  `IEffect` classes appended after the 0.7 rack types (`InsertSlot::firstR3Type`); their parameter blocks
+  are registered for every slot of every rack (`FxRack::registerTypeBlocks`). Synced types use
+  `IEffect::setTempo()`, retriggered ones `noteOn()`.
+* **Bass mono** (`pN.monobass`, `Part::applyBassMono`): at the end of the part's chain (after the FX rack)
+  the side signal below the frequency is removed with a 4th-order Linkwitz-Riley low-pass; 20 Hz = off.
 * **Layer engine** (`Part`, `pN.layer.*`): a second engine of the part plays every note; it is
   rendered into its own buffer and mixed with ring / AM / fold cross-modulation. Off = bit-identical
   to 0.7. See [en/engines/layer.md](en/engines/layer.md).

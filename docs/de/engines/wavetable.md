@@ -38,9 +38,9 @@ die Stimme.
 Parameter-IDs: `p1.wavetable.pos`, `.warp`, `.tone`, `.unison`, `.table`, `.warpmode`, `.envpos`,
 `.reso`, `.sub`, `.keytrack`, 0.8: `.univoices`, `.uniwidth`, `.fm`, `.fmratio`, `.lfopos`, `.envfm`.
 
-**Bass mit breitem Stapel (0.8):** der Stapel spreizt auch den Tiefbass – den FX-Slot auf *Squash*
-mit *Tiefen mono* (oder *Stereobreite* mit *Mono unter* 120 Hz) stellen, damit der Bass monotauglich
-bleibt.
+**Bass mit breitem Stapel (0.8):** der Stapel spreizt auch den Tiefbass – *Bass mono* des Parts
+(`pN.monobass`, z. B. 150 Hz) oder einen *Stereobreite*-Slot mit *Mono unter* setzen, damit der Bass
+monotauglich bleibt.
 
 **Ausgangspunkte:** Fläche – Formant, Position 0,3, Hüllk. > Position 0,4, langsamer Amp-Attack;
 Bass – Klassisch, Position 0,45, Unisono 0, Sub 0,5, Klang 0,5; heller Lead – Digital, Warp 0,4,

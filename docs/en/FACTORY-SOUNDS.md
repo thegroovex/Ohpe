@@ -14,10 +14,9 @@ through the list – every preset loads at once, so you hear it while you browse
 * A **part preset** loads into the edit part (part selector 1–4). Its **Part Gain** (`pN.gain`, dB)
   matches its loudness to the other factory sounds: all of them sit around −18 … −12 dBFS RMS when
   played, so switching presets does not jump in level.
-* The **FX slot** (chorus, phaser, bitcrush, filter drive, delay, reverb; 0.8: shaper, squash,
-  comb, formant, flanger, wobble, tremolo, width) exists on **every part** since 0.8, so a preset
-  sounds the same in any part. (The projects made before 0.8 keep their parts 2–4 dry, as they were
-  designed.)
+* The **FX rack** (up to six effects per part, see [TAPE-MIXER-FX.md](TAPE-MIXER-FX.md)) is part of
+  the preset and exists on **every part**, so a preset sounds the same in any part. (The projects
+  made before 0.8 keep their parts 2–4 dry, as they were designed.)
 * The macros on the four encoders are the engine's first four parameters; most presets are built so
   that turning them gives musical results (cutoff, tone, position, grain size …). The modulation
   envelope and the LFO are part of every preset.
@@ -39,9 +38,10 @@ Parts without a sequencer are left for you to play along.
 
 * **Bass music:** reese basses (classic detuned, phased, flanged, hollow comb, distorted neuro,
   vowel and moving reeses) built on the Wavetable engine's new unison stack (up to eight voices)
-  with a mono-safe low end (*Squash* with *Low Mono*); drum & bass subs and rollers; wobble and
-  growl basses with the tempo-synced *Wobble* (it restarts with every note), the vowel *Formant*
-  filter, FM on the wavetable, wavefolding and the multiband *Squash*.
+  with a mono-safe low end (*Bass Mono* below 150 Hz after the FX rack); drum & bass subs and rollers;
+  wobble and growl basses with the tempo-synced *Wobble* (it restarts with every note), the vowel
+  *Formant* filter, FM on the wavetable, wavefolding (*Distortion*) and *Multiband* squash – chains of
+  up to six effects per preset.
 * **Leads** with stereo stacks, delays and halls; **stereo effects** (risers, impacts, zaps,
   whooshes).
 * **Pianos** (category *Piano*): grand and upright piano recordings, modelled tine and reed electric

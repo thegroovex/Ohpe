@@ -14,10 +14,9 @@ oder eine Engine, dann durch die Liste klicken – jedes Preset lädt sofort, du
 * Ein **Part-Preset** lädt in den bearbeiteten Part (Part-Wahl 1–4). Sein **Part-Gain**
   (`pN.gain`, dB) gleicht die Lautheit an die anderen Werksklänge an: alle liegen beim Spielen bei
   etwa −18 … −12 dBFS RMS, beim Umschalten springt der Pegel also nicht.
-* Den **FX-Slot** (Chorus, Phaser, Bitcrush, Filter-Drive, Delay, Hall; 0.8: Waveshaper, Squash,
-  Kammfilter, Formant, Flanger, Wobble, Tremolo, Stereobreite) hat seit 0.8 **jeder Part**, ein
-  Preset klingt also in jedem Part gleich. (Die Projekte von vor 0.8 lassen ihre Parts 2–4 trocken,
-  wie sie gebaut wurden.)
+* Das **FX-Rack** (bis zu sechs Effekte pro Part, siehe [BAND-MISCHER-FX.md](BAND-MISCHER-FX.md))
+  gehört zum Preset und **jeder Part** hat es, ein Preset klingt also in jedem Part gleich. (Die
+  Projekte von vor 0.8 lassen ihre Parts 2–4 trocken, wie sie gebaut wurden.)
 * Die Makros auf den vier Drehreglern sind die ersten vier Parameter der Engine; die meisten Presets
   sind so gebaut, dass Drehen musikalisch klingt (Cutoff, Klang, Position, Korngröße …).
   Modulationshüllkurve und LFO gehören zu jedem Preset.
@@ -39,9 +38,10 @@ spielen polyrhythmische Drums. Parts ohne Sequenzer bleiben zum Mitspielen frei.
 
 * **Bassmusik:** Reese-Bässe (klassisch verstimmt, gephast, geflangt, hohler Kammfilter, verzerrter
   Neuro-, Vokal- und bewegter Reese) auf dem neuen Unisono-Stapel der Wavetable-Engine (bis zu acht
-  Stimmen) mit monotauglichem Tiefbass (*Squash* mit *Tiefen mono*); Drum-&-Bass-Subs und Roller;
-  Wobble- und Growl-Bässe mit dem tempo-synchronen *Wobble* (startet mit jeder Note neu), dem
-  Vokalfilter *Formant*, FM auf der Wavetable, Wavefolding und dem Mehrband-*Squash*.
+  Stimmen) mit monotauglichem Tiefbass (*Bass mono* unter 150 Hz nach dem FX-Rack); Drum-&-Bass-Subs
+  und Roller; Wobble- und Growl-Bässe mit dem tempo-synchronen *Wobble* (startet mit jeder Note neu),
+  dem Vokalfilter *Formant*, FM auf der Wavetable, Wavefolding (*Verzerrung*) und *Multiband*-Squash –
+  Ketten aus bis zu sechs Effekten pro Preset.
 * **Leads** mit Stereo-Stapeln, Delays und Hallräumen; **Stereo-Effekte** (Riser, Impacts, Zaps,
   Whooshes).
 * **Pianos** (Kategorie *Klavier*): Flügel- und Klavier-Aufnahmen, modellierte Tine- und

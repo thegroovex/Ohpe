@@ -113,11 +113,13 @@ Anleitung: [BAND-MISCHER-FX.md](BAND-MISCHER-FX.md) · Parameter: [../PARAMETERS
 
 ## 0.8: Sound-Revision 3
 
-* **FX-Slot-Typen** (`src/core/fx/InsertEffects2.*`): Waveshaper, Squash, Kammfilter, Formant,
-  Flanger, Wobble, Tremolo, Stereobreite – eigenständige `IEffect`-Klassen, an die Typliste des Slots
-  angehängt; ihre Parameterblöcke werden spät registriert (`InsertSlot::registerLateParams`). `IEffect`
-  bekam `setTempo()` (der Core ruft es in jedem Block) und `noteOn()` (eine Note im Part des Slots:
-  LFO-Neustart). Die Parts 2–4 bekamen ihren Slot (`p2.fx.*` …, angehängt).
+* **FX-Typen** (`src/core/fx/InsertEffects2.*`): Kammfilter, Formant, Wobble, Tremolo, Stereobreite –
+  eigenständige `IEffect`-Klassen, nach den Rack-Typen von 0.7 angehängt (`InsertSlot::firstR3Type`);
+  ihre Parameterblöcke werden für jeden Slot jedes Racks registriert (`FxRack::registerTypeBlocks`).
+  Synchronisierte Typen nutzen `IEffect::setTempo()`, neu startende `noteOn()`.
+* **Bass mono** (`pN.monobass`, `Part::applyBassMono`): am Ende der Kette des Parts (nach dem FX-Rack)
+  wird das Seitensignal unterhalb der Frequenz mit einem Linkwitz-Riley-Tiefpass 4. Ordnung entfernt;
+  20 Hz = aus.
 * **Layer-Engine** (`Part`, `pN.layer.*`): eine zweite Engine des Parts spielt jede Note; sie rendert
   in einen eigenen Puffer und wird mit Ring- / AM- / Falt-Kreuzmodulation gemischt. Aus = bitgleich
   zu 0.7. Siehe [engines/layer.md](engines/layer.md).

@@ -36,8 +36,8 @@ reason. Three unison oscillators, a sub sine and a resonant low-pass complete th
 Parameter IDs: `p1.wavetable.pos`, `.warp`, `.tone`, `.unison`, `.table`, `.warpmode`, `.envpos`,
 `.reso`, `.sub`, `.keytrack`, 0.8: `.univoices`, `.uniwidth`, `.fm`, `.fmratio`, `.lfopos`, `.envfm`.
 
-**Bass with a wide stack (0.8):** the stack spreads the low end too – put the FX slot on *Squash*
-with *Low Mono* on (or *Width* with *Mono Below* 120 Hz) to keep the bass mono-safe.
+**Bass with a wide stack (0.8):** the stack spreads the low end too – set the part's *Bass Mono*
+(`pN.monobass`, e.g. 150 Hz) or a *Width* slot with *Mono Below* to keep the bass mono-safe.
 
 **Starting points:** pad – Formant, Position 0.3, Env > Position 0.4, slow amp attack; bass –
 Classic, Position 0.45, Unison 0, Sub 0.5, Tone 0.5; bright lead – Digital, Warp 0.4, Unison 0.5.

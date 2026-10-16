@@ -35,12 +35,17 @@
     "lfo.depth": 0.9,
     "lfo.shape": 1,
     "lfo.dest": 0,
-    "fx.type": 13,
+    "fx.type": 19,
     "fx.tremolo.rate": 0.8,
     "fx.tremolo.sync": 0,
     "fx.tremolo.depth": 0.7,
     "fx.tremolo.mode": 1,
     "fx.tremolo.shape": 0,
+    "fx2.type": 6,
+    "fx2.reverb.size": 0.7,
+    "fx2.reverb.damping": 0.5,
+    "fx2.reverb.predelay": 0.02,
+    "fx2.reverb.mix": 0.25,
     "voices": 2,
     "gain": 0.0
   }
