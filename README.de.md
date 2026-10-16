@@ -90,7 +90,8 @@ Ausführlich: [Bedienung](docs/de/BEDIENUNG.md).
 
 ## Installation auf dem Mac
 
-Jeder Pull Request und jeder manuelle CI-Lauf baut einen macOS-Installer – Artefakt
+Jeder Push auf main, jeder manuelle CI-Lauf und jeder Pull Request mit dem Label `installer` baut
+einen macOS-Installer – Artefakt
 **Ohpe-macOS-Installer** am Lauf (*Actions → CI*). Das Disk-Image enthält `Ohpe-Installer.pkg`
 (Standalone-App, VST3 und Audio Unit, einzeln wählbar; universell für Apple Silicon und Intel,
 ab macOS 11), ein Gatekeeper-Fix-Skript, ein Deinstallations-Skript und Hinweise auf Deutsch und

@@ -7,6 +7,7 @@
 
 #include "OhpeCore.h"
 #include "TestHelpers.h"
+#include "../TestSlice.h"
 #include "engines/FmEngine.h"
 #include "engines/WavetableEngine.h"
 #include "fx/InsertEffects2.h"
@@ -474,11 +475,14 @@ TEST_CASE ("0.8 MPE: pressure and timbre reach the new targets with their amount
         }
 }
 
-TEST_CASE ("0.8 MPE: every target in every engine stays finite at full pressure and timbre, with smoothing and slide")
+TEST_CASE ("0.8 MPE: every target in every engine stays finite at full pressure and timbre, with smoothing and slide" * doctest::test_suite ("sliced"))
 {
+    const auto slice = test::testSlice(); // CI runs the combinations in several processes
+    long long item = 0;
     for (int engine = 0; engine < numEngineTypes; ++engine)
         for (int target = 1; target < MpeInput::numTargets; ++target)
         {
+            if (! slice.has (item++)) continue;
             CAPTURE (engine);
             CAPTURE (target);
             Rig rig;

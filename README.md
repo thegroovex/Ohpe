@@ -88,7 +88,8 @@ Full guide: [playing the interface](docs/en/USER-INTERFACE.md).
 
 ## Installing on macOS
 
-Every pull request and manual CI run builds a macOS installer – artifact **Ohpe-macOS-Installer**
+Every push to main, every manual CI run and every pull request labelled `installer` builds a macOS
+installer – artifact **Ohpe-macOS-Installer**
 on the run (*Actions → CI*). The disk image holds `Ohpe-Installer.pkg` (standalone app, VST3 and
 Audio Unit, each selectable; universal for Apple Silicon and Intel, macOS 11+), a Gatekeeper fix
 script, an uninstaller and a read-me in English and German. The pkg is not signed by Apple: open it
