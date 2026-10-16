@@ -70,6 +70,7 @@ juce::RangedAudioParameter* OhpeProcessor::parameter (int i) const
 void OhpeProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     ohpeCore.prepare (sampleRate, juce::jmax (16, samplesPerBlock));
+    setLatencySamples (ohpeCore.latencySamples()); // 0.8: limiter look-ahead, constant (on and off)
     scratch.setSize (2, juce::jmax (16, samplesPerBlock));
     inputScratch.setSize (2, juce::jmax (16, samplesPerBlock)); // 0.2: copy of the input bus
     keyboardState.reset();

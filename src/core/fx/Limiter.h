@@ -16,7 +16,8 @@ namespace ohpe
     fast for short peaks, slower once the limiter works continuously - no pumping on dense mixes), then averaged
     over the window: the gain ramps down before a peak arrives (no hard gain step = no clipping distortion) and is
     at or below the required gain when it does. A final clamp at the ceiling catches what the estimate misses.
-    The audio is delayed by the window (71 samples at 48 kHz) while the limiter is on.
+    The audio is delayed by the window (71 samples at 48 kHz). The delay stays when the limiter is off
+    (passThrough): the plug-in reports one constant latency to the host and switching never jumps in time.
 */
 class Limiter
 {
@@ -50,10 +51,38 @@ public:
         for (auto& h : histR) h = 0.0f;
     }
 
+    /** Gain state back to unity; the delay line keeps its audio (on / off switching without a gap). */
+    void resetGain() noexcept
+    {
+        std::fill (reqRing.begin(), reqRing.end(), 1.0f);
+        std::fill (avgRing.begin(), avgRing.end(), 1.0f);
+        held = 1.0f;
+        sum = (double) look;
+        gain = 1.0f;
+        workDb = 0.0f;
+    }
+
+    /** Limiter off: only the look-ahead delay (constant latency). Keeps the true-peak history current. */
+    void passThrough (float* l, float* r, int n) noexcept
+    {
+        if (delayL.empty()) return;
+        for (int i = 0; i < n; ++i)
+        {
+            const float xl = l[i], xr = r[i];
+            histL[0] = histL[1]; histL[1] = histL[2]; histL[2] = xl;
+            histR[0] = histR[1]; histR[1] = histR[2]; histR[2] = xr;
+            delayL[(size_t) pos] = xl;
+            delayR[(size_t) pos] = xr;
+            if (++pos >= look) pos = 0;
+            l[i] = delayL[(size_t) pos];
+            r[i] = delayR[(size_t) pos];
+        }
+    }
+
     /** Ceiling as linear gain (default 0.966 = -0.3 dBFS). */
     void setCeiling (float linear) noexcept { ceiling = std::clamp (linear, 0.05f, 1.0f); }
     float getCeiling() const noexcept { return ceiling; }
-    /** Look-ahead delay in samples while the limiter is on. */
+    /** Look-ahead delay in samples (on and off: constant). */
     int latencySamples() const noexcept { return look - 1; }
 
     void process (float* l, float* r, int n) noexcept

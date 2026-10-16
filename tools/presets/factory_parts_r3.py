@@ -141,11 +141,14 @@ _punch_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "punch.js
 PUNCH = json.load(open(_punch_path)) if os.path.exists(_punch_path) else {}
 _guard_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "peak_guard.json")
 GUARDED = set(json.load(open(_guard_path))) if os.path.exists(_guard_path) else set()  # make_factory adds a slot for them
-GLUE = {  # ratio, attack ms, release ms, knee dB, threshold below the incoming level (dB), mix
-    "Bass": (4.0, 1.0, 70.0, 6.0, 6.0, 1.0), "Boom": (3.0, 2.0, 90.0, 6.0, 5.0, 1.0), "Leads": (3.5, 1.5, 80.0, 6.0, 5.0, 1.0),
-    "Drums": (4.0, 0.8, 70.0, 6.0, 7.0, 0.7), "Plucks": (3.0, 1.5, 90.0, 6.0, 5.0, 1.0), "Arp": (3.0, 1.5, 90.0, 6.0, 5.0, 1.0),
-    "Keys": (2.5, 5.0, 140.0, 8.0, 4.0, 1.0), "Vocal": (3.0, 3.0, 110.0, 6.0, 5.0, 1.0)}
-GLUE_DEFAULT_IN = -16.0  # assumed incoming level before the first measurement
+GLUE = {  # ratio, attack ms, release ms, knee dB, threshold below the incoming PEAK (dB), mix
+    # The compressors' detector holds peaks (12 ms), so the threshold sits below the incoming peak level: a few dB of
+    # gain reduction on the loud notes (glue / density), the body below the knee stays untouched (no pumping, no
+    # spiky transients over a squashed body).
+    "Bass": (4.0, 1.0, 70.0, 6.0, 9.0, 1.0), "Boom": (3.0, 2.0, 90.0, 6.0, 7.0, 1.0), "Leads": (3.5, 1.5, 80.0, 6.0, 8.0, 1.0),
+    "Drums": (4.0, 0.8, 70.0, 6.0, 8.0, 0.7), "Plucks": (3.0, 1.5, 90.0, 6.0, 6.0, 1.0), "Arp": (3.0, 1.5, 90.0, 6.0, 6.0, 1.0),
+    "Keys": (2.5, 5.0, 140.0, 8.0, 5.0, 1.0), "Vocal": (3.0, 3.0, 110.0, 6.0, 7.0, 1.0)}
+GLUE_DEFAULT_IN = -4.0  # assumed incoming peak before the first measurement
 _NO_CHORUS_WORDS = ("Sub", "Grand", "Piano", "Upright", "808", "Kick", "Snare", "Kit", "Hat", "Riser", "Downlifter", "Impact")
 CHORUS_ROLE = {  # rate Hz, depth, mix, voices, drift, low cut Hz
     "Keys": (0.45, 0.55, 0.42, 3, 0.35, 160.0), "Pads": (0.25, 0.6, 0.38, 4, 0.45, 180.0), "Plucks": (0.4, 0.5, 0.33, 3, 0.3, 200.0),

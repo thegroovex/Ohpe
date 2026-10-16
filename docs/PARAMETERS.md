@@ -599,6 +599,6 @@ Appended after `p4.monobass`. Guides: [English](en/TAPE-MIXER-FX.md) · [Deutsch
 The chorus IDs exist for every slot of every rack (`p1.fx.` … `p4.fx6.`, `mfx1.` … `mfx4.`), registered in that
 order after the ducking parameters. Their defaults give the 0.2 chorus.
 
-Behaviour changes in the punch pass: the master limiter looks ahead 1.5 ms (latency 71 samples at 48 kHz while
-`mix.master.limit` is on) and limits true peaks; the compressors (master, compressor-lite, rack Compressor) hold
+Behaviour changes in the punch pass: the master limiter looks ahead 1.5 ms (latency 71 samples at 48 kHz, constant -
+also with `mix.master.limit` off and on the aux outputs - and reported to the host) and limits true peaks; the compressors (master, compressor-lite, rack Compressor) hold
 a detected peak for 12 ms; the Hyper effect restarts its voices on a new note only with *Retrigger* on.

@@ -77,7 +77,7 @@ def balance(names):
     mk()
 
 
-def master(names, rounds=3):
+def master(names, rounds=4):
     for k in range(rounds):
         mk()
         pj = load()

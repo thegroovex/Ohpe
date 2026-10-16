@@ -158,6 +158,8 @@ void Mixer::prepare (double sampleRate, int maxBlockSize)
     delay.prepare (sampleRate, maxBlockSize);
     reverb.prepare (sampleRate, maxBlockSize);
     limiter.prepare (sr);
+    for (auto& line : auxDelay) line.assign ((size_t) std::max (1, limiter.latencySamples()), 0.0f);
+    auxPos = 0;
     for (auto& c : channels)
     {
         c.gainL.prepare (sr, 15.0f);
@@ -191,6 +193,8 @@ void Mixer::reset() noexcept
     delay.reset();
     reverb.reset();
     limiter.reset();
+    for (auto& line : auxDelay) std::fill (line.begin(), line.end(), 0.0f);
+    auxPos = 0;
     duckEnv = duckPeak = duckLp1 = duckLp2 = 0.0f;
     for (auto& m : meters) m.store (0.0f);
 }
@@ -234,7 +238,7 @@ void Mixer::pullParams (const ParamSnapshot& s) noexcept
     masterGain = mdb <= -59.9f ? 0.0f : dsp::dbToGain (mdb);
     {
         const bool on = s.getBool (masterIdx[MasterLimit]);
-        if (on && ! limiterOn) limiter.reset(); // 0.8: the look-ahead line starts empty, not with old audio
+        if (on != limiterOn) limiter.resetGain(); // 0.8: constant delay, the gain starts at unity
         limiterOn = on;
     }
     returnA = s[masterIdx[ReturnA]];
@@ -453,6 +457,7 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
             masterR[(size_t) i] = masterLp[1].process (masterR[(size_t) i], dsp::Svf::LowPass);
         }
     if (limiterOn) limiter.process (masterL.data(), masterR.data(), n);
+    else limiter.passThrough (masterL.data(), masterR.data(), n); // 0.8: constant latency
 
     float peak = 0.0f;
     float* ml = out.left[0];
@@ -464,5 +469,26 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
         peak = std::max (peak, std::max (std::abs (masterL[(size_t) i]), std::abs (masterR[(size_t) i])));
     }
     meters[numChannels].store (peak, std::memory_order_relaxed);
+
+    // 0.8: the aux outputs are delayed like the main output (one latency for the host)
+    const int D = (int) auxDelay[0].size();
+    if (D > 0)
+    {
+        for (int o = 1; o <= numAuxOutputs; ++o)
+            for (int c = 0; c < 2; ++c)
+            {
+                float* b = c == 0 ? out.left[(size_t) o] : out.right[(size_t) o];
+                auto& line = auxDelay[(size_t) ((o - 1) * 2 + c)];
+                int p = auxPos;
+                for (int i = 0; i < n; ++i)
+                {
+                    const float x = b != nullptr ? b[i] : 0.0f;
+                    if (b != nullptr) b[i] = line[(size_t) p];
+                    line[(size_t) p] = x;
+                    if (++p >= D) p = 0;
+                }
+            }
+        auxPos = (int) ((auxPos + n) % D);
+    }
 }
 } // namespace ohpe

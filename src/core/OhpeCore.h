@@ -62,6 +62,8 @@ public:
     OrbitSequencer& orbitSequencer() noexcept { return orbit; }
     Part& part (int index) noexcept { return *parts[(size_t) index]; }
     Mixer& mixer() noexcept { return mix; }
+    /** 0.8: output latency in samples (after prepare), reported to the host. */
+    int latencySamples() const noexcept { return mix.latencySamples(); }
     drum::DrumKit& drumKit() noexcept { return drums; }   ///< mixer source "drum", MIDI channel 10
     TapeMachine& tape() noexcept { return tapeMachine; }             ///< 0.2: eight-track tape
     InsertSlot& insertFx (int part) noexcept { return parts[(size_t) part]->fxRack().slot (0); } ///< 0.2: FX slot of a part (0.7: rack slot 1)

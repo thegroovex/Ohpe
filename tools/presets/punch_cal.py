@@ -2,9 +2,10 @@
 # Ohpe - designed by groovex
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Punch-pass calibration of the glue compressors (factory_parts_r3.GLUE) -> punch.json, levels.json.
-  punch_cal.py thresh            level reaching each glue (glue ratio 1, makeup 0) -> threshold = level - GLUE "below"
+  punch_cal.py thresh            peak reaching each glue (glue ratio 1, makeup 0) -> threshold = peak - GLUE "below"
   punch_cal.py makeup N          N rounds: make_factory, render (plug-in test conditions), makeup += error (a level
                                  below makeup 0 moves the part gain and the threshold together)
+  punch_cal.py levels N          N rounds: the part gain of the presets WITHOUT a glue compressor outside the level window
   punch_cal.py report OUT.json   every part preset in test conditions: active RMS, peak, crest; lists those outside
 Needs a build-core build (ohpe_render). Never run while make_factory or another render runs."""
 import glob, json, os, subprocess, sys, tempfile
@@ -98,7 +99,8 @@ def cmd_thresh(names=None):
         if not r:
             continue
         below = r3.GLUE[d["tags"][0]][4]
-        punch.setdefault(name, {})["thresh"] = round(max(-50.0, r["active"] - below), 1)
+        punch.setdefault(name, {})["thresh"] = round(max(-50.0, r["peak"] - below), 1)
+        punch[name]["makeup"] = 0.0
         n += 1
     json.dump(punch, open(PJ, "w"), indent=1, sort_keys=True)
     make_factory()
@@ -136,6 +138,30 @@ def cmd_makeup(rounds):
     make_factory()
 
 
+def cmd_levels(rounds):
+    for k in range(rounds):
+        make_factory()
+        g, r3 = glued()
+        files = {n: v for n, v in factory_parts_files().items() if n not in g}
+        rows = render([v[0] for v in files.values()])
+        levels = json.load(open(LJ))
+        moved = 0
+        for name, (f, d) in files.items():
+            r = rows.get(name)
+            if not r or (-20.0 <= r["active"] <= -12.0 and r["peak"] <= -1.2):
+                continue
+            delta = min(TARGET.get(d["tags"][0], -16.0) - r["active"], -1.5 - r["peak"])
+            if abs(delta) < 0.3:
+                continue
+            moved += 1
+            levels[name] = round(max(-24.0, min(24.0, levels.get(name, 0.0) + delta)), 1)
+        json.dump(levels, open(LJ, "w"), indent=1, sort_keys=True)
+        print("levels round %d: %d moved" % (k + 1, moved), flush=True)
+        if not moved:
+            break
+    make_factory()
+
+
 def cmd_report(out):
     files = factory_parts_files()
     rows = render([v[0] for v in files.values()])
@@ -157,5 +183,7 @@ if __name__ == "__main__":
         cmd_thresh(set(sys.argv[2].split(",")) if len(sys.argv) > 2 else None)
     elif c == "makeup":
         cmd_makeup(int(sys.argv[2]))
+    elif c == "levels":
+        cmd_levels(int(sys.argv[2]))
     elif c == "report":
         cmd_report(sys.argv[2])

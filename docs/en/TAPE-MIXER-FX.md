@@ -77,8 +77,8 @@ recording.
 * **Master low-pass** (0.6, `mix.master.lowpass`, 500 Hz … 20 kHz, 12 dB/octave; 20 kHz = off): after
   the volume, before the limiter – darkens the whole mix, e.g. 4–5 kHz for lo-fi.
 * **Limiter** (`mix.master.limit`) with an adjustable **ceiling** (`mix.master.ceiling`,
-  default −0.3 dBFS as in 0.1). Since 0.8 it looks ahead 1.5 ms (71 samples at 48 kHz of latency while it
-  is on), measures true peaks (inter-sample peaks of a 4× interpolation) and ramps its gain down before a
+  default −0.3 dBFS as in 0.1). Since 0.8 it looks ahead 1.5 ms (71 samples at 48 kHz of latency, constant –
+  also when off and on the aux outputs – and reported to the host), measures true peaks (inter-sample peaks of a 4× interpolation) and ramps its gain down before a
   peak arrives instead of jumping – loud mixes stay clean, no clipping distortion. Its release is two-stage:
   fast after a single peak, slower while it works continuously (no pumping).
 * **Compressor detector** (0.8): the master compressor, compressor-lite and the rack Compressor hold a peak for

@@ -85,6 +85,8 @@ public:
 
     /** Mixes sources into the outputs (which are overwritten). numSamples <= maxBlockSize. */
     void process (const SourceBuffers& in, const OutputBuffers& out, int numSamples) noexcept;
+    /** 0.8: constant output latency in samples (the limiter look-ahead, on or off; main and aux outputs). */
+    int latencySamples() const noexcept { return limiter.latencySamples(); }
 
     /**
         Audio thread, before process(): adds a stereo signal straight to an output for the next
@@ -136,6 +138,8 @@ private:
     DelayEffect delay;
     ReverbEffect reverb;
     Limiter limiter;
+    std::array<std::vector<float>, 2 * numAuxOutputs> auxDelay; ///< 0.8: aux outputs delayed like the main output
+    int auxPos = 0;
     std::array<int, numDynParams> dynIdx {};
     bool masterCompOn = false;
     Compressor masterComp;
