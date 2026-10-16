@@ -13,6 +13,7 @@
 #include <cmath>
 #include <fstream>
 #include <functional>
+#include <memory>
 #include <sstream>
 
 using namespace ohpe;
@@ -22,7 +23,8 @@ namespace
 {
 struct Rig
 {
-    Core core;
+    std::unique_ptr<Core> owner = std::make_unique<Core>(); // on the heap: several cores per test (Windows stack)
+    Core& core = *owner;
     static constexpr int block = 256;
     std::array<std::vector<float>, numOutputPairs> l, r;
     Stereo rec;
@@ -93,7 +95,8 @@ float maxStep (const std::vector<float>& v, size_t from)
 
 TEST_CASE ("p16 morph: parameters appended after the wheels; matrix sources and targets")
 {
-    Core core;
+    auto owner = std::make_unique<Core>();
+    Core& core = *owner;
     const auto& reg = core.params();
     CHECK (reg.indexOf ("perf.mod") + 1 == reg.indexOf ("p1.morph.on"));
     const char* names[] = { "on", "x", "y", "glide", "xsrc", "ysrc" };
@@ -181,12 +184,12 @@ TEST_CASE ("p16 morph: a corner is its snapshot, exactly")
 
 TEST_CASE ("p16 morph: state and part presets keep the corners")
 {
-    Core a;
+    auto pa = std::make_unique<Core>(), pb = std::make_unique<Core>(), pc = std::make_unique<Core>(), pf = std::make_unique<Core>();
+    Core &a = *pa, &b = *pb, &c = *pc, &fresh = *pf;
     fourSounds (a);
     a.params().set ("p1.morph.on", 1.0f);
     a.params().set ("p1.morph.x", 0.25f);
     const auto state = a.saveState();
-    Core b;
     REQUIRE (b.loadState (state));
     CHECK (b.params().get ("p1.morph.x") == doctest::Approx (0.25f));
     for (int c = 0; c < MorphSpace::numCorners; ++c)
@@ -205,7 +208,6 @@ TEST_CASE ("p16 morph: state and part presets keep the corners")
     preset::Preset back;
     REQUIRE (preset::fromJson (preset::toJson (p), back));
     REQUIRE (back.morph.has_value());
-    Core c;
     REQUIRE (preset::applyPart (back, c.params(), 2).ok);
     preset::applyPartMorph (back, c, 2);
     for (int k = 0; k < MorphSpace::numCorners; ++k) CHECK (c.morph().cornerParams (2, k) == a.morph().cornerParams (0, k));
@@ -216,7 +218,6 @@ TEST_CASE ("p16 morph: state and part presets keep the corners")
     preset::applyPartMorph (plain, c, 2);
     CHECK_FALSE (c.morph().anyCorner (2));
     // a state without the section clears all corners
-    Core fresh;
     REQUIRE (b.loadState (fresh.saveState()));
     CHECK_FALSE (b.morph().anyCorner (0));
 }
@@ -291,6 +292,8 @@ TEST_CASE ("p16 morph: the matrix moves the pad and reads its position; off = th
     auto midi = Rig::chord();
     midi.push_back (MidiEvent::controller (1, 1, 127, 0));
     rig.run (60, midi);
+    CHECK (rig.core.part (0).modMatrix().sourceValue (mod::SrcModWheel) == doctest::Approx (1.0f));
+    CHECK (rig.core.part (0).modulationOf (rig.core.params().indexOf ("p1.morph.x")) == doctest::Approx (0.5f).epsilon (0.02));
     CHECK (rig.core.morph().uiX (0) == doctest::Approx (0.5f).epsilon (0.02));
     CHECK (rig.core.part (0).modMatrix().sourceValue (mod::SrcMorphX) == doctest::Approx (rig.core.morph().uiX (0)));
     CHECK (rig.core.part (0).modMatrix().sourceValue (mod::SrcMorphY) == doctest::Approx (0.0f));
