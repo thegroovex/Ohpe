@@ -26,7 +26,10 @@ const char* const* triggerIds()
 {
     static const char* const ids[] = { Core::Ids::libOpen, Core::Ids::libPrev, Core::Ids::libNext, Core::Ids::tapeLift,
                                        Core::Ids::tapeCut, Core::Ids::tapeDrop, Core::Ids::tapeSplice, Core::Ids::tapeUndo,
-                                       Core::Ids::tapeRedo, Core::Ids::tapeRtz };
+                                       Core::Ids::tapeRedo, Core::Ids::tapeRtz,
+                                       // p11: tape transport
+                                       Core::Ids::tapeTxPlay, Core::Ids::tapeTxTapePlay, Core::Ids::tapeTxStop, Core::Ids::tapeTxRec, Core::Ids::tapeTxLoop,
+                                       Core::Ids::tapeTxArm };
     return ids;
 }
 } // namespace
@@ -253,6 +256,21 @@ void OhpeProcessor::pollRemoteControls()
             if (id == Core::Ids::libOpen) libraryToggles.fetch_add (1);
             else if (id == Core::Ids::libPrev) presetManager->step (-1);
             else if (id == Core::Ids::libNext) presetManager->step (1);
+            else if (id.startsWith ("tape.tx."))
+            {
+                const auto action = id == Core::Ids::tapeTxPlay ? TransportKey::PlayStop
+                                  : id == Core::Ids::tapeTxTapePlay ? TransportKey::TapePlayStop
+                                  : id == Core::Ids::tapeTxStop ? TransportKey::Stop
+                                  : id == Core::Ids::tapeTxRec  ? TransportKey::Record
+                                  : id == Core::Ids::tapeTxLoop ? TransportKey::Loop
+                                                                : TransportKey::Arm;
+                const auto msg = runTransport (action);
+                {
+                    const juce::ScopedLock sl (transportLock);
+                    transportMessage = msg;
+                }
+                transportMessages.fetch_add (1);
+            }
             else runTapeEdit (triggerIds()[t]);
         }
     }
@@ -276,6 +294,125 @@ bool OhpeProcessor::runTapeEdit (const char* triggerId)
     else if (id == Core::Ids::tapeRtz) { tape.locate (0.0); ok = true; }
     sendChangeMessage();
     return ok;
+}
+
+// ---------------------------------------------------------------- p11: tape transport
+void OhpeProcessor::setPlainFromUi (const char* id, float plain)
+{
+    if (auto* p = apvts.getParameter (id))
+    {
+        p->beginChangeGesture();
+        p->setValueNotifyingHost (p->convertTo0to1 (plain));
+        p->endChangeGesture();
+    }
+    ohpeCore.params().set (id, plain); // the UI and the next action see it at once
+}
+
+bool OhpeProcessor::tapeRolling() const { return ohpeCore.params().get ("tape.play") >= 0.5f; }
+bool OhpeProcessor::tapeRecordReady() const { return ohpeCore.params().get ("tape.rec") >= 0.5f; }
+bool OhpeProcessor::tapeRecording() const { return tapeRolling() && tapeRecordReady() && armedTrackMask() != 0; }
+
+int OhpeProcessor::armedTrackMask() const
+{
+    int mask = 0;
+    for (int t = 0; t < TapeMachine::numTracks; ++t)
+        if (ohpeCore.params().get ("tape.tr" + std::to_string (t + 1) + ".arm") >= 0.5f) mask |= 1 << t;
+    return mask;
+}
+
+juce::String OhpeProcessor::runTransport (TransportKey action)
+{
+    using i18n::tr;
+    auto& reg = ohpeCore.params();
+    auto& tape = ohpeCore.tape();
+    const bool linked = reg.get (Core::Ids::tapeTxLink) >= 0.5f;
+    const int editTrack = juce::jlimit (0, TapeMachine::numTracks - 1, (int) std::lround (reg.get (Core::Ids::tapeEditTrack)) - 1);
+    const std::string armId = "tape.tr" + std::to_string (editTrack + 1) + ".arm";
+    auto trackList = [] (int mask) {
+        juce::StringArray s;
+        for (int t = 0; t < TapeMachine::numTracks; ++t)
+            if ((mask >> t) & 1) s.add (juce::String (t + 1));
+        return s.joinIntoString (", ");
+    };
+    auto start = [&] {
+        setPlainFromUi ("tape.play", 1.0f);
+        if (linked) setPlainFromUi (Core::Ids::seqRun, 1.0f);
+    };
+    auto stop = [&] {
+        setPlainFromUi ("tape.rec", 0.0f);
+        setPlainFromUi ("tape.play", 0.0f);
+        if (linked) setPlainFromUi (Core::Ids::seqRun, 0.0f);
+    };
+    juce::String msg;
+    switch (action)
+    {
+        case TransportKey::PlayStop:
+        {
+            const bool seqRunning = reg.get (Core::Ids::seqRun) >= 0.5f;
+            if (! linked) // the sequencer alone; the tape keeps its own transport
+            {
+                setPlainFromUi (Core::Ids::seqRun, seqRunning ? 0.0f : 1.0f);
+                msg = seqRunning ? tr ("Stopped") : tr ("Play");
+                break;
+            }
+            if (tapeRolling() || seqRunning) { stop(); msg = tr ("Stopped"); }
+            else { start(); msg = tr ("Play"); }
+            break;
+        }
+        case TransportKey::TapePlayStop:
+            if (tapeRolling()) { stop(); msg = tr ("Stopped"); }
+            else { start(); msg = tr ("Play"); }
+            break;
+        case TransportKey::Stop: // stops everything, linked or not
+            if (tapeRolling() || tapeRecordReady() || reg.get (Core::Ids::seqRun) >= 0.5f)
+            {
+                stop();
+                setPlainFromUi (Core::Ids::seqRun, 0.0f);
+                msg = tr ("Stopped");
+            }
+            else { tape.locate (0.0); msg = tr ("Back to the start"); }
+            break;
+        case TransportKey::Record:
+            if (tapeRecording())
+            {
+                setPlainFromUi ("tape.rec", 0.0f); // punch out, the tape keeps playing
+                msg = tr ("Recording stopped - the tape keeps playing");
+                break;
+            }
+            if (armedTrackMask() == 0) setPlainFromUi (armId.c_str(), 1.0f);
+            setPlainFromUi ("tape.rec", 1.0f);
+            if (! tapeRolling()) start();
+            msg = tr ("Recording track") + " " + trackList (armedTrackMask());
+            break;
+        case TransportKey::ToStart:
+            tape.locate (0.0);
+            msg = tr ("Back to the start");
+            break;
+        case TransportKey::Loop:
+        {
+            const bool on = reg.get ("tape.loop") < 0.5f;
+            if (on && reg.get ("tape.loopout") <= reg.get ("tape.loopin") + 0.05f)
+            {
+                // no loop range yet: the recorded length, or four bars of the tempo
+                const double sr = juce::jmax (1.0, tape.sampleRate());
+                double len = (double) tape.contentEndFrames() / sr;
+                if (len < 0.5) len = 4.0 * 4.0 * 60.0 / juce::jmax (20.0, (double) reg.get (Core::Ids::tempo));
+                setPlainFromUi ("tape.loopin", 0.0f);
+                setPlainFromUi ("tape.loopout", (float) len);
+            }
+            setPlainFromUi ("tape.loop", on ? 1.0f : 0.0f);
+            msg = on ? tr ("Loop on") : tr ("Loop off");
+            break;
+        }
+        case TransportKey::Arm:
+        {
+            const bool armed = reg.get (armId) >= 0.5f;
+            setPlainFromUi (armId.c_str(), armed ? 0.0f : 1.0f);
+            msg = (armed ? tr ("Track disarmed") : tr ("Track armed")) + ": " + juce::String (editTrack + 1);
+            break;
+        }
+    }
+    return msg; // the editor follows on its timer (no change message: that would reload the UI state)
 }
 
 void OhpeProcessor::editRegistry (const std::function<void (Core&)>& fn)

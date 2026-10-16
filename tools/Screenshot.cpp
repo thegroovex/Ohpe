@@ -5,6 +5,7 @@
 //   usage: ohpe_screenshot <output directory>
 // Writes ohpe-<view>.png (English) and ohpe-<view>-de.png (German).
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
+// p11: the tape page while recording (ohpe-tape-recording).
 // 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack; the Mid/Side scope,
 // the master scope view and the spectrum terrain. The
 // preset library reads the user folder from OHPE_PRESET_DIR when set (otherwise the default).
@@ -176,33 +177,42 @@ int main (int argc, char* argv[])
         p.parameter ("seq.run")->setValueNotifyingHost (0.0f);
         run (p, 4);
 
-        // 0.3: tape page - part 1 recorded onto tracks 1 and 2, track 2 selected, loop set
+        // p11: tape page - recorded with the transport keys: REC on tracks 1 and 2 (part 1), loop set;
+        //      one shot while recording (REC lit), one after STOP with track 2 selected
         {
             p.parameter ("tape.tr1.arm")->setValueNotifyingHost (1.0f);
             p.parameter ("tape.tr2.arm")->setValueNotifyingHost (1.0f);
             p.parameter ("tape.tr2.src")->setValueNotifyingHost (p.parameter ("tape.tr2.src")->convertTo0to1 (1.0f)); // part 1
-            p.parameter ("tape.loop")->setValueNotifyingHost (1.0f);
             p.parameter ("tape.loopin")->setValueNotifyingHost (p.parameter ("tape.loopin")->convertTo0to1 (1.0f));
             p.parameter ("tape.loopout")->setValueNotifyingHost (p.parameter ("tape.loopout")->convertTo0to1 (5.0f));
-            p.parameter ("tape.rec")->setValueNotifyingHost (1.0f);
-            p.parameter ("tape.play")->setValueNotifyingHost (1.0f);
+            run (p, 2);
+            e.selectMode (ui::Mode::Tape);
+            e.selectTapeTrack (1);
+            p.core().tape().housekeeping();
+            e.transport (OhpeProcessor::TransportKey::Record);
             for (int k = 0; k < 12; ++k)
             {
                 run (p, 12, 48 + (k * 5) % 24);
                 release (p, { 48 + (k * 5) % 24 });
                 p.core().tape().housekeeping();
+                e.advanceAnimation (0.05f);
             }
-            p.parameter ("tape.rec")->setValueNotifyingHost (0.0f);
+            for (int k = 0; k < 40 && ! e.recordKey().isActive(); ++k) e.advanceAnimation (0.05f); // REC blink "on"
+            save (e, dir.getChildFile ("ohpe-tape-recording" + suffix + ".png"));
+            e.transport (OhpeProcessor::TransportKey::Record); // punch out
             run (p, 4);
             p.core().tape().housekeeping();
-            p.parameter ("tape.tr1.arm")->setValueNotifyingHost (0.0f);
-            p.parameter ("tape.tr2.arm")->setValueNotifyingHost (0.0f);
-            p.parameter ("tape.play")->setValueNotifyingHost (0.0f);
+            e.transport (OhpeProcessor::TransportKey::Stop);
+            e.transport (OhpeProcessor::TransportKey::Loop);
             run (p, 2);
-            e.selectMode (ui::Mode::Tape);
+            p.core().tape().housekeeping();
+            p.parameter ("tape.tr1.arm")->setValueNotifyingHost (0.0f);
+            run (p, 2);
             e.selectTapeTrack (1);
             e.advanceAnimation (0.7f);
             save (e, dir.getChildFile ("ohpe-tape" + suffix + ".png"));
+            p.parameter ("tape.tr2.arm")->setValueNotifyingHost (0.0f);
+            run (p, 2);
         }
 
         // 0.3: drum kit page

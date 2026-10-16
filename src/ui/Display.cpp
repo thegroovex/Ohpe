@@ -91,6 +91,7 @@ int Display::forcedScopeSource() const
 
 Display::Visual Display::shownVisual() const
 {
+    if (mode == Mode::Tape) return Visual::Character; // p11: the tape page always shows its transport
     if (forcedScopeSource() != ScopeTap::None) return Visual::Scope;
     if (userVisual == Visual::Terrain && ! animated) return Visual::Character;
     return userVisual;
@@ -117,6 +118,207 @@ juce::Rectangle<float> Display::characterArea() const
     auto mid = midArea();
     if (mode == Mode::Sequencer) mid = mid.withTrimmedTop (mid.getHeight() * 0.17f);
     return mid.withWidth (mid.getWidth() * 0.42f);
+}
+
+// ---------------------------------------------------------------- p11: tape transport
+juce::Rectangle<float> Display::transportButton (int b) const
+{
+    if (mode != Mode::Tape || b < 0 || b >= numTransportButtons) return {};
+    const auto a = characterArea();
+    const auto row = a.withTrimmedTop (a.getHeight() * 0.53f).withHeight (a.getHeight() * 0.27f);
+    const float gap = row.getWidth() * 0.03f;
+    const float w = (row.getWidth() - gap * (float) (numTransportButtons - 1)) / (float) numTransportButtons;
+    return { row.getX() + (w + gap) * (float) b, row.getY(), w, row.getHeight() };
+}
+
+juce::Rectangle<float> Display::trackArmArea (int t) const
+{
+    if (mode != Mode::Tape || t < 0 || t >= TapeMachine::numTracks) return {};
+    const auto lane = trackLane (t);
+    const auto label = lane.withWidth (lane.getHeight() * 2.6f);
+    return label.withTrimmedLeft (label.getWidth() * 0.45f);
+}
+
+juce::String Display::tapeHint() const
+{
+    auto& tape = proc.core().tape();
+    if (proc.tapeRecording()) return tr ("Recording - REC again punches out, STOP ends");
+    if (proc.tapeRecordReady() && ! proc.tapeRolling()) return tr ("Record is on - press PLAY to start");
+    if (proc.tapeRolling()) return tr ("Playing - STOP stops, twice goes to the start");
+    if (tape.contentEndFrames() <= 0) return tr ("Pick a track, press REC");
+    return tr ("PLAY plays the tape - REC records on the armed track");
+}
+
+namespace
+{
+juce::String clockText (double seconds)
+{
+    seconds = juce::jmax (0.0, seconds);
+    const int tenths = (int) (seconds * 10.0);
+    return juce::String (tenths / 600) + ":" + juce::String ((tenths / 10) % 60).paddedLeft ('0', 2) + "." + juce::String (tenths % 10);
+}
+
+const char* transportTriggerId (int b)
+{
+    switch (b)
+    {
+        case Display::TxToStart: return Core::Ids::tapeRtz;
+        case Display::TxStop: return Core::Ids::tapeTxStop;
+        case Display::TxPlay: return Core::Ids::tapeTxTapePlay;
+        case Display::TxRecord: return Core::Ids::tapeTxRec;
+        default: return Core::Ids::tapeTxLoop;
+    }
+}
+} // namespace
+
+juce::String Display::getTooltip()
+{
+    const auto p = lastMouse;
+    auto key = [this] (const char* k) { return shortcuts ? "  (" + juce::String (k) + ")" : juce::String(); };
+    if (mode == Mode::Tape)
+    {
+        for (int b = 0; b < numTransportButtons; ++b)
+            if (transportButton (b).contains (p))
+                switch (b)
+                {
+                    case TxToStart: return tr ("To the start of the tape") + key ("Enter");
+                    case TxStop: return tr ("Stop - press again to go to the start") + key ("Space");
+                    case TxPlay: return tr ("Play / stop the tape") + key ("Space");
+                    case TxRecord: return tr ("Record on the armed track - arms the selected track when none is armed") + key ("R");
+                    default: return tr ("Loop between loop in and out") + key ("L");
+                }
+        for (int t = 0; t < TapeMachine::numTracks; ++t)
+        {
+            if (trackArmArea (t).contains (p)) return tr ("Arm the track for recording");
+            if (trackLane (t).contains (p)) return tr ("Select the track");
+        }
+    }
+    return {};
+}
+
+void Display::paintTapeTransport (juce::Graphics& g, juce::Rectangle<float> a)
+{
+    auto& core = proc.core();
+    auto& tape = core.tape();
+    const auto& reg = core.params();
+    const double sr = juce::jmax (1.0, tape.sampleRate());
+    const double secs = (double) tape.positionFrames() / sr;
+    const bool rolling = proc.tapeRolling(), ready = proc.tapeRecordReady(), recording = proc.tapeRecording();
+    const bool blink = std::fmod (time, 1.0f) < 0.6f;
+    const int mask = proc.armedTrackMask();
+
+    // statusRow line: state badge (left), armed tracks (right)
+    auto statusRow = a.withHeight (a.getHeight() * 0.17f);
+    {
+        juce::String text;
+        juce::Colour c = colour::displayDim;
+        bool filled = false;
+        Picto sign = Picto::Stop;
+        if (recording) { text = i18n::upper (tr ("Rec")); c = colour::signalRed; filled = blink; sign = Picto::Record; }
+        else if (ready) { text = i18n::upper (tr ("Rec ready")); c = colour::signalRed; sign = Picto::Record; }
+        else if (rolling) { text = i18n::upper (tr ("Play")); c = colour::displayText; sign = Picto::Play; }
+        else text = i18n::upper (tr ("Stop"));
+        const auto f = labelFont (statusRow.getHeight() * 0.62f);
+        const float h = statusRow.getHeight() * 0.84f;
+        const float w = juce::GlyphArrangement::getStringWidth (f, text) + h * 1.9f;
+        auto badge = statusRow.withWidth (juce::jmin (statusRow.getWidth() * 0.55f, w)).withSizeKeepingCentre (juce::jmin (statusRow.getWidth() * 0.55f, w), h);
+        badge.setX (statusRow.getX());
+        g.setColour (c);
+        if (filled) g.fillRoundedRectangle (badge, badge.getHeight() * 0.3f);
+        else g.drawRoundedRectangle (badge, badge.getHeight() * 0.3f, 1.2f);
+        const auto ink = filled ? colour::displayText : c;
+        // the sign is drawn, not a glyph: the fonts need not carry it
+        drawPictogram (g, badge.withWidth (h).translated (h * 0.2f, 0.0f).reduced (h * 0.08f), sign, PictoState {}, ink);
+        g.setColour (ink);
+        g.setFont (f);
+        g.drawText (text, badge.withTrimmedLeft (h * 1.1f).withTrimmedRight (h * 0.3f), juce::Justification::centred, true);
+
+        juce::String armed;
+        for (int t = 0; t < TapeMachine::numTracks; ++t)
+            if ((mask >> t) & 1) armed << (armed.isEmpty() ? "" : ", ") << (t + 1);
+        g.setColour (mask != 0 ? colour::signalRed : colour::displayDim);
+        g.setFont (labelFont (statusRow.getHeight() * 0.55f));
+        g.drawText (mask != 0 ? i18n::upper (tr ("Armed")) + " " + armed : i18n::upper (tr ("No track armed")),
+                    statusRow.withTrimmedLeft (badge.getWidth() + statusRow.getHeight() * 0.4f), juce::Justification::centredRight, true);
+    }
+
+    // clock row: reels (turning with the tape), time, bar.beat
+    auto clockRow = a.withTrimmedTop (a.getHeight() * 0.2f).withHeight (a.getHeight() * 0.3f);
+    {
+        auto reels = clockRow.removeFromLeft (clockRow.getHeight() * 1.9f);
+        PictoState ps;
+        ps.large = true;
+        ps.time = (float) (secs * 1.5); // the reels follow the tape: still when stopped, backwards in reverse
+        drawPictogram (g, reels, Picto::Tape, ps, recording ? colour::signalRed : colour::displayText);
+        const auto bpm = juce::jmax (20.0, (double) reg.get (Core::Ids::tempo));
+        const double beats = secs * bpm / 60.0;
+        const juce::String bar = i18n::upper (tr ("Bar")) + " " + juce::String ((int) (beats / 4.0) + 1) + "." + juce::String ((int) std::fmod (beats, 4.0) + 1);
+        auto barArea = clockRow.removeFromRight (clockRow.getWidth() * 0.34f);
+        g.setColour (colour::displayDim);
+        g.setFont (monoFont (clockRow.getHeight() * 0.36f));
+        g.drawText (bar, barArea, juce::Justification::centredRight, true);
+        g.setColour (recording ? colour::signalRed : colour::displayText);
+        g.setFont (monoFont (clockRow.getHeight() * 0.72f));
+        g.drawText (clockText (secs), clockRow.withTrimmedLeft (clockRow.getHeight() * 0.25f), juce::Justification::centredLeft, true);
+    }
+
+    // transport buttons
+    const bool loopOn = reg.get ("tape.loop") >= 0.5f;
+    for (int b = 0; b < numTransportButtons; ++b)
+    {
+        const auto r = transportButton (b);
+        const bool isRec = b == TxRecord;
+        const bool active = b == TxPlay ? rolling : b == TxRecord ? (recording ? blink : ready) : b == TxLoop ? loopOn : false;
+        const auto accent = isRec ? colour::signalRed : colour::displayText;
+        const bool hover = isMouseOver() && r.contains (lastMouse);
+        if (active)
+        {
+            g.setColour (accent);
+            g.fillRoundedRectangle (r, r.getHeight() * 0.22f);
+        }
+        else
+        {
+            g.setColour (colour::displayGrid.brighter (hover ? 0.6f : 0.35f));
+            g.drawRoundedRectangle (r, r.getHeight() * 0.22f, 1.2f);
+        }
+        static const Picto pictos[] = { Picto::ToStart, Picto::Stop, Picto::Play, Picto::Record, Picto::Loop };
+        const auto ink = active ? (isRec ? colour::displayText : colour::display) : (isRec ? colour::signalRed : colour::displayText);
+        drawPictogram (g, r.withSizeKeepingCentre (r.getHeight(), r.getHeight()).reduced (r.getHeight() * 0.12f), pictos[b], PictoState {}, ink);
+    }
+
+    // hint line
+    auto hint = a.withTop (transportButton (0).getBottom() + a.getHeight() * 0.05f);
+    g.setColour (proc.armedTrackMask() == 0 && ! rolling ? colour::sunYellow.withAlpha (0.9f) : colour::displayDim);
+    g.setFont (labelFont (juce::jmin (hint.getHeight() * 0.7f, (float) getHeight() * 0.04f)));
+    g.drawFittedText (tapeHint(), hint.toNearestInt(), juce::Justification::centredLeft, 2, 0.85f);
+}
+
+void Display::paintTapeHeaderStatus (juce::Graphics& g, juce::Rectangle<float> area, float height)
+{
+    // p11: the tape's state on every page: "(rec sign) REC 0:12.3" (blinking) or "(play sign) TAPE 0:12.3"
+    if (! proc.tapeRolling() && ! proc.tapeRecordReady()) return;
+    auto& tape = proc.core().tape();
+    const double secs = (double) tape.positionFrames() / juce::jmax (1.0, tape.sampleRate());
+    const bool rec = proc.tapeRecording() || proc.tapeRecordReady();
+    const bool blink = std::fmod (time, 1.0f) < 0.6f;
+    juce::String text = rec ? i18n::upper (tr ("Rec")) : i18n::upper (tr ("Tape"));
+    const auto f = monoFont (height * 0.42f);
+    const float signW = height * 0.55f;
+    juce::String full = text + " " + clockText (secs);
+    float w = juce::GlyphArrangement::getStringWidth (f, full) + height * 0.6f + signW;
+    if (w > area.getWidth()) { full = text; w = juce::GlyphArrangement::getStringWidth (f, full) + height * 0.6f + signW; }
+    if (w > area.getWidth()) return;
+    auto pill = juce::Rectangle<float> (w, height * 0.6f).withPosition (area.getRight() - w, area.getCentreY() - height * 0.3f);
+    const auto c = rec ? colour::signalRed : colour::displayText;
+    g.setColour (c);
+    if (rec && proc.tapeRecording() && blink) g.fillRoundedRectangle (pill, pill.getHeight() * 0.3f);
+    else g.drawRoundedRectangle (pill, pill.getHeight() * 0.3f, 1.2f);
+    const auto ink = rec && proc.tapeRecording() && blink ? colour::displayText : c;
+    drawPictogram (g, pill.withWidth (pill.getHeight()).translated (height * 0.12f, 0.0f).reduced (pill.getHeight() * 0.1f),
+                   rec ? Picto::Record : Picto::Play, PictoState {}, ink);
+    g.setColour (ink);
+    g.setFont (f);
+    g.drawText (full, pill.withTrimmedLeft (signW + height * 0.1f), juce::Justification::centred, false);
 }
 
 void Display::paintStereoScope (juce::Graphics& g, juce::Rectangle<float> area) const
@@ -155,6 +357,7 @@ void Display::showVisualMenu()
 
 void Display::mouseMove (const juce::MouseEvent& e)
 {
+    lastMouse = e.position; // p11: tooltips
     if (! animated || getWidth() <= 0) return;
     parallaxTarget = { juce::jlimit (-1.0f, 1.0f, (e.position.x / (float) getWidth()) * 2.0f - 1.0f),
                        juce::jlimit (-1.0f, 1.0f, (e.position.y / (float) getHeight()) * 2.0f - 1.0f) };
@@ -525,6 +728,7 @@ int Display::rowAt (juce::Point<float> p) const
 void Display::mouseDown (const juce::MouseEvent& e)
 {
     const auto p = e.position;
+    lastMouse = p; // p11: tooltips
     dragRow = -1;
     if (pages > 1 && pageArrow (false).contains (p)) { if (onPageChange) onPageChange (-1); return; }
     if (pages > 1 && pageArrow (true).contains (p)) { if (onPageChange) onPageChange (1); return; }
@@ -535,6 +739,23 @@ void Display::mouseDown (const juce::MouseEvent& e)
             return;
         }
     if (lockStep >= 0 && captionArea().contains (p)) { if (onLockBadgeClicked) onLockBadgeClicked(); return; }
+    if (mode == Mode::Tape) // p11: transport buttons (right-click = MIDI learn), arm dots
+    {
+        for (int b = 0; b < numTransportButtons; ++b)
+            if (transportButton (b).contains (p))
+            {
+                if (e.mods.isPopupMenu()) showControlMenu (proc, transportTriggerId (b), this);
+                else if (onTransportClicked) onTransportClicked (b);
+                return;
+            }
+        for (int t = 0; t < TapeMachine::numTracks; ++t)
+            if (trackArmArea (t).contains (p))
+            {
+                if (e.mods.isPopupMenu()) showControlMenu (proc, "tape.tr" + juce::String (t + 1) + ".arm", this);
+                else if (onTrackArmClicked) onTrackArmClicked (t);
+                return;
+            }
+    }
 
     // parameter rows: drag, click to jump, right-click menu
     if (const int row = rowAt (p); row >= 0)
@@ -575,7 +796,7 @@ void Display::mouseDown (const juce::MouseEvent& e)
     }
 
     // 0.7: the visual area - click cycles character / scope / terrain, right-click opens the view menu
-    if (! showsModView() && ! showsRackView() && characterArea().contains (p)
+    if (! showsModView() && ! showsRackView() && mode != Mode::Tape && characterArea().contains (p)
         && ! (mode == Mode::Sequencer && seqTab (0).getBottom() > p.y))
     {
         if (e.mods.isPopupMenu()) { showVisualMenu(); return; }
@@ -693,8 +914,16 @@ void Display::paint (juce::Graphics& g)
     g.setColour (colour::displayDim);
     const auto bpm = core.params().get (Core::Ids::tempo);
     const bool running = core.params().get (Core::Ids::seqRun) >= 0.5f;
-    g.drawText ((running ? juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xb6 ")) : juce::String()) + juce::String (bpm, 1) + " BPM",
-                h.withTrimmedRight (h.getHeight() * 4.0f), juce::Justification::centredRight);
+    const juce::String bpmText = (running ? juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xb6 ")) : juce::String()) + juce::String (bpm, 1) + " BPM";
+    const auto bpmArea = h.withTrimmedRight (h.getHeight() * 4.0f);
+    g.drawText (bpmText, bpmArea, juce::Justification::centredRight);
+    if (mode != Mode::Tape) // p11: the tape's state on every other page
+    {
+        const float bpmW = juce::GlyphArrangement::getStringWidth (monoFont (h.getHeight() * 0.5f), bpmText);
+        auto room = bpmArea.withTrimmedRight (bpmW + h.getHeight() * 0.5f);
+        room = room.withLeft (h.getX() + titleW + h.getHeight() * ((partMode || mode == Mode::Effects) ? 2.4f : 0.5f));
+        if (room.getWidth() > 0.0f) paintTapeHeaderStatus (g, room, h.getHeight());
+    }
     if (pages > 1)
     {
         g.setColour (colour::displayText);
@@ -764,6 +993,14 @@ void Display::paint (juce::Graphics& g)
         // the character stands on a slowly moving terrain of its sound (a layer further back)
         if (animated && (mode == Mode::Synth || mode == Mode::Mixer))
             visuals.paintTerrain (g, pictoArea.withTrimmedTop (pictoArea.getHeight() * 0.42f).reduced (u * 0.4f, 0), parallax * 0.6f, 0.42f);
+        if (mode == Mode::Tape) // p11: the transport panel takes the character's place
+        {
+            paintTapeTransport (g, characterArea());
+            paintRows (g);
+            paintStrip (g, stripArea());
+            g.drawImageAt (glassLayer, 0, 0);
+            return;
+        }
         const auto charArea = pictoArea.reduced (u * 1.5f);
         drawPictogram (g, charArea.translated (u * 0.35f, u * 0.6f), picto, ps, juce::Colours::black.withAlpha (0.55f)); // cast shadow
         drawPictogram (g, charArea, picto, ps, dim ? colour::displayDim : colour::displayText);
@@ -1072,10 +1309,10 @@ void Display::paintTapeStrip (juce::Graphics& g, juce::Rectangle<float> s)
     g.setColour (reg.get ("tape.rec") >= 0.5f ? colour::signalRed : colour::displayText);
     g.fillRect (px - 1.0f, all.getY(), 2.0f, all.getHeight());
     paintSoftKeys (g);
-    const auto seconds = (double) pos / sr;
-    juce::String clock = juce::String ((int) seconds / 60) + ":" + juce::String ((int) seconds % 60).paddedLeft ('0', 2) + "." + juce::String ((int) (seconds * 10.0) % 10);
-    if (status.isNotEmpty()) clock << "  " << status;
-    paintHint (g, softKeyRow().withWidth (juce::jmax (10.0f, softKeyArea (0).getX() - softKeyRow().getX() - 4.0f)), clock);
+    // p11: the clock moved to the transport panel; here the loop range (lift / cut work on it)
+    juce::String info = i18n::upper (tr ("Loop")) + " " + clockText (reg.get ("tape.loopin")) + utf8 ("\xe2\x80\x93") + clockText (reg.get ("tape.loopout"));
+    if (status.isNotEmpty()) info = status;
+    paintHint (g, softKeyRow().withWidth (juce::jmax (10.0f, softKeyArea (0).getX() - softKeyRow().getX() - 4.0f)), info);
 }
 
 void Display::paintDrumStrip (juce::Graphics& g, juce::Rectangle<float> s)

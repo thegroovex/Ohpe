@@ -249,6 +249,10 @@ PictoKey::PictoKey (Picto p, juce::String legendEnglish)
     : juce::Button (legendEnglish), picto (p), legend (std::move (legendEnglish)), accent (colour::signalRed)
 {
     setMouseCursor (juce::MouseCursor::PointingHandCursor);
+    // p11: keys never take the keyboard focus - Space / R are the transport shortcuts in the
+    // standalone app, not "click the last key"
+    setWantsKeyboardFocus (false);
+    setMouseClickGrabsKeyboardFocus (false);
 }
 
 void PictoKey::mouseDown (const juce::MouseEvent& e)
@@ -285,8 +289,15 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
         g.fillRoundedRectangle (cap, r);
     }
     PictoState s;
-    const auto ink = available ? (active ? accent : colour::keyLight.withAlpha (0.85f)) : colour::keyLight.withAlpha (0.25f);
-    drawPictogram (g, cap.reduced (cap.getWidth() * 0.2f), picto, s, ink);
+    auto ink = available ? (active ? accent : colour::keyLight.withAlpha (0.85f)) : colour::keyLight.withAlpha (0.25f);
+    if (hasPictoInk && available) ink = active ? pictoInk.brighter (0.25f) : pictoInk;
+    // p11: the transport signs sit in a square of the cap's height (wide keys would shrink them to dots)
+    const bool transportSign = picto == Picto::Play || picto == Picto::Stop || picto == Picto::Record
+                            || picto == Picto::ToStart || picto == Picto::Loop;
+    if (transportSign)
+        drawPictogram (g, cap.withSizeKeepingCentre (cap.getHeight(), cap.getHeight()).reduced (cap.getHeight() * 0.12f), picto, s, ink);
+    else
+        drawPictogram (g, cap.reduced (cap.getWidth() * 0.2f), picto, s, ink);
     if (active)
     {
         g.setColour (accent);

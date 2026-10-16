@@ -79,6 +79,10 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 * **Keyboard**: play with the mouse or any MIDI keyboard; the octave keys shift it.
 * **Sequencer**: tap steps to switch them on, Shift-tap a step to edit it and lock parameters on
   it, press Play (in a host, the sequencer follows the host transport while Play is on).
+* **Transport** (bottom left): **REC** records on the tape at once (it arms the selected track when
+  none is armed), **PLAY** runs the sequencer and the tape, **STOP** stops (twice = back to the
+  start), **|◀** and **LOOP**. Standalone: Space, R, Enter, L. See
+  [first recording in 30 seconds](docs/en/TAPE-MIXER-FX.md#first-recording-in-30-seconds).
 * Drop an audio file on the instrument to load it into the Sampler / Grain engine or onto a drum pad.
 
 Full guide: [playing the interface](docs/en/USER-INTERFACE.md).

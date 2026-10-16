@@ -235,5 +235,18 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate08MpeParams (reg);
     // ---- 0.8: bass mono per part (side signal below the frequency removed after the FX slot) ---------------------
     for (auto& p : parts) p->registerLate08MonoParams (reg);
+
+    // ---- tape transport (p11): transport keys as MIDI-mappable triggers, "Play starts the tape" --------------
+    //      Triggers fire when their value rises to "on" (CC >= 64), like the 0.3 remote controls.
+    {
+        auto add = [&] (ParamDescriptor d) { d.group = "remote"; reg.add (std::move (d)); };
+        add (toggle (Core::Ids::tapeTxPlay, "Transport Play/Stop", "Transport Start/Stopp", false));
+        add (toggle (Core::Ids::tapeTxTapePlay, "Tape Play/Stop", "Tape Start/Stopp", false));
+        add (toggle (Core::Ids::tapeTxStop, "Transport Stop", "Transport Stopp", false));
+        add (toggle (Core::Ids::tapeTxRec, "Transport Record", "Transport Aufnahme", false));
+        add (toggle (Core::Ids::tapeTxLoop, "Transport Loop", "Transport Schleife", false));
+        add (toggle (Core::Ids::tapeTxArm, "Arm Edit Track", "Bearbeitungsspur aufnahmebereit", false));
+        add (toggle (Core::Ids::tapeTxLink, "Play Starts Tape", "Start startet Tape", true));
+    }
 }
 } // namespace ohpe

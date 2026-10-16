@@ -174,6 +174,15 @@ public:
         static constexpr const char* stepDrums = "seq.step.drums";
         static constexpr const char* euclidDrums = "seq.euclid.drums";
         static constexpr const char* orbitDrums = "seq.orbit.drums";
+        // tape transport (p11): momentary transport keys for MIDI controllers and the "Play starts the tape"
+        // setting; not part of presets (see preset::isExcludedFromProject)
+        static constexpr const char* tapeTxPlay = "tape.tx.play";   ///< trigger: play / stop (the PLAY key)
+        static constexpr const char* tapeTxTapePlay = "tape.tx.tplay"; ///< trigger: tape play / stop (tape page)
+        static constexpr const char* tapeTxStop = "tape.tx.stop";   ///< trigger: stop; when stopped: to the start
+        static constexpr const char* tapeTxRec = "tape.tx.rec";     ///< trigger: one-touch record / punch out
+        static constexpr const char* tapeTxLoop = "tape.tx.loop";   ///< trigger: loop on / off
+        static constexpr const char* tapeTxArm = "tape.tx.arm";     ///< trigger: arm / disarm the edit track
+        static constexpr const char* tapeTxLink = "tape.tx.link";   ///< toggle: PLAY runs sequencer and tape together
     };
 
 private:
