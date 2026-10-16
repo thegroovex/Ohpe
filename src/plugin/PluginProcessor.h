@@ -109,8 +109,8 @@ public:
         - Arm: arms / disarms the edit track.
         Message thread. Returns a short, translated message for the display ("Recording track 2").
     */
-    enum class Transport { PlayStop = 0, TapePlayStop, Stop, Record, ToStart, Loop, Arm };
-    juce::String runTransport (Transport action);
+    enum class TransportKey { PlayStop = 0, TapePlayStop, Stop, Record, ToStart, Loop, Arm };
+    juce::String runTransport (TransportKey action);
     bool tapeRolling() const;       ///< the tape plays (tape.play on)
     bool tapeRecording() const;     ///< the tape really records (play + rec + an armed track)
     bool tapeRecordReady() const;   ///< recording is switched on (tape.rec), maybe not rolling yet

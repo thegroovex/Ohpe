@@ -189,7 +189,7 @@ int main (int argc, char* argv[])
             e.selectMode (ui::Mode::Tape);
             e.selectTapeTrack (1);
             p.core().tape().housekeeping();
-            e.transport (OhpeProcessor::Transport::Record);
+            e.transport (OhpeProcessor::TransportKey::Record);
             for (int k = 0; k < 12; ++k)
             {
                 run (p, 12, 48 + (k * 5) % 24);
@@ -199,11 +199,11 @@ int main (int argc, char* argv[])
             }
             for (int k = 0; k < 40 && ! e.recordKey().isActive(); ++k) e.advanceAnimation (0.05f); // REC blink "on"
             save (e, dir.getChildFile ("ohpe-tape-recording" + suffix + ".png"));
-            e.transport (OhpeProcessor::Transport::Record); // punch out
+            e.transport (OhpeProcessor::TransportKey::Record); // punch out
             run (p, 4);
             p.core().tape().housekeeping();
-            e.transport (OhpeProcessor::Transport::Stop);
-            e.transport (OhpeProcessor::Transport::Loop);
+            e.transport (OhpeProcessor::TransportKey::Stop);
+            e.transport (OhpeProcessor::TransportKey::Loop);
             run (p, 2);
             p.core().tape().housekeeping();
             p.parameter ("tape.tr1.arm")->setValueNotifyingHost (0.0f);

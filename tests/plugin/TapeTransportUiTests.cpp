@@ -12,7 +12,7 @@
 #include "ui/PluginEditor.h"
 
 using namespace ohpe;
-using T = OhpeProcessor::Transport;
+using T = OhpeProcessor::TransportKey;
 
 namespace
 {

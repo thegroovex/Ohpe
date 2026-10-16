@@ -258,12 +258,12 @@ void OhpeProcessor::pollRemoteControls()
             else if (id == Core::Ids::libNext) presetManager->step (1);
             else if (id.startsWith ("tape.tx."))
             {
-                const auto action = id == Core::Ids::tapeTxPlay ? Transport::PlayStop
-                                  : id == Core::Ids::tapeTxTapePlay ? Transport::TapePlayStop
-                                  : id == Core::Ids::tapeTxStop ? Transport::Stop
-                                  : id == Core::Ids::tapeTxRec  ? Transport::Record
-                                  : id == Core::Ids::tapeTxLoop ? Transport::Loop
-                                                                : Transport::Arm;
+                const auto action = id == Core::Ids::tapeTxPlay ? TransportKey::PlayStop
+                                  : id == Core::Ids::tapeTxTapePlay ? TransportKey::TapePlayStop
+                                  : id == Core::Ids::tapeTxStop ? TransportKey::Stop
+                                  : id == Core::Ids::tapeTxRec  ? TransportKey::Record
+                                  : id == Core::Ids::tapeTxLoop ? TransportKey::Loop
+                                                                : TransportKey::Arm;
                 const auto msg = runTransport (action);
                 {
                     const juce::ScopedLock sl (transportLock);
@@ -320,7 +320,7 @@ int OhpeProcessor::armedTrackMask() const
     return mask;
 }
 
-juce::String OhpeProcessor::runTransport (Transport action)
+juce::String OhpeProcessor::runTransport (TransportKey action)
 {
     using i18n::tr;
     auto& reg = ohpeCore.params();
@@ -346,7 +346,7 @@ juce::String OhpeProcessor::runTransport (Transport action)
     juce::String msg;
     switch (action)
     {
-        case Transport::PlayStop:
+        case TransportKey::PlayStop:
         {
             const bool seqRunning = reg.get (Core::Ids::seqRun) >= 0.5f;
             if (! linked) // the sequencer alone; the tape keeps its own transport
@@ -359,11 +359,11 @@ juce::String OhpeProcessor::runTransport (Transport action)
             else { start(); msg = tr ("Play"); }
             break;
         }
-        case Transport::TapePlayStop:
+        case TransportKey::TapePlayStop:
             if (tapeRolling()) { stop(); msg = tr ("Stopped"); }
             else { start(); msg = tr ("Play"); }
             break;
-        case Transport::Stop: // stops everything, linked or not
+        case TransportKey::Stop: // stops everything, linked or not
             if (tapeRolling() || tapeRecordReady() || reg.get (Core::Ids::seqRun) >= 0.5f)
             {
                 stop();
@@ -372,7 +372,7 @@ juce::String OhpeProcessor::runTransport (Transport action)
             }
             else { tape.locate (0.0); msg = tr ("Back to the start"); }
             break;
-        case Transport::Record:
+        case TransportKey::Record:
             if (tapeRecording())
             {
                 setPlainFromUi ("tape.rec", 0.0f); // punch out, the tape keeps playing
@@ -384,11 +384,11 @@ juce::String OhpeProcessor::runTransport (Transport action)
             if (! tapeRolling()) start();
             msg = tr ("Recording track") + " " + trackList (armedTrackMask());
             break;
-        case Transport::ToStart:
+        case TransportKey::ToStart:
             tape.locate (0.0);
             msg = tr ("Back to the start");
             break;
-        case Transport::Loop:
+        case TransportKey::Loop:
         {
             const bool on = reg.get ("tape.loop") < 0.5f;
             if (on && reg.get ("tape.loopout") <= reg.get ("tape.loopin") + 0.05f)
@@ -404,7 +404,7 @@ juce::String OhpeProcessor::runTransport (Transport action)
             msg = on ? tr ("Loop on") : tr ("Loop off");
             break;
         }
-        case Transport::Arm:
+        case TransportKey::Arm:
         {
             const bool armed = reg.get (armId) >= 0.5f;
             setPlainFromUi (armId.c_str(), armed ? 0.0f : 1.0f);

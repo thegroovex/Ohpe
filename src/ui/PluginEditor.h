@@ -100,7 +100,7 @@ public:
 
     // p11: tape transport
     /** Runs a transport action (keys, tape page, shortcuts) and shows its message on the display. */
-    void transport (OhpeProcessor::Transport action);
+    void transport (OhpeProcessor::TransportKey action);
     /** Standalone shortcuts: Space = play / stop, R = record, Enter / Home = to the start, L = loop,
         A = arm the edit track. Returns false for other keys and in plug-in hosts (the host owns them). */
     bool handleShortcut (const juce::KeyPress& key);

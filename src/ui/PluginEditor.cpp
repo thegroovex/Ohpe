@@ -178,18 +178,18 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
 
     // p11: the TRANSPORT cluster - play, record, stop, to the start, loop; right-click = MIDI learn
     playKey.setAccent (colour::signalRed);
-    playKey.onClick = [this] { transport (OhpeProcessor::Transport::PlayStop); };
+    playKey.onClick = [this] { transport (OhpeProcessor::TransportKey::PlayStop); };
     playKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::tapeTxPlay, &playKey); };
     recKey.setAccent (colour::signalRed);
     recKey.setPictoColour (colour::signalRed);
-    recKey.onClick = [this] { transport (OhpeProcessor::Transport::Record); };
+    recKey.onClick = [this] { transport (OhpeProcessor::TransportKey::Record); };
     recKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::tapeTxRec, &recKey); };
-    stopKey.onClick = [this] { transport (OhpeProcessor::Transport::Stop); };
+    stopKey.onClick = [this] { transport (OhpeProcessor::TransportKey::Stop); };
     stopKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::tapeTxStop, &stopKey); };
-    toStartKey.onClick = [this] { transport (OhpeProcessor::Transport::ToStart); };
+    toStartKey.onClick = [this] { transport (OhpeProcessor::TransportKey::ToStart); };
     toStartKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::tapeRtz, &toStartKey); };
     loopKey.setAccent (colour::sunYellow);
-    loopKey.onClick = [this] { transport (OhpeProcessor::Transport::Loop); };
+    loopKey.onClick = [this] { transport (OhpeProcessor::TransportKey::Loop); };
     loopKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::tapeTxLoop, &loopKey); };
     for (auto* k : { &recKey, &stopKey, &toStartKey, &loopKey }) addAndMakeVisible (*k);
     octDownKey.onClick = [this] { keyboard.setBaseOctave (keyboard.getBaseOctave() - 1); saveUiState(); repaint(); };
@@ -246,13 +246,13 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     display.onSoftKey = [this] (int id) { onSoftKey (id); };
     // p11: tape page transport and arm dots
     display.onTransportClicked = [this] (int b) {
-        using T = OhpeProcessor::Transport;
+        using T = OhpeProcessor::TransportKey;
         static const T actions[] = { T::ToStart, T::Stop, T::TapePlayStop, T::Record, T::Loop };
         transport (actions[juce::jlimit (0, 4, b)]);
     };
     display.onTrackArmClicked = [this] (int t) {
         selectTapeTrack (t);
-        transport (OhpeProcessor::Transport::Arm);
+        transport (OhpeProcessor::TransportKey::Arm);
     };
     display.setShowShortcuts (proc.wrapperType == juce::AudioProcessor::wrapperType_Standalone);
     display.setAnimatedVisuals (loadAnimatedVisualsSetting());
@@ -597,7 +597,7 @@ void OhpeEditor::updateOverlayVisibility()
 }
 
 // ---------------------------------------------------------------- p11: tape transport
-void OhpeEditor::transport (OhpeProcessor::Transport action)
+void OhpeEditor::transport (OhpeProcessor::TransportKey action)
 {
     const auto msg = proc.runTransport (action);
     if (msg.isNotEmpty())
@@ -614,11 +614,15 @@ bool OhpeEditor::handleShortcut (const juce::KeyPress& key)
 {
     if (proc.wrapperType != juce::AudioProcessor::wrapperType_Standalone) return false;
     if (key.getModifiers().isCommandDown() || key.getModifiers().isCtrlDown() || key.getModifiers().isAltDown()) return false;
-    using T = OhpeProcessor::Transport;
+    using T = OhpeProcessor::TransportKey;
     const auto c = juce::CharacterFunctions::toLowerCase (key.getTextCharacter());
     if (key.getKeyCode() == juce::KeyPress::spaceKey) { transport (T::PlayStop); return true; }
     if (c == 'r') { transport (T::Record); return true; }
-    if (key.getKeyCode() == juce::KeyPress::returnKey || key.getKeyCode() == juce::KeyPress::homeKey) { transport (T::ToStart); return true; }
+    if ((key.getKeyCode() == juce::KeyPress::returnKey && ! library.isVisible()) || key.getKeyCode() == juce::KeyPress::homeKey)
+    {
+        transport (T::ToStart); // Enter keeps its meaning in the library (keep the preset)
+        return true;
+    }
     if (c == 'l') { transport (T::Loop); return true; }
     return false;
 }
