@@ -213,7 +213,7 @@ std::vector<float> DiscoverStrip::sketch (const discover::Genome& g) const
         const float delta = j >= 0 ? gene.value - varyFrom.genes[(size_t) j].value : 0.0f;
         const auto k = (size_t) (h % (uint32_t) numPartials);
         amp[k] += delta;
-        phase[(size_t) ((h >> 8) % (uint32_t) numPartials)] += delta * 9.0f;
+        phase[(size_t) ((h >> 8) % (uint32_t) numPartials)] += delta * 25.0f;
         const auto dot = gene.id.rfind ('.');
         if (character::engineWeights (dot == std::string::npos ? gene.id : gene.id.substr (dot + 1)).w[character::Bright] > 0.0f)
         {
@@ -230,11 +230,15 @@ std::vector<float> DiscoverStrip::sketch (const discover::Genome& g) const
     {
         const float move = amp[(size_t) k] / peakDelta; // -1 .. 1
         const float tilt = 1.0f / (1.0f + (float) k * (1.6f - 1.3f * bright));
-        w[(size_t) k] = k == 0 ? 1.0f : juce::jmax (0.0f, tilt * (0.15f + 0.85f * std::abs (move)));
+        w[(size_t) k] = k == 0 ? 0.45f : juce::jmax (0.0f, tilt * (0.1f + 1.3f * std::abs (move)));
     }
+    // the pattern of which partials went up / down picks the number of cycles shown (2 .. 4): siblings that moved
+    // differently read differently at a glance
+    uint32_t pattern = 0;
+    for (int k = 0; k < numPartials; ++k) pattern = pattern * 3u + (amp[(size_t) k] > 0.15f * peakDelta ? 2u : (amp[(size_t) k] < -0.15f * peakDelta ? 1u : 0u));
     std::vector<float> out (64);
     const float aEnd = 0.02f + 0.3f * a, dEnd = aEnd + 0.05f + 0.35f * d, relStart = 0.72f, relLen = 0.04f + 0.24f * r;
-    const float cycles = 3.0f;
+    const float cycles = 2.0f + (float) ((pattern * 2654435761u) >> 30) * 0.67f;
     float norm = 0.0f;
     std::vector<float> wave (out.size());
     for (size_t i = 0; i < out.size(); ++i)
@@ -427,10 +431,15 @@ void DiscoverStrip::paint (juce::Graphics& g)
         g.drawText (juce::String (t + 1), a.reduced (u * 0.6f, u * 0.35f).withHeight (u * 1.2f), juce::Justification::centredLeft, false);
         {
             // relative to the farthest of the six: 1 = closest .. 3 = farthest
-            float far = 1.0e-6f;
-            for (const auto& v : variants) far = juce::jmax (far, varyFrom.empty() ? 0.0f : v.distance (varyFrom));
+            float nearD = 1.0e9f, farD = 0.0f;
+            for (const auto& v : variants)
+            {
+                const float dv = varyFrom.empty() ? 0.0f : v.distance (varyFrom);
+                nearD = juce::jmin (nearD, dv);
+                farD = juce::jmax (farD, dv);
+            }
             const float dist = varyFrom.empty() ? 0.0f : variants[(size_t) t].distance (varyFrom);
-            const int dots = juce::jlimit (1, 3, 1 + (int) std::lround (2.0f * dist / far));
+            const int dots = farD - nearD > 1.0e-6f ? juce::jlimit (1, 3, 1 + (int) std::lround (2.0f * (dist - nearD) / (farD - nearD))) : 2;
             for (int k = 0; k < 3; ++k)
             {
                 const auto dc = juce::Rectangle<float> (u * 0.45f, u * 0.45f).withCentre ({ a.getRight() - u * (0.9f + 0.65f * (float) k), a.getY() + u * 0.95f });
