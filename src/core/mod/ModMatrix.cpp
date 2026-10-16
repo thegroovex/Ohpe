@@ -85,6 +85,13 @@ const std::vector<DestInfo>& destTable()
         // p16: the morph pad's position
         add ("morphx", "Morph X", "Morph X", DestKind::PartParam, 0, "morph.x");
         add ("morphy", "Morph Y", "Morph Y", DestKind::PartParam, 0, "morph.y");
+        // p19: the resonator body stage of the part
+        add ("resotune", "Body Tune", "Körper-Stimmung", DestKind::PartParam, 0, "reso.tune");
+        add ("resosize", "Body Size", "Körper-Größe", DestKind::PartParam, 0, "reso.size");
+        add ("resomaterial", "Body Material", "Körper-Material", DestKind::PartParam, 0, "reso.material");
+        add ("resodecay", "Body Decay", "Körper-Ausklang", DestKind::PartParam, 0, "reso.decay");
+        add ("resoposition", "Body Position", "Körper-Position", DestKind::PartParam, 0, "reso.position");
+        add ("resomix", "Body Mix", "Körper-Mischung", DestKind::PartParam, 0, "reso.mix");
         return v;
     }();
     return t;

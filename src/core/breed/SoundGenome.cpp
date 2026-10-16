@@ -206,6 +206,11 @@ Schema Schema::forPart (const ParamRegistry& reg, int partIndex)
             g.group = Fx;
             if (g.id == "space.on") g.mutable_ = false;
         }
+        else if (head == "reso") // p19: the part's resonator body stage - bred like an effect, switched on by a parent only
+        {
+            g.group = Fx;
+            if (g.id == "reso.on") g.mutable_ = false;
+        }
         else if (seg.size() == 3 && head == "mod" && seg[1].size() >= 2 && seg[1][0] == 's')
         {
             g.group = Mod;

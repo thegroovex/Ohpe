@@ -705,3 +705,7 @@ PRESETS += PRESETS_R3
 from factory_parts_space import PRESETS_SPACE  # noqa: E402
 
 PRESETS += PRESETS_SPACE
+# p19: the resonator body presets (plates, tubes, sympathetic strings) - factory_parts_reso.py
+from factory_parts_reso import PRESETS_RESO  # noqa: E402
+
+PRESETS += PRESETS_RESO

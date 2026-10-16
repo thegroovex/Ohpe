@@ -223,7 +223,7 @@ Tools, for contributors:
 | Wobble Bass | Analog | FX | Tempo-ish filter wobble on a driven saw stack; turn the LFO rate to taste. |
 | Wub Machine | Wavetable | MPE | Saw stack through a tempo-synced eighth-note wobble filter that restarts with every note. |
 
-### Keys (37)
+### Keys (38)
 
 | Name | Engine | Also in | Description |
 |---|---|---|---|
@@ -243,6 +243,7 @@ Tools, for contributors:
 | FM Vibes | FM | Plucks | Mellow metallic bars with tremolo. |
 | Felt Grand | Sampler | Piano, MPE | Dark, soft grand: the top rolled off, a slow release and a warm hall - intimate. |
 | Funk Clav | FM | Plucks | Snappy clavinet-style keys; play short and syncopated. |
+| Glass Body Keys | Cluster | MPE | Soft keys through a glass plate tuned to each note: a glassy halo over the chord. |
 | Glass Keys | Wavetable | – | Bell-like Glass table that darkens as the note decays. |
 | Glide Poly Synth | Analog | Leads | Poly synth whose chords always slide from the chord before (poly glide). |
 | Halo Grand | Sampler | Hybrid, Piano, MPE | Grand piano with a halo: its own recording frozen into a grain cloud that blooms behind every chord. |
@@ -265,7 +266,7 @@ Tools, for contributors:
 | Vibraphone | Sampler | – | Recorded vibraphone with a gentle motor tremolo. |
 | Wide Organ | Wavetable | – | Drawbar-like organ with a rotating stereo pan and a short hall. |
 
-### Pads (47)
+### Pads (48)
 
 | Name | Engine | Also in | Description |
 |---|---|---|---|
@@ -311,17 +312,19 @@ Tools, for contributors:
 | Spectral Morph | Wavetable | Hybrid, MPE | Formant table morphing under a breathy vocal layer, both through a drifting comb: spectra that melt into each other. |
 | Super Stack | Cluster | – | Seven detuned saws per key, wide and lush. |
 | Sus Horizon | Cluster | – | Suspended-second stacks that never resolve; ambient beds. |
+| Sympathetic Pad | Analog | MPE | A warm pad that wakes a set of sympathetic strings tuned to the chord you hold - they keep ringing after release. |
 | Tidal Pad | Analog | MPE | Warm saw pad whose filter rolls in and out over two bars like a tide. |
 | Tine Bloom | Grain | Textures, Piano, MPE | Tine-piano grains blooming slowly, chorused, with a dotted echo. |
 | Vowel Pad | Wavetable | – | Formant table drifting between vowels; slow attack. |
 | Warm Horizon | Cluster | MPE | Soft, wide add-nine pad with gentle drift: warm and open, sits behind everything. |
 | Warm Strings | Analog | – | Ensemble strings: detuned saws, an octave up, gentle chorus. |
 
-### Leads (33)
+### Leads (34)
 
 | Name | Engine | Also in | Description |
 |---|---|---|---|
 | Binaural Lead | Wavetable | 3D, MPE | Expressive lead placed in front of you: slide moves it up over your head, pressure brings it right up to your ear, a slow drift keeps it alive. Made for MPE controllers and headphones. |
+| Bowed Tube | Analog | MPE | Breathy noise bowing a closed bore: a hollow, clarinet-like tone that swells with pressure. |
 | Breath Lead | Vocal | Hybrid, MPE | Breathy sung tone fused with a soft saw stack: a lead between a voice and a synth. |
 | Chip Square Lead | Wavetable | MPE | Narrow pulse lead with a crunchy bit crusher and a quick vibrato - retro, but wide. |
 | Classic Mono Lead | Analog | – | Saw lead with a little vibrato, glide and a dotted delay. |
@@ -355,14 +358,16 @@ Tools, for contributors:
 | Vox Lead | Vocal | Vocal | Solo synthetic voice with expressive vibrato and glide. |
 | Vox Synth Lead | Vocal | Vocal, MPE | Sung synth lead: an 'ah' with vibrato, widened by a Haas spread, with delay. |
 
-### Plucks (20)
+### Plucks (23)
 
 | Name | Engine | Also in | Description |
 |---|---|---|---|
 | Concert Harp | Sampler | – | Recorded concert harp (eight notes, CC0). |
+| Drone Strings | Pluck | MPE | Plucked steel over sympathetic strings tuned to the chord: buzzing, droning, endlessly resonant. |
 | Echo Harp | Pluck | MPE | Plucked nylon-like string with dotted ping-pong echoes and a wide room. |
 | FM Koto | FM | – | Plucked FM: a bright attack that quickly mellows. |
 | Future Chord | Cluster | Keys, MPE | Wide minor-seventh chord stab with squash and a short shimmer - one key, one chord. |
+| Gamelan Plate | Pluck | MPE | Short mallet hits on a long bronze plate, stretched partials and a shimmering tail. |
 | Glass Pluck | Wavetable | – | Glass table pluck with a bell-like sparkle. |
 | Harp Pluck | Pluck | – | Long-ringing harp-like string with a soft attack. |
 | Kalimba | Sampler | Keys | Recorded thumb piano with its buzzy, woody tines (CC0). |
@@ -370,6 +375,7 @@ Tools, for contributors:
 | Muted Pick | Analog | – | Short palm-muted square pluck for fast lines. |
 | Nylon Guitar | Pluck | – | Warm nylon string plucked near the soundhole. |
 | Pluck Nebula | Pluck | Hybrid, MPE | A plucked string that dissolves into a kalimba grain cloud: the string fades, the cloud swells and lingers. |
+| Plucked Plate | Pluck | MPE | A bright pluck striking a tuned metal plate: bell-like partials that bloom after the attack. |
 | Poly Pluck | Analog | – | Classic synth pluck: snappy filter on a detuned saw pair. |
 | Resonator Hit | Pluck | Hybrid, MPE | A struck metal bar feeding a short grain resonance and a tuned comb: percussive, ringing, strange. |
 | Steel Drum FM | FM | Keys | Tropical pan tones from inharmonic FM. |
@@ -448,11 +454,12 @@ Presets marked *Arp:* switch the arpeggiator on for the part they load into (lat
 | Trance Gate Arp | Cluster | Leads | Supersaw stack on a sixteenth arp over two octaves, ping-pong delay and hall. *Arp: Up · 1/16 · 2 oct · latch* |
 | Wide Pluck Arp | Wavetable | Plucks | Six-voice stereo pluck, up / down over three octaves, dotted ping-pong delay. *Arp: Up/Down · 1/16 · 3 oct · latch* |
 
-### Textures (25)
+### Textures (26)
 
 | Name | Engine | Also in | Description |
 |---|---|---|---|
 | Backwards Kalimba | Sampler | FX | The kalimba played in reverse: swells that end in a pluck. |
+| Breath Bore | Vocal | MPE | A whispering voice blown through an open pipe: airy flute tones with a soft edge. |
 | Breath Texture | Vocal | Vocal | Nearly unvoiced breath through slowly moving vowels. |
 | Breathing Machine | Vocal | Vocal, MPE | Breathy vocal drone whose vowel opens and closes over two bars. |
 | Dark Matter | Wavetable | Pads, MPE | Low Grit table with a crawling phaser and a slowly moving position - ominous. |
@@ -587,5 +594,5 @@ Presets marked *Arp:* switch the arpeggiator on for the part they load into (lat
 | Liquid Roll | Bass, Drums, Keys | Liquid drum & bass at 174 BPM in D minor: a rolling beat on the Tight kit (Orbit), dreamy tine-piano seventh chords and a warm pad (Orbit lanes 3 and 4), a smooth sliding sub (step sequencer) and glassy plucks from Euclid. Press Play. |
 | Evolving Space | Pads, Textures, Hybrid, 3D | Ambient at 66 BPM in A minor: Evolving Tide chords drifting through their wavetable (step sequencer), a generative grand piano with a grain halo from three Orbit lanes of 5, 7 and 11 steps, a glacial grain drone and random starfield bells (Euclid). Let it run. In 3D: the chords circle you slowly, the starfield bells scatter all around and the drone sways overhead (best with headphones). |
 
-**Engines:** FM 42, Wavetable 79, Analog 66, Pluck 14, Grain 27, Vocal 19, Cluster 22, Sampler 26
+**Engines:** FM 42, Wavetable 79, Analog 68, Pluck 17, Grain 27, Vocal 20, Cluster 23, Sampler 26
 <!-- presets:end -->

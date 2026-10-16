@@ -5,6 +5,8 @@
 #include "Palette.h"
 #include "fx/RackEffects.h"
 #include "fx/Space3D.h"
+#include "ResoView.h"
+#include "fx/Resonator.h"
 #include "SpaceView.h"
 #include "plugin/Localisation.h"
 #include "plugin/ParameterBridge.h"
@@ -85,7 +87,7 @@ juce::String typeName (const Core& core, const std::string& prefix) { return cho
 const char* lfoViewName (int v) noexcept { return v == LfoViewMod ? "Mod" : v == LfoViewMorph ? "Morph" : "LFO"; }
 const char* fxViewName (int v) noexcept
 {
-    return v == FxViewRack ? "Rack" : v == FxViewMaster ? "Master" : v == FxViewSpace ? "3D Space" : "Sends";
+    return v == FxViewRack ? "Rack" : v == FxViewMaster ? "Master" : v == FxViewSpace ? "3D Space" : v == FxViewBody ? "Body" : "Sends";
 }
 
 // ------------------------------------------------------------------------------------------------- pages
@@ -331,6 +333,13 @@ void paintSlotVisual (juce::Graphics& g, juce::Rectangle<float> area, Core& core
                                          space3d::speakerMonitoring (core), (float) juce::Time::getMillisecondCounter() * 0.001f);
         return;
     }
+    if (type == InsertSlot::Resonator) // p19: the slot's body
+    {
+        if (auto* e = static_cast<ResonatorEffect*> (slot.effect (type)))
+            resoview::paintBody (g, plot, resoview::stateOf (*e, core, pre + "resonator.", true), (float) juce::Time::getMillisecondCounter() * 0.001f,
+                                 colour::ultraviolet);
+        return;
+    }
     const std::string block = pre + info.id + ".";
     auto val = [&] (const char* k) { return core.params().get (block + k); };
     const std::string id = info.id;
@@ -485,7 +494,7 @@ juce::String compactName (const std::string& id, const std::string& nameEn, cons
         if (marker < 0) return name;
         return rest == "space.on" ? name.substring (marker + 1) : name.substring (marker + 4);
     }
-    if (part && rest.rfind ("morph.", 0) == 0 && name.startsWith ("Part ") && name.length() > 7) // p16: "Part 1 Morph X" -> "Morph X"
+    if (part && (rest.rfind ("morph.", 0) == 0 || rest.rfind ("reso.", 0) == 0) && name.startsWith ("Part ") && name.length() > 7) // p16: "Part 1 Morph X" -> "Morph X" (p19: "Part 1 Body Mix" -> "Body Mix")
         return name.substring (7).trimStart();
     if (! matrix && ! rack) return name;
 
