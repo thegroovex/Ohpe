@@ -289,7 +289,7 @@ int main (int argc, char* argv[])
             for (int s = 2; s <= 6; ++s) setPlain (p, "p1.fx" + juce::String (s) + ".type", 0.0f);
             for (int s = 1; s <= 4; ++s) setPlain (p, "mfx" + juce::String (s) + ".type", 0.0f);
             for (int r = 1; r <= 6; ++r) setPlain (p, "p1.mod.s" + juce::String (r) + ".amt", 0.0f);
-            p.core().prepareEffects();
+            prepareRack (p);
             e.selectPart (0);
             e.selectEngine (EngineType::Cluster);
             setPlain (p, "p1.cluster.spread", 1.0f);
@@ -313,7 +313,7 @@ int main (int argc, char* argv[])
             setPlain (p, "mfx1.midside.width", 1.25f);
             setPlain (p, "mfx1.midside.bassmono", 1.0f);
             p.core().params().set ("mfx1.type", (float) InsertSlot::MidSide);
-            p.core().prepareEffects();
+            prepareRack (p);
             e.selectMode (ui::Mode::Mixer);
             d.setVisual (ui::Display::Visual::Scope);
             playAnimated (p, e, 40, { 45, 52, 60, 64 });
