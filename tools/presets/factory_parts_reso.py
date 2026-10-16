@@ -27,8 +27,8 @@ def reso(model="string", follow="note", tune=0.0, size=0.5, material=0.55, decay
 RESO_GAINS = {  # level calibration (ohpe_render): about -15 dBFS active RMS
     "Plucked Plate": 5.9,
     "Gamelan Plate": 2.5,
-    "Bowed Tube": 12.0,
-    "Breath Bore": 11.3,
+    "Bowed Tube": 24.0,
+    "Breath Bore": 11.6,
     "Sympathetic Pad": 6.3,
     "Drone Strings": 11.2,
     "Glass Body Keys": 2.3,
