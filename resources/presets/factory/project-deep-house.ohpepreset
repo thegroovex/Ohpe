@@ -221,11 +221,11 @@
     "mix.ch5.comp": 0.45,
     "mix.master.tapesat": 0.15,
     "mix.master.comp": 1,
-    "mix.master.comp.thresh": -14.0,
+    "mix.master.comp.thresh": -10.0,
     "mix.master.comp.ratio": 2.5,
     "mix.master.comp.attack": 0.012,
     "mix.master.comp.release": 0.16,
-    "mix.master.comp.makeup": 0.0,
+    "mix.master.comp.makeup": 7.6,
     "mix.master.limit": 1
   },
   "sections": {
