@@ -2,7 +2,7 @@
 
 *designed by groovex* · [Deutsch](README.de.md)
 
-**[⬇ Download Ohpe (macOS · Windows)](https://github.com/thegroovex/Ohpe/releases/latest)** · [All releases](https://github.com/thegroovex/Ohpe/releases)
+**[⬇ Download Ohpe (macOS · Windows)](https://github.com/thegroovex/Ohpe/releases)**
 
 **Ohpe** is a compact, playful synthesizer workstation for your computer: eight synth engines on
 four parts, a drum kit, four sequencers, an eight-track tape machine, an eight-channel mixer with
@@ -15,7 +15,7 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 > Orbit sequencers, tape machine, mixer dynamics, FX slot, MPE and MIDI clock sync, preset library,
 > pro view and direct manipulation – now with the **factory sounds**: 120 part presets, 7 demo
 > projects, five drum kits and ten recorded instruments. First preview: unsigned builds on the
-> [releases page](https://github.com/thegroovex/Ohpe/releases/latest).
+> [releases page](https://github.com/thegroovex/Ohpe/releases).
 
 ## Features
 
