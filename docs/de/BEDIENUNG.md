@@ -184,7 +184,7 @@ an den Balken. Die Balken bleiben unter jedem Bild als genaue Zeile; der Winkel 
 Über einem Balken oder Bild zeigt der Hinweis den Wert und einen Satz dazu, was er tut.
 
 **Farben:** Gelb = was du bearbeitest, **Violett = Modulation** (jeder modulierte Parameter zeigt den Bereich,
-den seine Routings bewegen, als violetten Bogen, Streifen oder Schatten – das Filter zeigt den ganzen
+den seine Routings bewegen, als violetten Bogen, Streifen oder Schatten, auf den Balken als violettes Band um den Wert – das Filter zeigt den ganzen
 überstrichenen Frequenzgang), Grün = spielt, Rot = nimmt auf.
 
 **Modulation per Ziehen:** die Quellen-Chips in der ENTDECKEN-Zeile (LFO 1–3, Mod-Hüllkurve, Hüllkurve 3,
@@ -205,8 +205,10 @@ Der Streifen oben in der Profiansicht (Part-Modi) ist zum Finden von Klängen st
   schnelleren Anstieg, Drive und Feedback, LEBENDIG treibt das [Leben](#leben) des Parts plus Drift und
   Jitter, WEIT verbreitert Unisono, Spreizung und Layer. Sie sind Host-Parameter (Automation, MIDI Learn)
   und Matrix-Ziele.
-- **VARIIEREN** – sechs Verwandte des aktuellen Klangs erscheinen als Kacheln mit einer kleinen
-  Wellenform-Skizze. Kachel anklicken = **anhören** (der Klang wird gesetzt, eine kurze Note spielt),
+- **VARIIEREN** – sechs Verwandte des aktuellen Klangs erscheinen als nummerierte Kacheln. Die Welle jeder
+  Kachel zeigt, wie sich dieser Verwandte vom Ausgangsklang entfernt hat (andere Änderungen = andere Welle,
+  geformt von seiner Amp-Hüllkurve); die Punkte oben rechts zeigen, wie weit (1 = am nächsten der sechs,
+  3 = am weitesten). Ändern sich die Parameter des Klangs (andere Engine), werden die Kacheln geleert. Kachel anklicken = **anhören** (der Klang wird gesetzt, eine kurze Note spielt),
   **halten oder doppelklicken** = **behalten**. Eine Kachel auf eine andere ziehen = beide **kreuzen** – das
   Kind ersetzt die Zielkachel. Erneutes VARIIEREN ohne Behalten kehrt zum Ausgangsklang zurück.
 - **Würfel** – würfelt alle nicht gesperrten Gruppen auf einmal; der Regler darunter stellt die Stärke von

@@ -180,7 +180,7 @@ as on the bars. The bars stay below each picture as the precise row; the chevron
 them away. Hover over a bar or a picture for the value and one sentence on what it does.
 
 **Colours:** yellow = what you edit, **violet = modulation** (every routed parameter shows the range its
-routings move it as a violet arc, band or shadow – the filter shows the whole swept response), green =
+routings move it as a violet arc, band or shadow, on the bars as a violet band around the value – the filter shows the whole swept response), green =
 playing, red = recording.
 
 **Modulation by drag:** the source chips on the DISCOVER line (LFO 1–3, Mod Env, Env 3, Mod Wheel) can be
@@ -200,7 +200,10 @@ The strip at the top of the pro view (part modes) is for finding sounds rather t
   neutral). Each moves several real parameters musically: BRIGHT opens filter / tone / FM index, HARD gives a
   faster attack, drive and feedback, ALIVE drives the part's [Life](#life) amount plus drift and jitter, WIDE
   widens unison, spread and the layer. They are host parameters (automation, MIDI learn) and matrix targets.
-- **VARY** – six relatives of the current sound appear as tiles with a small waveform sketch. Click a tile to
+- **VARY** – six relatives of the current sound appear as numbered tiles. Each tile's wave is drawn from
+  how that relative moved away from the starting sound (different changes = a different wave, shaped by its
+  amp envelope); the dots top right show how far it went (1 = closest of the six, 3 = farthest). The tiles
+  are cleared when the sound's parameters change (another engine). Click a tile to
   **audition** it (the sound is applied and a short note plays), **hold or double-click** to **keep** it.
   Drag one tile onto another to **cross** the two – the child replaces the target tile. Pressing VARY again
   without keeping returns to the sound you started from.
