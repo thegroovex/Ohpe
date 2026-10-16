@@ -36,15 +36,17 @@ das Ansichtsmenü:
 | Ansicht | Was sie zeigt |
 |---|---|
 | **Figur** (Standard) | die animierte Figur der Engine / des Modus. Auf den Synth- und Mixer-Seiten steht sie auf einer langsam bewegten **Spektrum-Landschaft** ihres Klangs (Bearbeitungs-Part, Master). |
-| **Stereobild** | der Master: Goniometer (Mitte nach oben, Seite quer, L oben links, R oben rechts), Korrelationsanzeige (−1 … +1; rot = gegenphasig) und die Pegelbalken **M** / **S**. |
+| **Stereobild** | der Master-Ausgang: Goniometer (Mitte nach oben, Seite quer, L oben links, R oben rechts), Korrelationsanzeige (−1 … +1; rot = gegenphasig) und die Pegelbalken **M** / **S**. |
 | **Spektrum-Landschaft** | das Master-Spektrum als perspektivische Landschaft: Neue Reihen steigen vorn auf und wandern zum Horizont. Wenn der Klang endet, kommt sie zur Ruhe. |
 
-Das **Stereobild erscheint von selbst** auf den Seiten des FX-Slots **Mitte/Seite** (Stereobild
-dieses Parts nach seinem Slot, beschriftet *P1*–*P4*) und auf den Mixer-Seiten **Master-Stereo**
-(beschriftet *Master*). Die Balken M und S tragen die Farben der Encoder *Mitte-Pegel* und
-*Seite-Pegel*.
+Das **Stereobild erscheint von selbst**, sobald die Encoder einen Effekt **Mitte/Seite** in einem
+Slot des FX-Racks zeigen: im Rack eines Parts das Stereobild dieses Parts nach seinem Rack
+(beschriftet *P1*–*P4*), im Master-Rack (*MFX 1*–*MFX 4*) den Master-Ausgang (beschriftet *Master*).
+Die Balken M und S tragen die Farben der Encoder *Mitte-Pegel* und *Seite-Pegel*.
 
 ![FX-Slot Mitte/Seite mit Stereobild](../images/ohpe-midside-scope-de.png)
+
+![Master-Stereobild mit Mitte/Seite im Master-Rack](../images/ohpe-master-scope-de.png)
 
 ![Spektrum-Landschaft](../images/ohpe-terrain-de.png)
 

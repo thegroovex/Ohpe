@@ -11,8 +11,8 @@
 namespace ohpe
 {
 /**
-    Mid / side stereo processor (0.7): FX slot type "Mid/Side" of every part and the master
-    stereo stage ("mix.master.ms.*").
+    Mid / side stereo processor (0.7): FX rack type "Mid/Side" (index 7), available in every slot of
+    every part rack ("pN.fx.midside.*", "pN.fx2.midside.*" ...) and of the master rack ("mfxK.midside.*").
 
         M = (L + R) / 2,  S = (L - R) / 2
         bass mono:  S -= low part of S below "monofreq" (24 dB/oct.; mono-compatible lows)
@@ -29,7 +29,8 @@ namespace ohpe
 class MidSideEffect final : public IEffect
 {
 public:
-    enum Param { Width = 0, Mid, Side, BassMono, MonoFreq, Balance, Haas, MidTilt, SideTilt, HaasTime, numParams };
+    /// Descriptor (= registry, page) order. The first four are the modulation-matrix targets "FX k Param 1-4".
+    enum Param { Width = 0, Mid, Side, Balance, BassMono, MonoFreq, Haas, HaasTime, MidTilt, SideTilt, numParams };
 
     EffectInfo info() const noexcept override { return { "midside", "Mid/Side", "Mitte/Seite", "midside" }; }
     std::vector<ParamDescriptor> getParamDescriptors() const override;

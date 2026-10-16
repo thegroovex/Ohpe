@@ -90,7 +90,7 @@ Stehen alle neuen Regler auf ihrem Standard, klingt der Mixer bit-genau wie in 0
 
 ## FX-Slot des Parts
 
-`p1.fx.type`: Aus, Chorus, Phaser, Bitcrusher, Filter-Drive, Delay, Hall – ein Insert-Effekt
+`p1.fx.type`: Aus, Chorus, Phaser, Bitcrusher, Filter-Drive, Delay, Hall, Mitte/Seite (0.7) – ein Insert-Effekt
 zwischen Part 1 und Mixer (und vor dem Band, wenn eine Spur Part 1 aufnimmt). Jeder Effekt
 behält seine eigenen Parameter (`p1.fx.chorus.rate` …); Chorus, Phaser, Bitcrusher und
 Filter-Drive haben einen eigenen Mischungsregler, Delay und Hall bekommen ihn vom Slot
@@ -128,6 +128,39 @@ Jeder Part hat ein **FX-Rack mit sechs Slots in Reihe**, der Master eines mit vi
 * Die Modulationsmatrix kann die Mischung jedes Slots und die ersten vier Parameter seines
   Effekts bewegen ([MODULATION.md](MODULATION.md)).
 
+### Mitte/Seite-Stereo (0.7)
+
+**Mitte/Seite** (Typ 7, an die Typenliste angehängt) bearbeitet das Stereobild. Der Effekt steht in
+jedem Slot jedes Racks zur Wahl – den sechs Slots jedes Parts und den vier Master-Slots – mit einem
+eigenen Parameterblock pro Slot (`p1.fx.midside.width`, `p2.fx4.midside.width`, `mfx1.midside.width` …).
+Er zerlegt das Signal in Mitte M = (L + R) / 2 und Seite S = (L − R) / 2, formt beide und setzt sie
+wieder zusammen:
+
+| Parameter (`<Slot>.midside.*`) | Bereich | Wirkung |
+|---|---|---|
+| Stereobreite `width` | 0 … 200 % | Seite × Breite: 0 % = mono, 100 % = unverändert, 200 % = doppelt so breit |
+| Mitte-Pegel `mid` / Seite-Pegel `side` | −24 … +12 dB | Pegel von M und von S |
+| Balance `balance` | −100 … +100 % | Links-/Rechts-Balance |
+| Bass mono `bassmono` + Mono unter `monofreq` | an / aus, 40 … 500 Hz | entfernt die Seite unterhalb der Frequenz (24 dB/Okt.): straffe, monosichere Tiefen, breite Höhen |
+| Mikroversatz `haas` + Versatzzeit `haastime` | 0 … 100 %, 1 … 30 ms | mischt die um einige Millisekunden verzögerte Mitte in die Seite: breiter, ohne die Monosumme zu ändern |
+| Mitte-Tilt `midtilt` / Seite-Tilt `sidetilt` | −6 … +6 dB | je ein Tilt-EQ für M und S um 650 Hz (+ = heller, − = dunkler) |
+
+* **Monosicher:** Breite, Seite-Pegel, Bass mono, Seite-Tilt und Mikroversatz wirken nur auf S, und
+  S hebt sich in der Monosumme L + R = 2 M auf – beim Zusammenlegen auf mono geht an der Mitte nichts
+  verloren und nichts verfärbt sich.
+* **Sauber:** Alle Pegel gleiten (20 ms), Drehen an den Encodern oder Modulation klickt also nie;
+  nach der Vorbereitung des Slots wird kein Speicher reserviert. Stehen alle Parameter auf dem
+  Standard (Breite 100 %, 0 dB, Balance Mitte, Bass mono aus, Mikroversatz 0), reicht der Effekt das
+  Signal **bitgenau** durch.
+* **Modulation:** Die Matrix-Ziele *FX k Param 1–4* sind Breite, Mitte-Pegel, Seite-Pegel und Balance.
+* **Im Master-Rack** (`mfx1` … `mfx4`, vor Master-Kompressor und Limiter) formt er die ganze Mischung:
+  *Bass mono* hält die Tiefen in der Mitte, *Breite* macht die Mischung schmaler oder breiter.
+* Zeigen die Encoder einen Mitte/Seite-Slot, zeigt das Display das **Stereobild** dieses Parts nach
+  seinem Rack bzw. des Master-Ausgangs bei einem Master-Slot (Goniometer, Korrelation, M-/S-Pegel;
+  siehe [BEDIENUNG.md](BEDIENUNG.md)).
+
+![FX-Slot Mitte/Seite mit Stereobild](../images/ohpe-midside-scope-de.png)
+
 ## Audioeingang (Plug-in)
 
 Das Plug-in hat einen Audio-Eingangsbus **„Input“** (Stereo oder Mono), standardmäßig aus,
@@ -163,5 +196,7 @@ oder leeres Band) lädt mit leerem Band. Ohpe 0.1 kann Zustände mit Bandaudio n
 ## Tests
 
 `tests/core/TapeTests.cpp`, `tests/core/FxTests.cpp`, `tests/core/AllocationTests.cpp`
-(keine Speicherreservierung in `Core::process()`) und `tests/plugin/TapeExportTests.cpp` – Details
-im englischen Dokument.
+(keine Speicherreservierung in `Core::process()`), `tests/plugin/TapeExportTests.cpp`, seit 0.7
+`tests/core/StereoTests.cpp` (Mitte/Seite: Breite 100 % = bitgenauer Bypass, Breite 0 = mono, Bass
+mono unterhalb der Frequenz, Mikroversatz monokompatibel, kein NaN; FIFO; Parameter in jedem
+Rack-Slot) und `tests/plugin/StereoDisplayTests.cpp` – Details im englischen Dokument.

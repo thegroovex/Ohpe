@@ -36,14 +36,17 @@ view menu:
 | View | What it shows |
 |---|---|
 | **Character** (default) | the animated character of the engine / mode. On the Synth and Mixer pages it stands on a slowly moving **spectrum terrain** of its sound (the edit part, the master). |
-| **Stereo scope** | the master: goniometer (mid up, side across, L upper left, R upper right), correlation meter (−1 … +1; red = out of phase) and the **M** / **S** level bars. |
+| **Stereo scope** | the master output: goniometer (mid up, side across, L upper left, R upper right), correlation meter (−1 … +1; red = out of phase) and the **M** / **S** level bars. |
 | **Spectrum terrain** | the master spectrum as a perspective landscape: new rows rise at the front and recede to the horizon. It comes to rest when the sound stops. |
 
-The **stereo scope appears by itself** on the pages of the **Mid/Side** FX slot (scope of that part
-after its slot, marked *P1*–*P4*) and on the **Master Stereo** pages of the mixer (marked *Master*).
-The M and S bars use the colours of the *Mid Level* and *Side Level* encoders.
+The **stereo scope appears by itself** whenever the encoders show a **Mid/Side** effect in an FX rack
+slot: in a part's rack it shows that part after its rack (marked *P1*–*P4*), in the master rack
+(*MFX 1*–*MFX 4*) the master output (marked *Master*). The M and S bars use the colours of the
+*Mid Level* and *Side Level* encoders.
 
 ![Mid/Side FX slot with the stereo scope](../images/ohpe-midside-scope.png)
+
+![Master scope with Mid/Side in the master rack](../images/ohpe-master-scope.png)
 
 ![Spectrum terrain](../images/ohpe-terrain.png)
 

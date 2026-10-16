@@ -9,18 +9,19 @@ namespace ohpe
 std::vector<ParamDescriptor> MidSideEffect::getParamDescriptors() const
 {
     using namespace pd;
-    // registry order = page order on the display (after "type"): width / levels, bass / balance / shift, tilts
+    // registry order = page order on the display (after "type"): width / levels / balance, bass mono / shift, tilts.
+    // The first four are what the modulation matrix moves ("FX k Param 1-4"): all continuous.
     return {
         continuous ("width", "Stereo Width", "Stereobreite", 0.0f, 2.0f, 1.0f, ParamUnit::Percent),
         continuous ("mid", "Mid Level", "Mitte-Pegel", -24.0f, 12.0f, 0.0f, ParamUnit::Decibel),
         continuous ("side", "Side Level", "Seite-Pegel", -24.0f, 12.0f, 0.0f, ParamUnit::Decibel),
+        continuous ("balance", "Balance", "Balance", -1.0f, 1.0f, 0.0f, ParamUnit::Percent),
         toggle ("bassmono", "Bass Mono", "Bass mono", false),
         continuous ("monofreq", "Mono Below", "Mono unter", 40.0f, 500.0f, 120.0f, ParamUnit::Hertz, 0.5f),
-        continuous ("balance", "Balance", "Balance", -1.0f, 1.0f, 0.0f, ParamUnit::Percent),
         continuous ("haas", "Micro-Shift", "Mikroversatz", 0.0f, 1.0f, 0.0f),
+        continuous ("haastime", "Shift Time", "Versatzzeit", 0.001f, maxHaasSeconds, 0.012f, ParamUnit::Seconds, 0.6f),
         continuous ("midtilt", "Mid Tilt", "Mitte-Tilt", -6.0f, 6.0f, 0.0f, ParamUnit::Decibel),
         continuous ("sidetilt", "Side Tilt", "Seite-Tilt", -6.0f, 6.0f, 0.0f, ParamUnit::Decibel),
-        continuous ("haastime", "Shift Time", "Versatzzeit", 0.001f, maxHaasSeconds, 0.012f, ParamUnit::Seconds, 0.6f),
     };
 }
 
