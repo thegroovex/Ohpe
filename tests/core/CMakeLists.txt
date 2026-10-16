@@ -65,3 +65,5 @@ target_link_libraries(ohpe_core_tests PRIVATE Threads::Threads)
 target_sources(ohpe_core_tests PRIVATE SpaceTests.cpp)
 # p16: the morph space
 target_sources(ohpe_core_tests PRIVATE MorphTests.cpp)
+# p18: preset breeding
+target_sources(ohpe_core_tests PRIVATE BreedTests.cpp)
