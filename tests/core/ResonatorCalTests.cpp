@@ -44,7 +44,7 @@ TEST_CASE ("p19 CAL: resonator levels")
                 s.l[i] = s.r[i] = x;
             }
             const float inRms = rms (s.l);
-            for (size_t p = 0; p < s.size(); p += 256) e.process (s.l.data() + p, s.r.data() + p, 256);
+            for (size_t p = 0; p < s.size(); p += 256) e.process (s.l.data() + p, s.r.data() + p, (int) std::min<size_t> (256, s.size() - p));
             o << "model " << model << " in " << in << " inRms " << inRms << " outRms " << rms (s.l) << " peak " << peak (s.l) << "\n";
         }
     namespace fs = std::filesystem;
