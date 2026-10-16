@@ -8,6 +8,8 @@ namespace ohpe
 {
 namespace vocal
 {
+static_assert (usertable::numFormants == numFormants, "user formant frames match the engine");
+
 const FormantSet& vowelFormants (int vowel) noexcept
 {
     // classic low-voice formant data: frequency (Hz), level (dB), bandwidth (Hz)
@@ -113,7 +115,17 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         float vowel = p.vowel + c.modEnvAmount * modEnv.getLevel() * 2.0f;
         if (c.lfoDest == LfoDest::Timbre) vowel += lfoValue * 2.0f;
         vowel += expr.timbre * 2.0f; // per-note expression / modulation matrix (0.7)
-        const FormantSet fs = morphVowel (vowel);
+        FormantSet fs = morphVowel (vowel);
+        if (p.user != nullptr) // p20: the user's formant tracks, vowel 0 .. 4 = first .. last frame
+        {
+            const auto uf = p.user->formantsAt (std::clamp (vowel, 0.0f, 4.0f) * 0.25f);
+            for (int k = 0; k < numFormants; ++k)
+            {
+                fs.freq[k] = uf.freq[(size_t) k];
+                fs.gainDb[k] = uf.gainDb[(size_t) k];
+                fs.bandwidth[k] = uf.bandwidth[(size_t) k];
+            }
+        }
         const float shift = dsp::semitonesToRatio (std::clamp (p.formantShift + 12.0f * expr.formant, -24.0f, 24.0f)); // 0.8: MPE formant
         for (int k = 0; k < numFormants; ++k)
         {

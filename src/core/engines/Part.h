@@ -73,6 +73,11 @@ public:
         own - pitch drift, filter / brightness breathing, engine colour, grain scatter (VoiceBase life motion).
     */
     void registerLate15LifeParams (ParamRegistry& reg) const;
+    /**
+        p20: "pN.usertable.wt" (the Wavetable engine plays the part's user wavetable) and "pN.usertable.vocal" (the
+        Vocal engine uses the user formant tracks). Off, or on without a loaded table = the built-in material.
+    */
+    void registerLate20UserTableParams (ParamRegistry& reg) const;
     /** 1.0, audio thread: master monitoring mode (SpaceEffect::Headphones / Speakers) for the stage and the rack. */
     void setMonitorMode (int mode) noexcept
     {
@@ -195,6 +200,7 @@ private:
     int exprSmoothIndex = -1, exprSlideIndex = -1; ///< 0.8: "pN.mpe.smooth", "pN.mpe.slide"
     int monoBassIndex = -1;                        ///< 0.8: "pN.monobass"
     int lifeIndex = -1;                            ///< p15: "pN.life"
+    int userWtIndex = -1, userVocalIndex = -1;     ///< p20: "pN.usertable.wt" / "pN.usertable.vocal"
     float monoBassHz = 20.0f, partSr = 48000.0f;
     dsp::Svf monoLp1, monoLp2;                     ///< 4th-order Butterworth high-pass of the side signal
     float exprBlend = 0.0f;                        ///< 0.8: latest per-note "layer blend" expression (part-wide)
