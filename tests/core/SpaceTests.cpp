@@ -180,9 +180,9 @@ TEST_CASE ("1.0 space: parameters - per-part stage, monitoring, rack type in eve
     CHECK (reg.indexOf ("p1.space.on") > reg.indexOf ("tape.tx.link")); // appended after the tape transport IDs (p11)
     // the 1.0 block ends with the master racks' Space 3D blocks; only the punch pass IDs (ducking, chorus ensemble) follow
     CHECK (reg.indexOf ("mfx4.space3d.glide") + 1 == reg.indexOf ("mix.duck.src"));
-    // p14: the performance wheels (perf.bend, perf.mod) come after the punch pass IDs, as the last two
-    CHECK (reg.indexOf ("perf.bend") == reg.size() - 2);
-    CHECK (reg.indexOf ("perf.mod") == reg.size() - 1);
+    // p14: the performance wheels (perf.bend, perf.mod) come right after the punch pass IDs (later blocks follow them)
+    CHECK (reg.indexOf ("perf.bend") == reg.indexOf ("mfx4.chorus.lowcut") + 1);
+    CHECK (reg.indexOf ("perf.mod") == reg.indexOf ("perf.bend") + 1);
 }
 
 TEST_CASE ("1.0 space: motion paths and orientation (pure functions)")

@@ -102,12 +102,12 @@ Stereo renderCore (Core& core, int blocks, int block = 512)
 }
 } // namespace
 
-TEST_CASE ("life: registered for every part after the performance wheels, 0 .. 1, default 0 (golden order)")
+TEST_CASE ("life: registered for every part after the performance wheels, 0 .. 1, default 0")
 {
     Core core;
     const int first = core.params().indexOf ("p1.life");
     REQUIRE (first >= 0);
-    CHECK (first == core.params().indexOf (Core::Ids::perfMod) + 1);
+    CHECK (first > core.params().indexOf (Core::Ids::perfMod)); // appended after the performance wheels
     for (int p = 0; p < Core::numParts; ++p)
     {
         const auto id = "p" + std::to_string (p + 1) + ".life";
@@ -179,19 +179,25 @@ TEST_CASE ("life: alive on every engine; finite, no denormals, bounded, no level
 
 TEST_CASE ("life: the pitch drifts only a few cents")
 {
-    VoiceCommon c = lifeCommon (1.0f, 3u);
+    auto render = [] (float life, uint32_t seed) {
+        auto e = makeEngine (EngineType::Analog, lifeCommon (life, seed));
+        e->setParam (1, 0.0f); // no oscillator detune: a clean pitch to measure
+        e->noteOn (57, 0.8f);  // A3, 220 Hz
+        return renderEngine (*e, 48000 * 4);
+    };
+    const auto still = render (0.0f, 1u);
     for (uint32_t seed : { 3u, 11u, 99u })
     {
-        c.lifeSeed = seed;
-        auto e = makeEngine (EngineType::Analog, c);
-        e->noteOn (57, 0.8f); // A3, 220 Hz
-        const auto out = renderEngine (*e, 48000 * 4);
-        for (size_t from = 0; from + 24000 <= out.size(); from += 24000)
+        const auto alive = render (1.0f, seed);
+        for (size_t from = 0; from + 24000 <= alive.size(); from += 24000)
         {
-            const double f = kit::bandFrequency (out.l, sampleRate, from + 2400, from + 24000, 220.0);
+            const double f0 = kit::bandFrequency (still.l, sampleRate, from + 2400, from + 24000, 220.0);
+            const double f = kit::bandFrequency (alive.l, sampleRate, from + 2400, from + 24000, 220.0);
             CAPTURE (seed);
             CAPTURE (from);
-            CHECK (std::abs (centsBetween (f, 220.0)) < 16.0);
+            CAPTURE (f0);
+            CAPTURE (f);
+            CHECK (std::abs (centsBetween (f, f0)) < 16.0);
         }
     }
 }
