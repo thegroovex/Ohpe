@@ -165,12 +165,13 @@ void MidSideEffect::process (float* l, float* r, int n) noexcept
         // before bass mono and width, so the lows stay mono and width 0 stays exactly mono.
         delayBuf[(size_t) writePos] = m;
         const float amt = haasAmt.next();
+        // integer part and fraction of the delay kept apart: the read index never depends on float rounding at the wrap
         const float d = std::clamp (haasDelay.next(), 1.0f, (float) (len - 2));
-        float rp = (float) writePos - d;
-        if (rp < 0.0f) rp += (float) len;
-        const int i0 = (int) rp;
-        const int i1 = i0 + 1 < len ? i0 + 1 : 0;
-        const float frac = rp - (float) i0;
+        const int di = (int) d;
+        const float frac = d - (float) di;
+        int i0 = writePos - di; // d samples back lies between i0 (di back) and i1 (di + 1 back)
+        if (i0 < 0) i0 += len;
+        const int i1 = i0 > 0 ? i0 - 1 : len - 1;
         const float delayed = delayBuf[(size_t) i0] + (delayBuf[(size_t) i1] - delayBuf[(size_t) i0]) * frac;
         if (++writePos >= len) writePos = 0;
         s += delayed * amt * 0.7f;
