@@ -2,8 +2,9 @@
 # Ohpe - designed by groovex
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """
-Level calibration of the "3D" factory presets (factory_parts_space.py): renders each one with ohpe_render (the
-factory phrase, master limiter off), measures the active RMS and the peak, and writes the part gain (dB) that brings
+Level calibration of the "3D" factory presets (factory_parts_space.py): renders each one with ohpe_render in both
+windows of the level tests (4 beats + 1 s tail as the plug-in test, 2 beats + 0.4 s as the core test; master limiter
+off), measures the active RMS and the peak (the louder window counts for the peak, the quieter one for the level), and writes the part gain (dB) that brings
 it to -15 dBFS active RMS without letting the peak exceed -1.2 dBFS into SPACE_GAINS (into SPACE_OUT, the Multiband
 output, for presets that end in it: the compressor makes the part gain ineffective there). Run make_factory.py afterwards
 (this script does it with --write); two passes settle presets whose chain is not linear (drive, compressor).
@@ -53,11 +54,16 @@ def main():
         gains = dict(s.SPACE_GAINS)
         files = [os.path.join(ROOT, "resources", "presets", "factory", "%s-%s.ohpepreset" % (p["tags"][0].lower(), slug(p["name"])))
                  for p in s.PRESETS_SPACE]
-        cmd = [a.render, "--bank", os.path.join(ROOT, "resources", "samples", "bank.json"), "--wavdir", a.wavdir] + files
-        res = subprocess.run(cmd, capture_output=True, text=True)
-        sys.stderr.write(res.stderr)
-        rows = [json.loads(l) for l in res.stdout.splitlines() if l.startswith("{")]
-        assert len(rows) == len(files), "rendered %d of %d" % (len(rows), len(files))
+        windows = []
+        for beats, tail in (("4", "1"), ("2", "0.4")):
+            cmd = [a.render, "--bank", os.path.join(ROOT, "resources", "samples", "bank.json"), "--wavdir", a.wavdir,
+                   "--beats", beats, "--tail", tail] + files
+            res = subprocess.run(cmd, capture_output=True, text=True)
+            sys.stderr.write(res.stderr)
+            got = [json.loads(l) for l in res.stdout.splitlines() if l.startswith("{")]
+            assert len(got) == len(files), "rendered %d of %d" % (len(got), len(files))
+            windows.append(got)
+        rows = [dict(r, active=min(r["active"], q["active"]), peak=max(r["peak"], q["peak"])) for r, q in zip(*windows)]
         outs = dict(s.SPACE_OUT)
         for r in rows:
             params = json.load(open(next(f for f in files if f.endswith(r["file"] + ".ohpepreset"))))["params"]

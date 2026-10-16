@@ -13,7 +13,7 @@ Imported by make_factory.py (written after the other part presets).
 """
 import factory_parts_r3 as r3
 from factory_parts import an, fm, wt, pl, cl, vo, amp, mod, lfo, pitchenv, arp, MONO  # noqa: F401
-from factory_parts_r3 import P, cho, dly, rev, fdrive, shaper, squash, wobble, formant, comb, flanger, motion, lfo_n, mpe
+from factory_parts_r3 import P, cho, dly, rev, fdrive, shaper, squash, wobble, formant, comb, flanger, comp, motion, lfo_n, mpe
 
 # the matrix targets reserved in 0.7 for the spatialiser (ModMatrix.cpp, after "FX 6 Param 4")
 SPACE_DST = ["azimuth", "elevation", "distance", "pathrate", "pathphase"]
@@ -41,26 +41,31 @@ def expressive(*extra, slide=0.35, press=-0.12, **settings):
 
 SPACE_GAINS = {  # level calibration (space_cal.py): -15 dBFS active RMS, peaks <= -1.2 dBFS
     "Binaural Lead": -6.1,
-    "Doppler Fly-By": 24.0,
+    "Doppler Fly-By": 17.8,
     "Figure Eight Arp": 22.2,
     "Halo Drift": 10.1,
     "Neuro Swirl": 12.9,
-    "Night Swarm": 17.9,
-    "Orbit Arp": 21.5,
+    "Night Swarm": 21.0,
+    "Orbit Arp": 22.5,
     "Orbit Atmos": 9.5,
     "Orbit Reese": 9.9,
     "Overhead Choir": 13.9,
     "Pendulum Wobble": 11.7,
-    "Spiral Arp": 20.0,
-    "Spiral Riser": 24.0,
+    "Spiral Arp": 20.5,
+    "Spiral Riser": 22.8,
 }
 
+
+# Spiral Riser and Doppler Fly-By end in a peak compressor after their reverb (slot 4, before the 3D stage): it keeps a
+# held note / the close pass in check; their level is set by its makeup (space_cal.py's gain step barely moves them).
+# Orbit Arp and Spiral Arp start with a fast-release compressor (slot 1) that takes the edge off the pluck / bell attacks,
+# which the binaural stage raises again at the near ear.
 
 # Presets ending in the Multiband (upward + downward compression: the part gain barely changes their level) are
 # calibrated on its output (dB, -12 ... +12) instead; filled by space_cal.py as well.
 SPACE_OUT = {  # Multiband output (dB) from the same calibration
     "Neuro Swirl": 6.5,
-    "Orbit Reese": 5.3,
+    "Orbit Reese": 6.3,
     "Pendulum Wobble": 10.0,
 }
 
@@ -109,10 +114,10 @@ PRESETS_SPACE = [
     # ================================================================ ARPS (3)
     S("Orbit Arp", ["Arp", "3D"], "pluck",
       "Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast. Latched: hold a chord.",
-      pl(material=0.35, damping=0.45, bright=0.7, body=0.3, excite=0.4, pickpos=0.3, bodysize=0.4),
-      amp(0.001, 0.5, 0.0, 0.3), dly(2, 0.375, 0.3, 0.5, 1, 0.18), rev(3, 0.6, 0.5, 0.02, 0.18),
-      space("circle", "1 bar", size=0.15, dist=1.8, spread=20.0, room=0.3, roomsize=0.35, doppler=0.25),
-      arp("up", 2, 0.5, "1/16", latch=1), voices=8),
+      pl(material=0.35, damping=0.3, bright=0.6, body=0.3, excite=0.25, pickpos=0.3, bodysize=0.4),
+      amp(0.001, 0.8, 0.0, 0.4), comp(1, -8.0, 6.0, 0.1, 30.0), dly(2, 0.375, 0.3, 0.5, 1, 0.24), rev(3, 0.6, 0.5, 0.02, 0.18),
+      space("circle", "1 bar", size=0.15, dist=1.8, spread=20.0, room=0.36, roomsize=0.35, doppler=0.25),
+      arp("up", 2, 0.8, "1/16", latch=1), voices=8),
     S("Figure Eight Arp", ["Arp", "3D"], "wavetable",
       "Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. Latched.",
       wt(table="digital", pos=0.35, tone=0.72, unison=0.2, univoices=3, uniwidth=0.6, keytrack=0.5, envpos=0.3),
@@ -122,10 +127,10 @@ PRESETS_SPACE = [
     S("Spiral Arp", ["Arp", "3D"], "fm",
       "Bell arpeggio spiralling up from ear height to above your head over four bars, then dropping back for the next round.",
       fm(algo=1, modratio=2.0, index=0.3, op1ratio=1, op2ratio=2, op3ratio=4, op4ratio=1, op1level=1.0, op2level=0.5, op3level=0.3,
-         op4level=0.2, op5level=0.0, op6level=0.0, velidx=0.5),
-      amp(0.001, 0.6, 0.0, 0.4), mod(0.001, 0.4, 0.0, 0.3, 0.5), dly(2, 0.375, 0.35, 0.45, 1, 0.2), rev(3, 0.75, 0.45, 0.02, 0.24),
-      space("spiral", "4 bars", size=0.65, dist=2.4, spread=20.0, room=0.35, roomsize=0.45, doppler=0.2),
-      arp("up", 3, 0.45, "1/16", latch=1), voices=8),
+         op4level=0.2, op5level=0.0, op6level=0.0, velidx=0.3),
+      amp(0.004, 0.9, 0.0, 0.5), mod(0.001, 0.6, 0.0, 0.3, 0.35), comp(1, -8.0, 6.0, 0.1, 30.0), dly(2, 0.375, 0.35, 0.45, 1, 0.25), rev(3, 0.75, 0.45, 0.02, 0.24),
+      space("spiral", "4 bars", size=0.65, dist=2.4, spread=20.0, room=0.4, roomsize=0.45, doppler=0.2),
+      arp("up", 3, 0.75, "1/16", latch=1), voices=8),
 
     # ================================================================ BASS (3): the mid range moves, the sub stays mono
     S("Orbit Reese", ["Bass", "3D"], "wavetable",
@@ -156,15 +161,16 @@ PRESETS_SPACE = [
     S("Spiral Riser", ["FX", "3D"], "analog",
       "Hold a key: noise and saws climb for four seconds while spiralling from below your ears to high above your head.",
       an(shape=0.0, detune=0.4, cutoff=650, reso=0.35, oscmix=0.5, noise=0.6, drive=0.3, keytrack=0.3),
-      amp(2.0, 1.0, 1.0, 2.0), mod(3.0, 0.5, 1.0, 1.0, 1.0), pitchenv(-12, 4.0, 0.0), flanger(2, 0.3, 0.7, 0.5, 3.0, 0.4),
-      rev(3, 0.9, 0.4, 0.04, 0.35),
+      amp(1.4, 1.0, 1.0, 2.0), mod(3.0, 0.5, 1.0, 1.0, 1.0), pitchenv(-12, 4.0, 0.0), flanger(2, 0.3, 0.7, 0.5, 3.0, 0.4),
+      rev(3, 0.9, 0.4, 0.04, 0.35), comp(4, -6.0, 8.0, 0.1, 180.0, makeup=2.0),
       space("spiral", "2 bars", size=1.0, dist=2.2, spread=60.0, room=0.4, roomsize=0.6, doppler=0.1),
-      voices=2),
+      {"vol": 1.0}, voices=2),
     S("Doppler Fly-By", ["FX", "3D"], "wavetable",
       "A siren tone racing past from left to right and back - the pitch bends with the Doppler effect as it passes.",
       wt(table="digital", pos=0.3, tone=0.7, unison=0.3, univoices=3, uniwidth=0.5, keytrack=0.5),
       amp(0.05, 0.5, 1.0, 0.6), mod(0.01, 0.3, 0.5, 0.3, 0.2), lfo(5.5, 0.08, "sine", "pitch"), rev(3, 0.7, 0.4, 0.02, 0.22),
-      space("flyby", "2 bars", size=0.8, dist=2.0, spread=10.0, room=0.3, roomsize=0.6, doppler=1.0, air=0.8, rolloff=0.5),
+      comp(4, -6.0, 8.0, 0.1, 180.0, makeup=1.8),
+      space("flyby", "2 bars", size=0.8, dist=2.0, spread=10.0, room=0.3, roomsize=0.6, doppler=1.0, air=0.8, rolloff=0.4),
       {"vol": 1.0}, voices=2),
     S("Binaural Lead", ["Leads", "3D"], "wavetable",
       "Expressive lead placed in front of you: slide moves it up over your head, pressure brings it right up to your ear, "
@@ -196,6 +202,8 @@ SPACE_PROJECTS = {
                                                         doppler=0.3).items()},
                    **{"p4." + k: v for k, v in space("pendulum", "32 bars", size=0.7, dist=4.0, spread=90.0, room=0.4,
                                                         roomsize=0.8, doppler=0.0).items()}},
+        # the distance attenuation of the three moving parts (3 - 5 m) costs ~4 dB against the flat mix: made up on the part gains
+        "gain_offsets": {"p1": 3.0, "p3": 3.0, "p4": 3.0},
     },
 }
 
@@ -206,6 +214,8 @@ def apply_project(p):
     if extra is None:
         return p
     p = dict(p, params=dict(p["params"], **extra["params"]), tags=list(p["tags"]) + [t for t in extra["tags"] if t not in p["tags"]])
+    for part, db in extra.get("gain_offsets", {}).items():
+        p["params"][part + ".gain"] = round(p["params"].get(part + ".gain", 0.0) + db, 1)
     if extra["comment"] not in p["comment"]:
         p["comment"] = p["comment"] + extra["comment"]
     return p
