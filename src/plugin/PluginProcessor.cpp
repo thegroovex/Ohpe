@@ -231,6 +231,7 @@ void OhpeProcessor::timerCallback()
         sendChangeMessage();
     samples.timerTick();
     pollRemoteControls();
+    if (ohpeCore.effectsWaiting()) ohpeCore.prepareEffects(); // 0.7: FX rack slot types chosen by the host / a preset
 }
 
 void OhpeProcessor::pollRemoteControls()

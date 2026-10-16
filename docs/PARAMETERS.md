@@ -322,3 +322,56 @@ Behaviour changes in 0.6: with one voice, releasing the newest key returns to th
 held (legato). A step-sequencer or Orbit step at gate 100 % ends one sample after the next step
 starts, so a different next note overlaps it (legato). MIDI CC 65 switches portamento off / on and
 CC 5 sets the glide time of the part on that channel.
+
+## 0.7 – FX rack and modulation matrix
+
+Appended after `mix.master.lowpass`. Guides: FX rack [English](en/TAPE-MIXER-FX.md) ·
+[Deutsch](de/BAND-MISCHER-FX.md), modulation matrix [English](en/MODULATION.md) · [Deutsch](de/MODULATION.md).
+Order of the block (registry indices; 1151 parameters, 946–2096):
+
+| Range | Block |
+|---|---|
+| 946–1082 | part 1 rack: slots 2–6, then mix / bypass of slots 1–6 |
+| 1083–1244, 1245–1406, 1407–1568 | part 2, 3, 4 rack: slot 1 (`pN.fx.*`), slots 2–6, mix / bypass |
+| 1569–1676 | master rack `mfx1` … `mfx4` |
+| 1677–1781, 1782–1886, 1887–1991, 1992–2096 | modulation matrix of part 1, 2, 3, 4 (105 each) |
+
+
+1. **Part racks** – for part 1, then 2, 3, 4: slot 1 (`pN.fx.type` + the 0.2 type blocks; parts 2–4 only, part 1
+   has it since 0.2), slots 2–6 (`pN.fx2.type` … `pN.fx6.*`, each the type + the 0.2 type blocks in the order of
+   the 0.2 slot: chorus, phaser, bitcrush, filter drive, delay (+ `mix`), reverb (+ `mix`)), then `mix` and `bypass`
+   of slots 1–6 (`pN.fx.mix`, `pN.fx.bypass`, `pN.fx2.mix` …).
+2. **Master rack** – `mfx1.*` … `mfx4.*` (type + 0.2 blocks each), then `mfx1.mix`, `mfx1.bypass` … `mfx4.bypass`.
+3. **Modulation matrix** – for part 1, then 2, 3, 4: routings 1–16 (`pN.mod.sK.src`, `.via`, `.dst`, `.amt`,
+   `.curve`), LFO 2 and LFO 3 (`rate`, `sync`, `shape`, `phase`, `fade`, `mode`, `depth`), envelope 3
+   (`pN.env3.delay`, `.a`, `.hold`, `.d`, `.s`, `.r`), `pN.macro1` … `pN.macro4`, `pN.seqlane`.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.fxK.type` (K = 2…6), `mfxK.type` | P*N* FX*K* FX Slot / Master FX *K* FX Slot | P*N* FX*K* FX-Slot / Master-FX *K* FX-Slot | as `p1.fx.type` | Off |
+| `pN.fxK.mix`, `mfxK.mix` | Part *N* FX *K* Mix / Master FX *K* Mix | … Mischung | 0 … 100 % (dry / wet of the slot) | 100 % |
+| `pN.fxK.bypass`, `mfxK.bypass` | … Bypass | … Bypass | off / on | off |
+| `pN.mod.sK.src` | Part *N* Mod *K* Source | Part *N* Mod *K* Quelle | Off, LFO 1, LFO 2, LFO 3, Amp Env, Mod Env, Env 3, Velocity, Key Track, Mod Wheel, Pitch Bend, Channel Pressure, Note Pressure, Slide (Timbre), Note Bend, Random, Macro 1–4, Seq Lane | Off |
+| `pN.mod.sK.via` | … Via | … Via | as the source | Off |
+| `pN.mod.sK.dst` | … Target | … Ziel | Off, Pitch, Level, Pan, Timbre, Engine 1–24, Volume, LFO 1–3 Rate / Depth, Mod Env Amount, FX 1–6 Mix, FX 1–6 Param 1–4, Azimuth, Elevation, Distance, Motion Path Rate, Motion Path Phase (the last five reserved) | Off |
+| `pN.mod.sK.amt` | … Amount | … Menge | −100 … +100 % | 0 |
+| `pN.mod.sK.curve` | … Curve | … Kurve | Linear, Exponential, Logarithmic, S-Curve, Steps | Linear |
+| `pN.lfo2.rate` | Part *N* LFO 2 Rate | Part *N* LFO 2 Tempo | 0.01 … 40 Hz | 1 Hz |
+| `pN.lfo2.sync` | … LFO 2 Sync | … LFO 2 Sync | Free, 4/1, 2/1, 1/1, 1/2, 1/4, 1/8, 1/16, 1/32, 1/2., 1/4., 1/8., 1/16., 1/2T, 1/4T, 1/8T, 1/16T | Free |
+| `pN.lfo2.shape` | … LFO 2 Shape | … LFO 2 Form | Sine, Triangle, Saw Up, Saw Down, Square, S&H, Smooth Random | Sine |
+| `pN.lfo2.phase` | … LFO 2 Phase | … LFO 2 Phase | 0 … 1 | 0 |
+| `pN.lfo2.fade` | … LFO 2 Fade In | … LFO 2 Einblenden | 0 … 10 s | 0 s |
+| `pN.lfo2.mode` | … LFO 2 Mode | … LFO 2 Modus | Free-Running, Retrigger, One-Shot | Retrigger |
+| `pN.lfo2.depth` | … LFO 2 Depth | … LFO 2 Tiefe | 0 … 1 | 1 |
+| `pN.lfo3.*` | LFO 3 – as LFO 2 | | | |
+| `pN.env3.delay` / `.hold` | Env 3 Delay / Hold | Hüllkurve 3 Verzögerung / Halten | 0 … 4 s | 0 s |
+| `pN.env3.a` | Env 3 Attack | Hüllkurve 3 Attack | 1 ms … 10 s | 0.5 s |
+| `pN.env3.d` / `.r` | Env 3 Decay / Release | Hüllkurve 3 Decay / Release | 1 ms … 10 s | 1 s |
+| `pN.env3.s` | Env 3 Sustain | Hüllkurve 3 Sustain | 0 … 1 | 0.5 |
+| `pN.macro1` … `pN.macro4` | Part *N* Macro 1–4 | Part *N* Makro 1–4 | 0 … 1 | 0 |
+| `pN.seqlane` | Part *N* Seq Lane | Part *N* Seq-Spur | 0 … 1 | 0 |
+
+Behaviour changes in 0.7: the 0.2 FX slot is slot 1 of the part's rack (identical sound); parts 2–4 have FX slots
+(before 0.7 their slot parameters did not exist). The MPE / aftertouch target "Timbre" now also brightens the
+Cluster, Grain, Pluck, Sampler, Vocal and Wavetable engines (before: Analog and FM only). A change of the part
+volume glides over one block instead of jumping.
