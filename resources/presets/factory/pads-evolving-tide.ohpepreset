@@ -138,6 +138,7 @@
     "mpe.smooth": 0.06,
     "mpe.bend": 48,
     "voices": 8,
-    "gain": 1.3
+    "gain": 1.3,
+    "life": 0.35
   }
 }

@@ -66,6 +66,8 @@ void Voice::spawn (const IAudioRegion& src, float pitch) noexcept
 
     double centre = (double) std::clamp (p.position + 0.5f * expr.position, 0.0f, 1.0f) * frames + scanOffset * srcRate; // 0.8: MPE position
     centre += (double) (p.spray * rng.nextBipolar()) * std::min (0.5 * srcRate, frames * 0.5);
+    if (lifeScatter > 0.0f) // p15 life: grains scatter a little around the position (up to +-30 ms)
+        centre += (double) (0.12f * lifeScatter * rng.nextBipolar()) * std::min (0.25 * srcRate, frames * 0.5);
     const bool reverse = rng.next01() < p.reverseProb;
     // 0.8 punch pass: a grain never reads across the end of the sample. Wrapping (end -> start) jumped from the
     // quiet tail of a one-shot into its attack in the middle of the window: a click. The centre still wraps (the

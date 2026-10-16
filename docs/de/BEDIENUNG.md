@@ -2,7 +2,7 @@
 
 *Deutsch · English: [../en/USER-INTERFACE.md](../en/USER-INTERFACE.md)*
 
-Die Oberfläche von Ohpe (p14): Engine-Tasten (links), Display (Mitte), Modus-Tasten (rechts), vier
+Die Oberfläche von Ohpe (p14): Engine-Tasten mit dem **LEBEN**-Balken (links), Display (Mitte), Modus-Tasten (rechts), vier
 Encoder unter dem Display, die **TRANSPORT**-Tasten mit der Tape-Anzeige (unten links), die **OKTAVE**-Tasten,
 **MIDI** und die Tastatur-Anzeige (unten rechts) und die Klaviaturzeile – **PITCH**- und **MOD**-Rad, drei Oktaven Klaviatur, **Glide**-Modus
 und -Zeit. In der Kopfzeile liegen die **Part-Auswahl**, der **Preset-Streifen**, die Tasten
@@ -25,6 +25,31 @@ und -Zeit. In der Kopfzeile liegen die **Part-Auswahl**, der **Preset-Streifen**
 
 Beide Räder sind Host-Parameter (*Pitch-Rad* `perf.bend`, *Mod-Rad* `perf.mod`): Rechtsklick = MIDI Learn,
 Shift / Cmd / Strg = fein. Sie sind Spielhilfen und gehören nicht zu Presets.
+
+## Leben
+
+![LEBEN am Fuß der Engine-Spalte](../images/ohpe-life-de.png)
+
+**LEBEN** (p15) am Fuß der Engine-Spalte lässt gehaltene Töne des bearbeiteten Parts weiterleben – so wie
+ein gespieltes Instrument nie zweimal genau gleich klingt. Bei **0** ist der Klang statisch und genau wie
+ohne den Regler; dreht man auf, bewegt sich jede Stimme für sich:
+
+* eine langsame **Tonhöhen-Drift** von wenigen Cent (höchstens etwa ±12 Cent bei 100 %; die Stimmen eines Akkords laufen auseinander),
+* **atmender Filter** – die Helligkeit hebt und senkt sich langsam (Filter-Engines: Cutoff; FM: Index; Vokal: Vokal; Zupfen: Klang),
+* **Engine-Farbe** – Wavetable-Position und -Warp, FM-Index, Formant, Grain-Dichte wandern ein wenig,
+* **Grain-Streuung** – die Körner der Grain-Engine starten an leicht gestreuten Stellen,
+* ein Hauch **Panorama**- und **Pegel**-Bewegung (etwa ±0,25 dB – Atmen, nie ein Sprung).
+
+Die Bewegung entsteht aus langsamen Zufalls-Drifts und frei laufenden „Chaos“-LFOs mit ungeraden Raten,
+für jede Stimme anders (je Part, Stimme und Note geseedet – ein Bounce klingt jedes Mal gleich). Etwa
+15 – 35 % machen Flächen und Keys lebendig, ohne verstimmt zu wirken; höhere Werte ergeben üppige,
+treibende Texturen. Änderungen gleiten über etwa 60 ms – man kann den Regler fahren, während Töne klingen.
+
+Balken ziehen (Shift / Cmd / Strg = fein), Doppelklick = 0, Rechtsklick = MIDI Learn. Während der Part
+spielt, schimmert der leuchtende Balken langsam – schneller mit mehr Leben; ein feiner heller Strich zeigt,
+wohin die Modulationsmatrix ihn bewegt (Ziel **Leben**, [MODULATION.md](MODULATION.md)). LEBEN liegt auch auf
+den Hüllkurven-Seiten (nach Poly-Glide) und gehört zu Part-Presets (`pN.life`,
+[PARAMETERS.md](../PARAMETERS.md#life-per-part-p15)).
 
 ## Leuchtbalken
 

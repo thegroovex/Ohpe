@@ -267,5 +267,8 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
         add (continuous (Core::Ids::perfBend, "Pitch Wheel", "Pitch-Rad", -1.0f, 1.0f, 0.0f));
         add (continuous (Core::Ids::perfMod, "Mod Wheel", "Mod-Rad", 0.0f, 1.0f, 0.0f));
     }
+
+    // ---- p15: life per part ("pN.life": held notes keep evolving - drift, chaos LFOs, grain scatter, filter breathing) --
+    for (auto& p : parts) p->registerLate15LifeParams (reg);
 }
 } // namespace ohpe

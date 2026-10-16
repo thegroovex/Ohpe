@@ -104,7 +104,19 @@ public:
         pitchEnvPhase = 0.0f;
         ampEnv.resetGain();
         if (c.modProgram != nullptr) vmod.start (midiNote, vel, *c.modProgram); // 0.7: modulation matrix (LFO 2 / 3, env 3, random)
+        lifeStart (midiNote, c); // p15: the voice's own life motion (seeded per part, voice slot, note and start)
     }
+
+    /** p15: the voice's slot in its engine (part of its life seed); resets the start counter. */
+    void setLifeSlot (uint32_t slot) noexcept
+    {
+        lifeSlot = slot;
+        lifeStarts = 0;
+    }
+    /** p15: the life amount this voice follows now (0 = static; tests). */
+    float lifeLevel() const noexcept { return lifeOn ? lifeAmt : 0.0f; }
+    /** p15: the voice's current life pitch offset in semitones (tests). */
+    float lifePitchOffset() const noexcept { return lifeOn ? lifePitch : 0.0f; }
 
     void releaseBase() noexcept { ampEnv.noteOff(); modEnv.noteOff(); vmod.release(); }
     void killBase() noexcept
@@ -143,6 +155,7 @@ protected:
             currentNote = (float) note;
         if (! exprFresh) glideExpression (c, n); // 0.8: smooth per-note bend / pressure / timbre
         exprFresh = false;
+        lifeTick (c, n); // p15: nothing at all while life is (and was) 0
         lfo.setRate (c.lfoRate);
         lfo.setShape (c.lfoShape);
         lfoDepth = std::clamp (c.lfoDepth + expr.lfo, 0.0f, 1.0f);
@@ -169,6 +182,7 @@ protected:
             pitchEnvPhase = std::min (1.0f, pitchEnvPhase + (float) n / (std::max (0.001f, c.pitchEnvTime) * sr));
         }
         if (c.lfoDest == LfoDest::Pitch) pitch += lfoValue * 2.0f; // +-2 semitones at full depth
+        if (lifeOn) pitch += lifePitch;                             // p15: slow per-voice drift (cents)
         if (expr.vibrato > 0.0f) // 0.8: per-note vibrato (MPE / aftertouch target), 5.5 Hz
         {
             exprVibPhase += dsp::twoPi * 5.5f * (float) n / sr;
@@ -182,10 +196,113 @@ protected:
     void applyVoiceMod() noexcept
     {
         expr = exprGlide;
-        if (! modActive) return;
-        const auto& o = vmod.output();
-        expr.timbre += o.timbre;
-        if (o.pan != 0.0f) expr.pan = std::clamp (expr.pan + o.pan, -1.0f, 1.0f);
+        if (modActive)
+        {
+            const auto& o = vmod.output();
+            expr.timbre += o.timbre;
+            if (o.pan != 0.0f) expr.pan = std::clamp (expr.pan + o.pan, -1.0f, 1.0f);
+        }
+        if (lifeOn) // p15: life rides on the expression every engine already reads (no engine-specific code)
+        {
+            expr.cutoff += lifeCutoff;     // filter breathing (+-3 oct per unit)
+            expr.timbre += lifeTimbre;     // brightness: FM index, vowel, pluck tone
+            expr.position += lifeColour;   // wavetable / grain position
+            expr.index += lifeColour;      // FM index (FM engine, wavetable FM)
+            expr.formant += lifeFormant;   // vocal formant, wavetable warp
+            expr.density += lifeDensity;   // grain density
+            expr.pan = std::clamp (expr.pan + lifePan, -1.0f, 1.0f);
+            expr.amp *= lifeGain;
+        }
+    }
+
+    // ---- p15: life - every voice keeps moving on its own: slow random walks (drift) and three free sine LFOs at
+    //      incommensurate, per-voice rates (chaos). All of it is computed at control rate and is tiny per block, so
+    //      nothing steps; the amount follows the parameter over ~60 ms. life == 0 skips every line of it.
+    static constexpr int numLifeDrifts = 5;
+    void lifeStart (int midiNote, const VoiceCommon& c) noexcept
+    {
+        ++lifeStarts;
+        uint32_t h = c.lifeSeed * 0x9E3779B1u ^ (lifeSlot + 1u) * 0x85EBCA77u ^ (uint32_t) (midiNote + 1) * 0xC2B2AE3Du ^ lifeStarts * 0x27D4EB2Fu;
+        h ^= h >> 16; h *= 0x7FEB352Du; h ^= h >> 15; h *= 0x846CA68Bu; h ^= h >> 16;
+        lifeRng.seed (h);
+        for (int k = 0; k < numLifeDrifts; ++k)
+        {
+            lifeDrift[(size_t) k] = 0.6f * lifeRng.nextBipolar(); // voices of a chord start apart (like analogue detune)
+            lifeDriftTarget[(size_t) k] = lifeRng.nextBipolar();
+            lifeDriftTimer[(size_t) k] = 0.3f + 1.4f * lifeRng.next01();
+        }
+        static constexpr float baseRate[3] = { 0.11f, 0.23f, 0.37f }; // Hz at life 0.5
+        for (int j = 0; j < 3; ++j)
+        {
+            lifePhase[(size_t) j] = dsp::twoPi * lifeRng.next01();
+            lifeRate[(size_t) j] = baseRate[j] * (0.75f + 0.5f * lifeRng.next01());
+        }
+        lifeAmt = std::clamp (c.life, 0.0f, 1.0f); // a new note starts at the amount: no fade-in
+        lifeOn = lifeAmt > 0.0f;
+        if (lifeOn) lifeCompute();
+        else lifeClear();
+    }
+
+    void lifeTick (const VoiceCommon& c, int n) noexcept
+    {
+        const float target = std::clamp (c.life, 0.0f, 1.0f);
+        if (! lifeOn && target <= 0.0f) return;
+        const float dt = (float) n / sr;
+        lifeAmt += (target - lifeAmt) * (1.0f - std::exp (-dt / 0.06f));
+        if (std::abs (target - lifeAmt) < 1.0e-4f) lifeAmt = target;
+        if (lifeAmt <= 0.0f)
+        {
+            lifeAmt = 0.0f;
+            lifeOn = false;
+            lifeClear();
+            applyVoiceMod();
+            return;
+        }
+        lifeOn = true;
+        const float speed = 0.6f + 0.9f * lifeAmt; // more life: also a little faster motion
+        const float a = 1.0f - std::exp (-dt * speed / 0.8f);
+        for (int k = 0; k < numLifeDrifts; ++k)
+        {
+            auto& t = lifeDriftTimer[(size_t) k];
+            t -= dt * speed;
+            if (t <= 0.0f)
+            {
+                lifeDriftTarget[(size_t) k] = lifeRng.nextBipolar();
+                t += 0.5f + 1.7f * lifeRng.next01();
+            }
+            lifeDrift[(size_t) k] += (lifeDriftTarget[(size_t) k] - lifeDrift[(size_t) k]) * a;
+        }
+        for (int j = 0; j < 3; ++j)
+        {
+            auto& ph = lifePhase[(size_t) j];
+            ph += dsp::twoPi * lifeRate[(size_t) j] * speed * dt;
+            if (ph > dsp::twoPi) ph -= dsp::twoPi;
+        }
+        lifeCompute();
+        applyVoiceMod();
+    }
+
+    void lifeCompute() noexcept
+    {
+        const float L = lifeAmt;
+        const float c0 = std::sin (lifePhase[0]), c1 = std::sin (lifePhase[1]), c2 = std::sin (lifePhase[2] + 0.8f * c0);
+        const float chaos = 0.5f * (c0 + 0.6f * c1 + 0.4f * c2);    // -1 .. +1, never periodic in practice
+        const float breathe = 0.55f * chaos + 0.45f * lifeDrift[1];
+        lifePitch = 0.12f * L * std::sqrt (L) * (0.75f * lifeDrift[0] + 0.25f * c1); // at most ~+-12 cents
+        lifeCutoff = 0.10f * L * breathe;                           // up to ~+-0.3 octaves
+        lifeTimbre = 0.04f * L * breathe;
+        lifeColour = 0.10f * L * lifeDrift[2];
+        lifeFormant = 0.05f * L * lifeDrift[3];
+        lifeDensity = 0.15f * L * lifeDrift[3];
+        lifePan = 0.10f * L * lifeDrift[4];
+        lifeGain = 1.0f + 0.03f * L * c2;                          // +-0.25 dB: breathing, never a level jump
+        lifeScatter = L;
+    }
+
+    void lifeClear() noexcept
+    {
+        lifePitch = lifeCutoff = lifeTimbre = lifeColour = lifeFormant = lifeDensity = lifePan = lifeScatter = 0.0f;
+        lifeGain = 1.0f;
     }
 
     float velocityGain (const VoiceCommon& c) const noexcept { return 1.0f - c.velocitySens + c.velocitySens * velocity; }
@@ -225,6 +342,16 @@ protected:
     bool modActive = false;
     ModulatedAdsr ampEnv;
     dsp::Adsr modEnv;
+    // p15: life state (see lifeStart / lifeTick)
+    uint32_t lifeSlot = 0, lifeStarts = 0;
+    dsp::Random lifeRng { 0x1f123bb5u };
+    bool lifeOn = false;
+    float lifeAmt = 0.0f;
+    std::array<float, numLifeDrifts> lifeDrift {}, lifeDriftTarget {}, lifeDriftTimer {};
+    std::array<float, 3> lifePhase {}, lifeRate {};
+    float lifePitch = 0.0f, lifeCutoff = 0.0f, lifeTimbre = 0.0f, lifeColour = 0.0f, lifeFormant = 0.0f, lifeDensity = 0.0f,
+          lifePan = 0.0f, lifeGain = 1.0f;
+    float lifeScatter = 0.0f; ///< p15: 0..1, extra random grain start positions (grain engine)
 
     /** 0.8: one control block of expression glide: pitch over exprSlide (at least 2 ms), the rest over exprSmooth. */
     void glideExpression (const VoiceCommon& c, int n) noexcept
@@ -264,6 +391,7 @@ class PolyEngine : public ISynthEngine
 public:
     void prepare (double sampleRate, int) override
     {
+        for (size_t i = 0; i < voices.size(); ++i) voices[i].setLifeSlot ((uint32_t) i); // p15: deterministic life seeds
         for (auto& v : voices) v.prepare ((float) sampleRate);
         reset();
     }

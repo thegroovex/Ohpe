@@ -280,6 +280,40 @@ private:
     std::unique_ptr<juce::SliderParameterAttachment> attachment;
 };
 
+/**
+    p15: LIFE - the edit part's life amount as a light bar at the foot of the engine column. The legend and the
+    value sit on one line, under them a dark slot with a lit bar: drag anywhere (Shift / Cmd / Ctrl: fine),
+    double-click resets to 0, right-click opens MIDI learn. While the part's voices sound, the lit bar
+    shimmers slowly - faster with more life; a fine tick shows where the modulation matrix moves it.
+*/
+class LifeBar : public juce::Component, public juce::SettableTooltipClient
+{
+public:
+    explicit LifeBar (OhpeProcessor& p);
+    void bind (const juce::String& paramId);
+    const juce::String& boundId() const noexcept { return id; }
+    void setUiScale (float s) { if (s != uiScale) { uiScale = s; repaint(); } }
+    /** Editor timer: advances the shimmer; sounding = the part has voices; modDelta = live matrix offset (normalised). */
+    void tick (float seconds, bool sounding, float modDelta);
+    float normalisedValue() const;
+    /** The dark slot the light bar sits in (local coordinates). */
+    juce::Rectangle<float> slotArea() const;
+
+    void paint (juce::Graphics& g) override;
+    void mouseDown (const juce::MouseEvent& e) override;
+    void mouseDrag (const juce::MouseEvent& e) override;
+    void mouseUp (const juce::MouseEvent& e) override;
+    void mouseDoubleClick (const juce::MouseEvent& e) override;
+
+private:
+    OhpeProcessor& proc;
+    juce::String id;
+    juce::RangedAudioParameter* param = nullptr;
+    float uiScale = 1.0f, time = 0.0f, mod = 0.0f, shown = -1.0f;
+    bool alive = false, dragging = false, wasLearning = false;
+    BarDrag drag;
+};
+
 /** p14 rev 3: the caption of the keyboard row's right column (GLIDE, PORTAMENTO): design units. */
 namespace captionCol
 {

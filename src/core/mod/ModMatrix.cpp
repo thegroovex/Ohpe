@@ -79,6 +79,7 @@ const std::vector<DestInfo>& destTable()
         add ("distance", "Distance", "Entfernung", DestKind::PartParam, 0, "space.distance");
         add ("pathrate", "Motion Path Rate", "Bewegungspfad Tempo", DestKind::PartParam, 0, "space.pathrate");
         add ("pathphase", "Motion Path Phase", "Bewegungspfad Phase", DestKind::PartParam, 0, "space.pathphase");
+        add ("life", "Life", "Leben", DestKind::PartParam, 0, "life"); // p15
         return v;
     }();
     return t;

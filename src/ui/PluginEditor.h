@@ -124,6 +124,7 @@ public:
     ui::Wheel& modWheelComponent() { return modWheel; }
     ui::SlideSwitch& glideModeSwitch() { return glideSwitch; }
     ui::MiniKnob& glideKnobComponent() { return glideKnob; }
+    ui::LifeBar& lifeBarComponent() { return lifeBar; } // p15
     ui::Keyboard& keyboardComponent() { return keyboard; }
     ui::PictoKey& midiKeyComponent() { return midiKey; }
     // p14 rev 3: the bottom panels - transport keys with light bars, the readouts, the octave keys
@@ -200,6 +201,7 @@ private:
     ui::Wheel pitchWheel, modWheel;
     ui::SlideSwitch glideSwitch;
     ui::MiniKnob glideKnob;
+    ui::LifeBar lifeBar; ///< p15: the edit part's life amount (foot of the engine column)
     ui::Readout tapeReadout, keysReadout; ///< p14 rev 3
     juce::Image background; ///< p14: the static housing, panels and recesses (rendered once per size)
     ui::PartSelector partSelector;

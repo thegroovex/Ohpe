@@ -123,7 +123,7 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
         }
         case Mode::Envelope:
             return { p + "amp.a", p + "amp.d", p + "amp.s", p + "amp.r", p + "mod.a", p + "mod.d", p + "mod.s", p + "mod.r",
-                     p + "mod.amt", p + "velsens", p + "glide", p + "voices", p + "polyglide", "", "", "" };
+                     p + "mod.amt", p + "velsens", p + "glide", p + "voices", p + "polyglide", p + "life", "", "" }; // p15: life
         case Mode::Lfo:
             if (ctx.lfoView == modfx::LfoViewMod) return modfx::modParams (core, partIndex, ctx.modRouting); // 0.7
             return { p + "lfo.rate", p + "lfo.depth", p + "lfo.shape", p + "lfo.dest", p + "tune", p + "fine", p + "bend", p + "vol",
