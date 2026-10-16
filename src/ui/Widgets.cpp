@@ -200,10 +200,10 @@ void Encoder::paint (juce::Graphics& g)
     }
     // legend printed on the body: small caps, engraved grey
     g.setColour (learning ? colour::encoder (index) : colour::engraving);
-    g.setFont (labelFont (w * 0.105f));
+    g.setFont (labelFont (w * 0.092f));
     g.drawText (learning ? tr ("MIDI Learn") : i18n::upper (name), text.withHeight (w * 0.13f), juce::Justification::centred, true);
     g.setColour (colour::ink);
-    g.setFont (monoFont (w * 0.11f));
+    g.setFont (monoFont (w * 0.098f));
     g.drawText (value, text.withTrimmedTop (w * 0.13f).withHeight (w * 0.13f), juce::Justification::centred, true);
     if (virt != nullptr && virt->locked)
     {

@@ -362,7 +362,7 @@ void OhpeEditor::resized()
     place (display, "display");
     // four encoders centred under the display, 168 units apart
     for (int i = 0; i < 4; ++i)
-        encoders[(size_t) i]->setBounds (scaled (288.0f + 168.0f * (float) i, 460, 120, 148));
+        encoders[(size_t) i]->setBounds (scaled (280.0f + 168.0f * (float) i, 460, 136, 148));
     // transport panel (bottom left): REC PLAY STOP / TO START LOOP MIDI
     recKey.setBounds (scaled (40, 472, 56, 64));
     playKey.setBounds (scaled (108, 472, 56, 64));
