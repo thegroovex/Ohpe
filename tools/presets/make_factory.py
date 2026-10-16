@@ -8,7 +8,8 @@ presets from factory_projects.py. Run it after editing either file, then re-run 
 Presets listed in peak_guard.json (a held 10 s chord / note went above -1.5 dBFS: risers, grain clouds, stacked
 chords, resonant combs) get a fast peak compressor in the first free rack slot after their chain, so a held chord
 stays below -0.5 dBFS without the master limiter (threshold -4 dB, -7 dB for the risers / clouds that
-build far above it). Its makeup stays 0 dB (the level calibration never trims it).
+build far above it; -12 dB for the 3D arps and the spiral riser, whose binaural transients rise again after the rack).
+Its makeup stays 0 dB (the level calibration never trims it).
 
   python3 tools/presets/make_factory.py
 """

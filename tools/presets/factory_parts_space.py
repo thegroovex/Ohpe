@@ -39,13 +39,40 @@ def expressive(*extra, slide=0.35, press=-0.12, **settings):
     return motion(("slide", "elevation", slide), ("pressure", "distance", press), *extra, **settings)
 
 
-SPACE_GAINS = {}  # filled by the level calibration (space_cal.py); missing = 0 dB
+SPACE_GAINS = {  # level calibration (space_cal.py): -15 dBFS active RMS, peaks <= -1.2 dBFS
+    "Binaural Lead": -6.1,
+    "Doppler Fly-By": 24.0,
+    "Figure Eight Arp": 22.2,
+    "Halo Drift": 10.1,
+    "Neuro Swirl": 12.9,
+    "Night Swarm": 17.9,
+    "Orbit Arp": 21.5,
+    "Orbit Atmos": 9.5,
+    "Orbit Reese": 9.9,
+    "Overhead Choir": 13.9,
+    "Pendulum Wobble": 11.7,
+    "Spiral Arp": 20.0,
+    "Spiral Riser": 24.0,
+}
+
+
+# Presets ending in the Multiband (upward + downward compression: the part gain barely changes their level) are
+# calibrated on its output (dB, -12 ... +12) instead; filled by space_cal.py as well.
+SPACE_OUT = {  # Multiband output (dB) from the same calibration
+    "Neuro Swirl": 6.5,
+    "Orbit Reese": 5.3,
+    "Pendulum Wobble": 10.0,
+}
 
 
 def S(name, tags, engine, comment, *dicts, **kw):
     p = P(name, tags, engine, comment, *dicts, **kw)
     if name in SPACE_GAINS:
         p["params"]["gain"] = SPACE_GAINS[name]
+    if name in SPACE_OUT:
+        for k in p["params"]:
+            if k.endswith(".multiband.output"):
+                p["params"][k] = SPACE_OUT[name]
     return p
 
 
@@ -76,8 +103,8 @@ PRESETS_SPACE = [
       fm(algo=2, modratio=1.0, index=0.35, op1ratio=1, op2ratio=3.5, op3ratio=2, op4ratio=7, op1level=1.0, op2level=0.5, op3level=0.4,
          op4level=0.25, op5level=0.0, op6level=0.0, velidx=0.5),
       amp(0.002, 1.2, 0.2, 1.4), mod(0.001, 0.8, 0.2, 1.0, 0.6), dly(2, 0.375, 0.45, 0.4, 1, 0.25), rev(3, 0.9, 0.35, 0.03, 0.35),
-      space("random", "1 bar", size=1.0, dist=3.5, spread=30.0, room=0.5, roomsize=0.75, doppler=0.35),
-      expressive(), voices=10),
+      space("random", "1 bar", size=1.0, dist=2.6, spread=30.0, room=0.5, roomsize=0.75, doppler=0.35),
+      expressive(), {"vol": 1.0}, voices=10),
 
     # ================================================================ ARPS (3)
     S("Orbit Arp", ["Arp", "3D"], "pluck",
@@ -137,8 +164,8 @@ PRESETS_SPACE = [
       "A siren tone racing past from left to right and back - the pitch bends with the Doppler effect as it passes.",
       wt(table="digital", pos=0.3, tone=0.7, unison=0.3, univoices=3, uniwidth=0.5, keytrack=0.5),
       amp(0.05, 0.5, 1.0, 0.6), mod(0.01, 0.3, 0.5, 0.3, 0.2), lfo(5.5, 0.08, "sine", "pitch"), rev(3, 0.7, 0.4, 0.02, 0.22),
-      space("flyby", "2 bars", size=0.8, dist=2.0, spread=10.0, room=0.3, roomsize=0.6, doppler=1.0, air=0.8),
-      voices=2),
+      space("flyby", "2 bars", size=0.8, dist=2.0, spread=10.0, room=0.3, roomsize=0.6, doppler=1.0, air=0.8, rolloff=0.5),
+      {"vol": 1.0}, voices=2),
     S("Binaural Lead", ["Leads", "3D"], "wavetable",
       "Expressive lead placed in front of you: slide moves it up over your head, pressure brings it right up to your ear, "
       "a slow drift keeps it alive. Made for MPE controllers and headphones.",

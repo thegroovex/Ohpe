@@ -72,7 +72,7 @@
     "fx2.multiband.mid": 2,
     "fx2.multiband.high": 2,
     "fx2.multiband.mix": 1.0,
-    "fx2.multiband.output": 0.0,
+    "fx2.multiband.output": 6.5,
     "mod.s1.src": 13,
     "mod.s1.via": 0,
     "mod.s1.dst": 68,
@@ -89,6 +89,6 @@
     "mpe.slide": 0.08,
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
-    "gain": 0.0
+    "gain": 12.9
   }
 }

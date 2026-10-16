@@ -46,9 +46,10 @@
     "space.roomsize": 0.6,
     "space.doppler": 1.0,
     "space.air": 0.8,
-    "space.rolloff": 0.7,
+    "space.rolloff": 0.5,
     "space.lowkeep": 120.0,
     "space.glide": 0.06,
+    "vol": 1.0,
     "fx.type": 6,
     "fx.reverb.size": 0.7,
     "fx.reverb.damping": 0.4,
@@ -56,6 +57,14 @@
     "fx.reverb.mix": 0.22,
     "wavetable.lfopos": 0.12,
     "voices": 2,
-    "gain": 0.0
+    "gain": 24.0,
+    "fx2.type": 10,
+    "fx2.compressor.thresh": -7.0,
+    "fx2.compressor.ratio": 8.0,
+    "fx2.compressor.attack": 0.1,
+    "fx2.compressor.release": 180.0,
+    "fx2.compressor.knee": 6.0,
+    "fx2.compressor.makeup": 0.0,
+    "fx2.compressor.mix": 1.0
   }
 }
