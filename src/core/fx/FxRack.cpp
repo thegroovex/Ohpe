@@ -135,11 +135,13 @@ void FxRack::prepare (double sampleRate, int maxBlockSize)
     dryR.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
     smoothCoeff = 1.0f - std::exp (-1.0f / (0.01f * (float) sampleRate)); // ~10 ms mix / bypass glide
     for (int s = 0; s < slotCount; ++s) mixSmooth[(size_t) s] = bypass[(size_t) s] ? 0.0f : mix[(size_t) s];
+    snapMix = true;
 }
 
 void FxRack::reset() noexcept
 {
     for (int s = 0; s < slotCount; ++s) slots[(size_t) s].reset();
+    snapMix = true;
 }
 
 bool FxRack::prepareSelected (const ParamRegistry& reg)
@@ -165,8 +167,10 @@ void FxRack::pullParams (const ParamSnapshot& snap) noexcept
         sl.pullParams (snap);
         mix[(size_t) s] = mixIndex[(size_t) s] >= 0 ? dsp::clamp01 (snap[mixIndex[(size_t) s]]) : 1.0f;
         bypass[(size_t) s] = bypassIndex[(size_t) s] >= 0 && snap.getBool (bypassIndex[(size_t) s]);
+        if (snapMix) mixSmooth[(size_t) s] = bypass[(size_t) s] ? 0.0f : mix[(size_t) s];
         if (sl.currentType() != InsertSlot::Off) ++activeSlots;
     }
+    snapMix = false;
 }
 
 void FxRack::process (float* l, float* r, int n) noexcept

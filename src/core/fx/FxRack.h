@@ -103,6 +103,7 @@ private:
     std::array<std::atomic<float>, maxSlots> peaks {};
     std::vector<float> dryL, dryR;
     float smoothCoeff = 0.01f;
+    bool snapMix = true; ///< first pull after prepare / reset: mix and bypass start at their values (no glide)
     int activeSlots = 0;
 };
 } // namespace ohpe

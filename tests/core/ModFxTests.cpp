@@ -52,6 +52,19 @@ void basicPatch (Core& core)
     setAll (core, { { "mix.master.limit", 0.0f }, { "p1.engine", (float) EngineType::Analog }, { "p1.amp.s", 1.0f }, { "p1.voices", 4.0f } });
 }
 
+/** Brightness: energy of the first difference relative to the signal energy (~ mean squared frequency). */
+double brightnessOf (const Stereo& x, size_t from = 6000)
+{
+    double d = 0.0, e = 1.0e-12;
+    for (size_t i = from; i < x.size(); ++i)
+    {
+        const double dx = (double) x.l[i] - (double) x.l[i - 1];
+        d += dx * dx;
+        e += (double) x.l[i] * (double) x.l[i];
+    }
+    return d / e;
+}
+
 bool identical (const Stereo& a, const Stereo& b)
 {
     return a.l == b.l && a.r == b.r;
@@ -434,11 +447,12 @@ TEST_CASE ("0.7 matrix: per-voice pitch from LFO 2 makes vibrato; velocity to ti
                      { "p1.mod.s1.dst", (float) mod::DstTimbre }, { "p1.mod.s1.amt", 1.0f } });
         c.queueNote (48, velocity, true);
         const auto x = renderCore (c, 20);
-        float hf = 0.0f; // energy of the first difference ~ high frequencies
-        for (size_t i = 6000; i < x.size(); ++i) hf += std::abs (x.l[i] - x.l[i - 1]);
-        return hf;
+        return brightnessOf (x);
     };
-    CHECK (brightness (1.0f) > 3.0f * brightness (0.1f));
+    const double b1 = brightness (1.0f), b0 = brightness (0.1f);
+    CAPTURE (b1);
+    CAPTURE (b0);
+    CHECK (b1 > 3.0 * b0);
 }
 
 TEST_CASE ("0.7 matrix: level modulation is smooth (no control-rate zipper)")
@@ -478,13 +492,10 @@ TEST_CASE ("0.7 matrix: parameter routings move the engine parameter (smoothed),
     CHECK (core.part (0).modMatrix().uiRouteValue (2) == doctest::Approx (0.5f).epsilon (0.01));
     core.params().set ("p1.macro1", 0.0f);
     const auto dark = renderCore (core, 20);
-    float hb = 0.0f, hd = 0.0f;
-    for (size_t i = 6000; i < bright.size(); ++i)
-    {
-        hb += std::abs (bright.l[i] - bright.l[i - 1]);
-        hd += std::abs (dark.l[i] - dark.l[i - 1]);
-    }
-    CHECK (hb > 2.0f * hd);
+    const double hb = brightnessOf (bright), hd = brightnessOf (dark);
+    CAPTURE (hb);
+    CAPTURE (hd);
+    CHECK (hb > 2.0 * hd);
     // FX targets follow the type in the slot
     setAll (core, { { "p1.fx2.type", (float) InsertSlot::Delay }, { "p1.mod.s4.src", (float) mod::SrcMacro2 },
                     { "p1.mod.s4.dst", (float) mod::DstFx1Param1 + 4 }, { "p1.mod.s4.amt", 0.2f } });
@@ -511,7 +522,7 @@ TEST_CASE ("0.7 matrix: tempo-synced free-running LFO follows the song position;
         Core core;
         core.prepare (sampleRate, 512);
         basicPatch (core);
-        setAll (core, { { "p1.lfo2.sync", 4.0f }, { "p1.lfo2.mode", (float) mod::ModeFree }, { "p1.mod.s1.src", (float) mod::SrcLfo2 },
+        setAll (core, { { "seq.run", 1.0f }, { "p1.lfo2.sync", 4.0f }, { "p1.lfo2.mode", (float) mod::ModeFree }, { "p1.mod.s1.src", (float) mod::SrcLfo2 },
                         { "p1.mod.s1.dst", (float) mod::DstVolume }, { "p1.mod.s1.amt", 0.1f } });
         Transport t;
         t.bpm = 120.0;
@@ -522,6 +533,7 @@ TEST_CASE ("0.7 matrix: tempo-synced free-running LFO follows the song position;
         renderCore (core, 1, 512, t);
         return core.part (0).modMatrix().sourceValue (mod::SrcLfo2);
     };
+    MESSAGE ("lfo2 at 8 / 8.25 / 16: " << panAt (8.0) << " " << panAt (8.25) << " " << panAt (16.0));
     CHECK (panAt (8.0) == doctest::Approx (panAt (16.0)).epsilon (0.01));
     CHECK (std::abs (panAt (8.0) - panAt (8.25)) > 0.1f);
 }
