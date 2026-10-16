@@ -84,6 +84,13 @@ low-pass (4.2 kHz) and tape saturation. **Lofi Kit** is the same kit set-up as a
 your own beats. *Vinyl Crackle* is the Analog engine with its oscillators off (0.6 `analog.osclevel`)
 and the new crackle generator (`analog.crackle`) – hold any note.
 
+## Life (p15)
+
+Eight part presets use **LIFE** so their held notes keep evolving: *Analog Dawn*, *Warm Strings*, *Angel Pad*,
+*Evolving Tide*, *Crystal FM Pad*, *Bowed Haze*, *Warm Horizon* (15 – 40 %) and *Dusty EP* (a hint, 15 %).
+Turn LIFE to 0 for the static version ([USER-INTERFACE.md](USER-INTERFACE.md#life)); the list lives in
+`tools/presets/factory_parts_life.py`.
+
 ## Drum kits
 
 `drum.kit` chooses the recordings the 24 pads play. All kits have the same pad layout, so every

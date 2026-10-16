@@ -86,6 +86,13 @@ Kit-Setup als Ausgangspunkt für eigene Beats. *Vinyl Crackle* ist die Analog-En
 ausgeschalteten Oszillatoren (0.6 `analog.osclevel`) und dem neuen Knister-Generator
 (`analog.crackle`) – eine beliebige Note halten.
 
+## Leben (p15)
+
+Acht Part-Presets nutzen **LEBEN**, damit gehaltene Töne weiterleben: *Analog Dawn*, *Warm Strings*, *Angel Pad*,
+*Evolving Tide*, *Crystal FM Pad*, *Bowed Haze*, *Warm Horizon* (15 – 40 %) und *Dusty EP* (ein Hauch, 15 %).
+LEBEN auf 0 ergibt die statische Fassung ([BEDIENUNG.md](BEDIENUNG.md#leben)); die Liste steht in
+`tools/presets/factory_parts_life.py`.
+
 ## Drum-Kits
 
 `drum.kit` wählt die Aufnahmen, die die 24 Pads spielen. Alle Kits haben dieselbe Pad-Belegung,
