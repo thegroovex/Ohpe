@@ -15,8 +15,8 @@ macOS 11 or newer, on Apple Silicon and Intel Macs (all binaries are universal).
 
 ## Where to get it
 
-There are no tagged releases yet. Every pull request and every manual run of the **CI** workflow
-builds the installer on the macOS runner and attaches it to the run as the artifact
+There are no tagged releases yet. Every push to main, every manual run of the **CI** workflow and
+every pull request labelled `installer` builds the installer on the macOS runner and attaches it to the run as the artifact
 **Ohpe-macOS-Installer**: open the repository's *Actions* tab → *CI* → a green run → *Artifacts*.
 GitHub delivers artifacts as a zip; unzip it to get the `.dmg` (and `SHA256SUMS.txt`).
 
