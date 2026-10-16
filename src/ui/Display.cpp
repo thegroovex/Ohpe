@@ -697,12 +697,16 @@ void Display::paint (juce::Graphics& g)
     g.setFont (brandFont (h.getHeight() * 0.62f));
     g.setColour (colour::displayText);
     juce::String title = i18n::upper (tr (info.nameEn));
-    const bool partMode = mode == Mode::Synth || mode == Mode::Envelope || mode == Mode::Lfo;
     if (mode == Mode::Synth) title << "  /  " << i18n::upper (i18n::pick (eng.nameEn, eng.nameDe));
     if (mode == Mode::Mixer) title << "  /  " << i18n::upper (tr ("Channel")) << " " << (ctx.mixerChannel + 1);
     if (mode == Mode::Tape) title << "  /  " << i18n::upper (tr ("Track")) << " " << (ctx.tapeTrack + 1);
     if (mode == Mode::Drum) title << "  /  " << i18n::upper (tr ("Pad")) << " " << (ctx.drumPad + 1);
-    const float titleW = juce::jmin (h.getWidth() * 0.62f, juce::GlyphArrangement::getStringWidth (brandFont (h.getHeight() * 0.62f), title) + 4.0f);
+    const bool partMode = mode == Mode::Synth || mode == Mode::Envelope || mode == Mode::Lfo;
+    // 1.0: a long title (engine names, German) shortens with an ellipsis before it pushes the part badge and the 3D badge
+    // into the tempo on the right: badges = 0.4 + 1.9 (part) + 2.3 (3D) header heights, tempo + page arrows = 7.8
+    const float badgesW = h.getHeight() * ((partMode || mode == Mode::Effects ? 2.3f : 0.4f) + 2.3f + 0.2f);
+    const float titleMax = juce::jmax (h.getHeight() * 4.0f, juce::jmin (h.getWidth() * 0.62f, h.getWidth() - h.getHeight() * 7.8f - badgesW));
+    const float titleW = juce::jmin (titleMax, juce::GlyphArrangement::getStringWidth (brandFont (h.getHeight() * 0.62f), title) + 4.0f);
     g.drawText (title, h.withWidth (titleW), juce::Justification::centredLeft, true);
     float badgeX = h.getX() + titleW + h.getHeight() * 0.4f; // 1.0: where the 3D badge goes
     if (partMode || mode == Mode::Effects)

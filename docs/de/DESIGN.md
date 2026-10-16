@@ -34,5 +34,19 @@ tiefes Display und vier funktionale Farben.
   Modulation. Die vollständige Tabelle steht in der
   [englischen Fassung](../DESIGN.md#pictogram-characters).
 
+* **3D-Raum (1.0):** Die Raum-Ansicht im Effekt-Modus (und die Display-Ansicht „3D-Raum“) zeigt die
+  Kugel um den Hörer: einen Kopf von leicht hinten oben, Bodenringe und den Mittelbogen; jeder Part
+  mit eingeschalteter Raum-Stufe ist ein Punkt in seiner Part-Farbe mit verblassender Spur und
+  Lotlinie zum Boden, näher = größer, der bearbeitete Part obenauf und beschriftet. Beim Abhören über
+  Kopfhörer trägt der Kopf Kopfhörer, im Lautsprecher-Modus stehen zwei Lautsprecher vor ihm.
+* **Kopfhörer-Piktogramm und 3D-Abzeichen (1.0):** eine eigene Strichzeichnung im Stil der Figuren
+  (Bügel, zwei Muscheln, Schallbögen, wenn es leuchtet). Das Abzeichen „3D“ hinter dem Part-Abzeichen im
+  Display-Kopf leuchtet ultraviolett und pulsiert sanft, solange der bearbeitete Part binaurales 3D
+  spielt, ist im Lautsprecher-Modus sonnengelb umrandet (mit Lautsprechern) und sonst nur schwach
+  umrandet; ein Klick öffnet die Raum-Ansicht, der Tooltip sagt „Binaurales 3D – am besten mit
+  Kopfhörern“. Ein langer Titel wird mit Auslassungspunkten gekürzt, bevor er die Abzeichen in die
+  Tempoanzeige schiebt. Die Part-Tasten tragen das Piktogramm in der Ecke, solange der Part den Raum
+  nutzt; Presets mit dem Schlagwort „3D“ tragen es in der Bibliothek hinter ihrem Namen.
+
 Texte gibt es überall auf Englisch und Deutsch; lange Texte werden gekürzt oder eingepasst, nie
 mitten im Zeichen abgeschnitten.
