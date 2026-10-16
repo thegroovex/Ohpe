@@ -1,6 +1,6 @@
 {
  "Ambient Drift": {
-  "makeup": 12.8,
+  "makeup": 12.9,
   "master": 0.0,
   "thresh": -13.9,
   "vols": {
@@ -9,7 +9,7 @@
   }
  },
  "Arp Sequence": {
-  "makeup": 7.7,
+  "makeup": 7.8,
   "master": 0.0,
   "thresh": -9.0,
   "vols": {
@@ -29,7 +29,7 @@
   }
  },
  "Deep House": {
-  "makeup": 7.6,
+  "makeup": 7.7,
   "master": 0.0,
   "thresh": -10.0,
   "vols": {

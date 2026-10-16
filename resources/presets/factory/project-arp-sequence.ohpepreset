@@ -232,7 +232,7 @@
     "mix.master.comp.ratio": 2.5,
     "mix.master.comp.attack": 0.012,
     "mix.master.comp.release": 0.16,
-    "mix.master.comp.makeup": 7.7,
+    "mix.master.comp.makeup": 7.8,
     "mix.master.limit": 1
   },
   "sections": {
