@@ -7,6 +7,7 @@
 #include "ProTiles.h"
 #include "Widgets.h"
 
+#include <cstdint>
 #include <memory>
 #include <set>
 #include <vector>
@@ -141,6 +142,7 @@ private:
     OhpeProcessor& proc;
     Mode mode = Mode::Synth;
     int part = 0;
+    uint64_t routingSig = 0; ///< the part's matrix slots last seen (repaint the bars when it changes)
     EngineType engine = EngineType::Analog;
     juce::String subtitle;
     std::vector<ParamGroup> groups;

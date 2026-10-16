@@ -9,6 +9,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <cstring>
 
 namespace ohpe::ui
 {
@@ -63,6 +65,18 @@ void ParamBar::paint (juce::Graphics& g)
     }
     else
         g.fillRoundedRectangle (bar.withWidth (juce::jmax (bar.getHeight(), bar.getWidth() * shown)), bar.getHeight() * 0.5f);
+    // p21: what the matrix adds around the value (violet: something else moves it)
+    const int barPart = id.startsWithChar ('p') && id.length() > 2 && id[2] == '.' ? id.substring (1, 2).getIntValue() - 1 : -1;
+    if (const auto mr = barPart >= 0 && barPart < Core::numParts ? pro::modRange (proc, barPart, id.toStdString()) : juce::Range<float>();
+        ! mr.isEmpty())
+    {
+        const float lo = juce::jlimit (0.0f, 1.0f, shown + mr.getStart()), hi = juce::jlimit (0.0f, 1.0f, shown + mr.getEnd());
+        const auto band = bar.withX (bar.getX() + bar.getWidth() * lo).withWidth (juce::jmax (2.0f, bar.getWidth() * (hi - lo)));
+        g.setColour (colour::ultraviolet.withAlpha (0.55f));
+        g.fillRoundedRectangle (band, bar.getHeight() * 0.5f);
+        g.setColour (colour::ultraviolet);
+        g.fillRect (bar.getX() + bar.getWidth() * shown - 1.0f, bar.getY() - 1.0f, 2.0f, bar.getHeight() + 2.0f);
+    }
     if (proc.core().midiMap().isMapped (id.toStdString()))
     {
         g.setColour (accent);
@@ -314,6 +328,26 @@ void ProView::refresh() { tick (1.0f / 30.0f); }
 
 void ProView::tick (float seconds)
 {
+    // the matrix of this part changed (a route added / removed / its amount): the violet ranges on the bars move
+    {
+        const auto& reg = proc.core().params();
+        const std::string pre = "p" + std::to_string (part + 1) + ".mod.s";
+        uint64_t sig = 1469598103934665603ull;
+        for (int k = 1; k <= mod::numSlots; ++k)
+            for (const char* f : { "src", "dst", "amt" })
+            {
+                const float v = reg.get (pre + std::to_string (k) + "." + f);
+                uint32_t bits = 0;
+                std::memcpy (&bits, &v, sizeof bits);
+                sig = (sig ^ bits) * 1099511628211ull;
+            }
+        if (sig != routingSig)
+        {
+            routingSig = sig;
+            for (auto& b : bars) b->repaint();
+            content.repaint();
+        }
+    }
     for (auto& b : bars)
         if (b->isVisible()) b->refresh();
     for (auto& c : cards)
