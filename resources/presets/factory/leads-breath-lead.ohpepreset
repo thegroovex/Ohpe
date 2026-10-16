@@ -67,13 +67,13 @@
     "fx2.hyper.retrig": 0,
     "fx2.hyper.mix": 0.32,
     "fx3.type": 16,
-    "fx3.midside.width": 1.35,
+    "fx3.midside.width": 1.2,
     "fx3.midside.mid": 0.0,
     "fx3.midside.side": 0.0,
     "fx3.midside.balance": 0.0,
     "fx3.midside.bassmono": 1,
     "fx3.midside.monofreq": 150.0,
-    "fx3.midside.haas": 0.25,
+    "fx3.midside.haas": 0.15,
     "fx3.midside.haastime": 0.011,
     "fx3.midside.midtilt": 0.0,
     "fx3.midside.sidetilt": 1.5,
@@ -160,6 +160,6 @@
     "mpe.bend": 48,
     "voices": 4,
     "glide": 0.03,
-    "gain": 6.3
+    "gain": 8.4
   }
 }

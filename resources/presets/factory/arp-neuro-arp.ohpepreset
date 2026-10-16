@@ -49,7 +49,7 @@
     "fx2.multiband.mid": 0.0,
     "fx2.multiband.high": 0.0,
     "fx2.multiband.mix": 1.0,
-    "fx2.multiband.output": 6.5,
+    "fx2.multiband.output": 7.4,
     "lfo.rate": 0.09,
     "lfo.depth": 0.22,
     "lfo.shape": 1,

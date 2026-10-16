@@ -35,6 +35,6 @@
     "lfo.dest": 0,
     "voices": 16,
     "velsens": 0.2,
-    "gain": 0.2
+    "gain": 0.9
   }
 }

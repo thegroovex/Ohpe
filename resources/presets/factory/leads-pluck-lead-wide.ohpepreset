@@ -18,7 +18,7 @@
     "wavetable.tone": 0.55,
     "wavetable.unison": 0.35,
     "wavetable.univoices": 6,
-    "wavetable.uniwidth": 0.9,
+    "wavetable.uniwidth": 0.75,
     "wavetable.keytrack": 0.6,
     "amp.a": 0.003,
     "amp.d": 0.45,

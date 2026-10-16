@@ -43,6 +43,6 @@
     "lfo.dest": 3,
     "wavetable.lfopos": 0.12,
     "voices": 10,
-    "gain": 3.8
+    "gain": 5.8
   }
 }

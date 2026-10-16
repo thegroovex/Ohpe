@@ -29,6 +29,6 @@
     "fx.reverb.predelay": 0.02,
     "fx.reverb.mix": 0.18,
     "voices": 12,
-    "gain": 9.2
+    "gain": 8.9
   }
 }

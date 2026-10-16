@@ -16,7 +16,7 @@
     "wavetable.tone": 0.85,
     "wavetable.unison": 0.3,
     "wavetable.univoices": 4,
-    "wavetable.uniwidth": 1.0,
+    "wavetable.uniwidth": 0.75,
     "wavetable.keytrack": 0.5,
     "amp.a": 0.003,
     "amp.d": 0.35,
@@ -47,6 +47,6 @@
     "lfo.dest": 1,
     "wavetable.lfopos": 0.12,
     "voices": 4,
-    "gain": 17.8
+    "gain": 23.4
   }
 }

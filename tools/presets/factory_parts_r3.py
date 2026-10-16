@@ -392,7 +392,7 @@ def up_bass(engine, sync="1/4", grit=0.25, wobble=None):
 
 def up_lead(engine):
     return {"drop": ("delay", "reverb", "width"),
-            "add": [midside(3, 1.35, 0.0, 0.0, True, 150.0, 0.25, 11.0, 0.0, 1.5), hyper(4, 0.45, 0.28, 5, 0.9, 0.45, 0, 0.32), echo(5, "1/8.", fb=0.33, highcut=6500.0, mix=0.18),
+            "add": [midside(3, 1.2, 0.0, 0.0, True, 150.0, 0.15, 11.0, 0.0, 1.5), hyper(4, 0.45, 0.28, 5, 0.9, 0.45, 0, 0.32), echo(5, "1/8.", fb=0.33, highcut=6500.0, mix=0.18),
                     hall(6, 0.72, 2.6, 0.45, 18.0, 1.0, 0.2), eq(9, (120.0, -1.0), (400.0, -1.5, 0.8), (2200.0, 1.0, 0.9),
                                                                     (5200.0, -1.0, 1.2), (12000.0, 1.5))],
             "motion": motion(("lfo2", ("fx", "hyper", 2), 0.22), ("lfo3", "pan", 0.1), ("lfo3", "timbre", 0.14),
@@ -414,7 +414,7 @@ def up_keys(engine):
 
 def up_atmos(engine):
     return {"drop": ("delay", "reverb", "width"),
-            "add": [midside(3, 1.5, 0.0, 0.0, True, 180.0, 0.35, 14.0, -0.5, 1.0), hyper(3, 0.3, 0.35, 6, 1.0, 0.6, 0, 0.4), echo(4, "1/4.", fb=0.45, highcut=5000.0, mix=0.2),
+            "add": [midside(3, 1.25, 0.0, 0.0, True, 180.0, 0.18, 14.0, -0.5, 1.0), hyper(3, 0.3, 0.35, 6, 0.8, 0.6, 0, 0.4), echo(4, "1/4.", fb=0.45, highcut=5000.0, mix=0.2),
                     hall(6, 0.9, 6.0, 0.45, 40.0, 1.0, 0.36)],
             "motion": motion(("lfo2", ("eng", MAIN_TARGET[engine]), 0.28), ("lfo3", "pan", 0.25), ("lfo3", ("fx", "echo", 3), 0.25),
                              ("env3", "timbre", 0.3), ("pressure", ("fx", "hyper", 2), 0.3), ("macro1", ("fxmix", "hall"), 0.4),
@@ -649,7 +649,7 @@ PRESETS_R3 = [
       amp(0.004, 0.5, 0.85, 0.22), mod(0.01, 0.35, 0.5, 0.2, 0.2), cho(1, 0.6, 0.5, 0.35), width(2, 1.4, 0.4, 13, 120),
       rev(3, 0.5, 0.5, 0.01, 0.18), voices=4),
     P("Pluck Lead Wide", ["Leads", "Plucks"], "wavetable", "Snappy plucked lead: a quick filter snap, stereo stack and a dotted delay.",
-      wt(table="classic", pos=0.45, tone=0.55, unison=0.35, univoices=6, uniwidth=0.9, keytrack=0.6),
+      wt(table="classic", pos=0.45, tone=0.55, unison=0.35, univoices=6, uniwidth=0.75, keytrack=0.6),
       amp(0.002, 0.45, 0.25, 0.3), mod(0.001, 0.18, 0.0, 0.2, 0.55), dly(2, 0.45, 0.4, 0.5, 1, 0.28), rev(3, 0.65, 0.5, 0.02, 0.22),
       voices=6, velsens=0.5),
 
@@ -729,7 +729,7 @@ PRESETS_R3 = [
       amp(0.003, 0.18, 0.3, 0.12), mod(0.001, 0.12, 0.1, 0.1, 0.3), dly(2, 0.375, 0.35, 0.5, 1, 0.2), rev(3, 0.75, 0.45, 0.02, 0.22),
       arp("up", 2, 0.45, "1/16"), voices=8),
     P("Wide Pluck Arp", ["Arp", "Plucks"], "wavetable", "Six-voice stereo pluck, up / down over three octaves, dotted ping-pong delay.",
-      wt(table="classic", pos=0.45, tone=0.55, unison=0.35, univoices=6, uniwidth=1.0, keytrack=0.6),
+      wt(table="classic", pos=0.45, tone=0.55, unison=0.35, univoices=6, uniwidth=0.75, keytrack=0.6),
       amp(0.002, 0.3, 0.0, 0.25), mod(0.001, 0.12, 0.0, 0.1, 0.5), dly(2, 0.45, 0.45, 0.5, 1, 0.25), rev(3, 0.7, 0.5, 0.02, 0.2),
       arp("updown", 3, 0.5, "1/16"), voices=8),
     P("Bell Cascade Arp", ["Arp", "Keys"], "fm", "FM bells cascading down three octaves in triplets, with echoes and a bright hall.",
@@ -829,7 +829,7 @@ PRESETS_R3 = [
       amp(0.001, 3.0, 0.0, 2.0), mod(0.001, 0.15, 0.0, 0.2, 1.0), pitchenv(-24, 0.4, 0.8), squash(2, 0.6, 0.3, 0.5),
       rev(3, 0.95, 0.4, 0.02, 0.4), voices=2),
     P("Stereo Zap", ["FX"], "wavetable", "Laser zap diving two octaves, thrown left and right by a ping-pong delay.",
-      wt(table="digital", pos=0.6, tone=0.85, unison=0.3, univoices=4, uniwidth=1.0, keytrack=0.5),
+      wt(table="digital", pos=0.6, tone=0.85, unison=0.3, univoices=4, uniwidth=0.75, keytrack=0.5),
       amp(0.001, 0.35, 0.0, 0.2), mod(0.001, 0.2, 0.0, 0.1, 0.5), pitchenv(24, 0.25, 0.9), dly(2, 0.25, 0.55, 0.5, 1, 0.35),
       rev(3, 0.7, 0.5, 0.02, 0.2), voices=4),
     P("Downlifter", ["FX"], "analog", "Falling noise and saw sweep over three seconds with a jet flanger - the end of the build.",
@@ -851,7 +851,7 @@ PRESETS_R3 = [
 
     # ================================================================ WIDE PLUCKS / KEYS (6)
     P("Stereo Pluck", ["Plucks"], "wavetable", "Bright six-voice pluck spread wide with a dotted ping-pong delay and hall.",
-      wt(table="classic", pos=0.5, tone=0.5, unison=0.3, univoices=6, uniwidth=1.0, keytrack=0.6),
+      wt(table="classic", pos=0.5, tone=0.5, unison=0.3, univoices=6, uniwidth=0.75, keytrack=0.6),
       amp(0.002, 0.4, 0.0, 0.3), mod(0.001, 0.2, 0.0, 0.2, 0.6), dly(2, 0.45, 0.4, 0.5, 1, 0.24), rev(3, 0.75, 0.5, 0.02, 0.24),
       voices=8, velsens=0.5),
     P("Wide Glass Pluck", ["Plucks", "Keys"], "fm", "FM glass pluck with a Haas spread and a bright, airy reverb.",

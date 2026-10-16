@@ -38,6 +38,6 @@
     "pitchenv.time": 0.6,
     "pitchenv.curve": 0.4,
     "voices": 10,
-    "gain": 7.5
+    "gain": 8.1
   }
 }
