@@ -156,14 +156,33 @@ juce::String hoverText (OhpeProcessor& proc, const std::string& id)
 int destForParam (OhpeProcessor& proc, int part, const std::string& paramId)
 {
     auto& core = proc.core();
-    auto& pt = core.part (juce::jlimit (0, Core::numParts - 1, part));
+    const int pi = juce::jlimit (0, Core::numParts - 1, part);
+    auto& pt = core.part (pi);
     const int idx = core.params().indexOf (paramId);
     if (idx < 0) return -1;
+    const std::string prefix = pt.prefix();
+    if (paramId.rfind (prefix, 0) != 0) return -1;
+    const auto local = paramId.substr (prefix.size());
+    // the engine the part plays now (the selected one - the audio thread may not have switched yet)
+    const auto type = selectedEngine (core, pi);
+    const std::string ep = std::string (engineTypeInfo (type).id) + ".";
+    if (local.rfind (ep, 0) == 0)
+        if (auto* e = pt.engine (type))
+        {
+            const auto ds = e->getParamDescriptors();
+            for (size_t i = 0; i < ds.size() && i < (size_t) mod::numEngineDests; ++i)
+                if (ds[i].id == local.substr (ep.size())) return mod::DstEngine1 + (int) i;
+            return -1;
+        }
     for (int d = mod::DstOff + 1; d < mod::numDests; ++d)
     {
         const auto& info = mod::destTable()[(size_t) d];
-        if (info.kind == mod::DestKind::Voice || info.kind == mod::DestKind::None) continue;
-        if (pt.destParamIndex (d) == idx) return d;
+        if (info.kind == mod::DestKind::PartParam && info.paramSuffix != nullptr && local == info.paramSuffix) return d;
+    }
+    for (int d = mod::DstOff + 1; d < mod::numDests; ++d) // FX rack slots: as the part resolves them now
+    {
+        const auto& info = mod::destTable()[(size_t) d];
+        if ((info.kind == mod::DestKind::FxMix || info.kind == mod::DestKind::FxParam) && pt.destParamIndex (d) == idx) return d;
     }
     return -1;
 }

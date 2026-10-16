@@ -370,7 +370,7 @@ void ProView::layoutContent()
 {
     const float u = unit();
     const int width = juce::jmax (100, viewport.getWidth() - viewport.getScrollBarThickness() - 2);
-    columns = juce::jlimit (1, 4, (int) ((float) width / (u * 27.0f)));
+    columns = juce::jlimit (1, 4, (int) ((float) width / juce::jmax (u * 27.0f, 250.0f))); // p21: 1 - 4 columns by width
     const int colW = width / columns;
     const int rowH = (int) (u * 3.4f), titleH = (int) (u * 3.0f), gap = (int) (u * 1.6f);
     const bool simpleNow = simple && anyTile(); // a mode without pictures shows its bars in Simple too
