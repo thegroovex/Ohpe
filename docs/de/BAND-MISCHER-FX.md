@@ -80,7 +80,20 @@ Aufnahme werden Schnitte abgelehnt (Rückgabe `false`).
 * **Master-Tiefpass** (0.6, `mix.master.lowpass`, 500 Hz … 20 kHz, 12 dB/Oktave; 20 kHz = aus): nach
   der Lautstärke, vor dem Limiter – macht den ganzen Mix dunkler, z. B. 4–5 kHz für Lo-Fi.
 * **Limiter** (`mix.master.limit`) mit einstellbarer **Obergrenze** (`mix.master.ceiling`,
-  Standard −0,3 dBFS wie in 0.1).
+  Standard −0,3 dBFS wie in 0.1). Seit 0.8 schaut er 1,5 ms voraus (71 Samples Latenz bei 48 kHz, solange er
+  an ist), misst echte Spitzen (Zwischen-Sample-Spitzen einer 4-fachen Interpolation) und senkt seine
+  Verstärkung vor einer Spitze sanft ab, statt zu springen – laute Mischungen bleiben sauber, ohne
+  Clipping-Verzerrung. Sein Release ist zweistufig: schnell nach einer einzelnen Spitze, langsamer, solange
+  er dauernd arbeitet (kein Pumpen).
+* **Kompressor-Detektor** (0.8): Master-Kompressor, Kompressor-lite und der Rack-Kompressor halten eine Spitze
+  12 ms, bevor sie loslassen – schnelle Einstellungen folgen nicht mehr der Wellenform eines Basses (keine
+  Verzerrung im Sub).
+* **Ducking** (0.8, Sidechain): `mix.duck.src` wählt den Auslöser-Kanal (Aus, Kanal 1 … Kanal 8), meist die
+  Drums (Kanal 5). Dessen Tiefen (unter etwa 150 Hz – die Kick) drücken die anderen Kanäle um ihren eigenen
+  Betrag `mix.chN.duck` (0 … 1, bis −24 dB bei vollem Schlag); `mix.duck.release` (0,03 … 1 s) bestimmt,
+  wie schnell sie zurückkommen. Der Auslöser folgt seiner eigenen jüngsten Spitze, so erreicht jede Kick die
+  eingestellte Tiefe, egal wie laut sie ist. Die Werks-Projekte ducken die Bässe am stärksten, Flächen
+  weniger, Leads / Keys ein wenig.
 * Die Pegelreduktion ist für Anzeigen lesbar: `Mixer::gainReduction (Kanal)`, Master = 8.
 * **Delay-Sync** (0.5, `fxa.delay.sync`): Aus, 1/16, 1/8T, 1/8, 1/4T, 1/8., 1/4, 1/4., 1/2. Jede
   Einstellung außer Aus setzt die Zeit des Send-Delays aus dem Tempo (Host, Link oder intern) und
@@ -96,6 +109,15 @@ behält seine eigenen Parameter (`p1.fx.chorus.rate` …); Chorus, Phaser, Bitcr
 Filter-Drive haben einen eigenen Mischungsregler, Delay und Hall bekommen ihn vom Slot
 (`p1.fx.delay.mix`, `p1.fx.reverb.mix`). *Aus* ist ein exakter Bypass. Seit 0.7 ist dieser Slot
 Slot 1 im FX-Rack des Parts (unten).
+
+**Chorus-Ensemble** (0.8): der Chorus hat vier weitere Parameter (angehängt, in jedem Slot jedes Racks):
+*Stimmen* (1 … 4; 1 = der klassische Chorus mit zwei Abgriffen, 2 … 4 = Ensemble: gestaffelte Abgriffe mit
+gleichmäßig verteilten LFO-Phasen, über das Stereofeld verteilt), *Drift* (ein langsames zufälliges Wandern
+jedes Abgriffs – weniger statisch, eher wie analoge Ensembles), *Breite* (Stereobreite der Ensemble-Stimmen) und
+*Tiefensperre* (20 Hz … 1 kHz, 12 dB/Oktave nur auf dem Chorus-Anteil: darunter bleibt der Klang trocken und
+mono, ein Bass mit Chorus behält einen festen Sub). Die Standardwerte (1 Stimme, kein Drift, 20 Hz) ergeben den
+Chorus von 0.2. Seit dem Punch-Durchgang von 0.8 ist jeder Werks-Chorus ein Ensemble, und E-Pianos, Orgeln,
+Flächen, Plucks, Leads, Arps, Stimmen und die Mitten von Reese- / Neuro-Bässen tragen eines.
 
 ## FX-Rack (0.7)
 

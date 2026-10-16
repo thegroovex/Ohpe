@@ -22,9 +22,8 @@ LJ = HERE + "/levels.json"
 
 
 def r3mod():
-    import importlib
+    import factory_parts  # noqa: F401 (imports factory_parts_r3; importing r3 first is circular)
     import factory_parts_r3
-    importlib.reload(factory_parts_r3)
     return factory_parts_r3
 
 

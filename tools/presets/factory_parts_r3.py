@@ -139,6 +139,8 @@ def auto_mpe(name, tags, engine, params):
 # pianos and effects keep none. Every chorus of the factory set becomes an ensemble.
 _punch_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "punch.json")
 PUNCH = json.load(open(_punch_path)) if os.path.exists(_punch_path) else {}
+_guard_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "peak_guard.json")
+GUARDED = set(json.load(open(_guard_path))) if os.path.exists(_guard_path) else set()  # make_factory adds a slot for them
 GLUE = {  # ratio, attack ms, release ms, knee dB, threshold below the incoming level (dB), mix
     "Bass": (4.0, 1.0, 70.0, 6.0, 6.0, 1.0), "Boom": (3.0, 2.0, 90.0, 6.0, 5.0, 1.0), "Leads": (3.5, 1.5, 80.0, 6.0, 5.0, 1.0),
     "Drums": (4.0, 0.8, 70.0, 6.0, 7.0, 0.7), "Plucks": (3.0, 1.5, 90.0, 6.0, 5.0, 1.0), "Arp": (3.0, 1.5, 90.0, 6.0, 5.0, 1.0),
@@ -183,12 +185,13 @@ def punch_inject(name, tags, engine, fxs):
     cal0 = calib_slot(kinds0)
     trim_fx = chain(fxs)[cal0] if cal0 is not None else None
     out = list(fxs)
+    room = MAX_SLOTS - (1 if name in GUARDED else 0)
     for f in out:  # every chorus becomes an ensemble (its own rate / depth / mix kept)
         if f["__fx__"] == "chorus":
             f["params"] = dict(f["params"], **{"chorus." + k: v for k, v in ENSEMBLE.items() if "chorus." + k not in f["params"]})
-    if cat in GLUE and len(out) < MAX_SLOTS and not any(f["__fx__"] == "compressor" for f in out):
+    if cat in GLUE and len(out) < room and not any(f["__fx__"] == "compressor" for f in out):
         out.append(dict(comp(9, **glue_params(name, cat)), __glue__=True))
-    if wants_chorus(name, tags, engine) and len(out) < MAX_SLOTS and not any(f["__fx__"] in _MOD_KINDS for f in out):
+    if wants_chorus(name, tags, engine) and len(out) < room and not any(f["__fx__"] in _MOD_KINDS for f in out):
         out.append(ensemble_chorus(cat))
     return out, trim_fx
 
