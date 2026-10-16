@@ -85,7 +85,7 @@ void meridian (juce::Graphics& g, const Camera& cam, float r, float azimuth, juc
     const int n = 48;
     for (int i = 0; i <= n; ++i)
     {
-        const float e = -0.25f * pi + (float) i / (float) n * 0.75f * pi; // -45 .. +90 degrees
+        const float e = -pi / 18.0f + (float) i / (float) n * (10.0f / 18.0f) * pi; // -10 .. +90 degrees (stays above the summary rows)
         const float a = azimuth;
         const auto p = cam.project ({ r * std::cos (e) * std::sin (a), r * std::cos (e) * std::cos (a), r * std::sin (e) }).s;
         if (i == 0) path.startNewSubPath (p);
@@ -172,8 +172,9 @@ void drawSource (juce::Graphics& g, const Camera& cam, space::Vec3 scenePos, flo
 Camera makeCamera (juce::Rectangle<float> area, float yaw, juce::Point<float> parallax)
 {
     Camera cam;
-    cam.radius = juce::jmin (area.getWidth() * 0.46f, area.getHeight() * 0.62f);
-    cam.centre = { area.getCentreX(), area.getY() + area.getHeight() * 0.56f };
+    // sized so the overhead arc (+90 degrees, nearest the camera) and the back of the floor stay inside the area
+    cam.radius = juce::jmin (area.getWidth() * 0.46f, area.getHeight() * 0.54f);
+    cam.centre = { area.getCentreX(), area.getY() + area.getHeight() * 0.55f };
     cam.yaw = yaw + parallax.x * 0.25f;
     cam.pitch = 0.42f + parallax.y * 0.12f;
     return cam;
@@ -359,6 +360,8 @@ void Scene::paint (juce::Graphics& g, juce::Rectangle<float> area, Core& core, i
     const float u = area.getWidth() / 42.0f;
     const bool speakers = speakerMonitoring (core);
     const auto cam = makeCamera (area.reduced (u * 0.5f), yaw, parallax);
+    juce::Graphics::ScopedSaveState clip (g);
+    g.reduceClipRegion (area.toNearestInt()); // nothing of the scene (low sources, trails) runs into the tabs or the rows below
     paintStage (g, cam, u, speakers);
 
     // sources behind the head first, then the head, then those in front (depth = further from the camera first)
