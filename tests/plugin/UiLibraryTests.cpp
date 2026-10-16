@@ -551,6 +551,7 @@ int userCount (const PresetManager& pm)
 TEST_CASE ("library: a sound saved under a new name shows under User at once, with filters set, and after a restart")
 {
     TempFolder tmp;
+    const auto previousDir = juce::SystemStats::getEnvironmentVariable ("OHPE_PRESET_DIR", {});
     setEnv ("OHPE_PRESET_DIR", tmp.dir.getFullPathName()); // the default user folder, as after a restart
     {
         OhpeProcessor p;
@@ -631,6 +632,16 @@ TEST_CASE ("library: a sound saved under a new name shows under User at once, wi
         CHECK (pm.entries()[(size_t) pm.current()].meta.name == "Second Sound 2");
         CHECK (tmp.dir.getChildFile ("Parts").getChildFile ("Second Sound 2.ohpepreset").existsAsFile());
         CHECK (lib.rowOfEntry (pm.current()) >= 0);
+        // keep both with a name at the file name limit still finds a free name
+        const std::string longName (90, 'x');
+        lib.showSavePanel (true);
+        lib.setSaveFields (juce::String (longName), "Tester", {}, false);
+        REQUIRE (lib.commitSave());
+        lib.showSavePanel (true);
+        lib.setSaveFields (juce::String (longName), "Tester", {}, false);
+        REQUIRE (lib.commitSave (ui::LibraryBrowser::SaveConflict::KeepBoth));
+        CHECK (userCount (pm) == 5);
+        CHECK (pm.entries()[(size_t) pm.current()].meta.name == std::string (72, 'x') + " 2");
         CHECK (e.createComponentSnapshot (e.getLocalBounds()).isValid());
         e.showLibrary (false);
     }
@@ -638,16 +649,16 @@ TEST_CASE ("library: a sound saved under a new name shows under User at once, wi
         // restart: a new instance finds them in the default folder, under User
         OhpeProcessor q;
         auto& pm = q.presets();
-        CHECK (userCount (pm) == 3);
+        CHECK (userCount (pm) == 5);
         pm.filter.bank = preset::Bank::User;
-        CHECK (pm.view().size() == 3);
+        CHECK (pm.view().size() == 5);
         CHECK (entryIndex (pm, "My Own Bass") >= 0);
         CHECK (pm.author() == "Tester");
         const int idx = entryIndex (pm, "Second Sound");
         REQUIRE (idx >= 0);
         CHECK (pm.entries()[(size_t) idx].favourite);
     }
-    setEnv ("OHPE_PRESET_DIR", {});
+    setEnv ("OHPE_PRESET_DIR", previousDir);
 }
 
 TEST_CASE ("library: the default user folder")

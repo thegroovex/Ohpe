@@ -204,7 +204,15 @@ juce::File PresetManager::save (const preset::Meta& metaIn, bool project, int pa
     if (file.exists() && ! overwrite)
     {
         // keep both: the new preset gets the first free name, in the file and in the list
-        const auto base = meta.name;
+        // short enough that the number survives the file name limit (80 bytes), no cut UTF-8 sequence
+        auto base = meta.name;
+        if (base.size() > 72)
+        {
+            base.resize (72);
+            while (! base.empty() && (((unsigned char) base.back()) & 0xc0) == 0x80) base.pop_back();
+            if (! base.empty() && ((unsigned char) base.back()) >= 0xc0) base.pop_back();
+            while (! base.empty() && base.back() == ' ') base.pop_back();
+        }
         for (int n = 2; file.exists(); ++n)
         {
             meta.name = base + " " + std::to_string (n);
