@@ -36,7 +36,7 @@
     "fx.distortion.tone": 0.823,
     "fx.distortion.mix": 1.0,
     "fx.distortion.output": 0.0,
-    "fx2.type": 18,
+    "fx2.type": 19,
     "fx2.wobble.rate": 2.0,
     "fx2.wobble.sync": 3,
     "fx2.wobble.shape": 1,

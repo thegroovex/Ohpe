@@ -64,7 +64,7 @@
     "fx3.multiband.high": 3,
     "fx3.multiband.mix": 1.0,
     "fx3.multiband.output": 0.0,
-    "fx4.type": 20,
+    "fx4.type": 21,
     "fx4.width.width": 1.3,
     "fx4.width.spread": 0.0,
     "fx4.width.haas": 12,

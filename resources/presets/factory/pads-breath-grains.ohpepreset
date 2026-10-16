@@ -31,7 +31,7 @@
     "mod.s": 0.5,
     "mod.r": 1.0,
     "mod.amt": 0.0,
-    "fx.type": 20,
+    "fx.type": 21,
     "fx.width.width": 1.5,
     "fx.width.spread": 0.4,
     "fx.width.haas": 15,

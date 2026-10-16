@@ -32,7 +32,7 @@
     "lfo.depth": 0.5,
     "lfo.shape": 0,
     "lfo.dest": 1,
-    "fx.type": 19,
+    "fx.type": 20,
     "fx.tremolo.rate": 0.5,
     "fx.tremolo.sync": 1,
     "fx.tremolo.depth": 0.35,

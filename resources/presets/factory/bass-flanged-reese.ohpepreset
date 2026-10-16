@@ -42,7 +42,7 @@
     "fx2.flange.feedback": 0.6,
     "fx2.flange.stereo": 0.25,
     "fx2.flange.mix": 0.55,
-    "fx3.type": 20,
+    "fx3.type": 21,
     "fx3.width.width": 1.3,
     "fx3.width.spread": 0.0,
     "fx3.width.haas": 12,

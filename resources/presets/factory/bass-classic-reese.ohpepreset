@@ -44,7 +44,7 @@
     "fx2.chorus.rate": 0.22,
     "fx2.chorus.depth": 0.45,
     "fx2.chorus.mix": 0.25,
-    "fx3.type": 20,
+    "fx3.type": 21,
     "fx3.width.width": 1.2,
     "fx3.width.spread": 0.0,
     "fx3.width.haas": 12,

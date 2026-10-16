@@ -36,7 +36,7 @@
     "lfo.shape": 0,
     "lfo.dest": 1,
     "voices": 1,
-    "fx.type": 16,
+    "fx.type": 17,
     "fx.comb.freq": 420,
     "fx.comb.feedback": 0.75,
     "fx.comb.damp": 0.25,

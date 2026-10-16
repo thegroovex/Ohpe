@@ -35,7 +35,7 @@
     "lfo.shape": 1,
     "lfo.dest": 1,
     "voices": 1,
-    "fx.type": 17,
+    "fx.type": 18,
     "fx.formant.vowel": 0.35,
     "fx.formant.shift": 0.0,
     "fx.formant.reso": 0.55,

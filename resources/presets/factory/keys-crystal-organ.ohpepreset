@@ -73,7 +73,7 @@
     "fx2.compressor.knee": 6.0,
     "fx2.compressor.makeup": 1.5,
     "fx2.compressor.mix": 1.0,
-    "fx3.type": 19,
+    "fx3.type": 20,
     "fx3.tremolo.rate": 0.9,
     "fx3.tremolo.sync": 0,
     "fx3.tremolo.depth": 0.4,

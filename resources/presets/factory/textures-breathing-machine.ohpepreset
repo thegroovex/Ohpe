@@ -29,7 +29,7 @@
     "mod.s": 0.6,
     "mod.r": 2.0,
     "mod.amt": 0.2,
-    "fx.type": 17,
+    "fx.type": 18,
     "fx.formant.vowel": 0.3,
     "fx.formant.shift": 0.0,
     "fx.formant.reso": 0.6,

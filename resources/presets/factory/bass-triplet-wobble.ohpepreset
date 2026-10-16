@@ -36,7 +36,7 @@
     "fx.filterdrive.drive": 0.4,
     "fx.filterdrive.mode": 0,
     "fx.filterdrive.mix": 1.0,
-    "fx2.type": 18,
+    "fx2.type": 19,
     "fx2.wobble.rate": 2.0,
     "fx2.wobble.sync": 13,
     "fx2.wobble.shape": 0,

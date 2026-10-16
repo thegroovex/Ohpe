@@ -39,7 +39,7 @@
     "fx.distortion.tone": 0.869,
     "fx.distortion.mix": 1.0,
     "fx.distortion.output": 0.0,
-    "fx2.type": 20,
+    "fx2.type": 21,
     "fx2.width.width": 0.0,
     "fx2.width.spread": 0.0,
     "fx2.width.haas": 12,

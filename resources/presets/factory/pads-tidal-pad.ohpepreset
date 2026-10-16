@@ -28,7 +28,7 @@
     "mod.s": 0.6,
     "mod.r": 2.0,
     "mod.amt": 0.1,
-    "fx.type": 18,
+    "fx.type": 19,
     "fx.wobble.rate": 2.0,
     "fx.wobble.sync": 15,
     "fx.wobble.shape": 0,

@@ -39,7 +39,7 @@
     "fx.multiband.high": 0.0,
     "fx.multiband.mix": 1.0,
     "fx.multiband.output": 0.0,
-    "fx2.type": 20,
+    "fx2.type": 21,
     "fx2.width.width": 0.0,
     "fx2.width.spread": 0.0,
     "fx2.width.haas": 12,

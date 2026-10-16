@@ -59,7 +59,7 @@
     "fx3.eq.highfreq": 11000.0,
     "fx3.eq.highgain": -2.5,
     "fx3.eq.output": 0.0,
-    "fx4.type": 20,
+    "fx4.type": 21,
     "fx4.width.width": 1.4,
     "fx4.width.spread": 0.0,
     "fx4.width.haas": 12,

@@ -36,7 +36,7 @@
     "fx.chorus.rate": 0.3,
     "fx.chorus.depth": 0.5,
     "fx.chorus.mix": 0.35,
-    "fx2.type": 20,
+    "fx2.type": 21,
     "fx2.width.width": 1.4,
     "fx2.width.spread": 0.0,
     "fx2.width.haas": 12,

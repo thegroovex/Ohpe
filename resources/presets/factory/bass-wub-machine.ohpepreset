@@ -30,7 +30,7 @@
     "mod.r": 0.2,
     "mod.amt": 0.0,
     "voices": 1,
-    "fx.type": 18,
+    "fx.type": 19,
     "fx.wobble.rate": 2.0,
     "fx.wobble.sync": 4,
     "fx.wobble.shape": 0,

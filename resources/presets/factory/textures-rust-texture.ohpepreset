@@ -31,7 +31,7 @@
     "mod.s": 0.5,
     "mod.r": 1.0,
     "mod.amt": 0.0,
-    "fx.type": 16,
+    "fx.type": 17,
     "fx.comb.freq": 90,
     "fx.comb.feedback": 0.8,
     "fx.comb.damp": 0.5,
