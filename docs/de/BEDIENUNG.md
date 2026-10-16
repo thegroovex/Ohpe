@@ -2,11 +2,34 @@
 
 *Deutsch · English: [../en/USER-INTERFACE.md](../en/USER-INTERFACE.md)*
 
-Die Oberfläche von Ohpe: Engine-Tasten (links), Display (Mitte), Modus-Tasten (rechts), vier
-Encoder unter dem Display, die **TRANSPORT**-Tasten (unten links) und die Oktavtasten, die Klaviatur.
-In der Kopfzeile liegen die **Part-Auswahl**, der **Preset-Streifen** und die Tasten **BIBLIOTHEK**,
-**PRO** und **MIDI**. Jede Funktion
-ist mit der Maus und – über MIDI Learn – vom Controller aus erreichbar.
+Die Oberfläche von Ohpe (p14): Engine-Tasten (links), Display (Mitte), Modus-Tasten (rechts), vier
+Encoder unter dem Display, die **TRANSPORT**-Tasten und **MIDI** (unten links), die **OKTAVE**-Tasten
+(unten rechts) und die Klaviaturzeile – **PITCH**- und **MOD**-Rad, drei Oktaven Klaviatur, **Glide**-Modus
+und -Zeit. In der Kopfzeile liegen die **Part-Auswahl**, der **Preset-Streifen**, die Tasten
+**BIBLIOTHEK** und **PRO**, **ZUFALL** und **SPEICHERN** sowie EN / DE. Jede Funktion ist mit der Maus und –
+über MIDI Learn – vom Controller aus erreichbar.
+
+![Die Platte](../images/ohpe-analog-de.png)
+
+## Klaviaturzeile: Räder, Klaviatur, Glide
+
+![Klaviaturzeile](../images/ohpe-keyboard-row-de.png)
+
+| Element | Wirkung |
+|---|---|
+| **PITCH**-Rad | Pitchbend für den bearbeiteten Part (auf seinem MIDI-Kanal, wie die Bildschirm-Klaviatur); Umfang = *Pitchbend-Bereich* des Parts. Nach oben / unten ziehen; beim Loslassen federt es zur Mitte zurück. |
+| **MOD**-Rad | das Modulationsrad (CC 1): eine Quelle der [Modulationsmatrix](MODULATION.md). Bleibt stehen; Doppelklick = 0. |
+| Klaviatur | drei Oktaven (ab Werk C3–C6); **OKTAVE −/+** verschiebt sie. |
+| **AUTO / LEGATO / IMMER** | Glide-Modus des bearbeiteten Parts: *Auto* gleitet, solange die vorige Note klingt, *Legato* nur bei gehaltener Taste, *Immer* von jeder vorigen Note. |
+| **GLIDE** | Glide-Zeit des bearbeiteten Parts (0 = aus). |
+
+Beide Räder sind Host-Parameter (*Pitch-Rad* `perf.bend`, *Mod-Rad* `perf.mod`): Rechtsklick = MIDI Learn,
+Shift / Cmd / Strg = fein. Sie sind Spielhilfen und gehören nicht zu Presets.
+
+## ZUFALL und SPEICHERN
+
+**ZUFALL** gibt der Engine des bearbeiteten Parts neue Klangwerte (ihre Synth-Seiten; Pegel, Stimmung,
+Stimmen und Sample bleiben). **SPEICHERN** öffnet das Speicherfeld der Bibliothek für den bearbeiteten Part.
 
 ## Display: Balken ziehen
 
@@ -118,7 +141,7 @@ Schritt-Ansicht:
 
 ## Transport-Tasten
 
-Die **TRANSPORT**-Tasten unten links wirken auf jeder Seite:
+Die **TRANSPORT**-Tasten im Feld unten links (REC, START, STOPP / ANFANG, SCHLEIFE, neben MIDI) wirken auf jeder Seite:
 
 | Taste | Aktion |
 |---|---|

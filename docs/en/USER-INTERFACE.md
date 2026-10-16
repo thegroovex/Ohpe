@@ -2,10 +2,33 @@
 
 *English · Deutsch: [../de/BEDIENUNG.md](../de/BEDIENUNG.md)*
 
-Ohpe's surface: engine keys (left), the display (centre), mode keys (right), four encoders below the
-display, the **TRANSPORT** keys (bottom left) and the octave keys, the keyboard. The header holds the
-**part selector**, the **preset strip** and the **LIBRARY**, **PRO** and **MIDI** keys. Every function can be reached with the mouse
-and – through MIDI learn – from a controller.
+Ohpe's surface (p14): engine keys (left), the display (centre), mode keys (right), four encoders below the
+display, the **TRANSPORT** keys and **MIDI** (bottom left), the **OCTAVE** keys (bottom right) and the
+keyboard row – **PITCH** and **MOD** wheels, a three-octave keyboard, **glide** mode and time. The header
+holds the **part selector**, the **preset strip**, the **LIBRARY** and **PRO** keys, **RANDOM** and **SAVE**,
+and EN / DE. Every function can be reached with the mouse and – through MIDI learn – from a controller.
+
+![The plate](../images/ohpe-analog.png)
+
+## Keyboard row: wheels, keyboard, glide
+
+![Keyboard row](../images/ohpe-keyboard-row.png)
+
+| Control | What it does |
+|---|---|
+| **PITCH** wheel | pitch bend for the edit part (its MIDI channel, like the on-screen keyboard); range = the part's *Bend Range*. Drag up / down; it springs back to the centre when you let go. |
+| **MOD** wheel | the mod wheel (CC 1): a source in the [modulation matrix](MODULATION.md). Stays where you leave it; double-click = 0. |
+| Keyboard | three octaves (C3–C6 by default); **OCTAVE −/+** moves it. |
+| **AUTO / LEGATO / ALWAYS** | glide mode of the edit part: *Auto* glides while the previous note still sounds, *Legato* only while another key is held, *Always* from every previous note. |
+| **GLIDE** | glide time of the edit part (0 = off). |
+
+Both wheels are host parameters (*Pitch Wheel* `perf.bend`, *Mod Wheel* `perf.mod`): right-click for MIDI
+learn, Shift / Cmd / Ctrl for fine control. They are performance controls, not part of presets.
+
+## RANDOM and SAVE
+
+**RANDOM** gives the edit part's engine new sound values (its Synth pages; level, tuning, voices and the
+sample stay). **SAVE** opens the library's save panel for the edit part.
 
 ## Display: drag the bars
 
@@ -112,7 +135,7 @@ Step view:
 
 ## Transport keys
 
-The **TRANSPORT** keys at the bottom left work on every page:
+The **TRANSPORT** keys in the bottom-left panel (REC, PLAY, STOP / TO START, LOOP, next to MIDI) work on every page:
 
 | Key | Action |
 |---|---|

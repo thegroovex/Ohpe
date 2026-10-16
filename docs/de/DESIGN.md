@@ -2,22 +2,41 @@
 
 *Deutsch · English: [../DESIGN.md](../DESIGN.md)*
 
-Ohpe ist ein Instrument, kein Fenster voller Bedienelemente. Die Gestaltung folgt einer eigenen,
-minimalistischen skandinavisch-industriellen Idee: heller eloxierter Korpus, Grafit-Tasten, ein
-tiefes Display und vier funktionale Farben.
+Ohpe ist ein Instrument, kein Fenster voller Bedienelemente. Die Gestaltung ist ein eigener
+funktionaler Minimalismus: weniger, aber besser. Ein mattes warmweißes Gehäuse, graue eingelassene
+Felder, matte helle Tasten mit sanfter Tiefe, ein großes schwarzes Display und vier funktionale
+Farben. Nichts ist Dekoration: jede Linie, jeder Schatten und jede Farbe sagt, was ein Element ist
+oder tut.
 
-* **Eine Fläche** auf einem 10er-Raster (1200 × 800 Einheiten, gleichmäßig skaliert). Bibliothek
-  und Profiansicht liegen wie ein Deckel auf der Platte; die Klaviatur bleibt spielbar.
+![Die neu gestaltete Platte (p14)](../images/ohpe-analog-de.png)
+
+* **Ein Gehäuse (p14)** auf einem 8er-Raster (1200 × 800 Einheiten, gleichmäßig skaliert): matt
+  warmweiß, großzügige Ränder, weicher Schatten auf dem Hintergrund – kein Metall, keine Textur.
+  Funktionsgruppen liegen in grauen, **eingelassenen Feldern**: ENGINE (links), MODUS (rechts),
+  TRANSPORT + MIDI (unten links), OKTAVE (unten rechts), das Klaviaturbett. Bibliothek und
+  Profiansicht liegen wie ein Deckel in dunklem Rahmen auf der Platte; Kopfzeile und
+  Klaviaturzeile bleiben sichtbar und spielbar.
+* **Aufteilung (p14):** Kopfzeile mit OHPE, PART 1–4 (Segmente), Preset-Streifen, BIBLIOTHEK und PRO
+  (dunkle Pillen), ZUFALL und SPEICHERN (runde Tasten mit Vierfarbring), EN / DE. Links die acht
+  Engines, rechts die acht Modi, in der Mitte das Display mit vier Encodern darunter. Klaviaturzeile:
+  PITCH- und MOD-Rad links, drei Oktaven Klaviatur (C3–C6), rechts der Glide-Schalter
+  (Auto / Legato / Immer) und der GLIDE-Regler.
 * **Farbe heißt Funktion.** Die vier Akzente gehören zu den vier Encodern: Signalrot (1),
-  Sonnengelb (2), Ultraviolett (3), Rosé (4). Rot markiert außerdem Aufnahme und aktiven Modus,
-  Gelb Engine und bearbeiteten Part.
-* **Das Display ist der einzige Bildschirm:** tiefes Glas mit feinem Punktraster, warmweiße Schrift.
-* **Tiefe statt Dekoration (0.7):** Das Display ist ein versenktes Fenster mit Ebenen: eingelassene
-  Fassung (oben beschattet, an der unteren Kante beleuchtet), Glas mit von oben einfallendem Licht
-  und dunkleren Ecken, das Punktraster hinter dem Inhalt, der Inhalt, die Glasoberfläche darüber
-  (innerer Schatten, ein feiner diagonaler Glanz). Die hinteren Ebenen verschieben sich mit der Maus
-  leicht gegen die vorderen (Parallaxe); die Figur wirft einen weichen Schatten. Keine Texturen,
-  kein Chrom.
+  Sonnengelb (2), Ultraviolett (3), Rosé (4) – auf den Encoder-Ringen und in den Makrozeilen des
+  Displays. Rot markiert außerdem Aufnahme und aktiven Modus, Gelb Engine und bearbeiteten Part.
+  Alles andere ist Warmweiß, Grau und Grafit.
+* **Das Display ist der einzige Bildschirm:** groß, kontrastreich, in einem dunklen Rahmen
+  versenkt; tiefes Glas mit feinem Punktraster, warmweiße Schrift.
+* **Tiefe statt Dekoration:** Tasten sind matte helle Kappen mit beleuchteter Oberkante und weichem
+  Schatten; gedrückte oder aktive Tasten sinken leicht ein und zeigen einen kurzen Balken in ihrer
+  Funktionsfarbe. Felder sind ins Gehäuse eingelassen. Das Glas des Displays hat Ebenen (Punktraster
+  dahinter, Inhalt, Glasoberfläche) mit leichter Parallaxe. Kein Chrom.
+* **Räder und Glide (p14):** PITCH- und MOD-Rad sind Grafit-Daumenräder in dunklen Schlitzen; das
+  Pitch-Rad federt zur Mitte zurück, das Mod-Rad bleibt stehen; Rechtsklick = MIDI Learn. Der
+  Glide-Schalter und der kleine GLIDE-Regler folgen dem bearbeiteten Part.
+* **Pixelgenau:** Das statische Gehäuse wird je Größe einmal in der physischen Pixelauflösung
+  gezeichnet (scharf auf 2x-Bildschirmen, keine Zeichenarbeit beim Spielen); jede Beschriftung wird
+  in ihre Breite eingepasst.
 * **Bewegte Flächen (0.7):** Stereobild (Goniometer, Korrelation, M-/S-Balken in den Farben der
   Mitte-/Seite-Encoder) und Spektrum-Landschaft (perspektivischer Wasserfall, vorn warmweiß mit
   ultraviolettem Schimmer, zum Horizont grau; in der Stille flach und ruhig) auf der linken
@@ -33,14 +52,14 @@ tiefes Display und vier funktionale Farben.
   Pegelreduktion); ein dünner Modulationsring im Encoder zeigt Reichweite und aktuelle Position der
   Modulation. Die vollständige Tabelle steht in der
   [englischen Fassung](../DESIGN.md#pictogram-characters).
-* **Transport (p11):** REC und START groß, darunter zum Anfang / Stopp / Schleife, unten links;
+* **Transport (p11, p14):** im Feld unten links REC / START / STOPP, darunter ANFANG / SCHLEIFE / MIDI;
   schlichte geometrische Zeichen (Kreis, Dreieck, Quadrat, Strich + Dreieck, offene Schleife mit
   Pfeil). Der Aufnahmekreis ist immer signalrot, die Taste blinkt während der Aufnahme. Auf der
   Tape-Seite ersetzt das Transportfeld die Spulen-Figur: Zustandsschild (rot blinkend = Aufnahme),
   aufnahmebereite Spuren in Rot, Zeit und Takt.Schlag in Monospace, Spulen, die sich mit dem Band
   drehen, fünf umrandete Tasten (gefüllt, wenn aktiv) und eine Hinweiszeile (gelb, solange keine Spur
   bereit ist).
-* **Deckel:** Bibliothek und Profiansicht blenden alle Bedienelemente und Beschriftungen der Platte
+* **Deckel:** Bibliothek und Profiansicht liegen in dunklem Rahmen und blenden alle Bedienelemente und Beschriftungen der Platte
   unter sich aus – keine Beschriftung schaut über die Kante.
 
 Texte gibt es überall auf Englisch und Deutsch; lange Texte werden gekürzt oder eingepasst, nie
