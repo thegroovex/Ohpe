@@ -84,6 +84,11 @@ public:
     {
         for (int s = 0; s < slotCount; ++s) slots[(size_t) s].setMonitorMode (mode);
     }
+    /** p19: the part's keyboard for resonator slots (part racks; the master rack has none). */
+    void setKeys (const KeyState* k) noexcept
+    {
+        for (int s = 0; s < slotCount; ++s) slots[(size_t) s].setKeys (k);
+    }
     /** Message thread: prepares the selected types of all slots; true when something was prepared. */
     bool prepareSelected (const ParamRegistry& reg);
     /** Any slot is waiting for prepareSelected(). */

@@ -342,6 +342,18 @@ die Bibliothek hinter dem Namen jedes Presets mit dem Schlagwort **3D**.
 
 ![Das 3D-Abzeichen im Display-Kopf](../images/ohpe-space-badge-de.png)
 
+## Körper-Ansicht (p19)
+
+![Die Körper-Ansicht](../images/ohpe-reso-view-de.png)
+
+Der fünfte Reiter des **Effekte**-Modus, **Körper**, bearbeitet den [Resonanzkörper](RESONANZKOERPER.md) des
+Edit-Parts: Ein/Aus, Körpermodell, Stimmung (Fest / Note / Akkord) und Mischung auf der ersten Seite, danach Stimmung,
+Größe, Material und Ausklang, dann Position, Inharmonizität, Resonanzsaiten und Breite und auf der letzten Seite Drive
+und die MPE-Mengen (Druck, Slide). Das Display zeichnet den Körper – das Saitenpaar mit seinen Resonanzsaiten, die
+Platte mit ihrem bewegten Modenmuster oder die Bohrung mit ihrer stehenden Welle – mit dem Anregungspunkt als gelbem
+Punkt; der Streifen darunter nennt Modell, Stimmung und die Tonhöhe, der der Körper folgt. Ein *Resonanzkörper*-Slot
+im Rack zeigt denselben Körper in der Rack-Ansicht.
+
 ## Morph-Ansicht (p16)
 
 ![Die Morph-Ansicht](../images/ohpe-morph-view-de.png)

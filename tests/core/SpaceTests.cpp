@@ -163,7 +163,7 @@ TEST_CASE ("1.0 space: parameters - per-part stage, monitoring, rack type in eve
     REQUIRE (reg.indexOf ("space.out") >= 0);
     CHECK (reg.descriptor (reg.indexOf ("space.out")).choices.size() == 2);
     CHECK (reg.indexOf ("space.monocheck") >= 0);
-    CHECK (InsertSlot::numTypes == InsertSlot::firstSpaceType + 1);
+    CHECK (InsertSlot::firstResoType == InsertSlot::firstSpaceType + 1); // p19: the resonator follows
     CHECK (InsertSlot::typeNamesEn()[(size_t) InsertSlot::Space3D] == "Space 3D");
     CHECK (InsertSlot::typeNamesDe()[(size_t) InsertSlot::Space3D] == "3D-Raum");
     CHECK (std::string (InsertSlot::typeInfo (InsertSlot::Space3D).id) == "space3d");

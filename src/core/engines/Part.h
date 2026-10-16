@@ -4,6 +4,7 @@
 
 #include "../dsp/Filters.h"
 #include "../fx/FxRack.h"
+#include "../fx/Resonator.h"
 #include "../fx/Space3D.h"
 #include "../mod/ModMatrix.h"
 #include "../model/Events.h"
@@ -78,6 +79,18 @@ public:
         Vocal engine uses the user formant tracks). Off, or on without a loaded table = the built-in material.
     */
     void registerLate20UserTableParams (ParamRegistry& reg) const;
+    /**
+        p19: the resonator body stage "pN.reso.*" ("on" + the Resonator block, ResonatorEffect) right after the engines and
+        the layer (before the part's volume and FX rack). It follows the part's keyboard and expression (KeyState).
+        Off (or mix 0) = exact bypass; switching crossfades over 20 ms.
+    */
+    void registerLate19ResoParams (ParamRegistry& reg) const;
+    /** p19: the resonator stage (UI: body visual, level; tests). */
+    const ResonatorEffect& resoStage() const noexcept { return reso; }
+    /** p19, any thread: the stage is on (or still fading out). */
+    bool resoRunning() const noexcept { return resoRunningFlag.load (std::memory_order_relaxed); }
+    /** p19: what the keyboard of this part is doing (audio thread; tests). */
+    const KeyState& keyState() const noexcept { return keys; }
     /** 1.0, audio thread: master monitoring mode (SpaceEffect::Headphones / Speakers) for the stage and the rack. */
     void setMonitorMode (int mode) noexcept
     {
@@ -247,6 +260,19 @@ private:
     float spaceFade = 0.0f, spaceFadeStep = 0.001f;
     std::vector<float> spaceDryL, spaceDryR;
     std::atomic<bool> spaceRunningFlag { false };
+    // ---- p19: resonator body stage
+    void applyReso (float* l, float* r, int n) noexcept;
+    void updateHeldKeys() noexcept;
+    ResonatorEffect reso;
+    KeyState keys;
+    int resoOnIndex = -1;
+    std::array<int, ResonatorEffect::numParams> resoIndex {};
+    std::array<float, ResonatorEffect::numParams> resoLast {};
+    bool resoOn = false;
+    float resoFade = 0.0f;
+    std::vector<float> resoDryL, resoDryR;
+    std::atomic<bool> resoRunningFlag { false };
+    float keyNoteBend = 0.0f; ///< per-note bend (semitones) of the newest note
     static constexpr int controlBlock = 32; ///< samples per modulation update (as VoiceBase::controlRate)
 };
 } // namespace ohpe

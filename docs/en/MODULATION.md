@@ -85,6 +85,7 @@ Release 1 ms … 10 s (exponential).
 | 67 – 71 | Azimuth, Elevation, Distance, Motion Path Rate / Phase | – | 1.0: the part's 3D stage `pN.space.*` ([SPACE.md](SPACE.md)), full range (azimuth ±180°, elevation −60 … 90°, distance 0.2 … 40 m logarithmic, rate ×−4 … 4, phase 0 … 360°); e.g. Slide → Elevation, Note Pressure → Distance for MPE |
 | 72 | Life | – | p15: the part's life amount `pN.life` ([USER-INTERFACE.md](USER-INTERFACE.md#life)), 0 … 100 %; e.g. Mod Wheel → Life to bring held notes alive, Note Pressure → Life for MPE |
 | 73, 74 | Morph X, Morph Y | – | p16: the position of the part's [morph pad](MORPH.md) (`pN.morph.x` / `.y`), full width; e.g. LFO 2 → Morph X, Note Pressure → Morph Y |
+| 75 – 80 | Body Tune, Body Size, Body Material, Body Decay, Body Position, Body Mix | – | p19: the part's [resonator body](RESONATOR.md) (`pN.reso.tune` … `.mix`), full range (tune ±24 semitones); e.g. LFO 2 → Body Position for a moving pluck point, Env 3 → Body Mix |
 
 Targets 5 and up move a **parameter** by `amount × source` of its full range (normalised, so a
 cutoff moves in octaves): one value for the part, computed from part-wide sources – the

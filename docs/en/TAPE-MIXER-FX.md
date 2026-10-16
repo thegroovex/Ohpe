@@ -238,6 +238,7 @@ is a complete insert with its own controls (`pN.fxK.<id>.*`, `mfxK.<id>.*`):
 | **Wobble** (`wobble`) | resonant low- / band-pass swept between two cutoffs by a tempo-synced LFO (sine, triangle, saws, square, S&H) that restarts with every note (`retrig`) | `rate`, `sync`, `shape`, `low`, `high`, `reso`, `mode`, `drive`, `retrig`, `mix` |
 | **Tremolo** (`tremolo`) | tremolo or autopan, free or synced | `rate`, `sync`, `depth`, `mode`, `shape` |
 | **Width** (`width`) | side gain 0 – 200 %, a Haas-style spread that cancels in the mono sum, mono below a frequency (4th order) | `width`, `spread`, `haas` (ms), `mono` (20 Hz = off), `output` |
+| **Resonator** (`resonator`, p19) | the physically modelled body as an effect: string pair with sympathetic strings, modal plate, open / closed tube; in a part rack it follows that part's keyboard – see [RESONATOR.md](RESONATOR.md) | `model`, `follow`, `tune`, `size`, `material`, `decay`, `position`, `inharm`, `sympathetic`, `width`, `drive`, `mix`, `pressamt`, `slideamt` |
 
 Sync divisions: Free (the rate in Hz), 1/1 … 1/32, dotted, triplets, then 2/1 and 4/1 – from the host,
 Link or the internal tempo. The effects are self-contained classes (`src/core/fx/InsertEffects2.h`).

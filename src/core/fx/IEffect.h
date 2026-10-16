@@ -4,6 +4,8 @@
 
 #include "../model/ParamDescriptor.h"
 
+#include <array>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -15,6 +17,23 @@ struct EffectInfo
     const char* nameEn;
     const char* nameDe;
     const char* pictogram;
+};
+
+/**
+    p19: what a part's keyboard is doing, for effects that follow it (the resonator body). Owned and written by the
+    part on the audio thread (before it renders); effects read it in process(). Notes are MIDI note numbers.
+*/
+struct KeyState
+{
+    static constexpr int maxHeld = 8;
+    int lastNote = -1;                   ///< newest note started (-1: none yet)
+    int numHeld = 0;                     ///< keys down or sustained (ascending in held[], at most maxHeld)
+    std::array<int, maxHeld> held {};
+    float bendSemitones = 0.0f;          ///< part tuning + pitch bend x range + the per-note bend of the newest note
+    float pressure = 0.0f;               ///< 0..1 pressure of the newest note (MPE / poly / channel pressure)
+    float slide = 0.0f;                  ///< -1..+1 slide (CC 74 / MPE timbre) of the newest note
+    float velocity = 0.0f;               ///< velocity of the newest note
+    uint32_t noteCounter = 0;            ///< counts note starts
 };
 
 /**
@@ -49,5 +68,8 @@ public:
     virtual void setTransportPosition (double ppq, bool playing) noexcept { (void) ppq; (void) playing; }
     /** 1.0, audio thread: master monitoring mode for spatial effects (0 = headphones / binaural, 1 = speakers). Optional. */
     virtual void setMonitorMode (int mode) noexcept { (void) mode; }
+    /** p19, audio thread: the keyboard state of the part the effect belongs to (nullptr: none, e.g. the master rack). The
+        pointer stays valid while set. Optional. */
+    virtual void setKeys (const KeyState* k) noexcept { (void) k; }
 };
 } // namespace ohpe
