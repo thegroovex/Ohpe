@@ -32,6 +32,8 @@ set(OHPE_PLUGIN_SOURCES
     ${CMAKE_SOURCE_DIR}/src/standalone/AudioSettingsPage.cpp)
 # phase 2, engines B: sample files from disk
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/SampleLoader.cpp)
+# p20: audio to wavetable (user wavetables, analysis worker, library)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/UserTables.cpp)
 
 set(OHPE_DEFINES OHPE_VERSION="${PROJECT_VERSION}" JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0 JUCE_DISPLAY_SPLASH_SCREEN=0)
@@ -80,6 +82,7 @@ list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/Visuals.cpp)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/SpaceView.cpp)
 # p16: the morph pad (LFO mode, view Morph)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/MorphView.cpp)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/UserTableView.cpp) # p20
 # p21: pro view 2.0 - graphic tiles, the Discover strip
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ProTiles.cpp ${CMAKE_SOURCE_DIR}/src/ui/DiscoverStrip.cpp)
 
@@ -181,6 +184,11 @@ endif()
 # ---------------------------------------------------------------- p16: the morph pad (LFO mode, view Morph)
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/MorphUiTests.cpp)
+endif()
+
+# ---------------------------------------------------------------- p20: audio to wavetable (import, library, state)
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/UserTableUiTests.cpp)
 endif()
 
 # ---------------------------------------------------------------- p21: pro view 2.0 (pictures, Discover, Simple / All)

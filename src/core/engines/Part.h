@@ -75,6 +75,10 @@ public:
     */
     void registerLate15LifeParams (ParamRegistry& reg) const;
     /**
+        p20: "pN.usertable.wt" (the Wavetable engine plays the part's user wavetable) and "pN.usertable.vocal" (the
+        Vocal engine uses the user formant tracks). Off, or on without a loaded table = the built-in material.
+    */
+    void registerLate20UserTableParams (ParamRegistry& reg) const;
         p21: the character macros "pN.char.bright", "pN.char.hard", "pN.char.alive", "pN.char.wide" (-1..1, 0 = neutral;
         see mod/Character.h): each moves several parameters of the part at once (inside the part, after the matrix).
     */
@@ -202,6 +206,7 @@ private:
     int exprSmoothIndex = -1, exprSlideIndex = -1; ///< 0.8: "pN.mpe.smooth", "pN.mpe.slide"
     int monoBassIndex = -1;                        ///< 0.8: "pN.monobass"
     int lifeIndex = -1;                            ///< p15: "pN.life"
+    int userWtIndex = -1, userVocalIndex = -1;     ///< p20: "pN.usertable.wt" / "pN.usertable.vocal"
     std::array<int, character::numMacros> charIndex { -1, -1, -1, -1 }; ///< p21: "pN.char.*"
     std::array<float, character::numMacros> charAmount {};             ///< p21: current macro values (-1..1)
     bool charActive = false;                                           ///< p21: any macro != 0

@@ -150,6 +150,13 @@ bool PresetManager::apply (const preset::Preset& p, int part)
     });
     if (ok && p.meta.kind == preset::Kind::Project && p.sections.count ("samples") > 0)
         proc.sampleLoader().restoreFromState();
+    if (ok && p.meta.kind == preset::Kind::Project) // p20: the project's user wavetables (none = the built-in ones)
+    {
+        if (p.sections.count ("usertables") == 0) proc.core().setStateSection ("usertables", {});
+        proc.userTables().restoreFromState();
+    }
+    else if (ok) // p20: a part preset brings its user material (or clears the part's)
+        proc.userTables().applyPartJson (part, p.userTables ? *p.userTables : std::string());
     return ok;
 }
 
@@ -195,12 +202,16 @@ juce::File PresetManager::save (const preset::Meta& metaIn, bool project, int pa
         std::map<std::string, std::string> extra;
         const auto samples = proc.core().stateSection ("samples");
         if (! samples.empty()) extra["samples"] = samples;
+        proc.userTables().storeInState(); // p20
+        const auto tables = proc.core().stateSection ("usertables");
+        if (! tables.empty() && tables.find ("\"parts\":{}") == std::string::npos) extra["usertables"] = tables;
         p = preset::captureProject (proc.core(), meta, extra);
     }
     else
     {
         p = preset::capturePart (proc.core().params(), part, meta);
         preset::captureMorph (proc.core(), part, p); // p16
+        if (auto t = proc.userTables().partJson (part); ! t.empty()) p.userTables = t; // p20
     }
 
     auto file = userFileFor (meta.name, project);
@@ -291,7 +302,8 @@ void PresetManager::beginPreview (int part)
     previewIndex = currentIndex;
     previewArpOwner = arpOwner;
     previewArpByPreset = arpByPreset;
-    previewBackup = preset::captureProject (proc.core(), {});
+    proc.userTables().storeInState(); // p20: reverting brings the user wavetables back too
+    previewBackup = preset::captureProject (proc.core(), {}, { { "usertables", proc.core().stateSection ("usertables") } });
 }
 
 void PresetManager::revertPreview()

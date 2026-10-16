@@ -709,9 +709,25 @@ part presets (`"morph"` block) and in projects / the plug-in state (section `"mo
 The modulation matrix gains the sources **Morph X / Morph Y** (21, 22) and the targets **Morph X / Morph Y**
 (73, 74); the source and target choice lists grow at their end.
 
+## Audio to wavetable (p20)
+
+Appended after the morph block (`p4.morph.ysrc`), part by part (`p1.usertable.*` … `p4.usertable.*`, 8 IDs). Guides:
+[English](en/engines/wavetable.md#user-wavetables-audio-to-wavetable-p20) ·
+[Deutsch](de/engines/wavetable.md#eigene-wavetables-klang-zu-wavetable-p20). The tables themselves are not parameters:
+they live in the user wavetable library and are referenced by part presets (block `"usertables"`) and by projects / the
+plug-in state (section `"usertables"`; path, library file name, embedded copy up to 64 frames).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.usertable.wt` | Part N User Wavetable | Part N Eigene Wavetable | Off / On | Off |
+| `pN.usertable.vocal` | Part N User Formants | Part N Eigene Formanten | Off / On | Off |
+
+On without a loaded table = the built-in material (no change to the sound). No new modulation matrix sources or targets:
+the Wavetable *Position* and Vocal *Vowel* targets scan the user material.
+
 ## Character macros (p21)
 
-Appended after the morph block (`p4.morph.ysrc`), part by part (`p1.char.*` … `p4.char.*`, 16 IDs). Guides:
+Appended after the audio-to-wavetable block (`p4.usertable.vocal`), part by part (`p1.char.*` … `p4.char.*`, 16 IDs). Guides:
 [English](en/USER-INTERFACE.md#discover) · [Deutsch](de/BEDIENUNG.md#entdecken).
 
 | ID | English | Deutsch | Range | Default |

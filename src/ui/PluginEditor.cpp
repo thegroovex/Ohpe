@@ -1,6 +1,8 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "PluginEditor.h"
+#include "UserTableView.h"
+#include "wavetable/TableFile.h"
 
 #include "ModFxViews.h"
 #include "MorphView.h"
@@ -32,13 +34,22 @@ enum SoftKeyId
     skClearLocks = 40, skLockDone,
     skModPrev = 50, skModNext, skModClear,           // 0.7: matrix
     skSlotLeft = 60, skSlotRight, skSlotClear,       // 0.7: FX rack
-    skCornerA = 70, skCornerB, skCornerC, skCornerD  // p16: morph corners
+    skCornerA = 70, skCornerB, skCornerC, skCornerD, // p16: morph corners
+    skTableImport = 80, skTableUser, skTableClear     // p20: user wavetable / formants
 };
 
 bool isAudioFile (const juce::String& path)
 {
     const auto ext = juce::File (path).getFileExtension().toLowerCase();
     return ext == ".wav" || ext == ".aif" || ext == ".aiff" || ext == ".flac" || ext == ".ogg";
+}
+
+/** p20: the engine pages that import user material (Wavetable: frames, Vocal: formant tracks). */
+bool importsTables (EngineType e) { return e == EngineType::Wavetable || e == EngineType::Vocal; }
+UserTableManager::Target tableTarget (EngineType e) { return e == EngineType::Vocal ? UserTableManager::Target::Vocal : UserTableManager::Target::Wavetable; }
+juce::String userTableParam (int part, EngineType e)
+{
+    return "p" + juce::String (part + 1) + (e == EngineType::Vocal ? ".usertable.vocal" : ".usertable.wt");
 }
 
 bool isPresetFile (const juce::String& path) { return juce::File (path).hasFileExtension (preset::fileExtension); }
@@ -1194,6 +1205,14 @@ void OhpeEditor::refreshSoftKeys()
         }
         status = name.isNotEmpty() ? name : tr ("Built-in tone - drop an audio file here");
     }
+    else if (mode == Mode::Synth && importsTables (shownEngine)) // p20
+    {
+        const bool has = usertable::tableOf (core, ctx.part, tableTarget (shownEngine)) != nullptr;
+        const auto* prm = proc.parameter (userTableParam (ctx.part, shownEngine));
+        const bool on = prm != nullptr && prm->getValue() > 0.5f;
+        keys = { { skTableImport, tr ("Import") }, { skTableUser, tr ("User"), has, on && has }, { skTableClear, tr ("Clear"), has } };
+        status = usertableview::statusLine (proc, ctx.part, shownEngine);
+    }
     else if (mode == Mode::Tape)
     {
         auto& tape = core.tape();
@@ -1282,6 +1301,18 @@ void OhpeEditor::onSoftKey (int id)
         case skCornerB:
         case skCornerC:
         case skCornerD: showCornerMenu (id - skCornerA); return; // p16
+        case skTableImport: showTableImportMenu(); return; // p20
+        case skTableUser:
+        {
+            const auto id = userTableParam (ctx.part, shownEngine);
+            const auto* prm = proc.parameter (id); // the host value (the registry follows at the next block)
+            setParamPlain (id, prm != nullptr && prm->getValue() > 0.5f ? 0.0f : 1.0f);
+            break;
+        }
+        case skTableClear:
+            proc.userTables().clear (ctx.part, tableTarget (shownEngine));
+            setParamPlain (userTableParam (ctx.part, shownEngine), 0.0f);
+            break;
         case skSlotLeft: moveFxSlot (ctx.fxSlot, ctx.fxSlot - 1); return;
         case skSlotRight: moveFxSlot (ctx.fxSlot, ctx.fxSlot + 1); return;
         case skSlotClear:
@@ -1400,10 +1431,85 @@ bool OhpeEditor::loadAudioFile (const juce::File& f, int pad)
     return ok;
 }
 
+void OhpeEditor::importTable (const juce::File& f)
+{
+    auto& ut = proc.userTables();
+    EngineType engine = shownEngine;
+    if (mode != Mode::Synth || ! importsTables (engine)) // an .ohpewt dropped elsewhere: into the Wavetable engine
+    {
+        engine = EngineType::Wavetable;
+        if (ui::selectedEngine (proc.core(), ctx.part) != EngineType::Wavetable) selectEngine (EngineType::Wavetable);
+    }
+    if (ut.status().busy) { display.flash (tr ("An import is running")); return; }
+    if (! ut.importFile (f, ctx.part, tableTarget (engine))) display.flash (tr ("The file could not be loaded."));
+    refreshSoftKeys();
+}
+
+void OhpeEditor::showTableImportMenu()
+{
+    auto& ut = proc.userTables();
+    auto& core = proc.core();
+    const auto target = tableTarget (shownEngine);
+    const int part = ctx.part;
+    enum { idFile = 1, idCancel = 2, idTape = 100, idInput = 200, idFrames = 300, idSmooth = 400, idLib = 1000 };
+    juce::PopupMenu m;
+    const bool busy = ut.status().busy;
+    m.addItem (idFile, tr ("Audio or wavetable file ..."), ! busy);
+    juce::PopupMenu tape;
+    for (int t = 0; t < TapeMachine::numTracks; ++t)
+        tape.addItem (idTape + t, tr ("Track") + " " + juce::String (t + 1), ! busy && core.tape().contentEndFrames (t) > 0);
+    m.addSubMenu (tr ("From tape track"), tape, ! busy);
+    juce::PopupMenu input;
+    for (int sec : { 2, 4, 8 }) input.addItem (idInput + sec, juce::String (sec) + " s", ! busy);
+    m.addSubMenu (tr ("Record input"), input, ! busy);
+    const auto files = ut.libraryFiles();
+    juce::PopupMenu lib;
+    for (int i = 0; i < juce::jmin (200, files.size()); ++i) lib.addItem (idLib + i, files[i].getFileNameWithoutExtension(), ! busy);
+    m.addSubMenu (tr ("Library"), lib, ! busy && ! files.isEmpty());
+    m.addSeparator();
+    juce::PopupMenu frames;
+    for (int n : { 8, 16, 32, 64, 128, 256 }) frames.addItem (idFrames + n / 8, juce::String (n), true, ut.frameCount == n);
+    m.addSubMenu (tr ("Frames"), frames);
+    juce::PopupMenu smooth;
+    static const float levels[] = { 0.0f, 0.25f, 0.5f, 1.0f };
+    static const char* const names[] = { "Off", "Light", "Medium", "Strong" };
+    for (int i = 0; i < 4; ++i) smooth.addItem (idSmooth + i, tr (names[i]), true, std::abs (ut.smoothing - levels[i]) < 0.01f);
+    m.addSubMenu (tr ("Smoothing"), smooth);
+    if (busy)
+    {
+        m.addSeparator();
+        m.addItem (idCancel, tr ("Cancel import"));
+    }
+    juce::Component::SafePointer<OhpeEditor> safe (this);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&display), [safe, target, part, files] (int r) {
+        if (safe == nullptr || r == 0) return;
+        auto& self = *safe;
+        auto& u = self.proc.userTables();
+        bool started = true;
+        if (r == idFile)
+        {
+            self.chooser = std::make_unique<juce::FileChooser> (tr ("Import a sound or wavetable"),
+                                                                juce::File::getSpecialLocation (juce::File::userMusicDirectory), u.filePatterns());
+            self.chooser->launchAsync (juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles, [safe] (const juce::FileChooser& fc) {
+                if (safe != nullptr && fc.getResult() != juce::File()) safe->importTable (fc.getResult());
+            });
+            return;
+        }
+        if (r == idCancel) u.cancel();
+        else if (r >= idLib) started = u.importFile (files[r - idLib], part, target);
+        else if (r >= idSmooth) u.smoothing = levels[juce::jlimit (0, 3, r - idSmooth)];
+        else if (r >= idFrames) u.frameCount = (r - idFrames) * 8;
+        else if (r >= idInput) started = u.recordInput ((double) (r - idInput), part, target);
+        else if (r >= idTape) started = u.importTapeTrack (r - idTape, part, target);
+        if (! started) self.display.flash (tr ("The import could not start"));
+        self.refreshSoftKeys();
+    });
+}
+
 bool OhpeEditor::isInterestedInFileDrag (const juce::StringArray& files)
 {
     for (const auto& f : files)
-        if (isAudioFile (f) || isPresetFile (f)) return true;
+        if (isAudioFile (f) || isPresetFile (f) || juce::File (f).hasFileExtension (usertable::fileExtension)) return true;
     return false;
 }
 
@@ -1418,6 +1524,11 @@ void OhpeEditor::filesDropped (const juce::StringArray& files, int x, int y)
             if (preset::fromJson (f.loadFileAsString().toStdString(), p) && proc.presets().apply (p))
                 display.flash (tr ("Loaded") + ": " + juce::String::fromUTF8 (p.meta.name.c_str()));
             continue;
+        }
+        if (f.hasFileExtension (usertable::fileExtension) || (mode == Mode::Synth && importsTables (shownEngine) && isAudioFile (path)))
+        {
+            importTable (f); // p20: audio / wavetable files on the Wavetable and Vocal pages
+            break;
         }
         if (! isAudioFile (path)) continue;
         int pad = -1;
@@ -1578,6 +1689,23 @@ void OhpeEditor::timerCallback()
         lastFlashText = proc.lastTransportMessage();
         display.flash (lastFlashText);
         if (mode == Mode::Tape) rebindEncoders();
+    }
+    {   // p20: import progress and messages
+        auto& ut = proc.userTables();
+        const bool busy = ut.status().busy;
+        if (const int n = ut.messageCount(); n != userTableMessagesSeen)
+        {
+            userTableMessagesSeen = n;
+            const auto det = ut.lastDetail();
+            display.flash (tr (ut.lastMessage()) + (det.isNotEmpty() ? ": " + det : juce::String()));
+            refreshSoftKeys();
+        }
+        if (busy || busy != userTableBusy)
+        {
+            userTableBusy = busy;
+            if (mode == Mode::Synth && importsTables (shownEngine)) refreshSoftKeys();
+            display.repaint();
+        }
     }
     const auto learning = proc.learningParamId();
     if (learning != lastLearning)

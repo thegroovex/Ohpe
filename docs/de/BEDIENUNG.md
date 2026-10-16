@@ -153,6 +153,18 @@ FLAC, Ogg) kann auch aus dem Dateimanager auf das Instrument **gezogen** werden:
 Grain-Engine des Parts, wenn Grain gewählt ist, sonst an seinen Sampler (der Part wechselt zum
 Sampler). Jeder Part hat eigene Samples. Die Pfade werden mit dem Projekt gespeichert.
 
+## Eigene Wavetables und Formanten (p20)
+
+Mit der Wavetable- oder Vokal-Engine auf dem bearbeiteten Part zeigt die Synth-Seite **IMPORT**,
+**EIGENE** und **LEEREN**. Einen Klang oder eine Wavetable-Datei auf das Instrument ziehen (oder IMPORT:
+Datei, Tape-Spur, Live-Eingang, Bibliothek; Frames 8 … 256, Glättung): Der Klang wird im Hintergrund
+analysiert – ein Fortschrittsbalken auf dem Display – und wird zur eigenen Wavetable (Wavetable-Engine)
+oder zu Formantspuren (Vokal-Engine), in der eigenen Wavetable-Bibliothek gespeichert und
+eingeschaltet. Das Display zeigt dann den Frame-Stapel (den Frame an der aktuellen Position gelb) oder
+die fünf Formantspuren. **EIGENE** schaltet zwischen eigenem und eingebautem Material um
+(`pN.usertable.wt` / `pN.usertable.vocal`), **LEEREN** entfernt es. Details:
+[Wavetable-Engine](engines/wavetable.md#eigene-wavetables-klang-zu-wavetable-p20).
+
 ## Profiansicht
 
 ![Profiansicht](../images/ohpe-pro-view-de.png)
