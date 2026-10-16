@@ -235,7 +235,7 @@ void Display::paintTapeTransport (juce::Graphics& g, juce::Rectangle<float> a)
 
         juce::String armed;
         for (int t = 0; t < TapeMachine::numTracks; ++t)
-            if ((mask >> t) & 1) armed << (armed.isEmpty() ? "" : " ") << (t + 1);
+            if ((mask >> t) & 1) armed << (armed.isEmpty() ? "" : ", ") << (t + 1);
         g.setColour (mask != 0 ? colour::signalRed : colour::displayDim);
         g.setFont (labelFont (statusRow.getHeight() * 0.55f));
         g.drawText (mask != 0 ? i18n::upper (tr ("Armed")) + " " + armed : i18n::upper (tr ("No track armed")),
