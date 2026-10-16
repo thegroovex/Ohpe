@@ -6219,3 +6219,11 @@ p4.morph.y
 p4.morph.glide
 p4.morph.xsrc
 p4.morph.ysrc
+p1.usertable.wt
+p1.usertable.vocal
+p2.usertable.wt
+p2.usertable.vocal
+p3.usertable.wt
+p3.usertable.vocal
+p4.usertable.wt
+p4.usertable.vocal

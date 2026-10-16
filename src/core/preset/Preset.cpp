@@ -156,6 +156,11 @@ std::string toJson (const Preset& p)
         auto parsed = json::parse (*p.morph, nullptr, false);
         if (! parsed.is_discarded()) j["morph"] = parsed;
     }
+    if (p.meta.kind == Kind::Part && p.userTables) // p20
+    {
+        auto parsed = json::parse (*p.userTables, nullptr, false);
+        if (! parsed.is_discarded()) j["usertables"] = parsed;
+    }
     if (! p.sections.empty())
     {
         json s = json::object();
@@ -203,6 +208,7 @@ bool fromJson (const std::string& text, Preset& out, std::string* error)
         p.arp = std::move (arp);
     }
     if (p.meta.kind == Kind::Part && j.contains ("morph") && j["morph"].is_object()) p.morph = j["morph"].dump(); // p16
+    if (p.meta.kind == Kind::Part && j.contains ("usertables") && j["usertables"].is_object()) p.userTables = j["usertables"].dump(); // p20
     if (j.contains ("sections") && j["sections"].is_object())
         for (const auto& [name, v] : j["sections"].items())
             p.sections[name] = v.is_string() ? v.get<std::string>() : v.dump();

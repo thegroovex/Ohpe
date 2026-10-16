@@ -272,5 +272,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate15LifeParams (reg);
     // ---- p16: the morph space - per part: on, X / Y, glide, X / Y control (pressure, slide, mod wheel) -------
     MorphSpace::registerParams (reg, Core::numParts);
+    // ---- p20: audio to wavetable - per part: play the user wavetable / the user formant tracks ---------------
+    for (auto& p : parts) p->registerLate20UserTableParams (reg);
 }
 } // namespace ohpe

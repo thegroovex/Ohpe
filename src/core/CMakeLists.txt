@@ -73,3 +73,10 @@ target_sources(ohpe_core PRIVATE
 
 # 0.7: Mid/Side stereo effect (FX rack type)
 target_sources(ohpe_core PRIVATE fx/MidSide.cpp)
+
+# p20: audio to wavetable (user wavetables, analysis, table files, state)
+target_sources(ohpe_core PRIVATE
+    wavetable/UserTable.cpp
+    wavetable/AudioAnalysis.cpp
+    wavetable/TableFile.cpp
+    wavetable/UserTableState.cpp)
