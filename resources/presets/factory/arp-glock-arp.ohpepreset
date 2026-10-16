@@ -30,7 +30,15 @@
     "fx.delay.pingpong": 1,
     "fx.delay.mix": 0.18,
     "voices": 12,
-    "gain": 11.0
+    "gain": 11.8,
+    "fx2.type": 10,
+    "fx2.compressor.thresh": -4.0,
+    "fx2.compressor.ratio": 8.0,
+    "fx2.compressor.attack": 0.1,
+    "fx2.compressor.release": 180.0,
+    "fx2.compressor.knee": 6.0,
+    "fx2.compressor.makeup": 0.0,
+    "fx2.compressor.mix": 1.0
   },
   "arp": {
     "on": 1,

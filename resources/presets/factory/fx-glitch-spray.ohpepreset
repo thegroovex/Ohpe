@@ -55,7 +55,7 @@
     "voices": 4,
     "gain": 10.0,
     "fx4.type": 10,
-    "fx4.compressor.thresh": -7.0,
+    "fx4.compressor.thresh": -4.0,
     "fx4.compressor.ratio": 8.0,
     "fx4.compressor.attack": 0.1,
     "fx4.compressor.release": 180.0,
