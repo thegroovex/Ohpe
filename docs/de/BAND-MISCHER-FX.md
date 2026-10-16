@@ -80,11 +80,11 @@ Aufnahme werden Schnitte abgelehnt (Rückgabe `false`).
 * **Master-Tiefpass** (0.6, `mix.master.lowpass`, 500 Hz … 20 kHz, 12 dB/Oktave; 20 kHz = aus): nach
   der Lautstärke, vor dem Limiter – macht den ganzen Mix dunkler, z. B. 4–5 kHz für Lo-Fi.
 * **Limiter** (`mix.master.limit`) mit einstellbarer **Obergrenze** (`mix.master.ceiling`,
-  Standard −0,3 dBFS wie in 0.1). Seit 0.8 schaut er 1,5 ms voraus (71 Samples Latenz bei 48 kHz, immer gleich –
-  auch ausgeschaltet und an den Aux-Ausgängen – und dem Host gemeldet), misst echte Spitzen (Zwischen-Sample-Spitzen einer 4-fachen Interpolation) und senkt seine
+  Standard −0,3 dBFS wie in 0.1). Seit 0.8 schaut er 1,5 ms voraus (83 Samples Latenz bei 48 kHz mit seinem True-Peak-Interpolator, immer gleich –
+  auch ausgeschaltet und an den Aux-Ausgängen – und dem Host gemeldet), misst echte Spitzen (Zwischen-Sample-Spitzen einer 4-fachen Windowed-Sinc-Interpolation, genau bis nahe Nyquist, z. B. bei einer gesättigten Hi-Hat) und senkt seine
   Verstärkung vor einer Spitze sanft ab, statt zu springen – laute Mischungen bleiben sauber, ohne
-  Clipping-Verzerrung. Sein Release ist zweistufig: schnell nach einer einzelnen Spitze, langsamer, solange
-  er dauernd arbeitet (kein Pumpen).
+  Clipping-Verzerrung. Sein Release ist zweistufig: schnell nach einer einzelnen Spitze, gleitend langsamer, solange
+  er dauernd arbeitet (kein Pumpen, und mehr Pegel macht ihn nie leiser).
 * **Kompressor-Detektor** (0.8): Master-Kompressor, Kompressor-lite und der Rack-Kompressor halten eine Spitze
   12 ms, bevor sie loslassen – schnelle Einstellungen folgen nicht mehr der Wellenform eines Basses (keine
   Verzerrung im Sub).

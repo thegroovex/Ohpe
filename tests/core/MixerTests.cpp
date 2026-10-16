@@ -163,7 +163,7 @@ TEST_CASE ("mixer: one constant latency (limiter look-ahead), limiter on or off,
             m.srcL[0] = m.srcR[0] = 0.25f;
             m.run ({ true, true, true, true, true, true, true, true, true }, 1);
             const int lat = m.mixer.latencySamples();
-            CHECK (lat == 71);
+            CHECK (lat == 83); // 1.5 ms look-ahead (71) + the true-peak interpolator (12)
             const auto& o = m.outL[(size_t) target];
             int at = -1;
             float best = 0.0f;

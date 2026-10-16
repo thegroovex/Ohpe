@@ -4,6 +4,8 @@
 
 #include "../dsp/DspUtil.h"
 
+#include <array>
+#include <cmath>
 #include <vector>
 
 namespace ohpe
@@ -11,12 +13,13 @@ namespace ohpe
 /**
     Master limiter (0.8 punch pass): 1.5 ms look-ahead, true-peak aware, ceiling -0.3 dBFS by default.
 
-    The required gain of every sample (ceiling / peak, the peak including the inter-sample peaks of a cubic
-    4x interpolation) is held as a running minimum over the look-ahead window, released smoothly (two stages:
+    The required gain of every sample (ceiling / peak, the peak including the inter-sample peaks of a 4x
+    windowed-sinc interpolation over 24 samples - a cubic estimate missed up to 3 dB on near-Nyquist content such as
+    a saturated hi-hat) is held as a running minimum over the look-ahead window, released smoothly (two stages:
     fast for short peaks, slower once the limiter works continuously - no pumping on dense mixes), then averaged
     over the window: the gain ramps down before a peak arrives (no hard gain step = no clipping distortion) and is
     at or below the required gain when it does. A final clamp at the ceiling catches what the estimate misses.
-    The audio is delayed by the window (71 samples at 48 kHz). The delay stays when the limiter is off
+    The audio is delayed by the window plus the interpolator's 12 samples (83 samples at 48 kHz). The delay stays when the limiter is off
     (passThrough): the plug-in reports one constant latency to the host and switching never jumps in time.
 */
 class Limiter
@@ -33,6 +36,23 @@ public:
         relFast = std::exp (-1.0f / (0.06f * sr));
         relSlow = std::exp (-1.0f / (0.35f * sr));
         slowFollow = std::exp (-1.0f / (0.4f * sr));
+        // 4x true-peak interpolator: windowed sinc over taps x[m-11] .. x[m+12] for the points m + 1/4, 1/2, 3/4
+        for (int ph = 0; ph < 3; ++ph)
+        {
+            const double frac = (double) (ph + 1) * 0.25;
+            double total = 0.0;
+            for (int j = 0; j < taps; ++j)
+            {
+                const double t = frac - (double) (j - (half - 1)); // distance from tap j (x[m - 11 + j]) to the point
+                const double pi = 3.14159265358979323846;
+                const double sinc = std::abs (t) < 1.0e-9 ? 1.0 : std::sin (pi * t) / (pi * t);
+                const double u = t / ((double) half + 0.5); // Hann window over the span
+                const double w = std::abs (u) >= 1.0 ? 0.0 : 0.5 + 0.5 * std::cos (pi * u);
+                coef[(size_t) ph][(size_t) j] = sinc * w;
+                total += sinc * w;
+            }
+            for (auto& c : coef[(size_t) ph]) c /= total;
+        }
         reset();
     }
 
@@ -47,8 +67,8 @@ public:
         sum = (double) look;
         gain = 1.0f;
         workDb = 0.0f;
-        for (auto& h : histL) h = 0.0f;
-        for (auto& h : histR) h = 0.0f;
+        histL.fill (0.0f);
+        histR.fill (0.0f);
     }
 
     /** Gain state back to unity; the delay line keeps its audio (on / off switching without a gap). */
@@ -68,9 +88,9 @@ public:
         if (delayL.empty()) return;
         for (int i = 0; i < n; ++i)
         {
-            const float xl = l[i], xr = r[i];
-            histL[0] = histL[1]; histL[1] = histL[2]; histL[2] = xl;
-            histR[0] = histR[1]; histR[1] = histR[2]; histR[2] = xr;
+            push (histL, l[i]);
+            push (histR, r[i]);
+            const float xl = histL[(size_t) (half - 1)], xr = histR[(size_t) (half - 1)];
             delayL[(size_t) pos] = xl;
             delayR[(size_t) pos] = xr;
             if (++pos >= look) pos = 0;
@@ -83,7 +103,7 @@ public:
     void setCeiling (float linear) noexcept { ceiling = std::clamp (linear, 0.05f, 1.0f); }
     float getCeiling() const noexcept { return ceiling; }
     /** Look-ahead delay in samples (on and off: constant). */
-    int latencySamples() const noexcept { return look - 1; }
+    int latencySamples() const noexcept { return look - 1 + half; }
 
     void process (float* l, float* r, int n) noexcept
     {
@@ -91,9 +111,11 @@ public:
         const float target = ceiling * 0.97f; // headroom for the inter-sample estimate (true peak stays below the ceiling)
         for (int i = 0; i < n; ++i)
         {
-            const float xl = l[i], xr = r[i];
-            // true-peak estimate: the sample and three cubic (Catmull-Rom) points before it
-            const float pk = std::max (truePeak (histL, xl), truePeak (histR, xr));
+            push (histL, l[i]);
+            push (histR, r[i]);
+            // the sample 12 back and its true peak towards the next one (the interpolator needs 12 samples ahead)
+            const float xl = histL[(size_t) (half - 1)], xr = histR[(size_t) (half - 1)];
+            const float pk = std::max (truePeak (histL), truePeak (histR));
             const float req = pk > target ? target / pk : 1.0f;
 
             // running minimum over the window (window is short: a plain scan)
@@ -128,28 +150,32 @@ public:
     float currentGain() const noexcept { return gain; }
 
 private:
-    static float truePeak (float* h, float x) noexcept
+    static constexpr int half = 12, taps = 24;
+    using History = std::array<float, (size_t) taps>;
+
+    static void push (History& h, float x) noexcept
     {
-        // h[0..2] = the three previous samples; interpolate between h[1] and h[2] (needs x as the next point)
-        const float y0 = h[0], y1 = h[1], y2 = h[2], y3 = x;
-        float pk = std::abs (x);
-        for (float t : { 0.25f, 0.5f, 0.75f })
+        for (size_t j = 0; j + 1 < h.size(); ++j) h[j] = h[j + 1];
+        h[h.size() - 1] = x;
+    }
+
+    float truePeak (const History& h) const noexcept
+    {
+        float pk = std::abs (h[(size_t) (half - 1)]);
+        for (const auto& c : coef)
         {
-            const float t2 = t * t, t3 = t2 * t;
-            const float v = 0.5f * ((2.0f * y1) + (-y0 + y2) * t + (2.0f * y0 - 5.0f * y1 + 4.0f * y2 - y3) * t2
-                                    + (-y0 + 3.0f * y1 - 3.0f * y2 + y3) * t3);
-            pk = std::max (pk, std::abs (v));
+            double v = 0.0;
+            for (size_t j = 0; j < h.size(); ++j) v += (double) c[j] * (double) h[j];
+            pk = std::max (pk, (float) std::abs (v));
         }
-        h[0] = y1;
-        h[1] = y2;
-        h[2] = y3;
         return pk;
     }
 
     float sr = 48000.0f, ceiling = 0.966f; // -0.3 dBFS
     int look = 72, pos = 0;
     std::vector<float> delayL, delayR, reqRing, avgRing;
-    float histL[3] {}, histR[3] {};
+    History histL {}, histR {};
+    std::array<std::array<double, (size_t) taps>, 3> coef {};
     double sum = 72.0;
     float held = 1.0f, gain = 1.0f, workDb = 0.0f, relFast = 0.999f, relSlow = 0.9999f, slowFollow = 0.9999f;
 };
