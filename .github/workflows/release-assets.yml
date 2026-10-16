@@ -1,0 +1,40 @@
+name: release-assets
+
+# Attaches the build artefacts of a finished CI run to an existing GitHub release.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.1.0)"
+        required: true
+      run_id:
+        description: "CI run id whose artefacts are attached"
+        required: true
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: art
+      - name: Collect files
+        run: |
+          set -e
+          mkdir out
+          ver="${{ inputs.tag }}"; ver="${ver#v}"
+          find art -type f -name '*.dmg' -exec cp {} out/ \;
+          find art -type f -name 'SHA256SUMS.txt' -exec cp {} out/SHA256SUMS-macOS.txt \;
+          for f in $(find art -type f -name 'Ohpe-Windows-*.zip'); do cp "$f" "out/Ohpe-$ver-$(basename "$f" | sed 's/^Ohpe-//')"; done
+          (cd out && sha256sum * > SHA256SUMS.txt)
+          ls -la out
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ inputs.tag }}" out/* --clobber --repo "${{ github.repository }}"
