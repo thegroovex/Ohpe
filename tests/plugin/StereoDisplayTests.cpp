@@ -8,6 +8,7 @@
 
 #include "plugin/Localisation.h"
 #include "plugin/PluginProcessor.h"
+#include "ui/ModFxViews.h"
 #include "ui/PluginEditor.h"
 
 #include <algorithm>
@@ -87,12 +88,27 @@ TEST_CASE ("editor 0.7: the Mid/Side slot page of part 2 shows the stereo scope 
     const auto area = d.characterArea().toNearestInt() + d.getPosition();
     CHECK (brightness (img, area) > 6.0f);
 
-    // the second slot page (bass mono ...) still shows the scope; the delay pages do not
+    // the second slot page (balance, bass mono ...) still shows the scope; the delay pages do not
     d.onPageChange (1);
-    CHECK (e.encoder (0).boundId() == "p2.fx.midside.bassmono");
+    CHECK (e.encoder (0).boundId() == "p2.fx.midside.balance");
+    CHECK (e.encoder (1).boundId() == "p2.fx.midside.bassmono");
     CHECK (d.shownVisual() == ui::Display::Visual::Scope);
     d.onPageChange (-4);
     CHECK (d.scopeSource() != 1);
+
+    // rack view of the FX page: the selected Mid/Side slot shows its stereo picture (scope of part 2)
+    e.selectView (ui::modfx::FxViewRack);
+    e.selectFxSlot (0);
+    CHECK (e.encoder (0).boundId() == "p2.fx.type");
+    CHECK (d.scopeSource() == 1);
+    for (int i = 0; i < 3; ++i)
+    {
+        play (p, 2);
+        e.advanceAnimation (1.0f / 30.0f);
+    }
+    CHECK (p.core().scope().getSource() == 1);
+    CHECK (e.createComponentSnapshot (e.getLocalBounds()).isValid());
+    e.selectView (ui::modfx::FxViewSends);
 }
 
 TEST_CASE ("editor 0.7: master scope view, terrain, animation setting, tap released with the editor")

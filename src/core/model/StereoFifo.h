@@ -61,6 +61,18 @@ public:
         return count;
     }
 
+    /** Producer: frames written so far (its own write position). */
+    uint64_t writtenFrames() const noexcept { return writePos.load (std::memory_order_relaxed); }
+
+    /** Consumer: skips forward to the absolute position `pos` (no-op when already there or beyond). */
+    void skipTo (uint64_t pos) noexcept
+    {
+        const uint64_t r = readPos.load (std::memory_order_relaxed);
+        const uint64_t w = writePos.load (std::memory_order_acquire);
+        const uint64_t target = std::min (pos, w);
+        if (target > r) readPos.store (target, std::memory_order_release);
+    }
+
     /** Consumer: drops everything written so far. */
     void clear() noexcept { readPos.store (writePos.load (std::memory_order_acquire), std::memory_order_release); }
 
@@ -79,38 +91,54 @@ private:
 
 /**
     The scope tap of the core (0.7): the UI chooses one source, the audio thread copies that
-    signal into the FIFO - a part after its FX slot, or the main output after the master chain.
+    signal into the FIFO - a part after its FX rack, or the main output after the master chain.
+
+    A source change is noticed by the producer: it marks the write position where the new source
+    starts (position and source in one atomic word). The reader skips everything before that mark,
+    so frames of the previous source never reach the display and no frame of the new one is lost.
 */
 class ScopeTap
 {
 public:
     enum Source : int { None = -1, Part1 = 0, Part2, Part3, Part4, Master = 100 };
 
-    void setSource (int s) noexcept
-    {
-        if (source.exchange (s, std::memory_order_acq_rel) != s) changed.store (true, std::memory_order_release);
-    }
+    /** UI thread. */
+    void setSource (int s) noexcept { source.store (s, std::memory_order_release); }
     int getSource() const noexcept { return source.load (std::memory_order_acquire); }
 
     /** Audio thread: offers a block of `src`; copied when it is the selected source. */
     void offer (int src, const float* left, const float* right, int n) noexcept
     {
-        if (left == nullptr || right == nullptr || n <= 0 || src != source.load (std::memory_order_relaxed)) return;
+        const int selected = source.load (std::memory_order_acquire);
+        if (selected != producerSource)
+        {
+            producerSource = selected;
+            startMark.store (pack (fifo.writtenFrames(), selected), std::memory_order_release);
+        }
+        if (left == nullptr || right == nullptr || n <= 0 || src != selected) return;
         fifo.push (left, right, (size_t) n);
     }
 
     /** UI thread: reads frames of the selected source (frames of a previous source are skipped). */
     size_t read (float* left, float* right, size_t max) noexcept
     {
-        if (changed.exchange (false, std::memory_order_acq_rel)) fifo.clear();
+        const int selected = source.load (std::memory_order_acquire);
+        const uint64_t mark = startMark.load (std::memory_order_acquire);
+        if (sourceOf (mark) == selected) fifo.skipTo (positionOf (mark)); // the producer has switched: from its mark on
+        else fifo.clear();                                               // not yet: all that is there is the old source
         return fifo.pop (left, right, max);
     }
 
     StereoFifo<8192>& buffer() noexcept { return fifo; }
 
 private:
+    static uint64_t pack (uint64_t pos, int src) noexcept { return (pos << 8) | (uint64_t) (uint8_t) (src + 1); }
+    static uint64_t positionOf (uint64_t mark) noexcept { return mark >> 8; }
+    static int sourceOf (uint64_t mark) noexcept { return (int) (mark & 0xffu) - 1; }
+
     std::atomic<int> source { None };
-    std::atomic<bool> changed { false };
+    std::atomic<uint64_t> startMark { pack (0, None) };
+    int producerSource = None; ///< audio thread only
     StereoFifo<8192> fifo;
 };
 } // namespace ohpe

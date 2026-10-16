@@ -156,7 +156,7 @@ TEST_CASE ("mid/side: micro-shift widens but cancels in mono, balance, tilt; no 
     narrow.set (MidSideEffect::Haas, 1.0f);
     narrow.set (MidSideEffect::Width, 0.0f);
     out = narrow.run (in);
-    for (size_t i = 12000; i < out.size(); i += 61) CHECK (out.l[i] == out.r[i]);
+    for (size_t i = 19200; i < out.size(); i += 61) CHECK (out.l[i] == out.r[i]); // after the 20 ms glide has landed
     MsRig lows;
     lows.set (MidSideEffect::Haas, 1.0f);
     lows.set (MidSideEffect::HaasTime, 0.015f);

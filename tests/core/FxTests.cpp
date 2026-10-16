@@ -138,7 +138,10 @@ TEST_CASE ("fx slot: Off is an exact bypass, every type renders finite, paramete
     {
         INFO ("type " << t);
         rig.set ("type", (float) t);
-        if (t == InsertSlot::MidSide) rig.set ("midside.width", 1.5f); // neutral by default (exact bypass)
+        // neutral by default (exact bypass) / echo beyond the test length
+        if (t == InsertSlot::Eq) rig.set ("eq.p1gain", 6.0f);
+        if (t == InsertSlot::Echo) { rig.set ("echo.sync", 0.0f); rig.set ("echo.time", 20.0f); }
+        if (t == InsertSlot::MidSide) rig.set ("midside.width", 1.5f);
         const auto out = rig.run (in);
         CHECK (rig.slot.currentType() == t);
         CHECK (allFinite (out.l));

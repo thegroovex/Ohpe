@@ -42,7 +42,8 @@ view menu:
 The **stereo scope appears by itself** whenever the encoders show a **Mid/Side** effect in an FX rack
 slot: in a part's rack it shows that part after its rack (marked *P1*–*P4*), in the master rack
 (*MFX 1*–*MFX 4*) the master output (marked *Master*). The M and S bars use the colours of the
-*Mid Level* and *Side Level* encoders.
+*Mid Level* and *Side Level* encoders. In the rack view of the FX page the strip below the effect
+chain shows the stereo scope when a Mid/Side slot is selected there.
 
 ![Mid/Side FX slot with the stereo scope](../images/ohpe-midside-scope.png)
 

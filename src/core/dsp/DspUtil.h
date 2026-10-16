@@ -55,10 +55,12 @@ public:
         return current;
     }
     float value() const noexcept { return current; }
-    /** Jumps to the target once within `tolerance` of it (0.7). */
+    /** Jumps to the target once within `tolerance` of it, or once the glide has stalled in float precision
+        (a step smaller than the value's resolution near the target) (0.7). */
     void settle (float tolerance) noexcept
     {
-        if (std::abs (target - current) <= tolerance) current = target;
+        const float d = target - current;
+        if (std::abs (d) <= tolerance || current + d * coeff == current) current = target;
     }
 
 private:

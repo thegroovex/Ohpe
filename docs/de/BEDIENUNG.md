@@ -42,7 +42,9 @@ das Ansichtsmenü:
 Das **Stereobild erscheint von selbst**, sobald die Encoder einen Effekt **Mitte/Seite** in einem
 Slot des FX-Racks zeigen: im Rack eines Parts das Stereobild dieses Parts nach seinem Rack
 (beschriftet *P1*–*P4*), im Master-Rack (*MFX 1*–*MFX 4*) den Master-Ausgang (beschriftet *Master*).
-Die Balken M und S tragen die Farben der Encoder *Mitte-Pegel* und *Seite-Pegel*.
+Die Balken M und S tragen die Farben der Encoder *Mitte-Pegel* und *Seite-Pegel*. In der Rack-Ansicht
+der FX-Seite zeigt der Streifen unter der Effektkette das Stereobild, wenn dort ein Slot mit
+Mitte/Seite gewählt ist.
 
 ![FX-Slot Mitte/Seite mit Stereobild](../images/ohpe-midside-scope-de.png)
 

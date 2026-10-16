@@ -11,7 +11,7 @@
 namespace ohpe
 {
 /**
-    Mid / side stereo processor (0.7): FX rack type "Mid/Side" (index 7), available in every slot of
+    Mid / side stereo processor (0.7): FX rack type "Mid/Side" (index 16, after the nine 0.7 rack types), available in every slot of
     every part rack ("pN.fx.midside.*", "pN.fx2.midside.*" ...) and of the master rack ("mfxK.midside.*").
 
         M = (L + R) / 2,  S = (L - R) / 2
