@@ -129,6 +129,11 @@ public:
     enum Param { Rate = 0, Detune, Voices, Spread, Dimension, Retrigger, Mix, numParams };
     static constexpr int maxVoices = 7;
     EffectInfo info() const noexcept override { return { "hyper", "Hyper", "Hyper", "hyper" }; }
+    int modulationParam (int j) const noexcept override
+    {
+        static constexpr int p[4] = { Rate, Detune, Spread, Dimension };
+        return j >= 0 && j < 4 ? p[j] : j;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
@@ -158,6 +163,11 @@ public:
     enum Param { Mode = 0, Drive, Bias, PreFilter, PreFreq, PostTone, Output, Mix, numParams };
     enum Curve { Tube = 0, SoftClip, HardClip, Diode, LinearFold, SineFold, Asymmetric, Downsample, numCurves };
     EffectInfo info() const noexcept override { return { "distortion", "Distortion", "Verzerrung", "distortion" }; }
+    int modulationParam (int j) const noexcept override
+    {
+        static constexpr int p[4] = { Drive, Bias, PreFreq, PostTone };
+        return j >= 0 && j < 4 ? p[j] : j;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
@@ -186,6 +196,11 @@ class FlangerRackEffect final : public IEffect
 public:
     enum Param { Rate = 0, Sync, Depth, Delay, Feedback, Stereo, Mix, numParams };
     EffectInfo info() const noexcept override { return { "flange", "Flanger", "Flanger", "flanger" }; }
+    int modulationParam (int j) const noexcept override
+    {
+        static constexpr int p[4] = { Rate, Depth, Delay, Feedback };
+        return j >= 0 && j < 4 ? p[j] : j;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
@@ -209,6 +224,11 @@ class CompressorEffect final : public IEffect
 public:
     enum Param { Threshold = 0, Ratio, Attack, Release, Knee, Makeup, Mix, numParams };
     EffectInfo info() const noexcept override { return { "compressor", "Compressor", "Kompressor", "compressor" }; }
+    int modulationParam (int j) const noexcept override
+    {
+        static constexpr int p[4] = { Threshold, Ratio, Attack, Makeup };
+        return j >= 0 && j < 4 ? p[j] : j;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
@@ -237,6 +257,11 @@ public:
     enum Param { Depth = 0, Upward, Downward, Time, LowGain, MidGain, HighGain, LowSplit, HighSplit, Output, Mix, numParams };
     static constexpr int numBands = 3;
     EffectInfo info() const noexcept override { return { "multiband", "Multiband", "Multiband", "multiband" }; }
+    int modulationParam (int j) const noexcept override
+    {
+        static constexpr int p[4] = { Depth, LowGain, MidGain, HighGain };
+        return j >= 0 && j < 4 ? p[j] : j;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
@@ -273,6 +298,11 @@ public:
     };
     static constexpr int numBands = 5;
     EffectInfo info() const noexcept override { return { "eq", "EQ", "EQ", "eq" }; }
+    int modulationParam (int j) const noexcept override
+    {
+        static constexpr int p[4] = { P1Freq, P1Gain, P2Freq, P2Gain };
+        return j >= 0 && j < 4 ? p[j] : j;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
@@ -300,6 +330,11 @@ public:
     enum Param { Type = 0, Cutoff, Resonance, Drive, Mix, numParams };
     enum Kind { LP12 = 0, LP24, HP12, HP24, BP, Notch, CombPlus, CombMinus, Formant, numKinds };
     EffectInfo info() const noexcept override { return { "filter", "Filter", "Filter", "filter" }; }
+    int modulationParam (int j) const noexcept override
+    {
+        static constexpr int p[4] = { Cutoff, Resonance, Drive, Mix };
+        return j >= 0 && j < 4 ? p[j] : j;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
@@ -332,6 +367,11 @@ public:
     enum Param { Mode = 0, Sync, Time, Ratio, Feedback, LowCut, HighCut, Width, Mix, numParams };
     enum Modes { Stereo = 0, PingPong, Tap, numModes };
     EffectInfo info() const noexcept override { return { "echo", "Echo", "Echo", "echo" }; }
+    int modulationParam (int j) const noexcept override
+    {
+        static constexpr int p[4] = { Feedback, Time, HighCut, Width };
+        return j >= 0 && j < 4 ? p[j] : j;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
@@ -360,6 +400,11 @@ public:
     enum Param { Mode = 0, Size, Decay, Damping, PreDelay, Width, Mix, numParams };
     static constexpr int numLines = 8;
     EffectInfo info() const noexcept override { return { "hall", "Hall", "Raum", "hall" }; }
+    int modulationParam (int j) const noexcept override
+    {
+        static constexpr int p[4] = { Size, Decay, Damping, PreDelay };
+        return j >= 0 && j < 4 ? p[j] : j;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;

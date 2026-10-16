@@ -37,6 +37,9 @@ four functional colours. Code: `src/ui/Palette.h` (colours, fonts), `src/ui/Pict
 | Sampler – waveform | start marker, tone darkens the tail, loop start / end bracket the loop |
 | Drum – drum | model changes the shape (hat = cymbal), tune its size, decay the ringing, tone the strike flash |
 | Envelope, LFO, Mixer, Effects, Sequencer, Tape | the curve, the moving dot, faders, echoes, the running step, the turning reels |
+| Mod view – routing list (0.7) | takes the LFO character's place: 16 lines in two columns, source → target with an amount bar growing from the centre and the live value; below, the trace of the selected routing |
+| Rack – chain of blocks (0.7) | takes the Effects character's place: one block per slot in signal order, joined by arrows; effect name, mix bar (yellow), output level (violet), BYPASS in red; empty slots dimmed, the selected one outlined |
+| Rack – effect pictures (0.7) | the selected slot drawn as what it does: distortion transfer curve, EQ and filter response, compressor curve with its gain-reduction bar, multiband band gains, the output motion of the modulated effects |
 
 ## Components
 
@@ -44,6 +47,7 @@ four functional colours. Code: `src/ui/Palette.h` (colours, fonts), `src/ui/Pict
 |---|---|
 | Keys | graphite caps, pictogram, engraved legend below; active = accent dot + coloured pictogram |
 | Encoders | flat round knobs with the accent ring; small dot = MIDI-mapped; square marker = step lock |
+| Modulation ring (0.7) | a thin translucent arc inside the encoder ring (a line above the bar on display rows) = reach of the matrix routings; ink dot / tick = live position |
 | Display rows | dot (square when locked) · name · value in the accent colour · bar with handle |
 | Soft keys | outlined pills at the bottom of the display; red = active |
 | Part badge | yellow pill "P1"–"P4" in the display header |

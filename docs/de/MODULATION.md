@@ -81,7 +81,7 @@ Verzögerung 0 … 4 s, Attack 1 ms … 10 s (linear), Halten 0 … 4 s, Decay 1
 | 30 – 35 | LFO 1 – 3 Tempo / Tiefe | – | |
 | 36 | Mod-Hüllkurve Menge | – | |
 | 37 – 42 | FX 1 – 6 Mischung | – | Mischung des FX-Rack-Slots |
-| 43 – 66 | FX 1 – 6 Parameter 1 – 4 | – | Parameter 1 … 4 des Effekts im Slot (folgt dem Typ des Slots) |
+| 43 – 66 | FX 1 – 6 Parameter 1 – 4 | – | vier Parameter des Effekts im Slot (folgt dem Typ des Slots: die ersten vier eines 0.2-Typs, die *Mod 1–4* eines [Rack-Typs](BAND-MISCHER-FX.md#effekttypen-des-racks)) |
 | 67 – 71 | Azimut, Elevation, Entfernung, Bewegungspfad Tempo / Phase | – | reserviert für den für 1.0 geplanten Raumklang; bis dahin wirkungslos und ausgeblendet |
 
 Ziele ab 5 bewegen einen **Parameter** um `Menge × Quelle` seines vollen Bereichs (normiert, ein

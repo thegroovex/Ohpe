@@ -34,7 +34,9 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 | **Je Stimme** | Lautstärke- und Modulationshüllkurve, LFO mit mehreren Zielen, Glide, 16 Stimmen |
 | **Sequencer** | Step-Sequencer (bis zu 64 Schritte, Wahrscheinlichkeit, Ratchets, Parameter-Locks, 16 Pattern, Song-Modus), Euklid, Arpeggiator und Orbit (Polymetrik), jeweils mit Ziel-Part – Step, Euklid und Orbit können auch das Drum-Kit spielen |
 | **Bandmaschine** | acht Stereospuren: Aufnahme / Overdub / Punch vom Eingang, von Parts oder Drums, Varispeed, rückwärts, Loop, Bandcharakter, Rückgängig, Export als WAV-Master und Stems |
-| **Mixer** | acht Kanäle mit EQ, Kompressor, Lautstärke, Panorama, Mute / Solo, zwei Sends (A: Delay, B: Hall), Master-Kompressor, Bandsättigung und Limiter; FX-Slot auf Part 1 (Chorus, Phaser, Bitcrush, Filter-Drive, Delay, Hall) |
+| **Mixer** | acht Kanäle mit EQ, Kompressor, Lautstärke, Panorama, Mute / Solo, zwei Sends (A: Delay, B: Hall), Master-Kompressor, Bandsättigung und Limiter |
+| **FX-Racks** | sechs Slots in Reihe pro Part und vier im Master: Hyper (Unisono-Verbreiterer), Verzerrung (acht Modi), Flanger, Kompressor, Multiband, EQ, Filter, Echo, Raum, Chorus, Phaser, Bitcrush, Filter-Drive, Delay, Hall – Reihenfolge per Ziehen, jeder mit Mischung und Bypass – siehe [FX-Rack](docs/de/BAND-MISCHER-FX.md#fx-rack-07) |
+| **Modulationsmatrix** | 16 Verbindungen pro Part aus 20 Quellen (drei LFOs, drei Hüllkurven, Anschlag, MPE, Makros, eine Sequencer-Spur …) auf Tonhöhe, Pegel, Panorama, 24 Engine-Parameter, die LFOs und jeden Rack-Slot; Ringe an den Drehreglern zeigen, was sich bewegt – siehe [Modulation](docs/de/MODULATION.md) |
 | **Sync** | Host-Transport im Plug-in; MIDI-Clock ein / aus und Netzwerk-Tempo-Sync (Link) in der Standalone-App |
 | **Multi-Out** | jeder Kanal geht auf den Hauptausgang oder auf einen eigenen Stereoausgang (8 Zusatzausgänge) – im Plug-in und in der Standalone-App |
 | **MIDI** | Kanal je Part, MPE, jeder Regler ist per MIDI-Learn zuweisbar (Rechtsklick → MIDI-Learn), Zuweisungen lassen sich exportieren / importieren; alle Parameter sind automatisierbar |
@@ -55,6 +57,8 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 | Drum-Kit-Seite | FM-Engine |
 | ![Mixer](docs/images/ohpe-mixer-de.png) | ![Englische Oberfläche](docs/images/ohpe-analog.png) |
 | Mixer | Englische Oberfläche |
+| ![Mod-Ansicht](docs/images/ohpe-mod-view-de.png) | ![FX-Rack](docs/images/ohpe-rack-view-de.png) |
+| Mod-Ansicht (Modulationsmatrix) | FX-Rack eines Parts |
 
 ## So spielst du Ohpe
 
@@ -65,6 +69,8 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 * Die **vier Drehregler** steuern immer das, was das Display zeigt; im Synth-Modus sind es die
   vier Makros der Engine. Die **Balken im Display** lassen sich direkt ziehen (Shift / Cmd / Strg
   = fein). Doppelklick setzt einen Wert zurück, Rechtsklick öffnet MIDI-Learn.
+* **LFO → Mod** zeigt die Modulationsmatrix, **Effekte → Rack / Master** die FX-Racks: eine
+  Verbindung oder einen Slot anklicken zum Bearbeiten, Slots ziehen zum Umsortieren.
 * **BIBLIOTHEK** öffnet die Preset-Bibliothek, **PRO** zeigt alle Parameter des Modus auf einmal.
 * **Klaviatur**: mit der Maus oder einem MIDI-Keyboard spielen; die Oktavtasten verschieben sie.
 * **Sequencer**: Schritte antippen zum Einschalten, Shift-Tippen wählt einen Schritt zum
@@ -109,12 +115,13 @@ Alle Tests laufen mit `scripts/test-all.sh` – siehe [Mitwirken](docs/de/MITWIR
 * Engines: [Wavetable](docs/de/engines/wavetable.md), [Zupfen](docs/de/engines/pluck.md),
   [Cluster](docs/de/engines/cluster.md), [Grain, Vokal, Sampler und Drum-Kit](docs/de/GRAIN-VOKAL-SAMPLER-DRUM.md)
 * [Installation auf dem Mac](docs/de/INSTALLATION.md) – Installer, Gatekeeper-Fix, Deinstallation, Signieren
-* [Bedienung](docs/de/BEDIENUNG.md) – Display, Parts, Profiansicht, Schritt-Locks, Tape- und Drum-Seite
+* [Bedienung](docs/de/BEDIENUNG.md) – Display, Parts, Profiansicht, Schritt-Locks, Tape- und Drum-Seite, Mod- und Rack-Ansicht
 * [Werksklänge](docs/de/FACTORY-SOUNDS.md) – alle Presets nach Kategorie, Drum-Kits, aufgenommene Instrumente
 * [Preset-Bibliothek](docs/de/PRESETS.md) – Stöbern, Speichern, MIDI, Dateiformat
 * [Sequencer, Parts und Skalen-Modus](docs/de/SEQUENZER.md)
 * [MIDI-Leitfaden](docs/de/MIDI.md) – Kanäle, MPE, Clock, Sync
-* [Bandmaschine, Mixer-Dynamik und FX-Slot](docs/de/BAND-MISCHER-FX.md)
+* [Bandmaschine, Mixer-Dynamik und FX-Rack](docs/de/BAND-MISCHER-FX.md) – Effekttypen des Racks, Slot-Reihenfolge, Master-Rack
+* [Modulationsmatrix](docs/de/MODULATION.md) – Verbindungen, Quellen, Ziele, LFO 2 / 3, Hüllkurve 3, Makros
 * [Parameter](docs/PARAMETERS.md) – alle Host-Parameter-IDs
 * [Architektur](docs/de/ARCHITEKTUR.md) – Kurzfassung; ausführlich auf Englisch in [ARCHITECTURE.md](docs/ARCHITECTURE.md)
 * [Gestaltung](docs/de/DESIGN.md) – Farben, Figuren, Bedienelemente

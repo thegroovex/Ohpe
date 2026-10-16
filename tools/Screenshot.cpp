@@ -4,7 +4,8 @@
 // Renders the Ohpe editor into PNG files for the documentation (headless, e.g. under xvfb).
 //   usage: ohpe_screenshot <output directory>
 // Writes ohpe-<view>.png (English) and ohpe-<view>-de.png (German).
-// 0.3: also the library, the pro view, the tape page, step locks and the drum kit page. The
+// 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
+// 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack. The
 // preset library reads the user folder from OHPE_PRESET_DIR when set (otherwise the default).
 
 #include "plugin/Localisation.h"
@@ -34,6 +35,32 @@ void release (OhpeProcessor& p, std::initializer_list<int> notes)
     for (int n : notes) midi.addEvent (juce::MidiMessage::noteOff (1, n), 0);
     p.processBlock (buffer, midi);
     run (p, 8);
+}
+
+void setPlain (OhpeProcessor& p, const juce::String& id, float v)
+{
+    if (auto* q = p.parameter (id)) q->setValueNotifyingHost (q->convertTo0to1 (v));
+}
+
+/** Sets a choice parameter by its English label. */
+void setChoice (OhpeProcessor& p, const juce::String& id, const std::string& labelEn)
+{
+    const auto& reg = p.core().params();
+    const int i = reg.indexOf (id.toStdString());
+    if (i < 0) return;
+    const auto& d = reg.descriptor (i);
+    for (size_t c = 0; c < d.choices.size(); ++c)
+        if (d.choices[c] == labelEn) setPlain (p, id, (float) c);
+}
+
+/** Renders audio and animation frames together (traces, meters). */
+void animate (OhpeProcessor& p, OhpeEditor& e, int frames)
+{
+    for (int f = 0; f < frames; ++f)
+    {
+        run (p, 2);
+        e.advanceAnimation (1.0f / 30.0f);
+    }
 }
 
 void save (juce::Component& c, const juce::File& f)
@@ -153,6 +180,69 @@ int main (int argc, char* argv[])
         e.selectDrumPad (2);
         e.advanceAnimation (0.4f);
         save (e, dir.getChildFile ("ohpe-drum" + suffix + ".png"));
+
+        // 0.7: Mod view - six routings on part 1, routing 1 selected, a chord sounding
+        {
+            setChoice (p, "p1.fx2.type", "Hyper");
+            setChoice (p, "p1.mod.s1.src", "LFO 2");    setChoice (p, "p1.mod.s1.dst", "Engine 2");     setPlain (p, "p1.mod.s1.amt", 0.4f);
+            setChoice (p, "p1.mod.s2.src", "Mod Env");  setChoice (p, "p1.mod.s2.dst", "Engine 3");     setPlain (p, "p1.mod.s2.amt", -0.25f);
+            setChoice (p, "p1.mod.s3.src", "Velocity"); setChoice (p, "p1.mod.s3.dst", "Level");        setPlain (p, "p1.mod.s3.amt", 0.5f);
+            setChoice (p, "p1.mod.s4.src", "LFO 3");    setChoice (p, "p1.mod.s4.via", "Mod Wheel");
+            setChoice (p, "p1.mod.s4.dst", "Pan");      setPlain (p, "p1.mod.s4.amt", 0.35f);
+            setChoice (p, "p1.mod.s5.src", "Random");   setChoice (p, "p1.mod.s5.dst", "FX 2 Param 2"); setPlain (p, "p1.mod.s5.amt", 0.3f);
+            setChoice (p, "p1.mod.s6.src", "Macro 1");  setChoice (p, "p1.mod.s6.dst", "FX 2 Mix");     setPlain (p, "p1.mod.s6.amt", 0.5f);
+            setChoice (p, "p1.mod.s1.curve", "S-Curve");
+            setPlain (p, "p1.lfo2.rate", 0.8f);
+            setPlain (p, "p1.lfo3.rate", 3.0f);
+            setPlain (p, "p1.macro1", 0.6f);
+            p.core().prepareEffects();
+            e.selectPart (0);
+            e.selectEngine (EngineType::Analog);
+            run (p, 1, 60); run (p, 1, 64); run (p, 1, 67);
+            e.selectMode (ui::Mode::Lfo);
+            e.selectView (1);
+            e.selectModRouting (0);
+            animate (p, e, 96);
+            save (e, dir.getChildFile ("ohpe-mod-view" + suffix + ".png"));
+        }
+
+        // 0.7: FX rack of part 1 - five effects and an empty slot, the EQ selected
+        {
+            setChoice (p, "p1.fx.type", "Distortion");
+            setPlain (p, "p1.fx.distortion.drive", 0.35f);
+            setChoice (p, "p1.fx3.type", "EQ");
+            setPlain (p, "p1.fx3.eq.lowgain", 3.0f);
+            setPlain (p, "p1.fx3.eq.p1gain", -4.0f);
+            setPlain (p, "p1.fx3.eq.p2freq", 2000.0f);
+            setPlain (p, "p1.fx3.eq.p2gain", 5.0f);
+            setPlain (p, "p1.fx3.eq.p2q", 1.5f);
+            setPlain (p, "p1.fx3.eq.highgain", 2.0f);
+            setChoice (p, "p1.fx4.type", "Echo");
+            setChoice (p, "p1.fx5.type", "Hall");
+            setPlain (p, "p1.fx5.mix", 0.6f);
+            p.core().prepareEffects();
+            e.selectMode (ui::Mode::Effects);
+            e.selectView (1);
+            e.selectFxSlot (2);
+            animate (p, e, 20);
+            save (e, dir.getChildFile ("ohpe-rack-view" + suffix + ".png"));
+        }
+
+        // 0.7: master rack - compressor and multiband working on the chord, the compressor selected
+        {
+            setChoice (p, "mfx1.type", "Compressor");
+            setPlain (p, "mfx1.compressor.thresh", -30.0f);
+            setPlain (p, "mfx1.compressor.ratio", 3.0f);
+            setPlain (p, "mfx1.compressor.makeup", 4.0f);
+            setChoice (p, "mfx2.type", "Multiband");
+            setPlain (p, "mfx2.multiband.depth", 0.6f);
+            p.core().prepareEffects();
+            e.selectView (2);
+            e.selectFxSlot (0);
+            animate (p, e, 20);
+            save (e, dir.getChildFile ("ohpe-master-rack" + suffix + ".png"));
+            release (p, { 60, 64, 67 });
+        }
 
         // 0.3: pro view of the FM engine on part 2
         e.selectPart (1);

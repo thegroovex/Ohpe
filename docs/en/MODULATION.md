@@ -80,7 +80,7 @@ Release 1 ms … 10 s (exponential).
 | 30 – 35 | LFO 1 – 3 Rate / Depth | – | |
 | 36 | Mod Env Amount | – | |
 | 37 – 42 | FX 1 – 6 Mix | – | mix of the FX rack slot |
-| 43 – 66 | FX 1 – 6 Param 1 – 4 | – | parameter 1 … 4 of the effect in that slot (follows the slot's type) |
+| 43 – 66 | FX 1 – 6 Param 1 – 4 | – | four parameters of the effect in that slot (follows the slot's type: the first four of a 0.2 type, the *Mod 1–4* of a [rack type](TAPE-MIXER-FX.md#rack-effect-types)) |
 | 67 – 71 | Azimuth, Elevation, Distance, Motion Path Rate / Phase | – | reserved for the spatialiser planned for 1.0; inert and hidden until then |
 
 Targets 5 and up move a **parameter** by `amount × source` of its full range (normalised, so a
