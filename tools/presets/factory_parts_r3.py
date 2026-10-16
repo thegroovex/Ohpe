@@ -141,7 +141,7 @@ def P(name, tags, engine, comment, *dicts, **kw):
     role = next((r for r, names in _FLAG.items() if name in names), None)
     if role is not None:  # flagship presets: real multi-slot rack chains and matrix routings
         up = {"bass": lambda: up_bass(engine, _SYNC.get(name, "1/4")), "lead": lambda: up_lead(engine),
-              "keys": lambda: up_keys(engine), "atmos": lambda: up_atmos(engine), "pluck": lambda: up_pluck(engine)}[role]()
+              "keys": lambda: up_keys(engine, name), "atmos": lambda: up_atmos(engine), "pluck": lambda: up_pluck(engine)}[role]()
         drop = set(up.get("drop", ()))
         dicts = [d for d in dicts if not (isinstance(d, dict) and d.get("__fx__") in drop)] + list(up.get("add", ()))
         if "motion" in up:
@@ -403,9 +403,10 @@ def up_lead(engine):
                              env3=env3(a=1.2, d=2.0, s=0.6, r=0.6))}
 
 
-def up_keys(engine):
+def up_keys(engine, name=""):
+    bright = name == "Bright Grand"  # pop piano: a faster, firmer compressor holds its hammer peaks
     return {"drop": ("reverb",),
-            "add": [comp(1, -20.0, 2.5, 15.0, 160.0, 6.0, 1.5), eq(9, (90.0, 0.5), (250.0, -1.0, 0.8), (2500.0, 1.0, 0.8),
+            "add": [comp(1, -20.0, 3.0 if bright else 2.5, 3.0 if bright else 15.0, 160.0, 6.0, 1.5), eq(9, (90.0, 0.5), (250.0, -1.0, 0.8), (2500.0, 1.0, 0.8),
                                                                 (5200.0, -0.5, 1.0), (11000.0, 1.5)),
                     hall(6, 0.7, 2.4, 0.4, 25.0, 1.0, 0.2)],
             "motion": motion(("lfo3", "pan", 0.08), ("lfo2", ("fx", "hall", 3), 0.15), ("pressure", "timbre", 0.2),
@@ -660,7 +661,7 @@ PRESETS_R3 = [
       rev(3, 0.6, 0.55, 0.015, 0.16), voices=16, velsens=0.75),
     P("Bright Grand", ["Keys", "Piano"], "sampler", "Grand piano opened up for pop: brighter, lightly squashed, short room.",
       sm(tone=1.0, inst2=KEYS["grand"]), amp(0.001, 8.0, 0.0, 0.4), mod(0.001, 0.3, 0.0, 0.2, 0.0),
-      squash(2, 0.3, 0.35, 0.4, -1, 0, 3), rev(3, 0.45, 0.5, 0.01, 0.14), voices=16, velsens=0.7),
+      squash(2, 0.3, 0.35, 0.4, -1, 0, 1.5), rev(3, 0.45, 0.5, 0.01, 0.14), voices=16, velsens=0.7),
     P("Felt Grand", ["Keys", "Piano"], "sampler", "Dark, soft grand: the top rolled off, a slow release and a warm hall - intimate.",
       sm(tone=0.55, inst2=KEYS["grand"]), amp(0.003, 8.0, 0.0, 0.8), mod(0.001, 0.3, 0.0, 0.2, 0.0),
       rev(3, 0.75, 0.65, 0.02, 0.24), voices=16, velsens=0.6),
