@@ -162,3 +162,36 @@ TEST_CASE ("grain: replacing the sample while playing is safe")
     rig.e.setSample (nullptr);
     CHECK ((rig.e.sample() == nullptr));
 }
+
+TEST_CASE ("grain: a held note scanning through a one-shot never clicks at the sample end (0.8 punch pass)")
+{
+    // A struck one-shot: loud attack, ring decaying to a quiet tail. The scan (and the spray around it) carries grains
+    // to the end of the sample; before 0.8 a grain read across the end into the attack - a click every scan cycle.
+    std::vector<float> x (48000 * 3);
+    for (size_t i = 0; i < x.size(); ++i)
+        x[i] = 0.8f * std::exp (-2.0f * (float) i / 48000.0f) * (float) std::sin (2.0 * 3.14159265358979323846 * 220.0 * (double) i / 48000.0);
+    for (float rev : { 0.0f, 0.5f })
+    {
+        CAPTURE (rev);
+        GrainRig rig;
+        rig.e.setSample (SampleData::fromMono (std::move (std::vector<float> (x)), 48000.0, {}));
+        rig.e.setParam (grain::Position, 0.1f);
+        rig.e.setParam (grain::Size, 90.0f);
+        rig.e.setParam (grain::Density, 40.0f);
+        rig.e.setParam (grain::Spray, 0.35f);
+        rig.e.setParam (grain::Scan, 1.2f);
+        rig.e.setParam (grain::ReverseProb, rev);
+        rig.e.noteOn (grain::rootNote, 1.0f); // root pitch: the sample's own 220 Hz
+        auto out = renderEngine (rig.e, 48000 * 8);
+        float peak = 0.0f, d2 = 0.0f;
+        for (size_t i = 2400; i < out.l.size(); ++i)
+        {
+            peak = std::max (peak, std::abs (out.l[i]));
+            d2 = std::max (d2, std::abs (out.l[i] - 2.0f * out.l[i - 1] + out.l[i - 2]));
+        }
+        REQUIRE (peak > 0.01f);
+        // smooth grains of a 220 Hz tone: the second difference stays a small fraction of the peak; a jump inside a
+        // grain window (tail -> attack) is of the order of the attack itself
+        CHECK (d2 < 0.02f * peak);
+    }
+}
