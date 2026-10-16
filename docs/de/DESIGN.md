@@ -13,7 +13,7 @@ oder tut.
 * **Ein Gehäuse (p14)** auf einem 8er-Raster (1200 × 800 Einheiten, gleichmäßig skaliert): matt
   warmweiß, großzügige Ränder, weicher Schatten auf dem Hintergrund – kein Metall, keine Textur.
   Funktionsgruppen liegen in grauen, **eingelassenen Feldern**: ENGINE (links), MODUS (rechts),
-  TRANSPORT + MIDI (unten links), OKTAVE (unten rechts), das Klaviaturbett. Bibliothek und
+  TRANSPORT (unten links), OKTAVE + MIDI (unten rechts), das Klaviaturbett. Bibliothek und
   Profiansicht liegen wie ein Deckel in dunklem Rahmen auf der Platte; Kopfzeile und
   Klaviaturzeile bleiben sichtbar und spielbar. **Ein Radiensystem:** das Gehäuse hat 18 Einheiten
   Eckradius, jedes eingelassene Feld und jeder Rahmen (Spalten, Transport, Oktave, Klaviaturbett,
@@ -25,11 +25,12 @@ oder tut.
   PRO, ZUFALL, SPEICHERN, SPRACHE) darüber auf einer Grundlinie; 8 Einheiten zwischen den Tasten, rechts
   32 Einheiten Rand wie links vor dem Schriftzug. Links die acht
   Engines, rechts die acht Modi, in der Mitte das Display mit vier Encodern darunter. Klaviaturzeile:
-  PITCH- und MOD-Rad links, drei Oktaven Klaviatur (C3–C6), rechts der Glide-Schalter
-  (Auto / Legato / Immer) und der GLIDE-Regler.
+  PITCH- und MOD-Rad links, drei Oktaven Klaviatur (C3–C6), rechts eine Spalte: der Glide-Schalter
+  (Auto / Legato / Immer) mit der Beschriftung PORTAMENTO und darunter der GLIDE-Regler – beide
+  Beschriftungen auf einer Textspalte, in derselben Typografie.
 * **Farbe heißt Funktion.** Die vier Akzente gehören zu den vier Encodern: Signalrot (1),
   Sonnengelb (2), Ultraviolett (3), Rosé (4) – auf den Encoder-Ringen und in den Makrozeilen des
-  Displays. Die Tasten-LEDs sprechen dieselbe Sprache: **Gelb = dein Fokus** (Engine des bearbeiteten
+  Displays. Die Leuchtbalken der Tasten sprechen dieselbe Sprache: **Gelb = dein Fokus** (Engine des bearbeiteten
   Parts, die angezeigte Seite), **Ultraviolett = läuft / anderswo in Benutzung** (Engine eines anderen
   Parts, laufender Sequencer, spielendes Tape, ein Effekt-Platz an, eine geroutete Modulation),
   **Rot = Aufnahme**.
@@ -37,10 +38,14 @@ oder tut.
 * **Das Display ist der einzige Bildschirm:** groß, kontrastreich, in einem dunklen Rahmen
   versenkt; tiefes Glas mit feinem Punktraster, warmweiße Schrift.
 * **Tiefe statt Dekoration:** Tasten sind matte helle Kappen mit beleuchteter Oberkante und weichem
-  Schatten; gedrückte oder aktive Tasten sinken leicht ein. Engine-, Modus- sowie START-, REC- und
-  SCHLEIFE-Tasten tragen oben links eine **LED** (matte Linse, unbeleuchtet eine graue Mulde, leuchtend
-  eine flache Farbe mit weichem Hof – kein Glanzpunkt); Engine-Tasten zeigen oben rechts vier kleine
-  Punkte für die Parts 1 – 4, die die Engine spielen. Felder sind ins Gehäuse eingelassen. Das Glas des Displays hat Ebenen (Punktraster
+  Schatten; gedrückte oder aktive Tasten sinken leicht ein. Engine-, Modus-, Transport-, Oktav- und
+  MIDI-Tasten tragen einen **Leuchtbalken** (Rev. 3): ein kurzes waagrechtes Fenster am unteren Rand der
+  Kappe, unter dem Piktogramm – unbeleuchtet ein feiner dunkler Schlitz, leuchtend eine flache Farbe mit
+  weichem Schein, kein Glanzpunkt. Auf den Engine-Tasten ist der Balken in vier Segmente geteilt, eines je
+  Part (1 – 4, von links): gelb = der bearbeitete Part spielt die Engine, violett = ein anderer Part.
+  START leuchtet violett (auch das Dreieck), REC rot (stetig = bereit, blinkend = Aufnahme; der Kreis
+  glüht), SCHLEIFE gelb, MIDI rot während MIDI-Learn, OKTAVE −/+ gelb, solange die Klaviatur in diese
+  Richtung verschoben ist. Felder sind ins Gehäuse eingelassen. Das Glas des Displays hat Ebenen (Punktraster
   dahinter, Inhalt, Glasoberfläche) mit leichter Parallaxe. Kein Chrom.
 * **Räder und Glide (p14):** PITCH- und MOD-Rad sind Grafit-Daumenräder in dunklen Schlitzen; das
   Pitch-Rad federt zur Mitte zurück, das Mod-Rad bleibt stehen; Rechtsklick = MIDI Learn. Der
@@ -63,7 +68,11 @@ oder tut.
   Pegelreduktion); ein dünner Modulationsring im Encoder zeigt Reichweite und aktuelle Position der
   Modulation. Die vollständige Tabelle steht in der
   [englischen Fassung](../DESIGN.md#pictogram-characters).
-* **Transport (p11, p14):** im Feld unten links REC / START / STOPP, darunter ANFANG / SCHLEIFE / MIDI;
+* **Transport (p11, p14, Rev. 3):** im Feld unten links eine Tape-Anzeige (REC / START / TAPE, Zeit
+  m:ss.z, Takt.Schlag) über einer segmentierten Reihe aus fünf verbundenen, gleich breiten Tasten
+  ANFANG · STOPP · START · REC · SCHLEIFE (Variante *A, Tape-Deck*); Variante *B* zum Vergleich: zwei
+  große Tasten REC / START über der Anzeige und drei kleinen Tasten ANFANG · STOPP · SCHLEIFE. Das Feld
+  unten rechts spiegelt es: Tastatur-Anzeige (Umfang, Oktavlage; MIDI-Learn rot) über OKTAVE − / + und MIDI;
   schlichte geometrische Zeichen (Kreis, Dreieck, Quadrat, Strich + Dreieck, offene Schleife mit
   Pfeil). Der Aufnahmekreis ist immer signalrot, die Taste blinkt während der Aufnahme. Auf der
   Tape-Seite ersetzt das Transportfeld die Spulen-Figur: Zustandsschild (rot blinkend = Aufnahme),

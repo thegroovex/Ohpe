@@ -5,7 +5,8 @@
 //   usage: ohpe_screenshot <output directory>
 // Writes ohpe-<view>.png (English) and ohpe-<view>-de.png (German).
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
-// p11: the tape page while recording (ohpe-tape-recording).
+// p11: the tape page while recording (ohpe-tape-recording). p14 rev 3: the transport layouts A / B
+// (ohpe-transport-variant-a / -b).
 // 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack; the Mid/Side scope,
 // the master scope view and the spectrum terrain. 1.0: the 3D Space view and the 3D badge. The
 // preset library reads the user folder from OHPE_PRESET_DIR when set (otherwise the default).
@@ -211,6 +212,16 @@ int main (int argc, char* argv[])
             }
             for (int k = 0; k < 40 && ! e.recordKey().isActive(); ++k) e.advanceAnimation (0.05f); // REC blink "on"
             save (e, dir.getChildFile ("ohpe-tape-recording" + suffix + ".png"));
+            // p14 rev 3: the two layouts of the transport block (and the octave block mirroring it) while
+            // recording, for the user to choose from - A: tape-deck row, B: large REC / PLAY keys
+            {
+                const auto shown = e.transportLayout();
+                e.setTransportLayout (OhpeEditor::TransportLayout::TapeDeck);
+                save (e, dir.getChildFile ("ohpe-transport-variant-a" + suffix + ".png"));
+                e.setTransportLayout (OhpeEditor::TransportLayout::Primary);
+                save (e, dir.getChildFile ("ohpe-transport-variant-b" + suffix + ".png"));
+                e.setTransportLayout (shown);
+            }
             e.transport (OhpeProcessor::TransportKey::Record); // punch out
             run (p, 4);
             p.core().tape().housekeeping();

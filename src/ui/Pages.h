@@ -90,6 +90,9 @@ struct KeyLeds
 {
     std::array<Led, numEngineTypes> engine {};        ///< Focus = the edit part's engine, Active = another part's
     std::array<unsigned, numEngineTypes> engineParts {}; ///< bit p set = part p + 1 plays this engine
+    /** p14 rev 3: the engine key's light bar has one segment per part: Focus = the edit part plays this
+        engine, Active = another part plays it, Off = the part plays another engine. */
+    std::array<std::array<Led, Core::numParts>, numEngineTypes> engineSegments {};
     std::array<Led, numModes> mode {};                ///< Record > Active (status) > Focus (shown page) > Off
 };
 

@@ -3,8 +3,8 @@
 *Deutsch · English: [../en/USER-INTERFACE.md](../en/USER-INTERFACE.md)*
 
 Die Oberfläche von Ohpe (p14): Engine-Tasten (links), Display (Mitte), Modus-Tasten (rechts), vier
-Encoder unter dem Display, die **TRANSPORT**-Tasten und **MIDI** (unten links), die **OKTAVE**-Tasten
-(unten rechts) und die Klaviaturzeile – **PITCH**- und **MOD**-Rad, drei Oktaven Klaviatur, **Glide**-Modus
+Encoder unter dem Display, die **TRANSPORT**-Tasten mit der Tape-Anzeige (unten links), die **OKTAVE**-Tasten,
+**MIDI** und die Tastatur-Anzeige (unten rechts) und die Klaviaturzeile – **PITCH**- und **MOD**-Rad, drei Oktaven Klaviatur, **Glide**-Modus
 und -Zeit. In der Kopfzeile liegen die **Part-Auswahl**, der **Preset-Streifen**, die Tasten
 **BIBLIOTHEK** und **PRO**, **ZUFALL** und **SPEICHERN** sowie EN / DE. Jede Funktion ist mit der Maus und –
 über MIDI Learn – vom Controller aus erreichbar.
@@ -20,26 +20,33 @@ und -Zeit. In der Kopfzeile liegen die **Part-Auswahl**, der **Preset-Streifen**
 | **PITCH**-Rad | Pitchbend für den bearbeiteten Part (auf seinem MIDI-Kanal, wie die Bildschirm-Klaviatur); Umfang = *Pitchbend-Bereich* des Parts. Nach oben / unten ziehen; beim Loslassen federt es zur Mitte zurück. |
 | **MOD**-Rad | das Modulationsrad (CC 1): eine Quelle der [Modulationsmatrix](MODULATION.md). Bleibt stehen; Doppelklick = 0. |
 | Klaviatur | drei Oktaven (ab Werk C3–C6); **OKTAVE −/+** verschiebt sie. |
-| **AUTO / LEGATO / IMMER** | Glide-Modus des bearbeiteten Parts: *Auto* gleitet, solange die vorige Note klingt, *Legato* nur bei gehaltener Taste, *Immer* von jeder vorigen Note. |
+| **PORTAMENTO**: AUTO / LEGATO / IMMER | Glide-Modus des bearbeiteten Parts: *Auto* gleitet, solange die vorige Note klingt, *Legato* nur bei gehaltener Taste, *Immer* von jeder vorigen Note. |
 | **GLIDE** | Glide-Zeit des bearbeiteten Parts (0 = aus). |
 
 Beide Räder sind Host-Parameter (*Pitch-Rad* `perf.bend`, *Mod-Rad* `perf.mod`): Rechtsklick = MIDI Learn,
 Shift / Cmd / Strg = fein. Sie sind Spielhilfen und gehören nicht zu Presets.
 
-## Tasten-LEDs
+## Leuchtbalken
 
-Engine-, Modus- und Transport-Tasten tragen oben links eine kleine LED. Eine Farbsprache:
-**Gelb** = was du bearbeitest, **Violett** = läuft oder anderswo in Benutzung, **Rot** = Aufnahme.
+Engine-, Modus-, Transport-, Oktav- und MIDI-Tasten tragen am unteren Rand der Taste, unter dem
+Piktogramm, einen kurzen **Leuchtbalken**. Eine Farbsprache: **Gelb** = was du bearbeitest,
+**Violett** = läuft oder anderswo in Benutzung, **Rot** = Aufnahme.
 
-| Tasten | LED |
+| Tasten | Leuchtbalken |
 |---|---|
-| Engine | **Gelb** = Engine des bearbeiteten Parts; **Violett** = eine Engine, die ein anderer Part spielt. Die vier Punkte oben rechts zeigen, welche Parts (1 – 4, von links) die Engine benutzen. |
+| Engine | vier Segmente, eines je Part (1 – 4, von links): ein Segment leuchtet, wenn dieser Part die Engine spielt – **gelb** für den bearbeiteten Part, **violett** für einen anderen Part. |
 | Modus | **Gelb** = die Seite auf dem Display. **Violett**: SEQUENCER = der Sequencer läuft; TAPE = das Tape spielt; EFFEKTE = ein Platz eines Effekt-Racks (Part oder Master) ist an; DRUM = ein laufender Sequencer spielt das Drum-Kit; LFO = der LFO eines Parts hat Tiefe oder eine Modulation ist geroutet. **Rot** (blinkend) auf TAPE = Aufnahme. Die Statusfarbe hat Vorrang; die angezeigte Seite bleibt als eingesunkene Taste sichtbar. |
-| Transport | START **violett**, solange es läuft, REC **rot** (stetig = bereit, blinkend = Aufnahme), SCHLEIFE **gelb**, solange sie an ist. |
+| Transport | START **violett**, solange es läuft (auch das Dreieck leuchtet), REC **rot** (stetig = bereit, blinkend = Aufnahme; der Kreis glüht), SCHLEIFE **gelb**, solange sie an ist. |
+| OKTAVE − / + · MIDI | OKTAVE **gelb**, solange die Klaviatur in diese Richtung verschoben ist; MIDI **rot** während MIDI-Learn. |
 
-Der Tooltip einer Taste sagt, was ihre LED bedeutet (Engine-Tasten nennen auch die Parts, die sie benutzen).
+Der Tooltip einer Taste sagt, was ihr Balken bedeutet (Engine-Tasten nennen auch die Parts, die sie benutzen).
 
-![Engine-LEDs: mehrere Parts mit verschiedenen Engines](../images/ohpe-engine-leds-de.png)
+Die **Anzeigen** neben den Tasten: Die Tape-Anzeige über den Transport-Tasten zeigt den Zustand (**REC**
+rot, **START** violett, *TAPE*), die Bandzeit (m:ss.z) und Takt.Schlag; die Tastatur-Anzeige im Oktavfeld
+zeigt den Umfang der Klaviatur (C3–C6) und ihre Oktavlage, und **MIDI-LEARN** in Rot, solange ein Regler
+auf eine MIDI-Nachricht wartet.
+
+![Leuchtbalken: mehrere Parts mit verschiedenen Engines](../images/ohpe-engine-leds-de.png)
 
 ## ZUFALL und SPEICHERN
 
@@ -157,7 +164,7 @@ Schritt-Ansicht:
 
 ## Transport-Tasten
 
-Die **TRANSPORT**-Tasten im Feld unten links (REC, START, STOPP / ANFANG, SCHLEIFE, neben MIDI) wirken auf jeder Seite:
+Die **TRANSPORT**-Tasten im Feld unten links (eine Reihe: ANFANG, STOPP, START, REC, SCHLEIFE unter der Tape-Anzeige) wirken auf jeder Seite:
 
 | Taste | Aktion |
 |---|---|

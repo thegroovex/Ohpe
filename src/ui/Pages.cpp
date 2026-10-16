@@ -398,6 +398,7 @@ KeyLeds keyLeds (const LedInputs& in) noexcept
         const int t = in.partEngine[(size_t) p];
         if (t < 0 || t >= numEngineTypes) continue;
         out.engineParts[(size_t) t] |= 1u << p;
+        out.engineSegments[(size_t) t][(size_t) p] = p == edit ? Led::Focus : Led::Active;
         if (p == edit) out.engine[(size_t) t] = Led::Focus;
         else if (out.engine[(size_t) t] == Led::Off) out.engine[(size_t) t] = Led::Active;
     }

@@ -7,6 +7,8 @@
 #include "plugin/Localisation.h"
 #include "plugin/ParameterBridge.h"
 
+#include <algorithm>
+
 namespace ohpe::ui
 {
 using i18n::tr;
@@ -321,42 +323,74 @@ void fourColourRing (juce::Graphics& g, juce::Point<float> c, float radius, floa
 void PictoKey::setLed (juce::Colour c, float level)
 {
     level = juce::jlimit (0.0f, 1.0f, level);
-    if (level == ledLevel && (level == 0.0f || c == ledColour)) return;
+    if (! segmented && level == ledLevel && (level == 0.0f || c == ledColour)) return;
+    segmented = false;
     ledLevel = level;
     ledColour = c;
+    repaint();
+}
+
+void PictoKey::setBarSegments (const std::array<juce::Colour, 4>& colours, const std::array<float, 4>& levels)
+{
+    std::array<float, 4> l {};
+    for (size_t i = 0; i < 4; ++i) l[i] = juce::jlimit (0.0f, 1.0f, levels[i]);
+    bool same = segmented && l == segLevel;
+    for (size_t i = 0; i < 4 && same; ++i) same = l[i] == 0.0f || colours[i] == segColour[i];
+    if (same) return;
+    segmented = true;
+    segColour = colours;
+    segLevel = l;
+    ledLevel = *std::max_element (l.begin(), l.end());
     repaint();
 }
 
 juce::Rectangle<float> PictoKey::capArea() const
 {
     const auto b = getLocalBounds().toFloat();
-    const float legendH = juce::jmin (18.0f * uiScale, b.getHeight() * 0.4f);
-    return b.withTrimmedBottom (legendH + 2.0f).reduced (2.0f, 1.0f);
+    const float legendH = showLegend ? juce::jmin (18.0f * uiScale, b.getHeight() * 0.4f) : 0.0f;
+    // joined keys: no gap on the joined side - the caps meet in a fine seam
+    return b.withTrimmedBottom (legendH + (showLegend ? 2.0f : 1.0f)).withTrimmedTop (1.0f)
+            .withTrimmedLeft (joinLeft ? 0.0f : 2.0f).withTrimmedRight (joinRight ? 0.0f : 2.0f);
+}
+
+juce::Rectangle<float> PictoKey::barArea() const
+{
+    if (! hasLed || style != Style::Cap) return {};
+    const auto cap = capArea();
+    const float h = juce::jmax (2.0f, 3.0f * uiScale);
+    const float w = segmented ? juce::jmin (cap.getWidth() * 0.56f, 40.0f * uiScale)
+                              : juce::jmin (cap.getWidth() * 0.34f, 26.0f * uiScale);
+    return juce::Rectangle<float> (w, h).withCentre ({ cap.getCentreX(), cap.getBottom() - juce::jmax (5.0f, cap.getHeight() * 0.11f) });
 }
 
 namespace
 {
-/** p14: a matte LED lens: unlit a dark grey pit, lit a flat colour with a soft halo (no specular glare). */
-void drawLed (juce::Graphics& g, juce::Point<float> c, float d, juce::Colour colour, float level)
+/** A key cap's outline: rounded, square on the sides joined to a neighbour. */
+juce::Path capPath (juce::Rectangle<float> r, float radius, bool joinLeft, bool joinRight)
 {
-    const auto lens = juce::Rectangle<float> (d, d).withCentre (c);
-    // the pit the lens sits in: a fine darker ring and a light lower lip
-    g.setColour (juce::Colours::white.withAlpha (0.7f));
-    g.fillEllipse (lens.expanded (0.9f).translated (0, 0.6f));
-    g.setColour (juce::Colour (0xff8f8b84));
-    g.fillEllipse (lens.expanded (0.9f));
-    g.setColour (juce::Colour (0xffa9a59d));
-    g.fillEllipse (lens);
+    juce::Path p;
+    p.addRoundedRectangle (r.getX(), r.getY(), r.getWidth(), r.getHeight(), radius, radius,
+                           ! joinLeft, ! joinRight, ! joinLeft, ! joinRight);
+    return p;
+}
+
+/** p14 rev 3: one window of a light bar: unlit a faint dark slot sunk into the cap, lit a flat colour
+    with a soft glow on the cap around it (no specular glare). */
+void drawBarWindow (juce::Graphics& g, juce::Rectangle<float> r, juce::Colour colour, float level, float s)
+{
+    const float rr = r.getHeight() * 0.5f;
+    g.setColour (juce::Colours::white.withAlpha (0.6f)); // the lower lip of the slot
+    g.fillRoundedRectangle (r.translated (0, 0.7f), rr);
+    g.setColour (juce::Colour (0xffb9b4ab));
+    g.fillRoundedRectangle (r, rr);
     if (level <= 0.0f) return;
-    for (int i = 3; i >= 1; --i) // soft halo on the cap
+    for (int i = 3; i >= 1; --i) // the glow on the cap
     {
-        g.setColour (colour.withAlpha (0.07f * level));
-        g.fillEllipse (lens.expanded (d * 0.22f * (float) i));
+        g.setColour (colour.withAlpha (0.08f * level));
+        g.fillRoundedRectangle (r.expanded (1.2f * s * (float) i, 1.0f * s * (float) i), rr + 1.2f * s * (float) i);
     }
-    g.setColour (colour.withMultipliedAlpha (0.35f + 0.65f * level));
-    g.fillEllipse (lens);
-    g.setColour (colour.darker (0.35f).withAlpha (0.55f * level)); // matte rim
-    g.drawEllipse (lens.reduced (0.4f), 0.8f);
+    g.setColour (colour.withMultipliedAlpha (0.4f + 0.6f * level));
+    g.fillRoundedRectangle (r, rr);
 }
 } // namespace
 
@@ -365,7 +399,7 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
     const auto b = getLocalBounds().toFloat();
     const bool pressed = down || (active && style == Style::Cap);
     // p14: header keys carry their legend above (12 units, the header's legend baseline), 4 units of air below it
-    const float legendH = legendOnTop ? 16.0f * uiScale : juce::jmin ((style == Style::Cap ? 18.0f : 16.0f) * uiScale, b.getHeight() * 0.4f);
+    const float legendH = legendOnTop ? 16.0f * uiScale : ! showLegend ? 0.0f : juce::jmin ((style == Style::Cap ? 18.0f : 16.0f) * uiScale, b.getHeight() * 0.4f);
     const auto legendArea = legendOnTop ? b.withHeight (12.0f * uiScale) : b.withTop (b.getBottom() - legendH);
     const auto body = legendOnTop ? b.withTrimmedTop (legendH) : b.withTrimmedBottom (legendH);
     auto ink = colour::capInk;
@@ -411,42 +445,64 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
     }
     else
     {
-        auto cap = b.withTrimmedBottom (legendH + 2.0f).reduced (2.0f, 1.0f);
+        auto cap = capArea();
         const float r = radius::inset * uiScale; // p14: the radius system (Palette.h)
-        softShadow (g, cap, r, pressed ? 0.8f : 2.4f);
+        { // soft two-layer shadow under the cap (the joined sides square)
+            const float lift = pressed ? 0.8f : 2.4f;
+            g.setColour (juce::Colours::black.withAlpha (0.05f));
+            g.fillPath (capPath (cap.expanded (lift * 0.6f).translated (0, lift * 1.4f), r + lift * 0.6f, joinLeft, joinRight));
+            g.setColour (juce::Colours::black.withAlpha (0.10f));
+            g.fillPath (capPath (cap.translated (0, lift * 0.7f), r, joinLeft, joinRight));
+        }
         if (pressed) cap = cap.translated (0, 1.0f);
+        const auto outline = capPath (cap, r, joinLeft, joinRight);
         const auto top = pressed ? colour::capBottom : colour::capTop;
         const auto bottom = pressed ? colour::capBottom.darker (0.03f) : colour::capBottom;
         g.setGradientFill (juce::ColourGradient (top, cap.getX(), cap.getY(), bottom, cap.getX(), cap.getBottom(), false));
-        g.fillRoundedRectangle (cap, r);
+        g.fillPath (outline);
         g.setColour (colour::capEdge);
-        g.drawRoundedRectangle (cap.reduced (0.5f), r, 1.0f);
+        g.strokePath (capPath (cap.reduced (0.5f), r, joinLeft, joinRight), juce::PathStrokeType (1.0f));
         if (! pressed) // a fine lit upper edge: the soft depth of a matte key
         {
             g.setColour (juce::Colours::white.withAlpha (0.75f));
-            g.fillRect (cap.reduced (r, 0).withHeight (1.0f).translated (0, 1.0f));
+            g.fillRect (cap.withTrimmedLeft (joinLeft ? 1.0f : r).withTrimmedRight (joinRight ? 1.0f : r).withHeight (1.0f).translated (0, 1.0f));
         }
-        if (over && ! down) { g.setColour (juce::Colours::white.withAlpha (0.22f)); g.fillRoundedRectangle (cap, r); }
+        if (over && ! down) { g.setColour (juce::Colours::white.withAlpha (0.22f)); g.fillPath (outline); }
         if (hasPictoInk && available) ink = pictoInk;
         else if (! available) ink = ink.withAlpha (0.28f);
+        // rev 3: the light bar sits at the cap's lower edge, under the pictogram (as the lit bar of before)
+        const auto bar = barArea().translated (0, pressed ? 1.0f : 0.0f);
         if (transportSign)
-            drawPictogram (g, cap.withSizeKeepingCentre (cap.getHeight(), cap.getHeight()).reduced (cap.getHeight() * 0.18f), picto, ps, ink);
+        {
+            const float side = juce::jmin (cap.getHeight(), cap.getWidth());
+            const auto sign = cap.withSizeKeepingCentre (side, side).reduced (side * 0.18f);
+            if (hasLed && picto == Picto::Play && ledLevel > 0.0f && available)
+                ink = ledColour; // rev 3: the PLAY triangle lights with its bar
+            if (hasLed && picto == Picto::Record && ledLevel > 0.0f && available)
+            {   // rev 3: the REC circle glows (steady when armed, blinking while recording)
+                const auto c = sign.getCentre();
+                const float d = sign.getHeight() * 0.62f;
+                for (int i = 4; i >= 1; --i)
+                {
+                    g.setColour (ledColour.withAlpha (0.07f * ledLevel));
+                    g.fillEllipse (juce::Rectangle<float> (d, d).withCentre (c).expanded (d * 0.13f * (float) i));
+                }
+                ink = ink.interpolatedWith (ledColour.brighter (0.25f), 0.5f * ledLevel);
+            }
+            drawPictogram (g, sign, picto, ps, ink);
+        }
         else
             drawPictogram (g, cap.reduced (cap.getWidth() * 0.2f, cap.getHeight() * 0.12f), picto, ps, ink);
         if (hasLed)
         {
-            const float d = juce::jmax (4.5f, 7.0f * uiScale), inset = juce::jmax (6.0f, 9.5f * uiScale);
-            drawLed (g, { cap.getX() + inset, cap.getY() + inset }, d, ledColour, ledLevel);
-            if (partDots != 0)
+            if (segmented)
             {
-                const float dd = juce::jmax (2.4f, 3.4f * uiScale), pitch = juce::jmax (3.6f, 5.2f * uiScale);
-                for (int p = 0; p < 4; ++p)
-                {
-                    const juce::Point<float> pc { cap.getRight() - inset - pitch * (float) (3 - p), cap.getY() + inset };
-                    g.setColour ((partDots >> p) & 1u ? colour::capInk.withAlpha (0.8f) : colour::capEdge.withAlpha (0.9f));
-                    g.fillEllipse (juce::Rectangle<float> (dd, dd).withCentre (pc));
-                }
+                const float gap = juce::jmax (1.5f, 2.0f * uiScale), w = (bar.getWidth() - 3.0f * gap) / 4.0f;
+                for (int i = 0; i < 4; ++i)
+                    drawBarWindow (g, bar.withWidth (w).translated ((w + gap) * (float) i, 0), segColour[(size_t) i], segLevel[(size_t) i], uiScale);
             }
+            else
+                drawBarWindow (g, bar, ledColour, ledLevel, uiScale);
         }
         else if (active) // the lit bar of the active key, in its function colour
         {
@@ -455,6 +511,7 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
                                         .withCentre ({ cap.getCentreX(), cap.getBottom() - cap.getHeight() * 0.11f }), 1.5f);
         }
     }
+    if (! showLegend && ! legendOnTop) return;
     g.setColour (available ? colour::engraving : colour::engraving.withAlpha (0.45f));
     if (legendOnTop) drawBaselineLegend (g, i18n::upper (tr (legend)), legendArea, 11.0f * uiScale);
     else drawFittedLegend (g, i18n::upper (tr (legend)), legendArea, 10.5f * uiScale);
@@ -681,18 +738,25 @@ void SlideSwitch::refresh()
     if (const int p = position(); p != shown) { shown = p; repaint(); }
 }
 
+// p14 rev 3: design units (128 x 72): the caption PORTAMENTO on the text column (x 64, as GLIDE's), the three
+// positions under it; the slot centred in the 56-unit control column (the GLIDE knob's width) beside them
 juce::Rectangle<float> SlideSwitch::slotArea() const
 {
-    auto b = getLocalBounds().toFloat();
-    return b.withWidth (b.getHeight() * 0.3f).reduced (0, b.getHeight() * 0.04f);
+    const float u = uiScale;
+    return { 19.0f * u, 16.0f * u, 18.0f * u, juce::jmax (8.0f, (float) getHeight() - 16.0f * u) };
 }
 
 juce::Rectangle<float> SlideSwitch::labelArea (int i) const
 {
-    auto b = getLocalBounds().toFloat();
     const auto s = slotArea();
-    const float h = s.getHeight() / 3.0f;
-    return { s.getRight() + b.getHeight() * 0.14f, s.getY() + h * (float) i, b.getRight() - s.getRight() - b.getHeight() * 0.14f, h };
+    const float h = s.getHeight() / 3.0f, x = captionCol::textX * uiScale;
+    return { x, s.getY() + h * (float) i, (float) getWidth() - x, h };
+}
+
+juce::Rectangle<float> SlideSwitch::captionArea() const
+{
+    const float x = captionCol::textX * uiScale;
+    return { x, 2.0f * uiScale, (float) getWidth() - x, captionCol::boxH * uiScale };
 }
 
 void SlideSwitch::paint (juce::Graphics& g)
@@ -722,10 +786,16 @@ void SlideSwitch::paint (juce::Graphics& g)
             if (i < (int) d.choices.size()) label = i18n::pick (d.choices[(size_t) i], i < (int) d.choicesDe.size() ? d.choicesDe[(size_t) i] : d.choices[(size_t) i]);
         }
         g.setColour (i == pos ? colour::ink : colour::engraving.withAlpha (0.8f));
-        drawFittedLegend (g, i18n::upper (label), labelArea (i), juce::jmin (labelArea (i).getHeight() * 0.62f, 12.0f * (float) getHeight() / 64.0f),
+        drawFittedLegend (g, i18n::upper (label), labelArea (i), juce::jmin (labelArea (i).getHeight() * 0.62f, 10.0f * uiScale),
                           juce::Justification::centredLeft);
     }
-    if (proc.learningParamId() == id)
+    const bool learning = id.isNotEmpty() && proc.learningParamId() == id;
+    if (caption.isNotEmpty()) // rev 3: the caption in GLIDE's typography, on GLIDE's text column
+    {
+        g.setColour (learning ? colour::signalRed : colour::engraving);
+        drawBaselineLegend (g, learning ? tr ("MIDI Learn") : i18n::upper (tr (caption)), captionArea(), captionCol::height * uiScale, juce::Justification::left);
+    }
+    if (learning)
     {
         g.setColour (colour::signalRed);
         g.drawRoundedRectangle (s.expanded (1.5f), r + 1.5f, 1.2f);
@@ -775,24 +845,30 @@ void MiniKnob::bind (const juce::String& paramId)
 
 void MiniKnob::resized()
 {
-    const int d = juce::jmin (getHeight(), getWidth() / 2);
+    const int d = juce::jmin (getHeight(), getWidth() / 2, juce::roundToInt ((captionCol::textX - 8.0f) * uiScale));
     knob.setBounds (0, (getHeight() - d) / 2, d, d);
+}
+
+juce::Rectangle<float> MiniKnob::captionArea() const
+{
+    // rev 3: the caption box ends 2 units above the knob's centre line, the value sits under it
+    const float x = captionCol::textX * uiScale;
+    return { x, (float) getHeight() * 0.5f - (captionCol::boxH + 2.0f) * uiScale, (float) getWidth() - x, captionCol::boxH * uiScale };
 }
 
 void MiniKnob::paint (juce::Graphics& g)
 {
-    auto b = getLocalBounds().toFloat().withTrimmedLeft ((float) knob.getRight() + getHeight() * 0.12f);
+    const auto cap = captionArea();
     const bool learning = id.isNotEmpty() && proc.learningParamId() == id;
     g.setColour (learning ? colour::signalRed : colour::engraving);
-    drawFittedLegend (g, learning ? tr ("MIDI Learn") : i18n::upper (tr (legend)), b.withHeight (b.getHeight() * 0.5f), b.getHeight() * 0.2f,
-                      juce::Justification::bottomLeft);
+    drawBaselineLegend (g, learning ? tr ("MIDI Learn") : i18n::upper (tr (legend)), cap, captionCol::height * uiScale, juce::Justification::left);
     juce::String value;
     const int idx = proc.core().params().indexOf (id.toStdString());
     if (idx >= 0)
         if (auto* q = proc.parameter (id)) value = formatValue (proc.core().params().descriptor (idx), q->convertFrom0to1 (q->getValue()));
     g.setColour (colour::ink);
-    g.setFont (monoFont (b.getHeight() * 0.2f));
-    g.drawText (value, b.withTrimmedTop (b.getHeight() * 0.54f), juce::Justification::topLeft, true);
+    g.setFont (monoFont (11.0f * uiScale));
+    g.drawText (value, cap.withY ((float) getHeight() * 0.5f + 2.0f * uiScale).withHeight (14.0f * uiScale), juce::Justification::centredLeft, true);
     if (idx >= 0 && proc.core().midiMap().isMapped (id.toStdString()))
     {
         g.setColour (colour::signalRed);
@@ -816,5 +892,58 @@ void MiniKnob::Knob::mouseUp (const juce::MouseEvent& e)
 void MiniKnob::Knob::mouseDoubleClick (const juce::MouseEvent&)
 {
     if (auto* q = owner.proc.parameter (owner.id)) q->setValueNotifyingHost (q->getDefaultValue());
+}
+
+// ---------------------------------------------------------------- p14 rev 3: readout glass
+void Readout::setContent (const juce::String& b, juce::Colour c, const juce::String& m, const juce::String& a)
+{
+    if (b == badge && c == badgeColour && m == main && a == aside) return;
+    badge = b;
+    badgeColour = c;
+    main = m;
+    aside = a;
+    repaint();
+}
+
+void Readout::paint (juce::Graphics& g)
+{
+    const auto bounds = getLocalBounds().toFloat();
+    const float u = uiScale, r = radius::inset * u;
+    // a glass sunk into the panel: a light lower lip, the dark glass, a fine shadow under the upper edge
+    g.setColour (juce::Colours::white.withAlpha (0.7f));
+    g.fillRoundedRectangle (bounds.translated (0, 1.0f), r);
+    auto glass = bounds.withTrimmedBottom (1.0f);
+    g.setColour (colour::display);
+    g.fillRoundedRectangle (glass, r);
+    g.setColour (juce::Colours::black.withAlpha (0.5f));
+    g.drawRoundedRectangle (glass.reduced (0.5f), r, 1.0f);
+    auto in = glass.reduced (8.0f * u, 4.0f * u);
+    const bool oneRow = glass.getWidth() > glass.getHeight() * 3.0f;
+    if (oneRow)
+    {
+        const float h = in.getHeight();
+        g.setColour (badgeColour);
+        auto badgeArea = in.removeFromLeft (juce::jmin (in.getWidth() * 0.3f, 44.0f * u));
+        drawFittedLegend (g, badge, badgeArea, juce::jmin (h * 0.62f, 11.0f * u), juce::Justification::centredLeft);
+        g.setColour (colour::displayDim);
+        g.setFont (monoFont (juce::jmin (h * 0.6f, 11.0f * u)));
+        const float asideW = juce::GlyphArrangement::getStringWidth (g.getCurrentFont(), aside) + 2.0f;
+        g.drawText (aside, in.removeFromRight (asideW), juce::Justification::centredRight, false);
+        g.setColour (colour::displayText);
+        g.setFont (monoFont (juce::jmin (h * 0.8f, 15.0f * u)));
+        g.drawText (main, in, juce::Justification::centredLeft, true);
+    }
+    else
+    {
+        auto top = in.removeFromTop (in.getHeight() * 0.42f);
+        g.setColour (colour::displayDim);
+        g.setFont (monoFont (juce::jmin (top.getHeight() * 0.85f, 10.0f * u)));
+        g.drawText (aside, top, juce::Justification::centredRight, false);
+        g.setColour (badgeColour);
+        drawFittedLegend (g, badge, top.withTrimmedRight (top.getWidth() * 0.45f), juce::jmin (top.getHeight() * 0.9f, 10.0f * u), juce::Justification::centredLeft);
+        g.setColour (colour::displayText);
+        g.setFont (monoFont (juce::jmin (in.getHeight() * 0.85f, 15.0f * u)));
+        g.drawText (main, in, juce::Justification::centredLeft, true);
+    }
 }
 } // namespace ohpe::ui

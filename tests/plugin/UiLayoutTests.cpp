@@ -9,6 +9,7 @@
 
 #include "plugin/Localisation.h"
 #include "plugin/PluginProcessor.h"
+#include "ui/Palette.h"
 #include "ui/PluginEditor.h"
 #include "mod/ModVoice.h"
 #include "fx/FxRack.h"
@@ -80,11 +81,15 @@ TEST_CASE ("editor layout: no overlapping visible components in any view, langua
             CAPTURE (width);
             e.setLanguage (lang);
             e.setSize (width, width * 2 / 3);
-            for (int m = 0; m < ui::numModes; ++m)
+            for (auto layout : { OhpeEditor::TransportLayout::Primary, OhpeEditor::TransportLayout::TapeDeck })
             {
-                CAPTURE (m);
-                e.selectMode ((ui::Mode) m);
-                checkLayout (e);
+                e.setTransportLayout (layout); // rev 3: both variants of the transport block
+                for (int m = 0; m < ui::numModes; ++m)
+                {
+                    CAPTURE (m);
+                    e.selectMode ((ui::Mode) m);
+                    checkLayout (e);
+                }
             }
             e.showLibrary (true);
             checkLayout (e);
@@ -97,7 +102,7 @@ TEST_CASE ("editor layout: no overlapping visible components in any view, langua
     i18n::setCurrent (i18n::Language::English);
 }
 
-TEST_CASE ("editor layout: wheels left of the keyboard, glide right of it, transport + MIDI bottom left")
+TEST_CASE ("editor layout: wheels left, glide right of the keyboard; transport block left, octave + MIDI block right, mirrored")
 {
     OhpeProcessor p;
     std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
@@ -108,12 +113,76 @@ TEST_CASE ("editor layout: wheels left of the keyboard, glide right of it, trans
     CHECK (e.glideModeSwitch().getX() > kb.getRight());
     CHECK (e.glideKnobComponent().getX() > kb.getRight());
     CHECK (e.glideModeSwitch().getBottom() <= e.glideKnobComponent().getY());
-    // the transport cluster and the MIDI key share the bottom-left panel, under the engine column
-    const auto panel = OhpeEditor::designArea ("transportPanel");
-    for (auto* c : { (juce::Component*) &e.recordKey(), (juce::Component*) &e.playTransportKey(), (juce::Component*) &e.midiKeyComponent() })
+    // p14 rev 3: the transport block (bottom left) holds the five transport keys and the tape readout; the octave
+    // block (bottom right) mirrors it: the octave keys, MIDI and the keyboard readout - in both layouts
+    const auto txPanel = OhpeEditor::designArea ("transportPanel"), octPanel = OhpeEditor::designArea ("octavePanel");
+    CHECK (txPanel.getWidth() == octPanel.getWidth());
+    CHECK (txPanel.getHeight() == octPanel.getHeight());
+    CHECK (txPanel.getY() == octPanel.getY());
+    CHECK (txPanel.getX() - OhpeEditor::designArea ("housing").getX() == doctest::Approx (OhpeEditor::designArea ("housing").getRight() - octPanel.getRight()));
+    for (auto layout : { OhpeEditor::TransportLayout::TapeDeck, OhpeEditor::TransportLayout::Primary })
     {
-        CHECK (panel.contains (c->getBounds().toFloat()));
-        CHECK (c->isVisible());
+        CAPTURE ((int) layout);
+        e.setTransportLayout (layout);
+        const float s = (float) e.getWidth() / (float) OhpeEditor::designWidth;
+        auto design = [s] (juce::Component& c) { return c.getBounds().toFloat() / s; };
+        for (auto* c : std::initializer_list<juce::Component*> { &e.recordKey(), &e.playTransportKey(), &e.stopTransportKey(), &e.toStartTransportKey(),
+                                                                &e.loopTransportKey(), &e.tapeReadoutComponent() })
+        {
+            CHECK (txPanel.reduced (11.0f).contains (design (*c)));
+            CHECK (c->isVisible());
+        }
+        for (auto* c : std::initializer_list<juce::Component*> { &e.octaveDownKey(), &e.octaveUpKey(), &e.midiKeyComponent(), &e.keysReadoutComponent() })
+        {
+            CHECK (octPanel.reduced (11.0f).contains (design (*c)));
+            CHECK (c->isVisible());
+        }
+        // the readouts sit at the same place in their panels, with the same size
+        const auto tr = design (e.tapeReadoutComponent()), kr = design (e.keysReadoutComponent());
+        CHECK (tr.getX() - txPanel.getX() == doctest::Approx (kr.getX() - octPanel.getX()).epsilon (0.02));
+        CHECK (tr.getY() == doctest::Approx (kr.getY()).epsilon (0.02));
+        CHECK (tr.getWidth() == doctest::Approx (kr.getWidth()).epsilon (0.02));
+        CHECK (tr.getHeight() == doctest::Approx (kr.getHeight()).epsilon (0.02));
+        // consistent key heights: a key of the transport block and the octave block on the same row share it
+        CHECK (e.recordKey().getHeight() == e.octaveDownKey().getHeight());
+        CHECK (e.recordKey().getY() == e.octaveDownKey().getY());
+        CHECK (e.stopTransportKey().getHeight() == e.midiKeyComponent().getHeight());
+        CHECK (e.stopTransportKey().getY() == e.midiKeyComponent().getY());
+        // every key of the two blocks carries a light bar inside its cap, under the pictogram
+        for (auto* k : { &e.recordKey(), &e.playTransportKey(), &e.stopTransportKey(), &e.toStartTransportKey(), &e.loopTransportKey(),
+                         &e.octaveDownKey(), &e.octaveUpKey(), &e.midiKeyComponent() })
+        {
+            const auto bar = k->barArea(), cap = k->capArea();
+            CHECK_FALSE (bar.isEmpty());
+            CHECK (cap.contains (bar));
+            CHECK (bar.getCentreY() > cap.getCentreY());
+        }
+    }
+    // the tape-deck row: TO START STOP PLAY REC LOOP joined left to right, equal widths, one row
+    e.setTransportLayout (OhpeEditor::TransportLayout::TapeDeck);
+    {
+        ui::PictoKey* row[] = { &e.toStartTransportKey(), &e.stopTransportKey(), &e.playTransportKey(), &e.recordKey(), &e.loopTransportKey() };
+        for (int i = 1; i < 5; ++i)
+        {
+            CHECK (row[i]->getY() == row[0]->getY());
+            CHECK (std::abs (row[i]->getX() - row[i - 1]->getRight()) <= 1);
+            CHECK (std::abs (row[i]->getWidth() - row[0]->getWidth()) <= 1);
+        }
+    }
+    // the large keys of the Primary layout are as large as the column keys
+    e.setTransportLayout (OhpeEditor::TransportLayout::Primary);
+    CHECK (e.recordKey().getWidth() == e.engineKey (EngineType::Analog).getWidth());
+    CHECK (e.recordKey().getHeight() == e.engineKey (EngineType::Analog).getHeight());
+    CHECK (e.playTransportKey().getWidth() == e.recordKey().getWidth());
+    // PORTAMENTO over GLIDE: one text column - the captions start at the same x, in the same font size
+    {
+        const auto sw = e.glideModeSwitch().captionArea() + e.glideModeSwitch().getPosition().toFloat();
+        const auto kn = e.glideKnobComponent().captionArea() + e.glideKnobComponent().getPosition().toFloat();
+        CHECK (sw.getX() == doctest::Approx (kn.getX()));
+        CHECK (sw.getHeight() == doctest::Approx (kn.getHeight()));
+        CHECK (sw.getBottom() <= kn.getY());
+        CHECK (e.glideModeSwitch().getCaption() == "Portamento");
+        CHECK (e.glideModeSwitch().labelArea (0).getX() == doctest::Approx (e.glideModeSwitch().captionArea().getX()));
     }
     // three octaves, C3..C6 by default
     CHECK (e.keyboardComponent().getRangeEnd() - e.keyboardComponent().getRangeStart() == 36);
@@ -224,6 +293,17 @@ TEST_CASE ("key LEDs: engine keys light yellow for the edit part, violet for oth
     in.editPart = 0;
     auto leds = ui::keyLeds (in);
     CHECK (leds.engine[(size_t) EngineType::Analog] == Led::Focus);
+    // rev 3: one bar segment per part - the edit part's segment yellow (Focus), other parts violet (Active)
+    {
+        const auto& seg = leds.engineSegments[(size_t) EngineType::Analog];
+        for (int p = 0; p < 4; ++p)
+        {
+            CAPTURE (p);
+            const bool plays = in.partEngine[(size_t) p] == (int) EngineType::Analog;
+            CHECK (seg[(size_t) p] == (! plays ? Led::Off : p == in.editPart ? Led::Focus : Led::Active));
+        }
+        for (const auto l : leds.engineSegments[(size_t) EngineType::Wavetable]) CHECK (l == Led::Off);
+    }
     CHECK (leds.engineParts[(size_t) EngineType::Analog] == 0b0101u);
     CHECK (leds.engine[(size_t) EngineType::FM] == Led::Active);
     CHECK (leds.engineParts[(size_t) EngineType::FM] == 0b0010u);
@@ -328,4 +408,59 @@ TEST_CASE ("key LEDs: the editor lights the edit part's engine and the shown mod
     const auto leds = ui::keyLeds (ui::ledInputs (p.core(), 0, ui::Mode::Envelope, false, false));
     CHECK (leds.mode[(size_t) ui::Mode::Envelope] != ui::Led::Off);
     CHECK (leds.engine[(size_t) ui::selectedEngine (p.core(), 0)] == ui::Led::Focus);
+    // rev 3: the keys show it as light bars - the edit part's segment of its engine yellow, the mode bar yellow
+    auto& ek = e.engineKey (ui::selectedEngine (p.core(), 0));
+    CHECK (ek.getBarSegmentCount() == 4);
+    CHECK (ek.getSegmentLevel (0) > 0.0f);
+    CHECK (ek.getSegmentColour (0) == ui::colour::sunYellow);
+    for (int t = 0; t < numEngineTypes; ++t)
+        if ((EngineType) t != ui::selectedEngine (p.core(), 0))
+            for (int part = 0; part < 4; ++part)
+                if ((int) ui::selectedEngine (p.core(), part) != t) CHECK (e.engineKey ((EngineType) t).getSegmentLevel (part) == 0.0f);
+    CHECK (e.modeKey (ui::Mode::Envelope).getLedLevel() > 0.0f);
+    CHECK (e.modeKey (ui::Mode::Envelope).getLedColour() == ui::colour::sunYellow);
+    CHECK (e.modeKey (ui::Mode::Mixer).getLedLevel() == 0.0f);
+    // part 2 on another engine: its segment lights violet on that engine's key
+    p.core().params().set ("p2.engine", (float) EngineType::FM);
+    e.advanceAnimation (1.0f / 30.0f);
+    CHECK (e.engineKey (EngineType::FM).getSegmentLevel (1) > 0.0f);
+    CHECK (e.engineKey (EngineType::FM).getSegmentColour (1) == ui::colour::ultraviolet);
+}
+
+TEST_CASE ("transport light bars: PLAY violet while running, REC red, LOOP yellow, octave keys yellow when shifted")
+{
+    OhpeProcessor p;
+    p.prepareToPlay (48000.0, 512);
+    std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
+    auto& e = *dynamic_cast<OhpeEditor*> (ed.get());
+    e.advanceAnimation (1.0f / 30.0f);
+    CHECK (e.playTransportKey().getLedLevel() == 0.0f);
+    CHECK (e.recordKey().getLedLevel() == 0.0f);
+    CHECK (e.stopTransportKey().getLedLevel() == 0.0f);
+    p.core().params().set (Core::Ids::seqRun, 1.0f);
+    e.advanceAnimation (1.0f / 30.0f);
+    CHECK (e.playTransportKey().getLedLevel() > 0.0f);
+    CHECK (e.playTransportKey().getLedColour() == ui::colour::ultraviolet);
+    p.core().params().set (Core::Ids::seqRun, 0.0f);
+    p.core().params().set ("tape.loop", 1.0f);
+    e.advanceAnimation (1.0f / 30.0f);
+    CHECK (e.loopTransportKey().getLedLevel() > 0.0f);
+    CHECK (e.loopTransportKey().getLedColour() == ui::colour::sunYellow);
+    CHECK (e.playTransportKey().getLedLevel() == 0.0f);
+    // octave keys
+    CHECK (e.octaveUpKey().getLedLevel() == 0.0f);
+    e.octaveUpKey().onClick();
+    e.advanceAnimation (1.0f / 30.0f);
+    CHECK (e.octaveUpKey().getLedLevel() > 0.0f);
+    CHECK (e.octaveDownKey().getLedLevel() == 0.0f);
+    CHECK (e.keysReadoutComponent().asideText() == "+1");
+    CHECK (e.keysReadoutComponent().mainText().startsWith ("C4"));
+    e.octaveDownKey().onClick();
+    e.octaveDownKey().onClick();
+    e.advanceAnimation (1.0f / 30.0f);
+    CHECK (e.octaveDownKey().getLedLevel() > 0.0f);
+    CHECK (e.octaveUpKey().getLedLevel() == 0.0f);
+    // the tape readout shows the tape time
+    CHECK (e.tapeReadoutComponent().mainText() == "0:00.0");
+    CHECK (e.tapeReadoutComponent().asideText() == "1.1");
 }

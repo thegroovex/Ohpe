@@ -217,7 +217,12 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     loopKey.onClick = [this] { transport (OhpeProcessor::TransportKey::Loop); };
     loopKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::tapeTxLoop, &loopKey); };
     for (auto* k : { &recKey, &stopKey, &toStartKey, &loopKey }) addAndMakeVisible (*k);
-    for (auto* k : { &playKey, &recKey, &loopKey }) k->setHasLed (true); // p14: transport state LEDs
+    // p14 rev 3: every key of the two bottom panels carries a light bar (unlit: a faint slot) - PLAY violet while
+    // running, REC red (blinking while recording), LOOP yellow, MIDI red during MIDI learn, the octave keys
+    // yellow while the keyboard is shifted that way
+    for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey }) k->setHasLed (true);
+    for (auto* r : { &tapeReadout, &keysReadout }) addAndMakeVisible (*r);
+    glideSwitch.setCaption ("Portamento");
     octDownKey.onClick = [this] { keyboard.setBaseOctave (keyboard.getBaseOctave() - 1); saveUiState(); repaint(); };
     octUpKey.onClick = [this] { keyboard.setBaseOctave (keyboard.getBaseOctave() + 1); saveUiState(); repaint(); };
     midiKey.onClick = [this] { showMidiMenu(); };
@@ -371,7 +376,8 @@ juce::Rectangle<float> OhpeEditor::designArea (const char* name)
         { "keyboardBed", 24, 624, 1152, 152 },
         { "pitchWheel", 40, 636, 40, 128 },     { "modWheel", 96, 636, 40, 128 },
         { "keyboard", 152, 632, 872, 136 },
-        { "glideSwitch", 1040, 638, 128, 60 },  { "glideKnob", 1040, 708, 128, 56 },
+        // rev 3: PORTAMENTO (switch) over GLIDE (knob) - a 56-unit control column and one text column at x 1104
+        { "glideSwitch", 1040, 632, 128, 72 },  { "glideKnob", 1040, 712, 128, 56 },
     };
     for (const auto& i : items)
         if (std::strcmp (i.name, name) == 0) return { i.x, i.y, i.w, i.h };
@@ -395,16 +401,56 @@ void OhpeEditor::resized()
     // four encoders centred under the display, 168 units apart
     for (int i = 0; i < 4; ++i)
         encoders[(size_t) i]->setBounds (scaled (280.0f + 168.0f * (float) i, 460, 136, 148));
-    // transport panel (bottom left): REC PLAY STOP / TO START LOOP MIDI
-    recKey.setBounds (scaled (40, 472, 56, 64));
-    playKey.setBounds (scaled (108, 472, 56, 64));
-    stopKey.setBounds (scaled (176, 472, 56, 64));
-    toStartKey.setBounds (scaled (40, 540, 56, 64));
-    loopKey.setBounds (scaled (108, 540, 56, 64));
-    midiKey.setBounds (scaled (176, 540, 56, 64));
-    // octave panel (bottom right): keys like the mode keys, centred in the panel
-    octDownKey.setBounds (scaled (972, 500, 88, 72));
-    octUpKey.setBounds (scaled (1068, 500, 88, 72));
+    // p14 rev 3: the transport block (bottom left) and the octave block (bottom right) mirror each other: the
+    // same panel, the same rows and key heights, on the 8-unit grid (12 units inside the panels)
+    for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey })
+    {
+        k->setJoined (false, false);
+        k->setShowLegend (true);
+    }
+    auto box = [this] (juce::Component& c, float x, float y, float w, float h) {
+        const float sc = (float) getWidth() / (float) designWidth;
+        c.setBounds (juce::Rectangle<float> (x * sc, y * sc, w * sc, h * sc).toNearestIntEdges()); // joined keys share an edge
+    };
+    if (txLayout == TransportLayout::TapeDeck)
+    {
+        // a readout (32) over one segmented row of five joined keys (80): TO START STOP PLAY REC LOOP; the
+        // octave block: the keyboard readout over OCTAVE - / OCTAVE + (two slots each, joined) and MIDI
+        const float slot = 184.0f / 5.0f;
+        box (tapeReadout, 44, 476, 184, 32);
+        ui::PictoKey* row[] = { &toStartKey, &stopKey, &playKey, &recKey, &loopKey };
+        for (int i = 0; i < 5; ++i)
+        {
+            box (*row[i], 44.0f + slot * (float) i, 516, slot, 80);
+            row[i]->setJoined (i > 0, i < 4);
+        }
+        box (keysReadout, 972, 476, 184, 32);
+        box (octDownKey, 972, 516, slot * 2.0f, 80);
+        box (octUpKey, 972 + slot * 2.0f, 516, slot * 2.0f, 80);
+        box (midiKey, 972 + slot * 4.0f, 516, slot, 80);
+        octDownKey.setJoined (false, true);
+        octUpKey.setJoined (true, false);
+    }
+    else
+    {
+        // two large keys REC / PLAY (88 x 72, the size of the column keys) over the readout and three small
+        // joined keys TO START STOP LOOP (40); the octave block: OCTAVE - / OCTAVE + over the keyboard readout and MIDI
+        box (recKey, 44, 476, 88, 72);
+        box (playKey, 140, 476, 88, 72);
+        box (tapeReadout, 44, 556, 88, 40);
+        ui::PictoKey* row[] = { &toStartKey, &stopKey, &loopKey };
+        for (int i = 0; i < 3; ++i)
+        {
+            box (*row[i], 140.0f + 88.0f / 3.0f * (float) i, 556, 88.0f / 3.0f, 40);
+            row[i]->setJoined (i > 0, i < 2);
+            row[i]->setShowLegend (false);
+        }
+        box (octDownKey, 972, 476, 88, 72);
+        box (octUpKey, 1068, 476, 88, 72);
+        box (keysReadout, 972, 556, 88, 40);
+        box (midiKey, 1068, 556, 88, 40);
+        midiKey.setShowLegend (false);
+    }
     // header
     place (partSelector, "partSelector");
     place (presetStrip, "presetStrip");
@@ -426,6 +472,10 @@ void OhpeEditor::resized()
     for (auto& k : modeKeys) k->setUiScale (s);
     for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey, &libraryKey, &proKey, &randomKey, &saveKey })
         k->setUiScale (s);
+    glideSwitch.setUiScale (s);
+    glideKnob.setUiScale (s);
+    tapeReadout.setUiScale (s);
+    keysReadout.setUiScale (s);
     background = {}; // rendered again at the next paint (at the physical pixel scale)
 }
 
@@ -769,7 +819,8 @@ void OhpeEditor::showProView (bool show)
 std::vector<juce::Component*> OhpeEditor::plateComponents()
 {
     // everything that sits on the plate under the overlay area (p14: 24..1176 x 104..616)
-    std::vector<juce::Component*> c { &display, &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &midiKey, &octDownKey, &octUpKey };
+    std::vector<juce::Component*> c { &display, &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &midiKey, &octDownKey, &octUpKey,
+                                      &tapeReadout, &keysReadout };
     for (auto& k : engineKeys) c.push_back (k.get());
     for (auto& k : modeKeys) c.push_back (k.get());
     for (auto& e : encoders) c.push_back (e.get());
@@ -819,19 +870,64 @@ bool OhpeEditor::handleShortcut (const juce::KeyPress& key)
     return false;
 }
 
+void OhpeEditor::setTransportLayout (TransportLayout l)
+{
+    if (l == txLayout) return;
+    txLayout = l;
+    resized();
+    repaint();
+}
+
 void OhpeEditor::refreshTransportKeys()
 {
     const bool seqRunning = proc.core().params().get (Core::Ids::seqRun) >= 0.5f;
     const bool blink = std::fmod (blinkClock, 1.0f) < 0.6f;
     const bool playing = seqRunning || proc.tapeRolling();
     const bool loop = proc.core().params().get ("tape.loop") >= 0.5f;
+    const bool recording = proc.tapeRecording(), ready = proc.tapeRecordReady();
     playKey.setActive (playing);
-    recKey.setActive (proc.tapeRecording() ? blink : proc.tapeRecordReady());
+    recKey.setActive (recording ? blink : ready);
     loopKey.setActive (loop);
-    // p14: the transport LEDs - PLAY ultraviolet while running, REC red (blinking while recording), LOOP yellow
+    // p14 rev 3: the transport light bars - PLAY violet while running (its triangle lights too), REC red
+    // (steady when armed, blinking while recording; the circle glows), LOOP yellow; STOP / TO START unlit
     playKey.setLed (colour::ultraviolet, playing ? 1.0f : 0.0f);
-    recKey.setLed (colour::signalRed, proc.tapeRecording() ? (blink ? 1.0f : 0.0f) : (proc.tapeRecordReady() ? 1.0f : 0.0f));
+    recKey.setLed (colour::signalRed, recording ? (blink ? 1.0f : 0.0f) : (ready ? 1.0f : 0.0f));
     loopKey.setLed (colour::sunYellow, loop ? 1.0f : 0.0f);
+    stopKey.setLed (colour::ultraviolet, 0.0f);
+    toStartKey.setLed (colour::ultraviolet, 0.0f);
+    const bool learning = proc.learningParamId().isNotEmpty();
+    midiKey.setLed (colour::signalRed, learning ? (blink ? 1.0f : 0.45f) : 0.0f);
+    const int oct = keyboard.getBaseOctave();
+    octDownKey.setLed (colour::sunYellow, oct < 3 ? 1.0f : 0.0f);
+    octUpKey.setLed (colour::sunYellow, oct > 3 ? 1.0f : 0.0f);
+
+    // the tape readout: state, time (m:ss.t) and bar.beat of the tape position
+    {
+        auto& tape = proc.core().tape();
+        const double secs = juce::jmax (0.0, (double) tape.positionFrames() / juce::jmax (1.0, tape.sampleRate()));
+        const int tenths = (int) (secs * 10.0);
+        const juce::String time = juce::String (tenths / 600) + ":" + juce::String ((tenths / 10) % 60).paddedLeft ('0', 2) + "." + juce::String (tenths % 10);
+        const double beats = secs * juce::jmax (20.0, (double) proc.core().params().get (Core::Ids::tempo)) / 60.0;
+        const juce::String barBeat = juce::String ((int) (beats / 4.0) + 1) + "." + juce::String ((int) std::fmod (beats, 4.0) + 1);
+        juce::String badge = i18n::upper (tr ("Tape"));
+        auto badgeColour = colour::displayDim;
+        if (recording) { badge = "REC"; badgeColour = blink ? colour::signalRed : colour::signalRed.withAlpha (0.45f); }
+        else if (ready) { badge = "REC"; badgeColour = colour::signalRed; }
+        else if (proc.tapeRolling()) { badge = i18n::upper (tr ("Play")); badgeColour = colour::ultraviolet.brighter (0.4f); }
+        tapeReadout.setContent (badge, badgeColour, time, barBeat);
+    }
+    // the keyboard readout: range of the on-screen keyboard and its octave shift; MIDI learn in red
+    {
+        const int lo = keyboard.getRangeStart(), hi = keyboard.getRangeEnd();
+        const auto name = [] (int n) { return juce::MidiMessage::getMidiNoteName (n, true, true, 4); };
+        const juce::String range = name (lo) + juce::String (juce::CharPointer_UTF8 ("\xe2\x80\x93")) + name (hi);
+        const juce::String shift = (oct > 3 ? "+" : oct < 3 ? juce::String (juce::CharPointer_UTF8 ("\xe2\x88\x92")) : juce::String (juce::CharPointer_UTF8 ("\xc2\xb1")))
+                                 + juce::String (std::abs (oct - 3));
+        if (learning)
+            keysReadout.setContent (i18n::upper (tr ("MIDI Learn")), blink ? colour::signalRed : colour::signalRed.withAlpha (0.45f), range, shift);
+        else
+            keysReadout.setContent (i18n::upper (tr ("Keys")), colour::displayDim, range, shift);
+    }
 }
 
 void OhpeEditor::refreshLeds()
@@ -849,16 +945,24 @@ void OhpeEditor::refreshLeds()
     };
     for (int t = 0; t < numEngineTypes; ++t)
     {
+        // rev 3: the engine key's bar has a segment per part - yellow the edit part, violet the other parts
         auto& k = *engineKeys[(size_t) t];
-        apply (k, leds.engine[(size_t) t]);
-        k.setPartDots (leds.engineParts[(size_t) t]);
+        std::array<juce::Colour, 4> colours {};
+        std::array<float, 4> levels {};
+        for (int p = 0; p < Core::numParts; ++p)
+        {
+            const auto seg = leds.engineSegments[(size_t) t][(size_t) p];
+            colours[(size_t) p] = seg == ui::Led::Focus ? colour::sunYellow : colour::ultraviolet;
+            levels[(size_t) p] = seg == ui::Led::Off ? 0.0f : 1.0f;
+        }
+        k.setBarSegments (colours, levels);
         if (! engineTipsValid || engineTipParts[(size_t) t] != leds.engineParts[(size_t) t])
         {
             engineTipParts[(size_t) t] = leds.engineParts[(size_t) t];
             juce::String parts;
             for (int p = 0; p < Core::numParts; ++p)
                 if ((leds.engineParts[(size_t) t] >> p) & 1u) parts << (parts.isEmpty() ? "" : ", ") << (p + 1);
-            auto tip = tr (engineTypeInfo ((EngineType) t).nameEn) + " - " + tr ("LED: yellow = engine of the edit part, violet = used by another part");
+            auto tip = tr (engineTypeInfo ((EngineType) t).nameEn) + " - " + tr ("Bar: one segment per part - yellow = the edit part, violet = another part uses the engine");
             if (parts.isNotEmpty()) tip << "\n" << tr ("Parts") << ": " << parts;
             k.setTooltip (tip);
         }
@@ -1294,12 +1398,14 @@ void OhpeEditor::refreshKeys()
     const bool sa = proc.wrapperType == juce::AudioProcessor::wrapperType_Standalone;
     auto tip = [sa] (const char* text, const char* key) { return tr (text) + (sa ? "  (" + juce::String (key) + ")" : juce::String()); };
     const bool linked = proc.core().params().get (Core::Ids::tapeTxLink) >= 0.5f;
-    playKey.setTooltip (tip (linked ? "Play / stop - sequencer and tape" : "Play / stop the sequencer", "Space"));
-    recKey.setTooltip (tip ("Record on the tape - arms the selected track when none is armed", "R"));
+    playKey.setTooltip (tip (linked ? "Play / stop - sequencer and tape" : "Play / stop the sequencer", "Space") + "\n" + tr ("Bar: violet = running"));
+    recKey.setTooltip (tip ("Record on the tape - arms the selected track when none is armed", "R") + "\n" + tr ("Bar: red = record on, blinking = recording"));
     stopKey.setTooltip (tip ("Stop - press again to go to the start", "Space"));
     toStartKey.setTooltip (tip ("To the start of the tape", "Enter"));
-    loopKey.setTooltip (tip ("Loop between loop in and out", "L"));
-    midiKey.setTooltip (tr ("MIDI maps and remote controls"));
+    loopKey.setTooltip (tip ("Loop between loop in and out", "L") + "\n" + tr ("Bar: yellow = loop on"));
+    midiKey.setTooltip (tr ("MIDI maps and remote controls") + "\n" + tr ("Bar: red = MIDI learn"));
+    tapeReadout.setTooltip (tr ("Tape position (minutes:seconds) and bar.beat; REC = recording, PLAY = tape rolling"));
+    keysReadout.setTooltip (tr ("Range of the on-screen keyboard and its octave shift; red during MIDI learn"));
     libraryKey.setTooltip (tr ("Preset library"));
     proKey.setTooltip (tr ("All parameters of the mode"));
     randomKey.setTooltip (tr ("Random: new values for the sound of the edit part's engine"));
@@ -1308,9 +1414,9 @@ void OhpeEditor::refreshKeys()
     modWheel.setTooltip (tr ("Mod wheel (modulation matrix source); right-click: MIDI learn"));
     glideSwitch.setTooltip (tr ("Glide mode of the edit part: Auto, Legato or Always"));
     glideKnob.setTooltip (tr ("Glide time of the edit part"));
-    octDownKey.setTooltip (tr ("Keyboard one octave down"));
-    octUpKey.setTooltip (tr ("Keyboard one octave up"));
-    for (int m = 0; m < numModes; ++m) // p14: what the mode LEDs say
+    octDownKey.setTooltip (tr ("Keyboard one octave down") + "\n" + tr ("Bar: yellow = keyboard shifted down"));
+    octUpKey.setTooltip (tr ("Keyboard one octave up") + "\n" + tr ("Bar: yellow = keyboard shifted up"));
+    for (int m = 0; m < numModes; ++m) // p14: what the mode keys' light bars say
     {
         const auto status = (Mode) m == Mode::Sequencer ? tr ("violet = sequencer running")
                           : (Mode) m == Mode::Tape      ? tr ("violet = tape playing, red = recording")
@@ -1318,7 +1424,7 @@ void OhpeEditor::refreshKeys()
                           : (Mode) m == Mode::Drum      ? tr ("violet = a sequencer plays the drum kit")
                           : (Mode) m == Mode::Lfo       ? tr ("violet = LFO or modulation routed")
                                                         : juce::String();
-        modeKeys[(size_t) m]->setTooltip (tr (modeInfo ((Mode) m).nameEn) + " - " + tr ("LED: yellow = shown page")
+        modeKeys[(size_t) m]->setTooltip (tr (modeInfo ((Mode) m).nameEn) + " - " + tr ("Bar: yellow = shown page")
                                           + (status.isNotEmpty() ? ", " + status : juce::String()));
     }
     libraryKey.setActive (library.isVisible());

@@ -3,7 +3,7 @@
 *English · Deutsch: [../de/BEDIENUNG.md](../de/BEDIENUNG.md)*
 
 Ohpe's surface (p14): engine keys (left), the display (centre), mode keys (right), four encoders below the
-display, the **TRANSPORT** keys and **MIDI** (bottom left), the **OCTAVE** keys (bottom right) and the
+display, the **TRANSPORT** keys with the tape readout (bottom left), the **OCTAVE** keys, **MIDI** and the keyboard readout (bottom right) and the
 keyboard row – **PITCH** and **MOD** wheels, a three-octave keyboard, **glide** mode and time. The header
 holds the **part selector**, the **preset strip**, the **LIBRARY** and **PRO** keys, **RANDOM** and **SAVE**,
 and EN / DE. Every function can be reached with the mouse and – through MIDI learn – from a controller.
@@ -19,26 +19,33 @@ and EN / DE. Every function can be reached with the mouse and – through MIDI l
 | **PITCH** wheel | pitch bend for the edit part (its MIDI channel, like the on-screen keyboard); range = the part's *Bend Range*. Drag up / down; it springs back to the centre when you let go. |
 | **MOD** wheel | the mod wheel (CC 1): a source in the [modulation matrix](MODULATION.md). Stays where you leave it; double-click = 0. |
 | Keyboard | three octaves (C3–C6 by default); **OCTAVE −/+** moves it. |
-| **AUTO / LEGATO / ALWAYS** | glide mode of the edit part: *Auto* glides while the previous note still sounds, *Legato* only while another key is held, *Always* from every previous note. |
+| **PORTAMENTO**: AUTO / LEGATO / ALWAYS | glide mode of the edit part: *Auto* glides while the previous note still sounds, *Legato* only while another key is held, *Always* from every previous note. |
 | **GLIDE** | glide time of the edit part (0 = off). |
 
 Both wheels are host parameters (*Pitch Wheel* `perf.bend`, *Mod Wheel* `perf.mod`): right-click for MIDI
 learn, Shift / Cmd / Ctrl for fine control. They are performance controls, not part of presets.
 
-## Key LEDs
+## Light bars
 
-Engine, mode and transport keys carry a small LED in the top-left corner of the key. One colour language:
-**yellow** = what you are editing, **violet** = running or in use elsewhere, **red** = recording.
+Engine, mode, transport, octave and MIDI keys carry a short **light bar** at the bottom edge of the key,
+under the pictogram. One colour language: **yellow** = what you are editing, **violet** = running or in use
+elsewhere, **red** = recording.
 
-| Keys | LED |
+| Keys | Light bar |
 |---|---|
-| Engine | **yellow** = the edit part's engine; **violet** = an engine another part plays. The four dots in the top-right corner show which parts (1 – 4, left to right) use the engine. |
+| Engine | four segments, one per part (1 – 4, left to right): a segment lights when that part plays the engine – **yellow** for the edit part, **violet** for another part. |
 | Mode | **yellow** = the page on the display. **Violet**: SEQUENCER = the sequencer runs; TAPE = the tape plays; EFFECTS = a slot of any FX rack (a part or the master) is on; DRUM = a running sequencer plays the drum kit; LFO = a part's LFO has depth or a modulation routing is set. **Red** (blinking) on TAPE = recording. The status colour wins; the shown page keeps its sunk key. |
-| Transport | PLAY **violet** while running, REC **red** (steady = ready, blinking = recording), LOOP **yellow** while on. |
+| Transport | PLAY **violet** while running (the triangle lights too), REC **red** (steady = ready, blinking = recording; the circle glows), LOOP **yellow** while on. |
+| OCTAVE − / + · MIDI | OCTAVE **yellow** while the keyboard is shifted that way; MIDI **red** during MIDI learn. |
 
-Hover a key: its tooltip says what the LED means (engine keys also list the parts that use them).
+Hover a key: its tooltip says what the bar means (engine keys also list the parts that use them).
 
-![Engine LEDs: several parts with different engines](../images/ohpe-engine-leds.png)
+The **readouts** next to the keys: the tape readout above the transport keys shows the state (**REC**
+red, **PLAY** violet, *TAPE*), the tape time (m:ss.t) and bar.beat; the keyboard readout in the octave
+block shows the keyboard's range (C3–C6) and its octave shift, and **MIDI LEARN** in red while a control
+waits for a MIDI message.
+
+![Light bars: several parts with different engines](../images/ohpe-engine-leds.png)
 
 ## RANDOM and SAVE
 
@@ -151,7 +158,7 @@ Step view:
 
 ## Transport keys
 
-The **TRANSPORT** keys in the bottom-left panel (REC, PLAY, STOP / TO START, LOOP, next to MIDI) work on every page:
+The **TRANSPORT** keys in the bottom-left panel (one row: TO START, STOP, PLAY, REC, LOOP under the tape readout) work on every page:
 
 | Key | Action |
 |---|---|

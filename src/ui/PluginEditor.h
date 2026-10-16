@@ -126,6 +126,22 @@ public:
     ui::MiniKnob& glideKnobComponent() { return glideKnob; }
     ui::Keyboard& keyboardComponent() { return keyboard; }
     ui::PictoKey& midiKeyComponent() { return midiKey; }
+    // p14 rev 3: the bottom panels - transport keys with light bars, the readouts, the octave keys
+    ui::PictoKey& stopTransportKey() { return stopKey; }
+    ui::PictoKey& toStartTransportKey() { return toStartKey; }
+    ui::PictoKey& loopTransportKey() { return loopKey; }
+    ui::PictoKey& octaveDownKey() { return octDownKey; }
+    ui::PictoKey& octaveUpKey() { return octUpKey; }
+    ui::PictoKey& engineKey (EngineType t) { return *engineKeys[(size_t) t]; }
+    ui::PictoKey& modeKey (ui::Mode m) { return *modeKeys[(size_t) m]; }
+    ui::Readout& tapeReadoutComponent() { return tapeReadout; }
+    ui::Readout& keysReadoutComponent() { return keysReadout; }
+    /** p14 rev 3: two layouts of the bottom-left transport block (and the octave block mirroring it), for the
+        user to choose from: TapeDeck = one segmented row of five joined keys under a readout; Primary = two
+        large keys REC / PLAY, a row with the readout and three small keys. */
+    enum class TransportLayout { TapeDeck, Primary };
+    void setTransportLayout (TransportLayout l);
+    TransportLayout transportLayout() const noexcept { return txLayout; }
     /** RANDOM: new values for the sound parameters of the edit part's engine (its Synth pages). */
     void randomiseSound (juce::int64 seed = 0);
     /** SAVE: opens the library with the save panel for the edit part. */
@@ -190,6 +206,8 @@ private:
     ui::Wheel pitchWheel, modWheel;
     ui::SlideSwitch glideSwitch;
     ui::MiniKnob glideKnob;
+    ui::Readout tapeReadout, keysReadout; ///< p14 rev 3
+    TransportLayout txLayout = TransportLayout::TapeDeck;
     juce::Image background; ///< p14: the static housing, panels and recesses (rendered once per size)
     ui::PartSelector partSelector;
     float spatialTime = 0.0f;

@@ -5,6 +5,7 @@
 #include "Pictograms.h"
 #include "plugin/PluginProcessor.h"
 
+#include <array>
 #include <functional>
 #include <memory>
 
@@ -117,18 +118,30 @@ public:
     void setLegend (juce::String englishText) { legend = std::move (englishText); repaint(); }
     /** p11: the pictogram keeps this colour even when the key is not active (record = red). */
     void setPictoColour (juce::Colour c) { pictoInk = c; hasPictoInk = true; repaint(); }
-    /** p14: the key carries an LED in the top-left corner of its cap (a matte lens; replaces the lit bar). */
     /** p14: the legend above the key on the header row's baseline (12 units high) instead of below it. */
     void setLegendOnTop (bool t) { if (t != legendOnTop) { legendOnTop = t; repaint(); } }
+    /** p14 rev 3: no legend under the key (small icon-only keys); the cap takes the whole height. */
+    void setShowLegend (bool show) { if (show != showLegend) { showLegend = show; repaint(); } }
+    /** p14 rev 3: the key carries a light bar - a short lit window at the bottom edge of its cap, under the
+        pictogram (unlit: a faint dark slot). One segment by default; see setBarSegments. */
     void setHasLed (bool h) { if (h != hasLed) { hasLed = h; repaint(); } }
-    /** p14: LED colour and level (0 = off, 1 = lit). */
+    /** The light bar's colour and level (0 = off, 1 = lit) - one segment. */
     void setLed (juce::Colour c, float level);
     float getLedLevel() const noexcept { return ledLevel; }
     juce::Colour getLedColour() const noexcept { return ledColour; }
-    /** p14: four tiny dots in the top-right corner of the cap, one per part (bit p = part p + 1 uses the key). */
-    void setPartDots (unsigned mask) { if (mask != partDots) { partDots = mask; repaint(); } }
-    /** The cap of a Cap-style key in local coordinates (where the LED and the dots sit). */
+    /** p14 rev 3: the bar split into four segments, one per part (engine keys): a segment is lit in its
+        colour when its level is > 0. Setting segments replaces the single bar. */
+    void setBarSegments (const std::array<juce::Colour, 4>& colours, const std::array<float, 4>& levels);
+    int getBarSegmentCount() const noexcept { return segmented ? 4 : 1; }
+    float getSegmentLevel (int i) const noexcept { return segmented ? segLevel[(size_t) juce::jlimit (0, 3, i)] : ledLevel; }
+    juce::Colour getSegmentColour (int i) const noexcept { return segmented ? segColour[(size_t) juce::jlimit (0, 3, i)] : ledColour; }
+    /** p14 rev 3: the key is joined to its neighbour on the left / right (a segmented row of keys, like the
+        keys of a tape deck): square inner corners, no gap - only a fine seam between the caps. */
+    void setJoined (bool left, bool right) { if (left != joinLeft || right != joinRight) { joinLeft = left; joinRight = right; repaint(); } }
+    /** The cap of a Cap-style key in local coordinates (where the light bar sits). */
     juce::Rectangle<float> capArea() const;
+    /** The light bar's window in local coordinates (empty without a bar). */
+    juce::Rectangle<float> barArea() const;
 
     std::function<void()> onSecondaryClick;
 
@@ -139,10 +152,11 @@ public:
 private:
     Picto picto;
     juce::String legend;
-    bool hasLed = false, legendOnTop = false;
+    bool hasLed = false, legendOnTop = false, showLegend = true, segmented = false, joinLeft = false, joinRight = false;
     float ledLevel = 0.0f;
     juce::Colour ledColour;
-    unsigned partDots = 0;
+    std::array<juce::Colour, 4> segColour {};
+    std::array<float, 4> segLevel {};
     Style style = Style::Cap;
     float uiScale = 1.0f;
     bool active = false, available = true;
@@ -218,10 +232,17 @@ public:
     void mouseDown (const juce::MouseEvent& e) override;
     juce::Rectangle<float> slotArea() const;
     juce::Rectangle<float> labelArea (int i) const;
+    /** p14 rev 3: the editor's scale (pixels per design unit). */
+    void setUiScale (float s) { if (s != uiScale) { uiScale = s; repaint(); } }
+    /** p14 rev 3: the caption (PORTAMENTO) right of the slot, on the text column of the GLIDE knob. */
+    void setCaption (juce::String englishText) { caption = std::move (englishText); repaint(); }
+    const juce::String& getCaption() const noexcept { return caption; }
+    juce::Rectangle<float> captionArea() const;
 
 private:
     OhpeProcessor& proc;
-    juce::String id;
+    juce::String id, caption;
+    float uiScale = 1.0f;
     int shown = -1;
 };
 
@@ -237,8 +258,13 @@ public:
 
     void paint (juce::Graphics& g) override;
     void resized() override;
+    /** p14 rev 3: the editor's scale (pixels per design unit). */
+    void setUiScale (float s) { if (s != uiScale) { uiScale = s; resized(); repaint(); } }
+    /** p14 rev 3: the caption (GLIDE) right of the knob - the text column it shares with PORTAMENTO. */
+    juce::Rectangle<float> captionArea() const;
 
 private:
+    float uiScale = 1.0f;
     class Knob : public juce::Slider
     {
     public:
@@ -252,5 +278,34 @@ private:
     juce::String id, legend;
     Knob knob { *this };
     std::unique_ptr<juce::SliderParameterAttachment> attachment;
+};
+
+/** p14 rev 3: the caption of the keyboard row's right column (GLIDE, PORTAMENTO): design units. */
+namespace captionCol
+{
+inline constexpr float textX = 64.0f;  ///< the text column starts 64 units right of the control's left edge
+inline constexpr float height = 11.0f; ///< the font height (the header legends' size)
+inline constexpr float boxH = 12.0f;   ///< the legend box the baseline is set in
+} // namespace captionCol
+
+/**
+    p14 rev 3: a small recessed readout glass (the display's colours) next to the transport and octave keys:
+    a coloured badge (REC / PLAY / TAPE, KEYS), the main value in mono (tape time, keyboard range) and an aside
+    (bar.beat, octave). Wide: one row; narrow and tall: badge + aside above, the value below.
+*/
+class Readout : public juce::Component, public juce::SettableTooltipClient
+{
+public:
+    void setContent (const juce::String& badge, juce::Colour badgeColour, const juce::String& main, const juce::String& aside);
+    void setUiScale (float s) { if (s != uiScale) { uiScale = s; repaint(); } }
+    const juce::String& badgeText() const noexcept { return badge; }
+    const juce::String& mainText() const noexcept { return main; }
+    const juce::String& asideText() const noexcept { return aside; }
+    void paint (juce::Graphics& g) override;
+
+private:
+    juce::String badge, main, aside;
+    juce::Colour badgeColour;
+    float uiScale = 1.0f;
 };
 } // namespace ohpe::ui
