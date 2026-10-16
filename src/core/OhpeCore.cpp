@@ -220,12 +220,7 @@ void Core::dispatch (const RoutedEvent& r) noexcept
 {
     if (r.event.isNoteOn()) lastNoteOn.store (r.event.data1, std::memory_order_relaxed);
     if (r.part == drumPart) drums.handleMidi (r.event);
-    else
-    {
-        if (r.event.isNoteOn()) // 0.8: synced FX LFOs restart with a new note
-            inserts[(size_t) r.part].noteOn();
-        mpeIn[(size_t) r.part].handle (r.event, *parts[(size_t) r.part]);
-    }
+    else mpeIn[(size_t) r.part].handle (r.event, *parts[(size_t) r.part]); // note starts retrigger the rack (Part::noteOn)
 }
 
 void Core::applyLocks (const std::vector<ParamLockEvent>& locks, size_t& next, int upTo) noexcept

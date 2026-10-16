@@ -27,51 +27,6 @@ float rateHz (int division, float hz, double bpm) noexcept;
 /** Shared shape of the LFOs of these effects (phase 0..1 -> -1..+1). */
 float fxLfoShape (int shape, float phase, float held) noexcept;
 
-    enum Curve { Soft = 0, Hard, Fold, Tube, Rectify, Sine, Crush, numCurves };
-    EffectInfo info() const noexcept override { return { "shaper", "Shaper", "Waveshaper", "shaper" }; }
-    std::vector<ParamDescriptor> getParamDescriptors() const override;
-    void prepare (double sampleRate, int maxBlockSize) override;
-    void reset() noexcept override;
-    void setParam (int localIndex, float value) noexcept override;
-    void process (float* left, float* right, int numSamples) noexcept override;
-
-    static float shape (int curve, float x) noexcept;
-
-private:
-    struct Channel
-    {
-        dsp::Svf up1, up2, down1, down2;
-        dsp::OnePole tone;
-        float last = 0.0f, dcX = 0.0f, dcY = 0.0f;
-    };
-    float run (Channel& c, float x) noexcept;
-    std::array<Channel, 2> ch;
-    float sr = 48000.0f, drive = 0.3f, bias = 0.0f, toneHz = 12000.0f, mix = 1.0f, outGain = 1.0f;
-    int curve = Soft;
-};
-
-    static constexpr int numBands = 3;
-    EffectInfo info() const noexcept override { return { "squash", "Squash", "Squash", "squash" }; }
-    std::vector<ParamDescriptor> getParamDescriptors() const override;
-    void prepare (double sampleRate, int maxBlockSize) override;
-    void reset() noexcept override;
-    void setParam (int localIndex, float value) noexcept override;
-    void process (float* left, float* right, int numSamples) noexcept override;
-
-    /** Static gain (dB) of one band at level `levelDb` for the depth / upward settings (tests). */
-    static float bandGainDb (float levelDb, float depth, float upward) noexcept;
-
-private:
-    void updateTimes() noexcept;
-    std::array<dsp::Svf, 4> lo1, lo2; ///< [channel*2 + stage]: low split (two cascaded Butterworth = 4th order)
-    std::array<dsp::Svf, 4> mi1;      ///< mid / high split
-    std::array<float, numBands> env {}, gainDb {};
-    float sr = 48000.0f, depth = 0.5f, time = 0.5f, upward = 0.5f, mix = 1.0f, outGain = 1.0f;
-    std::array<float, numBands> bandGain { 1.0f, 1.0f, 1.0f };
-    float atk = 0.0f, rel = 0.0f, envAtk = 0.0f, envRel = 0.0f;
-    bool monoLow = false; ///< the low band (below 120 Hz) summed to mono: a mono-safe bass
-};
-
 /** Modulated comb filter (stereo offset, damped feedback; negative feedback = hollow, odd harmonics). */
 class CombEffect final : public IEffect
 {
@@ -111,21 +66,6 @@ private:
     float sr = 48000.0f, vowel = 0.0f, shift = 0.0f, reso = 0.5f, rate = 1.0f, depth = 0.0f, mix = 1.0f, phase = 0.0f;
     int sync = 0;
     double tempo = 120.0;
-};
-
-    EffectInfo info() const noexcept override { return { "flanger", "Flanger", "Flanger", "flanger" }; }
-    std::vector<ParamDescriptor> getParamDescriptors() const override;
-    void prepare (double sampleRate, int maxBlockSize) override;
-    void reset() noexcept override;
-    void setParam (int localIndex, float value) noexcept override;
-    void process (float* left, float* right, int numSamples) noexcept override;
-    double tailSeconds() const noexcept override { return 0.1; }
-
-private:
-    std::vector<float> bufL, bufR;
-    int writePos = 0;
-    float fbL = 0.0f, fbR = 0.0f, sr = 48000.0f, rate = 0.2f, depth = 0.7f, feedback = 0.5f, delayMs = 2.0f, mix = 0.5f,
-          phase = 0.0f;
 };
 
 /**

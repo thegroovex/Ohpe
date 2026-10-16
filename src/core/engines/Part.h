@@ -48,6 +48,7 @@ public:
     */
     void registerLate07Rack (ParamRegistry& reg) const;
     void registerLate07Mod (ParamRegistry& reg) const;
+    /**
         0.8: the layer - a second engine of the same part playing every note with it ("layer.engine",
         Off = none), with its own level, tuning, stereo width, optional own amp envelope and a
         cross-modulation of the main engine by the layer (ring, AM or fold). Registered at the end.

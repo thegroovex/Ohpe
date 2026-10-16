@@ -101,7 +101,6 @@ public:
 
 private:
     static std::unique_ptr<IEffect> create (int t);
-    static void registerBlocks (ParamRegistry& reg, const std::string& prefix, const std::string& group, int from, int to);
 
     std::array<std::unique_ptr<IEffect>, numTypes> effects;
     std::array<std::vector<int>, numTypes> paramIndex;
