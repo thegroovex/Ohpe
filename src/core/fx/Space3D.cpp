@@ -265,6 +265,7 @@ void SpaceEffect::prepare (double sampleRate, int)
     roomLine.prepare ((int) std::ceil (0.42f * sr) + directMax);
     for (int i = 0; i < 4; ++i) fdn[(size_t) i].assign ((size_t) (0.05f * sr) + 8, 0.0f);
     for (int b = 0; b < 4; ++b) bandFreqG[(size_t) b] = fastTan (pi * std::min (bandHz[b], 0.45f * sr) / sr);
+    sideLpCoeff = 1.0f - std::exp (-2.0f * pi * 700.0f / sr);
     lowKeepSet = roomSizeSet = -1.0f;
     reset();
 }
@@ -276,6 +277,7 @@ void SpaceEffect::reset() noexcept
         s.line.reset();
         for (auto& b : s.bands) b.reset();
         s.air = 0.0f;
+        s.lp = 0.0f;
         for (auto& e : s.ear) e.x1 = e.y1 = 0.0f;
     }
     src[1].numEars = 4;
@@ -494,6 +496,14 @@ void SpaceEffect::updateSources (const Vec3& p, float b, int n) noexcept
         S.dGain = (gTarget[s] - S.gain) * invN;
     }
 
+    // the side pair cancels at low frequencies (the ears hear both sources almost alike): its low part goes to the
+    // ears directly, so wide material keeps its width and level (binaural only - panned speakers do not cancel)
+    {
+        auto& S = src[1];
+        const float target = b * 0.9f * std::min (1.0f, spread / 40.0f);
+        if (fresh) S.direct = target;
+        S.dDirect = (target - S.direct) * invN;
+    }
     // mid: one point source at the position
     src[0].numEars = 2;
     for (int e = 0; e < 2; ++e) setEar (src[0].ear[e], u, d, b, 1.0f, e, invN);
@@ -592,6 +602,15 @@ void SpaceEffect::process (float* left, float* right, int numSamples) noexcept
                 (e == 0 ? outL : outR) += out * E.gain;
                 E.delay += E.dDelay; E.b0 += E.dB0; E.b1 += E.dB1; E.gain += E.dGain; E.sh += E.dSh;
             }
+        }
+
+        {
+            auto& S = src[1]; // low part of the side, straight to the ears (delayed like the rest)
+            S.lp = dsp::flush (S.lp + sideLpCoeff * (S.line.linear (lowDelay) - S.lp));
+            const float sd = S.lp * S.direct;
+            S.direct += S.dDirect;
+            outL += sd;
+            outR -= sd;
         }
 
         // room: image-source reflections of the (darkened) source + a small diffuse tail

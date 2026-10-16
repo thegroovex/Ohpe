@@ -144,6 +144,7 @@ private:
         Line line;
         Ear ear[4]; // mid: left, right; side: A left, A right, B left, B right
         int numEars = 2;
+        float lp = 0.0f, direct = 0.0f, dDirect = 0.0f; // side only: its low part straight to the ears (binaural)
     };
     struct Reflection
     {
@@ -187,6 +188,7 @@ private:
     float levelAcc = 0.0f;
     int levelCount = 0;
     std::array<float, 6> bandFreqG {};
+    float sideLpCoeff = 0.1f;
 
     std::array<std::atomic<float>, 3> uiPos {};
     std::atomic<float> uiLevelValue { 0.0f }, uiSpreadValue { 40.0f };

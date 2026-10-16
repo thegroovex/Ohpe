@@ -228,8 +228,8 @@ juce::String badgeTooltip (State s)
 {
     switch (s)
     {
-        case State::Binaural: return tr ("Binaural 3D - best with headphones");
-        case State::Speakers: return tr ("3D for speakers - switch 3D Monitoring to Headphones for binaural sound");
+        case State::Binaural: return tr ("Binaural 3D \xe2\x80\x93 best with headphones");
+        case State::Speakers: return tr ("3D for speakers \xe2\x80\x93 switch 3D Monitoring to Headphones for binaural sound");
         case State::Off: break;
     }
     return tr ("3D Space is off for this part");
