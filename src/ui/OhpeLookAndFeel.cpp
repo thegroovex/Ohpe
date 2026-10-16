@@ -53,6 +53,20 @@ void OhpeLookAndFeel::drawRotarySlider (juce::Graphics& g, int x, int y, int w, 
         g.strokePath (arc, juce::PathStrokeType (ringW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
     }
 
+    // 0.7: modulation ring inside the value arc - the reach of the matrix routings, the live position as a dot
+    if (enabled && (bool) s.getProperties().getWithDefault ("modAny", false))
+    {
+        const float lo = (float) s.getProperties()["modLo"], hi = (float) s.getProperties()["modHi"], live = (float) s.getProperties()["modLive"];
+        const float modR = ringR - ringW * 1.15f;
+        juce::Path reach;
+        reach.addCentredArc (c.x, c.y, modR, modR, 0.0f, start + (end - start) * lo, start + (end - start) * juce::jmax (hi, lo + 0.004f), true);
+        g.setColour (accent.withAlpha (0.45f));
+        g.strokePath (reach, juce::PathStrokeType (ringW * 0.45f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        const float la = start + (end - start) * live;
+        g.setColour (colour::ink);
+        g.fillEllipse (juce::Rectangle<float> (ringW * 0.8f, ringW * 0.8f).withCentre (c + juce::Point<float> (std::sin (la), -std::cos (la)) * modR));
+    }
+
     // flat cap with a soft shadow, a fine machined edge and an indicator line
     g.setColour (juce::Colours::black.withAlpha (0.22f));
     g.fillEllipse (juce::Rectangle<float> (capR * 2.0f, capR * 2.0f).withCentre (c.translated (0, size * 0.025f)));

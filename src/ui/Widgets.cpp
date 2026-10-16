@@ -159,6 +159,21 @@ void Encoder::resized()
     knob.setBounds (getLocalBounds().withHeight ((int) (s * 0.78f)).reduced ((int) (s * 0.06f)));
 }
 
+void Encoder::setModulation (bool any, float lo, float hi, float live)
+{
+    auto& props = knob.getProperties();
+    const bool had = props.getWithDefault ("modAny", false);
+    if (! any && ! had) return;
+    const float q = 1.0f / 512.0f; // repaint only on visible changes
+    auto changed = [&] (const char* k, float v) { return std::abs ((float) props.getWithDefault (k, -1.0f) - v) > q; };
+    if (any == had && ! changed ("modLo", lo) && ! changed ("modHi", hi) && ! changed ("modLive", live)) return;
+    props.set ("modAny", any);
+    props.set ("modLo", lo);
+    props.set ("modHi", hi);
+    props.set ("modLive", live);
+    knob.repaint();
+}
+
 void Encoder::paint (juce::Graphics& g)
 {
     const float w = (float) getWidth();

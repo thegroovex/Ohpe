@@ -64,6 +64,15 @@ public:
     /** In place; numSamples <= maxBlockSize. */
     void process (float* left, float* right, int numSamples) noexcept;
 
+    /** Tempo (synced effects) and note starts of the part (retriggered effects) for every slot. Audio thread. */
+    void setTempo (double bpm) noexcept
+    {
+        for (int s = 0; s < slotCount; ++s) slots[(size_t) s].setTempo (bpm);
+    }
+    void noteOn() noexcept
+    {
+        for (int s = 0; s < slotCount; ++s) slots[(size_t) s].noteOn();
+    }
     /** Message thread: prepares the selected types of all slots; true when something was prepared. */
     bool prepareSelected (const ParamRegistry& reg);
     /** Any slot is waiting for prepareSelected(). */

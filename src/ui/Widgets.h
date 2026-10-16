@@ -66,6 +66,8 @@ public:
     const juce::String& boundId() const noexcept { return paramId; }
     const VirtualPtr& boundVirtual() const noexcept { return virt; }
     void refreshVirtual(); ///< re-reads the virtual control's value (timer)
+    /** 0.7: modulation ring - the reach of the matrix routings (normalised lo..hi) and the live position. */
+    void setModulation (bool any, float lo, float hi, float live);
 
     void paint (juce::Graphics& g) override;
     void resized() override;

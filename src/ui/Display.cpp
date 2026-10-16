@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Display.h"
 
+#include "ModFxViews.h"
+
 #include "Palette.h"
 #include "plugin/Localisation.h"
 #include "plugin/ParameterBridge.h"
@@ -69,6 +71,12 @@ void Display::tick (float seconds)
     if (flashTime > 0.0f) flashTime -= seconds;
     overviewAge += seconds;
     if (mode == Mode::Tape && overviewAge > 0.5f) updateTapeOverview();
+    if (showsModView()) // 0.7: history of the selected routing's value (about 3 s)
+    {
+        const auto& m = proc.core().part (juce::jlimit (0, Core::numParts - 1, ctx.part)).modMatrix();
+        modHistory.push_back (m.uiRouteValue (juce::jlimit (0, mod::numSlots - 1, ctx.modRouting)));
+        if (modHistory.size() > 96) modHistory.erase (modHistory.begin());
+    }
     repaint();
 }
 
@@ -125,15 +133,54 @@ juce::Rectangle<float> Display::midArea() const
 juce::Rectangle<float> Display::seqTab (int view) const
 {
     auto mid = midArea();
-    const float w = mid.getWidth() / (float) numSeqViews;
+    const float w = mid.getWidth() / (float) juce::jmax (1, numViewTabs());
     return { mid.getX() + w * (float) view, mid.getY(), w, mid.getHeight() * 0.14f };
+}
+
+int Display::numViewTabs() const noexcept
+{
+    if (mode == Mode::Sequencer) return numSeqViews;
+    if (mode == Mode::Lfo) return modfx::numLfoViews;   // 0.7: LFO | Mod
+    if (mode == Mode::Effects) return modfx::numFxViews; // 0.7: Sends | Rack | Master
+    return 0;
+}
+
+juce::String Display::viewTabName (int v) const
+{
+    if (mode == Mode::Lfo) return tr (modfx::lfoViewName (v));
+    if (mode == Mode::Effects) return tr (modfx::fxViewName (v));
+    return tr (seqViewName ((SeqView) v));
+}
+
+int Display::selectedViewTab() const noexcept
+{
+    if (mode == Mode::Lfo) return ctx.lfoView;
+    if (mode == Mode::Effects) return ctx.fxView;
+    return (int) ctx.seqView;
+}
+
+bool Display::showsModView() const noexcept { return mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMod; }
+bool Display::showsRackView() const noexcept { return mode == Mode::Effects && ctx.fxView != modfx::FxViewSends; }
+
+juce::Rectangle<float> Display::visualArea() const
+{
+    const float u = (float) getWidth() / 100.0f;
+    auto mid = midArea();
+    if (numViewTabs() > 0) mid = mid.withTrimmedTop (mid.getHeight() * 0.17f);
+    return mid.withWidth (mid.getWidth() * 0.42f).reduced (u * 0.3f, 0.0f);
+}
+
+FxRack& Display::shownRack() const
+{
+    auto& core = proc.core();
+    return ctx.fxView == modfx::FxViewMaster ? core.masterFxRack() : core.fxRack (juce::jlimit (0, Core::numParts - 1, ctx.part));
 }
 
 juce::Rectangle<float> Display::rowsArea() const
 {
     const float u = (float) getWidth() / 100.0f;
     auto mid = midArea();
-    if (mode == Mode::Sequencer) mid = mid.withTrimmedTop (mid.getHeight() * 0.17f);
+    if (numViewTabs() > 0) mid = mid.withTrimmedTop (mid.getHeight() * 0.17f);
     return mid.withTrimmedLeft (mid.getWidth() * 0.42f + u * 2.0f);
 }
 
@@ -309,6 +356,20 @@ void Display::mouseDown (const juce::MouseEvent& e)
         return;
     }
 
+    if (mode == Mode::Lfo || mode == Mode::Effects) // 0.7: view tabs, routing list, FX chain
+    {
+        for (int v = 0; v < numViewTabs(); ++v)
+            if (seqTab (v).contains (p)) { if (onViewTabClicked) onViewTabClicked (v); return; }
+        if (showsModView())
+            if (const int r = modfx::modListHit (visualArea(), p); r >= 0) { if (onModRoutingClicked) onModRoutingClicked (r); return; }
+        if (showsRackView())
+            if (const int s = modfx::rackChainHit (visualArea(), shownRack().numSlots(), p); s >= 0)
+            {
+                dragSlot = s;
+                if (onFxSlotClicked) onFxSlotClicked (s);
+                return;
+            }
+    }
     if (mode == Mode::Sequencer)
     {
         for (int v = 0; v < numSeqViews; ++v)
@@ -345,8 +406,14 @@ void Display::mouseDrag (const juce::MouseEvent& e)
     setRowValue (dragRow, drag.update (e.position, len, isFineDrag (e.mods)));
 }
 
-void Display::mouseUp (const juce::MouseEvent&)
+void Display::mouseUp (const juce::MouseEvent& e)
 {
+    if (dragSlot >= 0 && showsRackView()) // 0.7: drop a slot on another one = move it there
+    {
+        const int to = modfx::rackChainHit (visualArea(), shownRack().numSlots(), e.position);
+        if (to >= 0 && to != dragSlot && onFxSlotMoved) onFxSlotMoved (dragSlot, to);
+    }
+    dragSlot = -1;
     if (dragRow >= 0 && virtuals[(size_t) dragRow] == nullptr && dragRow < (int) ids.size())
         if (auto* prm = proc.parameter (ids[(size_t) dragRow])) prm->endChangeGesture();
     dragRow = -1;
@@ -425,20 +492,30 @@ void Display::paint (juce::Graphics& g)
 
     // sequencer views: tabs
     auto mid = midArea();
-    if (mode == Mode::Sequencer)
+    if (numViewTabs() > 0)
     {
-        for (int v = 0; v < numSeqViews; ++v)
+        for (int v = 0; v < numViewTabs(); ++v)
         {
             auto tab = seqTab (v).reduced (u * 0.4f, 0);
-            const bool sel = (int) ctx.seqView == v;
+            const bool sel = selectedViewTab() == v;
             g.setColour (sel ? colour::displayText : colour::displayGrid.brighter (0.25f));
             if (sel) g.fillRoundedRectangle (tab, tab.getHeight() * 0.25f);
             else g.drawRoundedRectangle (tab, tab.getHeight() * 0.25f, 1.0f);
             g.setColour (sel ? colour::display : colour::displayDim);
             g.setFont (labelFont (tab.getHeight() * 0.6f));
-            g.drawText (i18n::upper (tr (seqViewName ((SeqView) v))), tab, juce::Justification::centred, true);
+            g.drawText (i18n::upper (viewTabName (v)), tab, juce::Justification::centred, true);
         }
         mid = mid.withTrimmedTop (mid.getHeight() * 0.17f);
+    }
+
+    // 0.7: the matrix's routing list / the FX rack's chain instead of the pictogram
+    if (showsModView() || showsRackView())
+    {
+        if (showsModView()) modfx::paintModList (g, visualArea(), core, ctx.part, ctx.modRouting);
+        else modfx::paintRackChain (g, visualArea(), core, modfx::rackPrefixes (ctx.fxView, ctx.part), shownRack(), ctx.fxSlot);
+        paintRows (g);
+        paintStrip (g, stripArea());
+        return;
     }
 
     // middle: pictogram character + encoder rows
@@ -534,6 +611,17 @@ void Display::paintRows (juce::Graphics& g)
         }
         else
             g.fillRoundedRectangle (bar.withWidth (juce::jmax (bar.getHeight(), bar.getWidth() * norm)), bar.getHeight() * 0.5f);
+        // 0.7: modulation - the reach of the matrix routings above the bar, the live position as a tick
+        if (const auto mr = modfx::modulationRange (proc.core(), id.toStdString()); mr.any)
+        {
+            auto band = bar.translated (0.0f, -bar.getHeight() * 1.6f).withHeight (bar.getHeight() * 0.7f);
+            g.setColour (colour::displayText.withAlpha (0.35f));
+            g.fillRoundedRectangle (band.withX (band.getX() + band.getWidth() * mr.lo).withWidth (juce::jmax (2.0f, band.getWidth() * (mr.hi - mr.lo))),
+                                    band.getHeight() * 0.5f);
+            g.setColour (colour::displayText);
+            const float lx = band.getX() + band.getWidth() * mr.live;
+            g.fillRect (lx - 1.0f, band.getY() - 1.0f, 2.0f, band.getHeight() + 2.0f);
+        }
         // handle: shows that the bar can be dragged
         const float hx = bar.getX() + bar.getWidth() * norm;
         g.setColour (dragRow == i ? colour::displayText : c.brighter (0.4f));
@@ -797,6 +885,20 @@ void Display::paintStrip (juce::Graphics& g, juce::Rectangle<float> s)
         return;
     }
     if (mode == Mode::Tape) { paintTapeStrip (g, s); return; }
+    if (showsModView()) // 0.7: trace of the selected routing
+    {
+        modfx::paintModTrace (g, hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s, core, ctx.part, ctx.modRouting, modHistory);
+        if (hasSoftKeys()) paintSoftKeys (g);
+        return;
+    }
+    if (showsRackView()) // 0.7: what the selected effect does
+    {
+        auto& rack = shownRack();
+        const int slot = juce::jlimit (0, rack.numSlots() - 1, ctx.fxSlot);
+        modfx::paintSlotVisual (g, hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s, core, rack.slotPrefix (slot), rack.slot (slot));
+        if (hasSoftKeys()) paintSoftKeys (g);
+        return;
+    }
     if (mode == Mode::Drum) { paintDrumStrip (g, s); return; }
     if (mode == Mode::Mixer)
     {

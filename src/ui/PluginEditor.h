@@ -77,6 +77,10 @@ public:
     void selectEngine (EngineType t);
     void selectPart (int part);                 ///< 0..3
     void selectSeqView (ui::SeqView v);
+    void selectView (int v);          ///< 0.7: view tab of the LFO / Effects mode
+    void selectModRouting (int r);    ///< 0.7
+    void selectFxSlot (int s);        ///< 0.7
+    void moveFxSlot (int from, int to);
     void selectTapeTrack (int track);
     void selectDrumPad (int pad, bool audition = false);
     void selectLockStep (int step);             ///< -1 = leave lock editing
@@ -146,6 +150,7 @@ private:
     juce::String lastLearning;
     int libraryRequestsSeen = 0;
     int lastKeyboardChannel = 1, lastFxType = -1;
+    int modPage = 0, rackPage = 0, lastModSignature = -1; ///< 0.7
     std::array<ui::VirtualPtr, 4> virtuals {};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OhpeEditor)

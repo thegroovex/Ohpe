@@ -32,7 +32,13 @@ namespace ohpe
 class InsertSlot
 {
 public:
-    enum Type { Off = 0, Chorus, Phaser, Bitcrush, FilterDrive, Delay, Reverb, numTypes };
+    enum Type
+    {
+        Off = 0, Chorus, Phaser, Bitcrush, FilterDrive, Delay, Reverb,
+        Hyper, Distortion, Flanger, Compressor, Multiband, Eq, Filter, Echo, Hall, // 0.7 (rack types, RackEffects.h)
+        numTypes
+    };
+    static constexpr int firstRackType = Hyper; ///< the 0.7 types (their blocks: FxRack::registerTypeBlocks)
     static constexpr int numLegacyTypes = Reverb + 1; ///< the 0.2 types (their blocks: registerParams)
 
     InsertSlot();
@@ -73,6 +79,9 @@ public:
 
     /** In place; numSamples <= maxBlockSize. */
     void process (float* left, float* right, int numSamples) noexcept;
+    /** 0.7: tempo for the synced types, note starts of the part (retrigger). Audio thread. */
+    void setTempo (double bpm) noexcept;
+    void noteOn() noexcept;
 
     int currentType() const noexcept { return type; }
     IEffect* effect (int t) noexcept { return t > Off && t < numTypes ? effects[(size_t) t].get() : nullptr; }
