@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "FxRack.h"
+#include "InsertEffects.h"
 #include "../dsp/DspUtil.h"
 
 #include <algorithm>
@@ -87,6 +88,12 @@ void FxRack::registerMaster (ParamRegistry& reg)
 void FxRack::registerTypeBlocks (ParamRegistry& reg, int numParts, int fromType, int toType)
 {
     for (const auto& pre : allSlotPrefixes (numParts)) InsertSlot::registerBlocks (reg, pre, groupOf (pre), fromType, toType);
+}
+
+void FxRack::registerChorusEnsemble (ParamRegistry& reg, int numParts)
+{
+    for (const auto& pre : allSlotPrefixes (numParts))
+        InsertSlot::registerBlockTail (reg, pre, groupOf (pre), InsertSlot::Chorus, ChorusEffect::Voices);
 }
 
 FxRack::FxRack (int numSlots) : slotCount (std::clamp (numSlots, 1, maxSlots))

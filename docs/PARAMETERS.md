@@ -640,3 +640,24 @@ Appended after `tape.tx.link`. Guide: [English](en/SPACE.md) · [Deutsch](de/RAU
 Behaviour changes in 1.0: the matrix targets 67 – 71 (Azimuth, Elevation, Distance, Motion Path Rate / Phase),
 reserved in 0.7, now move `pN.space.azimuth` … `pN.space.pathphase`. The preset category list gains **3D**.
 New parameter units: degrees (°) and metres (m).
+
+## 0.8 punch pass – sidechain ducking and chorus ensemble
+
+Appended after the 3D block (`mfx4.space3d.glide`). Guides: [English](en/TAPE-MIXER-FX.md) · [Deutsch](de/BAND-MISCHER-FX.md).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `mix.duck.src` | Ducking Key | Ducking-Auslöser | Off, Ch 1 … Ch 8 | Off |
+| `mix.duck.release` | Ducking Release | Ducking-Release | 0.03 … 1 s | 0.16 |
+| `mix.chN.duck` (N = 1 … 8) | Ch N Ducking | Kanal N Ducking | 0 … 1 | 0 |
+| `pN.fxK.chorus.voices`, `mfxK.chorus.voices` | Chorus Voices | Chorus-Stimmen | 1 … 4 | 1 |
+| `pN.fxK.chorus.drift`, `mfxK.chorus.drift` | Chorus Drift | Chorus-Drift | 0 … 1 | 0 |
+| `pN.fxK.chorus.spread`, `mfxK.chorus.spread` | Chorus Spread | Chorus-Breite | 0 … 1 | 0.8 |
+| `pN.fxK.chorus.lowcut`, `mfxK.chorus.lowcut` | Chorus Low Cut | Chorus-Tiefensperre | 20 … 1000 Hz | 20 |
+
+The chorus IDs exist for every slot of every rack (`p1.fx.` … `p4.fx6.`, `mfx1.` … `mfx4.`), registered in that
+order after the ducking parameters. Their defaults give the 0.2 chorus.
+
+Behaviour changes in the punch pass: the master limiter looks ahead 1.5 ms (latency 83 samples at 48 kHz - the look-ahead plus a 24-tap true-peak interpolator -, constant -
+also with `mix.master.limit` off and on the aux outputs - and reported to the host) and limits true peaks; the compressors (master, compressor-lite, rack Compressor) hold
+a detected peak for 12 ms; the Hyper effect restarts its voices on a new note only with *Retrigger* on.

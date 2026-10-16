@@ -111,7 +111,17 @@ recording.
 * **Master low-pass** (0.6, `mix.master.lowpass`, 500 Hz … 20 kHz, 12 dB/octave; 20 kHz = off): after
   the volume, before the limiter – darkens the whole mix, e.g. 4–5 kHz for lo-fi.
 * **Limiter** (`mix.master.limit`) with an adjustable **ceiling** (`mix.master.ceiling`,
-  default −0.3 dBFS as in 0.1).
+  default −0.3 dBFS as in 0.1). Since 0.8 it looks ahead 1.5 ms (83 samples at 48 kHz of latency with its true-peak interpolator, constant –
+  also when off and on the aux outputs – and reported to the host), measures true peaks (inter-sample peaks of a 4× windowed-sinc interpolation, accurate up to near Nyquist, e.g. a saturated hi-hat) and ramps its gain down before a
+  peak arrives instead of jumping – loud mixes stay clean, no clipping distortion. Its release is two-stage:
+  fast after a single peak, gliding to slower while it works continuously (no pumping, and more drive never makes it quieter).
+* **Compressor detector** (0.8): the master compressor, compressor-lite and the rack Compressor hold a peak for
+  12 ms before they let go, so fast settings no longer follow the waveform of a bass (no distortion on the sub).
+* **Ducking** (0.8, sidechain): `mix.duck.src` picks the key channel (Off, Ch 1 … Ch 8), usually the drums
+  (channel 5). Its low end (below about 150 Hz – the kick) pulls the other channels down by their own amount
+  `mix.chN.duck` (0 … 1, up to −24 dB at a full hit); `mix.duck.release` (0.03 … 1 s) sets how fast they come
+  back. The key follows its own recent peak, so every kick reaches the set depth whatever its level. The factory
+  projects duck the basses most, pads less and leads / keys a touch.
 * Gain reduction is readable for meters: `Mixer::gainReduction (channel)`, master = 8.
 * **Delay sync** (0.5, `fxa.delay.sync`): Off, 1/16, 1/8T, 1/8, 1/4T, 1/8., 1/4, 1/4., 1/2. Any
   setting but Off sets the send delay's time from the tempo (host, Link or internal) and overrides
@@ -127,6 +137,14 @@ effect keeps its own parameters (`p1.fx.chorus.rate` …); chorus, phaser, bitcr
 drive have their own mix control, delay and reverb get one from the slot
 (`p1.fx.delay.mix`, `p1.fx.reverb.mix`). *Off* is an exact bypass. Since 0.7 this slot is slot 1
 of the part's FX rack (below).
+
+**Chorus ensemble** (0.8): the chorus has four more parameters (appended, in every slot of every rack):
+*voices* (1 … 4; 1 = the classic two-tap chorus, 2 … 4 = ensemble: staggered taps with evenly spread LFO phases,
+panned across the stereo field), *drift* (a slow random wander of every tap – less static, more like analog
+ensembles), *spread* (stereo spread of the ensemble voices) and *low cut* (20 Hz … 1 kHz, 12 dB/octave on the
+chorus' share only: below it the sound stays dry and mono, so a chorused bass keeps a solid sub). The defaults
+(1 voice, no drift, 20 Hz) give the 0.2 chorus. Since the 0.8 punch pass every factory chorus is an ensemble, and
+electric pianos, organs, pads, plucks, leads, arps, voices and the mid range of reese / neuro basses carry one.
 
 ## FX rack (0.7)
 

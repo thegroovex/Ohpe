@@ -71,6 +71,7 @@ SPACE_OUT = {  # Multiband output (dB) from the same calibration
 
 
 def S(name, tags, engine, comment, *dicts, **kw):
+    r3.NO_PUNCH.add(name)  # calibrated with the binaural stage (space_cal.py): no glue / ensemble chorus injected
     p = P(name, tags, engine, comment, *dicts, **kw)
     if name in SPACE_GAINS:
         p["params"]["gain"] = SPACE_GAINS[name]

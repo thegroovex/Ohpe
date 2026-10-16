@@ -180,7 +180,8 @@ inline Phrase holdPhrase (const std::string& category, double beats)
 }
 
 inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0, double bpm = 100.0, double beatsLimit = 1.0e9,
-                         double tailLimit = 1.0e9, double holdSeconds = 0.0)
+                         double tailLimit = 1.0e9, double holdSeconds = 0.0, const std::vector<int>& holdNotes = {},
+                         int holdVelocity = 0)
 {
     preset::PartOptions opt;
     opt.arp = false; // measure the sound itself: the phrase plays the notes, not the arpeggiator
@@ -188,8 +189,14 @@ inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0,
     core.params().set ("tempo", (float) bpm);
     core.params().set ("mix.master.limit", 0.0f); // measure the preset itself, not the master limiter
     core.prepareEffects(); // rack slots 2-6 prepare their types lazily (the plugin does this on the message thread)
-    const auto phrase = holdSeconds > 0.0 ? holdPhrase (primaryCategory (p.meta), holdSeconds * bpm / 60.0)
-                                          : phraseFor (primaryCategory (p.meta));
+    auto phrase = holdSeconds > 0.0 ? holdPhrase (primaryCategory (p.meta), holdSeconds * bpm / 60.0)
+                                    : phraseFor (primaryCategory (p.meta));
+    if (holdSeconds > 0.0 && ! holdNotes.empty()) // the held note / chord of a click check (other pitches, velocities)
+    {
+        const int vel = holdVelocity > 0 ? holdVelocity : phrase.notes.front().velocity;
+        phrase.notes.clear();
+        for (int n : holdNotes) phrase.notes.push_back ({ 0, phrase.beats, n, vel });
+    }
     const double sr = core.sampleRate();
     const double spb = 60.0 / bpm * sr;
     const int ch = partIndex + 1;

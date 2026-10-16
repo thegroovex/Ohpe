@@ -99,7 +99,10 @@ private:
     int64_t regionStart = 0, regionEnd = 0, loopStart = 0, loopEnd = 0;
     int loopMode = LoopOff;
     float declick = 1.0f;
+    int64_t xfade = 0;       ///< 0.8: loop crossfade length (frames before the loop end / after the loop start)
+    float rampGain = -1.0f, rampL = 0.0f, rampR = 0.0f; ///< 0.8: last block's gain / pan (ramped per sample; < 0 = set)
     dsp::Svf filter[2];
+    float filterMix = -1.0f; ///< 0.8: tone-filter crossfade (0 = bypassed, 1 = filtering, < 0 = set at the next block)
 };
 } // namespace sampler
 

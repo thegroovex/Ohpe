@@ -35,6 +35,14 @@
     "voices": 1,
     "glide": 0.16,
     "velsens": 0.3,
+    "fx.type": 10,
+    "fx.compressor.thresh": -18.8,
+    "fx.compressor.ratio": 4.0,
+    "fx.compressor.attack": 1.0,
+    "fx.compressor.release": 70.0,
+    "fx.compressor.knee": 6.0,
+    "fx.compressor.makeup": 6.1,
+    "fx.compressor.mix": 1.0,
     "gain": 13.9
   }
 }

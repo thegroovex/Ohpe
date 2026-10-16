@@ -122,8 +122,13 @@ TEST_CASE ("fx: chorus, phaser, bitcrush and filter drive change the sound; mix 
         INFO (std::string (e->info().id));
         e->prepare (sampleRate, 256);
         CHECK (differs (*e) > 0.003f); // bitcrush at its default 8 bits: up to 1/256
-        // every new insert has "mix" as its last parameter
-        e->setParam ((int) e->getParamDescriptors().size() - 1, 0.0f);
+        // every new insert has a "mix" parameter (the chorus' 0.8 ensemble parameters are appended after it)
+        const auto d = e->getParamDescriptors();
+        int mixIdx = -1;
+        for (size_t i = 0; i < d.size(); ++i)
+            if (d[i].id == "mix") mixIdx = (int) i;
+        REQUIRE (mixIdx >= 0);
+        e->setParam (mixIdx, 0.0f);
         e->reset();
         CHECK (differs (*e) < 1.0e-6f);
     }

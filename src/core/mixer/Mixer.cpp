@@ -99,6 +99,27 @@ void Mixer::registerLate06Params (ParamRegistry& reg) const
     reg.add (std::move (d));
 }
 
+void Mixer::registerLate08DuckParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    std::vector<std::string> en { "Off" }, de { "Aus" };
+    for (int ch = 0; ch < numChannels; ++ch)
+    {
+        en.push_back ("Ch " + std::to_string (ch + 1));
+        de.push_back ("Kanal " + std::to_string (ch + 1));
+    }
+    auto addM = [&] (ParamDescriptor d) { d.group = "mixer/master"; reg.add (std::move (d)); };
+    addM (choice ("mix.duck.src", "Ducking Key", "Ducking-Auslöser", en, de, 0));
+    addM (continuous ("mix.duck.release", "Ducking Release", "Ducking-Release", 0.03f, 1.0f, 0.16f, ParamUnit::Seconds, 0.4f));
+    for (int ch = 0; ch < numChannels; ++ch)
+    {
+        const auto n = std::to_string (ch + 1);
+        auto d = continuous (chId (ch, "duck"), "Ch " + n + " Ducking", "Kanal " + n + " Ducking", 0.0f, 1.0f, 0.0f);
+        d.group = "mixer/ch" + n;
+        reg.add (std::move (d));
+    }
+}
+
 double Mixer::delaySyncBeats (int choice) noexcept
 {
     static constexpr double beats[] = { 0.0, 0.25, 1.0 / 3.0, 0.5, 2.0 / 3.0, 0.75, 1.0, 1.5, 2.0 };
@@ -112,6 +133,9 @@ void Mixer::bind (const ParamRegistry& reg)
         for (int p = 0; p < numChannelParams; ++p)
             channels[(size_t) ch].idx[(size_t) p] = reg.indexOf (chId (ch, names[p]));
     for (int ch = 0; ch < numChannels; ++ch) channels[(size_t) ch].compIdx = reg.indexOf (chId (ch, "comp"));
+    for (int ch = 0; ch < numChannels; ++ch) channels[(size_t) ch].duckIdx = reg.indexOf (chId (ch, "duck"));
+    duckSrcIdx = reg.indexOf ("mix.duck.src");
+    duckRelIdx = reg.indexOf ("mix.duck.release");
     dynIdx = { reg.indexOf ("mix.master.comp"), reg.indexOf ("mix.master.comp.thresh"), reg.indexOf ("mix.master.comp.ratio"),
                reg.indexOf ("mix.master.comp.attack"), reg.indexOf ("mix.master.comp.release"), reg.indexOf ("mix.master.comp.makeup"),
                reg.indexOf ("mix.master.tapesat"), reg.indexOf ("mix.master.ceiling") };
@@ -130,10 +154,12 @@ void Mixer::prepare (double sampleRate, int maxBlockSize)
 {
     sr = (float) sampleRate;
     const auto n = (size_t) maxBlockSize;
-    for (auto* v : { &chL, &chR, &sendAL, &sendAR, &sendBL, &sendBR, &masterL, &masterR }) v->assign (n, 0.0f);
+    for (auto* v : { &chL, &chR, &sendAL, &sendAR, &sendBL, &sendBR, &masterL, &masterR, &duckKey }) v->assign (n, 0.0f);
     delay.prepare (sampleRate, maxBlockSize);
     reverb.prepare (sampleRate, maxBlockSize);
     limiter.prepare (sr);
+    for (auto& line : auxDelay) line.assign ((size_t) std::max (1, limiter.latencySamples()), 0.0f);
+    auxPos = 0;
     for (auto& c : channels)
     {
         c.gainL.prepare (sr, 15.0f);
@@ -167,6 +193,9 @@ void Mixer::reset() noexcept
     delay.reset();
     reverb.reset();
     limiter.reset();
+    for (auto& line : auxDelay) std::fill (line.begin(), line.end(), 0.0f);
+    auxPos = 0;
+    duckEnv = duckPeak = duckLp1 = duckLp2 = 0.0f;
     for (auto& m : meters) m.store (0.0f);
 }
 
@@ -183,6 +212,7 @@ void Mixer::pullParams (const ParamSnapshot& s) noexcept
         c.sendA = s[c.idx[SendA]];
         c.sendB = s[c.idx[SendB]];
         c.out = s.getInt (c.idx[Out]);
+        c.duck = c.duckIdx >= 0 ? dsp::clamp01 (s[c.duckIdx]) : 0.0f;
         if (const float a = c.compIdx >= 0 ? dsp::clamp01 (s[c.compIdx]) : 0.0f; a != c.compAmount)
         {
             // compressor-lite: one amount knob -> threshold, ratio and half the makeup
@@ -202,9 +232,15 @@ void Mixer::pullParams (const ParamSnapshot& s) noexcept
             }
         }
     }
+    duckSrc = duckSrcIdx >= 0 ? std::clamp (s.getInt (duckSrcIdx), 0, numChannels) : 0;
+    if (duckRelIdx >= 0) duckRelease = std::max (0.01f, s[duckRelIdx]);
     const float mdb = s[masterIdx[MasterVol]];
     masterGain = mdb <= -59.9f ? 0.0f : dsp::dbToGain (mdb);
-    limiterOn = s.getBool (masterIdx[MasterLimit]);
+    {
+        const bool on = s.getBool (masterIdx[MasterLimit]);
+        if (on != limiterOn) limiter.resetGain(); // 0.8: constant delay, the gain starts at unity
+        limiterOn = on;
+    }
     returnA = s[masterIdx[ReturnA]];
     returnB = s[masterIdx[ReturnB]];
     masterCompOn = dynIdx[MComp] >= 0 && s.getBool (dynIdx[MComp]);
@@ -251,6 +287,41 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
 
     bool anySolo = false;
     for (const auto& c : channels) anySolo |= c.solo;
+
+    // 0.8 sidechain ducking: the key is the low end (two one-pole low-passes at 150 Hz) of the key channel's source,
+    // followed with 1 ms attack and the ducking release, normalised to its own recent peak (a slowly falling
+    // memory): every kick reaches full depth whatever its level. Channels dip by their amount (up to -24 dB).
+    bool ducking = false;
+    if (duckSrc > 0 && n <= (int) duckKey.size())
+    {
+        const auto& kc = channels[(size_t) (duckSrc - 1)];
+        const bool keyValid = kc.src > 0 && kc.src < source::maxSources && in.left[(size_t) kc.src] != nullptr
+                              && in.right[(size_t) kc.src] != nullptr;
+        for (int ci = 0; ci < numChannels; ++ci) ducking |= ci != duckSrc - 1 && channels[(size_t) ci].duck > 0.0f;
+        if (keyValid && ducking)
+        {
+            const float* kl = in.left[(size_t) kc.src];
+            const float* kr = in.right[(size_t) kc.src];
+            const float lpC = 1.0f - std::exp (-dsp::twoPi * 150.0f / sr);
+            const float atk = 1.0f - std::exp (-1.0f / (0.001f * sr)), rel = 1.0f - std::exp (-1.0f / (duckRelease * sr));
+            const float peakFall = std::exp (-1.0f / (3.0f * sr));
+            for (int i = 0; i < n; ++i)
+            {
+                duckLp1 += lpC * (0.5f * (kl[i] + kr[i]) - duckLp1);
+                duckLp2 += lpC * (duckLp1 - duckLp2);
+                const float x = std::abs (duckLp2);
+                duckEnv += (x > duckEnv ? atk : rel) * (x - duckEnv);
+                duckPeak = std::max (duckEnv, duckPeak * peakFall);
+                duckKey[(size_t) i] = duckPeak > 1.0e-4f ? std::min (1.0f, duckEnv / duckPeak) : 0.0f;
+            }
+            duckEnv = dsp::flush (duckEnv);
+            duckPeak = dsp::flush (duckPeak);
+            duckLp1 = dsp::flush (duckLp1);
+            duckLp2 = dsp::flush (duckLp2);
+        }
+        else
+            ducking = false;
+    }
 
     for (int ci = 0; ci < numChannels; ++ci)
     {
@@ -312,6 +383,12 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
             }
             l *= c.gainL.next();
             r *= c.gainR.next();
+            if (ducking && c.duck > 0.0f && ci != duckSrc - 1)
+            {
+                const float g = std::exp2 (-c.duck * duckKey[(size_t) i] * (24.0f / 6.0206f)); // -24 dB at full depth
+                l *= g;
+                r *= g;
+            }
             dl[i] += l;
             dr[i] += r;
             sendAL[(size_t) i] += l * c.sendA;
@@ -380,6 +457,7 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
             masterR[(size_t) i] = masterLp[1].process (masterR[(size_t) i], dsp::Svf::LowPass);
         }
     if (limiterOn) limiter.process (masterL.data(), masterR.data(), n);
+    else limiter.passThrough (masterL.data(), masterR.data(), n); // 0.8: constant latency
 
     float peak = 0.0f;
     float* ml = out.left[0];
@@ -391,5 +469,26 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
         peak = std::max (peak, std::max (std::abs (masterL[(size_t) i]), std::abs (masterR[(size_t) i])));
     }
     meters[numChannels].store (peak, std::memory_order_relaxed);
+
+    // 0.8: the aux outputs are delayed like the main output (one latency for the host)
+    const int D = (int) auxDelay[0].size();
+    if (D > 0)
+    {
+        for (int o = 1; o <= numAuxOutputs; ++o)
+            for (int c = 0; c < 2; ++c)
+            {
+                float* b = c == 0 ? out.left[(size_t) o] : out.right[(size_t) o];
+                auto& line = auxDelay[(size_t) ((o - 1) * 2 + c)];
+                int p = auxPos;
+                for (int i = 0; i < n; ++i)
+                {
+                    const float x = b != nullptr ? b[i] : 0.0f;
+                    if (b != nullptr) b[i] = line[(size_t) p];
+                    line[(size_t) p] = x;
+                    if (++p >= D) p = 0;
+                }
+            }
+        auxPos = (int) ((auxPos + n) % D);
+    }
 }
 } // namespace ohpe

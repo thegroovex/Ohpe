@@ -16,11 +16,13 @@ public:
     void prepare (float sampleRate) noexcept
     {
         sr = sampleRate > 0.0f ? sampleRate : 48000.0f;
+        holdSamples = (int) (0.012f * sr);
+        envFall = std::exp (-1.0f / (0.02f * sr));
         set (threshold, ratio, attackMs, releaseMs, makeup);
         reset();
     }
 
-    void reset() noexcept { grDb = 0.0f; }
+    void reset() noexcept { grDb = 0.0f; peakEnv = 0.0f; holdLeft = 0; }
 
     void set (float thresholdDb, float ratioIn, float attackMsIn, float releaseMsIn, float makeupDb, float kneeDbIn = 6.0f) noexcept
     {
@@ -52,7 +54,12 @@ public:
     {
         for (int i = 0; i < n; ++i)
         {
-            const float peak = std::max (std::abs (l[i]), std::abs (r[i]));
+            // 0.8: held peak detector (12 ms hold, 20 ms fall) - no gain ripple inside a bass cycle
+            const float x = std::max (std::abs (l[i]), std::abs (r[i]));
+            if (x >= peakEnv) { peakEnv = x; holdLeft = holdSamples; }
+            else if (holdLeft > 0) --holdLeft;
+            else peakEnv = std::max (x, peakEnv * envFall);
+            const float peak = peakEnv;
             const float target = staticGainDb (dsp::gainToDb (peak));
             const float c = target < grDb ? attackCoeff : releaseCoeff;
             grDb = target + (grDb - target) * c;
@@ -69,5 +76,7 @@ public:
 private:
     float sr = 48000.0f, threshold = -12.0f, ratio = 3.0f, attackMs = 10.0f, releaseMs = 150.0f, makeup = 0.0f, kneeDb = 6.0f;
     float attackCoeff = 0.0f, releaseCoeff = 0.0f, makeupGain = 1.0f, grDb = 0.0f;
+    float peakEnv = 0.0f, envFall = 0.999f;
+    int holdSamples = 576, holdLeft = 0;
 };
 } // namespace ohpe

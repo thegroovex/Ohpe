@@ -99,6 +99,7 @@ public:
         lfo.reset();
         expr = exprIn = exprGlide = NoteExpression {};
         exprFresh = true;
+        lfoFresh = true;
         exprVibPhase = 0.0f;
         pitchEnvPhase = 0.0f;
         ampEnv.resetGain();
@@ -147,6 +148,10 @@ protected:
         lfoDepth = std::clamp (c.lfoDepth + expr.lfo, 0.0f, 1.0f);
         const float lfoRaw = lfo.advance (n);
         lfoValue = lfoRaw * lfoDepth;
+        // 0.8: amplitude / pan follow the LFO through a ~2 ms slew: square, saw and S&H edges were steps (clicks)
+        const float slew = 1.0f - std::exp (-(float) n / (0.002f * sr));
+        lfoSlewed = lfoFresh ? lfoValue : lfoSlewed + (lfoValue - lfoSlewed) * slew;
+        lfoFresh = false;
         float pitch = currentNote + c.pitchOffset + expr.pitch;
         if (c.modProgram != nullptr && (c.modProgram->numRoutes > 0 || modActive)) // 0.7: per-voice routings of the modulation matrix
         {
@@ -188,13 +193,13 @@ protected:
     /** Tremolo factor 1-depth .. 1 when the LFO targets the amplitude, else 1. */
     float lfoAmp (const VoiceCommon& c) const noexcept
     {
-        return (c.lfoDest == LfoDest::Amp ? 1.0f - 0.5f * (lfoValue + lfoDepth) : 1.0f) * expr.amp;
+        return (c.lfoDest == LfoDest::Amp ? 1.0f - 0.5f * (lfoSlewed + lfoDepth) : 1.0f) * expr.amp;
     }
 
     /** Pan gains (equal power, centre when the LFO does not target the pan). */
     void lfoPan (const VoiceCommon& c, float& l, float& r) const noexcept
     {
-        const float pan = (c.lfoDest == LfoDest::Pan ? lfoValue : 0.0f) + expr.pan;
+        const float pan = (c.lfoDest == LfoDest::Pan ? lfoSlewed : 0.0f) + expr.pan;
         if (c.lfoDest == LfoDest::Pan || expr.pan != 0.0f) dsp::panGains (std::clamp (pan, -1.0f, 1.0f), l, r);
         else l = r = 0.70710678f;
     }
@@ -208,6 +213,8 @@ protected:
     bool retriggerNext = true;
     float pitchEnvPhase = 1.0f;       ///< 0.6: 0 at note start .. 1 = arrived
     float lfoValue = 0.0f;
+    float lfoSlewed = 0.0f;   ///< 0.8: lfoValue through a ~2 ms slew (amplitude / pan targets)
+    bool lfoFresh = true;
     float lfoDepth = 0.0f;
     NoteExpression expr;      ///< per-note expression (MPE) plus the matrix's per-voice pan / timbre (what engines read)
     NoteExpression exprIn;    ///< 0.7: the note's own expression (MPE input; 0.8: the value the glide moves to)

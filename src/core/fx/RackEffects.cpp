@@ -185,6 +185,7 @@ void HyperEffect::prepare (double sampleRate, int)
     lineL.prepare ((int) (0.05f * sr));
     lineR.prepare ((int) (0.05f * sr));
     for (auto& d : dim) d.prepare ((int) (0.03f * sr));
+    tapC = 1.0f - std::exp (-1.0f / (0.002f * sr));
     depthG.prepare (sr, 0.03f);
     mixG.prepare (sr, 0.02f);
     reset();
@@ -195,12 +196,20 @@ void HyperEffect::reset() noexcept
     lineL.reset();
     lineR.reset();
     for (auto& d : dim) d.reset();
-    noteOn();
+    resetPhases();
+    tapSnap = true;
     depthG.snap (detune);
     mixG.snap (mix);
 }
 
 void HyperEffect::noteOn() noexcept
+{
+    // 0.8 punch pass: the voices restart only with Retrigger on (every note used to jump the taps: a click at
+    // each new chord), and the taps glide to their new position (see process) instead of jumping
+    if (retrigger) resetPhases();
+}
+
+void HyperEffect::resetPhases() noexcept
 {
     // fixed, irrational-ish rate ratios and spread phases: the voices never line up
     static constexpr float ratios[maxVoices] = { 1.0f, 1.13f, 0.87f, 1.31f, 0.71f, 1.53f, 0.61f };
@@ -253,11 +262,14 @@ void HyperEffect::process (float* l, float* r, int n) noexcept
             // triangle motion of the tap: a constant pitch offset up, then down (Doppler detune)
             const float tri = 1.0f - 4.0f * std::abs (ph - 0.5f);
             const float dMs = 8.0f + 3.0f * (float) v + depth * 6.0f * tri;
-            const float dSamples = dMs * 0.001f * sr;
+            float& tap = tapSm[(size_t) v];
+            tap = tapSnap ? dMs * 0.001f * sr : tap + (dMs * 0.001f * sr - tap) * tapC; // ~2 ms glide
+            const float dSamples = tap;
             const float x = (v % 2 ? lineR : lineL).read (dSamples) * 0.6f + (v % 2 ? lineL : lineR).read (dSamples) * 0.4f;
             wl += x * panL[(size_t) v];
             wr += x * panR[(size_t) v];
         }
+        tapSnap = false;
         wl *= norm * 1.41f;
         wr *= norm * 1.41f;
         // dimension: cross-fed short delays, opposite polarity - width without a hole in the middle
@@ -535,12 +547,16 @@ void CompressorEffect::prepare (double sampleRate, int)
     mixG.prepare (sr, 0.02f);
     setParam (Attack, attackMs);
     setParam (Release, releaseMs);
+    holdSamples = (int) (0.012f * sr);
+    envFall = std::exp (-1.0f / (0.02f * sr));
     reset();
 }
 
 void CompressorEffect::reset() noexcept
 {
     env = -120.0f;
+    peakEnv = 0.0f;
+    holdLeft = 0;
     grDb = 0.0f;
     makeupG.v = makeupG.t;
     mixG.v = mixG.t;
@@ -567,8 +583,14 @@ void CompressorEffect::process (float* l, float* r, int n) noexcept
     float worst = 0.0f;
     for (int i = 0; i < n; ++i)
     {
-        // stereo-linked peak detector in dB, smoothed gain computer (branching attack / release)
-        const float peak = std::max (std::abs (l[i]), std::abs (r[i]));
+        // stereo-linked peak detector, smoothed gain computer (branching attack / release). 0.8 punch pass: the
+        // detector holds a peak for 12 ms (then falls with 20 ms), so fast settings no longer follow the waveform of a
+        // bass between its peaks (gain ripple inside every cycle = distortion on the sub)
+        const float x = std::max (std::abs (l[i]), std::abs (r[i]));
+        if (x >= peakEnv) { peakEnv = x; holdLeft = holdSamples; }
+        else if (holdLeft > 0) --holdLeft;
+        else peakEnv = std::max (x, peakEnv * envFall);
+        const float peak = peakEnv;
         const float target = staticGainDb (dsp::gainToDb (peak), threshold, ratio, knee);
         const float c = target < grDb ? atkC : relC;
         grDb = target + (grDb - target) * c;

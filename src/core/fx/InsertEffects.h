@@ -16,7 +16,10 @@ namespace ohpe
 class ChorusEffect final : public IEffect
 {
 public:
-    enum Param { Rate = 0, Depth, Mix, numParams };
+    /** Rate, Depth, Mix: 0.2. Voices, Drift, Spread, LowCut: 0.8 punch pass (appended; their defaults give the 0.2
+        chorus). Voices 2-4 = ensemble: staggered taps with phase-offset LFOs, panned across the stereo field. */
+    enum Param { Rate = 0, Depth, Mix, Voices, Drift, Spread, LowCut, numParams };
+    static constexpr int maxVoices = 4;
     EffectInfo info() const noexcept override { return { "chorus", "Chorus", "Chorus", "chorus" }; }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
@@ -29,6 +32,11 @@ private:
     std::vector<float> bufL, bufR;
     int writePos = 0;
     float sr = 48000.0f, rate = 0.6f, depth = 0.5f, mix = 0.5f, phase = 0.0f;
+    int voices = 1;
+    float drift = 0.0f, spread = 0.0f, lowCutHz = 20.0f;
+    std::array<float, maxVoices> driftPos {}, driftVel {};
+    uint32_t seed = 0x2545f491u, driftTick = 0;
+    float hpC = 0.0f, hpL1 = 0.0f, hpL2 = 0.0f, hpR1 = 0.0f, hpR2 = 0.0f, hpXL1 = 0.0f, hpXL2 = 0.0f, hpXR1 = 0.0f, hpXR2 = 0.0f;
 };
 
 /** Six-stage stereo phaser with feedback, exponential sweep 150 Hz .. 5 kHz. */
@@ -85,5 +93,13 @@ private:
     dsp::Smoother cutoffSmooth;
     float sr = 48000.0f, cutoff = 2000.0f, resonance = 0.3f, drive = 0.3f, mix = 1.0f;
     int mode = 0;
+    float dcC = 0.99935f, dcX[2] = { 0.0f, 0.0f }, dcY[2] = { 0.0f, 0.0f }; ///< 0.8: DC blocker (~5 Hz) after the clipper
+    float dcBlock (float x, int c) noexcept
+    {
+        const float y = x - dcX[c] + dcC * dcY[c];
+        dcX[c] = x;
+        dcY[c] = std::abs (y) < 1.0e-20f ? 0.0f : y;
+        return y;
+    }
 };
 } // namespace ohpe

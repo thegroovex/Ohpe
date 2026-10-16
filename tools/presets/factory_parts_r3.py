@@ -129,6 +129,112 @@ def auto_mpe(name, tags, engine, params):
     return mpe("cutoff", 0.5, "pan", 0.5, 0.1, 0.06)
 
 
+# ---- 0.8 punch pass: density and chorus for every part preset ------------------------------------------------------
+# A glue compressor (rack Compressor, dynamics rank: after drive / tone, before modulation / width / echoes / space) on
+# basses, 808s, leads, drums, plucks, arps, keys and voices; pads, textures and effects stay open. Its threshold sits
+# a fixed distance below the level that reaches it (measured, punch.json "thresh"), its makeup carries the level
+# calibration (punch.json "makeup"), so the part gain - and with it every drive stage - stays where it was.
+# A lush chorus ensemble (3-4 voices, drift, wet low cut: the low end stays dry and mono) on electric pianos and
+# organs, pads, plucks, leads, arps, voices and the mid range of reese / neuro basses; sub basses, 808s, drums, grand
+# pianos and effects keep none. Every chorus of the factory set becomes an ensemble.
+_punch_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "punch.json")
+PUNCH = json.load(open(_punch_path)) if os.path.exists(_punch_path) else {}
+_guard_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "peak_guard.json")
+GUARDED = set(json.load(open(_guard_path))) if os.path.exists(_guard_path) else set()  # make_factory adds a slot for them
+GLUE = {  # ratio, attack ms, release ms, knee dB, threshold below the incoming PEAK (dB), mix
+    # The compressors' detector holds peaks (12 ms), so the threshold sits below the incoming peak level: a few dB of
+    # gain reduction on the loud notes (glue / density), the body below the knee stays untouched (no pumping, no
+    # spiky transients over a squashed body).
+    "Bass": (4.0, 1.0, 70.0, 6.0, 9.0, 1.0), "Boom": (3.0, 2.0, 90.0, 6.0, 7.0, 1.0), "Leads": (3.5, 1.5, 80.0, 6.0, 8.0, 1.0),
+    "Drums": (4.0, 0.8, 70.0, 6.0, 8.0, 0.7), "Plucks": (3.0, 1.5, 90.0, 6.0, 6.0, 1.0), "Arp": (3.0, 1.5, 90.0, 6.0, 6.0, 1.0),
+    "Keys": (2.5, 5.0, 140.0, 8.0, 5.0, 1.0), "Vocal": (3.0, 3.0, 110.0, 6.0, 7.0, 1.0)}
+# struck mallets / bells / gated sparkle arps: a glue only ducks the ringing body under the strike (crest +2 dB, measured)
+# presets outside the punch pass (the 3D presets: calibrated with their binaural stage by space_cal.py)
+NO_PUNCH = set()
+NO_GLUE = {"Glock Arp", "Mallet Echo Arp", "Music Box", "Random Spark Arp", "Trance Gate Arp"}
+GLUE_DEFAULT_IN = -4.0  # assumed incoming peak before the first measurement
+_NO_CHORUS_WORDS = ("Sub", "Grand", "Piano", "Upright", "808", "Kick", "Snare", "Kit", "Hat", "Riser", "Downlifter", "Impact")
+CHORUS_ROLE = {  # rate Hz, depth, mix, voices, drift, low cut Hz
+    "Keys": (0.45, 0.55, 0.42, 3, 0.35, 160.0), "Pads": (0.25, 0.6, 0.38, 4, 0.45, 180.0), "Plucks": (0.4, 0.5, 0.33, 3, 0.3, 200.0),
+    "Leads": (0.35, 0.45, 0.28, 3, 0.3, 220.0), "Arp": (0.4, 0.5, 0.3, 3, 0.3, 200.0), "Vocal": (0.3, 0.5, 0.3, 3, 0.35, 200.0),
+    "Bass": (0.3, 0.5, 0.35, 3, 0.3, 320.0), "Textures": (0.2, 0.55, 0.3, 4, 0.45, 180.0)}
+ENSEMBLE = {"voices": 3, "drift": 0.35, "spread": 0.85, "lowcut": 150.0}  # every existing chorus becomes an ensemble
+_MOD_KINDS = ("chorus", "phaser", "flange", "hyper")
+
+
+def glue_params(name, cat):
+    ratio, attack, release, knee, below, mix = GLUE[cat]
+    pz = PUNCH.get(name, {})
+    return dict(thresh=round(pz.get("thresh", GLUE_DEFAULT_IN - below), 1), ratio=ratio, attack=attack, release=release,
+                knee=knee, makeup=round(pz.get("makeup", 0.0), 1), mix=mix)
+
+
+def wants_chorus(name, tags, engine):
+    cat = tags[0]
+    if cat not in CHORUS_ROLE or any(w in name for w in _NO_CHORUS_WORDS):
+        return False
+    if cat == "Bass":  # reese / neuro / growl mid range only
+        return any(w in name for w in ("Reese", "Neuro", "Growl", "Hybrid", "Vox", "Hollow"))
+    if cat == "Keys" and engine == "sampler":  # sampled grands stay dry; electric pianos / organs get it
+        return False
+    return True
+
+
+def ensemble_chorus(cat, slot=1):
+    rate, depth, mix, voices, drift, lowcut = CHORUS_ROLE[cat]
+    return fx(slot, "chorus", rate=rate, depth=depth, mix=mix, voices=voices, drift=drift, spread=0.85, lowcut=lowcut)
+
+
+def punch_inject(name, tags, engine, fxs):
+    """The punch pass for an r3 preset: returns (effects, the effect object that carried the level trim before)."""
+    cat = tags[0]
+    kinds0 = [f["__fx__"] for f in chain(fxs)]
+    cal0 = calib_slot(kinds0)
+    trim_fx = chain(fxs)[cal0] if cal0 is not None else None
+    out = list(fxs)
+    if name in NO_PUNCH:
+        return out, trim_fx
+    room = MAX_SLOTS - (1 if name in GUARDED else 0)
+    for f in out:  # every chorus becomes an ensemble (its own rate / depth / mix kept)
+        if f["__fx__"] == "chorus":
+            f["params"] = dict(f["params"], **{"chorus." + k: v for k, v in ENSEMBLE.items() if "chorus." + k not in f["params"]})
+    if cat in GLUE and name not in NO_GLUE and len(out) < room and not any(f["__fx__"] == "compressor" for f in out):
+        out.append(dict(comp(9, **glue_params(name, cat)), __glue__=True))
+    if wants_chorus(name, tags, engine) and len(out) < room and not any(f["__fx__"] in _MOD_KINDS for f in out):
+        out.append(ensemble_chorus(cat))
+    return out, trim_fx
+
+
+_LEGACY_KIND = {1: "chorus", 2: "phaser", 3: "bitcrush", 4: "filterdrive", 5: "delay", 6: "reverb"}
+
+
+def punch_legacy(p):
+    """The punch pass for a 0.4 - 0.6 preset (one FX slot, no matrix): its effect, a glue compressor and an ensemble
+    chorus laid out over the rack by RANK. The glue's makeup carries the level calibration from now on."""
+    params = dict(p["params"])
+    cat, name = p["tags"][0], p["name"]
+    fxs = []
+    t = params.get("fx.type", 0)
+    if t:
+        kind = _LEGACY_KIND[t]
+        own = {k[3:]: v for k, v in params.items() if k.startswith("fx.") and k != "fx.type"}
+        if kind == "chorus":
+            own.update({"chorus." + k: v for k, v in ENSEMBLE.items() if "chorus." + k not in own})
+        fxs.append({"__fx__": kind, "slot": 0, "params": dict({"type": t}, **own)})
+        for k in [k for k in params if k.startswith("fx.")]:
+            del params[k]
+    if cat in GLUE and name not in NO_GLUE:
+        fxs.append(comp(9, **glue_params(name, cat)))
+    if wants_chorus(name, p["tags"], next((e for e, v in ENGINES.items() if v == params.get("engine")), "")) \
+            and not any(f["__fx__"] in _MOD_KINDS for f in fxs):
+        fxs.append(ensemble_chorus(cat))
+    if not fxs or (len(fxs) == 1 and t):
+        return p if not t or _LEGACY_KIND[t] != "chorus" else dict(p, params=dict(p["params"], **{"fx.chorus." + k: v for k, v in ENSEMBLE.items()}))
+    for i, f in enumerate(chain(fxs)):
+        params.update({slot_prefix(i) + k: v for k, v in f["params"].items()})
+    return dict(p, params=params)
+
+
 # presets without MPE mappings: sub basses (pressure on a sub only muddies it), arps and one-shot effects
 NO_MPE = {"Rolling Sub", "Liquid Sub", "Step Sub", "Halftime Sub", "Click Sub", "Deep Pluck Sub", "Roller Bass", "Tech Stab Bass",
           "Warm Roller", "Wide Organ", "Ghost Organ"}
@@ -154,13 +260,13 @@ def P(name, tags, engine, comment, *dicts, **kw):
     rest = [d for d in dicts if not (isinstance(d, dict) and ("__fx__" in d or "__mpe__" in d or "__motion__" in d))]
     kinds = []
     tags = list(tags)
+    fxs, trim_fx = punch_inject(name, tags, engine, fxs)
     if fxs:
         ch = chain(fxs)
         kinds = [f["__fx__"] for f in ch]
-        cal = calib_slot(kinds)
         for i, f in enumerate(ch):
             p = dict(f["params"])
-            if i == cal and name in FX_LEVELS:
+            if f is trim_fx and name in FX_LEVELS:  # the level trim of the chain before the punch pass stays
                 p[f["__fx__"] + "." + TRIM_KEY.get(f["__fx__"], "output")] = FX_LEVELS[name]
             rest.append({slot_prefix(i) + k: v for k, v in p.items()})
     for m in motions:
@@ -817,7 +923,7 @@ PRESETS_R3 = [
       amp(0.9, 2.0, 0.9, 3.0), mod(1.0, 2.0, 0.6, 2.0, 0.1), cho(1, 0.25, 0.55, 0.35), rev(3, 0.88, 0.5, 0.03, 0.34), voices=6),
     P("Night Rain", ["Textures"], "grain", "Random kalimba droplets falling into a ping-pong delay and a dark hall.",
       gr(inst="kalimba", pos=0.3, size=110, density=55, spray=0.9, reverse=0.1, spread=1.0, scan=0.2, tone=0.6, pitch=12),
-      amp(0.05, 1.0, 0.85, 3.0), mod(0.01, 1.0, 0.5, 1.0, 0.0), comp(1, -30.0, 3.0, 3.0, 150.0, 8.0, 12.0), dly(2, 0.36, 0.55, 0.35, 1, 0.35), rev(3, 0.9, 0.6, 0.03, 0.4),
+      amp(0.05, 1.0, 0.85, 3.0), mod(0.01, 1.0, 0.5, 1.0, 0.0), comp(1, -25.0, 3.0, 3.0, 150.0, 8.0, 12.0), dly(2, 0.36, 0.55, 0.35, 1, 0.35), rev(3, 0.9, 0.6, 0.03, 0.4),
       voices=8),
     P("Ghost Organ", ["Pads", "Keys"], "wavetable", "Hollow harmonic organ with a slow autopan and a cavernous hall.",
       wt(table="harmonic", pos=0.55, tone=0.65, unison=0.2, univoices=3, keytrack=0.4, lfopos=0.15),

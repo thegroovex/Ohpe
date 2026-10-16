@@ -100,9 +100,12 @@ BounceResult bounce (Core& live, const BounceOptions& options)
     for (int c = 0; c < 2 * TapeMachine::numTracks; ++c) capture[(size_t) c] = stems.getWritePointer (c);
     offline->setTapeCapture (&capture);
 
-    for (juce::int64 pos = 0; pos < total; pos += block)
+    // 0.8: the master output is late by the limiter look-ahead (constant); render that much longer and drop the
+    //      first frames so the master file lines up with the stems (and with the tape) sample for sample
+    const juce::int64 latency = juce::jmax (0, offline->latencySamples());
+    for (juce::int64 pos = 0; pos < total + latency; pos += block)
     {
-        const int n = (int) juce::jmin ((juce::int64) block, total - pos);
+        const int n = (int) juce::jmin ((juce::int64) block, total + latency - pos);
         OutputBuffers ob;
         for (int o = 0; o < numOutputPairs; ++o)
         {
@@ -112,15 +115,21 @@ BounceResult bounce (Core& live, const BounceOptions& options)
         offline->process (ob, n, nullptr, 0, Transport {});
         if (masterWriter != nullptr)
         {
-            const float* ch[2] = { outs.getReadPointer (0), outs.getReadPointer (1) };
-            if (! masterWriter->writeFromFloatArrays (ch, 2, n)) { result.error = i18n::tr ("Could not write the file:"); return result; }
-        }
-        for (int t = 0; t < TapeMachine::numTracks; ++t)
-            if (auto& w = stemWriters[(size_t) t])
+            const int skip = (int) juce::jlimit ((juce::int64) 0, (juce::int64) n, latency - pos);
+            if (n > skip)
             {
-                const float* ch[2] = { stems.getReadPointer (2 * t), stems.getReadPointer (2 * t + 1) };
-                if (! w->writeFromFloatArrays (ch, 2, n)) { result.error = i18n::tr ("Could not write the file:"); return result; }
+                const float* ch[2] = { outs.getReadPointer (0) + skip, outs.getReadPointer (1) + skip };
+                if (! masterWriter->writeFromFloatArrays (ch, 2, n - skip)) { result.error = i18n::tr ("Could not write the file:"); return result; }
             }
+        }
+        const int stemN = (int) juce::jlimit ((juce::int64) 0, (juce::int64) n, total - pos);
+        if (stemN > 0)
+            for (int t = 0; t < TapeMachine::numTracks; ++t)
+                if (auto& w = stemWriters[(size_t) t])
+                {
+                    const float* ch[2] = { stems.getReadPointer (2 * t), stems.getReadPointer (2 * t + 1) };
+                    if (! w->writeFromFloatArrays (ch, 2, stemN)) { result.error = i18n::tr ("Could not write the file:"); return result; }
+                }
     }
     offline->setTapeCapture (nullptr);
     masterWriter.reset();

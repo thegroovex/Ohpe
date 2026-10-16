@@ -66,6 +66,17 @@ bool Voice::pickRegion (const SampleMap& m) noexcept
         loopEnd = std::clamp<int64_t> (loopEnd, 0, regionEnd);
         if (loopEnd - loopStart < 16) loopMode = LoopOff;
     }
+    // 0.8: a forward loop crossfades into its start over up to 20 ms (the material before the loop start, or after
+    // the end when it plays backwards): a loop jump between points that do not meet in level and phase clicked
+    // on every pass of a held note
+    xfade = 0;
+    if (loopMode == LoopForward)
+    {
+        const auto len = loopEnd - loopStart;
+        const auto room = p.reverse ? sample->numFrames() - 2 - loopEnd : loopStart;
+        xfade = std::max<int64_t> (0, std::min<int64_t> ({ (int64_t) (0.02 * sample->sampleRate()), len / 3, room }));
+        if (xfade < 16) xfade = 0;
+    }
     if (regionEnd - regionStart < 2) return false;
 
     const double offset = (double) p.start * (double) (regionEnd - regionStart - 1);
@@ -89,6 +100,8 @@ void Voice::start (int midiNote, float vel, bool legato, const VoiceCommon& c) n
     }
     declick = 1.0f;
     for (auto& f : filter) f.reset();
+    filterMix = -1.0f;
+    rampGain = -1.0f;
 }
 
 void Voice::kill() noexcept
@@ -124,22 +137,48 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         if (c.lfoDest == LfoDest::Timbre) octaves += lfoValue * 2.0f;
         octaves += (expr.timbre + expr.cutoff) * 3.0f; // per-note expression / modulation matrix (0.7), cutoff target (0.8)
         const float cutoff = std::clamp (40.0f * std::pow (2.0f, p.tone * 9.0f + octaves), 20.0f, 20000.0f);
-        const bool useFilter = cutoff < 18000.0f;
-        if (useFilter)
-            for (auto& f : filter) f.set (cutoff, 0.1f);
+        // 0.8 punch pass: the tone filter always runs (its state stays continuous) and fades in / out over ~3 ms
+        // when the cutoff crosses 18 kHz. Switching it on with a stale state (LFO / expression sweeping the tone
+        // across the bypass point) put a one-sample spike into the sound - an audible click.
+        const float filterTarget = cutoff < 18000.0f ? 1.0f : 0.0f;
+        if (filterMix < 0.0f) filterMix = filterTarget;
+        const float filterFade = 1.0f / (0.003f * sr);
+        for (auto& f : filter) f.set (cutoff, 0.1f);
 
         float panL, panR;
         lfoPan (c, panL, panR);
         const float gain = velocityGain (c) * lfoAmp (c);
+        // 0.8: gain and pan glide over the block (a tremolo / auto-pan edge was a step at every block boundary)
+        if (rampGain < 0.0f) { rampGain = gain; rampL = panL; rampR = panR; }
+        const float g0 = rampGain, l0 = rampL, r0 = rampR, inv = 1.0f / (float) n;
+        rampGain = gain;
+        rampL = panL;
+        rampR = panR;
+        const auto loopLen = (double) (loopEnd - loopStart);
 
         for (int i = 0; i < n; ++i)
         {
             float a = readHermite (ch0, frames, pos);
             float b = ch1 == ch0 ? a : readHermite (ch1, frames, pos);
-            if (useFilter)
+            if (xfade > 0) // 0.8: loop crossfade (equal gain: the two readings are the same tone a loop apart)
             {
-                a = filter[0].process (a, dsp::Svf::LowPass);
-                b = ch1 == ch0 ? a : filter[1].process (b, dsp::Svf::LowPass);
+                double t = 0.0, other = 0.0;
+                if (direction > 0 && pos > (double) (loopEnd - xfade)) { t = (pos - (double) (loopEnd - xfade)) / (double) xfade; other = pos - loopLen; }
+                else if (direction < 0 && pos < (double) (loopStart + xfade)) { t = ((double) (loopStart + xfade) - pos) / (double) xfade; other = pos + loopLen; }
+                if (t > 0.0)
+                {
+                    const auto w = (float) std::min (1.0, t);
+                    const float oa = readHermite (ch0, frames, other);
+                    const float ob = ch1 == ch0 ? oa : readHermite (ch1, frames, other);
+                    a += (oa - a) * w;
+                    b += (ob - b) * w;
+                }
+            }
+            {
+                filterMix += std::clamp (filterTarget - filterMix, -filterFade, filterFade);
+                const float fa = filter[0].process (a, dsp::Svf::LowPass), fb = filter[1].process (b, dsp::Svf::LowPass);
+                a += (fa - a) * filterMix;
+                b += (fb - b) * filterMix;
             }
 
             pos += ratio * (double) direction;
@@ -171,9 +210,10 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
             }
 
             modEnv.next();
-            const float env = ampEnv.next() * gain * declick;
-            l[done + i] += a * env * panL;
-            r[done + i] += b * env * panR;
+            const float k = (float) (i + 1) * inv;
+            const float env = ampEnv.next() * (g0 + (gain - g0) * k) * declick;
+            l[done + i] += a * env * (l0 + (panL - l0) * k);
+            r[done + i] += b * env * (r0 + (panR - r0) * k);
             if (ended)
             {
                 kill();
