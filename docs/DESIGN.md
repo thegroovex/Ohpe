@@ -19,11 +19,16 @@ fonts), `src/ui/Widgets.cpp` (keys, encoders, wheels, keyboard), `src/ui/PluginE
    uniformly). No metal, no grain, no texture. Functional groups lie in grey **recessed panels**:
    ENGINE (left), MODE (right), TRANSPORT + MIDI (bottom left), OCTAVE (bottom right), the keyboard
    bed. Overlays (library, pro view) lie *on* the plate like a lid in a dark frame; the header and
-   the keyboard row stay visible and playable.
+   the keyboard row stay visible and playable. **One radius system:** the housing has an 18-unit
+   corner radius, every recessed panel and frame (columns, transport, octave, keyboard bed, display
+   frame, the header slots, the overlays) the same 8 units, and what sits inside a panel (keys,
+   part keys, preset strip, display glass) 5 units - the curves read as concentric.
 2. **Colour means function.** The four accents belong to the four encoders and appear only where
    the matching value is: signal red (1), sun yellow (2), ultraviolet (3), rose (4). The encoder
-   rings and the display's macro rows share them. Red also marks recording and the active mode,
-   yellow the engine and the edit part. Everything else is warm white, grey and graphite.
+   rings and the display's macro rows share them. The key LEDs speak the same language: **yellow =
+   your focus** (the edit part's engine, the page on the display), **ultraviolet = running / in use
+   elsewhere** (another part's engine, a running sequencer, the tape playing, an FX slot on, a
+   routed modulation), **red = recording**. Everything else is warm white, grey and graphite.
 3. **The display is the only screen.** Big, high-contrast and recessed in a dark frame: deep
    "night" glass with a faint dot grid, warm paper-white text. Values in a monospace face, names in
    Space Grotesk.
@@ -44,7 +49,7 @@ fonts), `src/ui/Widgets.cpp` (keys, encoders, wheels, keyboard), `src/ui/PluginE
 
 | Area | Content |
 |---|---|
-| Header | OHPE wordmark, PART 1–4 (segmented), preset strip (black, yellow arrows), LIBRARY and PRO (dark pills), RANDOM and SAVE (round keys with the four-colour ring), EN / DE |
+| Header | OHPE wordmark, PART 1–4 (segmented), preset strip (black, yellow arrows), LIBRARY and PRO (dark pills), RANDOM and SAVE (round keys with the four-colour ring), EN / DE. One row: every control is centred on the strips' centre line (y 56), every legend (PART, PRESET, LIBRARY, PRO, RANDOM, SAVE, LANGUAGE) sits above its control on one baseline (y 20 – 32; a long legend is narrowed, never lowered); 8 units between the keys, and the row ends 32 units from the housing's right edge as the wordmark starts 32 units from its left edge |
 | Left column | ENGINE: eight engine keys, 2 × 4 |
 | Centre | the display; four encoders below it, 168 units apart |
 | Right column | MODE: Synth, Envelope, LFO, Mixer, Effects, Sequencer, Tape, Drum |
@@ -76,7 +81,8 @@ fonts), `src/ui/Widgets.cpp` (keys, encoders, wheels, keyboard), `src/ui/PluginE
 
 | Component | Notes |
 |---|---|
-| Keys (p14) | matte light square caps, ink pictogram, engraved legend below; active = sunk cap + a short lit bar in the function colour (yellow engine, red mode / transport) |
+| Keys (p14) | matte light square caps, ink pictogram, engraved legend below; active = sunk cap. Engine, mode and the PLAY / REC / LOOP keys carry an **LED** instead of a lit bar |
+| Key LEDs (p14) | a 7-unit matte lens in the top-left corner of the cap: unlit a grey pit, lit a flat colour with a soft halo on the cap - no glare, no specular dot. **Engine keys:** yellow = the edit part's engine, ultraviolet = used only by other parts; four tiny dots in the top-right corner show which parts (1 – 4, left to right) play the engine. **Mode keys:** yellow = the page on the display; ultraviolet = SEQUENCER running, TAPE playing, EFFECTS (any rack slot of a part or the master has a type and is not bypassed), DRUM (a running sequencer plays the drum kit), LFO (a part's LFO 1 has depth or a matrix routing has source, target and amount); red = TAPE recording (blinking). Status wins over the page colour; the page stays visible as the sunk cap. **Transport:** PLAY ultraviolet while running, REC red (steady = ready, blinking = recording), LOOP yellow while on. The tooltips say what each LED means |
 | Pills (p14) | LIBRARY and PRO: dark graphite pills with a light pictogram; active = the pictogram and a short bar in the accent |
 | Round keys (p14) | RANDOM (a die) and SAVE (a preset card with a plus): light round caps inside a ring of the four accent colours |
 | Encoders | matte light knob on a soft shadow with an ink pointer line, the value arc in the encoder's accent on a light track; small dot = MIDI-mapped; square marker = step lock |

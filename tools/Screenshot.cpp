@@ -403,6 +403,28 @@ int main (int argc, char* argv[])
             e.selectEngine (EngineType::Analog);
         }
 
+        // p14: key LEDs - the parts on different engines (P1 Analog edited, P2 FM, P3 Wavetable, P4 Analog), a chorus
+        //      in part 1's rack and the sequencer running: yellow / violet engine LEDs with their part dots,
+        //      status LEDs on the mode keys (Effects, Sequencer violet; Synth yellow = the shown page)
+        {
+            setChoice (p, "p2.engine", "FM");
+            setChoice (p, "p3.engine", "Wavetable");
+            setChoice (p, "p4.engine", "Analog");
+            setChoice (p, "p1.fx.type", "Chorus");
+            prepareRack (p);
+            e.selectPart (0);
+            e.selectEngine (EngineType::Analog);
+            e.selectMode (ui::Mode::Synth);
+            setPlain (p, "seq.run", 1.0f);
+            playAnimated (p, e, 20);
+            save (e, dir.getChildFile ("ohpe-engine-leds" + suffix + ".png"));
+            setPlain (p, "seq.run", 0.0f);
+            setChoice (p, "p1.fx.type", "Off");
+            for (int part = 2; part <= 4; ++part) setChoice (p, "p" + juce::String (part) + ".engine", "Analog");
+            run (p, 8);
+            e.advanceAnimation (1.0f / 30.0f);
+        }
+
         // 0.3: preset library with a category filter and a preset selected
         e.showLibrary (true);
         auto& lib = e.libraryComponent();

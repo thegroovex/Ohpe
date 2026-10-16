@@ -280,6 +280,18 @@ void drawFittedLegend (juce::Graphics& g, const juce::String& text, juce::Rectan
     g.drawText (text, area, j, true);
 }
 
+void drawBaselineLegend (juce::Graphics& g, const juce::String& text, juce::Rectangle<float> area, float height, juce::Justification j)
+{
+    auto f = labelFont (height);
+    const float baseline = area.getY() + (area.getHeight() + f.getAscent() - f.getDescent()) * 0.5f;
+    const float w = juce::GlyphArrangement::getStringWidth (f, text);
+    if (w > area.getWidth() && w > 0.0f) f = f.withHorizontalScale (juce::jmax (0.7f, area.getWidth() / w));
+    g.setFont (f);
+    const int x = j.testFlags (juce::Justification::left) ? (int) area.getX()
+                : j.testFlags (juce::Justification::right) ? (int) area.getRight() : (int) area.getCentreX();
+    g.drawSingleLineText (text, x, juce::roundToInt (baseline), j.getOnlyHorizontalFlags());
+}
+
 namespace
 {
 /** Soft two-layer shadow under a rounded shape (matte objects on the housing). */
@@ -306,12 +318,56 @@ void fourColourRing (juce::Graphics& g, juce::Point<float> c, float radius, floa
 }
 } // namespace
 
+void PictoKey::setLed (juce::Colour c, float level)
+{
+    level = juce::jlimit (0.0f, 1.0f, level);
+    if (level == ledLevel && (level == 0.0f || c == ledColour)) return;
+    ledLevel = level;
+    ledColour = c;
+    repaint();
+}
+
+juce::Rectangle<float> PictoKey::capArea() const
+{
+    const auto b = getLocalBounds().toFloat();
+    const float legendH = juce::jmin (18.0f * uiScale, b.getHeight() * 0.4f);
+    return b.withTrimmedBottom (legendH + 2.0f).reduced (2.0f, 1.0f);
+}
+
+namespace
+{
+/** p14: a matte LED lens: unlit a dark grey pit, lit a flat colour with a soft halo (no specular glare). */
+void drawLed (juce::Graphics& g, juce::Point<float> c, float d, juce::Colour colour, float level)
+{
+    const auto lens = juce::Rectangle<float> (d, d).withCentre (c);
+    // the pit the lens sits in: a fine darker ring and a light lower lip
+    g.setColour (juce::Colours::white.withAlpha (0.7f));
+    g.fillEllipse (lens.expanded (0.9f).translated (0, 0.6f));
+    g.setColour (juce::Colour (0xff8f8b84));
+    g.fillEllipse (lens.expanded (0.9f));
+    g.setColour (juce::Colour (0xffa9a59d));
+    g.fillEllipse (lens);
+    if (level <= 0.0f) return;
+    for (int i = 3; i >= 1; --i) // soft halo on the cap
+    {
+        g.setColour (colour.withAlpha (0.10f * level));
+        g.fillEllipse (lens.expanded (d * 0.28f * (float) i));
+    }
+    g.setColour (colour.withMultipliedAlpha (0.35f + 0.65f * level));
+    g.fillEllipse (lens);
+    g.setColour (colour.darker (0.35f).withAlpha (0.55f * level)); // matte rim
+    g.drawEllipse (lens.reduced (0.4f), 0.8f);
+}
+} // namespace
+
 void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
 {
     const auto b = getLocalBounds().toFloat();
     const bool pressed = down || (active && style == Style::Cap);
-    const float legendH = juce::jmin ((style == Style::Cap ? 18.0f : 16.0f) * uiScale, b.getHeight() * 0.4f);
-    const auto legendArea = b.withTop (b.getBottom() - legendH);
+    // p14: header keys carry their legend above (12 units, the header's legend baseline), 4 units of air below it
+    const float legendH = legendOnTop ? 16.0f * uiScale : juce::jmin ((style == Style::Cap ? 18.0f : 16.0f) * uiScale, b.getHeight() * 0.4f);
+    const auto legendArea = legendOnTop ? b.withHeight (12.0f * uiScale) : b.withTop (b.getBottom() - legendH);
+    const auto body = legendOnTop ? b.withTrimmedTop (legendH) : b.withTrimmedBottom (legendH);
     auto ink = colour::capInk;
     PictoState ps;
     const bool transportSign = picto == Picto::Play || picto == Picto::Stop || picto == Picto::Record
@@ -319,8 +375,8 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
 
     if (style == Style::Round)
     {
-        const float d = juce::jmin (b.getWidth(), b.getHeight() - legendH) - 2.0f;
-        const auto ringBox = juce::Rectangle<float> (d, d).withCentre ({ b.getCentreX(), (b.getHeight() - legendH) * 0.5f });
+        const float d = juce::jmin (body.getWidth(), body.getHeight()) - 2.0f;
+        const auto ringBox = juce::Rectangle<float> (d, d).withCentre (body.getCentre());
         const float ringW = juce::jmax (1.5f, d * 0.07f);
         fourColourRing (g, ringBox.getCentre(), d * 0.5f - ringW * 0.5f, ringW);
         auto cap = ringBox.reduced (ringW * 1.9f);
@@ -336,7 +392,8 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
     }
     else if (style == Style::Pill)
     {
-        auto cap = b.withTrimmedBottom (legendH).reduced (1.0f, b.getHeight() * 0.04f);
+        auto cap = legendOnTop ? body.withSizeKeepingCentre (body.getWidth() - 2.0f, 32.0f * uiScale) // the strips' height
+                               : body.reduced (1.0f, b.getHeight() * 0.04f);
         const float r = cap.getHeight() * 0.5f;
         softShadow (g, cap, r, down ? 0.6f : 2.0f);
         if (down) cap = cap.translated (0, 1.0f);
@@ -355,7 +412,7 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
     else
     {
         auto cap = b.withTrimmedBottom (legendH + 2.0f).reduced (2.0f, 1.0f);
-        const float r = juce::jmin (cap.getWidth(), cap.getHeight()) * 0.12f;
+        const float r = radius::inset * uiScale; // p14: the radius system (Palette.h)
         softShadow (g, cap, r, pressed ? 0.8f : 2.4f);
         if (pressed) cap = cap.translated (0, 1.0f);
         const auto top = pressed ? colour::capBottom : colour::capTop;
@@ -376,7 +433,22 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
             drawPictogram (g, cap.withSizeKeepingCentre (cap.getHeight(), cap.getHeight()).reduced (cap.getHeight() * 0.18f), picto, ps, ink);
         else
             drawPictogram (g, cap.reduced (cap.getWidth() * 0.2f, cap.getHeight() * 0.12f), picto, ps, ink);
-        if (active) // the lit bar of the active key, in its function colour
+        if (hasLed)
+        {
+            const float d = juce::jmax (4.5f, 7.0f * uiScale), inset = juce::jmax (6.0f, 9.5f * uiScale);
+            drawLed (g, { cap.getX() + inset, cap.getY() + inset }, d, ledColour, ledLevel);
+            if (partDots != 0)
+            {
+                const float dd = juce::jmax (2.4f, 3.4f * uiScale), pitch = juce::jmax (3.6f, 5.2f * uiScale);
+                for (int p = 0; p < 4; ++p)
+                {
+                    const juce::Point<float> pc { cap.getRight() - inset - pitch * (float) (3 - p), cap.getY() + inset };
+                    g.setColour ((partDots >> p) & 1u ? colour::capInk.withAlpha (0.8f) : colour::capEdge.withAlpha (0.9f));
+                    g.fillEllipse (juce::Rectangle<float> (dd, dd).withCentre (pc));
+                }
+            }
+        }
+        else if (active) // the lit bar of the active key, in its function colour
         {
             g.setColour (accent);
             g.fillRoundedRectangle (juce::Rectangle<float> (cap.getWidth() * 0.3f, juce::jmax (2.0f, cap.getHeight() * 0.05f))
@@ -384,7 +456,8 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
         }
     }
     g.setColour (available ? colour::engraving : colour::engraving.withAlpha (0.45f));
-    drawFittedLegend (g, i18n::upper (tr (legend)), legendArea, 10.5f * uiScale);
+    if (legendOnTop) drawBaselineLegend (g, i18n::upper (tr (legend)), legendArea, 11.0f * uiScale);
+    else drawFittedLegend (g, i18n::upper (tr (legend)), legendArea, 10.5f * uiScale);
 }
 
 // ---------------------------------------------------------------- Keyboard

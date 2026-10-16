@@ -117,6 +117,18 @@ public:
     void setLegend (juce::String englishText) { legend = std::move (englishText); repaint(); }
     /** p11: the pictogram keeps this colour even when the key is not active (record = red). */
     void setPictoColour (juce::Colour c) { pictoInk = c; hasPictoInk = true; repaint(); }
+    /** p14: the key carries an LED in the top-left corner of its cap (a matte lens; replaces the lit bar). */
+    /** p14: the legend above the key on the header row's baseline (12 units high) instead of below it. */
+    void setLegendOnTop (bool t) { if (t != legendOnTop) { legendOnTop = t; repaint(); } }
+    void setHasLed (bool h) { if (h != hasLed) { hasLed = h; repaint(); } }
+    /** p14: LED colour and level (0 = off, 1 = lit). */
+    void setLed (juce::Colour c, float level);
+    float getLedLevel() const noexcept { return ledLevel; }
+    juce::Colour getLedColour() const noexcept { return ledColour; }
+    /** p14: four tiny dots in the top-right corner of the cap, one per part (bit p = part p + 1 uses the key). */
+    void setPartDots (unsigned mask) { if (mask != partDots) { partDots = mask; repaint(); } }
+    /** The cap of a Cap-style key in local coordinates (where the LED and the dots sit). */
+    juce::Rectangle<float> capArea() const;
 
     std::function<void()> onSecondaryClick;
 
@@ -127,6 +139,10 @@ public:
 private:
     Picto picto;
     juce::String legend;
+    bool hasLed = false, legendOnTop = false;
+    float ledLevel = 0.0f;
+    juce::Colour ledColour;
+    unsigned partDots = 0;
     Style style = Style::Cap;
     float uiScale = 1.0f;
     bool active = false, available = true;
@@ -136,6 +152,9 @@ private:
 
 /** Draws a legend in engraved small caps, shrinking the font (down to 70 %) until it fits the width. */
 void drawFittedLegend (juce::Graphics& g, const juce::String& text, juce::Rectangle<float> area, float height, juce::Justification j = juce::Justification::centred);
+/** p14: a header legend on a fixed baseline (the area's height and the font size set it, not the text):
+    too long a text is narrowed, never lowered, so every legend of the header row shares one baseline. */
+void drawBaselineLegend (juce::Graphics& g, const juce::String& text, juce::Rectangle<float> area, float height, juce::Justification j = juce::Justification::centred);
 
 /** p14: three-octave keyboard with matte keys. */
 class Keyboard : public juce::MidiKeyboardComponent

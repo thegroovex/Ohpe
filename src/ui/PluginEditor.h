@@ -143,6 +143,7 @@ private:
     void bindPartControls(); ///< p14: glide switch / knob follow the edit part
     void refreshKeys();
     void refreshTransportKeys(); ///< p11: key states (REC blinks while recording)
+    void refreshLeds();          ///< p14: engine / mode key LEDs and their tooltips
     void updateOverlayVisibility(); ///< p11: hides every plate control under the library / pro view
     std::vector<juce::Component*> plateComponents();
     void refreshSoftKeys();
@@ -176,6 +177,8 @@ private:
     juce::String lastFlashText;
     int transportMessagesSeen = 0;
     float blinkClock = 0.0f;
+    std::array<unsigned, numEngineTypes> engineTipParts {}; ///< p14: part sets the engine tooltips were written for
+    bool engineTipsValid = false;
     ui::PictoKey octDownKey { ui::Picto::OctaveDown, "Octave" };
     ui::PictoKey octUpKey { ui::Picto::OctaveUp, "Octave" };
     ui::PictoKey midiKey { ui::Picto::Midi, "MIDI" };

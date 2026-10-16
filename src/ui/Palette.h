@@ -59,6 +59,16 @@ inline juce::Colour encoder (int i)
 }
 } // namespace colour
 
+/** p14: one radius system (design units at 1x): the housing, a matching smaller radius on every recessed
+    panel and frame (columns, transport, octave, keyboard bed, display frame, header slots, overlays),
+    the keys and strips that sit inside a panel a smaller one again - the curves read as concentric. */
+namespace radius
+{
+inline constexpr float housing = 18.0f;
+inline constexpr float panel = 8.0f;
+inline constexpr float inset = 5.0f; ///< strips and keys inside a panel (part keys, preset strip, display glass)
+} // namespace radius
+
 /** Fonts: Space Grotesk (geometric, bundled, SIL OFL) and the platform monospace for values. */
 juce::Font brandFont (float height, bool bold = true);
 juce::Font labelFont (float height);

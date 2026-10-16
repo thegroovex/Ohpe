@@ -11,6 +11,7 @@
 #include "plugin/PluginProcessor.h"
 #include "ui/PluginEditor.h"
 #include "mod/ModVoice.h"
+#include "fx/FxRack.h"
 
 using namespace ohpe;
 
@@ -213,4 +214,118 @@ TEST_CASE ("glide controls follow the edit part; RANDOM changes the engine's sou
     e.openSave();
     CHECK (e.libraryVisible());
     e.showLibrary (false);
+}
+
+TEST_CASE ("key LEDs: engine keys light yellow for the edit part, violet for other parts, with part dots")
+{
+    using ui::Led;
+    ui::LedInputs in;
+    in.partEngine = { (int) EngineType::Analog, (int) EngineType::FM, (int) EngineType::Analog, (int) EngineType::Grain };
+    in.editPart = 0;
+    auto leds = ui::keyLeds (in);
+    CHECK (leds.engine[(size_t) EngineType::Analog] == Led::Focus);
+    CHECK (leds.engineParts[(size_t) EngineType::Analog] == 0b0101u);
+    CHECK (leds.engine[(size_t) EngineType::FM] == Led::Active);
+    CHECK (leds.engineParts[(size_t) EngineType::FM] == 0b0010u);
+    CHECK (leds.engine[(size_t) EngineType::Grain] == Led::Active);
+    CHECK (leds.engineParts[(size_t) EngineType::Grain] == 0b1000u);
+    CHECK (leds.engine[(size_t) EngineType::Wavetable] == Led::Off);
+    CHECK (leds.engineParts[(size_t) EngineType::Wavetable] == 0u);
+    // another edit part: its engine takes the focus, the edit part's former engine stays lit for parts 1 and 3
+    in.editPart = 1;
+    leds = ui::keyLeds (in);
+    CHECK (leds.engine[(size_t) EngineType::FM] == Led::Focus);
+    CHECK (leds.engine[(size_t) EngineType::Analog] == Led::Active);
+}
+
+TEST_CASE ("key LEDs: mode keys show the page in yellow and the status in violet / red")
+{
+    using ui::Led;
+    using ui::Mode;
+    ui::LedInputs in;
+    in.page = Mode::Synth;
+    auto leds = ui::keyLeds (in);
+    for (int m = 0; m < ui::numModes; ++m)
+        CHECK (leds.mode[(size_t) m] == ((Mode) m == Mode::Synth ? Led::Focus : Led::Off));
+
+    in.sequencerRunning = true;
+    in.drumSeqRunning = true;
+    in.effectsActive = true;
+    in.modulationActive = true;
+    in.tapePlaying = true;
+    leds = ui::keyLeds (in);
+    CHECK (leds.mode[(size_t) Mode::Sequencer] == Led::Active);
+    CHECK (leds.mode[(size_t) Mode::Drum] == Led::Active);
+    CHECK (leds.mode[(size_t) Mode::Effects] == Led::Active);
+    CHECK (leds.mode[(size_t) Mode::Lfo] == Led::Active);
+    CHECK (leds.mode[(size_t) Mode::Tape] == Led::Active);
+    CHECK (leds.mode[(size_t) Mode::Envelope] == Led::Off);
+    CHECK (leds.mode[(size_t) Mode::Mixer] == Led::Off);
+    // recording wins on the tape key, the status wins over the page colour
+    in.tapeRecording = true;
+    in.page = Mode::Sequencer;
+    leds = ui::keyLeds (in);
+    CHECK (leds.mode[(size_t) Mode::Tape] == Led::Record);
+    CHECK (leds.mode[(size_t) Mode::Sequencer] == Led::Active);
+    CHECK (leds.mode[(size_t) Mode::Synth] == Led::Off);
+}
+
+TEST_CASE ("key LEDs: the inputs are read from the core (sequencer, drums, FX rack, modulation, engines)")
+{
+    OhpeProcessor p;
+    auto& core = p.core();
+    auto& reg = core.params();
+    auto set = [&reg] (const char* id, float v) { REQUIRE (reg.indexOf (id) >= 0); reg.set (id, v); };
+    // a clean state: no slot, no routing, nothing running
+    for (const auto& pre : FxRack::allSlotPrefixes (Core::numParts)) reg.set (pre + "type", 0.0f);
+    for (int part = 1; part <= Core::numParts; ++part)
+    {
+        const std::string pp = "p" + std::to_string (part) + ".";
+        reg.set (pp + "lfo.depth", 0.0f);
+        for (int k = 1; k <= mod::numSlots; ++k) reg.set (pp + "mod.s" + std::to_string (k) + ".src", 0.0f);
+    }
+    set (Core::Ids::seqRun, 0.0f);
+    auto in = ui::ledInputs (core, 0, ui::Mode::Synth, false, false);
+    CHECK_FALSE (in.sequencerRunning);
+    CHECK_FALSE (in.drumSeqRunning);
+    CHECK_FALSE (in.effectsActive);
+    CHECK_FALSE (in.modulationActive);
+
+    set ("p2.engine", (float) EngineType::FM);
+    set (Core::Ids::seqRun, 1.0f);
+    set (Core::Ids::stepDrums, 1.0f);
+    set ("p3.fx2.type", 1.0f); // Chorus
+    set ("p4.lfo.depth", 0.5f);
+    in = ui::ledInputs (core, 1, ui::Mode::Synth, true, false);
+    CHECK (in.partEngine[1] == (int) EngineType::FM);
+    CHECK (in.editPart == 1);
+    CHECK (in.sequencerRunning);
+    CHECK (in.drumSeqRunning);
+    CHECK (in.effectsActive);
+    CHECK (in.modulationActive);
+    CHECK (in.tapeRecording);
+    CHECK (in.tapePlaying); // recording rolls the tape
+    // a bypassed slot is off; a matrix routing needs source, target and amount
+    set ("p3.fx2.bypass", 1.0f);
+    set ("p4.lfo.depth", 0.0f);
+    set ("p1.mod.s3.src", (float) mod::SrcLfo2);
+    set ("p1.mod.s3.dst", (float) mod::DstPitch);
+    set ("p1.mod.s3.amt", 0.0f);
+    in = ui::ledInputs (core, 0, ui::Mode::Synth, false, false);
+    CHECK_FALSE (in.effectsActive);
+    CHECK_FALSE (in.modulationActive);
+    set ("p1.mod.s3.amt", 0.4f);
+    CHECK (ui::ledInputs (core, 0, ui::Mode::Synth, false, false).modulationActive);
+}
+
+TEST_CASE ("key LEDs: the editor lights the edit part's engine and the shown mode")
+{
+    OhpeProcessor p;
+    std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
+    auto& e = *dynamic_cast<OhpeEditor*> (ed.get());
+    e.selectMode (ui::Mode::Envelope);
+    e.advanceAnimation (1.0f / 30.0f);
+    const auto leds = ui::keyLeds (ui::ledInputs (p.core(), 0, ui::Mode::Envelope, false, false));
+    CHECK (leds.mode[(size_t) ui::Mode::Envelope] != ui::Led::Off);
+    CHECK (leds.engine[(size_t) ui::selectedEngine (p.core(), 0)] == ui::Led::Focus);
 }

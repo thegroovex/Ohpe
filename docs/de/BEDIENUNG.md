@@ -26,6 +26,21 @@ und -Zeit. In der Kopfzeile liegen die **Part-Auswahl**, der **Preset-Streifen**
 Beide Räder sind Host-Parameter (*Pitch-Rad* `perf.bend`, *Mod-Rad* `perf.mod`): Rechtsklick = MIDI Learn,
 Shift / Cmd / Strg = fein. Sie sind Spielhilfen und gehören nicht zu Presets.
 
+## Tasten-LEDs
+
+Engine-, Modus- und Transport-Tasten tragen oben links eine kleine LED. Eine Farbsprache:
+**Gelb** = was du bearbeitest, **Violett** = läuft oder anderswo in Benutzung, **Rot** = Aufnahme.
+
+| Tasten | LED |
+|---|---|
+| Engine | **Gelb** = Engine des bearbeiteten Parts; **Violett** = eine Engine, die ein anderer Part spielt. Die vier Punkte oben rechts zeigen, welche Parts (1 – 4, von links) die Engine benutzen. |
+| Modus | **Gelb** = die Seite auf dem Display. **Violett**: SEQUENCER = der Sequencer läuft; TAPE = das Tape spielt; EFFEKTE = ein Platz eines Effekt-Racks (Part oder Master) ist an; DRUM = ein laufender Sequencer spielt das Drum-Kit; LFO = der LFO eines Parts hat Tiefe oder eine Modulation ist geroutet. **Rot** (blinkend) auf TAPE = Aufnahme. Die Statusfarbe hat Vorrang; die angezeigte Seite bleibt als eingesunkene Taste sichtbar. |
+| Transport | START **violett**, solange es läuft, REC **rot** (stetig = bereit, blinkend = Aufnahme), SCHLEIFE **gelb**, solange sie an ist. |
+
+Der Tooltip einer Taste sagt, was ihre LED bedeutet (Engine-Tasten nennen auch die Parts, die sie benutzen).
+
+![Engine-LEDs: mehrere Parts mit verschiedenen Engines](../images/ohpe-engine-leds-de.png)
+
 ## ZUFALL und SPEICHERN
 
 **ZUFALL** gibt der Engine des bearbeiteten Parts neue Klangwerte (ihre Synth-Seiten; Pegel, Stimmung,

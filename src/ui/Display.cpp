@@ -381,7 +381,8 @@ void Display::renderLayers()
     const float u = b.getWidth() / 100.0f;
     const auto glass = b.reduced (u * 0.6f);
     juce::Path glassPath;
-    glassPath.addRoundedRectangle (glass, u * 1.2f);
+    const float du = b.getWidth() / 688.0f; // p14: design units (the display is 688 wide)
+    glassPath.addRoundedRectangle (glass, radius::inset * du);
 
     // base: an inset bezel (shaded at the top, lit at the lower lip) and deep glass with a soft
     // light falling in from above, darker towards the corners
@@ -389,9 +390,9 @@ void Display::renderLayers()
     {
         juce::Graphics g (baseLayer);
         g.setGradientFill (juce::ColourGradient (colour::bezelLow, 0, b.getY(), colour::bezel, 0, b.getBottom(), false)); // p14: dark frame
-        g.fillRoundedRectangle (b, u * 1.6f);
+        g.fillRoundedRectangle (b, (radius::inset + 1.5f) * du);
         g.setColour (juce::Colours::black.withAlpha (0.18f));
-        g.drawRoundedRectangle (b.reduced (0.5f), u * 1.6f, 1.0f);
+        g.drawRoundedRectangle (b.reduced (0.5f), (radius::inset + 1.5f) * du, 1.0f);
         juce::ColourGradient fill (juce::Colour (0xff15171c), 0, glass.getY(), juce::Colour (0xff08090b), 0, glass.getBottom(), false);
         fill.addColour (0.55, colour::display);
         g.setGradientFill (fill);

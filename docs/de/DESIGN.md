@@ -15,21 +15,32 @@ oder tut.
   Funktionsgruppen liegen in grauen, **eingelassenen Feldern**: ENGINE (links), MODUS (rechts),
   TRANSPORT + MIDI (unten links), OKTAVE (unten rechts), das Klaviaturbett. Bibliothek und
   Profiansicht liegen wie ein Deckel in dunklem Rahmen auf der Platte; Kopfzeile und
-  Klaviaturzeile bleiben sichtbar und spielbar.
+  Klaviaturzeile bleiben sichtbar und spielbar. **Ein Radiensystem:** das Gehäuse hat 18 Einheiten
+  Eckradius, jedes eingelassene Feld und jeder Rahmen (Spalten, Transport, Oktave, Klaviaturbett,
+  Display-Rahmen, die Mulden der Kopfzeile, die Overlays) dieselben 8 Einheiten, was in einem Feld
+  liegt (Tasten, Part-Tasten, Preset-Streifen, Display-Glas) 5 Einheiten – die Rundungen wirken konzentrisch.
 * **Aufteilung (p14):** Kopfzeile mit OHPE, PART 1–4 (Segmente), Preset-Streifen, BIBLIOTHEK und PRO
-  (dunkle Pillen), ZUFALL und SPEICHERN (runde Tasten mit Vierfarbring), EN / DE. Links die acht
+  (dunkle Pillen), ZUFALL und SPEICHERN (runde Tasten mit Vierfarbring), EN / DE – eine Reihe: alle
+  Bedienelemente auf der Mittellinie der Streifen (y 56), alle Beschriftungen (PART, PRESET, BIBLIOTHEK,
+  PRO, ZUFALL, SPEICHERN, SPRACHE) darüber auf einer Grundlinie; 8 Einheiten zwischen den Tasten, rechts
+  32 Einheiten Rand wie links vor dem Schriftzug. Links die acht
   Engines, rechts die acht Modi, in der Mitte das Display mit vier Encodern darunter. Klaviaturzeile:
   PITCH- und MOD-Rad links, drei Oktaven Klaviatur (C3–C6), rechts der Glide-Schalter
   (Auto / Legato / Immer) und der GLIDE-Regler.
 * **Farbe heißt Funktion.** Die vier Akzente gehören zu den vier Encodern: Signalrot (1),
   Sonnengelb (2), Ultraviolett (3), Rosé (4) – auf den Encoder-Ringen und in den Makrozeilen des
-  Displays. Rot markiert außerdem Aufnahme und aktiven Modus, Gelb Engine und bearbeiteten Part.
+  Displays. Die Tasten-LEDs sprechen dieselbe Sprache: **Gelb = dein Fokus** (Engine des bearbeiteten
+  Parts, die angezeigte Seite), **Ultraviolett = läuft / anderswo in Benutzung** (Engine eines anderen
+  Parts, laufender Sequencer, spielendes Tape, ein Effekt-Platz an, eine geroutete Modulation),
+  **Rot = Aufnahme**.
   Alles andere ist Warmweiß, Grau und Grafit.
 * **Das Display ist der einzige Bildschirm:** groß, kontrastreich, in einem dunklen Rahmen
   versenkt; tiefes Glas mit feinem Punktraster, warmweiße Schrift.
 * **Tiefe statt Dekoration:** Tasten sind matte helle Kappen mit beleuchteter Oberkante und weichem
-  Schatten; gedrückte oder aktive Tasten sinken leicht ein und zeigen einen kurzen Balken in ihrer
-  Funktionsfarbe. Felder sind ins Gehäuse eingelassen. Das Glas des Displays hat Ebenen (Punktraster
+  Schatten; gedrückte oder aktive Tasten sinken leicht ein. Engine-, Modus- sowie START-, REC- und
+  SCHLEIFE-Tasten tragen oben links eine **LED** (matte Linse, unbeleuchtet eine graue Mulde, leuchtend
+  eine flache Farbe mit weichem Hof – kein Glanzpunkt); Engine-Tasten zeigen oben rechts vier kleine
+  Punkte für die Parts 1 – 4, die die Engine spielen. Felder sind ins Gehäuse eingelassen. Das Glas des Displays hat Ebenen (Punktraster
   dahinter, Inhalt, Glasoberfläche) mit leichter Parallaxe. Kein Chrom.
 * **Räder und Glide (p14):** PITCH- und MOD-Rad sind Grafit-Daumenräder in dunklen Schlitzen; das
   Pitch-Rad federt zur Mitte zurück, das Mod-Rad bleibt stehen; Rechtsklick = MIDI Learn. Der

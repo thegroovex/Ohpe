@@ -25,6 +25,21 @@ and EN / DE. Every function can be reached with the mouse and – through MIDI l
 Both wheels are host parameters (*Pitch Wheel* `perf.bend`, *Mod Wheel* `perf.mod`): right-click for MIDI
 learn, Shift / Cmd / Ctrl for fine control. They are performance controls, not part of presets.
 
+## Key LEDs
+
+Engine, mode and transport keys carry a small LED in the top-left corner of the key. One colour language:
+**yellow** = what you are editing, **violet** = running or in use elsewhere, **red** = recording.
+
+| Keys | LED |
+|---|---|
+| Engine | **yellow** = the edit part's engine; **violet** = an engine another part plays. The four dots in the top-right corner show which parts (1 – 4, left to right) use the engine. |
+| Mode | **yellow** = the page on the display. **Violet**: SEQUENCER = the sequencer runs; TAPE = the tape plays; EFFECTS = a slot of any FX rack (a part or the master) is on; DRUM = a running sequencer plays the drum kit; LFO = a part's LFO has depth or a modulation routing is set. **Red** (blinking) on TAPE = recording. The status colour wins; the shown page keeps its sunk key. |
+| Transport | PLAY **violet** while running, REC **red** (steady = ready, blinking = recording), LOOP **yellow** while on. |
+
+Hover a key: its tooltip says what the LED means (engine keys also list the parts that use them).
+
+![Engine LEDs: several parts with different engines](../images/ohpe-engine-leds.png)
+
 ## RANDOM and SAVE
 
 **RANDOM** gives the edit part's engine new sound values (its Synth pages; level, tuning, voices and the
