@@ -150,7 +150,7 @@ TEST_CASE ("0.7: golden file is a prefix and documents the 0.7 block")
     REQUIRE (in.good());
     std::vector<std::string> golden;
     for (std::string line; std::getline (in, line);)
-        if (! line.empty()) golden.push_back (line);
+        if (! line.empty() && line[0] != '#') golden.push_back (line);
     REQUIRE (golden.size() <= ids.size());
     CHECK (std::find (golden.begin(), golden.end(), "p4.seqlane") != golden.end());
 }
@@ -437,6 +437,8 @@ TEST_CASE ("0.7 matrix: per-voice pitch from LFO 2 makes vibrato; velocity to ti
     // square LFO, +-12 semitones: halves of 0.25 s at about 880 Hz and 220 Hz
     const double hi = measureFrequency (s.l, sampleRate, 2000, 10000);
     const double lo = measureFrequency (s.l, sampleRate, 14500, 22500);
+    CAPTURE (hi);
+    CAPTURE (lo);
     CHECK (std::max (hi, lo) / std::min (hi, lo) == doctest::Approx (4.0).epsilon (0.08));
 
     auto brightness = [] (float velocity) {
