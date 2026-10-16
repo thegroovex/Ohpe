@@ -35,18 +35,18 @@
     "fx.hyper.rate": 0.3,
     "fx.hyper.detune": 0.35,
     "fx.hyper.voices": 6,
-    "fx.hyper.spread": 0.8,
+    "fx.hyper.spread": 0.7,
     "fx.hyper.dimension": 0.6,
     "fx.hyper.retrig": 0,
     "fx.hyper.mix": 0.4,
     "fx2.type": 16,
-    "fx2.midside.width": 1.25,
+    "fx2.midside.width": 1.15,
     "fx2.midside.mid": 0.0,
     "fx2.midside.side": 0.0,
     "fx2.midside.balance": 0.0,
     "fx2.midside.bassmono": 1,
     "fx2.midside.monofreq": 180.0,
-    "fx2.midside.haas": 0.18,
+    "fx2.midside.haas": 0.15,
     "fx2.midside.haastime": 0.014,
     "fx2.midside.midtilt": -0.5,
     "fx2.midside.sidetilt": 1.0,
@@ -124,6 +124,6 @@
     "mpe.smooth": 0.06,
     "mpe.bend": 48,
     "voices": 8,
-    "gain": -0.3
+    "gain": 0.0
   }
 }

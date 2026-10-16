@@ -14,7 +14,7 @@
     "engine": 6,
     "cluster.detune": 0.35,
     "cluster.spread": 0.9,
-    "cluster.tone": 0.82,
+    "cluster.tone": 0.58,
     "cluster.chord": 0,
     "cluster.stack": 7,
     "cluster.shape": 0.0,
@@ -40,11 +40,11 @@
     "fx.eq.p2freq": 2200.0,
     "fx.eq.p2gain": 1.0,
     "fx.eq.p2q": 0.9,
-    "fx.eq.p3freq": 5200.0,
-    "fx.eq.p3gain": -1.0,
-    "fx.eq.p3q": 1.2,
+    "fx.eq.p3freq": 4800.0,
+    "fx.eq.p3gain": -2.5,
+    "fx.eq.p3q": 1.0,
     "fx.eq.highfreq": 12000.0,
-    "fx.eq.highgain": 1.5,
+    "fx.eq.highgain": -1.0,
     "fx.eq.output": 0.0,
     "fx2.type": 11,
     "fx2.multiband.depth": 0.55,
@@ -157,6 +157,6 @@
     "mpe.smooth": 0.04,
     "mpe.bend": 48,
     "voices": 6,
-    "gain": 9.0
+    "gain": 14.3
   }
 }

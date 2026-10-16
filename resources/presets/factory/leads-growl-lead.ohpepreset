@@ -14,11 +14,11 @@
     "engine": 1,
     "wavetable.table": 2,
     "wavetable.pos": 0.4,
-    "wavetable.tone": 0.8,
+    "wavetable.tone": 0.5,
     "wavetable.unison": 0.3,
     "wavetable.univoices": 3,
-    "wavetable.fm": 0.35,
-    "wavetable.fmratio": 2.0,
+    "wavetable.fm": 0.25,
+    "wavetable.fmratio": 1.0,
     "wavetable.keytrack": 0.4,
     "wavetable.lfopos": 0.4,
     "amp.a": 0.003,
@@ -44,11 +44,11 @@
     "fx.eq.p2freq": 2200.0,
     "fx.eq.p2gain": 1.0,
     "fx.eq.p2q": 0.9,
-    "fx.eq.p3freq": 5200.0,
-    "fx.eq.p3gain": -1.0,
-    "fx.eq.p3q": 1.2,
+    "fx.eq.p3freq": 4800.0,
+    "fx.eq.p3gain": -2.5,
+    "fx.eq.p3q": 1.0,
     "fx.eq.highfreq": 12000.0,
-    "fx.eq.highgain": 1.5,
+    "fx.eq.highgain": -1.0,
     "fx.eq.output": 0.0,
     "fx2.type": 11,
     "fx2.multiband.depth": 0.6,
@@ -157,6 +157,6 @@
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
     "glide": 0.02,
-    "gain": 14.2
+    "gain": 18.6
   }
 }

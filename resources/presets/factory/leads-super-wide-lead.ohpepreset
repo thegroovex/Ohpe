@@ -37,11 +37,11 @@
     "fx.eq.p2freq": 2200.0,
     "fx.eq.p2gain": 1.0,
     "fx.eq.p2q": 0.9,
-    "fx.eq.p3freq": 5200.0,
-    "fx.eq.p3gain": -1.0,
-    "fx.eq.p3q": 1.2,
+    "fx.eq.p3freq": 4800.0,
+    "fx.eq.p3gain": -2.5,
+    "fx.eq.p3q": 1.0,
     "fx.eq.highfreq": 12000.0,
-    "fx.eq.highgain": 1.5,
+    "fx.eq.highgain": -1.0,
     "fx.eq.output": 0.0,
     "fx2.type": 1,
     "fx2.chorus.rate": 0.4,
@@ -150,6 +150,6 @@
     "mpe.bend": 48,
     "voices": 6,
     "glide": 0.0,
-    "gain": 7.8
+    "gain": 8.3
   }
 }
