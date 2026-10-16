@@ -12,6 +12,7 @@
 #include "engines/SamplerEngine.h"
 
 #include <cmath>
+#include <cstring>
 
 namespace ohpe
 {
@@ -42,7 +43,7 @@ bool isPresetFile (const juce::String& path) { return juce::File (path).hasFileE
 /** Parameters a step may lock: sound parameters, not transport / sequencer / remote controls. */
 bool lockable (const juce::String& id)
 {
-    for (const char* p : { "seq.", "tempo", "sync.", "lib.", "ui.", "tape.", "key." })
+    for (const char* p : { "seq.", "tempo", "sync.", "lib.", "ui.", "tape.", "key.", "perf." })
         if (id.startsWith (p)) return false;
     return id.isNotEmpty();
 }
@@ -142,7 +143,10 @@ void PresetStrip::mouseDown (const juce::MouseEvent& e)
 
 // ---------------------------------------------------------------- editor
 OhpeEditor::OhpeEditor (OhpeProcessor& p)
-    : AudioProcessorEditor (p), proc (p), display (p), keyboard (p.keyboardState), proView (p), library (p)
+    : AudioProcessorEditor (p), proc (p), display (p),
+      pitchWheel (p, Core::Ids::perfBend, "Pitch", true), modWheel (p, Core::Ids::perfMod, "Mod", false),
+      glideSwitch (p), glideKnob (p, "Glide"),
+      keyboard (p.keyboardState), proView (p), library (p)
 {
     setLookAndFeel (&lnf);
     setWantsKeyboardFocus (false);
@@ -201,6 +205,18 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     proKey.setAccent (colour::ultraviolet);
     proKey.onClick = [this] { showProView (! proView.isVisible()); };
     for (auto* k : { &playKey, &octDownKey, &octUpKey, &midiKey, &libraryKey, &proKey }) addAndMakeVisible (*k);
+    // p14: header pills and round keys, the keyboard row's wheels and glide controls
+    libraryKey.setStyle (PictoKey::Style::Pill);
+    proKey.setStyle (PictoKey::Style::Pill);
+    randomKey.setStyle (PictoKey::Style::Round);
+    saveKey.setStyle (PictoKey::Style::Round);
+    octDownKey.setLegend ("Octave -");
+    octUpKey.setLegend ("Octave +");
+    randomKey.onClick = [this] { randomiseSound(); };
+    saveKey.onClick = [this] { openSave(); };
+    for (auto* k : { &randomKey, &saveKey }) addAndMakeVisible (*k);
+    for (auto* c : { (juce::Component*) &pitchWheel, (juce::Component*) &modWheel, (juce::Component*) &glideSwitch, (juce::Component*) &glideKnob })
+        addAndMakeVisible (*c);
 
     partSelector.onSelect = [this] (int part) { selectPart (part); };
     presetStrip.onStep = [this] (int d) { proc.presets().step (d); };
@@ -282,6 +298,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
 
     ctx.part = juce::jlimit (0, Core::numParts - 1, (int) std::lround (proc.core().params().get (Core::Ids::editPart)) - 1);
     shownEngine = ui::selectedEngine (proc.core(), ctx.part);
+    bindPartControls();
     rebindEncoders();
     refreshKeys();
     updateOverlayVisibility();
@@ -303,90 +320,177 @@ juce::Rectangle<int> OhpeEditor::scaled (float x, float y, float w, float h) con
     return juce::Rectangle<float> (x * s, y * s, w * s, h * s).toNearestInt();
 }
 
+// ---------------------------------------------------------------- p14: layout (design units, 8-unit grid)
+juce::Rectangle<float> OhpeEditor::designArea (const char* name)
+{
+    struct Item { const char* name; float x, y, w, h; };
+    static const Item items[] = {
+        { "housing", 8, 8, 1184, 784 },
+        { "partLegend", 304, 20, 152, 12 },     { "partSelector", 304, 40, 152, 32 },
+        { "presetLegend", 472, 20, 272, 12 },   { "presetStrip", 472, 40, 272, 32 },
+        { "libraryKey", 760, 26, 80, 56 },      { "proKey", 848, 26, 80, 56 },
+        { "randomKey", 936, 22, 64, 62 },       { "saveKey", 1004, 22, 64, 62 },
+        { "langEn", 1080, 38, 36, 24 },         { "langDe", 1120, 38, 36, 24 },
+        { "engineLegend", 40, 88, 200, 12 },    { "modeLegend", 968, 88, 192, 12 },
+        { "overlay", 24, 104, 1152, 512 },
+        { "engineColumn", 32, 112, 208, 368 },  { "modeColumn", 960, 112, 208, 368 },
+        { "display", 256, 112, 688, 336 },
+        { "transportPanel", 32, 496, 208, 112 }, { "octavePanel", 960, 496, 208, 112 },
+        { "keyboardBed", 24, 624, 1152, 152 },
+        { "pitchWheel", 40, 636, 40, 128 },     { "modWheel", 96, 636, 40, 128 },
+        { "keyboard", 152, 632, 872, 136 },
+        { "glideSwitch", 1040, 638, 128, 60 },  { "glideKnob", 1040, 708, 128, 56 },
+    };
+    for (const auto& i : items)
+        if (std::strcmp (i.name, name) == 0) return { i.x, i.y, i.w, i.h };
+    jassertfalse;
+    return {};
+}
+
 void OhpeEditor::resized()
 {
-    // strict 10-unit grid on a 1200 x 800 canvas
+    auto place = [this] (juce::Component& c, const char* name) {
+        const auto r = designArea (name);
+        c.setBounds (scaled (r.getX(), r.getY(), r.getWidth(), r.getHeight()));
+    };
+    // columns: 2 x 4 keys of 88 x 80 on an 88-unit pitch, 12 units inside the recessed panels
     for (int t = 0; t < numEngineTypes; ++t)
-        engineKeys[(size_t) t]->setBounds (scaled (40.0f + 100.0f * (float) (t % 2), 100.0f + 82.0f * (float) (t / 2), 90, 78));
-    display.setBounds (scaled (260, 90, 680, 330));
+        engineKeys[(size_t) t]->setBounds (scaled (44.0f + 96.0f * (float) (t % 2), 124.0f + 88.0f * (float) (t / 2), 88, 80));
     for (int m = 0; m < numModes; ++m)
-        modeKeys[(size_t) m]->setBounds (scaled (970.0f + 100.0f * (float) (m % 2), 100.0f + 82.0f * (float) (m / 2), 90, 78));
+        modeKeys[(size_t) m]->setBounds (scaled (972.0f + 96.0f * (float) (m % 2), 124.0f + 88.0f * (float) (m / 2), 88, 80));
+    place (display, "display");
+    // four encoders centred under the display, 168 units apart
     for (int i = 0; i < 4; ++i)
-        encoders[(size_t) i]->setBounds (scaled (300.0f + 160.0f * (float) i, 440, 120, 150));
-    // p11: TRANSPORT cluster - REC and PLAY large, then to the start / stop / loop; MIDI moved to the header
-    recKey.setBounds (scaled (40, 462, 100, 70));
-    playKey.setBounds (scaled (150, 462, 100, 70));
-    toStartKey.setBounds (scaled (40, 534, 66, 62));
-    stopKey.setBounds (scaled (112, 534, 66, 62));
-    loopKey.setBounds (scaled (184, 534, 66, 62));
-    midiKey.setBounds (scaled (948, 8, 78, 70));
-    octDownKey.setBounds (scaled (970, 470, 90, 78));
-    octUpKey.setBounds (scaled (1070, 470, 90, 78));
-    // header (0.3): part selector, preset strip, library + pro keys
-    partSelector.setBounds (scaled (300, 30, 150, 30));
-    presetStrip.setBounds (scaled (470, 30, 290, 30));
-    libraryKey.setBounds (scaled (776, 8, 78, 70));
-    proKey.setBounds (scaled (862, 8, 78, 70));
-    langEn.setBounds (scaled (1070, 26, 42, 26));
-    langDe.setBounds (scaled (1116, 26, 42, 26));
-    keyboard.setBounds (scaled (40, 610, 1120, 166));
-    proView.setBounds (scaled (30, 86, 1140, 516));
-    library.setBounds (scaled (30, 86, 1140, 516));
+        encoders[(size_t) i]->setBounds (scaled (288.0f + 168.0f * (float) i, 460, 120, 148));
+    // transport panel (bottom left): REC PLAY STOP / TO START LOOP MIDI
+    recKey.setBounds (scaled (44, 504, 60, 48));
+    playKey.setBounds (scaled (112, 504, 60, 48));
+    stopKey.setBounds (scaled (180, 504, 60, 48));
+    toStartKey.setBounds (scaled (44, 556, 60, 48));
+    loopKey.setBounds (scaled (112, 556, 60, 48));
+    midiKey.setBounds (scaled (180, 556, 60, 48));
+    // octave panel (bottom right)
+    octDownKey.setBounds (scaled (972, 508, 88, 92));
+    octUpKey.setBounds (scaled (1068, 508, 88, 92));
+    // header
+    place (partSelector, "partSelector");
+    place (presetStrip, "presetStrip");
+    place (libraryKey, "libraryKey");
+    place (proKey, "proKey");
+    place (randomKey, "randomKey");
+    place (saveKey, "saveKey");
+    place (langEn, "langEn");
+    place (langDe, "langDe");
+    // keyboard row: wheels left, glide right
+    place (pitchWheel, "pitchWheel");
+    place (modWheel, "modWheel");
+    place (keyboard, "keyboard");
+    place (glideSwitch, "glideSwitch");
+    place (glideKnob, "glideKnob");
+    place (proView, "overlay");
+    place (library, "overlay");
+    background = {}; // rendered again at the next paint (at the physical pixel scale)
+}
 
-    // brushed aluminium texture, regenerated for the size
-    const int w = juce::jmax (1, getWidth()), h = juce::jmax (1, getHeight());
-    bodyTexture = juce::Image (juce::Image::RGB, w, h, false);
-    juce::Graphics g (bodyTexture);
-    g.setGradientFill (juce::ColourGradient (colour::bodyLight, 0, 0, colour::body.darker (0.03f), 0, (float) h, false));
-    g.fillAll();
-    juce::Random rnd (1971);
-    for (int y = 0; y < h; ++y)
+namespace
+{
+/** A panel sunk into the housing: darker fill, shadow under the upper edge, light at the lower lip. */
+void recess (juce::Graphics& g, juce::Rectangle<float> r, float radius, juce::Colour fill, float s)
+{
+    g.setColour (juce::Colours::white.withAlpha (0.8f));
+    g.fillRoundedRectangle (r.translated (0, 1.0f * s), radius);
+    g.setColour (fill);
+    g.fillRoundedRectangle (r, radius);
+    juce::Graphics::ScopedSaveState save (g);
+    juce::Path clip;
+    clip.addRoundedRectangle (r, radius);
+    g.reduceClipRegion (clip);
+    g.setGradientFill (juce::ColourGradient (juce::Colours::black.withAlpha (0.10f), 0, r.getY(), juce::Colours::transparentBlack, 0, r.getY() + 7.0f * s, false));
+    g.fillRect (r.withHeight (7.0f * s));
+    g.setColour (juce::Colours::black.withAlpha (0.07f));
+    g.drawRoundedRectangle (r.reduced (0.5f), radius, 1.0f);
+}
+} // namespace
+
+void OhpeEditor::renderBackground (float phys)
+{
+    // p14: the static part of the plate - housing, recessed panels, the display's frame - rendered once per
+    // size at the physical pixel scale (crisp on 2x screens, no repaint work while playing)
+    phys = juce::jlimit (1.0f, 4.0f, phys);
+    const int w = juce::jmax (1, juce::roundToInt ((float) getWidth() * phys)), h = juce::jmax (1, juce::roundToInt ((float) getHeight() * phys));
+    background = juce::Image (juce::Image::ARGB, w, h, true);
+    juce::Graphics g (background);
+    const float s = (float) w / (float) designWidth;
+    auto d = [s] (juce::Rectangle<float> r) { return juce::Rectangle<float> (r.getX() * s, r.getY() * s, r.getWidth() * s, r.getHeight() * s); };
+
+    g.fillAll (colour::backdrop);
+    // housing: a soft shadow on the backdrop, matte warm white, a lit upper edge
+    const auto housing = d (designArea ("housing"));
+    const float hr = 28.0f * s;
+    for (int i = 6; i >= 1; --i)
     {
-        g.setColour ((rnd.nextBool() ? juce::Colours::white : juce::Colours::black).withAlpha (0.012f + 0.02f * rnd.nextFloat()));
-        g.fillRect (0, y, w, 1);
+        g.setColour (juce::Colours::black.withAlpha (0.018f * (float) (7 - i) * 0.6f));
+        g.fillRoundedRectangle (housing.expanded ((float) i * 1.2f * s).translated (0, (float) i * 1.0f * s), hr + (float) i * s);
     }
+    g.setGradientFill (juce::ColourGradient (colour::bodyLight, 0, housing.getY(), colour::body.darker (0.015f), 0, housing.getBottom(), false));
+    g.fillRoundedRectangle (housing, hr);
+    g.setColour (juce::Colours::white.withAlpha (0.9f));
+    g.drawRoundedRectangle (housing.reduced (1.0f * s), hr - s, 1.0f * s);
+    g.setColour (colour::bodyShade.darker (0.08f));
+    g.drawRoundedRectangle (housing, hr, 1.0f * s);
+
+    // recessed panels
+    for (const char* n : { "engineColumn", "modeColumn", "transportPanel", "octavePanel" })
+        recess (g, d (designArea (n)), 16.0f * s, colour::panel, s);
+    recess (g, d (designArea ("keyboardBed")), 16.0f * s, colour::panel.darker (0.02f), s);
+    // header: the part selector's track and the preset strip's slot
+    recess (g, d (designArea ("partSelector")).expanded (3.0f * s), 9.0f * s, colour::panel, s);
+    recess (g, d (designArea ("presetStrip")).expanded (3.0f * s), 9.0f * s, colour::panel, s);
+
+    // the display sits in a dark frame sunk into the housing
+    const auto disp = d (designArea ("display"));
+    const auto frame = disp.expanded (7.0f * s);
+    g.setColour (juce::Colours::white.withAlpha (0.85f));
+    g.fillRoundedRectangle (frame.translated (0, 1.2f * s), 18.0f * s);
+    g.setGradientFill (juce::ColourGradient (colour::bezelLow, 0, frame.getY(), colour::bezel, 0, frame.getBottom(), false));
+    g.fillRoundedRectangle (frame, 18.0f * s);
+    g.setColour (juce::Colours::black.withAlpha (0.35f));
+    g.drawRoundedRectangle (frame.reduced (0.5f * s), 18.0f * s, 1.0f * s);
 }
 
 void OhpeEditor::paint (juce::Graphics& g)
 {
-    g.drawImageAt (bodyTexture, 0, 0);
+    const float phys = juce::jlimit (1.0f, 4.0f, g.getInternalContext().getPhysicalPixelScaleFactor());
+    if (background.getWidth() != juce::roundToInt ((float) getWidth() * phys)) renderBackground (phys);
+    g.drawImage (background, getLocalBounds().toFloat());
     const float s = (float) getWidth() / (float) designWidth;
 
     // wordmark + tagline
     g.setColour (colour::ink);
     g.setFont (brandFont (34.0f * s));
-    g.drawText ("OHPE", juce::Rectangle<float> (40 * s, 18 * s, 200 * s, 40 * s), juce::Justification::centredLeft);
+    g.drawText ("OHPE", juce::Rectangle<float> (40 * s, 28 * s, 200 * s, 40 * s), juce::Justification::centredLeft);
     g.setColour (colour::engraving);
     g.setFont (labelFont (12.0f * s));
-    g.drawText (tr ("designed by groovex"), juce::Rectangle<float> (142 * s, 30 * s, 150 * s, 20 * s), juce::Justification::centredLeft, true);
+    g.drawText (tr ("designed by groovex"), juce::Rectangle<float> (142 * s, 38 * s, 150 * s, 20 * s), juce::Justification::centredLeft, true);
     g.setColour (colour::signalRed);
-    g.fillEllipse (128 * s, 36 * s, 7 * s, 7 * s);
+    g.fillEllipse (128 * s, 44.5f * s, 7 * s, 7 * s);
 
-    // engraved section legends + grid lines
-    auto legend = [&] (const juce::String& text, float x, float y, float w) {
+    // engraved section legends (small caps, no rules: the recessed panels carry the structure)
+    auto legend = [&] (const juce::String& text, const char* area) {
+        const auto r = designArea (area);
         g.setColour (colour::engraving);
-        g.setFont (labelFont (11.0f * s));
-        g.drawText (i18n::upper (text), juce::Rectangle<float> (x * s, y * s, w * s, 14 * s), juce::Justification::centredLeft, true);
-        g.setColour (colour::bodyShade);
-        g.fillRect (juce::Rectangle<float> (x * s, (y + 15) * s, w * s, 1.0f * s));
+        drawFittedLegend (g, i18n::upper (text), juce::Rectangle<float> (r.getX() * s, r.getY() * s, r.getWidth() * s, r.getHeight() * s),
+                          11.0f * s, juce::Justification::centredLeft);
     };
-    legend (tr ("Part"), 300, 10, 150);
-    legend (tr ("Preset"), 470, 10, 290);
+    legend (tr ("Part"), "partLegend");
+    legend (tr ("Preset"), "presetLegend");
     // p11: the legends of the plate belong to its controls - hidden with them while the library or the
-    // pro view lies on the plate (the "Engine" legend sits above the lid's top edge and used to show)
+    // pro view lies on the plate
     if (! overlayOpen())
     {
-        legend (tr ("Engine") + " / P" + juce::String (ctx.part + 1), 40, 74, 190);
-        legend (tr ("Mode"), 970, 74, 190);
-        legend (tr ("Transport"), 40, 444, 210);
-        legend (tr ("Octave") + " " + juce::String (keyboard.getBaseOctave()), 970, 444, 190);
-        // encoder wells
-        g.setColour (colour::bodyShade.withAlpha (0.5f));
-        g.fillRoundedRectangle (juce::Rectangle<float> (280 * s, 430 * s, 640 * s, 166 * s), 14 * s);
+        legend (tr ("Engine") + " / P" + juce::String (ctx.part + 1), "engineLegend");
+        legend (tr ("Mode"), "modeLegend");
     }
-    // keyboard bed
-    g.setColour (colour::bodyShade.withAlpha (0.7f));
-    g.fillRoundedRectangle (juce::Rectangle<float> (30 * s, 602 * s, 1140 * s, 186 * s), 12 * s);
 }
 
 int& OhpeEditor::currentPage()
@@ -480,11 +584,57 @@ void OhpeEditor::selectPart (int part)
         proc.core().params().set (Core::Ids::editPart, (float) (part + 1)); // UI follows at once
     }
     ctx.part = part;
+    bindPartControls();
     shownEngine = ui::selectedEngine (proc.core(), part);
     pageOf[(size_t) Mode::Synth] = juce::jmin (pageOf[(size_t) Mode::Synth], numPages (modeParams (Mode::Synth, proc.core(), ctx)) - 1);
     rebindEncoders();
     refreshKeys();
     repaint();
+}
+
+// ---------------------------------------------------------------- p14: glide, RANDOM, SAVE
+void OhpeEditor::bindPartControls()
+{
+    const juce::String pre = "p" + juce::String (ctx.part + 1) + ".";
+    glideSwitch.bind (pre + "glide.mode");
+    glideKnob.bind (pre + "glide");
+}
+
+void OhpeEditor::randomiseSound (juce::int64 seed)
+{
+    // the engine's own sound parameters on its Synth pages; level, tuning, voices and sample choice stay
+    juce::Random rnd (seed != 0 ? seed : juce::Time::currentTimeMillis());
+    const auto prefix = "p" + std::to_string (ctx.part + 1) + "." + engineTypeInfo (shownEngine).id + ".";
+    auto& reg = proc.core().params();
+    for (const auto& id : modeParams (Mode::Synth, proc.core(), ctx))
+    {
+        if (id.rfind (prefix, 0) != 0) continue;
+        const auto tail = id.substr (prefix.size());
+        bool keep = false;
+        for (const char* k : { "vol", "level", "gain", "tune", "fine", "oct", "sample", "voices", "root" })
+            keep |= tail.find (k) != std::string::npos;
+        const int idx = reg.indexOf (id);
+        auto* p = proc.parameter (id);
+        if (keep || idx < 0 || p == nullptr) continue;
+        const auto& d = reg.descriptor (idx);
+        float norm;
+        if (d.isDiscrete())
+            norm = rnd.nextFloat();
+        else
+            norm = 0.1f + 0.8f * rnd.nextFloat(); // musical middle: no extreme corners
+        p->beginChangeGesture();
+        p->setValueNotifyingHost (norm);
+        p->endChangeGesture();
+    }
+    rebindEncoders();
+    display.flash (tr ("Random sound"));
+    lastFlashText = tr ("Random sound");
+}
+
+void OhpeEditor::openSave()
+{
+    showLibrary (true);
+    library.showSavePanel (true);
 }
 
 void OhpeEditor::selectSeqView (SeqView v)
@@ -576,8 +726,8 @@ void OhpeEditor::showProView (bool show)
 // ---------------------------------------------------------------- p11: overlays hide the plate
 std::vector<juce::Component*> OhpeEditor::plateComponents()
 {
-    // everything that sits on the plate under the overlay area (30..1170 x 86..602)
-    std::vector<juce::Component*> c { &display, &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey };
+    // everything that sits on the plate under the overlay area (p14: 24..1176 x 104..616)
+    std::vector<juce::Component*> c { &display, &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &midiKey, &octDownKey, &octUpKey };
     for (auto& k : engineKeys) c.push_back (k.get());
     for (auto& k : modeKeys) c.push_back (k.get());
     for (auto& e : encoders) c.push_back (e.get());
@@ -1064,6 +1214,14 @@ void OhpeEditor::refreshKeys()
     midiKey.setTooltip (tr ("MIDI maps and remote controls"));
     libraryKey.setTooltip (tr ("Preset library"));
     proKey.setTooltip (tr ("All parameters of the mode"));
+    randomKey.setTooltip (tr ("Random: new values for the sound of the edit part's engine"));
+    saveKey.setTooltip (tr ("Save the edit part as a user preset"));
+    pitchWheel.setTooltip (tr ("Pitch bend - springs back to the centre; right-click: MIDI learn"));
+    modWheel.setTooltip (tr ("Mod wheel (modulation matrix source); right-click: MIDI learn"));
+    glideSwitch.setTooltip (tr ("Glide mode of the edit part: Auto, Legato or Always"));
+    glideKnob.setTooltip (tr ("Glide time of the edit part"));
+    octDownKey.setTooltip (tr ("Keyboard one octave down"));
+    octUpKey.setTooltip (tr ("Keyboard one octave up"));
     libraryKey.setActive (library.isVisible());
     proKey.setActive (proView.isVisible());
     langEn.setToggleState (i18n::current() == i18n::Language::English, juce::dontSendNotification);
@@ -1145,8 +1303,13 @@ void OhpeEditor::timerCallback()
     {
         lastLearning = learning;
         for (auto& e : encoders) e->repaint();
+        for (auto* c : { (juce::Component*) &pitchWheel, (juce::Component*) &modWheel, (juce::Component*) &glideSwitch, (juce::Component*) &glideKnob })
+            c->repaint();
     }
     if (lockStepIndex >= 0) updateVirtualFlags();
+    pitchWheel.refresh(); // p14: host automation / MIDI-mapped wheels
+    modWheel.refresh();
+    glideSwitch.refresh();
     if (proView.isVisible()) proView.refresh();
     if (mode == Mode::Tape) refreshSoftKeys(); // undo / redo / clipboard state
 

@@ -59,6 +59,7 @@ Core::Core()
     notesOutIndex = registry.indexOf (Ids::notesOut);
     perfBendIndex = registry.indexOf (Ids::perfBend);
     perfModIndex = registry.indexOf (Ids::perfMod);
+    editPartIndex = registry.indexOf (Ids::editPart);
     stepDrumsIndex = registry.indexOf (Ids::stepDrums);
     euclidDrumsIndex = registry.indexOf (Ids::euclidDrums);
     orbitDrumsIndex = registry.indexOf (Ids::orbitDrums);
@@ -371,7 +372,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     // p14: the on-screen wheels - a changed value goes out as pitch bend / CC 1 on the edit part's channel
     if (perfBendIndex >= 0 && perfModIndex >= 0)
     {
-        const int edit = std::clamp ((int) std::lround (registry.get (registry.indexOf (Ids::editPart))) - 1, 0, numParts - 1);
+        const int edit = editPartIndex >= 0 ? std::clamp ((int) std::lround (snapshot[editPartIndex]) - 1, 0, numParts - 1) : 0;
         const int ch = routing[(size_t) edit].channel > 0 ? routing[(size_t) edit].channel : 1;
         if (const float b = snapshot[perfBendIndex]; ! (b == perfBendSent))
         {

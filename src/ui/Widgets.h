@@ -156,7 +156,7 @@ private:
     a host parameter (MIDI-learnable with a right-click). The pitch wheel springs back to the centre
     when released; the mod wheel stays where it is left. Shift / Cmd / Ctrl = fine.
 */
-class Wheel : public juce::Component, private juce::Timer
+class Wheel : public juce::Component, public juce::SettableTooltipClient, private juce::Timer
 {
 public:
     Wheel (OhpeProcessor& p, juce::String paramId, juce::String legendEnglish, bool springBack);
@@ -183,7 +183,7 @@ private:
 };
 
 /** p14: three-position slide switch for a choice parameter (glide mode Auto / Legato / Always). */
-class SlideSwitch : public juce::Component
+class SlideSwitch : public juce::Component, public juce::SettableTooltipClient
 {
 public:
     explicit SlideSwitch (OhpeProcessor& p);
@@ -204,7 +204,7 @@ private:
 };
 
 /** p14: small knob with a graphite ring and its legend + value at the right (GLIDE). */
-class MiniKnob : public juce::Component
+class MiniKnob : public juce::Component, public juce::SettableTooltipClient
 {
 public:
     MiniKnob (OhpeProcessor& p, juce::String legendEnglish);

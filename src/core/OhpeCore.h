@@ -257,7 +257,7 @@ private:
     std::array<MpeInput, numParts> mpeIn {};
     std::array<NoteShaper, numParts> liveShaper {}, seqShaper {};
     int stepDrumsIndex = -1, euclidDrumsIndex = -1, orbitDrumsIndex = -1; ///< 0.4: sequencers -> drum kit
-    int perfBendIndex = -1, perfModIndex = -1; ///< p14
+    int perfBendIndex = -1, perfModIndex = -1, editPartIndex = -1; ///< p14
     float perfBendSent = 0.0f, perfModSent = 0.0f;
     int syncSourceIndex = -1, syncSmoothIndex = -1, clockOutIndex = -1, notesOutIndex = -1, keyRootIndex = -1, keyScaleIndex = -1;
     bool arpWasOn = false;

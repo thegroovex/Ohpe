@@ -109,6 +109,19 @@ public:
     ui::PictoKey& recordKey() { return recKey; }
     ui::PictoKey& playTransportKey() { return playKey; }
     juce::String lastFlash() const { return lastFlashText; }
+    // p14: keyboard row and header
+    ui::Wheel& pitchWheelComponent() { return pitchWheel; }
+    ui::Wheel& modWheelComponent() { return modWheel; }
+    ui::SlideSwitch& glideModeSwitch() { return glideSwitch; }
+    ui::MiniKnob& glideKnobComponent() { return glideKnob; }
+    ui::Keyboard& keyboardComponent() { return keyboard; }
+    ui::PictoKey& midiKeyComponent() { return midiKey; }
+    /** RANDOM: new values for the sound parameters of the edit part's engine (its Synth pages). */
+    void randomiseSound (juce::int64 seed = 0);
+    /** SAVE: opens the library with the save panel for the edit part. */
+    void openSave();
+    /** The design-unit rectangles of the plate's panels and legends (layout tests). */
+    static juce::Rectangle<float> designArea (const char* name);
     void softKey (int id) { onSoftKey (id); }
     bool loadAudioFile (const juce::File& f, int pad = -1);
 
@@ -116,6 +129,8 @@ private:
     void timerCallback() override;
     void changeListenerCallback (juce::ChangeBroadcaster*) override;
     void rebindEncoders();
+    void renderBackground (float physicalScale);
+    void bindPartControls(); ///< p14: glide switch / knob follow the edit part
     void refreshKeys();
     void refreshTransportKeys(); ///< p11: key states (REC blinks while recording)
     void updateOverlayVisibility(); ///< p11: hides every plate control under the library / pro view
@@ -156,6 +171,13 @@ private:
     ui::PictoKey midiKey { ui::Picto::Midi, "MIDI" };
     ui::PictoKey libraryKey { ui::Picto::Library, "Library" };
     ui::PictoKey proKey { ui::Picto::Pro, "Pro" };
+    // p14: header round keys, performance wheels (left of the keyboard), glide (right of it)
+    ui::PictoKey randomKey { ui::Picto::Random, "Random" };
+    ui::PictoKey saveKey { ui::Picto::Save, "Save" };
+    ui::Wheel pitchWheel, modWheel;
+    ui::SlideSwitch glideSwitch;
+    ui::MiniKnob glideKnob;
+    juce::Image background; ///< p14: the static housing, panels and recesses (rendered once per size)
     ui::PartSelector partSelector;
     ui::PresetStrip presetStrip;
     juce::TextButton langEn { "EN" }, langDe { "DE" };
@@ -169,7 +191,6 @@ private:
     std::array<int, ui::numSeqViews> seqPageOf {};
     int stepPage = 0, lockStepIndex = -1;
     EngineType shownEngine = EngineType::Analog;
-    juce::Image bodyTexture;
     std::unique_ptr<juce::FileChooser> chooser;
     juce::String lastLearning;
     int libraryRequestsSeen = 0;

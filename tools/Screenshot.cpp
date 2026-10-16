@@ -92,9 +92,9 @@ void playAnimated (OhpeProcessor& p, OhpeEditor& e, int frames, std::initializer
     }
 }
 
-void save (juce::Component& c, const juce::File& f)
+void save (juce::Component& c, const juce::File& f, float scale = 1.0f, juce::Rectangle<int> area = {})
 {
-    auto img = c.createComponentSnapshot (c.getLocalBounds(), true, 1.0f);
+    auto img = c.createComponentSnapshot (area.isEmpty() ? c.getLocalBounds() : area, true, scale);
     f.deleteFile();
     juce::FileOutputStream out (f);
     juce::PNGImageFormat().writeImageToStream (img, out);
@@ -127,6 +127,18 @@ int main (int argc, char* argv[])
         playAnimated (p, e, 2, { 64 });
         playAnimated (p, e, 30, { 67 });
         save (e, dir.getChildFile ("ohpe-analog" + suffix + ".png"));
+        // p14: the same view at 2x (pixel check) and a close-up of the keyboard row at 2x: wheels, keys, glide
+        if (auto* q = p.parameter ("perf.mod")) q->setValueNotifyingHost (0.35f);
+        setChoice (p, "p1.glide.mode", "Legato");
+        setPlain (p, "p1.glide", 0.18f);
+        run (p, 2);
+        e.advanceAnimation (1.0f / 30.0f);
+        save (e, dir.getChildFile ("ohpe-analog-2x" + suffix + ".png"), 2.0f);
+        {
+            const auto bed = OhpeEditor::designArea ("keyboardBed").expanded (8.0f).toNearestInt();
+            save (e, dir.getChildFile ("ohpe-keyboard-row" + suffix + ".png"), 2.0f, bed);
+        }
+        if (auto* q = p.parameter ("perf.mod")) q->setValueNotifyingHost (0.0f);
 
         release (p, { 60, 64, 67 });
         e.selectEngine (EngineType::FM);
