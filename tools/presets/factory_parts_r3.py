@@ -59,7 +59,7 @@ RANK = {"filterdrive": 0, "distortion": 0, "bitcrush": 0, "comb": 0, "formant": 
         "multiband": 1, "compressor": 1, "chorus": 2, "phaser": 2, "flange": 2, "tremolo": 2, "hyper": 2, "width": 3,
         "delay": 4, "echo": 4, "reverb": 5, "hall": 5}
 NONLINEAR = ("distortion", "multiband", "compressor", "filterdrive", "bitcrush")
-OUTPUT = ("distortion", "multiband", "width")  # types with an output trim (level calibration after a non-linear stage)
+OUTPUT = ("distortion", "multiband", "width", "eq")  # types with an output trim (level calibration after a non-linear stage)
 _fx_levels_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "levels_fx.json")
 FX_LEVELS = json.load(open(_fx_levels_path)) if os.path.exists(_fx_levels_path) else {}
 _OLD_FX = {3: "bitcrush"}  # 0.4 helpers used here (crush) -> rack effect
@@ -231,6 +231,33 @@ def pha(slot, rate=0.3, depth=0.7, fb=0.5, mix=0.5):
 
 def fdrive(slot, cutoff=6000, reso=0.2, drv=0.4, mode="lp", mix=1.0):
     return fx(slot, "filterdrive", cutoff=cutoff, reso=reso, drive=drv, mode=mode, mix=mix)
+
+
+def hyper(slot, rate=0.6, detune=0.35, voices=5, spread=0.8, dim=0.4, retrig=0, mix=0.5):
+    """The rack's Hyper / Dimension widener."""
+    return fx(slot, "hyper", rate=rate, detune=detune, voices=voices, spread=spread, dimension=dim, retrig=retrig, mix=mix)
+
+
+def eq(slot, low=(100.0, 0.0), b1=(300.0, 0.0, 0.7), b2=(1200.0, 0.0, 0.7), b3=(4500.0, 0.0, 0.7), high=(8000.0, 0.0), out=0.0):
+    """The rack's EQ: low shelf (Hz, dB), three bands (Hz, dB, Q), high shelf (Hz, dB), output."""
+    return fx(slot, "eq", lowfreq=low[0], lowgain=low[1], p1freq=b1[0], p1gain=b1[1], p1q=b1[2], p2freq=b2[0], p2gain=b2[1],
+              p2q=b2[2], p3freq=b3[0], p3gain=b3[1], p3q=b3[2], highfreq=high[0], highgain=high[1], output=out)
+
+
+def comp(slot, thresh=-18.0, ratio=4.0, attack=10.0, release=120.0, knee=6.0, makeup=0.0, mix=1.0):
+    """The rack's Compressor."""
+    return fx(slot, "compressor", thresh=thresh, ratio=ratio, attack=attack, release=release, knee=knee, makeup=makeup, mix=mix)
+
+
+def echo(slot, sync="1/8.", time=375.0, mode="pingpong", ratio=0.75, fb=0.4, lowcut=150.0, highcut=7000.0, w=1.0, mix=0.25):
+    """The rack's Echo (tempo-synced unless sync="free")."""
+    return fx(slot, "echo", mode={"stereo": 0, "pingpong": 1, "tap": 2}[mode], sync=sync, time=time, ratio=ratio, feedback=fb,
+              lowcut=lowcut, highcut=highcut, width=w, mix=mix)
+
+
+def hall(slot, size=0.7, decay=3.0, damping=0.4, predelay=20.0, w=1.0, mix=0.3, plate=False):
+    """The rack's Hall (or plate)."""
+    return fx(slot, "hall", mode=0 if plate else 1, size=size, decay=decay, damping=damping, predelay=predelay, width=w, mix=mix)
 
 
 def layer(engine, level=0.7, tune=0, fine=0.0, xmode="ring", xmod=0.0, w=0.5, env=None):
