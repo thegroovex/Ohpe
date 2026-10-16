@@ -6,6 +6,7 @@
 
 #include "OhpeCore.h"
 #include "TestHelpers.h"
+#include "../TestSlice.h"
 
 #include <doctest/doctest.h>
 
@@ -486,12 +487,15 @@ TEST_CASE ("step: patterns, lengths and chain survive JSON; 0.1 patterns load in
 }
 
 // ================================================================ host-ppq timing
-TEST_CASE ("timing: sequencer notes are sample-accurate against the host ppq at various tempos and buffer sizes")
+TEST_CASE ("timing: sequencer notes are sample-accurate against the host ppq at various tempos and buffer sizes" * doctest::test_suite ("sliced"))
 {
+    const auto slice = test::testSlice(); // CI runs the combinations in several processes
+    long long item = 0;
     for (double bpm : { 60.0, 97.3, 120.0, 174.0, 233.0 })
         for (int block : { 17, 64, 441, 512, 1024 })
             for (double ppq0 : { 0.0, 3.37 })
             {
+                if (! slice.has (item++)) continue;
                 CAPTURE (bpm);
                 CAPTURE (block);
                 CAPTURE (ppq0);

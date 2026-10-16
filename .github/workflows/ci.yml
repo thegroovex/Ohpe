@@ -1,23 +1,152 @@
 name: CI
 
-# Every push to main: Linux build with all tests and pluginval.
-# Every pull request and every manual run (Actions -> CI -> Run workflow): additionally macOS
-# universal (app, AU incl. auval -strict, VST3, plus the pkg/DMG installer, installed and tested
-# on the runner) and Windows (app, VST3), with their artefacts attached to the run - so a pull request is checked on all three platforms before it is merged.
+# Every push to main, every pull request and every manual run (Actions -> CI -> Run workflow):
+# Linux, macOS universal and Windows are built and tested - so a pull request is checked on all
+# three platforms before it is merged. Each platform is built once; the tests then run as parallel
+# jobs on the build artefacts:
+#   Linux    core tests (own JUCE-free build, starts at once), plug-in tests + VST3 host test,
+#            pluginval (strictness 5), documentation screenshots (not on pushes to main)
+#   macOS    all tests, auval -strict, plus the pkg/DMG installer (installed and tested on the runner)
+#   Windows  all tests
+# The doctest binaries run one test case per process on all cores (scripts/ci/run-tests.py), and
+# the test jobs are split over several runners (matrix "shard": every process runs on exactly one).
+# Compiler output is cached with ccache, the downloaded dependencies (JUCE, Link, doctest, JSON,
+# juceaide) and pluginval with actions/cache.
+#
+# The macOS installer is built on main, on manual runs, for releases, and on pull requests that
+# carry the label "installer" (the label takes effect with the next push, or run the workflow
+# manually on the branch). Pull requests that only change docs/** or *.md skip the builds; the
+# "CI result" job reports for every run.
 
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  release:
+    types: [published]
 
+# A new push to a pull request cancels its running CI; runs on main are never cancelled.
 concurrency:
-  group: ci-${{ github.ref }}-${{ github.event_name }}
-  cancel-in-progress: true
+  group: ci-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('{0}-{1}', github.ref, github.sha) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  CCACHE_DIR: ${{ github.workspace }}/.ccache
+  CCACHE_BASEDIR: ${{ github.workspace }}
+  CCACHE_NOHASHDIR: "true"
+  CCACHE_COMPRESS: "true"
+  CCACHE_MAXSIZE: 2G
+  OHPE_DEPS_DIR: ${{ github.workspace }}/.deps
+  HOMEBREW_NO_AUTO_UPDATE: "1"
+  HOMEBREW_NO_INSTALL_CLEANUP: "1"
 
 jobs:
-  linux:
-    name: Linux (tests + pluginval)
+  # ---------------------------------------------------------------------------------- what to run
+  changes:
+    name: Changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.result.outputs.code }}
+      installer: ${{ steps.result.outputs.installer }}
+    steps:
+      - uses: actions/checkout@v4
+        if: github.event_name == 'push'
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'pull_request' || github.event_name == 'push'
+        with:
+          predicate-quantifier: every
+          filters: |
+            code:
+              - '**'
+              - '!docs/**'
+              - '!**/*.md'
+      - id: result
+        env:
+          EVENT: ${{ github.event_name }}
+          FILTER_CODE: ${{ steps.filter.outputs.code }}
+          HAS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'installer') }}
+        run: |
+          code=true
+          if [ "$EVENT" = pull_request ] || [ "$EVENT" = push ]; then
+            [ "$FILTER_CODE" = true ] || code=false
+          fi
+          installer=false
+          case "$EVENT" in
+            push|workflow_dispatch|release) installer=true ;;
+            pull_request) [ "$HAS_LABEL" = true ] && installer=true ;;
+          esac
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "installer=$installer" >> "$GITHUB_OUTPUT"
+          echo "code changes: $code, macOS installer: $installer"
+
+  docs-only:
+    name: Docs only (builds skipped)
+    needs: changes
+    if: needs.changes.outputs.code != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Only docs/** or *.md changed - builds and tests are skipped."
+
+  # ---------------------------------------------------------------------------------- Linux
+  linux-core:
+    name: Linux core tests (${{ matrix.shard }}/2)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build ccache
+
+      - name: Compiler cache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-${{ runner.os }}-${{ runner.arch }}-gcc-core-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.shard }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ runner.arch }}-gcc-core-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-
+            ccache-${{ runner.os }}-${{ runner.arch }}-gcc-core-
+
+      - name: Test timings (schedules long test cases first)
+        uses: actions/cache@v4
+        with:
+          path: .ci-timings
+          key: timings-linux-core-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: timings-linux-core-${{ matrix.shard }}-
+
+      - name: Configure + build (core, no JUCE)
+        run: |
+          ccache -z
+          cmake -S . -B build-core -G Ninja -DCMAKE_BUILD_TYPE=Release -DOHPE_BUILD_PLUGIN=OFF \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build build-core --config Release
+          ccache -s
+
+      - name: Core tests
+        run: |
+          mkdir -p .ci-timings
+          python3 scripts/ci/run-tests.py --build-dir build-core --split core_tests -j "$(nproc)" \
+            --shard ${{ matrix.shard }}/2 --timings .ci-timings/linux-core.json
+
+  linux-build:
+    name: Linux build
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -25,21 +154,130 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build libasound2-dev libfreetype-dev libfontconfig1-dev \
-            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxext-dev libgl1-mesa-dev \
-            xvfb xauth fonts-dejavu-core
+          sudo apt-get install -y ninja-build ccache libasound2-dev libfreetype-dev libfontconfig1-dev \
+            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxext-dev libgl1-mesa-dev
+
+      - name: Compiler cache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-${{ runner.os }}-${{ runner.arch }}-gcc-full-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ runner.arch }}-gcc-full-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-
+            ccache-${{ runner.os }}-${{ runner.arch }}-gcc-full-
+
+      - name: Dependency cache (JUCE, Link, doctest, JSON, juceaide)
+        uses: actions/cache@v4
+        with:
+          path: .deps
+          key: deps-${{ runner.os }}-${{ runner.arch }}-ninja-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+          restore-keys: deps-${{ runner.os }}-${{ runner.arch }}-ninja-
+
+      - name: Configure
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            "-DFETCHCONTENT_BASE_DIR=$OHPE_DEPS_DIR" -DFETCHCONTENT_UPDATES_DISCONNECTED=ON
+
+      - name: Build
+        run: |
+          ccache -z
+          cmake --build build --config Release
+          ccache -s
+
+      - name: Pack build tree
+        run: scripts/ci/pack-build.sh build build-linux.tar
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-linux
+          path: build-linux.tar
+          retention-days: 3
+          compression-level: 1
+
+  linux-plugin-tests:
+    name: Linux plug-in tests (${{ matrix.shard }}/2)
+    needs: linux-build
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2t64 libfreetype6 libfontconfig1 libx11-6 libxrandr2 \
+            libxinerama1 libxcursor1 libxext6 libgl1 xvfb xauth fonts-dejavu-core
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-linux
+
+      - name: Unpack build tree
+        run: tar -xf build-linux.tar && rm build-linux.tar
+
+      - name: Test timings (schedules long test cases first)
+        uses: actions/cache@v4
+        with:
+          path: .ci-timings
+          key: timings-linux-plugin-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: timings-linux-plugin-${{ matrix.shard }}-
+
+      # core_tests: the "Linux core tests" job runs them (same sources and flags, JUCE-free build)
+      - name: Plug-in tests
+        run: |
+          mkdir -p .ci-timings
+          xvfb-run -a python3 scripts/ci/run-tests.py --build-dir build --split plugin_tests \
+            -E '^core_tests$' -j "$(nproc)" --shard ${{ matrix.shard }}/2 --timings .ci-timings/linux-plugin.json
+
+  linux-pluginval:
+    name: Linux pluginval
+    needs: linux-build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Install runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2t64 libfreetype6 libfontconfig1 libx11-6 libxrandr2 \
+            libxinerama1 libxcursor1 libxext6 libgl1 xvfb xauth fonts-dejavu-core
+
+      - name: Latest pluginval release
+        id: pv
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "tag=$(gh release view --repo Tracktion/pluginval --json tagName -q .tagName)" >> "$GITHUB_OUTPUT"
+
+      - name: pluginval cache
+        id: pvcache
+        uses: actions/cache@v4
+        with:
+          path: pluginval-bin
+          key: pluginval-${{ runner.os }}-${{ steps.pv.outputs.tag }}
 
       - name: Get pluginval
+        if: steps.pvcache.outputs.cache-hit != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          curl -fsSL -o pluginval.zip https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Linux.zip
-          unzip -q pluginval.zip -d pluginval-bin
+          gh release download "${{ steps.pv.outputs.tag }}" --repo Tracktion/pluginval -p pluginval_Linux.zip
+          unzip -q pluginval_Linux.zip -d pluginval-bin
           chmod +x pluginval-bin/pluginval
 
-      - name: Build and test everything
-        env:
-          PLUGINVAL: ${{ github.workspace }}/pluginval-bin/pluginval
-          OHPE_REQUIRE_PLUGINVAL: "1"
-        run: scripts/test-all.sh
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-linux
+
+      - name: Unpack build tree
+        run: tar -xf build-linux.tar && rm build-linux.tar
+
+      - name: pluginval (strictness 5)
+        run: |
+          xvfb-run -a pluginval-bin/pluginval --strictness-level 5 --validate-in-process \
+            --timeout-ms 600000 --output-dir build/pluginval \
+            --validate build/Ohpe_artefacts/Release/VST3/Ohpe.vst3
 
       - name: Upload pluginval log
         if: failure()
@@ -49,44 +287,83 @@ jobs:
           path: build/pluginval
           if-no-files-found: ignore
 
-  macos:
-    name: macOS universal (app, AU, VST3)
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request'
+  linux-screenshots:
+    name: Linux documentation screenshots
+    needs: linux-build
+    if: github.event_name != 'push'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Install runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2t64 libfreetype6 libfontconfig1 libx11-6 libxrandr2 \
+            libxinerama1 libxcursor1 libxext6 libgl1 xvfb xauth fonts-dejavu-core
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-linux
+
+      - name: Unpack build tree
+        run: tar -xf build-linux.tar && rm build-linux.tar
+
+      - name: Render the documentation screenshots
+        run: xvfb-run -a build/ohpe_screenshot_artefacts/Release/ohpe_screenshot screenshots
+
+      - name: Upload the screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: ohpe-screenshots
+          path: screenshots
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------------- macOS
+  macos-build:
+    name: macOS universal build (app, AU, VST3)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Ninja
-        run: brew install ninja
+      - name: Install tools
+        run: brew install ninja ccache
+
+      - name: Compiler cache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-${{ runner.os }}-${{ runner.arch }}-appleclang-universal-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ runner.arch }}-appleclang-universal-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-
+            ccache-${{ runner.os }}-${{ runner.arch }}-appleclang-universal-
+
+      - name: Dependency cache (JUCE, Link, doctest, JSON, juceaide)
+        uses: actions/cache@v4
+        with:
+          path: .deps
+          key: deps-${{ runner.os }}-${{ runner.arch }}-ninja-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+          restore-keys: deps-${{ runner.os }}-${{ runner.arch }}-ninja-
 
       - name: Configure (arm64 + x86_64)
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            "-DFETCHCONTENT_BASE_DIR=$OHPE_DEPS_DIR" -DFETCHCONTENT_UPDATES_DISCONNECTED=ON
 
       - name: Build
-        run: cmake --build build --config Release
-
-      - name: Tests (core, processor/editor, VST3 host)
-        run: ctest --test-dir build -C Release --output-on-failure
+        run: |
+          ccache -z
+          cmake --build build --config Release
+          ccache -s
 
       - name: Check universal binaries
         run: |
-          lipo -info build/Ohpe_artefacts/Release/Standalone/Ohpe.app/Contents/MacOS/Ohpe
-          lipo -info build/Ohpe_artefacts/Release/VST3/Ohpe.vst3/Contents/MacOS/Ohpe
-          lipo -info build/Ohpe_artefacts/Release/AU/Ohpe.component/Contents/MacOS/Ohpe
           for f in build/Ohpe_artefacts/Release/Standalone/Ohpe.app/Contents/MacOS/Ohpe \
                    build/Ohpe_artefacts/Release/VST3/Ohpe.vst3/Contents/MacOS/Ohpe \
                    build/Ohpe_artefacts/Release/AU/Ohpe.component/Contents/MacOS/Ohpe; do
+            lipo -info "$f"
             lipo "$f" -verify_arch arm64 x86_64
           done
-
-      - name: Validate the Audio Unit (auval)
-        run: |
-          mkdir -p ~/Library/Audio/Plug-Ins/Components
-          cp -R build/Ohpe_artefacts/Release/AU/Ohpe.component ~/Library/Audio/Plug-Ins/Components/
-          killall -9 AudioComponentRegistrar || true
-          sleep 2
-          auval -a | grep -i ohpe || true
-          auval -strict -v aumu Ohpe Grvx
 
       - name: Package
         run: |
@@ -101,7 +378,83 @@ jobs:
           name: Ohpe-macOS-universal (unsigned)
           path: dist/*.zip
 
-      # ---------------------------------------------------------------- macOS installer
+      - name: Pack build tree
+        run: scripts/ci/pack-build.sh build build-macos.tar
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-macos
+          path: build-macos.tar
+          retention-days: 3
+          compression-level: 1
+
+  macos-tests:
+    name: macOS tests (${{ matrix.shard }}/2)
+    needs: macos-build
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-macos
+
+      - name: Unpack build tree
+        run: tar -xf build-macos.tar && rm build-macos.tar
+
+      - name: Test timings (schedules long test cases first)
+        uses: actions/cache@v4
+        with:
+          path: .ci-timings
+          key: timings-macos-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: timings-macos-${{ matrix.shard }}-
+
+      - name: Tests
+        run: |
+          mkdir -p .ci-timings
+          python3 scripts/ci/run-tests.py --build-dir build --split core_tests,plugin_tests \
+            -j "$(sysctl -n hw.ncpu)" --shard ${{ matrix.shard }}/2 --timings .ci-timings/macos.json
+
+  macos-auval:
+    name: macOS auval (strict)
+    needs: macos-build
+    runs-on: macos-14
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-macos
+
+      - name: Unpack build tree
+        run: tar -xf build-macos.tar && rm build-macos.tar
+
+      - name: Validate the Audio Unit (auval)
+        run: |
+          mkdir -p ~/Library/Audio/Plug-Ins/Components
+          cp -R build/Ohpe_artefacts/Release/AU/Ohpe.component ~/Library/Audio/Plug-Ins/Components/
+          killall -9 AudioComponentRegistrar || true
+          sleep 2
+          auval -a | grep -i ohpe || true
+          auval -strict -v aumu Ohpe Grvx
+
+  macos-installer:
+    name: macOS installer (pkg + DMG)
+    needs: [changes, macos-build]
+    if: needs.changes.outputs.installer == 'true'
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-macos
+
+      - name: Unpack build tree
+        run: tar -xf build-macos.tar && rm build-macos.tar
+
       # Signing and notarisation are optional: they run only when the repository secrets below
       # are set (docs/en/INSTALL.md, "Signing and notarisation"); otherwise the pkg is unsigned
       # and its postinstall script ad-hoc signs the installed bundles.
@@ -153,21 +506,61 @@ jobs:
         run: |
           if [ -n "${OHPE_KEYCHAIN:-}" ]; then security delete-keychain "$OHPE_KEYCHAIN" || true; fi
 
-  windows:
-    name: Windows (app, VST3)
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request'
+  # ---------------------------------------------------------------------------------- Windows
+  windows-build:
+    name: Windows build (app, VST3)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
 
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install Ninja + ccache
+        shell: pwsh
+        run: |
+          $ccv = "4.10.2"
+          Invoke-WebRequest "https://github.com/ccache/ccache/releases/download/v$ccv/ccache-$ccv-windows-x86_64.zip" -OutFile "$env:RUNNER_TEMP\ccache.zip"
+          Expand-Archive "$env:RUNNER_TEMP\ccache.zip" -DestinationPath "$env:RUNNER_TEMP\ccache"
+          Invoke-WebRequest "https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip" -OutFile "$env:RUNNER_TEMP\ninja.zip"
+          Expand-Archive "$env:RUNNER_TEMP\ninja.zip" -DestinationPath "$env:RUNNER_TEMP\ninja"
+          "$env:RUNNER_TEMP\ccache\ccache-$ccv-windows-x86_64" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "$env:RUNNER_TEMP\ninja" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Compiler cache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-${{ runner.os }}-${{ runner.arch }}-msvc-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ runner.arch }}-msvc-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-
+            ccache-${{ runner.os }}-${{ runner.arch }}-msvc-
+
+      - name: Dependency cache (JUCE, Link, doctest, JSON, juceaide)
+        uses: actions/cache@v4
+        with:
+          path: .deps
+          key: deps-${{ runner.os }}-${{ runner.arch }}-ninja-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+          restore-keys: deps-${{ runner.os }}-${{ runner.arch }}-ninja-
+
       - name: Configure
-        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+        shell: bash
+        run: |
+          which ninja ccache cl cmake
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            "-DFETCHCONTENT_BASE_DIR=$OHPE_DEPS_DIR" -DFETCHCONTENT_UPDATES_DISCONNECTED=ON
 
       - name: Build
-        run: cmake --build build --config Release --parallel
-
-      - name: Tests (core, processor/editor, VST3 host)
-        run: ctest --test-dir build -C Release --output-on-failure
+        shell: bash
+        run: |
+          ccache -z
+          cmake --build build --config Release
+          ccache -s
 
       - name: Package
         shell: pwsh
@@ -180,3 +573,77 @@ jobs:
         with:
           name: Ohpe-Windows-x64 (unsigned)
           path: dist/*.zip
+
+      - name: Pack build tree
+        shell: bash
+        run: scripts/ci/pack-build.sh build build-windows.tar
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-windows
+          path: build-windows.tar
+          retention-days: 3
+          compression-level: 1
+
+  windows-tests:
+    name: Windows tests (${{ matrix.shard }}/3)
+    needs: windows-build
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-windows
+
+      - name: Unpack build tree
+        shell: bash
+        run: tar -xf build-windows.tar && rm build-windows.tar
+
+      - name: Test timings (schedules long test cases first)
+        uses: actions/cache@v4
+        with:
+          path: .ci-timings
+          key: timings-windows-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: timings-windows-${{ matrix.shard }}-
+
+      - name: Tests
+        shell: bash
+        run: |
+          mkdir -p .ci-timings
+          python scripts/ci/run-tests.py --build-dir build --split core_tests,plugin_tests \
+            -j "$NUMBER_OF_PROCESSORS" --shard ${{ matrix.shard }}/3 --timings .ci-timings/windows.json
+
+  # ---------------------------------------------------------------------------------- result
+  result:
+    name: CI result
+    if: always()
+    needs: [changes, docs-only, linux-core, linux-build, linux-plugin-tests, linux-pluginval, linux-screenshots,
+            macos-build, macos-tests, macos-auval, macos-installer, windows-build, windows-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All jobs passed or were skipped on purpose
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+          CODE: ${{ needs.changes.outputs.code }}
+        run: |
+          echo "$RESULTS" | python3 -c '
+          import json, os, sys
+          needs = json.load(sys.stdin)
+          code = os.environ["CODE"] == "true"
+          bad = []
+          for name, n in needs.items():
+              r = n["result"]
+              print(f"{name:20} {r}")
+              if r in ("failure", "cancelled"):
+                  bad.append(name)
+              # with code changes every build / test job must have run
+              if code and r == "skipped" and name not in ("docs-only", "macos-installer", "linux-screenshots"):
+                  bad.append(name)
+          if needs["changes"]["result"] != "success":
+              bad.append("changes")
+          sys.exit(f"failed: {bad}" if bad else 0)'

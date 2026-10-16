@@ -30,8 +30,22 @@ step() { printf '\n==== %s\n' "$*"; }
 step "core: configure + build"
 cmake -S . -B build-core "${GEN[@]}" -DCMAKE_BUILD_TYPE=Release -DOHPE_BUILD_PLUGIN=OFF >/dev/null
 cmake --build build-core --config Release "${BUILD_ARGS[@]}"
+# The doctest binaries run one test case per process on all cores when Python 3 is available
+# (scripts/ci/run-tests.py, the same runner CI uses); otherwise plain ctest.
+PY="$(command -v python3 || true)"
+run_tests() { # run_tests <build dir> <ctest exclude regex or empty> <doctest binaries to split>
+    if [ -n "$PY" ]; then
+        local ex=(); [ -n "$2" ] && ex=(-E "$2")
+        "${RUN[@]}" "$PY" scripts/ci/run-tests.py --build-dir "$1" -C Release --split "$3" "${ex[@]}" ${JOBS:+-j "$JOBS"}
+    else
+        local ex=(); [ -n "$2" ] && ex=(-E "$2")
+        "${RUN[@]}" ctest --test-dir "$1" -C Release --output-on-failure "${ex[@]}"
+    fi
+}
+RUN=()
+
 step "core: tests"
-ctest --test-dir build-core -C Release --output-on-failure
+run_tests build-core "" core_tests
 
 if [ "${OHPE_CORE_ONLY:-0}" = "1" ]; then
     echo; echo "CORE TESTS PASSED"; exit 0
@@ -54,8 +68,9 @@ if [ "$(uname)" = "Linux" ] && [ -z "${DISPLAY:-}" ] && command -v xvfb-run >/de
     RUN=(xvfb-run -a)
 fi
 
-step "plug-in: tests (core, processor/editor, VST3 host)"
-"${RUN[@]}" ctest --test-dir "$BUILD" -C Release --output-on-failure
+# core_tests passed above (same sources and flags) - not run a second time here
+step "plug-in: tests (processor/editor, VST3 host)"
+run_tests "$BUILD" '^core_tests$' plugin_tests
 
 # ------------------------------------------------------------------ pluginval
 PV="${PLUGINVAL:-$(command -v pluginval || true)}"
