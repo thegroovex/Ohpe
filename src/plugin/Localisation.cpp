@@ -244,6 +244,13 @@ const std::map<juce::String, juce::String>& table()
         { "3D for speakers \xe2\x80\x93 switch 3D Monitoring to Headphones for binaural sound",
           "3D für Lautsprecher \xe2\x80\x93 für binauralen Klang die 3D-Abhöre auf Kopfhörer stellen" },
         { "3D Space is off for this part", "3D-Raum ist für diesen Part aus" },
+        // p19: the resonator body
+        { "Body", "Körper" },
+        { "Resonator", "Resonanzkörper" },
+        { "Body Tuning", "Körper-Stimmung" },
+        { "Body Character", "Körper-Charakter" },
+        { "Drive & Expression", "Drive & Ausdruck" },
+        { "Resonator off - switch it on with the first encoder", "Resonanzkörper aus – mit dem ersten Regler einschalten" },
         { "Glide", "Glide" },
         { "Pitch Envelope", "Tonhöhen-Hüllkurve" },
         { "Mod Envelope", "Mod-Hüllkurve" },

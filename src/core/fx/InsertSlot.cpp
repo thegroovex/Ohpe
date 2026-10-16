@@ -8,6 +8,7 @@
 #include "RackEffects.h"
 #include "InsertEffects2.h"
 #include "Reverb.h"
+#include "Resonator.h"
 #include "Space3D.h"
 
 #include <algorithm>
@@ -42,6 +43,7 @@ std::unique_ptr<IEffect> InsertSlot::create (int t)
         case Tremolo: return std::make_unique<TremoloEffect>();
         case Width: return std::make_unique<WidthEffect>();
         case Space3D: return std::make_unique<SpaceEffect>();
+        case Resonator: return std::make_unique<ResonatorEffect>();
         default: return nullptr;
     }
 }
@@ -59,14 +61,16 @@ std::vector<std::string> InsertSlot::typeNamesEn()
     return { "Off", "Chorus", "Phaser", "Bitcrush", "Filter Drive", "Delay", "Reverb",
              "Hyper", "Distortion", "Flanger", "Compressor", "Multiband", "EQ", "Filter", "Echo", "Hall", "Mid/Side",
              "Comb", "Formant", "Wobble", "Tremolo", "Width", // 0.8
-             "Space 3D" }; // 1.0
+             "Space 3D", // 1.0
+             "Resonator" }; // p19
 }
 std::vector<std::string> InsertSlot::typeNamesDe()
 {
     return { "Aus", "Chorus", "Phaser", "Bitcrusher", "Filter-Drive", "Delay", "Hall",
              "Hyper", "Verzerrung", "Flanger", "Kompressor", "Multiband", "EQ", "Filter", "Echo", "Raum", "Mitte/Seite",
              "Kammfilter", "Formant", "Wobble", "Tremolo", "Stereobreite", // 0.8
-             "3D-Raum" }; // 1.0
+             "3D-Raum", // 1.0
+             "Resonanzkörper" }; // p19
 }
 
 EffectInfo InsertSlot::typeInfo (int t)
@@ -235,6 +239,11 @@ void InsertSlot::setTransportPosition (double ppq, bool playing) noexcept
 void InsertSlot::setMonitorMode (int mode) noexcept
 {
     effects[(size_t) Space3D]->setMonitorMode (mode); // also while another type is selected: right from the first block
+}
+
+void InsertSlot::setKeys (const KeyState* k) noexcept
+{
+    effects[(size_t) Resonator]->setKeys (k); // also while another type is selected (the pointer only)
 }
 
 void InsertSlot::process (float* l, float* r, int n) noexcept

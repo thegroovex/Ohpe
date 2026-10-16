@@ -4,6 +4,7 @@
 
 #include "ModFxViews.h"
 #include "MorphView.h"
+#include "ResoView.h"
 #include "SpaceView.h"
 #include "fx/FxRack.h"
 #include "mod/ModVoice.h"
@@ -143,6 +144,7 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
         case Mode::Effects:
         {
             if (ctx.fxView == modfx::FxViewSpace) return space3d::spaceParams (partIndex); // 1.0: the 3D stage
+            if (ctx.fxView == modfx::FxViewBody) return resoview::resoParams (partIndex);  // p19: the resonator body
             if (modfx::isRackView (ctx.fxView)) // 0.7: the part's FX rack / the master rack
                 return modfx::rackParams (core, modfx::rackPrefixes (ctx.fxView, partIndex), ctx.fxSlot);
             Ids ids { "fxa.delay.time", "fxa.delay.sync", "fxa.delay.feedback", "fxa.delay.tone",
@@ -247,6 +249,8 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
     }
     if (m == Mode::Effects && ctx.fxView == modfx::FxViewSpace)
         t = space3d::spaceTitles();
+    else if (m == Mode::Effects && ctx.fxView == modfx::FxViewBody)
+        t = resoview::resoTitles(); // p19
     else if (m == Mode::Effects && modfx::isRackView (ctx.fxView))
         t = modfx::rackTitles (core, modfx::rackPrefixes (ctx.fxView, ctx.part), ctx.fxSlot);
     else if (m == Mode::Effects)
@@ -412,6 +416,11 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
                 auto sp = space3d::spaceParams (ctx.part); // 1.0: the part's 3D stage and the monitoring
                 sp.erase (std::remove (sp.begin(), sp.end(), std::string()), sp.end());
                 groups.push_back ({ "3D Space", 0, sp });
+            }
+            {
+                auto rp = resoview::resoParams (ctx.part); // p19: the part's resonator body
+                rp.erase (std::remove (rp.begin(), rp.end(), std::string()), rp.end());
+                groups.push_back ({ "Resonator", 0, rp });
             }
             return groups;
         }

@@ -725,9 +725,44 @@ plug-in state (section `"usertables"`; path, library file name, embedded copy up
 On without a loaded table = the built-in material (no change to the sound). No new modulation matrix sources or targets:
 the Wavetable *Position* and Vocal *Vowel* targets scan the user material.
 
+## Resonator body (p19)
+
+Appended after the audio to wavetable block (`p4.usertable.vocal`). Guide: [English](en/RESONATOR.md) · [Deutsch](de/RESONANZKOERPER.md).
+452 parameters:
+
+1. **Per-part stage** `pN.reso.*` for parts 1 – 4 (15 each, group `partN/reso`; host names "Part N …"):
+   `pN.reso.on` (Resonator / Resonanzkörper, 0 … 1, default 0) and the Resonator block below. The stage sits right
+   after the engines and the layer, before the part volume and the FX rack.
+2. **Rack type Resonator** (DE Resonanzkörper, `pN.fxK.type` / `mfxK.type` value 23, appended after Space 3D): its
+   block `<slot>resonator.*` for every slot of every rack, in the order parts 1 – 4 slots 1 – 6, then master slots
+   1 – 4 (28 × 14). FX Param 1 – 4 (matrix) = Body Tune, Material, Decay, Position.
+
+### The Resonator block (`pN.reso.*`, `<slot>resonator.*`)
+
+| Local ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `model` | Body | Körper | String, Plate, Open Tube, Closed Tube | 0 (String) |
+| `follow` | Tuning | Stimmung | Fixed, Note, Chord | 1 (Note) |
+| `tune` | Body Tune | Körper-Stimmung | -24 … 24 semitones | 0 |
+| `size` | Size | Größe | 0 … 1 | 0.5 |
+| `material` | Material | Material | 0 … 1 | 0.55 |
+| `decay` | Decay | Ausklang | 0.05 … 20 s (skew 0.3) | 2 |
+| `position` | Position | Position | 0 … 1 | 0.3 |
+| `inharm` | Inharmonicity | Inharmonizität | 0 … 1 | 0.1 |
+| `sympathetic` | Sympathetic Strings | Resonanzsaiten | 0 … 1 | 0.35 |
+| `width` | Body Width | Körper-Breite | 0 … 1 | 0.6 |
+| `drive` | Drive | Drive | 0 … 1 | 0 |
+| `mix` | Body Mix | Körper-Mischung | 0 … 1 (0 = exact bypass) | 0.5 |
+| `pressamt` | Pressure to Body | Druck auf Körper | -1 … 1 | 0.5 |
+| `slideamt` | Slide to Position | Slide auf Position | -1 … 1 | 0.5 |
+
+The modulation matrix gains the targets **Body Tune, Body Size, Body Material, Body Decay, Body Position, Body Mix**
+(75 – 80, `pN.reso.tune` … `pN.reso.mix`); the target choice list grows at its end. The FX slot type lists grow by
+**Resonator** (23).
+
 ## Character macros (p21)
 
-Appended after the audio-to-wavetable block (`p4.usertable.vocal`), part by part (`p1.char.*` … `p4.char.*`, 16 IDs). Guides:
+Appended after the resonator block (`mfx4.resonator.slideamt`), part by part (`p1.char.*` … `p4.char.*`, 16 IDs). Guides:
 [English](en/USER-INTERFACE.md#discover) · [Deutsch](de/BEDIENUNG.md#entdecken).
 
 | ID | English | Deutsch | Range | Default |
@@ -743,6 +778,6 @@ parameter values, automation and the UI stay as they are; all four at 0 leave th
 **Hard** – amp attack shorter (−30 % of its normalised range per unit), drive, FM feedback, pluck excitation,
 crackle, vocal tension, noise; **Alive** – `pN.life` (+0.6 per unit), cluster drift, detune, vocal jitter and
 vibrato depth, grain spray / scan; **Wide** – unison width, cluster / grain spread, cluster side, wavetable unison,
-the layer's width. The modulation matrix gains the targets **Bright / Hard / Alive / Wide** (81 … 84 – 75 … 80 are the resonator body targets, keys
+the layer's width. The modulation matrix gains the targets **Bright / Hard / Alive / Wide** (81 … 84, after the resonator body targets 75 … 80; keys
 `charbright`, `charhard`, `charalive`, `charwide`); the target choice list grows at its end.
 

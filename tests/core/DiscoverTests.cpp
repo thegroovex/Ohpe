@@ -84,7 +84,7 @@ TEST_CASE ("character macros: four per part, appended after the morph block, -1 
     Core core;
     const int first = core.params().indexOf ("p1.char.bright");
     REQUIRE (first >= 0);
-    CHECK (first > core.params().indexOf ("p4.usertable.vocal"));
+    CHECK (first > core.params().indexOf ("mfx4.resonator.slideamt"));
     for (int p = 0; p < Core::numParts; ++p)
         for (int m = 0; m < character::numMacros; ++m)
         {

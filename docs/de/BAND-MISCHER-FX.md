@@ -252,6 +252,7 @@ ist ein vollständiger Insert mit eigenen Reglern (`pN.fxK.<id>.*`, `mfxK.<id>.*
 | **Wobble** (`wobble`) | resonanter Tief- / Bandpass, zwischen zwei Cutoffs von einem tempo-synchronen LFO gefahren (Sinus, Dreieck, Sägezähne, Rechteck, S&H), der mit jeder Note neu startet (`retrig`) | `rate`, `sync`, `shape`, `low`, `high`, `reso`, `mode`, `drive`, `retrig`, `mix` |
 | **Tremolo** (`tremolo`) | Tremolo oder Autopan, frei oder synchron | `rate`, `sync`, `depth`, `mode`, `shape` |
 | **Stereobreite** (`width`) | Seitenpegel 0 – 200 %, Haas-artige Spreizung, die sich in der Mono-Summe aufhebt, mono unterhalb einer Frequenz (4. Ordnung) | `width`, `spread`, `haas` (ms), `mono` (20 Hz = aus), `output` |
+| **Resonanzkörper** (`resonator`, p19) | der physikalisch modellierte Körper als Effekt: Saitenpaar mit Resonanzsaiten, modale Platte, offenes / gedacktes Rohr; im Part-Rack folgt er der Tastatur dieses Parts – siehe [RESONANZKOERPER.md](RESONANZKOERPER.md) | `model`, `follow`, `tune`, `size`, `material`, `decay`, `position`, `inharm`, `sympathetic`, `width`, `drive`, `mix`, `pressamt`, `slideamt` |
 
 Sync-Werte: Frei (Tempo in Hz), 1/1 … 1/32, punktiert, Triolen, dann 2/1 und 4/1 – vom Host, von Link
 oder vom internen Tempo. Die Effekte sind eigenständige Klassen (`src/core/fx/InsertEffects2.h`).

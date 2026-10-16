@@ -206,6 +206,25 @@ void Part::registerLate20UserTableParams (ParamRegistry& reg) const
     add (toggle (id ("usertable.vocal"), P + "User Formants", P + "Eigene Formanten", false));
 }
 
+void Part::registerLate19ResoParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const auto group = "part" + n + "/reso";
+    const std::string P = "Part " + n + " ";
+    auto on = toggle (id ("reso.on"), P + "Resonator", P + "Resonanzkörper", false);
+    on.group = group;
+    reg.add (std::move (on));
+    for (auto d : ResonatorEffect().getParamDescriptors())
+    {
+        d.id = id ("reso." + d.id);
+        d.nameEn = P + d.nameEn;
+        d.nameDe = P + d.nameDe;
+        d.group = group;
+        reg.add (std::move (d));
+    }
+}
+
 void Part::registerLate21CharacterParams (ParamRegistry& reg) const
 {
     using namespace pd;
@@ -218,6 +237,41 @@ void Part::registerLate21CharacterParams (ParamRegistry& reg) const
         d.group = "part" + n;
         reg.add (std::move (d));
     }
+}
+
+void Part::applyReso (float* l, float* r, int n) noexcept
+{
+    if (! resoOn && resoFade <= 0.0f) return;
+    if (resoOn && resoFade >= 1.0f)
+    {
+        reso.process (l, r, n);
+        return;
+    }
+    n = std::min (n, (int) resoDryL.size());
+    std::memcpy (resoDryL.data(), l, sizeof (float) * (size_t) n);
+    std::memcpy (resoDryR.data(), r, sizeof (float) * (size_t) n);
+    reso.process (l, r, n);
+    const float step = resoOn ? spaceFadeStep : -spaceFadeStep; // 20 ms, as the 3D stage
+    for (int i = 0; i < n; ++i)
+    {
+        resoFade = std::clamp (resoFade + step, 0.0f, 1.0f);
+        const float w = resoFade * resoFade * (3.0f - 2.0f * resoFade);
+        l[i] = resoDryL[(size_t) i] + (l[i] - resoDryL[(size_t) i]) * w;
+        r[i] = resoDryR[(size_t) i] + (r[i] - resoDryR[(size_t) i]) * w;
+    }
+    if (resoFade <= 0.0f)
+    {
+        reso.reset(); // the next switch-on starts clean
+        resoRunningFlag.store (false, std::memory_order_relaxed);
+    }
+}
+
+void Part::updateHeldKeys() noexcept
+{
+    int k = 0;
+    for (int nn = 0; nn < 128 && k < KeyState::maxHeld; ++nn)
+        if (held[(size_t) nn] > 0.0f || sustained[(size_t) nn]) keys.held[(size_t) k++] = nn;
+    keys.numHeld = k;
 }
 
 void Part::registerLate10SpaceParams (ParamRegistry& reg) const
@@ -306,6 +360,11 @@ void Part::bind (const ParamRegistry& reg)
     userVocalIndex = reg.indexOf (id ("usertable.vocal")); // p20
     for (int m = 0; m < character::numMacros; ++m) charIndex[(size_t) m] = reg.indexOf (id (std::string ("char.") + character::key (m))); // p21
     spaceOnIndex = reg.indexOf (id ("space.on")); // 1.0
+    resoOnIndex = reg.indexOf (id ("reso.on"));   // p19
+    {
+        const auto ds = reso.getParamDescriptors();
+        for (size_t i = 0; i < ds.size() && i < resoIndex.size(); ++i) resoIndex[i] = reg.indexOf (id ("reso." + ds[i].id));
+    }
     {
         const auto ds = space.getParamDescriptors();
         for (size_t i = 0; i < ds.size() && i < spaceIndex.size(); ++i) spaceIndex[i] = reg.indexOf (id ("space." + ds[i].id));
@@ -370,6 +429,12 @@ void Part::prepare (double sampleRate, int maxBlockSize)
     spaceDryR.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
     spaceFadeStep = 1.0f / (0.02f * (float) sampleRate);
     spaceLast.fill (NAN);
+    reso.setKeys (&keys); // p19: the body and the rack's resonators follow this part's keyboard
+    rack.setKeys (&keys);
+    reso.prepare (sampleRate, maxBlockSize);
+    resoDryL.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
+    resoDryR.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
+    resoLast.fill (NAN);
     reset();
 }
 
@@ -392,6 +457,10 @@ void Part::reset() noexcept
     monoLp2.reset();
     space.reset();
     spaceFade = spaceOn ? 1.0f : 0.0f;
+    keys = KeyState {}; // p19
+    keyNoteBend = 0.0f;
+    reso.reset();
+    resoFade = resoOn ? 1.0f : 0.0f;
 }
 
 void Part::pullParams (const ParamSnapshot& s) noexcept
@@ -474,6 +543,18 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
                 if (const float val = s[spaceIndex[i]]; ! (val == spaceLast[i])) { spaceLast[i] = val; space.setParam ((int) i, val); }
     }
 
+    // p19 resonator body stage
+    if (resoOnIndex >= 0)
+    {
+        const bool on = s.getBool (resoOnIndex);
+        if (on && ! resoOn) resoRunningFlag.store (true, std::memory_order_relaxed);
+        resoOn = on;
+        for (size_t i = 0; i < resoIndex.size(); ++i)
+            if (resoIndex[i] >= 0)
+                if (const float val = s[resoIndex[i]]; ! (val == resoLast[i])) { resoLast[i] = val; reso.setParam ((int) i, val); }
+    }
+    keys.bendSemitones = tune + bend * bendRange + keyNoteBend; // the part's tuning moves the body too
+
     // 0.8 layer
     {
         auto ly = [&] (Late08 k, float def) { return late08Index[(size_t) k] >= 0 ? s[late08Index[(size_t) k]] : def; };
@@ -538,6 +619,14 @@ void Part::noteOn (int note, float velocity) noexcept
     for (auto* f : followers)
         if (f != nullptr) f->noteOn (note, velocity);
     sustained[(size_t) note] = false;
+    keys.lastNote = note; // p19: the resonator body follows the newest note
+    keys.velocity = velocity;
+    keys.pressure = 0.0f;
+    keys.slide = 0.0f;
+    keyNoteBend = 0.0f;
+    keys.bendSemitones = tune + bend * bendRange;
+    ++keys.noteCounter;
+    updateHeldKeys();
     matrix.noteOn (note, velocity); // first: the voice reads the new note's seed
     rack.noteOn();                  // 0.7: retriggered rack effects
     if (auto* e = engines[(size_t) current].get()) e->noteOn (note, velocity);
@@ -550,7 +639,8 @@ void Part::noteOff (int note) noexcept
     held[(size_t) note] = 0.0f; // p16
     for (auto* f : followers)
         if (f != nullptr) f->noteOff (note);
-    if (sustain) { sustained[(size_t) note] = true; return; }
+    if (sustain) { sustained[(size_t) note] = true; updateHeldKeys(); return; }
+    updateHeldKeys(); // p19
     matrix.noteOff (note);
     for (auto& e : engines)
         if (e != nullptr) e->noteOff (note);
@@ -560,6 +650,7 @@ void Part::allNotesOff (bool hard) noexcept
 {
     sustained.fill (false);
     held.fill (0.0f); // p16
+    keys.numHeld = 0;  // p19
     for (auto* f : followers)
         if (f != nullptr) f->allNotesOff (hard);
     matrix.allNotesOff();
@@ -572,6 +663,13 @@ void Part::noteExpression (int note, const NoteExpression& x) noexcept
     for (auto* f : followers) // p16
         if (f != nullptr) f->noteExpression (note, x);
     matrix.setNoteExpression (note, x.pressure, x.slide, x.noteBend);
+    if (note < 0 || note == keys.lastNote) // p19: the body follows the newest note's expression
+    {
+        keys.pressure = std::isfinite (x.pressure) ? std::clamp (x.pressure, 0.0f, 1.0f) : 0.0f;
+        keys.slide = std::isfinite (x.slide) ? std::clamp (x.slide, -1.0f, 1.0f) : 0.0f;
+        keyNoteBend = std::isfinite (x.pitch) ? std::clamp (x.pitch, -96.0f, 96.0f) : 0.0f;
+        keys.bendSemitones = tune + bend * bendRange + keyNoteBend;
+    }
     exprBlend = std::clamp (x.blend, -1.0f, 1.0f); // 0.8: part-wide (the mix of two engines is not per note)
     for (auto& e : engines)
         if (e != nullptr) e->noteExpression (note, x);
@@ -589,6 +687,7 @@ void Part::handleMidi (const MidiEvent& m) noexcept
         bend = ((float) m.pitchBendValue() - 8192.0f) / 8192.0f;
         matrix.setPitchBend (bend);
         common.pitchOffset = tune + bend * bendRange;
+        keys.bendSemitones = tune + bend * bendRange + keyNoteBend; // p19
         pushCommon();
     }
     else if (m.isController())
@@ -675,6 +774,7 @@ void Part::renderEngines (float* l, float* r, int numSamples) noexcept
 
 void Part::finishBlock (float* l, float* r, int numSamples) noexcept
 {
+    applyReso (l, r, numSamples); // p19: the body right after the engines (before volume and FX rack)
     // 0.4: a gentle DC blocker (one pole at ~5 Hz): pulse shapes and asymmetric waves must not
     // push a DC offset into the mix. 0.7: the volume glides over the block when it changed (automation, matrix).
     const float g = volume * gainFactor;
