@@ -45,6 +45,7 @@
     "fx.squash.mix": 1.0,
     "fx.squash.output": 0.0,
     "fx.squash.monolow": 1,
+    "monobass": 150.0,
     "mpe.press": 5,
     "mpe.pressamt": 0.6,
     "mpe.timbre": 6,

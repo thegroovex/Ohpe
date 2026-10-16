@@ -40,6 +40,7 @@
     "fx.phaser.depth": 0.7,
     "fx.phaser.feedback": 0.5,
     "fx.phaser.mix": 0.45,
+    "monobass": 150.0,
     "mpe.press": 5,
     "mpe.pressamt": 0.6,
     "mpe.timbre": 6,

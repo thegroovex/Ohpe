@@ -83,6 +83,7 @@
     "p2.lfo.depth": 0.12,
     "p2.lfo.shape": 1,
     "p2.lfo.dest": 1,
+    "p2.monobass": 150.0,
     "p2.velsens": 0.3,
     "p2.glide": 0.07,
     "p2.glide.mode": 1,

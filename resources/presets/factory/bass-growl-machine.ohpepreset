@@ -45,6 +45,7 @@
     "fx.formant.sync": 4,
     "fx.formant.depth": 0.9,
     "fx.formant.mix": 0.75,
+    "monobass": 150.0,
     "mpe.press": 9,
     "mpe.pressamt": 0.7,
     "mpe.timbre": 6,

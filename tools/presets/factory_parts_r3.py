@@ -155,6 +155,10 @@ def P(name, tags, engine, comment, *dicts, **kw):
             rest.append(lfo(0.17, 0.12, "tri", "timbre"))
         else:
             rest.append(lfo(0.09, 0.22, "tri", "timbre"))
+    # 0.8 bass mono: the side signal below ~150 Hz is removed after the FX slot - unison, chorus and width stay wide
+    # above it, the sub stays centred (club / mono-safe)
+    if "monobass" not in merged and (tags[0] in ("Bass", "Boom") or "Bass" in tags):
+        rest.append({"monobass": 150.0})
     if engine == "wavetable" and "wavetable.lfopos" not in merged:
         rest.append({"wavetable.lfopos": 0.12})
     if not mpes and name not in NO_MPE and tags[0] not in ("Arp", "FX"):

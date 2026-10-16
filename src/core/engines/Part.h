@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
+#include "../dsp/Filters.h"
 #include "../model/Events.h"
 #include "../model/ParamRegistry.h"
 #include "../model/ParamSnapshot.h"
@@ -46,6 +47,10 @@ public:
     void registerLate08EngineParams (ParamRegistry& reg, EngineType type) const;
     /** 0.8: MPE / aftertouch target amounts, expression smoothing and per-note slide time (group "partN/midi"). */
     void registerLate08MpeParams (ParamRegistry& reg) const;
+    /** 0.8: "pN.monobass" - the side signal below this frequency is removed after the FX slot (20 Hz = off). */
+    void registerLate08MonoParams (ParamRegistry& reg) const;
+    /** 0.8: makes the low end mono below "pN.monobass" (called by the core after the part's FX slot). */
+    void applyBassMono (float* l, float* r, int numSamples) noexcept;
     /** 0.8: the layer engine, or nullptr when the layer is off (or set to the main engine). */
     ISynthEngine* layerEngine() noexcept { return layerType >= 0 ? engines[(size_t) layerType].get() : nullptr; }
     enum LayerXMod { XRing = 0, XAm, XFold, numXMods };
@@ -111,6 +116,9 @@ private:
     // ---- 0.8 layer
     enum Late08 { lyEngine = 0, lyLevel, lyTune, lyFine, lyXMode, lyXMod, lyWidth, lyOwnEnv, lyA, lyD, lyS, lyR, numLate08 };
     int exprSmoothIndex = -1, exprSlideIndex = -1; ///< 0.8: "pN.mpe.smooth", "pN.mpe.slide"
+    int monoBassIndex = -1;                        ///< 0.8: "pN.monobass"
+    float monoBassHz = 20.0f, partSr = 48000.0f;
+    dsp::Svf monoLp1, monoLp2;                     ///< 4th-order Linkwitz-Riley low-pass of the side signal
     float exprBlend = 0.0f;                        ///< 0.8: latest per-note "layer blend" expression (part-wide)
     std::array<int, numLate08> late08Index {};
     int layerType = -1; ///< EngineType of the layer, -1 = off

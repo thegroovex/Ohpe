@@ -43,6 +43,7 @@
     "lfo.depth": 0.12,
     "lfo.shape": 1,
     "lfo.dest": 1,
+    "monobass": 150.0,
     "wavetable.lfopos": 0.12,
     "mpe.press": 5,
     "mpe.pressamt": 0.6,

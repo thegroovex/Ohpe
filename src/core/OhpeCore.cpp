@@ -242,7 +242,10 @@ void Core::pullPhase2Params() noexcept
 void Core::renderTapeChunk (SourceBuffers& src, int pos, int len) noexcept
 {
     for (int p = 0; p < numParts; ++p) // FX slot of each part (Off while a part has no slot parameters)
+    {
         inserts[(size_t) p].process (partL[(size_t) p].data(), partR[(size_t) p].data(), len);
+        parts[(size_t) p]->applyBassMono (partL[(size_t) p].data(), partR[(size_t) p].data(), len); // 0.8
+    }
 
     TapeInputs tin;
     tin.left[tapesource::input] = inputL != nullptr ? inputL + pos : nullptr;

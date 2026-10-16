@@ -409,7 +409,7 @@ std::vector<ParamDescriptor> WavetableEngine::getParamDescriptors() const
     d.push_back (continuous ("sub", "Sub", "Sub", 0.0f, 1.0f, 0.0f));
     d.push_back (continuous ("keytrack", "Key Track", "Key-Tracking", 0.0f, 1.0f, 0.5f));
     // 0.8 (late parameters)
-    d.push_back (integer ("univoices", "Unison Voices", "Unisono-Stimmen", 1, maxUnison, 3));
+    d.push_back (integer ("univoices", "Unison Voices", "Unisono-Stimmen", 1, wavetable::maxUnison, 3));
     d.push_back (continuous ("uniwidth", "Unison Width", "Unisono-Breite", 0.0f, 1.0f, 0.7f));
     d.push_back (continuous ("fm", "FM Amount", "FM-Menge", 0.0f, 1.0f, 0.0f));
     d.push_back (continuous ("fmratio", "FM Ratio", "FM-Verhältnis", 0.25f, 8.0f, 1.0f, ParamUnit::None, 0.4f));

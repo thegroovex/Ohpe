@@ -44,6 +44,7 @@
     "fx.shaper.tone": 8000,
     "fx.shaper.mix": 0.6,
     "fx.shaper.output": 0.0,
+    "monobass": 150.0,
     "mpe.press": 9,
     "mpe.pressamt": 0.7,
     "mpe.timbre": 6,
