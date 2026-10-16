@@ -68,7 +68,7 @@ TEST_CASE ("0.7 rack types: registered for every slot of every rack, names in En
 {
     Core core;
     const auto& reg = core.params();
-    for (int t = InsertSlot::firstRackType; t < InsertSlot::numTypes; ++t)
+    for (int t = InsertSlot::firstRackType; t < InsertSlot::endRackTypes; ++t)
     {
         const auto info = InsertSlot::typeInfo (t);
         CAPTURE (info.id);
@@ -87,7 +87,7 @@ TEST_CASE ("0.7 rack types: registered for every slot of every rack, names in En
 
 TEST_CASE ("0.7 rack types: the modulation targets FX Param 1-4 move four distinct continuous parameters")
 {
-    for (int t = InsertSlot::firstRackType; t < InsertSlot::numTypes; ++t)
+    for (int t = InsertSlot::firstRackType; t < InsertSlot::endRackTypes; ++t)
     {
         auto e = make (t);
         CAPTURE (e->info().id);
@@ -108,7 +108,7 @@ TEST_CASE ("0.7 rack types: the modulation targets FX Param 1-4 move four distin
 TEST_CASE ("0.7 rack types: finite and denormal-free at extreme settings; tails die out")
 {
     const auto in = noiseAndTones (24000, 1.5f);
-    for (int t = InsertSlot::firstRackType; t < InsertSlot::numTypes; ++t)
+    for (int t = InsertSlot::firstRackType; t < InsertSlot::endRackTypes; ++t)
     {
         auto e = make (t);
         CAPTURE (e->info().id);

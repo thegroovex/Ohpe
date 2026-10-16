@@ -36,9 +36,12 @@ public:
     {
         Off = 0, Chorus, Phaser, Bitcrush, FilterDrive, Delay, Reverb,
         Hyper, Distortion, Flanger, Compressor, Multiband, Eq, Filter, Echo, Hall, // 0.7 (rack types, RackEffects.h)
+        MidSide, // 0.7 (stereo type, MidSide.h)
         numTypes
     };
-    static constexpr int firstRackType = Hyper; ///< the 0.7 types (their blocks: FxRack::registerTypeBlocks)
+    static constexpr int firstRackType = Hyper; ///< the 0.7 rack types (their blocks: FxRack::registerTypeBlocks)
+    static constexpr int endRackTypes = Hall + 1; ///< one past the 0.7 rack types (registered before the stereo types)
+    static constexpr int firstStereoType = MidSide; ///< 0.7 stereo types (their blocks: FxRack::registerTypeBlocks, after the rack types)
     static constexpr int numLegacyTypes = Reverb + 1; ///< the 0.2 types (their blocks: registerParams)
 
     InsertSlot();

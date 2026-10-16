@@ -199,6 +199,13 @@ const std::map<juce::String, juce::String>& table()
         { "Master Compressor", "Master-Kompressor" },
         { "Master Output", "Master-Ausgang" },
         { "Master Filter", "Master-Filter" },
+        // 0.7: stereo scope, spectrum terrain, master stereo
+        { "Correlation", "Korrelation" },
+        { "Display view", "Display-Ansicht" },
+        { "Character", "Figur" },
+        { "Stereo scope", "Stereobild" },
+        { "Spectrum terrain", "Spektrum-Landschaft" },
+        { "Animated 3D visuals", "Animierte 3D-Ansichten" },
         { "Glide", "Glide" },
         { "Pitch Envelope", "Tonhöhen-Hüllkurve" },
         { "Mod Envelope", "Mod-Hüllkurve" },

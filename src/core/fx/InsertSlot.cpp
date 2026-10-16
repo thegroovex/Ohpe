@@ -4,6 +4,7 @@
 
 #include "Delay.h"
 #include "InsertEffects.h"
+#include "MidSide.h"
 #include "RackEffects.h"
 #include "Reverb.h"
 
@@ -32,6 +33,7 @@ std::unique_ptr<IEffect> InsertSlot::create (int t)
         case Filter: return std::make_unique<FilterRackEffect>();
         case Echo: return std::make_unique<EchoEffect>();
         case Hall: return std::make_unique<HallEffect>();
+        case MidSide: return std::make_unique<MidSideEffect>();
         default: return nullptr;
     }
 }
@@ -47,12 +49,12 @@ InsertSlot::InsertSlot()
 std::vector<std::string> InsertSlot::typeNamesEn()
 {
     return { "Off", "Chorus", "Phaser", "Bitcrush", "Filter Drive", "Delay", "Reverb",
-             "Hyper", "Distortion", "Flanger", "Compressor", "Multiband", "EQ", "Filter", "Echo", "Hall" };
+             "Hyper", "Distortion", "Flanger", "Compressor", "Multiband", "EQ", "Filter", "Echo", "Hall", "Mid/Side" };
 }
 std::vector<std::string> InsertSlot::typeNamesDe()
 {
     return { "Aus", "Chorus", "Phaser", "Bitcrusher", "Filter-Drive", "Delay", "Hall",
-             "Hyper", "Verzerrung", "Flanger", "Kompressor", "Multiband", "EQ", "Filter", "Echo", "Raum" };
+             "Hyper", "Verzerrung", "Flanger", "Kompressor", "Multiband", "EQ", "Filter", "Echo", "Raum", "Mitte/Seite" };
 }
 
 EffectInfo InsertSlot::typeInfo (int t)

@@ -47,6 +47,30 @@ bool lockable (const juce::String& id)
     return id.isNotEmpty();
 }
 
+/** 0.7: settings of this computer (not of the project): animated 3D visuals. */
+juce::PropertiesFile::Options uiSettingsOptions()
+{
+    juce::PropertiesFile::Options o;
+    o.applicationName = "Ohpe";
+    o.folderName = "Ohpe";
+    o.filenameSuffix = ".settings";
+    o.osxLibrarySubFolder = "Application Support";
+    return o;
+}
+
+bool loadAnimatedVisualsSetting()
+{
+    juce::PropertiesFile f (uiSettingsOptions());
+    return f.getBoolValue ("animatedVisuals", true);
+}
+
+void storeAnimatedVisualsSetting (bool on)
+{
+    juce::PropertiesFile f (uiSettingsOptions());
+    f.setValue ("animatedVisuals", on);
+    f.saveIfNeeded();
+}
+
 juce::String sampleName (const SamplePtr& s)
 {
     return s != nullptr ? juce::String::fromUTF8 (s->name().c_str()) : juce::String();
@@ -205,6 +229,11 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     display.onTrackClicked = [this] (int t) { selectTapeTrack (t); };
     display.onPadClicked = [this] (int pad) { selectDrumPad (pad, true); };
     display.onSoftKey = [this] (int id) { onSoftKey (id); };
+    display.setAnimatedVisuals (loadAnimatedVisualsSetting());
+    display.onVisualSettingsChanged = [this] {
+        saveUiState();
+        storeAnimatedVisualsSetting (display.animatedVisuals());
+    };
     addAndMakeVisible (display);
     addAndMakeVisible (keyboard);
 
@@ -1085,6 +1114,7 @@ void OhpeEditor::saveUiState()
     obj->setProperty ("modRouting", ctx.modRouting);
     obj->setProperty ("fxSlot", ctx.fxSlot);
     obj->setProperty ("pro", proView.isVisible());
+    obj->setProperty ("visual", (int) display.visual());
     juce::Array<juce::var> pages;
     for (int pg : pageOf) pages.add (pg);
     obj->setProperty ("pages", pages);
@@ -1104,6 +1134,7 @@ void OhpeEditor::loadUiState()
     if (s.hasProperty ("octave")) keyboard.setBaseOctave ((int) s["octave"]);
     if (s.hasProperty ("seqView")) ctx.seqView = (SeqView) juce::jlimit (0, numSeqViews - 1, (int) s["seqView"]);
     if (s.hasProperty ("drumPad")) ctx.drumPad = juce::jlimit (0, drum::DrumKit::numPads - 1, (int) s["drumPad"]);
+    if (s.hasProperty ("visual")) display.setVisual ((Display::Visual) juce::jlimit (0, (int) Display::Visual::numVisuals - 1, (int) s["visual"]));
     if (s.hasProperty ("lfoView")) ctx.lfoView = juce::jlimit (0, modfx::numLfoViews - 1, (int) s["lfoView"]); // 0.7
     if (s.hasProperty ("fxView")) ctx.fxView = juce::jlimit (0, modfx::numFxViews - 1, (int) s["fxView"]);
     if (s.hasProperty ("modRouting")) ctx.modRouting = juce::jlimit (0, mod::numSlots - 1, (int) s["modRouting"]);

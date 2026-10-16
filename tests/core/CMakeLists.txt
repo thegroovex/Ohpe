@@ -53,3 +53,7 @@ target_compile_definitions(ohpe_core_tests PRIVATE OHPE_SOURCE_DIR="${CMAKE_SOUR
 # 0.7: FX rack and modulation matrix
 target_sources(ohpe_core_tests PRIVATE ModFxTests.cpp)
 target_sources(ohpe_core_tests PRIVATE RackFxTests.cpp)
+# 0.7: Mid/Side stereo effect, scope FIFO, stereo / spectrum analysis
+target_sources(ohpe_core_tests PRIVATE StereoTests.cpp)
+find_package(Threads REQUIRED)
+target_link_libraries(ohpe_core_tests PRIVATE Threads::Threads)

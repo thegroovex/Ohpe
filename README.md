@@ -34,13 +34,14 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **Sequencers** | step sequencer (up to 64 steps, probability, ratchets, parameter locks, 16 patterns, song mode), Euclid, arpeggiator and Orbit (polymeter), each with a target part – step, Euclid and Orbit can also play the drum kit |
 | **Tape machine** | eight stereo tracks: record / overdub / punch from the input, parts or drums, varispeed, reverse, loop, tape character, undo, export as WAV master and stems |
 | **Mixer** | eight channels with EQ, compressor, volume, pan, mute / solo, two sends (A: delay, B: reverb), master compressor, tape saturation and limiter |
-| **FX racks** | six serial slots per part and four on the master: hyper (unison widener), distortion (eight modes), flanger, compressor, multiband, EQ, filter, echo, hall, chorus, phaser, bitcrush, filter drive, delay, reverb – reorder by dragging, each with mix and bypass – see [FX rack](docs/en/TAPE-MIXER-FX.md#fx-rack-07) |
+| **FX racks** | six serial slots per part and four on the master: hyper (unison widener), distortion (eight modes), flanger, compressor, multiband, EQ, filter, echo, hall, chorus, phaser, bitcrush, filter drive, delay, reverb, mid / side stereo – reorder by dragging, each with mix and bypass – see [FX rack](docs/en/TAPE-MIXER-FX.md#fx-rack-07) |
 | **Modulation matrix** | 16 routings per part from 20 sources (three LFOs, three envelopes, velocity, MPE, macros, a sequencer lane …) to pitch, level, pan, 24 engine parameters, the LFOs and every rack slot; rings on the encoders show what moves – see [Modulation](docs/en/MODULATION.md) |
 | **Sync** | host transport in the plug-in; MIDI clock in / out and network tempo sync (Link) in the standalone app |
 | **Multi-out** | every channel can go to the main output or its own stereo output (8 aux outputs) – in the plug-in and in the standalone app |
 | **MIDI** | per-part channels, MPE, every control is MIDI-learnable (right-click → MIDI Learn), maps can be exported / imported; all parameters are automatable |
 | **Standalone app** | choose audio system, device, sample rate and buffer size, latency display, multi-out routing to device channels, MIDI inputs |
 | **Preset library** | one LIBRARY key: categories (Bass, Keys, Pads, Leads, Plucks, Drums, FX, Arp, Textures, Vocal), engine filter, search, favourites, star ratings, sorting, factory and user banks, preview by selecting, part and whole-project presets, previous / next from MIDI |
+| **Display** | a deep, layered display with parallax; stereo scope (goniometer, correlation, M / S levels) and a moving 3D spectrum terrain |
 | **Direct manipulation** | drag the value bars on the display, Shift / Cmd / Ctrl for fine control, double-click to reset; pro view with every parameter of a mode at once |
 | **Languages** | English and German, switchable at any time |
 
@@ -58,6 +59,8 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | Mixer | German interface |
 | ![Mod view](docs/images/ohpe-mod-view.png) | ![FX rack](docs/images/ohpe-rack-view.png) |
 | Mod view (modulation matrix) | FX rack of a part |
+| ![Master stereo scope with mid / side in the master rack](docs/images/ohpe-master-scope.png) | ![Spectrum terrain](docs/images/ohpe-terrain.png) |
+| Master stereo scope (mid / side in the master rack) | Spectrum terrain |
 
 ## Playing Ohpe
 

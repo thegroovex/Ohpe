@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Pages.h"
+#include "Visuals.h"
 #include "Widgets.h"
 #include "plugin/PluginProcessor.h"
 
@@ -23,6 +24,25 @@ class Display : public juce::Component
 {
 public:
     explicit Display (OhpeProcessor& p);
+    ~Display() override;
+
+    /** 0.7: what the left half of the display shows. The stereo scope also appears by itself
+        on the Mid/Side FX slot pages and the master stereo pages. */
+    enum class Visual { Character = 0, Scope, Terrain, numVisuals };
+    void setVisual (Visual v);
+    Visual visual() const noexcept { return userVisual; }
+    Visual shownVisual() const;
+    /** 0.7 setting: animated 3D visuals (spectrum terrain, parallax). Off = static display. */
+    void setAnimatedVisuals (bool on);
+    bool animatedVisuals() const noexcept { return animated; }
+    /** The scope tap source the display needs right now (ScopeTap::Source). */
+    int scopeSource() const;
+    const DisplayVisuals& visualsState() const noexcept { return visuals; }
+    /** Paints the stereo scope of the current scope source into `area` (for other views, e.g. an
+        FX rack slot visual of a Mid/Side slot). */
+    void paintStereoScope (juce::Graphics& g, juce::Rectangle<float> area) const;
+    /** Called when the user changes the view or the animation setting on the display. */
+    std::function<void()> onVisualSettingsChanged;
 
     struct SoftKey
     {
@@ -64,6 +84,9 @@ public:
     std::function<void (int from, int to)> onFxSlotMoved; ///< 0.7: a block dropped on another one
 
     void paint (juce::Graphics& g) override;
+    void resized() override;
+    void mouseMove (const juce::MouseEvent& e) override;
+    void mouseExit (const juce::MouseEvent& e) override;
     void mouseDown (const juce::MouseEvent& e) override;
     void mouseDrag (const juce::MouseEvent& e) override;
     void mouseUp (const juce::MouseEvent& e) override;
@@ -77,6 +100,7 @@ public:
     juce::Rectangle<float> padCell (int pad) const;
     juce::Rectangle<float> trackLane (int track) const;
     juce::Rectangle<float> seqTab (int view) const;
+    juce::Rectangle<float> characterArea() const; ///< 0.7: the character / scope / terrain area
 
 private:
     juce::Rectangle<float> headerArea() const;
@@ -106,6 +130,9 @@ private:
     void paintSoftKeys (juce::Graphics& g);
     void paintHint (juce::Graphics& g, juce::Rectangle<float> area, const juce::String& text);
     void updateTapeOverview();
+    void renderLayers();
+    void showVisualMenu();
+    int forcedScopeSource() const;
 
     int rowAt (juce::Point<float> p) const;
     float rowValue (int row) const;
@@ -127,6 +154,14 @@ private:
     int dragSlot = -1;              ///< 0.7: FX block being dragged
     std::vector<float> modHistory;  ///< 0.7: recent values of the selected routing
     BarDrag drag;
+
+    // 0.7: visuals and depth
+    DisplayVisuals visuals;
+    Visual userVisual = Visual::Character;
+    bool animated = true;
+    int lastSource = -2;
+    juce::Point<float> parallax, parallaxTarget;
+    juce::Image baseLayer, gridLayer, glassLayer; ///< bezel + glass, dot grid (parallax), inner shadow + sheen
 
     // tape overview (peaks per track over the used length), refreshed about twice a second
     static constexpr int overviewPoints = 96;

@@ -5,12 +5,15 @@
 //   usage: ohpe_screenshot <output directory>
 // Writes ohpe-<view>.png (English) and ohpe-<view>-de.png (German).
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
-// 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack. The
+// 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack; the Mid/Side scope,
+// the master scope view and the spectrum terrain. The
 // preset library reads the user folder from OHPE_PRESET_DIR when set (otherwise the default).
 
 #include "plugin/Localisation.h"
 #include "plugin/PluginProcessor.h"
 #include "ui/PluginEditor.h"
+
+#include <algorithm>
 
 using namespace ohpe;
 
@@ -71,6 +74,23 @@ void animate (OhpeProcessor& p, OhpeEditor& e, int frames)
     }
 }
 
+/** 0.7: plays and animates together, like the editor timer does (30 frames per second). */
+void playAnimated (OhpeProcessor& p, OhpeEditor& e, int frames, std::initializer_list<int> notes = {}, int channel = 1)
+{
+    juce::AudioBuffer<float> buffer (p.getTotalNumOutputChannels(), 512);
+    for (int f = 0; f < frames; ++f)
+    {
+        juce::MidiBuffer midi;
+        if (f == 0)
+            for (int n : notes) midi.addEvent (juce::MidiMessage::noteOn (channel, n, (juce::uint8) 100), 0);
+        p.processBlock (buffer, midi);
+        juce::MidiBuffer none;
+        p.processBlock (buffer, none);
+        p.processBlock (buffer, none);
+        e.advanceAnimation (1.0f / 30.0f);
+    }
+}
+
 void save (juce::Component& c, const juce::File& f)
 {
     auto img = c.createComponentSnapshot (c.getLocalBounds(), true, 1.0f);
@@ -100,9 +120,11 @@ int main (int argc, char* argv[])
         // a chord on the analog engine
         p.parameter ("p1.analog.shape")->setValueNotifyingHost (0.35f);
         p.parameter ("p1.analog.reso")->setValueNotifyingHost (0.45f);
-        run (p, 2, 60); run (p, 2, 64); run (p, 2, 67);
         e.selectEngine (EngineType::Analog);
-        e.advanceAnimation (1.3f);
+        e.displayComponent().setAnimatedVisuals (true);
+        playAnimated (p, e, 2, { 60 });
+        playAnimated (p, e, 2, { 64 });
+        playAnimated (p, e, 30, { 67 });
         save (e, dir.getChildFile ("ohpe-analog" + suffix + ".png"));
 
         release (p, { 60, 64, 67 });
@@ -260,6 +282,62 @@ int main (int argc, char* argv[])
         save (e, dir.getChildFile ("ohpe-pro-view" + suffix + ".png"));
         e.showProView (false);
         e.selectPart (0);
+
+        // 0.7: Mid/Side FX slot on part 1 (a wide cluster chord), the stereo scope on its page
+        {
+            // a clean start: the rack and modulation scenes above are switched off
+            for (int s = 2; s <= 6; ++s) setPlain (p, "p1.fx" + juce::String (s) + ".type", 0.0f);
+            for (int s = 1; s <= 4; ++s) setPlain (p, "mfx" + juce::String (s) + ".type", 0.0f);
+            for (int r = 1; r <= 6; ++r) setPlain (p, "p1.mod.s" + juce::String (r) + ".amt", 0.0f);
+            prepareRack (p);
+            e.selectPart (0);
+            e.selectEngine (EngineType::Cluster);
+            setPlain (p, "p1.cluster.spread", 1.0f);
+            setPlain (p, "p1.fx.type", (float) InsertSlot::MidSide);
+            setPlain (p, "p1.fx.midside.width", 1.45f);
+            setPlain (p, "p1.fx.midside.side", 1.5f);
+            setPlain (p, "p1.fx.midside.bassmono", 1.0f);
+            setPlain (p, "p1.fx.midside.haas", 0.25f);
+            prepareRack (p); // the core sees the new type before the pages bind its block
+            e.selectMode (ui::Mode::Effects);
+            e.selectView (0); // sends + FX slot pages: the scope in the display's visual area
+            auto& d = e.displayComponent();
+            d.onPageChange (3);
+            playAnimated (p, e, 40, { 50, 57, 62, 65 });
+            save (e, dir.getChildFile ("ohpe-midside-scope" + suffix + ".png"));
+            release (p, { 50, 57, 62, 65 });
+
+            // the master scope as the display view (a pad with reverb; Mid/Side in the master rack, a little wider)
+            setPlain (p, "p1.fx.type", 0.0f);
+            setPlain (p, "mix.ch1.sendb", 0.45f);
+            setPlain (p, "mfx1.type", (float) InsertSlot::MidSide);
+            setPlain (p, "mfx1.midside.width", 1.25f);
+            setPlain (p, "mfx1.midside.bassmono", 1.0f);
+            p.core().params().set ("mfx1.type", (float) InsertSlot::MidSide);
+            prepareRack (p);
+            e.selectMode (ui::Mode::Mixer);
+            d.setVisual (ui::Display::Visual::Scope);
+            playAnimated (p, e, 40, { 45, 52, 60, 64 });
+            save (e, dir.getChildFile ("ohpe-master-scope" + suffix + ".png"));
+            release (p, { 45, 52, 60, 64 });
+
+            // the spectrum terrain as the display view (a moving line of notes)
+            e.selectEngine (EngineType::Wavetable);
+            d.setVisual (ui::Display::Visual::Terrain);
+            for (int k = 0; k < 8; ++k)
+            {
+                const int note = 48 + (k * 7) % 24;
+                playAnimated (p, e, 4, { note, note + 12 });
+                release (p, { note, note + 12 });
+            }
+            playAnimated (p, e, 6, { 55, 67, 74 });
+            save (e, dir.getChildFile ("ohpe-terrain" + suffix + ".png"));
+            release (p, { 55, 67, 74 });
+            d.setVisual (ui::Display::Visual::Character);
+            setPlain (p, "mfx1.type", 0.0f);
+            setPlain (p, "mix.ch1.sendb", 0.0f);
+            e.selectEngine (EngineType::Analog);
+        }
 
         // 0.3: preset library with a category filter and a preset selected
         e.showLibrary (true);
