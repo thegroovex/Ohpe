@@ -10,7 +10,9 @@ chords, resonant combs) get a fast peak compressor in the first free rack slot a
 stays below -0.5 dBFS without the master limiter (threshold -4 dB, -7 dB for the risers / clouds that
 build far above it). The 3D arps tame their attacks with their own fast-release compressor instead: the binaural
 stage after the rack raises the near-ear transients again, which a slow guard only turns into a constant gain cut.
-Its makeup stays 0 dB (the level calibration never trims it).
+Its makeup stays 0 dB (the level calibration never trims it). An entry {"thresh", "release"} is a transient guard
+(punch pass, punch_cal.py crest): released fast (40 ms), it shaves only the loudest attacks of struck keys / mallets
+so their body can sit inside the level window.
 
   python3 tools/presets/make_factory.py
 """
@@ -44,7 +46,7 @@ GUARD = {"thresh": -7.0, "ratio": 8.0, "attack": 0.1, "release": 180.0, "knee": 
 MAX_SLOTS = 6
 
 
-def add_peak_guard(params, thresh):
+def add_peak_guard(params, guard):
     """Appends the peak compressor (rack type 10) after the last used slot; False when the rack is full."""
     k = 0
     while k < MAX_SLOTS and params.get(("fx." if k == 0 else "fx%d." % (k + 1)) + "type", 0) != 0:
@@ -53,7 +55,8 @@ def add_peak_guard(params, thresh):
         return False
     pre = "fx." if k == 0 else "fx%d." % (k + 1)
     params[pre + "type"] = 10
-    params.update({pre + "compressor." + key: v for key, v in dict(GUARD, thresh=thresh).items()})
+    g = dict(GUARD, **guard) if isinstance(guard, dict) else dict(GUARD, thresh=guard)
+    params.update({pre + "compressor." + key: v for key, v in g.items()})
     return True
 
 

@@ -37,6 +37,10 @@
     "fx.chorus.rate": 0.2,
     "fx.chorus.depth": 0.5,
     "fx.chorus.mix": 0.3,
+    "fx.chorus.voices": 3,
+    "fx.chorus.drift": 0.35,
+    "fx.chorus.spread": 0.85,
+    "fx.chorus.lowcut": 150.0,
     "fx2.type": 9,
     "fx2.flange.rate": 0.04,
     "fx2.flange.sync": 0,
@@ -134,6 +138,6 @@
     "mpe.smooth": 0.06,
     "mpe.bend": 48,
     "voices": 8,
-    "gain": 2.4
+    "gain": 1.3
   }
 }

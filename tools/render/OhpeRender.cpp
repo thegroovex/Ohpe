@@ -9,6 +9,7 @@
 //               [--seconds S] [--bpm B] [--limit] [--hold S] [--beats N] [--tail S] preset.ohpepreset ...
 //
 // --hold S: part presets hold one note (bass, lead) or a chord for S seconds instead of their phrase (movement check).
+// --notes N,N,.. / --vel V: with --hold, the held notes and their velocity (click checks at other pitches).
 // --beats N / --tail S: shorten the phrase and its tail (the factory level tests render 4 beats + 1 s).
 //
 // Part presets play the phrase of their main category (render::phraseFor); project presets run
@@ -160,6 +161,8 @@ int main (int argc, char** argv)
     double seconds = 16.0, bpm = 100.0, hold = 0.0, beats = 1.0e9, tail = 1.0e9;
     bool limiter = false;
     std::vector<std::string> files;
+    std::vector<int> notes;
+    int vel = 0;
     for (int i = 1; i < argc; ++i)
     {
         const std::string a = argv[i];
@@ -174,6 +177,12 @@ int main (int argc, char** argv)
         else if (a == "--hold") hold = std::stod (next());
         else if (a == "--beats") beats = std::stod (next()); // phrase limit, as the level tests render it
         else if (a == "--tail") tail = std::stod (next());
+        else if (a == "--notes") // with --hold: the held notes, comma separated (MIDI numbers)
+        {
+            std::stringstream ns (next());
+            for (std::string t; std::getline (ns, t, ',');) notes.push_back (std::stoi (t));
+        }
+        else if (a == "--vel") vel = std::stoi (next()); // with --hold: their velocity
         else files.push_back (a);
     }
     const auto bank = loadBank (bankFile, wavdir);
@@ -195,7 +204,7 @@ int main (int argc, char** argv)
         core->prepare (48000.0, 256);
         for (const auto& [pad, s] : bank.studio) core->drumKit().setFactorySample (pad, s);
         const bool project = p.meta.kind == preset::Kind::Project;
-        const auto audio = project ? render::renderProject (*core, p, seconds, limiter) : render::renderPart (*core, p, part, bpm, beats, tail, hold);
+        const auto audio = project ? render::renderProject (*core, p, seconds, limiter) : render::renderPart (*core, p, part, bpm, beats, tail, hold, notes, vel);
         const auto m = render::measure (audio);
         if (! out.empty()) writeWav (out / (base (file) + ".wav"), audio);
 

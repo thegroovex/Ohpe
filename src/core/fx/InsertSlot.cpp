@@ -103,7 +103,9 @@ void InsertSlot::registerBlocks (ParamRegistry& reg, const std::string& prefix, 
     {
         auto e = create (t);
         const std::string p = prefix + e->info().id + ".";
-        for (auto d : e->getParamDescriptors())
+        auto descs = e->getParamDescriptors();
+        if (t == Chorus) descs.resize ((size_t) ChorusEffect::Voices); // 0.8 ensemble params: registered later (registerBlockTail)
+        for (auto d : descs)
         {
             d.id = p + d.id;
             d.nameEn = hostNamePrefix (prefix, false) + d.nameEn;
@@ -113,6 +115,23 @@ void InsertSlot::registerBlocks (ParamRegistry& reg, const std::string& prefix, 
         if (isWetOnly (t))
             add (continuous (p + "mix", hostNamePrefix (prefix, false) + e->info().nameEn + " Mix",
                              hostNamePrefix (prefix, true) + e->info().nameDe + "-Mischung", 0.0f, 1.0f, 0.35f));
+    }
+}
+
+void InsertSlot::registerBlockTail (ParamRegistry& reg, const std::string& prefix, const std::string& group, int type, int firstParam)
+{
+    auto e = create (type);
+    if (e == nullptr) return;
+    const std::string p = prefix + e->info().id + ".";
+    const auto descs = e->getParamDescriptors();
+    for (size_t i = (size_t) std::max (0, firstParam); i < descs.size(); ++i)
+    {
+        auto d = descs[i];
+        d.id = p + d.id;
+        d.nameEn = hostNamePrefix (prefix, false) + d.nameEn;
+        d.nameDe = hostNamePrefix (prefix, true) + d.nameDe;
+        d.group = group;
+        reg.add (std::move (d));
     }
 }
 

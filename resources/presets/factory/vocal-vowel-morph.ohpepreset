@@ -28,6 +28,22 @@
     "mod.r": 0.3,
     "mod.amt": -1.0,
     "voices": 10,
+    "fx.type": 10,
+    "fx.compressor.thresh": -11.7,
+    "fx.compressor.ratio": 3.0,
+    "fx.compressor.attack": 3.0,
+    "fx.compressor.release": 110.0,
+    "fx.compressor.knee": 6.0,
+    "fx.compressor.makeup": 2.7,
+    "fx.compressor.mix": 1.0,
+    "fx2.type": 1,
+    "fx2.chorus.rate": 0.3,
+    "fx2.chorus.depth": 0.5,
+    "fx2.chorus.mix": 0.3,
+    "fx2.chorus.voices": 3,
+    "fx2.chorus.drift": 0.35,
+    "fx2.chorus.spread": 0.85,
+    "fx2.chorus.lowcut": 200.0,
     "gain": -0.5
   }
 }

@@ -145,7 +145,11 @@ public:
 private:
     rackdsp::DelayLine lineL, lineR;
     std::array<rackdsp::DelayLine, 2> dim;
+    void resetPhases() noexcept;
     std::array<float, maxVoices> phase {}, rateMul {}, panL {}, panR {};
+    std::array<float, maxVoices> tapSm {}; ///< 0.8: smoothed tap delays (samples)
+    bool tapSnap = true;
+    float tapC = 0.01f;
     float sr = 48000.0f, rate = 0.6f, detune = 0.35f, spread = 0.8f, dimension = 0.4f, mix = 0.5f;
     int voices = 5;
     bool retrigger = false;
@@ -242,6 +246,8 @@ public:
 private:
     float sr = 48000.0f, threshold = -18.0f, ratio = 4.0f, attackMs = 10.0f, releaseMs = 120.0f, knee = 6.0f, env = -120.0f, grDb = 0.0f;
     float atkC = 0.0f, relC = 0.0f;
+    float peakEnv = 0.0f, envFall = 0.999f; ///< 0.8: held peak detector (12 ms hold, 20 ms fall)
+    int holdSamples = 576, holdLeft = 0;
     rackdsp::Glide makeupG, mixG;
     std::atomic<float> grUi { 0.0f };
 };

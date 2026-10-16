@@ -64,6 +64,9 @@ public:
     static void registerParams (ParamRegistry& reg, const std::string& prefix, const std::string& group);
     /** Registers the parameter blocks of the types [fromType, toType) for one prefix (later types). */
     static void registerBlocks (ParamRegistry& reg, const std::string& prefix, const std::string& group, int fromType, int toType);
+    /** Registers the parameters of one type's block from its local index `firstParam` on (parameters a type
+        appended to its block later, e.g. the 0.8 chorus ensemble). */
+    static void registerBlockTail (ParamRegistry& reg, const std::string& prefix, const std::string& group, int type, int firstParam);
     /** Host name prefix of a slot prefix: "" for the 0.2 slot "p1.fx.", "P2 FX3 " for "p2.fx3.", "Master FX 1 " ... */
     static std::string hostNamePrefix (const std::string& prefix, bool german);
     /** Effect info of a type (Off: nullptr id). Message thread. */

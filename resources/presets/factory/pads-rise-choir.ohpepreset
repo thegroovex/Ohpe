@@ -36,6 +36,10 @@
     "pitchenv.time": 0.45,
     "pitchenv.curve": 0.5,
     "voices": 10,
+    "fx.chorus.voices": 3,
+    "fx.chorus.drift": 0.35,
+    "fx.chorus.spread": 0.85,
+    "fx.chorus.lowcut": 150.0,
     "gain": 6.1
   }
 }

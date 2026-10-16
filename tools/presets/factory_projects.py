@@ -20,10 +20,15 @@ RATE = {"1/4": 0, "1/8": 1, "1/16": 2, "1/32": 3, "1/4T": 4, "1/8T": 5, "1/16T":
 STEP_RATE = {"1/4": 0, "1/8": 1, "1/16": 2, "1/32": 3, "1/8T": 4, "1/16T": 5}
 
 
-def part(n, preset_name, all_fx=False, **override):
+_PART_LOG = []  # (part, category) of the part() calls since the last project() (0.8 punch pass: mix roles)
+
+
+def part(n, preset_name, all_fx=True, **override):
     """Parameters of factory part preset `preset_name` for part n (1-4), with its calibrated gain.
-    all_fx (0.8): keep the FX rack of parts 2-4 too (projects before 0.8 used an FX slot on part 1 only)."""
+    all_fx (0.8): keep the FX rack of parts 2-4 too (projects before 0.8 used an FX slot on part 1 only; since the 0.8
+    punch pass every part keeps its whole rack - the glue compressor and chorus of the part presets live there)."""
     p = BY_NAME[preset_name]
+    _PART_LOG.append((n, p["tags"][0]))
     params = {}
     for k, v in p["params"].items():
         if re.match(r"fx\d*\.", k) and n != 1 and not all_fx:
@@ -128,7 +133,9 @@ def project(name, tags, comment, *dicts, sequencer=None, orbit=None, engine=None
         sections["sequencer"] = {"format": "ohpe-step-pattern", "version": 1, **sequencer}
     if orbit is not None:
         sections["orbit"] = {"format": "ohpe-orbit", "version": 1, "steps": orbit}
-    return {"name": name, "tags": tags, "engine": eng, "comment": comment, "params": params, "sections": sections}
+    roles = dict(_PART_LOG)
+    _PART_LOG.clear()
+    return {"name": name, "tags": tags, "engine": eng, "comment": comment, "params": params, "sections": sections, "roles": roles}
 
 
 CHORD = {"off": 0, "triad": 1, "seventh": 2}  # "pN.chord" (one-finger chords, diatonic in the key)
@@ -560,4 +567,42 @@ AMBIENT2 = project(
     + lane_steps(2, [(81, 52), None, None, None, (79, 50), None, None, (84, 48), None, None, None])
     + lane_steps(3, [(45, 60)] * 16))
 
-PROJECTS = [LOFI, TECHNO, AMBIENT, SYNTHPOP, POLY, ARP, HOUSE, SUBGLIDE, LOFIKIT, BOOMKIT, NEURO, DUBSTEP, LIQUID, AMBIENT2]
+# ---------------------------------------------------------------------------------------------
+# 0.8 punch pass: every project is mixed like a finished track. Drum bus compression (channel 5), the parts duck under
+# the kick (mixer ducking keyed by the drums' low end; basses most, pads less, leads / keys a touch), a glue compressor
+# on the master (threshold just above the mix level), tape saturation for density and the look-ahead limiter: about
+# -10 LUFS integrated. Channel volumes, master threshold and drive come from punch_projects.json (measured: each part
+# balanced against the drums by its role, then the master to the loudness target).
+_pp_path = os.path.join(HERE, "punch_projects.json")
+PUNCH_PROJ = json.load(open(_pp_path)) if os.path.exists(_pp_path) else {}
+ROLE_DUCK = {"Bass": 0.45, "Boom": 0.45, "Pads": 0.3, "Textures": 0.25, "Keys": 0.15, "Plucks": 0.15, "Leads": 0.15, "Arp": 0.15,
+             "Vocal": 0.15, "FX": 0.1, "Drums": 0.0}
+
+
+def has_drums(p):
+    prm = p["params"]
+    return "drum.kit" in prm and prm.get("mix.ch5.vol", 0.0) > -59.0
+
+
+def punch_mix(p):
+    prm = dict(p["params"])
+    cal = PUNCH_PROJ.get(p["name"], {})
+    if has_drums(p):
+        prm["mix.duck.src"] = 5
+        prm["mix.duck.release"] = cal.get("duckrel", 0.14)
+        for n, cat in p["roles"].items():
+            prm["mix.ch%d.duck" % n] = ROLE_DUCK.get(cat, 0.15)
+        prm["mix.ch5.comp"] = max(prm.get("mix.ch5.comp", 0.0), 0.45)
+        prm["mix.master.tapesat"] = max(prm.get("mix.master.tapesat", 0.0), 0.15)
+    prm.update({"mix.master.comp": 1, "mix.master.comp.thresh": cal.get("thresh", prm.get("mix.master.comp.thresh", -14.0)),
+                "mix.master.comp.ratio": 2.5, "mix.master.comp.attack": 0.012, "mix.master.comp.release": 0.16,
+                "mix.master.comp.makeup": cal.get("makeup", 0.0), "mix.master.limit": 1})
+    for ch, v in cal.get("vols", {}).items():
+        prm["mix.ch%s.vol" % ch] = v
+    if "master" in cal:
+        prm["mix.master.vol"] = cal["master"]
+    return dict(p, params=prm)
+
+
+PROJECTS = [punch_mix(p) for p in (LOFI, TECHNO, AMBIENT, SYNTHPOP, POLY, ARP, HOUSE, SUBGLIDE, LOFIKIT, BOOMKIT, NEURO, DUBSTEP,
+                                   LIQUID, AMBIENT2)]

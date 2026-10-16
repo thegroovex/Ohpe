@@ -45,7 +45,7 @@
     "fx2.compressor.attack": 15.0,
     "fx2.compressor.release": 160.0,
     "fx2.compressor.knee": 6.0,
-    "fx2.compressor.makeup": 2.4,
+    "fx2.compressor.makeup": 4.8,
     "fx2.compressor.mix": 1.0,
     "fx3.type": 15,
     "fx3.hall.mode": 1,

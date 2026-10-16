@@ -261,6 +261,7 @@ void WobbleEffect::prepare (double sampleRate, int)
     sr = (float) sampleRate;
     fl.prepare (sr);
     fr.prepare (sr);
+    dcC = 1.0f - 2.0f * 3.14159265f * 5.0f / sr;
     reset();
 }
 
@@ -271,6 +272,7 @@ void WobbleEffect::reset() noexcept
     phase = 0.0f;
     held = 0.0f;
     smoothOct = -1.0f;
+    dcX[0] = dcX[1] = dcY[0] = dcY[1] = 0.0f;
 }
 
 void WobbleEffect::setParam (int i, float v) noexcept
@@ -310,8 +312,9 @@ void WobbleEffect::process (float* l, float* r, int n) noexcept
         fr.set (fc, 0.92f * reso);
         for (int i = start; i < start + len; ++i)
         {
-            const float wl = fl.process (dsp::softClip (l[i] * pre), m) * post * bpGain;
-            const float wr = fr.process (dsp::softClip (r[i] * pre), m) * post * bpGain;
+            // 0.8: DC from clipping asymmetric waves blocked before the filter (the low-pass kept it)
+            const float wl = fl.process (dcBlock (dsp::softClip (l[i] * pre), 0), m) * post * bpGain;
+            const float wr = fr.process (dcBlock (dsp::softClip (r[i] * pre), 1), m) * post * bpGain;
             l[i] = l[i] * (1.0f - mix) + wl * mix;
             r[i] = r[i] * (1.0f - mix) + wr * mix;
         }

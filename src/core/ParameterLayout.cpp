@@ -257,6 +257,9 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
         add (toggle (Core::Ids::spaceMonoCheck, "Mono Check", "Mono-Prüfung", false));
     }
     FxRack::registerTypeBlocks (reg, Core::numParts, InsertSlot::firstSpaceType, InsertSlot::numTypes);
+    // ---- 0.8 punch pass: sidechain ducking (mixer), the chorus' ensemble parameters for every slot of every rack --
+    mixer.registerLate08DuckParams (reg);
+    FxRack::registerChorusEnsemble (reg, Core::numParts);
 
     // ---- p14: performance wheels left of the on-screen keyboard (pitch springs back, mod stays) -------------
     {

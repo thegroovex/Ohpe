@@ -97,6 +97,8 @@ private:
     double untilNext = 0.0;   ///< samples until the next grain
     dsp::Random rng;
     dsp::Svf filter[2];
+    float rampGain = -1.0f, rampL = 0.0f, rampR = 0.0f; ///< 0.8: last block's gain / pan (ramped per sample; < 0 = set)
+    float filterMix = -1.0f; ///< 0.8: tone-filter crossfade (0 = bypassed, 1 = filtering, < 0 = set at the next block)
 };
 } // namespace grain
 
