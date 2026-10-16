@@ -429,11 +429,13 @@ TEST_CASE ("0.7 matrix: per-voice pitch from LFO 2 makes vibrato; velocity to ti
     Core core;
     core.prepare (sampleRate, 512);
     basicPatch (core);
-    setAll (core, { { "p1.analog.cutoff", 20000.0f }, { "p1.analog.shape", 0.0f }, { "p1.mod.s1.src", (float) mod::SrcLfo2 },
+    // one oscillator, no detune, gently filtered: one zero crossing per cycle
+    setAll (core, { { "p1.analog.cutoff", 3000.0f }, { "p1.analog.keytrack", 0.0f }, { "p1.analog.detune", 0.0f }, { "p1.analog.oscmix", 0.0f },
+                    { "p1.analog.drive", 0.0f }, { "p1.analog.shape", 0.0f }, { "p1.mod.s1.src", (float) mod::SrcLfo2 },
                     { "p1.mod.s1.dst", (float) mod::DstPitch }, { "p1.mod.s1.amt", 1.0f }, { "p1.lfo2.rate", 2.0f },
                     { "p1.lfo2.shape", (float) mod::ShapeSquare } });
     core.queueNote (69, 1.0f, true);
-    const auto s = renderCore (core, 40);
+    const auto s = renderCore (core, 48); // 24576 samples: both measuring windows inside
     // square LFO, +-12 semitones: halves of 0.25 s at about 880 Hz and 220 Hz
     const double hi = measureFrequency (s.l, sampleRate, 2000, 10000);
     const double lo = measureFrequency (s.l, sampleRate, 14500, 22500);
