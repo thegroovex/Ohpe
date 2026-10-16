@@ -165,6 +165,9 @@ TEST_CASE ("character macros: modulation matrix targets, MIDI-mappable")
 {
     Core core;
     core.prepare (rate, 512);
+    // after the morph pad (73, 74) and the resonator body (75 .. 80)
+    CHECK (mod::DstMorphY == 74);
+    CHECK (mod::DstCharBright == 81);
     const char* keys[] = { "charbright", "charhard", "charalive", "charwide" };
     for (int m = 0; m < character::numMacros; ++m)
     {

@@ -79,6 +79,7 @@ public:
         Vocal engine uses the user formant tracks). Off, or on without a loaded table = the built-in material.
     */
     void registerLate20UserTableParams (ParamRegistry& reg) const;
+    /**
         p21: the character macros "pN.char.bright", "pN.char.hard", "pN.char.alive", "pN.char.wide" (-1..1, 0 = neutral;
         see mod/Character.h): each moves several parameters of the part at once (inside the part, after the matrix).
     */

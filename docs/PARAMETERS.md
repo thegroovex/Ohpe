@@ -743,6 +743,6 @@ parameter values, automation and the UI stay as they are; all four at 0 leave th
 **Hard** – amp attack shorter (−30 % of its normalised range per unit), drive, FM feedback, pluck excitation,
 crackle, vocal tension, noise; **Alive** – `pN.life` (+0.6 per unit), cluster drift, detune, vocal jitter and
 vibrato depth, grain spray / scan; **Wide** – unison width, cluster / grain spread, cluster side, wavetable unison,
-the layer's width. The modulation matrix gains the targets **Bright / Hard / Alive / Wide** (75 … 78, keys
+the layer's width. The modulation matrix gains the targets **Bright / Hard / Alive / Wide** (81 … 84 – 75 … 80 are the resonator body targets, keys
 `charbright`, `charhard`, `charalive`, `charwide`); the target choice list grows at its end.
 
