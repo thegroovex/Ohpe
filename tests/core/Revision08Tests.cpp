@@ -176,7 +176,7 @@ TEST_CASE ("0.8: the 0.8 FX types are appended after the rack types, with blocks
     Core core;
     const auto& reg = core.params();
     CHECK (InsertSlot::firstR3Type == InsertSlot::MidSide + 1); // after the 0.7 stereo type
-    CHECK (InsertSlot::numTypes == InsertSlot::firstR3Type + 5);
+    CHECK (InsertSlot::firstSpaceType == InsertSlot::firstR3Type + 5); // 1.0: Space 3D follows them
     for (int p = 1; p <= Core::numParts; ++p)
     {
         const auto n = "p" + std::to_string (p) + ".";

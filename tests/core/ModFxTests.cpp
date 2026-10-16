@@ -129,7 +129,7 @@ TEST_CASE ("0.7: rack and matrix parameters are appended after 0.6, in their doc
     CHECK (core.params().descriptor (core.params().indexOf ("mfx2.delay.mix")).nameDe == "Master-FX 2 Delay-Mischung");
 }
 
-TEST_CASE ("0.7: matrix source / target tables match the choice lists; keys are unique; reserved targets are inert")
+TEST_CASE ("0.7: matrix source / target tables match the choice lists; keys are unique; the 3D targets move pN.space.*")
 {
     CHECK (mod::sourceTable().size() == (size_t) mod::numSources);
     CHECK (mod::destTable().size() == (size_t) mod::numDests);
@@ -140,8 +140,13 @@ TEST_CASE ("0.7: matrix source / target tables match the choice lists; keys are 
     Core core;
     CHECK (core.part (0).destAvailable (mod::DstVolume));
     CHECK (core.part (0).destAvailable (mod::DstLfo3Depth));
-    CHECK_FALSE (core.part (0).destAvailable (mod::DstAzimuth)); // the spatialiser does not exist yet
-    CHECK (core.part (0).destParamIndex (mod::DstAzimuth) == -1);
+    // 1.0: the targets reserved in 0.7 for the spatialiser move its per-part stage
+    CHECK (core.part (0).destAvailable (mod::DstAzimuth));
+    CHECK (core.part (0).destParamIndex (mod::DstAzimuth) == core.params().indexOf ("p1.space.azimuth"));
+    CHECK (core.part (1).destParamIndex (mod::DstElevation) == core.params().indexOf ("p2.space.elevation"));
+    CHECK (core.part (2).destParamIndex (mod::DstDistance) == core.params().indexOf ("p3.space.distance"));
+    CHECK (core.part (3).destParamIndex (mod::DstPathRate) == core.params().indexOf ("p4.space.pathrate"));
+    CHECK (core.part (3).destParamIndex (mod::DstPathPhase) == core.params().indexOf ("p4.space.pathphase"));
     const auto& d = core.params().descriptor (core.params().indexOf ("p1.mod.s1.dst"));
     CHECK (d.choices.size() == (size_t) mod::numDests);
 }
