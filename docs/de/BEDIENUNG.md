@@ -54,7 +54,7 @@ dem tiefen Glas, die Werte schweben davor, die Figur wirft einen leichten Schatt
 selbst trägt einen weichen inneren Schatten und einen Glanz. Bewegst du die Maus über das Display,
 verschieben sich die hinteren Ebenen ein wenig gegen die vorderen (Parallaxe).
 
-Die linke Hälfte des Displays zeigt eine von drei **Ansichten** – Klick wechselt, Rechtsklick öffnet
+Die linke Hälfte des Displays zeigt eine von vier **Ansichten** – Klick wechselt, Rechtsklick öffnet
 das Ansichtsmenü:
 
 | Ansicht | Was sie zeigt |
@@ -62,6 +62,7 @@ das Ansichtsmenü:
 | **Figur** (Standard) | die animierte Figur der Engine / des Modus. Auf den Synth- und Mixer-Seiten steht sie auf einer langsam bewegten **Spektrum-Landschaft** ihres Klangs (Bearbeitungs-Part, Master). |
 | **Stereobild** | der Master-Ausgang: Goniometer (Mitte nach oben, Seite quer, L oben links, R oben rechts), Korrelationsanzeige (−1 … +1; rot = gegenphasig) und die Pegelbalken **M** / **S**. |
 | **Spektrum-Landschaft** | das Master-Spektrum als perspektivische Landschaft: Neue Reihen steigen vorn auf und wandern zum Horizont. Wenn der Klang endet, kommt sie zur Ruhe. |
+| **3D-Raum** (1.0) | die kopfbezogene Ansicht der [3D-Stufe](RAUM.md): jeder Part, der den Raum nutzt, als Punkt mit Spur um den Kopf des Hörers, der Bearbeitungs-Part beschriftet. |
 
 Das **Stereobild erscheint von selbst**, sobald die Encoder einen Effekt **Mitte/Seite** in einem
 Slot des FX-Racks zeigen: im Rack eines Parts das Stereobild dieses Parts nach seinem Rack
@@ -258,6 +259,26 @@ Seite. Während ein zum ersten Mal gewählter Effekt vorbereitet wird, steht auf
 wird vorbereitet …* (einen Moment; der Slot reicht den Klang so lange trocken durch).
 
 ![Master-Rack](../images/ohpe-master-rack-de.png)
+
+## 3D-Raum-Ansicht (1.0)
+
+![Die 3D-Raum-Ansicht](../images/ohpe-space-view-de.png)
+
+Der vierte Reiter des **Effekte**-Modus, **3D-Raum**, bearbeitet die [3D-Stufe](RAUM.md) des Edit-Parts:
+Ein/Aus, Bewegungspfad, -länge und -tempo auf der ersten Seite, danach Position (Azimut, Elevation,
+Entfernung, Quellenbreite), Form der Bewegung, Raum, Luft und Entfernung und auf der letzten Seite das
+globale **3D-Abhöre** (Kopfhörer / Lautsprecher) und die **Mono-Prüfung**. Statt der Effektkette
+zeigt das Display die kopfbezogene 3D-Ansicht aller vier Parts; der Streifen darunter fasst Bewegung
+und Abhöre zusammen. Die Rack-Softkeys (Schieben, Leeren) gehören nur zu den Reitern **Rack** und
+**Master**.
+
+Das **3D-Abzeichen** im Display-Kopf (Kopfhörer-Piktogramm + „3D“) leuchtet ultraviolett und pulsiert
+sanft, solange der Edit-Part binaurales 3D spielt; steht die Abhöre auf Lautsprecher, ist es gelb umrandet
+und zeigt zwei Lautsprecher, sonst ist es schwach. Ein Klick springt in diese Ansicht; der Tooltip
+sagt *Binaurales 3D – am besten mit Kopfhörern*. Die Part-Auswahl zeigt dasselbe Piktogramm je Part,
+die Bibliothek hinter dem Namen jedes Presets mit dem Schlagwort **3D**.
+
+![Das 3D-Abzeichen im Display-Kopf](../images/ohpe-space-badge-de.png)
 
 ## Tasten
 

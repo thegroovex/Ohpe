@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "LibraryBrowser.h"
 
+#include "SpaceView.h"
+
 #include "Palette.h"
 #include "plugin/Localisation.h"
 
@@ -542,7 +544,12 @@ void LibraryBrowser::paintListBoxItem (int row, juce::Graphics& g, int w, int h,
     g.setColour (e.favourite ? colour::rose : dim);
     g.drawText (e.favourite ? starFull() : starEmpty(), b.withWidth (u * 3.0f), juce::Justification::centred);
     g.setColour (ink);
-    g.drawText (str (e.meta.name), b.withTrimmedLeft (u * 3.0f).withWidth (u * 18.0f), juce::Justification::centredLeft, true);
+    // 1.0: binaural 3D presets carry the headphones pictogram after their name
+    const bool is3d = std::find (e.meta.tags.begin(), e.meta.tags.end(), std::string ("3D")) != e.meta.tags.end();
+    g.drawText (str (e.meta.name), b.withTrimmedLeft (u * 3.0f).withWidth (is3d ? u * 15.6f : u * 18.0f), juce::Justification::centredLeft, true);
+    if (is3d)
+        space3d::drawHeadphones (g, b.withX (b.getX() + u * 18.8f).withWidth (u * 2.2f).reduced (0, b.getHeight() * 0.12f),
+                                 selected ? colour::ultraviolet.darker (0.2f) : colour::ultraviolet.brighter (0.35f), selected ? 0.0f : 0.5f);
     g.setFont (labelFont (u * 1.3f));
     g.setColour (dim);
     g.drawText (engineLabel (e.meta.engine), b.withTrimmedLeft (u * 21.5f).withWidth (u * 8.0f), juce::Justification::centredLeft, true);

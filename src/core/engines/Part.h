@@ -4,6 +4,7 @@
 
 #include "../dsp/Filters.h"
 #include "../fx/FxRack.h"
+#include "../fx/Space3D.h"
 #include "../mod/ModMatrix.h"
 #include "../model/Events.h"
 #include "../model/ParamRegistry.h"
@@ -62,6 +63,21 @@ public:
     void registerLate08MonoParams (ParamRegistry& reg) const;
     /** 0.8: makes the low end mono below "pN.monobass" (end of finishBlock, after the FX rack). */
     void applyBassMono (float* l, float* r, int numSamples) noexcept;
+    /**
+        1.0: the 3D spatialiser stage "pN.space.*" ("on" + the Space 3D block, SpaceEffect), at the very end of the part
+        (after the FX rack and bass mono, before the mixer). Off = exact bypass; switching crossfades over 20 ms.
+    */
+    void registerLate10SpaceParams (ParamRegistry& reg) const;
+    /** 1.0, audio thread: master monitoring mode (SpaceEffect::Headphones / Speakers) for the stage and the rack. */
+    void setMonitorMode (int mode) noexcept
+    {
+        space.setMonitorMode (mode);
+        rack.setMonitorMode (mode);
+    }
+    /** 1.0: the spatialiser stage (UI: position / level; tests). */
+    const SpaceEffect& spaceStage() const noexcept { return space; }
+    /** 1.0, any thread: the stage is on (or still fading out). */
+    bool spaceRunning() const noexcept { return spaceRunningFlag.load (std::memory_order_relaxed); }
     /** 0.8: the layer engine, or nullptr when the layer is off (or set to the main engine). */
     ISynthEngine* layerEngine() noexcept { return layerType >= 0 ? engines[(size_t) layerType].get() : nullptr; }
     enum LayerXMod { XRing = 0, XAm, XFold, numXMods };
@@ -82,6 +98,9 @@ public:
     {
         matrix.setTransport (bpm, ppq, playing);
         rack.setTempo (bpm > 0.0 ? bpm : 120.0);
+        rack.setTransportPosition (ppq, playing); // 1.0: tempo-synced motion (Space 3D)
+        space.setTempo (bpm > 0.0 ? bpm : 120.0);
+        space.setTransportPosition (ppq, playing);
     }
     /** 0.7: the FX rack (insert effects after the engine; slot 1 = the 0.2 FX slot) and the modulation matrix. */
     FxRack& fxRack() noexcept { return rack; }
@@ -188,6 +207,16 @@ private:
     std::array<std::atomic<float>, mod::numSlots> uiTargetDelta {};
     std::array<int, mod::numDests> partDestIndex {}; ///< registry index of every PartParam target (-1: not registered)
     float lastGain = -1.0f;
+    // ---- 1.0: 3D spatialiser stage
+    void applySpace (float* l, float* r, int n) noexcept;
+    SpaceEffect space;
+    int spaceOnIndex = -1;
+    std::array<int, SpaceEffect::numParams> spaceIndex {};
+    std::array<float, SpaceEffect::numParams> spaceLast {};
+    bool spaceOn = false;
+    float spaceFade = 0.0f, spaceFadeStep = 0.001f;
+    std::vector<float> spaceDryL, spaceDryR;
+    std::atomic<bool> spaceRunningFlag { false };
     static constexpr int controlBlock = 32; ///< samples per modulation update (as VoiceBase::controlRate)
 };
 } // namespace ohpe

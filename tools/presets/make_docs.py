@@ -12,11 +12,11 @@ sys.path.insert(0, HERE)
 import factory_parts, factory_projects  # noqa: E402
 from comments_de import DE  # noqa: E402
 
-CATS = ["Bass", "Keys", "Pads", "Leads", "Plucks", "Drums", "FX", "Arp", "Textures", "Vocal", "Boom", "Hybrid", "Piano"]
-GATHER = ("Boom", "Hybrid", "Piano")  # these sections list every preset carrying the tag, wherever its main category is
+CATS = ["Bass", "Keys", "Pads", "Leads", "Plucks", "Drums", "FX", "Arp", "Textures", "Vocal", "Boom", "Hybrid", "Piano", "3D"]
+GATHER = ("Boom", "Hybrid", "Piano", "3D")  # these sections list every preset carrying the tag, wherever its main category is
 CAT_DE = {"Bass": "Bass", "Keys": "Tasten", "Pads": "Flächen", "Leads": "Leads", "Plucks": "Zupfer", "Drums": "Drums",
           "FX": "FX", "Arp": "Arp", "Textures": "Texturen", "Vocal": "Vokal", "Boom": "Boom", "Hybrid": "Hybrid",
-          "Piano": "Klavier"}
+          "Piano": "Klavier", "3D": "3D"}
 ENG = {"fm": ("FM", "FM"), "wavetable": ("Wavetable", "Wavetable"), "analog": ("Analog", "Analog"), "pluck": ("Pluck", "Zupfen"),
        "grain": ("Grain", "Grain"), "vocal": ("Vocal", "Vocal"), "cluster": ("Cluster", "Cluster"), "sampler": ("Sampler", "Sampler")}
 
@@ -65,8 +65,11 @@ def table(lang):
     out.append("### %s (%d)\n" % ("Projekte / Demo-Patterns" if de else "Projects / demo patterns", len(factory_projects.PROJECTS)))
     out.append("| Name | %s | %s |" % ("Kategorien" if de else "Categories", "Beschreibung" if de else "Description"))
     out.append("|---|---|---|")
-    for p in factory_projects.PROJECTS:
-        out.append("| %s | %s | %s |" % (p["name"], ", ".join(CAT_DE[t] if de else t for t in p["tags"]), DE[p["name"]] if de else p["comment"]))
+    import factory_parts_space
+    from factory_parts_space_de import DE_PROJECT_SPACE
+    for p in map(factory_parts_space.apply_project, factory_projects.PROJECTS):
+        de_text = DE[p["name"]] + DE_PROJECT_SPACE.get(p["name"], "")
+        out.append("| %s | %s | %s |" % (p["name"], ", ".join(CAT_DE[t] if de else t for t in p["tags"]), de_text if de else p["comment"]))
     out.append("")
     eng = Counter(p["engine"] for p in parts)
     out.append(("**Engines:** " if not de else "**Engines:** ") + ", ".join("%s %d" % (ENG[e][1 if de else 0], eng[e]) for e in ENG))
