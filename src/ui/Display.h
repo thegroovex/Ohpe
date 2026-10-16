@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Pages.h"
+#include "SpaceView.h"
 #include "Visuals.h"
 #include "Widgets.h"
 #include "plugin/PluginProcessor.h"
@@ -29,7 +30,7 @@ public:
 
     /** 0.7: what the left half of the display shows. The stereo scope also appears by itself
         on the Mid/Side FX slot pages and the master stereo pages. */
-    enum class Visual { Character = 0, Scope, Terrain, numVisuals };
+    enum class Visual { Character = 0, Scope, Terrain, Space, numVisuals }; ///< 1.0: Space = the 3D view
     void setVisual (Visual v);
     Visual visual() const noexcept { return userVisual; }
     Visual shownVisual() const;
@@ -83,6 +84,9 @@ public:
     std::function<void (int routing)> onModRoutingClicked; ///< 0.7: a line of the routing list
     std::function<void (int slot)> onFxSlotClicked;      ///< 0.7: a block of the FX chain
     std::function<void (int from, int to)> onFxSlotMoved; ///< 0.7: a block dropped on another one
+    std::function<void()> onSpaceBadgeClicked;           ///< 1.0: the 3D badge in the header (opens the Space view)
+    /** 1.0: where the 3D badge is (header; tests / screenshots). */
+    juce::Rectangle<float> spaceBadgeArea() const;
     /** p11: the transport buttons of the tape page (TransportButton) and the arm dots of the tracks. */
     std::function<void (int button)> onTransportClicked;
     std::function<void (int track)> onTrackArmClicked;
@@ -90,7 +94,7 @@ public:
     /** p11: shortcuts shown in the tooltips (standalone app only). */
     void setShowShortcuts (bool show) { shortcuts = show; }
 
-    juce::String getTooltip() override; ///< p11: depends on what the mouse is over
+    juce::String getTooltip() override; ///< p11: depends on what the mouse is over (1.0: the 3D badge too)
 
     void paint (juce::Graphics& g) override;
     void resized() override;
@@ -132,6 +136,7 @@ private:
     int selectedViewTab() const noexcept;
     bool showsModView() const noexcept;
     bool showsRackView() const noexcept;
+    bool showsSpaceView() const noexcept; ///< 1.0: Effects mode, view Space
     juce::Rectangle<float> visualArea() const; ///< 0.7: left of the rows (routing list / FX chain)
     FxRack& shownRack() const;
     void paintRows (juce::Graphics& g);
@@ -172,6 +177,8 @@ private:
 
     // 0.7: visuals and depth
     DisplayVisuals visuals;
+    space3d::Scene spaceScene; ///< 1.0
+    juce::Rectangle<float> badgeRect; ///< 1.0: the 3D badge (header, set while painting)
     Visual userVisual = Visual::Character;
     bool animated = true;
     int lastSource = -2;

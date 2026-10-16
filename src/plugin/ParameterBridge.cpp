@@ -43,6 +43,8 @@ juce::String formatValue (const ParamDescriptor& d, float v)
         case ParamUnit::Milliseconds: return v >= 1000.0f ? fixed (v / 1000.0f, 2) + " s" : fixed (v, v < 10.0f ? 1 : 0) + " ms";
         case ParamUnit::Percent: return fixed (v * 100.0f, 0) + " %";
         case ParamUnit::Semitones: return fixed (v, 1) + " st";
+        case ParamUnit::Degrees: return fixed (v, 0) + juce::String::fromUTF8 ("°");
+        case ParamUnit::Metres: return fixed (v, v < 10.0f ? 1 : 0) + " m";
         case ParamUnit::None: break;
     }
     if (d.minValue >= 0.0f && d.maxValue <= 1.0f) return fixed (v * 100.0f, 0) + " %";

@@ -29,6 +29,8 @@ namespace ohpe
     Adding a type: append it to Type, create() and the name lists, and register its parameter block
     for every slot at the end of the layout (FxRack::registerTypeBlocks).
 
+    1.0: Space 3D (the 3D spatialiser, Space3D.h) appended after the 0.8 types.
+
     0.8 (sound revision 3): Comb, Formant, Wobble, Tremolo and Width appended after the rack types
     (InsertEffects2.h); their blocks are registered for every slot with FxRack::registerTypeBlocks.
 */
@@ -41,12 +43,14 @@ public:
         Hyper, Distortion, Flanger, Compressor, Multiband, Eq, Filter, Echo, Hall, // 0.7 (rack types, RackEffects.h)
         MidSide, // 0.7 (stereo type, MidSide.h)
         Comb, Formant, Wobble, Tremolo, Width, // 0.8 (sound revision 3, InsertEffects2.h)
+        Space3D, // 1.0 (3D spatialiser, Space3D.h)
         numTypes
     };
     static constexpr int firstRackType = Hyper; ///< the 0.7 rack types (their blocks: FxRack::registerTypeBlocks)
     static constexpr int endRackTypes = Hall + 1; ///< one past the 0.7 rack types (registered before the stereo types)
     static constexpr int firstStereoType = MidSide; ///< 0.7 stereo types (their blocks: FxRack::registerTypeBlocks, after the rack types)
     static constexpr int firstR3Type = Comb;  ///< the 0.8 types (their blocks: FxRack::registerTypeBlocks, after Mid/Side)
+    static constexpr int firstSpaceType = Space3D; ///< 1.0: the spatialiser (its blocks: FxRack::registerTypeBlocks, at the end)
     static constexpr int numLegacyTypes = Reverb + 1; ///< the 0.2 types (their blocks: registerParams)
 
     InsertSlot();
@@ -96,6 +100,9 @@ public:
     /** 0.7: tempo for the synced types, note starts of the part (retrigger). Audio thread. */
     void setTempo (double bpm) noexcept;
     void noteOn() noexcept;
+    /** 1.0: song position for tempo-synced motion, master monitoring mode (headphones / speakers). Audio thread. */
+    void setTransportPosition (double ppq, bool playing) noexcept;
+    void setMonitorMode (int mode) noexcept;
 
     int currentType() const noexcept { return type; }
     IEffect* effect (int t) noexcept { return t > Off && t < numTypes ? effects[(size_t) t].get() : nullptr; }

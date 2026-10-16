@@ -30,7 +30,7 @@ glass, the values float in front of it, the character casts a faint shadow and t
 carries a soft inner shadow and sheen. When you move the mouse over the display the back layers
 shift a little against the front (parallax).
 
-The left half of the display shows one of three **views** – click it to cycle, right-click for the
+The left half of the display shows one of four **views** – click it to cycle, right-click for the
 view menu:
 
 | View | What it shows |
@@ -38,6 +38,7 @@ view menu:
 | **Character** (default) | the animated character of the engine / mode. On the Synth and Mixer pages it stands on a slowly moving **spectrum terrain** of its sound (the edit part, the master). |
 | **Stereo scope** | the master output: goniometer (mid up, side across, L upper left, R upper right), correlation meter (−1 … +1; red = out of phase) and the **M** / **S** level bars. |
 | **Spectrum terrain** | the master spectrum as a perspective landscape: new rows rise at the front and recede to the horizon. It comes to rest when the sound stops. |
+| **3D space** (1.0) | the head-centred view of the [3D stage](SPACE.md): every part that uses the space as a dot with its trail around the listener's head, the edit part labelled. |
 
 The **stereo scope appears by itself** whenever the encoders show a **Mid/Side** effect in an FX rack
 slot: in a part's rack it shows that part after its rack (marked *P1*–*P4*), in the master rack
@@ -224,6 +225,25 @@ While an effect chosen for the first time is being prepared, the display says *P
 (a moment; the slot passes the sound dry meanwhile).
 
 ![Master rack](../images/ohpe-master-rack.png)
+
+## 3D Space view (1.0)
+
+![The 3D Space view](../images/ohpe-space-view.png)
+
+The fourth tab of **Effects** mode, **3D Space**, edits the edit part's [3D stage](SPACE.md): on, motion
+path, length and rate on the first page, then position (azimuth, elevation, distance, spread), the shape
+of the motion, room, air and distance, and on the last page the global **3D Monitoring** (Headphones /
+Speakers) and **Mono Check**. Instead of the effect chain the display shows the head-centred 3D view of
+all four parts; the strip below sums up the motion and the monitoring. The rack soft keys (move, clear)
+belong to the **Rack** and **Master** tabs only.
+
+The **3D badge** in the display header (headphones pictogram + "3D") lights up in ultraviolet and pulses
+gently while the edit part plays binaural 3D; on speaker monitoring it is outlined in yellow with a pair
+of speakers, otherwise dim. Click it to jump to this view; hover it for *Binaural 3D – best with
+headphones*. The part selector shows the same pictogram per part, the library shows it after the name
+of every preset tagged **3D**.
+
+![The 3D badge in the display header](../images/ohpe-space-badge.png)
 
 ## Keys and shortcuts
 

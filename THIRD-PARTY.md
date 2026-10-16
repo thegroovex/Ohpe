@@ -11,6 +11,12 @@ keeps its own licence.
 | [Ableton Link](https://github.com/Ableton/link) 4.1 | network tempo sync in the standalone app (build option `OHPE_WITH_LINK`, default on) | GPL-2.0-or-later (compatible with the AGPL-3.0-or-later) |
 | Space Grotesk | UI font | SIL Open Font License 1.1 |
 
+**3D space / binaural rendering (1.0):** Ohpe's spatialiser (`src/core/fx/Space3D.cpp`) uses its own
+parametric head model – spherical-head shadow and interaural time difference (Woodworth formula),
+elevation-dependent pinna notches, directional bands, a shoulder reflection, near-field level and air
+absorption, all computed from formulas. It contains **no measured head-related transfer functions and no
+third-party data set**; nothing is fetched or bundled for it.
+
 Ableton Link is fetched at build time with its bundled standalone Asio (Boost Software License
 1.0). "Ableton" and "Link" are trademarks of their owner; Ohpe is not affiliated with it.
 

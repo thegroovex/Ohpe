@@ -98,7 +98,26 @@ void PartSelector::paint (juce::Graphics& g)
         g.setColour (sel ? colour::sunYellow : colour::engraving);
         g.setFont (brandFont (c.getHeight() * 0.55f));
         g.drawText (juce::String (i + 1), c, juce::Justification::centred);
+        // 1.0: the headphones pictogram in the corner lights up while the part plays binaural 3D
+        if (spatial[(size_t) i] != 0)
+        {
+            const auto icon = c.withSizeKeepingCentre (c.getHeight() * 0.42f, c.getHeight() * 0.42f)
+                                  .withPosition (c.getRight() - c.getHeight() * 0.48f, c.getY() + c.getHeight() * 0.06f);
+            if (spatial[(size_t) i] == 1)
+                ui::space3d::drawHeadphones (g, icon, colour::ultraviolet.brighter (sel ? 0.5f : 0.0f), 0.55f + 0.45f * std::sin (time * 2.4f));
+            else
+                ui::space3d::drawSpeakers (g, icon, sel ? colour::sunYellow : colour::engraving);
+        }
     }
+}
+
+juce::String PartSelector::getTooltip()
+{
+    const auto m = getMouseXYRelative().toFloat();
+    for (int i = 0; i < Core::numParts; ++i)
+        if (cell (i).contains (m) && spatial[(size_t) i] != 0)
+            return tr ("Part") + " " + juce::String (i + 1) + ": " + ui::space3d::badgeTooltip ((ui::space3d::State) spatial[(size_t) i]);
+    return {};
 }
 
 void PartSelector::mouseDown (const juce::MouseEvent& e)
@@ -241,6 +260,10 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     display.onModRoutingClicked = [this] (int r) { selectModRouting (r); };
     display.onFxSlotClicked = [this] (int s) { selectFxSlot (s); };
     display.onFxSlotMoved = [this] (int from, int to) { moveFxSlot (from, to); };
+    display.onSpaceBadgeClicked = [this] { // 1.0: the 3D badge opens the Space view of the edit part
+        if (mode != Mode::Effects) selectMode (Mode::Effects);
+        selectView (modfx::FxViewSpace);
+    };
     display.onTrackClicked = [this] (int t) { selectTapeTrack (t); };
     display.onPadClicked = [this] (int pad) { selectDrumPad (pad, true); };
     display.onSoftKey = [this] (int id) { onSoftKey (id); };
@@ -393,7 +416,7 @@ int& OhpeEditor::currentPage()
 {
     if (mode == Mode::Sequencer) return seqPageOf[(size_t) ctx.seqView];
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMod) return modPage;       // 0.7
-    if (mode == Mode::Effects && ctx.fxView != modfx::FxViewSends) return rackPage;  // 0.7
+    if (mode == Mode::Effects && ctx.fxView != modfx::FxViewSends) return rackPage;  // 0.7 (1.0: also the Space view)
     return pageOf[(size_t) mode];
 }
 
@@ -880,7 +903,7 @@ void OhpeEditor::refreshSoftKeys()
                  { skModNext, tr ("Mod") + juce::String::fromUTF8 (" \xe2\x96\xb6") },
                  { skModClear, tr ("Clear"), std::lround (core.params().get (r + "src")) != 0 || std::lround (core.params().get (r + "dst")) != 0 } };
     }
-    else if (mode == Mode::Effects && ctx.fxView != modfx::FxViewSends) // 0.7
+    else if (mode == Mode::Effects && modfx::isRackView (ctx.fxView)) // 0.7
     {
         const auto prefixes = modfx::rackPrefixes (ctx.fxView, ctx.part);
         const int n = (int) prefixes.size();
@@ -1087,6 +1110,12 @@ void OhpeEditor::timerCallback()
 {
     auto& core = proc.core();
     display.tick (1.0f / 30.0f);
+    {
+        std::array<int, 4> st {}; // 1.0: 3D state of every part for the part selector
+        for (int p = 0; p < Core::numParts; ++p) st[(size_t) p] = (int) ui::space3d::partState (core, p);
+        spatialTime += 1.0f / 30.0f;
+        partSelector.setSpatial (st, spatialTime);
+    }
 
     // remote controls / host: edit part, library key
     const int part = juce::jlimit (0, Core::numParts - 1, (int) std::lround (core.params().get (Core::Ids::editPart)) - 1);
@@ -1110,11 +1139,11 @@ void OhpeEditor::timerCallback()
     // the FX slot page follows the slot type (0.7: the selected slot of the shown rack)
     if (mode == Mode::Effects)
     {
-        const auto pre = ctx.fxView == modfx::FxViewSends ? "p" + std::to_string (ctx.part + 1) + ".fx."
+        const auto pre = ! modfx::isRackView (ctx.fxView) ? "p" + std::to_string (ctx.part + 1) + ".fx."
                                                           : modfx::rackPrefixes (ctx.fxView, ctx.part)[(size_t) juce::jlimit (0, (ctx.fxView == modfx::FxViewMaster ? FxRack::numMasterSlots : FxRack::numPartSlots) - 1, ctx.fxSlot)];
         const int fx = (int) std::lround (core.params().get (pre + "type"));
         if (fx != lastFxType) { lastFxType = fx; rebindEncoders(); }
-        if (ctx.fxView != modfx::FxViewSends) refreshSoftKeys();
+        if (modfx::isRackView (ctx.fxView)) refreshSoftKeys();
     }
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMod)
     {

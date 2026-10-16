@@ -33,6 +33,7 @@ target_sources(ohpe_core PRIVATE
     tape/TapeMachine.cpp
     fx/InsertEffects.cpp
     fx/InsertEffects2.cpp
+    fx/Space3D.cpp
     fx/InsertSlot.cpp)
 
 target_include_directories(ohpe_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

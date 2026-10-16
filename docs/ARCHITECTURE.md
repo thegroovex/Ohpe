@@ -268,3 +268,23 @@ Guide: [en/TAPE-MIXER-FX.md](en/TAPE-MIXER-FX.md) · parameters: [PARAMETERS.md]
   density, drive, vibrato, formant, layer blend), amounts per source, and gliding: a voice holds the
   target expression and the current one; per-note pitch glides over `pN.mpe.slide` (at least 2 ms),
   the rest over `pN.mpe.smooth`; a note's first expression applies at once.
+
+## 1.0: 3D spatialiser
+
+* **DSP** (`src/core/fx/Space3D.*`): `SpaceEffect` (an `IEffect`) – own parametric binaural model (spherical-head
+  shadow and ITD with cubic fractional delays, pinna notches and directional bands, shoulder reflection, near-field
+  level), distance (level, air, slew-limited Doppler delay), six moving image-source reflections + a 4-line FDN,
+  Linkwitz-Riley low band kept mono, speaker mode (constant-power panning) with a 30 ms glide between the modes.
+  Control rate 16 samples (positions, filter coefficients), everything else ramped per sample. Motion paths are pure
+  functions (`space::pathPoint`, `space::orient`) shared by the DSP, the display and the tests.
+* **Per-part stage** (`Part::applySpace`, `pN.space.*`): last in `Part::finishBlock` (after the rack and bass mono);
+  off = exact bypass, switching crossfades 20 ms. The matrix targets reserved in 0.7 (`DstAzimuth` …
+  `DstPathPhase`) bind to it by their parameter suffix – no matrix change was needed.
+* **Rack type** `InsertSlot::Space3D` (22), block registered for every slot of every rack after the stage.
+* **Transport / monitoring**: `IEffect::setTransportPosition` (song position; the motion phase locks to it at rate
+  ×1) and `IEffect::setMonitorMode`; `Core::process` reads `space.out` (pushes changes to the parts and racks) and
+  `space.monocheck` (folds the main output to mono after the mixer).
+* **UI** (`src/ui/SpaceView.*`): the 3D scene (`space3d::Scene`, trails sampled 30× per second from the stages'
+  atomics), the headphones / speakers pictograms and the 3D badge (display header, part selector, library rows),
+  the Space view of the Effects mode (`modfx::FxViewSpace`) and the display visual `Display::Visual::Space`.
+* Guide: [en/SPACE.md](en/SPACE.md) · parameters: [PARAMETERS.md](PARAMETERS.md#10--3d-spatialiser).
