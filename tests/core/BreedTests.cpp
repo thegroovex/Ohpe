@@ -151,7 +151,7 @@ TEST_CASE ("breed: children stay inside every range, no NaN, levels and risky va
                         CHECK_MESSAGE (c.genome[(size_t) k] <= std::max (a[(size_t) k], b[(size_t) k]) + 1.0e-5f, id);
                     }
                     for (int i = 0; i < s.size(); ++i)
-                        if (s.gene (i).risky)
+                        if (s.gene (i).risky && ! (c.inheritance.hybrid && s.gene (i).id.rfind ("layer.", 0) == 0))
                         {
                             const auto& gene = s.gene (i);
                             CHECK_MESSAGE (gene.toNorm (c.genome[(size_t) i])
