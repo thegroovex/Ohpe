@@ -21,7 +21,7 @@ enum ValueMode : uint8_t { ModeConst = 0, ModeInterp, ModePick };
 enum Owner : int8_t { OwnAlways = 0, OwnEngine, OwnFx };
 constexpr int numRackSlots = FxRack::numPartSlots;
 constexpr float sleepSeconds = 0.1f;
-constexpr int moveBlock = 32; ///< samples per morph update while the position glides or the lanes cross-fade
+constexpr int moveBlock = 64; ///< samples per morph update while the position glides or the lanes cross-fade (1.3 ms)
 
 bool startsWith (const std::string& s, const char* prefix)
 {

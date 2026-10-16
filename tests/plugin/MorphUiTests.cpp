@@ -34,6 +34,14 @@ juce::MouseEvent mouseEvent (juce::Component& c, juce::Point<float> pos)
     return juce::MouseEvent (src, pos, {}, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, &c, &c, now, pos, now, 1, false);
 }
 
+/** A parameter's value as the host sees it (the registry follows at the next block). */
+float hostPlain (OhpeProcessor& p, const juce::String& id)
+{
+    auto* prm = p.parameter (id);
+    REQUIRE (prm != nullptr);
+    return prm->convertFrom0to1 (prm->getValue());
+}
+
 /** First factory part preset whose engine differs from `engine`. */
 int presetWithOtherEngine (OhpeProcessor& p, const std::string& engine)
 {
@@ -64,7 +72,7 @@ TEST_CASE ("editor p16: the Morph view - pages, corners from the current sound a
     CHECK_FALSE (core.morph().anyCorner (0));
     e.assignMorphCorner (0, -1); // A = the current sound
     CHECK (core.morph().cornerSet (0, 0));
-    CHECK (core.params().get ("p1.morph.on") >= 0.5f); // assigning switches the morph on
+    CHECK (hostPlain (p, "p1.morph.on") >= 0.5f); // assigning switches the morph on
     const int other = presetWithOtherEngine (p, preset::engineIdOfPart (core.params(), 0));
     REQUIRE (other >= 0);
     e.assignMorphCorner (3, other); // D = a library sound with another engine
@@ -79,8 +87,8 @@ TEST_CASE ("editor p16: the Morph view - pages, corners from the current sound a
     const auto at = pad.getBottomRight() - juce::Point<float> (1.0f, 1.0f);
     d.mouseDown (mouseEvent (d, at));
     d.mouseUp (mouseEvent (d, at));
-    CHECK (core.params().get ("p1.morph.x") > 0.95f);
-    CHECK (core.params().get ("p1.morph.y") < 0.05f);
+    CHECK (hostPlain (p, "p1.morph.x") > 0.95f);
+    CHECK (hostPlain (p, "p1.morph.y") < 0.05f);
     play (p, 40, 60);
     CHECK (core.morph().uiActive (0));
     for (auto lang : { i18n::Language::English, i18n::Language::German })

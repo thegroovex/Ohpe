@@ -1209,7 +1209,7 @@ void OhpeEditor::refreshSoftKeys()
         for (int c = 0; c < MorphSpace::numCorners; ++c)
             keys.push_back ({ skCornerA + c, juce::String (MorphSpace::cornerName (c)) + juce::String::fromUTF8 (" \xc2\xb7 ")
                                                  + morphview::cornerTitle (core, ctx.part, c),
-                              true, core.morph().cornerSet (ctx.part, c) });
+                              true, false });
     }
     else if (mode == Mode::Effects && modfx::isRackView (ctx.fxView)) // 0.7
     {

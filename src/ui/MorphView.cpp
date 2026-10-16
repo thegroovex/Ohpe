@@ -21,13 +21,16 @@ struct Layout
     float chipH = 0.0f, gap = 0.0f;
 };
 
+constexpr float chipShare = 0.17f; ///< chip height / visual area height
+constexpr float gapShare = 0.2f;   ///< gap between chip and pad / chip height
+
 Layout layoutOf (juce::Rectangle<float> v)
 {
+    // the pad fills the visual area between a row of chips above (A, B) and below (C, D)
     Layout l;
-    l.chipH = juce::jmax (8.0f, v.getHeight() * 0.13f);
-    l.gap = l.chipH * 0.25f;
-    const float side = juce::jmax (10.0f, juce::jmin (v.getWidth() * 0.98f, v.getHeight() - 2.0f * (l.chipH + l.gap)));
-    l.pad = juce::Rectangle<float> (side, side).withCentre (v.getCentre());
+    l.chipH = juce::jmax (8.0f, v.getHeight() * chipShare);
+    l.gap = l.chipH * gapShare;
+    l.pad = v.reduced (v.getWidth() * 0.01f, 0.0f).withTrimmedTop (l.chipH + l.gap).withTrimmedBottom (l.chipH + l.gap);
     return l;
 }
 
@@ -38,7 +41,8 @@ juce::Rectangle<float> padArea (juce::Rectangle<float> visualArea) { return layo
 
 juce::Rectangle<float> cornerChip (juce::Rectangle<float> pad, int corner)
 {
-    const float chipH = juce::jmax (8.0f, pad.getHeight() * 0.16f), gap = chipH * 0.25f;
+    // the inverse of layoutOf: pad height = (1 - 2 chipShare (1 + gapShare)) of the visual area
+    const float chipH = juce::jmax (8.0f, pad.getHeight() * chipShare / (1.0f - 2.0f * chipShare * (1.0f + gapShare))), gap = chipH * gapShare;
     const float w = pad.getWidth() * 0.485f;
     const bool top = corner == 0 || corner == 1, left = corner == 0 || corner == 2;
     const float x = left ? pad.getX() : pad.getRight() - w;
@@ -91,7 +95,7 @@ void paint (juce::Graphics& g, juce::Rectangle<float> visualArea, Core& core, in
     const bool live = m.uiActive (part);
     const float x = live ? m.uiX (part) : px, y = live ? m.uiY (part) : py;
     const auto w = MorphSpace::weights (x, y);
-    const float rad = pad.getWidth() * 0.045f;
+    const float rad = juce::jmin (pad.getWidth(), pad.getHeight()) * 0.05f;
     const float alpha = on ? 1.0f : 0.45f;
 
     // the pad: a recessed field with a fine dot grid
@@ -108,20 +112,20 @@ void paint (juce::Graphics& g, juce::Rectangle<float> visualArea, Core& core, in
         {
             const auto p = pointOf (pad, at[c].x, at[c].y);
             const auto col = colour::encoder (c);
-            const float a = (m.cornerSet (part, c) ? 0.55f : 0.25f) * w[(size_t) c] * alpha;
-            juce::ColourGradient grad (col.withAlpha (a), p.x, p.y, col.withAlpha (0.0f), p.x + pad.getWidth() * 0.75f, p.y, true);
+            const float a = (m.cornerSet (part, c) ? 0.7f : 0.3f) * w[(size_t) c] * alpha;
+            juce::ColourGradient grad (col.withAlpha (a), p.x, p.y, col.withAlpha (0.0f), p.x + juce::jmax (pad.getWidth(), pad.getHeight()) * 0.8f, p.y, true);
             g.setGradientFill (grad);
             g.fillRect (pad);
         }
         g.setColour (colour::displayDim.withAlpha (0.35f * alpha));
-        const float dot = juce::jmax (1.0f, pad.getWidth() * 0.008f);
+        const float dot = juce::jmax (1.5f, juce::jmin (pad.getWidth(), pad.getHeight()) * 0.012f);
         for (int i = 1; i < 8; ++i)
             for (int j = 1; j < 8; ++j)
                 g.fillEllipse (pad.getX() + pad.getWidth() * (float) i / 8.0f - dot * 0.5f, pad.getY() + pad.getHeight() * (float) j / 8.0f - dot * 0.5f, dot, dot);
     }
 
     // edges: solid = the two corners morph their parameters (one sound), dotted = parallel sounds cross-fade
-    const float edgeW = juce::jmax (1.0f, pad.getWidth() * 0.008f);
+    const float edgeW = juce::jmax (1.0f, juce::jmin (pad.getWidth(), pad.getHeight()) * 0.01f);
     auto edge = [&] (int c1, int c2, juce::Point<float> a, juce::Point<float> b) {
         const bool same = m.laneOfCorner (part, c1) == m.laneOfCorner (part, c2);
         g.setColour (colour::displayText.withAlpha ((same ? 0.45f : 0.3f) * alpha));
@@ -143,7 +147,7 @@ void paint (juce::Graphics& g, juce::Rectangle<float> visualArea, Core& core, in
     g.setColour (colour::displayDim.withAlpha (0.5f * alpha));
     g.drawLine (pad.getX(), pos.y, pad.getRight(), pos.y, 1.0f);
     g.drawLine (pos.x, pad.getY(), pos.x, pad.getBottom(), 1.0f);
-    const float r = pad.getWidth() * 0.04f;
+    const float r = juce::jmin (pad.getWidth(), pad.getHeight()) * 0.055f;
     if (live && (std::abs (px - x) > 0.01f || std::abs (py - y) > 0.01f))
     {
         const auto t = pointOf (pad, px, py);
@@ -175,7 +179,7 @@ void paint (juce::Graphics& g, juce::Rectangle<float> visualArea, Core& core, in
         g.drawText (MorphSpace::cornerName (c), letter, juce::Justification::centred, false);
         auto text = chip.withTrimmedLeft (chip.getHeight() * 1.05f).withTrimmedRight (chip.getHeight() * 0.2f);
         g.setColour ((set ? colour::displayText : colour::displayDim).withAlpha (alpha));
-        g.setFont (labelFont (chip.getHeight() * 0.48f));
+        g.setFont (labelFont (chip.getHeight() * 0.52f));
         g.drawText (cornerTitle (core, part, c), text.withTrimmedBottom (chip.getHeight() * 0.12f), juce::Justification::centredLeft, true);
         const auto bar = juce::Rectangle<float> (text.getX(), chip.getBottom() - chip.getHeight() * 0.2f, text.getWidth() * w[(size_t) c], juce::jmax (1.0f, chip.getHeight() * 0.07f));
         g.setColour (col.withAlpha (0.9f * alpha));
