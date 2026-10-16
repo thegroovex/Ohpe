@@ -7,6 +7,7 @@
 #include <array>
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -101,6 +102,7 @@ public:
     int gainGene() const noexcept { return gainK; }
     int slotTypeGene (int slot) const noexcept { return slot >= 0 && slot < (int) slotTypeK.size() ? slotTypeK[(size_t) slot] : -1; }
     int numSlots() const noexcept { return (int) slotTypeK.size(); }
+    bool isSlotType (int i) const noexcept { return i >= 0 && i < (int) slotFlag.size() && slotFlag[(size_t) i] != 0; }
     int numRoutes() const noexcept { return (int) routeGenes.size(); }
     /** Genes of matrix routing `r` and which of them are the discrete "wiring" (source, via, target, curve). */
     const std::vector<int>& routeMembers (int r) const noexcept { return routeGenes[(size_t) r]; }
@@ -110,6 +112,7 @@ private:
     std::map<std::string, int> byId;
     int engineK = -1, layerK = -1, gainK = -1;
     std::vector<int> slotTypeK;
+    std::vector<uint8_t> slotFlag;
     std::vector<std::vector<int>> routeGenes;
 };
 
@@ -163,7 +166,7 @@ struct Child
 };
 
 /** `count` children of a and b: child i = crossover + mutation with seed mix (seed, i). */
-std::vector<Child> breed (const Schema& s, const Genome& a, const Genome& b, int count, float amount, uint64_t seed,
+std::vector<Child> makeBrood (const Schema& s, const Genome& a, const Genome& b, int count, float amount, uint64_t seed,
                           const Options& o = {});
 
 /**
