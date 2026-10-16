@@ -165,15 +165,30 @@ inline Audio renderCore (Core& core, std::vector<std::pair<int64_t, MidiEvent>> 
     its category on the part's MIDI channel. `beatsLimit` shortens the phrase (tests). The master
     limiter is switched off, so peaks show what the preset really does.
 */
+/** A held note / chord for listening to movement: bass C2, lead G4, a C minor chord otherwise, held for `beats`. */
+inline Phrase holdPhrase (const std::string& category, double beats)
+{
+    Phrase p;
+    p.beats = beats;
+    p.tail = 2.0;
+    if (category == "Bass") p.notes = { { 0, beats, 36, 110 } };
+    else if (category == "Leads") p.notes = { { 0, beats, 67, 110 } };
+    else if (category == "Drums") p.notes = { { 0, beats, 36, 110 } };
+    else
+        for (int n : { 48, 55, 63, 67 }) p.notes.push_back ({ 0, beats, n, 100 });
+    return p;
+}
+
 inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0, double bpm = 100.0, double beatsLimit = 1.0e9,
-                         double tailLimit = 1.0e9)
+                         double tailLimit = 1.0e9, double holdSeconds = 0.0)
 {
     preset::PartOptions opt;
     opt.arp = false; // measure the sound itself: the phrase plays the notes, not the arpeggiator
     preset::applyPart (p, core.params(), partIndex, opt);
     core.params().set ("tempo", (float) bpm);
     core.params().set ("mix.master.limit", 0.0f); // measure the preset itself, not the master limiter
-    const auto phrase = phraseFor (primaryCategory (p.meta));
+    const auto phrase = holdSeconds > 0.0 ? holdPhrase (primaryCategory (p.meta), holdSeconds * bpm / 60.0)
+                                          : phraseFor (primaryCategory (p.meta));
     const double sr = core.sampleRate();
     const double spb = 60.0 / bpm * sr;
     const int ch = partIndex + 1;

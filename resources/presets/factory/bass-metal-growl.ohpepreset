@@ -44,6 +44,7 @@
     "fx.comb.depth": 0.5,
     "fx.comb.spread": 0.3,
     "fx.comb.mix": 0.5,
+    "monobass": 150.0,
     "mpe.press": 9,
     "mpe.pressamt": 0.7,
     "mpe.timbre": 6,

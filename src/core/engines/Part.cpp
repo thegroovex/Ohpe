@@ -163,6 +163,29 @@ void Part::registerLate08MpeParams (ParamRegistry& reg) const
     add (continuous (id ("mpe.slide"), P + "Per-Note Slide", P + "Pro-Noten-Slide", 0.0f, 1.0f, 0.0f, ParamUnit::Seconds, 0.5f));
 }
 
+void Part::registerLate08MonoParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const std::string P = "Part " + n + " ";
+    auto d = continuous (id ("monobass"), P + "Bass Mono Below", P + "Bass mono unter", 20.0f, 400.0f, 20.0f, ParamUnit::Hertz, 0.5f);
+    d.group = "part" + n;
+    reg.add (std::move (d));
+}
+
+void Part::applyBassMono (float* l, float* r, int numSamples) noexcept
+{
+    if (monoBassHz <= 20.5f) return;
+    for (int i = 0; i < numSamples; ++i)
+    {
+        const float m = 0.5f * (l[i] + r[i]);
+        float s = 0.5f * (l[i] - r[i]);
+        s -= monoLp2.process (monoLp1.process (s, dsp::Svf::LowPass), dsp::Svf::LowPass);
+        l[i] = m + s;
+        r[i] = m - s;
+    }
+}
+
 void Part::registerLate08Params (ParamRegistry& reg) const
 {
     using namespace pd;
@@ -197,6 +220,7 @@ void Part::bind (const ParamRegistry& reg)
     for (int i = 0; i < numLate08; ++i) late08Index[(size_t) i] = reg.indexOf (id (late08[i]));
     exprSmoothIndex = reg.indexOf (id ("mpe.smooth"));
     exprSlideIndex = reg.indexOf (id ("mpe.slide"));
+    monoBassIndex = reg.indexOf (id ("monobass"));
     static const char* names[numCommon] = { "engine", "vol", "voices", "tune", "fine", "glide", "bend", "velsens",
                                             "amp.a", "amp.d", "amp.s", "amp.r", "mod.a", "mod.d", "mod.s", "mod.r",
                                             "mod.amt", "lfo.rate", "lfo.depth", "lfo.shape", "lfo.dest" };
@@ -244,6 +268,11 @@ void Part::prepare (double sampleRate, int maxBlockSize)
     layerL.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
     layerR.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
     xEnvCoeff = 1.0f - (float) std::exp (-1.0 / (0.004 * sampleRate));
+    partSr = (float) sampleRate;
+    monoLp1.prepare (partSr);
+    monoLp2.prepare (partSr);
+    monoLp1.set (monoBassHz, 0.299f); // Q 0.707 each
+    monoLp2.set (monoBassHz, 0.299f);
     reset();
 }
 
@@ -261,6 +290,8 @@ void Part::reset() noexcept
     matrix.reset();
     xEnv = 0.0f;
     exprBlend = 0.0f;
+    monoLp1.reset();
+    monoLp2.reset();
 }
 
 void Part::pullParams (const ParamSnapshot& s) noexcept
@@ -306,6 +337,12 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
     rack.pullParams (s);
     common.exprSmooth = exprSmoothIndex >= 0 ? s[exprSmoothIndex] : 0.0f;
     common.exprSlide = exprSlideIndex >= 0 ? s[exprSlideIndex] : 0.0f;
+    if (monoBassIndex >= 0 && s[monoBassIndex] != monoBassHz) // 0.8 bass mono
+    {
+        monoBassHz = std::clamp (s[monoBassIndex], 20.0f, 400.0f);
+        monoLp1.set (monoBassHz, 0.299f);
+        monoLp2.set (monoBassHz, 0.299f);
+    }
 
     // 0.8 layer
     {
@@ -522,6 +559,7 @@ void Part::finishBlock (float* l, float* r, int numSamples) noexcept
         dcY[c] = (std::abs (y1) < 1.0e-20f) ? 0.0f : y1; // no denormals in silence
     }
     rack.process (l, r, numSamples); // 0.7: the FX rack (slot 1 = the 0.2 FX slot)
+    applyBassMono (l, r, numSamples); // 0.8: after the rack, so no effect widens the sub again
 }
 
 void Part::render (float* l, float* r, int numSamples) noexcept
