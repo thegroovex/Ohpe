@@ -141,13 +141,37 @@ def cmd_makeup(rounds):
     make_factory()
 
 
+FXJ = HERE + "/levels_fx.json"
+_TRIM_RANGE = {"compressor": (0.0, 24.0), "distortion": (-24.0, 12.0), "width": (-24.0, 12.0), "multiband": (-12.0, 12.0),
+               "eq": (-18.0, 18.0)}
+
+
+def trim_slot(params, r3, glue_pre):
+    """The rack slot carrying the level trim of a preset (r3.calib_slot over its chain without the punch-pass glue and
+    the guards): (prefix, kind) or None (= the part gain)."""
+    kind_of = {v: k for k, v in r3.TYPES.items()}
+    slots = []
+    for k in range(6):
+        pre = r3.slot_prefix(k)
+        t = params.get(pre + "type", 0)
+        if not t or pre == glue_pre or (t == 10 and params.get(pre + "compressor.ratio") == 8.0 and
+                                       params.get(pre + "compressor.attack") == 0.1):
+            continue
+        slots.append((pre, kind_of.get(t, "?")))
+    i = r3.calib_slot([kd for _, kd in slots])
+    return slots[i] if i is not None else None
+
+
 def cmd_levels(rounds):
+    """Presets without a glue outside the window: the trim after their last non-linear stage (levels_fx.json) when
+    they have one (the stage is driven as designed), else the part gain."""
     for k in range(rounds):
         make_factory()
         g, r3 = glued()
         files = {n: v for n, v in factory_parts_files().items() if n not in g}
         rows = render([v[0] for v in files.values()])
-        levels = json.load(open(LJ))
+        levels, fxl = json.load(open(LJ)), json.load(open(FXJ))
+        r3_names = {p["name"] for p in r3.PRESETS_R3}
         moved = 0
         for name, (f, d) in files.items():
             r = rows.get(name)
@@ -157,8 +181,18 @@ def cmd_levels(rounds):
             if abs(delta) < 0.3:
                 continue
             moved += 1
-            levels[name] = round(max(-24.0, min(24.0, levels.get(name, 0.0) + delta)), 1)
+            ts = trim_slot(d["params"], r3, None) if name in r3_names else None  # 0.4 - 0.6 presets: part gain
+            if ts:
+                pre, kind = ts
+                key = pre + kind + "." + r3.TRIM_KEY.get(kind, "output")
+                lo, hi = _TRIM_RANGE.get(kind, (-12.0, 12.0))
+                want = d["params"].get(key, 0.0) + delta
+                fxl[name] = round(max(lo, min(hi, want)), 1)
+                delta = want - fxl[name]  # what the trim cannot carry goes to the part gain
+            if abs(delta) >= 0.05:
+                levels[name] = round(max(-24.0, min(24.0, levels.get(name, 0.0) + delta)), 1)
         json.dump(levels, open(LJ, "w"), indent=1, sort_keys=True)
+        json.dump(fxl, open(FXJ, "w"), indent=1, sort_keys=True)
         print("levels round %d: %d moved" % (k + 1, moved), flush=True)
         if not moved:
             break

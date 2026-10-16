@@ -237,7 +237,7 @@
  },
  "Glock Arp": {
   "makeup": 5.1,
-  "thresh": 3.5
+  "thresh": -10.2
  },
  "Gospel Hum": {
   "makeup": 4.1,
@@ -329,7 +329,7 @@
  },
  "Mallet Echo Arp": {
   "makeup": 6.0,
-  "thresh": -0.0
+  "thresh": -10.5
  },
  "Mallet Keys": {
   "makeup": 0.7,
@@ -365,7 +365,7 @@
  },
  "Music Box": {
   "makeup": 1.7,
-  "thresh": -1.0
+  "thresh": -6.5
  },
  "Muted Pick": {
   "makeup": 5.1,
@@ -441,7 +441,7 @@
  },
  "Random Spark Arp": {
   "makeup": 11.5,
-  "thresh": 0.4
+  "thresh": -9.3
  },
  "Recorder": {
   "makeup": 6.6,
@@ -629,7 +629,7 @@
  },
  "Trance Gate Arp": {
   "makeup": 5.1,
-  "thresh": -5.8
+  "thresh": -8.9
  },
  "Triplet Wobble": {
   "makeup": 8.0,
