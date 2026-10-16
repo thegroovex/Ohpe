@@ -697,6 +697,7 @@ PRESETS = [
 ]
 
 # 0.8 (sound revision 3): 120 presets using FX slots 2 / 3, the layer engine, the unison stack and the keyboard instruments
-from factory_parts_r3 import PRESETS_R3  # noqa: E402
+from factory_parts_r3 import PRESETS_R3, punch_legacy  # noqa: E402
 
+PRESETS = [punch_legacy(p) for p in PRESETS]  # 0.8 punch pass: glue compressor and chorus ensemble
 PRESETS += PRESETS_R3
