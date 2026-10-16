@@ -9,3 +9,6 @@ compile_commands.json
 /pluginval*
 Testing/
 __pycache__/
+.deps/
+.ccache/
+.ci-timings/
