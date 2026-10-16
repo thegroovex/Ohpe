@@ -3,6 +3,7 @@
 #include "Display.h"
 
 #include "ModFxViews.h"
+#include "ResoView.h"
 #include "MorphView.h"
 
 #include "Palette.h"
@@ -587,6 +588,7 @@ int Display::selectedViewTab() const noexcept
 bool Display::showsModView() const noexcept { return mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMod; }
 bool Display::showsRackView() const noexcept { return mode == Mode::Effects && modfx::isRackView (ctx.fxView); }
 bool Display::showsSpaceView() const noexcept { return mode == Mode::Effects && ctx.fxView == modfx::FxViewSpace; }
+bool Display::showsBodyView() const noexcept { return mode == Mode::Effects && ctx.fxView == modfx::FxViewBody; }
 bool Display::showsMorphView() const noexcept { return mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMorph; }
 
 juce::Rectangle<float> Display::morphPadArea() const { return morphview::padArea (visualArea()); }
@@ -848,7 +850,7 @@ void Display::mouseDown (const juce::MouseEvent& e)
     }
 
     // 0.7: the visual area - click cycles character / scope / terrain, right-click opens the view menu
-    if (! showsModView() && ! showsRackView() && ! showsSpaceView() && ! showsMorphView() && mode != Mode::Tape && characterArea().contains (p)
+    if (! showsModView() && ! showsRackView() && ! showsSpaceView() && ! showsBodyView() && ! showsMorphView() && mode != Mode::Tape && characterArea().contains (p)
         && ! (mode == Mode::Sequencer && seqTab (0).getBottom() > p.y))
     {
         if (e.mods.isPopupMenu()) { showVisualMenu(); return; }
@@ -1033,6 +1035,16 @@ void Display::paint (juce::Graphics& g)
         paintRows (g);
         paintStrip (g, stripArea());
         g.drawImageAt (glassLayer, 0, 0);
+        return;
+    }
+    if (showsBodyView()) // p19: the edit part's resonator body
+    {
+        const int pt = juce::jlimit (0, Core::numParts - 1, ctx.part);
+        const auto pre = "p" + std::to_string (pt + 1) + ".reso.";
+        const bool on = core.params().get (pre + "on") >= 0.5f;
+        resoview::paintBody (g, visualArea(), resoview::stateOf (core.part (pt).resoStage(), core, pre, on), time, colour::encoder (pt));
+        paintRows (g);
+        paintStrip (g, stripArea());
         return;
     }
     if (showsMorphView()) // p16: the morph pad of the edit part
@@ -1466,6 +1478,18 @@ void Display::paintStrip (juce::Graphics& g, juce::Rectangle<float> s)
         g.setColour (colour::displayText);
         g.drawText (i18n::upper (tr ("Morph")) + "   " + morphview::statusLine (core, juce::jlimit (0, Core::numParts - 1, ctx.part)), line,
                     juce::Justification::centredLeft, true);
+        if (hasSoftKeys()) paintSoftKeys (g);
+        return;
+    }
+    if (showsBodyView()) // p19: model, tuning, pitch of the body
+    {
+        const auto area = hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s;
+        auto line1 = area.withHeight (area.getHeight() * 0.4f).reduced (area.getHeight() * 0.05f, 0).translated (0, area.getHeight() * 0.08f);
+        const int pt = juce::jlimit (0, Core::numParts - 1, ctx.part);
+        const bool on = core.params().get ("p" + std::to_string (pt + 1) + ".reso.on") >= 0.5f;
+        g.setFont (labelFont (line1.getHeight() * 0.55f));
+        g.setColour (on ? colour::displayText : colour::sunYellow);
+        g.drawText (i18n::upper (tr ("Resonator")) + "   " + resoview::statusLine (core, pt), line1, juce::Justification::centredLeft, true);
         if (hasSoftKeys()) paintSoftKeys (g);
         return;
     }

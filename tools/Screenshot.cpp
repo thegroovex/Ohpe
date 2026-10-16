@@ -416,6 +416,31 @@ int main (int argc, char* argv[])
             e.selectEngine (EngineType::Analog);
         }
 
+        // p19: the resonator body - part 1 (Pluck) through a string body with sympathetic strings on a chord
+        {
+            e.selectPart (0);
+            setChoice (p, "p1.engine", "Pluck");
+            e.selectEngine (EngineType::Pluck);
+            setPlain (p, "p1.reso.on", 1.0f);
+            setChoice (p, "p1.reso.model", "String");
+            setChoice (p, "p1.reso.follow", "Chord");
+            setPlain (p, "p1.reso.mix", 0.7f);
+            setPlain (p, "p1.reso.sympathetic", 0.8f);
+            setPlain (p, "p1.reso.size", 0.8f);
+            setPlain (p, "p1.reso.decay", 4.0f);
+            e.selectMode (ui::Mode::Effects);
+            e.selectView (4); // Sends | Rack | Master | 3D Space | Body
+            playAnimated (p, e, 2, { 48, 55, 64 }, 1);
+            playAnimated (p, e, 40);
+            save (e, dir.getChildFile ("ohpe-reso-view" + suffix + ".png"));
+            release (p, { 48, 55, 64 });
+            setPlain (p, "p1.reso.on", 0.0f);
+            setChoice (p, "p1.engine", "Analog");
+            run (p, 8);
+            e.selectEngine (EngineType::Analog);
+            e.selectView (0);
+        }
+
         // p14: key LEDs - the parts on different engines (P1 Analog edited, P2 FM, P3 Wavetable, P4 Analog), a chorus
         //      in part 1's rack and the sequencer running: yellow / violet engine LEDs with their part dots,
         //      status LEDs on the mode keys (Effects, Sequencer violet; Synth yellow = the shown page)

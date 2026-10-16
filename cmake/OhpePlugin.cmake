@@ -78,6 +78,7 @@ list(APPEND OHPE_JUCE_MODULES ohpe_presets)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/Visuals.cpp)
 # 1.0: the 3D space view, the headphones pictogram / 3D badge
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/SpaceView.cpp)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ResoView.cpp) # p19
 # p16: the morph pad (LFO mode, view Morph)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/MorphView.cpp)
 
