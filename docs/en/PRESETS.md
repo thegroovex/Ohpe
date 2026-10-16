@@ -30,8 +30,16 @@ the name opens the library.
 
 *Save preset …* opens the save panel: name, author (remembered), tags (categories plus your own
 tags, comma separated) and what to save – **This part** (the edit part's sound) or **Whole project**
-(every part, drum kit, mixer, effects, sequencer patterns and settings). Presets with the same name
-are never overwritten; a number is added instead.
+(every part, drum kit, mixer, effects, sequencer patterns and settings). The panel starts with the
+name and tags of the loaded preset, so an edited sound keeps its categories.
+
+If one of your presets already has that name, Ohpe asks: **Replace** overwrites it (favourite and
+rating stay), **Keep both** saves the new one as "Name 2" (or the next free number), **Cancel** goes
+back to the panel. Factory presets are never overwritten.
+
+After saving, the new preset is selected in the list. If a filter would hide it (a category, the
+engine, the search text, favourites, the Factory bank), the filters are cleared and the list shows
+**User**. The line above the list confirms the save – or says which folder could not be written.
 
 User presets are files in the user folder, so you can copy, share and back them up:
 

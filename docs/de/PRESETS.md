@@ -31,7 +31,17 @@ Sortierung), ein Klick auf den Namen öffnet die Bibliothek.
 *Preset speichern …* öffnet das Speicherfeld: Name, Autor (wird gemerkt), Tags (Kategorien und
 eigene Tags, durch Komma getrennt) und was gespeichert wird – **Dieser Part** (der Klang des
 bearbeiteten Parts) oder **Ganzes Projekt** (alle Parts, Drum-Kit, Mixer, Effekte, Sequencer-Pattern
-und Einstellungen). Presets mit gleichem Namen werden nie überschrieben; es wird eine Nummer angehängt.
+und Einstellungen). Das Feld übernimmt Name und Tags des geladenen Presets, ein bearbeiteter Klang
+behält also seine Kategorien.
+
+Gibt es schon ein eigenes Preset mit diesem Namen, fragt Ohpe nach: **Ersetzen** überschreibt es
+(Favorit und Bewertung bleiben), **Beide behalten** speichert das neue als „Name 2“ (oder mit der
+nächsten freien Nummer), **Abbrechen** führt zurück zum Feld. Werks-Presets werden nie überschrieben.
+
+Nach dem Speichern ist das neue Preset in der Liste ausgewählt. Würde ein Filter es verbergen (eine
+Kategorie, die Engine, der Suchtext, Favoriten, die Werksbank), werden die Filter zurückgesetzt und
+die Liste zeigt **Eigene**. Die Zeile über der Liste bestätigt das Speichern – oder nennt den Ordner,
+in den nicht geschrieben werden konnte.
 
 Eigene Presets sind Dateien im Benutzerordner – kopieren, teilen und sichern ist einfach:
 
