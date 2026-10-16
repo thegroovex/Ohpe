@@ -6191,3 +6191,7 @@ mfx4.chorus.spread
 mfx4.chorus.lowcut
 perf.bend
 perf.mod
+p1.life
+p2.life
+p3.life
+p4.life

@@ -68,6 +68,11 @@ public:
         (after the FX rack and bass mono, before the mixer). Off = exact bypass; switching crossfades over 20 ms.
     */
     void registerLate10SpaceParams (ParamRegistry& reg) const;
+    /**
+        p15: "pN.life" 0..1 (0 = static, the sound exactly as without it): every voice of the part keeps evolving on its
+        own - pitch drift, filter / brightness breathing, engine colour, grain scatter (VoiceBase life motion).
+    */
+    void registerLate15LifeParams (ParamRegistry& reg) const;
     /** 1.0, audio thread: master monitoring mode (SpaceEffect::Headphones / Speakers) for the stage and the rack. */
     void setMonitorMode (int mode) noexcept
     {
@@ -173,6 +178,7 @@ private:
     enum Late08 { lyEngine = 0, lyLevel, lyTune, lyFine, lyXMode, lyXMod, lyWidth, lyOwnEnv, lyA, lyD, lyS, lyR, numLate08 };
     int exprSmoothIndex = -1, exprSlideIndex = -1; ///< 0.8: "pN.mpe.smooth", "pN.mpe.slide"
     int monoBassIndex = -1;                        ///< 0.8: "pN.monobass"
+    int lifeIndex = -1;                            ///< p15: "pN.life"
     float monoBassHz = 20.0f, partSr = 48000.0f;
     dsp::Svf monoLp1, monoLp2;                     ///< 4th-order Butterworth high-pass of the side signal
     float exprBlend = 0.0f;                        ///< 0.8: latest per-note "layer blend" expression (part-wide)

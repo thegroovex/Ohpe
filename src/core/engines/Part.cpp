@@ -186,6 +186,16 @@ void Part::applyBassMono (float* l, float* r, int numSamples) noexcept
     }
 }
 
+void Part::registerLate15LifeParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const std::string P = "Part " + n + " ";
+    auto d = continuous (id ("life"), P + "Life", P + "Leben", 0.0f, 1.0f, 0.0f, ParamUnit::Percent);
+    d.group = "part" + n;
+    reg.add (std::move (d));
+}
+
 void Part::registerLate10SpaceParams (ParamRegistry& reg) const
 {
     using namespace pd;
@@ -267,6 +277,7 @@ void Part::bind (const ParamRegistry& reg)
     exprSmoothIndex = reg.indexOf (id ("mpe.smooth"));
     exprSlideIndex = reg.indexOf (id ("mpe.slide"));
     monoBassIndex = reg.indexOf (id ("monobass"));
+    lifeIndex = reg.indexOf (id ("life")); // p15
     spaceOnIndex = reg.indexOf (id ("space.on")); // 1.0
     {
         const auto ds = space.getParamDescriptors();
@@ -396,6 +407,8 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
     rack.pullParams (s);
     common.exprSmooth = exprSmoothIndex >= 0 ? s[exprSmoothIndex] : 0.0f;
     common.exprSlide = exprSlideIndex >= 0 ? s[exprSlideIndex] : 0.0f;
+    common.life = lifeIndex >= 0 ? dsp::clamp01 (s[lifeIndex]) : 0.0f; // p15 (the matrix may move it: "life" target)
+    common.lifeSeed = 0x51ED27u * (uint32_t) number;
     if (monoBassIndex >= 0 && s[monoBassIndex] != monoBassHz) // 0.8 bass mono
     {
         monoBassHz = std::clamp (s[monoBassIndex], 20.0f, 400.0f);
@@ -460,6 +473,7 @@ void Part::pushCommon() noexcept
     {
         VoiceCommon c = common;
         c.pitchOffset += layerTune;
+        c.lifeSeed ^= 0x5BD1E995u; // p15: the layer's voices move on their own
         if (layerOwnEnv) c.amp = layerAmp;
         le->setCommon (c);
     }

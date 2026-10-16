@@ -164,7 +164,7 @@ void PresetStrip::mouseDown (const juce::MouseEvent& e)
 OhpeEditor::OhpeEditor (OhpeProcessor& p)
     : AudioProcessorEditor (p), proc (p), display (p),
       pitchWheel (p, Core::Ids::perfBend, "Pitch", true), modWheel (p, Core::Ids::perfMod, "Mod", false),
-      glideSwitch (p), glideKnob (p, "Glide"),
+      glideSwitch (p), glideKnob (p, "Glide"), lifeBar (p),
       keyboard (p.keyboardState), proView (p), library (p)
 {
     setLookAndFeel (&lnf);
@@ -245,6 +245,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     for (auto* k : { &randomKey, &saveKey }) addAndMakeVisible (*k);
     for (auto* c : { (juce::Component*) &pitchWheel, (juce::Component*) &modWheel, (juce::Component*) &glideSwitch, (juce::Component*) &glideKnob })
         addAndMakeVisible (*c);
+    addAndMakeVisible (lifeBar); // p15: LIFE at the foot of the engine column
 
     partSelector.onSelect = [this] (int part) { selectPart (part); };
     presetStrip.onStep = [this] (int d) { proc.presets().step (d); };
@@ -378,6 +379,8 @@ juce::Rectangle<float> OhpeEditor::designArea (const char* name)
         { "keyboard", 152, 632, 872, 136 },
         // rev 3: PORTAMENTO (switch) over GLIDE (knob) - a 56-unit control column and one text column at x 1104
         { "glideSwitch", 1040, 632, 128, 72 },  { "glideKnob", 1040, 712, 128, 56 },
+        // p15: LIFE - a light bar at the foot of the engine column, under the eight engine keys (64 high, 70 apart)
+        { "lifeBar", 44, 404, 184, 32 },
     };
     for (const auto& i : items)
         if (std::strcmp (i.name, name) == 0) return { i.x, i.y, i.w, i.h };
@@ -391,10 +394,13 @@ void OhpeEditor::resized()
         const auto r = designArea (name);
         c.setBounds (scaled (r.getX(), r.getY(), r.getWidth(), r.getHeight()));
     };
-    // columns: 2 x 4 keys of 88 x 72 on an 80-unit pitch, 12 units inside the recessed panels
+    // columns: 2 x 4 keys of 88 x 72 on an 80-unit pitch, 12 units inside the recessed panels; p15: the engine keys
+    // are 64 high on a 70-unit pitch, so the LIFE bar fits at the foot of the engine column
     const float s = (float) getWidth() / (float) designWidth;
     for (int t = 0; t < numEngineTypes; ++t)
-        engineKeys[(size_t) t]->setBounds (scaled (44.0f + 96.0f * (float) (t % 2), 124.0f + 80.0f * (float) (t / 2), 88, 72));
+        engineKeys[(size_t) t]->setBounds (scaled (44.0f + 96.0f * (float) (t % 2), 124.0f + 70.0f * (float) (t / 2), 88, 64));
+    place (lifeBar, "lifeBar");
+    lifeBar.setUiScale (s);
     for (int m = 0; m < numModes; ++m)
         modeKeys[(size_t) m]->setBounds (scaled (972.0f + 96.0f * (float) (m % 2), 124.0f + 80.0f * (float) (m / 2), 88, 72));
     place (display, "display");
@@ -670,6 +676,7 @@ void OhpeEditor::bindPartControls()
     const juce::String pre = "p" + juce::String (ctx.part + 1) + ".";
     glideSwitch.bind (pre + "glide.mode");
     glideKnob.bind (pre + "glide");
+    lifeBar.bind (pre + "life"); // p15
 }
 
 void OhpeEditor::randomiseSound (juce::int64 seed)
@@ -802,6 +809,7 @@ std::vector<juce::Component*> OhpeEditor::plateComponents()
     std::vector<juce::Component*> c { &display, &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &midiKey, &octDownKey, &octUpKey,
                                       &tapeReadout, &keysReadout };
     for (auto& k : engineKeys) c.push_back (k.get());
+    c.push_back (&lifeBar); // p15
     for (auto& k : modeKeys) c.push_back (k.get());
     for (auto& e : encoders) c.push_back (e.get());
     return c;
@@ -1391,6 +1399,7 @@ void OhpeEditor::refreshKeys()
     modWheel.setTooltip (tr ("Mod wheel (modulation matrix source); right-click: MIDI learn"));
     glideSwitch.setTooltip (tr ("Glide mode of the edit part: Auto, Legato or Always"));
     glideKnob.setTooltip (tr ("Glide time of the edit part"));
+    lifeBar.setTooltip (tr ("Life of the edit part: 0 = static; more = held notes keep evolving (drift, breathing filter, grain scatter). Right-click: MIDI learn"));
     octDownKey.setTooltip (tr ("Keyboard one octave down") + "\n" + tr ("Bar: yellow = keyboard shifted down"));
     octUpKey.setTooltip (tr ("Keyboard one octave up") + "\n" + tr ("Bar: yellow = keyboard shifted up"));
     for (int m = 0; m < numModes; ++m) // p14: what the mode keys' light bars say
@@ -1499,6 +1508,10 @@ void OhpeEditor::timerCallback()
     pitchWheel.refresh(); // p14: host automation / MIDI-mapped wheels
     modWheel.refresh();
     glideSwitch.refresh();
+    {   // p15: the LIFE bar shimmers while the edit part sounds; shows the matrix's live offset
+        auto& pt = core.part (ctx.part);
+        lifeBar.tick (1.0f / 30.0f, pt.activeVoiceCount() > 0, pt.modulationOf (core.params().indexOf (lifeBar.boundId().toStdString())));
+    }
     if (proView.isVisible()) proView.refresh();
     if (mode == Mode::Tape) refreshSoftKeys(); // undo / redo / clipboard state
 

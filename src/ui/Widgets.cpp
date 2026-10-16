@@ -898,6 +898,151 @@ void MiniKnob::Knob::mouseDoubleClick (const juce::MouseEvent&)
     if (auto* q = owner.proc.parameter (owner.id)) q->setValueNotifyingHost (q->getDefaultValue());
 }
 
+// ---------------------------------------------------------------- p15: LIFE light bar
+LifeBar::LifeBar (OhpeProcessor& p) : proc (p)
+{
+    setMouseCursor (juce::MouseCursor::LeftRightResizeCursor);
+    setName ("LifeBar");
+}
+
+void LifeBar::bind (const juce::String& paramId)
+{
+    if (paramId == id && param != nullptr) return;
+    id = paramId;
+    param = proc.parameter (id);
+    shown = -1.0f;
+    repaint();
+}
+
+float LifeBar::normalisedValue() const { return param != nullptr ? param->getValue() : 0.0f; }
+
+juce::Rectangle<float> LifeBar::slotArea() const
+{
+    const auto b = getLocalBounds().toFloat();
+    const float h = 10.0f * uiScale;
+    return { b.getX(), b.getBottom() - h - 2.0f * uiScale, b.getWidth(), h };
+}
+
+void LifeBar::tick (float seconds, bool sounding, float modDelta)
+{
+    const float v = normalisedValue();
+    const bool nowAlive = sounding && v > 0.0f;
+    const bool learning = id.isNotEmpty() && proc.learningParamId() == id;
+    time += seconds;
+    if (nowAlive || nowAlive != alive || std::abs (v - shown) > 1.0e-6f || std::abs (modDelta - mod) > 1.0e-4f || learning != wasLearning)
+        repaint();
+    alive = nowAlive;
+    mod = modDelta;
+    wasLearning = learning;
+}
+
+void LifeBar::paint (juce::Graphics& g)
+{
+    const float u = uiScale;
+    const auto b = getLocalBounds().toFloat();
+    shown = normalisedValue();
+    const bool learning = id.isNotEmpty() && proc.learningParamId() == id;
+    // the legend and the value on one line, above the slot
+    const auto line = b.withHeight (12.0f * u);
+    juce::String value;
+    const int idx = proc.core().params().indexOf (id.toStdString());
+    if (idx >= 0 && param != nullptr) value = formatValue (proc.core().params().descriptor (idx), param->convertFrom0to1 (shown));
+    g.setColour (colour::ink);
+    g.setFont (monoFont (11.0f * u));
+    g.drawText (value, line, juce::Justification::centredRight, false);
+    g.setColour (learning ? colour::signalRed : colour::engraving);
+    drawBaselineLegend (g, learning ? i18n::upper (i18n::tr ("MIDI Learn")) : i18n::upper (i18n::tr ("Life")), line.withTrimmedRight (60.0f * u),
+                        11.0f * u, juce::Justification::left);
+    if (idx >= 0 && proc.core().midiMap().isMapped (id.toStdString()))
+    {
+        g.setColour (colour::signalRed);
+        g.fillEllipse (line.getRight() - 64.0f * u, line.getCentreY() - 2.0f * u, 4.0f * u, 4.0f * u);
+    }
+
+    // the slot: dark glass sunk into the panel (a light lower lip), the light bar inside it
+    const auto slot = slotArea();
+    const float r = slot.getHeight() * 0.5f;
+    g.setColour (juce::Colours::white.withAlpha (0.7f));
+    g.fillRoundedRectangle (slot.translated (0, 1.0f), r);
+    g.setColour (colour::display);
+    g.fillRoundedRectangle (slot, r);
+    g.setColour (juce::Colours::black.withAlpha (0.5f));
+    g.drawRoundedRectangle (slot.reduced (0.5f), r, 1.0f);
+    const auto inner = slot.reduced (2.0f * u);
+    const float ir = inner.getHeight() * 0.5f;
+    // unlit: a faint track
+    g.setColour (colour::rose.withAlpha (0.10f));
+    g.fillRoundedRectangle (inner, ir);
+    if (shown > 0.0f)
+    {
+        const auto lit = inner.withWidth (juce::jmax (inner.getHeight(), inner.getWidth() * shown));
+        const auto base = colour::rose;
+        if (alive)
+        {
+            // the shimmer: a soft brighter crest wanders along the lit bar, faster with more life
+            const float speed = 0.12f + 0.35f * shown;
+            const float pos = std::fmod (time * speed, 1.0f);
+            juce::ColourGradient grad (base.withMultipliedBrightness (0.78f), lit.getX(), 0, base.withMultipliedBrightness (0.78f), lit.getRight(), 0, false);
+            grad.addColour (juce::jlimit (0.0, 1.0, (double) pos - 0.18), base.withMultipliedBrightness (0.78f));
+            grad.addColour ((double) pos, base.brighter (0.35f));
+            grad.addColour (juce::jlimit (0.0, 1.0, (double) pos + 0.18), base.withMultipliedBrightness (0.78f));
+            g.setGradientFill (grad);
+        }
+        else
+            g.setColour (base.withMultipliedBrightness (0.9f));
+        g.fillRoundedRectangle (lit, ir);
+        g.setColour (base.withAlpha (0.25f)); // a soft glow around the lit glass
+        g.drawRoundedRectangle (lit.expanded (0.5f), ir + 0.5f, 1.0f);
+    }
+    if (std::abs (mod) > 1.0e-4f) // the modulation matrix moves it: a fine light tick at the live value
+    {
+        const float live = juce::jlimit (0.0f, 1.0f, shown + mod);
+        const float x = inner.getX() + inner.getWidth() * live;
+        g.setColour (colour::displayText);
+        g.fillRect (juce::Rectangle<float> (1.5f * u, inner.getHeight() + 2.0f * u).withCentre ({ x, inner.getCentreY() }));
+    }
+    if (learning)
+    {
+        g.setColour (colour::signalRed);
+        g.drawRoundedRectangle (slot.expanded (1.5f * u), r + 1.5f * u, 1.2f);
+    }
+}
+
+void LifeBar::mouseDown (const juce::MouseEvent& e)
+{
+    if (param == nullptr) return;
+    if (e.mods.isPopupMenu()) { showControlMenu (proc, id, this); return; }
+    const bool fine = isFineDrag (e.mods);
+    float start = param->getValue();
+    const auto slot = slotArea();
+    if (! fine && e.position.y >= slot.getY() - slot.getHeight()) // a click on the slot jumps there
+        start = juce::jlimit (0.0f, 1.0f, (e.position.x - slot.getX()) / juce::jmax (1.0f, slot.getWidth()));
+    param->beginChangeGesture();
+    dragging = true;
+    drag.begin (start, e.position, fine);
+    param->setValueNotifyingHost (start);
+    repaint();
+}
+
+void LifeBar::mouseDrag (const juce::MouseEvent& e)
+{
+    if (! dragging || param == nullptr) return;
+    param->setValueNotifyingHost (drag.update (e.position, juce::jmax (40.0f, slotArea().getWidth()), isFineDrag (e.mods)));
+    repaint();
+}
+
+void LifeBar::mouseUp (const juce::MouseEvent&)
+{
+    if (dragging && param != nullptr) param->endChangeGesture();
+    dragging = false;
+}
+
+void LifeBar::mouseDoubleClick (const juce::MouseEvent& e)
+{
+    if (param != nullptr && ! e.mods.isPopupMenu()) setParameterNormalised (proc, id, param->getDefaultValue());
+    repaint();
+}
+
 // ---------------------------------------------------------------- p14 rev 3: readout glass
 void Readout::setContent (const juce::String& b, juce::Colour c, const juce::String& m, const juce::String& a)
 {
