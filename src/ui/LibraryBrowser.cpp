@@ -117,6 +117,7 @@ void LibraryBrowser::open()
     presets.rescan();
     presets.beginPreview();
     saving = false;
+    status.clear();
     showSavePanel (false);
     setVisible (true);
     rebuild();
@@ -187,14 +188,33 @@ void LibraryBrowser::toggleTag (const juce::String& tag)
     rebuild();
 }
 
+int LibraryBrowser::rowOfEntry (int index) const noexcept
+{
+    for (int r = 0; r < (int) rows.size(); ++r)
+        if (rows[(size_t) r] == index) return r;
+    return -1;
+}
+
 void LibraryBrowser::showSavePanel (bool show)
 {
     saving = show;
     if (show)
     {
         const int sel = presets.current();
+        const auto* loaded = sel >= 0 && sel < (int) presets.entries().size() ? &presets.entries()[(size_t) sel] : nullptr;
         if (saveName.isEmpty())
-            saveName.setText (sel >= 0 ? str (presets.entries()[(size_t) sel].meta.name) : juce::String(), false);
+        {
+            saveName.setText (loaded != nullptr ? str (loaded->meta.name) : juce::String(), false);
+            // the edited sound keeps the tags of the preset it came from (category filters still find it)
+            if (loaded != nullptr && saveTags.isEmpty() && saveFreeTags.isEmpty())
+            {
+                juce::StringArray more;
+                for (const auto& t : loaded->meta.tags)
+                    (preset::isCategory (t) ? saveTags : more).addIfNotAlreadyThere (str (t));
+                saveFreeTags.setText (more.joinIntoString (", "), false);
+                saveProject = loaded->meta.kind == preset::Kind::Project;
+            }
+        }
         if (saveAuthor.isEmpty()) saveAuthor.setText (presets.author(), false);
     }
     for (auto* e : { &saveName, &saveAuthor, &saveFreeTags }) e->setVisible (show);
@@ -207,11 +227,37 @@ void LibraryBrowser::setSaveFields (const juce::String& name, const juce::String
     saveName.setText (name, false);
     saveAuthor.setText (author, false);
     saveTags = tags;
+    saveFreeTags.clear();
     saveProject = project;
     repaint();
 }
 
-bool LibraryBrowser::commitSave()
+void LibraryBrowser::reveal (int index)
+{
+    if (index < 0 || index >= (int) presets.entries().size()) return;
+    rows = presets.view();
+    if (rowOfEntry (index) < 0)
+    {
+        // a filter hides it (category, engine, search text, favourites, bank, kind): show the user bank
+        const auto sort = presets.filter.sort;
+        presets.filter = {};
+        presets.filter.sort = sort;
+        presets.filter.bank = presets.entries()[(size_t) index].factory ? preset::Bank::All : preset::Bank::User;
+        search.setText ({}, false);
+        rows = presets.view();
+    }
+    list.updateContent();
+    const juce::ScopedValueSetter<bool> svs (ignoreSelection, true); // it is loaded already
+    if (const int r = rowOfEntry (index); r >= 0)
+    {
+        list.selectRow (r);
+        list.scrollToEnsureRowIsOnscreen (r);
+    }
+    list.repaint();
+    repaint();
+}
+
+bool LibraryBrowser::commitSave (SaveConflict conflict)
 {
     preset::Meta meta;
     meta.name = saveName.getText().trim().toStdString();
@@ -220,12 +266,44 @@ bool LibraryBrowser::commitSave()
     for (auto t : juce::StringArray::fromTokens (saveFreeTags.getText(), ",", ""))
         if (t.trim().isNotEmpty() && ! saveTags.contains (t.trim())) meta.tags.push_back (t.trim().toStdString());
     if (meta.name.empty()) meta.name = "Preset";
-    const auto file = presets.save (meta, saveProject);
-    if (file == juce::File()) return false;
+
+    const bool project = saveProject;
+    if (conflict == SaveConflict::Ask && presets.userFileFor (meta.name, project).exists())
+    {
+        juce::Component::SafePointer<LibraryBrowser> safe (this);
+        juce::AlertWindow::showAsync (juce::MessageBoxOptions()
+                                          .withIconType (juce::MessageBoxIconType::QuestionIcon)
+                                          .withTitle ("Ohpe")
+                                          .withMessage (tr ("A user preset with this name exists already.") + "\n" + str (meta.name))
+                                          .withButton (tr ("Replace"))
+                                          .withButton (tr ("Keep both"))
+                                          .withButton (tr ("Cancel")),
+                                      [safe] (int result) {
+                                          if (safe == nullptr || ! safe->saving) return;
+                                          if (result == 1) safe->commitSave (SaveConflict::Replace);
+                                          else if (result == 2) safe->commitSave (SaveConflict::KeepBoth);
+                                      });
+        return false;
+    }
+
+    const auto file = presets.save (meta, project, -1, conflict == SaveConflict::Replace);
+    if (file == juce::File())
+    {
+        status = tr ("Could not save the preset in") + " " + presets.userFolder().getFullPathName();
+        statusError = true;
+        repaint();
+        return false;
+    }
     presets.endPreview();
     presets.beginPreview(); // the saved sound is the new "before"
+    const int index = presets.indexOfFile (file);
+    status = tr ("Saved") + ": " + (index >= 0 ? str (presets.entries()[(size_t) index].meta.name) : file.getFileNameWithoutExtension());
+    statusError = false;
+    saveName.clear();
+    saveFreeTags.clear();
+    saveTags.clear();
     showSavePanel (false);
-    rebuild();
+    reveal (index);
     return true;
 }
 
@@ -338,6 +416,12 @@ void LibraryBrowser::paint (juce::Graphics& g)
     g.setFont (labelFont (u * 1.3f));
     g.drawText (juce::String ((int) rows.size()) + " " + tr ("presets"), juce::Rectangle<float> (u * 26.0f, u * 8.9f, u * 30.0f, u * 1.5f),
                 juce::Justification::centredLeft, true);
+
+    if (status.isNotEmpty())
+    {
+        g.setColour (statusError ? colour::signalRed : colour::sunYellow);
+        g.drawText (status, juce::Rectangle<float> (u * 44.0f, u * 8.9f, u * 34.0f, u * 1.5f), juce::Justification::centredRight, true);
+    }
 
     // right: details or save panel
     auto r = rightArea();

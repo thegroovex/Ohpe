@@ -40,6 +40,7 @@ juce::String formatValue (const ParamDescriptor& d, float v)
         case ParamUnit::Seconds: return v < 1.0f ? fixed (v * 1000.0f, v < 0.1f ? 1 : 0) + " ms" : fixed (v, 2) + " s";
         case ParamUnit::Cents: return fixed (v, 0) + " ct";
         case ParamUnit::Bpm: return fixed (v, 1) + " BPM";
+        case ParamUnit::Milliseconds: return v >= 1000.0f ? fixed (v / 1000.0f, 2) + " s" : fixed (v, v < 10.0f ? 1 : 0) + " ms";
         case ParamUnit::Percent: return fixed (v * 100.0f, 0) + " %";
         case ParamUnit::Semitones: return fixed (v, 1) + " st";
         case ParamUnit::None: break;

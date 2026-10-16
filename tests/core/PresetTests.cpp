@@ -74,10 +74,12 @@ TEST_CASE ("preset: part preset round-trip (save -> JSON -> load into another pa
     const int ch3 = (int) b.params().get ("p3.midich");
     const auto r = preset::applyPart (back, b.params(), 2);
     REQUIRE (r.ok);
-    int fxOnlyInPart1 = 0; // the FX slot exists for part 1 only (0.2): those IDs are unknown in part 3
-    for (int i = 0; i < reg.size(); ++i)
-        if (reg.descriptor (i).id.rfind ("p1.fx.", 0) == 0) ++fxOnlyInPart1;
-    CHECK (r.unknown == fxOnlyInPart1);
+    // since 0.7 every part has the same FX rack: a part preset of part 1 has no unknown IDs in part 3
+    int onlyInPart1 = 0;
+    for (const auto& kv : back.params)
+        if (b.params().indexOf ("p3." + kv.first) < 0) ++onlyInPart1;
+    CHECK (onlyInPart1 == 0);
+    CHECK (r.unknown == onlyInPart1);
     for (int i = 0; i < reg.size(); ++i)
     {
         const auto& id = reg.descriptor (i).id;
@@ -264,6 +266,37 @@ TEST_CASE ("preset library: tag, engine, bank, favourite, rating and text filter
     f.sort = preset::Sort::Engine;
     CHECK (names (f) == std::vector<std::string> { "Deep Bass", "Glass Keys", "Choir", "Slow Pad" });
     CHECK (preset::usedTags (e) == std::vector<std::string> { "Bass", "Keys", "Pads", "Plucks", "Textures", "Vocal" });
+}
+
+TEST_CASE ("preset library: a freshly saved user part preset passes the User bank filter (no tags, any engine)")
+{
+    // regression: a sound saved under a new name in the library did not show under "User"
+    Core core;
+    core.prepare (48000.0, 256);
+    preset::Meta meta;
+    meta.name = "My Own Sound";
+    const auto p = preset::capturePart (core.params(), 0, meta);
+    preset::Preset back;
+    REQUIRE (preset::fromJson (preset::toJson (p), back));
+    preset::Entry user;
+    user.uid = "user:Parts/My Own Sound.ohpepreset";
+    user.meta = back.meta;
+    std::vector<preset::Entry> e { entry ("Deep Bass", { "Bass" }, "analog", true), user };
+
+    preset::Filter f;
+    f.bank = preset::Bank::User;
+    REQUIRE (preset::filterAndSort (e, f) == std::vector<int> { 1 });
+    f.kind = 0; // parts
+    CHECK (preset::filterAndSort (e, f) == std::vector<int> { 1 });
+    f.kind = 1; // projects
+    CHECK (preset::filterAndSort (e, f).empty());
+    f.kind = -1;
+    f.text = "own sound";
+    CHECK (preset::filterAndSort (e, f) == std::vector<int> { 1 });
+    // only a category filter hides an untagged preset (the browser clears it after saving)
+    f.text.clear();
+    f.tags = { "Bass" };
+    CHECK (preset::filterAndSort (e, f).empty());
 }
 
 TEST_CASE ("preset library: user data (favourites, ratings) round-trip")

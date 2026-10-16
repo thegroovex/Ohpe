@@ -607,7 +607,7 @@ int Part::destParamIndex (int dest) const noexcept
             const int k = d.arg / numFxDestParams, j = d.arg % numFxDestParams;
             if (k >= rack.numSlots()) return -1;
             const auto& sl = rack.slot (k);
-            return sl.paramIndexOf (sl.currentType(), j);
+            return sl.modParamIndexOf (sl.currentType(), j);
         }
         default: return -1; // off, per voice
     }

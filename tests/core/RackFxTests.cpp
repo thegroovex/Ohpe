@@ -10,6 +10,7 @@
 
 #include <doctest/doctest.h>
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 
@@ -82,6 +83,26 @@ TEST_CASE ("0.7 rack types: registered for every slot of every rack, names in En
     CHECK (type.choices.size() == (size_t) InsertSlot::numTypes);
     CHECK (type.choicesDe.size() == (size_t) InsertSlot::numTypes);
     CHECK (type.choices[InsertSlot::Eq] == "EQ");
+}
+
+TEST_CASE ("0.7 rack types: the modulation targets FX Param 1-4 move four distinct continuous parameters")
+{
+    for (int t = InsertSlot::firstRackType; t < InsertSlot::numTypes; ++t)
+    {
+        auto e = make (t);
+        CAPTURE (e->info().id);
+        const auto ds = e->getParamDescriptors();
+        std::vector<int> seen;
+        for (int j = 0; j < 4; ++j)
+        {
+            const int local = e->modulationParam (j);
+            REQUIRE (local >= 0);
+            REQUIRE (local < (int) ds.size());
+            CHECK (ds[(size_t) local].kind == ParamKind::Continuous);
+            CHECK (std::find (seen.begin(), seen.end(), local) == seen.end());
+            seen.push_back (local);
+        }
+    }
 }
 
 TEST_CASE ("0.7 rack types: finite and denormal-free at extreme settings; tails die out")
@@ -193,13 +214,27 @@ TEST_CASE ("0.7 filter, hyper, echo, hall: the sound they promise")
 {
     const auto in = noiseAndTones (48000);
     {
-        FilterRackEffect f; // 24 dB low-pass at 300 Hz removes the 1.75 / 2.6 kHz tones
-        f.prepare (sampleRate, 256);
-        setDefaults (f);
-        f.setParam (FilterRackEffect::Cutoff, 300.0f);
-        f.reset();
-        const auto out = run (f, in);
-        CHECK (rmsOf (out, 24000) < 0.75f * rmsOf (in, 24000));
+        // 24 dB low-pass at 300 Hz: the 1.75 / 2.6 kHz tones go, a 110 Hz tone stays (flat pass band at resonance 0)
+        auto tone = [] (float hz) {
+            Stereo s (48000);
+            for (size_t i = 0; i < s.size(); ++i) s.l[i] = s.r[i] = 0.5f * std::sin (dsp::twoPi * hz * (float) i / (float) sampleRate);
+            return s;
+        };
+        auto through = [&] (float hz, float reso) {
+            FilterRackEffect f;
+            f.prepare (sampleRate, 256);
+            setDefaults (f);
+            f.setParam (FilterRackEffect::Cutoff, 300.0f);
+            f.setParam (FilterRackEffect::Resonance, reso);
+            f.reset();
+            const auto t = tone (hz);
+            return 20.0f * std::log10 (rmsOf (run (f, t), 24000) / rmsOf (t, 24000));
+        };
+        CHECK (through (1750.0f, 0.0f) < -50.0f);
+        CHECK (through (2600.0f, 0.3f) < -50.0f);
+        CHECK (std::abs (through (110.0f, 0.0f)) < 0.5f);
+        CHECK (through (300.0f, 0.0f) == doctest::Approx (-3.0f).epsilon (0.25)); // Butterworth: -3 dB at the cutoff
+        CHECK (through (300.0f, 0.6f) > 6.0f);                                      // the resonance peak
     }
     {
         HyperEffect h; // a mono input comes out wide

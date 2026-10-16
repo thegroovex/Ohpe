@@ -53,7 +53,7 @@ public:
     /** Parameter blocks of the types [fromType, toType) for every slot of every rack (types added later). */
     static void registerTypeBlocks (ParamRegistry& reg, int numParts, int fromType, int toType);
 
-    explicit FxRack (int slots = numPartSlots);
+    explicit FxRack (int numSlots = numPartSlots);
 
     /** Binds to slot prefixes (partSlotPrefix / masterSlotPrefix). Slot 1 of a part rack prepares eagerly. */
     void bindPart (const ParamRegistry& reg, const std::string& partPrefix);
@@ -112,6 +112,7 @@ private:
     std::array<std::atomic<float>, maxSlots> peaks {};
     std::vector<float> dryL, dryR;
     float smoothCoeff = 0.01f;
+    bool snapMix = true; ///< first pull after prepare / reset: mix and bypass start at their values (no glide)
     int activeSlots = 0;
 };
 } // namespace ohpe

@@ -125,8 +125,31 @@ Jeder Part hat ein **FX-Rack mit sechs Slots in Reihe**, der Master eines mit vi
   trocken durch).
 * Die Namen im Host unterscheiden die Slots: „P2 FX3 Chorus-Tempo“, „Master-FX 1 Delay-Mischung“
   (der 0.2-Slot von Part 1 behält seine Namen).
-* Die Modulationsmatrix kann die Mischung jedes Slots und die ersten vier Parameter seines
-  Effekts bewegen ([MODULATION.md](MODULATION.md)).
+* Die Modulationsmatrix kann die Mischung jedes Slots und vier Parameter seines Effekts
+  bewegen – bei den 0.2-Typen die ersten vier, bei den Rack-Typen die unten als *Mod 1–4*
+  genannten ([MODULATION.md](MODULATION.md)).
+* Auf dem Bildschirm: die Ansichten **Rack** und **Master** im Effekte-Modus
+  ([BEDIENUNG.md](BEDIENUNG.md#fx-rack-ansichten-07)).
+
+### Effekttypen des Racks
+
+Neben den sechs 0.2-Typen bietet jeder Slot neun Rack-Typen. Alles, was sich bewegt (Cutoffs,
+Zeiten, Verstärkungen, Drive), gleitet Sample für Sample – Automation und Modulation zippern nie;
+die nichtlinearen Stufen laufen mit Oversampling.
+
+| Typ | Was er tut | Parameter | Mod 1–4 |
+|---|---|---|---|
+| **Hyper** | Unisono-Verbreiterer: bis zu sieben langsam driftende, verstimmte Kopien im Stereofeld, danach eine *Dimension*-Stufe aus über Kreuz gekoppelten kurzen Delays; *Neustart* startet die Bewegung mit jeder Note neu | Tempo, Verstimmung, Stimmen, Breite, Dimension, Neustart, Mischung | Tempo, Verstimmung, Breite, Dimension |
+| **Verzerrung** | acht Modi – Röhre, Soft Clip, Hard Clip, Diode, lineare Faltung, Sinus-Faltung, asymmetrisch, Downsample – mit Bias, Vorfilter (Tief-, Band-, Hochpass) und Klangregelung danach | Modus, Drive, Bias, Vorfilter, Vorfilter-Frequenz, Klang, Ausgang, Mischung | Drive, Bias, Vorfilter-Frequenz, Klang |
+| **Flanger** | Stereo-Flanger, frei oder zum Tempo synchron, positives oder negatives Feedback | Tempo, Sync, Tiefe, Verzögerung, Feedback, Stereo, Mischung | Tempo, Tiefe, Verzögerung, Feedback |
+| **Kompressor** | Stereo-gekoppelter Kompressor mit weichem Knie und Aufholverstärkung; *Mischung* ergibt Parallelkompression | Schwelle, Ratio, Attack, Release, Knie, Aufholverstärkung, Mischung | Schwelle, Ratio, Attack, Aufholverstärkung |
+| **Multiband** | drei Bänder mit Aufwärts- und Abwärtskompression; bei Tiefe 0 summieren die Weichen linear | Tiefe, aufwärts, abwärts, Zeit, Tiefen / Mitten / Höhen, Trennung tief / hoch, Ausgang, Mischung | Tiefe, Tiefen, Mitten, Höhen |
+| **EQ** | Tiefen-Kuhschwanz, drei Glocken, Höhen-Kuhschwanz | Frequenzen, Gains, Güte, Ausgang | Band 1 Frequenz / Gain, Band 2 Frequenz / Gain |
+| **Filter** | Tief- / Hochpass 12 oder 24 dB, Bandpass, Notch, Kamm + / −, Vokal-Formant; Drive davor; der Cutoff gleitet in Oktaven | Typ, Cutoff, Resonanz, Drive, Mischung | Cutoff, Resonanz, Drive, Mischung |
+| **Echo** | Stereo-, Ping-Pong- oder Tap-Delay (rechter Tap im Verhältnis zum linken), frei oder synchron, gefiltertes Feedback | Modus, Sync, Zeit, Verhältnis, Feedback, Tiefensperre, Höhensperre, Breite, Mischung | Feedback, Zeit (frei), Höhensperre, Breite |
+| **Raum** | Platten- oder Hallraum: Eingangsdiffusion und ein Feedback-Netz aus acht Leitungen mit sanfter Modulation | Modus, Größe, Nachhall, Dämpfung, Pre-Delay, Breite, Mischung | Größe, Nachhall, Dämpfung, Pre-Delay |
+
+IDs, Bereiche und Vorgaben: [PARAMETERS.md](../PARAMETERS.md#07--rack-effect-types--effekttypen-des-racks).
 
 ### Weitere FX-Typen (0.8)
 

@@ -176,31 +176,32 @@ void paintModList (juce::Graphics& g, juce::Rectangle<float> area, Core& core, i
             g.setColour (colour::displayText);
             g.drawRoundedRectangle (line, line.getHeight() * 0.18f, 1.0f);
         }
-        auto inner = line.reduced (line.getHeight() * 0.12f, line.getHeight() * 0.08f);
-        auto num = inner.removeFromLeft (inner.getHeight() * 1.1f);
-        g.setFont (monoFont (inner.getHeight() * 0.42f));
+        auto inner = line.reduced (line.getHeight() * 0.14f, line.getHeight() * 0.06f);
+        auto bar = inner.removeFromBottom (juce::jmax (2.0f, inner.getHeight() * 0.16f));
+        inner.removeFromBottom (inner.getHeight() * 0.06f);
+        auto num = inner.removeFromLeft (inner.getHeight() * 1.25f);
+        g.setFont (monoFont (inner.getHeight() * 0.78f));
         g.setColour (on ? colour::displayText : colour::displayDim);
         g.drawText (juce::String (i + 1), num, juce::Justification::centredLeft);
-        auto text = inner.withHeight (inner.getHeight() * 0.6f);
-        g.setFont (labelFont (text.getHeight() * 0.72f));
+        g.setFont (labelFont (inner.getHeight() * 0.86f));
         if (! on)
         {
             g.setColour (colour::displayDim.withAlpha (0.6f));
-            g.drawText (juce::String::fromUTF8 ("\xe2\x80\x94"), text, juce::Justification::centredLeft);
+            g.drawText (juce::String::fromUTF8 ("\xe2\x80\x94"), inner, juce::Justification::centredLeft);
             continue;
         }
-        juce::String label = i18n::upper (sourceText (src));
-        if (via != mod::SrcOff) label << juce::String::fromUTF8 (" \xc3\x97 ") << i18n::upper (sourceText (via));
-        label << juce::String::fromUTF8 (" \xe2\x86\x92 ") << i18n::upper (targetText (core, part, dst));
+        juce::String label = sourceText (src);
+        if (via != mod::SrcOff) label << juce::String::fromUTF8 (" \xc3\x97 ") << sourceText (via);
+        label << juce::String::fromUTF8 (" \xe2\x86\x92 ") << targetText (core, part, dst);
         g.setColour (colour::displayText);
-        g.drawFittedText (label, text.toNearestInt(), juce::Justification::centredLeft, 1, 0.75f);
-        // amount (static) and the live value of the routing
-        auto bar = inner.withTop (inner.getY() + inner.getHeight() * 0.72f).withHeight (inner.getHeight() * 0.18f);
+        g.drawFittedText (label, inner.toNearestInt(), juce::Justification::centredLeft, 1, 0.8f);
+        // amount (static, from the centre) and the live value of the routing, under the text
+        bar = bar.withTrimmedLeft (num.getWidth());
         bipolarBar (g, bar, amt, colour::rose);
         const float live = juce::jlimit (-1.0f, 1.0f, m.uiRouteValue (i));
         const float x = bar.getCentreX() + live * bar.getWidth() * 0.5f;
         g.setColour (colour::displayText);
-        g.fillEllipse (juce::Rectangle<float> (bar.getHeight() * 1.6f, bar.getHeight() * 1.6f).withCentre ({ x, bar.getCentreY() }));
+        g.fillEllipse (juce::Rectangle<float> (bar.getHeight() * 2.0f, bar.getHeight() * 2.0f).withCentre ({ x, bar.getCentreY() }));
     }
 }
 
@@ -354,7 +355,7 @@ void paintSlotVisual (juce::Graphics& g, juce::Rectangle<float> area, Core& core
         g.drawLine (plot.getX(), plot.getCentreY(), plot.getRight(), plot.getCentreY(), 0.5f);
         curve (160, [&] (float t) {
             const float hz = 20.0f * std::pow (1000.0f, t);
-            return 0.5f + EqEffect::responseDb (v.data(), hz, 48000.0f) / 48.0f; // +-24 dB
+            return 0.5f + EqEffect::responseDb (v.data(), hz, 48000.0f) / 36.0f; // +-18 dB, the gain range
         });
         c = colour::sunYellow;
     }
@@ -455,5 +456,68 @@ Range modulationRange (Core& core, const std::string& paramId)
     r.live = juce::jlimit (0.0f, 1.0f, base + p.modulationOf (idx));
     r.liveValid = true;
     return r;
+}
+
+// ------------------------------------------------------------------------------------------------- names
+juce::String compactName (const std::string& id, const std::string& nameEn, const std::string& nameDe)
+{
+    juce::String name = i18n::pick (nameEn, nameDe);
+    const bool part = id.size() > 3 && id[0] == 'p' && id[1] >= '1' && id[1] <= '9' && id[2] == '.';
+    const std::string rest = part ? id.substr (3) : id;
+    const bool matrix = part && (rest.rfind ("mod.s", 0) == 0 || rest.rfind ("lfo2.", 0) == 0 || rest.rfind ("lfo3.", 0) == 0
+                                 || rest.rfind ("env3.", 0) == 0 || rest.rfind ("macro", 0) == 0 || rest == "seqlane");
+    const bool rack = (part && rest.rfind ("fx", 0) == 0) || id.rfind ("mfx", 0) == 0;
+    if (! matrix && ! rack) return name;
+
+    auto dropWord = [&name] (const juce::String& word) { // "word" + optional number + space
+        if (! name.startsWith (word)) return false;
+        auto r = name.substring (word.length());
+        int k = 0;
+        while (k < r.length() && juce::CharacterFunctions::isDigit (r[k])) ++k;
+        if (k == 0 || k >= r.length() || r[k] != ' ') return false;
+        name = r.substring (k + 1);
+        return true;
+    };
+    if (! dropWord ("Part ")) dropWord ("P");
+    if (matrix)
+    {
+        dropWord ("Mod ");
+        return name;
+    }
+    // rack: slot prefix ("FX3 ", "FX 3 ", "Master FX 1 ", "Master-FX 1 "), then the slot's own controls / the effect name
+    if (! dropWord ("Master FX ") && ! dropWord ("Master-FX ") && ! dropWord ("FX ")) dropWord ("FX");
+    std::vector<std::string> seg;
+    for (size_t a = 0, b; a <= id.size(); a = b + 1)
+    {
+        b = id.find ('.', a);
+        if (b == std::string::npos) b = id.size();
+        seg.push_back (id.substr (a, b - a));
+    }
+    const size_t slotEnd = part ? 2 : 1; // index of the first segment after the slot ("p1.fx3." / "mfx1.")
+    if (seg.size() == slotEnd + 1 && seg[slotEnd] == "type") return tr ("Type");
+    if (seg.size() <= slotEnd + 1) return name; // mix, bypass
+    for (int t = InsertSlot::Off + 1; t < InsertSlot::numTypes; ++t)
+    {
+        const auto info = InsertSlot::typeInfo (t);
+        if (info.id == nullptr || seg[slotEnd] != info.id) continue;
+        for (const juce::String eff : { juce::String (info.nameEn), juce::String::fromUTF8 (info.nameDe) })
+        {
+            if (! name.startsWith (eff) || name.length() <= eff.length() + 1) continue;
+            const auto sep = name[eff.length()];
+            if (sep != ' ' && sep != '-') continue;
+            auto shortName = name.substring (eff.length() + 1);
+            if (shortName == "Mix" || shortName == "Mischung") return name; // keep "Echo Mix" apart from the slot's mix
+            return shortName.substring (0, 1).toUpperCase() + shortName.substring (1);
+        }
+    }
+    return name;
+}
+
+juce::String specialValueText (Core& core, const std::string& id, float plain)
+{
+    if (id.size() < 12 || id[0] != 'p' || id.compare (id.size() - 4, 4, ".dst") != 0 || id.find (".mod.s") != 2) return {};
+    const int part = id[1] - '1';
+    if (part < 0 || part >= Core::numParts) return {};
+    return targetText (core, part, (int) std::lround (plain));
 }
 } // namespace ohpe::ui::modfx

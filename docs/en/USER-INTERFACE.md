@@ -114,6 +114,59 @@ tune, decay, tone (page 1), level, pan, choke group, source (page 2) and the kit
 note (page 3). **Load** puts an audio file on the selected pad (or drag a file onto a pad),
 **Clear** returns the pad to its factory sound.
 
+## Mod view (modulation matrix, 0.7)
+
+![Mod view](../images/ohpe-mod-view.png)
+
+In **LFO** mode the tabs on the display switch between **LFO** (LFO 1, as before) and **Mod**, the
+[modulation matrix](MODULATION.md) of the edit part. The Mod view lists all **16 routings** in two
+columns: source → target, a bar for the amount (to the right = positive, to the left = negative) and
+the routing's live value. Targets on an engine or an effect show the real parameter name ("Cutoff",
+"FX2 Hyper Detune"), so you see what moves without counting slots. Below the list a **trace** draws
+the value of the selected routing over the last three seconds.
+
+| Action | Result |
+|---|---|
+| Click a routing in the list | selects it; the encoders edit it |
+| **◀ Mod** / **Mod ▶** (soft keys) | previous / next routing |
+| **Clear** (soft key) | sets the selected routing back to Off (source, via, target, amount, curve) |
+| Page arrows | turn the encoder pages |
+
+Encoder pages of the Mod view: **source, via, target, amount** of the selected routing · **curve**
+and the **sequencer lane** · **macros 1–4** · **LFO 2** (rate, sync, shape, depth / mode, phase,
+fade) · **LFO 3** (the same) · **envelope 3** (delay, attack, hold, decay / sustain, release).
+Everything is in the pro view too (LFO tab).
+
+**Modulation rings.** Wherever a parameter is the target of a routing – on the encoders and on the
+display rows of any page – a thin second ring (encoder) or line above the bar (display row) shows
+the **reach** of all its routings around the set value, and a dot or tick shows the **live
+position** while notes play. Turn the encoder to move the centre; the reach moves with it.
+
+## FX rack views (0.7)
+
+![FX rack of a part](../images/ohpe-rack-view.png)
+
+In **Effects** mode the tabs switch between **Sends** (as before), **Rack** – the six slots of the
+edit part's [FX rack](TAPE-MIXER-FX.md#fx-rack-07) – and **Master**, the four slots of the master
+rack. The chain shows every slot as a block in signal order: effect name, mix bar, output level,
+**BYPASS** when bypassed; empty slots are dimmed. The selected slot is outlined, and the lower half of
+the display shows **what its effect does**: the transfer curve of the distortion, the response of the
+EQ and the filter, the static curve and live gain reduction of the compressor, the gain of each band
+of the multiband, the motion of the modulated effects.
+
+| Action | Result |
+|---|---|
+| Click a block | selects the slot; the encoders edit it |
+| Drag a block onto another one | moves the slot there (the others close up); undoable, part of the preset |
+| **◀ Move** / **Move ▶** (soft keys) | moves the selected slot one place earlier / later |
+| **Clear** (soft key) | empties the slot (type Off) |
+
+Encoder pages of a slot: **type, mix, bypass** · then the parameters of its effect, four per page.
+While an effect chosen for the first time is being prepared, the display says *Preparing effect…*
+(a moment; the slot passes the sound dry meanwhile).
+
+![Master rack](../images/ohpe-master-rack.png)
+
 ## Keys and shortcuts
 
 | Key | Action |

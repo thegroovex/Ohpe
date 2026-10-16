@@ -179,7 +179,11 @@ void InsertSlot::pullParams (const ParamSnapshot& s) noexcept
     auto& last = lastValue[(size_t) type];
     auto* e = effects[(size_t) type].get();
     for (size_t i = 0; i < idx.size(); ++i)
-        if (const float v = s[idx[i]]; idx[i] >= 0 && ! (v == last[i])) { last[i] = v; e->setParam ((int) i, v); }
+    {
+        if (idx[i] < 0) continue; // parameter not registered for this slot: keep the effect's default
+        const float v = s[idx[i]];
+        if (! (v == last[i])) { last[i] = v; e->setParam ((int) i, v); }
+    }
     if (mixIndex[(size_t) type] >= 0) wetMix = dsp::clamp01 (s[mixIndex[(size_t) type]]);
 }
 

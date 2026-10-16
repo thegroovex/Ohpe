@@ -585,8 +585,9 @@ void Display::paintRows (juce::Graphics& g)
         else
         {
             const auto& d = reg.descriptor (idx);
-            name = i18n::pick (d.nameEn, d.nameDe);
-            value = paramText (proc, id, norm);
+            name = modfx::compactName (d.id, d.nameEn, d.nameDe); // 0.7: "Source", not "Part 1 Mod 3 Source"
+            value = modfx::specialValueText (proc.core(), d.id, d.fromNormalised (norm));
+            if (value.isEmpty()) value = paramText (proc, id, norm);
         }
         auto textArea = row.withTrimmedLeft (row.getHeight() * 0.7f);
         g.setFont (monoFont (row.getHeight() * 0.4f));
