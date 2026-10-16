@@ -36,6 +36,10 @@ struct PageContext
     SeqView seqView = SeqView::Step;
     int tapeTrack = 0;    ///< 0..7
     int drumPad = 0;      ///< 0..23
+    int lfoView = 0;      ///< 0.7: LFO mode view (modfx::LfoView: LFO, Mod)
+    int fxView = 0;       ///< 0.7: Effects mode view (modfx::FxView: Sends, Rack, Master)
+    int modRouting = 0;   ///< 0.7: selected routing of the matrix, 0..15
+    int fxSlot = 0;       ///< 0.7: selected slot of the shown FX rack
 };
 
 /** Parameter IDs a mode puts on the encoders, four per page. Empty strings leave an encoder free. */

@@ -63,6 +63,7 @@ target_sources(ohpe_core PRIVATE sample/FactoryBank.cpp)
 # 0.7: FX rack (serial insert slots per part + master) and modulation matrix
 target_sources(ohpe_core PRIVATE
     fx/FxRack.cpp
+    fx/RackEffects.cpp
     mod/ModMatrix.cpp)
 
 # 0.7: Mid/Side stereo effect (FX rack type)

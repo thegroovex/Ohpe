@@ -90,7 +90,7 @@ Stehen alle neuen Regler auf ihrem Standard, klingt der Mixer bit-genau wie in 0
 
 ## FX-Slot des Parts
 
-`p1.fx.type`: Aus, Chorus, Phaser, Bitcrusher, Filter-Drive, Delay, Hall, Mitte/Seite (0.7) – ein Insert-Effekt
+`p1.fx.type`: Aus, Chorus, Phaser, Bitcrusher, Filter-Drive, Delay, Hall, Hyper, Verzerrung, Flanger, Kompressor, Multiband, EQ, Filter, Echo, Raum (0.7), Mitte/Seite (0.7) – ein Insert-Effekt
 zwischen Part 1 und Mixer (und vor dem Band, wenn eine Spur Part 1 aufnimmt). Jeder Effekt
 behält seine eigenen Parameter (`p1.fx.chorus.rate` …); Chorus, Phaser, Bitcrusher und
 Filter-Drive haben einen eigenen Mischungsregler, Delay und Hall bekommen ihn vom Slot
@@ -130,7 +130,7 @@ Jeder Part hat ein **FX-Rack mit sechs Slots in Reihe**, der Master eines mit vi
 
 ### Mitte/Seite-Stereo (0.7)
 
-**Mitte/Seite** (Typ 7, an die Typenliste angehängt) bearbeitet das Stereobild. Der Effekt steht in
+**Mitte/Seite** (Typ 16, nach den neun 0.7-Rack-Typen an die Typenliste angehängt) bearbeitet das Stereobild. Der Effekt steht in
 jedem Slot jedes Racks zur Wahl – den sechs Slots jedes Parts und den vier Master-Slots – mit einem
 eigenen Parameterblock pro Slot (`p1.fx.midside.width`, `p2.fx4.midside.width`, `mfx1.midside.width` …).
 Er zerlegt das Signal in Mitte M = (L + R) / 2 und Seite S = (L − R) / 2, formt beide und setzt sie

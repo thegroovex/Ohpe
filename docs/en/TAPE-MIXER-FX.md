@@ -87,7 +87,7 @@ With every new control at its default the mixer is bit-identical to 0.1.
 
 ## FX slot of the part
 
-`p1.fx.type`: Off, Chorus, Phaser, Bitcrush, Filter Drive, Delay, Reverb, Mid/Side (0.7) – an insert effect
+`p1.fx.type`: Off, Chorus, Phaser, Bitcrush, Filter Drive, Delay, Reverb, Hyper, Distortion, Flanger, Compressor, Multiband, EQ, Filter, Echo, Hall (0.7), Mid/Side (0.7) – an insert effect
 between part 1 and the mixer (and in front of the tape when a track records part 1). Each
 effect keeps its own parameters (`p1.fx.chorus.rate` …); chorus, phaser, bitcrush and filter
 drive have their own mix control, delay and reverb get one from the slot
@@ -123,7 +123,7 @@ Every part has an **FX rack of six serial slots**, the master a rack of four:
 
 ### Mid/Side stereo (0.7)
 
-**Mid/Side** (type 7, appended to the type list) works on the stereo image. It is available in every
+**Mid/Side** (type 16, appended to the type list after the nine 0.7 rack types) works on the stereo image. It is available in every
 slot of every rack – the six slots of each part and the four master slots – with its own parameter
 block per slot (`p1.fx.midside.width`, `p2.fx4.midside.width`, `mfx1.midside.width` …). It splits the
 signal into mid M = (L + R) / 2 and side S = (L − R) / 2, shapes both and puts them back together:

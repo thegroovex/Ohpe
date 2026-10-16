@@ -327,7 +327,15 @@ CC 5 sets the glide time of the part on that channel.
 
 Appended after `mix.master.lowpass`. Guides: FX rack [English](en/TAPE-MIXER-FX.md) ·
 [Deutsch](de/BAND-MISCHER-FX.md), modulation matrix [English](en/MODULATION.md) · [Deutsch](de/MODULATION.md).
-Order of the block:
+Order of the block (registry indices; 1151 parameters, 946–2096):
+
+| Range | Block |
+|---|---|
+| 946–1082 | part 1 rack: slots 2–6, then mix / bypass of slots 1–6 |
+| 1083–1244, 1245–1406, 1407–1568 | part 2, 3, 4 rack: slot 1 (`pN.fx.*`), slots 2–6, mix / bypass |
+| 1569–1676 | master rack `mfx1` … `mfx4` |
+| 1677–1781, 1782–1886, 1887–1991, 1992–2096 | modulation matrix of part 1, 2, 3, 4 (105 each) |
+
 
 1. **Part racks** – for part 1, then 2, 3, 4: slot 1 (`pN.fx.type` + the 0.2 type blocks; parts 2–4 only, part 1
    has it since 0.2), slots 2–6 (`pN.fx2.type` … `pN.fx6.*`, each the type + the 0.2 type blocks in the order of
@@ -370,9 +378,9 @@ volume glides over one block instead of jumping.
 
 ## 0.7 – Mid/Side stereo effect
 
-Appended after the modulation block of part 4 (`p4.seqlane`). Guide: [English](en/TAPE-MIXER-FX.md#midside-stereo-07) ·
-[Deutsch](de/BAND-MISCHER-FX.md#mitteseite-stereo-07). The FX type list gains **Mid/Side** (DE: Mitte/Seite) at index 7
-(append-only list) in every rack slot. Its block of 10 parameters is registered for every slot, in rack order: part 1
+Appended after the blocks of the nine 0.7 rack effect types (Hyper … Hall, last ID `mfx4.hall.mix`). Guide: [English](en/TAPE-MIXER-FX.md#midside-stereo-07) ·
+[Deutsch](de/BAND-MISCHER-FX.md#mitteseite-stereo-07). The FX type list gains **Mid/Side** (DE: Mitte/Seite) at index 16
+(append-only list, after Hall at 15) in every rack slot. Its block of 10 parameters is registered for every slot, in rack order: part 1
 slots 1–6 (`p1.fx.midside.*`, `p1.fx2.midside.*` … `p1.fx6.midside.*`), then parts 2, 3, 4, then the master slots
 `mfx1.midside.*` … `mfx4.midside.*` – 28 slots × 10 = 280 parameters. Host names carry the slot prefix like the other
 rack blocks ("P2 FX3 Stereo Width", "Master FX 1 Stereo Width").

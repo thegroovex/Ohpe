@@ -5,6 +5,7 @@
 #include "Delay.h"
 #include "InsertEffects.h"
 #include "MidSide.h"
+#include "RackEffects.h"
 #include "Reverb.h"
 
 #include <algorithm>
@@ -23,6 +24,15 @@ std::unique_ptr<IEffect> InsertSlot::create (int t)
         case FilterDrive: return std::make_unique<FilterDriveEffect>();
         case Delay: return std::make_unique<DelayEffect>();
         case Reverb: return std::make_unique<ReverbEffect>();
+        case Hyper: return std::make_unique<HyperEffect>();
+        case Distortion: return std::make_unique<DistortionEffect>();
+        case Flanger: return std::make_unique<FlangerRackEffect>();
+        case Compressor: return std::make_unique<CompressorEffect>();
+        case Multiband: return std::make_unique<MultibandEffect>();
+        case Eq: return std::make_unique<EqEffect>();
+        case Filter: return std::make_unique<FilterRackEffect>();
+        case Echo: return std::make_unique<EchoEffect>();
+        case Hall: return std::make_unique<HallEffect>();
         case MidSide: return std::make_unique<MidSideEffect>();
         default: return nullptr;
     }
@@ -34,8 +44,18 @@ InsertSlot::InsertSlot()
     mixIndex.fill (-1);
 }
 
-std::vector<std::string> InsertSlot::typeNamesEn() { return { "Off", "Chorus", "Phaser", "Bitcrush", "Filter Drive", "Delay", "Reverb", "Mid/Side" }; }
-std::vector<std::string> InsertSlot::typeNamesDe() { return { "Aus", "Chorus", "Phaser", "Bitcrusher", "Filter-Drive", "Delay", "Hall", "Mitte/Seite" }; }
+// English names: the UI derives a type's parameter block from them only for the 0.2 types; every type's block ID is
+// its EffectInfo::id. Append-only.
+std::vector<std::string> InsertSlot::typeNamesEn()
+{
+    return { "Off", "Chorus", "Phaser", "Bitcrush", "Filter Drive", "Delay", "Reverb",
+             "Hyper", "Distortion", "Flanger", "Compressor", "Multiband", "EQ", "Filter", "Echo", "Hall", "Mid/Side" };
+}
+std::vector<std::string> InsertSlot::typeNamesDe()
+{
+    return { "Aus", "Chorus", "Phaser", "Bitcrusher", "Filter-Drive", "Delay", "Hall",
+             "Hyper", "Verzerrung", "Flanger", "Kompressor", "Multiband", "EQ", "Filter", "Echo", "Raum", "Mitte/Seite" };
+}
 
 EffectInfo InsertSlot::typeInfo (int t)
 {
@@ -153,8 +173,22 @@ void InsertSlot::pullParams (const ParamSnapshot& s) noexcept
     auto& last = lastValue[(size_t) type];
     auto* e = effects[(size_t) type].get();
     for (size_t i = 0; i < idx.size(); ++i)
-        if (const float v = s[idx[i]]; idx[i] >= 0 && ! (v == last[i])) { last[i] = v; e->setParam ((int) i, v); }
+    {
+        if (idx[i] < 0) continue; // parameter not registered for this slot: keep the effect's default
+        const float v = s[idx[i]];
+        if (! (v == last[i])) { last[i] = v; e->setParam ((int) i, v); }
+    }
     if (mixIndex[(size_t) type] >= 0) wetMix = dsp::clamp01 (s[mixIndex[(size_t) type]]);
+}
+
+void InsertSlot::setTempo (double bpm) noexcept
+{
+    if (auto* e = effect (type)) e->setTempo (bpm);
+}
+
+void InsertSlot::noteOn() noexcept
+{
+    if (auto* e = effect (type)) e->noteOn();
 }
 
 void InsertSlot::process (float* l, float* r, int n) noexcept

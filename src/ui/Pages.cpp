@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Pages.h"
 
+#include "ModFxViews.h"
+
 #include <cmath>
 
 #include <algorithm>
@@ -33,25 +35,12 @@ Ids padded (Ids ids)
 std::string partPrefix (int part) { return "p" + std::to_string (juce::jlimit (0, Core::numParts - 1, part) + 1) + "."; }
 
 /** FX slot parameters of the selected slot type of a part ("pN.fx.type" + that effect's block). */
-Ids fxSlotParams (Core& core, int part)
+Ids fxSlotParams (const Core& core, int part)
 {
     const auto p = partPrefix (part);
-    const auto& reg = core.params();
-    const int typeIdx = reg.indexOf (p + "fx.type");
-    if (typeIdx < 0) return {};
+    if (core.params().indexOf (p + "fx.type") < 0) return {};
     Ids ids { p + "fx.type" };
-    const auto& d = reg.descriptor (typeIdx);
-    const int t = (int) std::lround (reg.get (typeIdx));
-    if (t > 0 && t < (int) d.choices.size())
-    {
-        // the block's ID segment is the effect's ID ("filterdrive", "midside")
-        std::string seg;
-        if (auto* e = core.insertFx (juce::jlimit (0, Core::numParts - 1, part)).effect (t)) seg = e->info().id;
-        else
-            for (char c : d.choices[(size_t) t])
-                if (std::isalnum ((unsigned char) c)) seg += (char) std::tolower ((unsigned char) c);
-        for (const auto& id : withPrefix (core, p + "fx." + seg + ".")) ids.push_back (id);
-    }
+    for (const auto& id : modfx::slotEffectParams (core, p + "fx.")) ids.push_back (id); // 0.7: the block of the type's effect ID
     return ids;
 }
 
@@ -123,6 +112,7 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             return { p + "amp.a", p + "amp.d", p + "amp.s", p + "amp.r", p + "mod.a", p + "mod.d", p + "mod.s", p + "mod.r",
                      p + "mod.amt", p + "velsens", p + "glide", p + "voices", p + "polyglide", "", "", "" };
         case Mode::Lfo:
+            if (ctx.lfoView == modfx::LfoViewMod) return modfx::modParams (core, partIndex, ctx.modRouting); // 0.7
             return { p + "lfo.rate", p + "lfo.depth", p + "lfo.shape", p + "lfo.dest", p + "tune", p + "fine", p + "bend", p + "vol",
                      p + "midich", p + "quant", p + "chord", "key.root", "key.scale", p + "mpe", p + "mpe.bend", p + "mpe.press",
                      p + "mpe.timbre", "", "", "" };
@@ -137,6 +127,8 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
         }
         case Mode::Effects:
         {
+            if (ctx.fxView != modfx::FxViewSends) // 0.7: the part's FX rack / the master rack
+                return modfx::rackParams (core, modfx::rackPrefixes (ctx.fxView, partIndex), ctx.fxSlot);
             Ids ids { "fxa.delay.time", "fxa.delay.sync", "fxa.delay.feedback", "fxa.delay.tone",
                       "fxb.reverb.size", "fxb.reverb.damping", "fxb.reverb.predelay", "mix.returnb",
                       "fxa.delay.pingpong", "", "", "" };
@@ -199,7 +191,10 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
     {
         case Mode::Synth: t = { "Macros" }; break;
         case Mode::Envelope: t = { "Amp Envelope", "Mod Envelope", "Voice" }; break;
-        case Mode::Lfo: t = { "LFO", "Pitch & Level", "MIDI & Key", "Scale & MPE", "MPE" }; break;
+        case Mode::Lfo:
+            t = ctx.lfoView == modfx::LfoViewMod ? modfx::modTitles (core, ctx.part, ctx.modRouting)
+                                                 : std::vector<std::string> { "LFO", "Pitch & Level", "MIDI & Key", "Scale & MPE", "MPE" };
+            break;
         case Mode::Mixer: t = { "Channel", "EQ & Output", "Source & Dynamics", "Master", "Master Compressor", "Master Output", "Master Filter" }; break;
         case Mode::Effects: t = { "Delay (Send A)", "Reverb (Send B)", "Delay (Send A)", "FX Slot" }; break;
         case Mode::Sequencer:
@@ -223,8 +218,11 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
         for (size_t i = 1; i < t.size(); ++i) t[i] = "Engine";
         if (t.size() >= 3) { t[t.size() - 2] = "Glide"; t[t.size() - 1] = "Pitch Envelope"; } // 0.6
     }
-    if (m == Mode::Effects)
+    if (m == Mode::Effects && ctx.fxView != modfx::FxViewSends)
+        t = modfx::rackTitles (core, modfx::rackPrefixes (ctx.fxView, ctx.part), ctx.fxSlot);
+    else if (m == Mode::Effects)
         for (size_t i = 4; i < t.size(); ++i) t[i] = "FX Slot";
+    while (t.size() < (size_t) pages) t.push_back (t.empty() ? std::string() : t.back());
     t.resize ((size_t) pages);
     return t;
 }
@@ -311,7 +309,48 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
             if (! macros.ids.empty()) groups.push_back (macros);
             if (! engine.ids.empty()) groups.push_back (engine);
             addPages (Mode::Envelope, ctx);
-            addPages (Mode::Lfo, ctx);
+            auto lfo = ctx;
+            lfo.lfoView = modfx::LfoViewLfo;
+            addPages (Mode::Lfo, lfo);
+            return groups;
+        }
+        case Mode::Lfo:
+        {
+            // 0.7: LFO pages, then the modulation matrix: macros, LFO 2 / 3, envelope 3, every routing
+            auto c = ctx;
+            c.lfoView = modfx::LfoViewLfo;
+            addPages (Mode::Lfo, c);
+            const std::string p = core.part (juce::jlimit (0, Core::numParts - 1, ctx.part)).prefix();
+            groups.push_back ({ "Macros", 0, { p + "macro1", p + "macro2", p + "macro3", p + "macro4", p + "seqlane" } });
+            for (const char* l : { "lfo2.", "lfo3." })
+                groups.push_back ({ l[3] == '2' ? "LFO 2" : "LFO 3", 0,
+                                    { p + l + "rate", p + l + "sync", p + l + "shape", p + l + "depth", p + l + "mode", p + l + "phase", p + l + "fade" } });
+            groups.push_back ({ "Env 3", 0, { p + "env3.delay", p + "env3.a", p + "env3.hold", p + "env3.d", p + "env3.s", p + "env3.r" } });
+            for (int k = 1; k <= mod::numSlots; ++k)
+            {
+                const auto r = p + "mod.s" + std::to_string (k) + ".";
+                groups.push_back ({ "Mod", k, { r + "src", r + "via", r + "dst", r + "amt", r + "curve" } });
+            }
+            return groups;
+        }
+        case Mode::Effects:
+        {
+            // 0.7: sends, then every slot of the part's rack and of the master rack (type, mix, bypass, effect)
+            auto c = ctx;
+            c.fxView = modfx::FxViewSends;
+            const auto ids = modeParams (Mode::Effects, core, c);
+            groups.push_back ({ "Delay (Send A)", 0, { ids[0], ids[1], ids[2], ids[3], ids[8] } });
+            groups.push_back ({ "Reverb (Send B)", 0, { ids[4], ids[5], ids[6], ids[7] } });
+            const auto addRack = [&] (const std::vector<std::string>& prefixes, const char* title) {
+                for (size_t s = 0; s < prefixes.size(); ++s)
+                {
+                    ParamGroup g { title, (int) s + 1, { prefixes[s] + "type", prefixes[s] + "mix", prefixes[s] + "bypass" } };
+                    for (const auto& id : modfx::slotEffectParams (core, prefixes[s])) g.ids.push_back (id);
+                    groups.push_back (std::move (g));
+                }
+            };
+            addRack (modfx::rackPrefixes (modfx::FxViewRack, ctx.part), "FX");
+            addRack (modfx::rackPrefixes (modfx::FxViewMaster, ctx.part), "Master FX");
             return groups;
         }
         default: addPages (m, ctx); return groups;

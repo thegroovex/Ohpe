@@ -89,11 +89,10 @@ TEST_CASE ("real-time: no allocation in Core::process with FX racks and the modu
     Core core;
     core.prepare (48000.0, 512);
     auto& p = core.params();
-    const int types[6] = { 1, 2, 3, 4, 5, 6 };
     for (int part = 1; part <= 4; ++part)
     {
         const auto pp = "p" + std::to_string (part) + ".";
-        for (int s = 0; s < 6; ++s) p.set (FxRack::partSlotPrefix (pp, s) + "type", (float) types[(s + part) % 6]);
+        for (int s = 0; s < 6; ++s) p.set (FxRack::partSlotPrefix (pp, s) + "type", (float) (1 + (s * 4 + part) % (InsertSlot::numTypes - 1)));
         p.set (pp + "fx3.mix", 0.5f);
         for (int k = 1; k <= 16; ++k)
         {

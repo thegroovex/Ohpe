@@ -26,7 +26,8 @@ enum class ParamUnit
     Seconds,
     Semitones,
     Cents,
-    Bpm
+    Bpm,
+    Milliseconds ///< 0.7 (rack effects): plain value in ms
 };
 
 /**

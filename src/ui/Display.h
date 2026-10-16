@@ -54,7 +54,12 @@ public:
 
     void setMode (Mode m, int page, int numPagesInMode, const std::vector<juce::String>& encoderIds, const juce::String& pageTitle = {});
     void setVirtuals (const std::array<VirtualPtr, 4>& v) { virtuals = v; repaint(); }
-    void setContext (const PageContext& c) { ctx = c; repaint(); }
+    void setContext (const PageContext& c)
+    {
+        if (c.modRouting != ctx.modRouting || c.part != ctx.part) modHistory.clear(); // 0.7
+        ctx = c;
+        repaint();
+    }
     void setMixerChannel (int ch) { ctx.mixerChannel = ch; repaint(); }
     void setStepPage (int p) { stepPage = p; repaint(); }
     void setLockStep (int step) { lockStep = step; repaint(); } ///< -1 = no step selected
@@ -73,6 +78,10 @@ public:
     std::function<void (int pad)> onPadClicked;
     std::function<void (int id)> onSoftKey;
     std::function<void()> onLockBadgeClicked;
+    std::function<void (int view)> onViewTabClicked;     ///< 0.7: LFO / Effects mode view tabs
+    std::function<void (int routing)> onModRoutingClicked; ///< 0.7: a line of the routing list
+    std::function<void (int slot)> onFxSlotClicked;      ///< 0.7: a block of the FX chain
+    std::function<void (int from, int to)> onFxSlotMoved; ///< 0.7: a block dropped on another one
 
     void paint (juce::Graphics& g) override;
     void resized() override;
@@ -105,6 +114,13 @@ private:
     juce::Rectangle<float> softKeyRow() const;
     bool hasSoftKeys() const noexcept { return ! softKeys.empty(); }
 
+    int numViewTabs() const noexcept;
+    juce::String viewTabName (int v) const;
+    int selectedViewTab() const noexcept;
+    bool showsModView() const noexcept;
+    bool showsRackView() const noexcept;
+    juce::Rectangle<float> visualArea() const; ///< 0.7: left of the rows (routing list / FX chain)
+    FxRack& shownRack() const;
     void paintRows (juce::Graphics& g);
     void paintStrip (juce::Graphics& g, juce::Rectangle<float> area);
     void paintStepStrip (juce::Graphics& g, juce::Rectangle<float> area);
@@ -135,6 +151,8 @@ private:
     float time = 0.0f, energy = 0.0f;
 
     int dragRow = -1;
+    int dragSlot = -1;              ///< 0.7: FX block being dragged
+    std::vector<float> modHistory;  ///< 0.7: recent values of the selected routing
     BarDrag drag;
 
     // 0.7: visuals and depth

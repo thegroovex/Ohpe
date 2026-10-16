@@ -421,6 +421,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
 
         SourceBuffers src;
         const double chunkPpq = tr.ppqAtBlockStart + (double) pos * tr.bpm / 60.0 / sr;
+        masterRack.setTempo (tr.bpm > 0.0 ? tr.bpm : 120.0);
         for (int p = 0; p < numParts; ++p)
         {
             parts[(size_t) p]->setTransport (tr.bpm, chunkPpq, tr.playing); // 0.7: tempo-synced LFOs
