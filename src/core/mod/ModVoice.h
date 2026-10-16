@@ -37,6 +37,7 @@ enum Dest
     DstFx1Mix, // ... FX 1-6 mix
     DstFx1Param1 = DstFx1Mix + 6, // ... FX slot k parameter j: DstFx1Param1 + 4 * (k - 1) + (j - 1)
     DstAzimuth = DstFx1Param1 + 24, DstElevation, DstDistance, DstPathRate, DstPathPhase, // reserved: 3D spatialiser (1.0)
+    DstLife, // p15: the part's life amount ("pN.life")
     DstMorphX, DstMorphY, // p16: the morph pad's position ("pN.morph.x" / "pN.morph.y")
     numDests
 };

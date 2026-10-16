@@ -5,6 +5,8 @@
 #include "../dsp/Envelope.h"
 #include "../model/ParamDescriptor.h"
 
+#include <cstdint>
+
 #include <vector>
 
 namespace ohpe
@@ -53,6 +55,11 @@ struct VoiceCommon
     const mod::VoiceProgram* modProgram = nullptr; ///< 0.7: per-voice routings of the modulation matrix (owned by the part)
     float exprSmooth = 0.0f;    ///< 0.8: seconds the per-note expression (pressure, timbre) glides to new values (0 = at once)
     float exprSlide = 0.0f;     ///< 0.8: seconds per-note pitch bends glide (at least 2 ms: no zipper steps)
+    /** p15 "Life": 0 = static (the voices sound exactly as without it) .. 1 = most alive. Every voice drifts on its
+        own: pitch, filter / brightness breathing, engine colour (wavetable position, FM index, formant), grain
+        scatter, a little pan and level. Followed by every voice over ~60 ms, so turning it never steps. */
+    float life = 0.0f;
+    uint32_t lifeSeed = 0;      ///< p15: per part (and layer) seed of the voices' life motion (deterministic)
 };
 
 /**

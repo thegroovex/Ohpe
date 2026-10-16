@@ -93,12 +93,12 @@ float maxStep (const std::vector<float>& v, size_t from)
 }
 } // namespace
 
-TEST_CASE ("p16 morph: parameters appended after the wheels; matrix sources and targets")
+TEST_CASE ("p16 morph: parameters appended after the life block; matrix sources and targets")
 {
     auto owner = std::make_unique<Core>();
     Core& core = *owner;
     const auto& reg = core.params();
-    CHECK (reg.indexOf ("perf.mod") + 1 == reg.indexOf ("p1.morph.on"));
+    CHECK (reg.indexOf ("p4.life") + 1 == reg.indexOf ("p1.morph.on")); // after the p15 life block
     const char* names[] = { "on", "x", "y", "glide", "xsrc", "ysrc" };
     int expect = reg.indexOf ("p1.morph.on");
     for (int p = 1; p <= 4; ++p)

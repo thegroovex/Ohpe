@@ -42,6 +42,7 @@
     "fx2.reverb.damping": 0.45,
     "fx2.reverb.predelay": 0.03,
     "fx2.reverb.mix": 0.3,
-    "gain": 8.8
+    "gain": 8.8,
+    "life": 0.25
   }
 }

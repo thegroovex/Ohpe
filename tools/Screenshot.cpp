@@ -124,6 +124,7 @@ int main (int argc, char* argv[])
         p.parameter ("p1.analog.reso")->setValueNotifyingHost (0.45f);
         e.selectEngine (EngineType::Analog);
         e.displayComponent().setAnimatedVisuals (true);
+        setPlain (p, "p1.life", 0.35f); // p15: the LIFE bar lit (and shimmering: the chord plays)
         playAnimated (p, e, 2, { 60 });
         playAnimated (p, e, 2, { 64 });
         playAnimated (p, e, 30, { 67 });
@@ -139,6 +140,11 @@ int main (int argc, char* argv[])
             const auto bed = OhpeEditor::designArea ("keyboardBed").expanded (8.0f).toNearestInt();
             save (e, dir.getChildFile ("ohpe-keyboard-row" + suffix + ".png"), 2.0f, bed);
         }
+        {   // p15: the engine column with the LIFE bar at its foot, 2x
+            const auto col = OhpeEditor::designArea ("engineColumn").expanded (8.0f).toNearestInt();
+            save (e, dir.getChildFile ("ohpe-life" + suffix + ".png"), 2.0f, col);
+        }
+        setPlain (p, "p1.life", 0.0f);
         if (auto* q = p.parameter ("perf.mod")) q->setValueNotifyingHost (0.0f);
 
         release (p, { 60, 64, 67 });

@@ -49,6 +49,8 @@ target_sources(ohpe_core_tests PRIVATE Revision05Tests.cpp)
 target_sources(ohpe_core_tests PRIVATE Revision06Tests.cpp)
 # 0.8 (sound revision 3): new insert effects, FX slots 2 / 3, layer engine, unison stack, keyboard instruments
 target_sources(ohpe_core_tests PRIVATE Revision08Tests.cpp)
+# p15: life per part (drift, chaos LFOs, grain scatter, filter breathing)
+target_sources(ohpe_core_tests PRIVATE LifeTests.cpp)
 target_include_directories(ohpe_core_tests PRIVATE ${CMAKE_SOURCE_DIR}/tools)
 target_compile_definitions(ohpe_core_tests PRIVATE OHPE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 

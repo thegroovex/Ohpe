@@ -63,7 +63,7 @@ D = x (1 − y); together always 100 %).
 | The pad (drag) | `pN.morph.x`, `pN.morph.y` – host-automatable, **MIDI-learnable** (right-click the pad or an encoder) |
 | Encoders (page *Morph*) | Morph on, X, Y, Glide |
 | **X Control / Y Control** (page *Control*) | Off, Pressure (channel or MPE pressure), Slide (MPE / CC 74, centre = 0, ±half the pad), Mod Wheel – added to X / Y |
-| Modulation matrix | targets **Morph X**, **Morph Y** (72, 73): any source moves the pad, e.g. LFO 2 → Morph X for an evolving sound |
+| Modulation matrix | targets **Morph X**, **Morph Y** (73, 74): any source moves the pad, e.g. LFO 2 → Morph X for an evolving sound |
 | Glide | `pN.morph.glide` 0 … 2 s – the position follows every change smoothly (also stepped MIDI CCs) |
 
 The glided position is also a **matrix source**: **Morph X**, **Morph Y** (21, 22, 0 … 1), so the pad can drive

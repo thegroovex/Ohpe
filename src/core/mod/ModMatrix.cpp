@@ -81,6 +81,7 @@ const std::vector<DestInfo>& destTable()
         add ("distance", "Distance", "Entfernung", DestKind::PartParam, 0, "space.distance");
         add ("pathrate", "Motion Path Rate", "Bewegungspfad Tempo", DestKind::PartParam, 0, "space.pathrate");
         add ("pathphase", "Motion Path Phase", "Bewegungspfad Phase", DestKind::PartParam, 0, "space.pathphase");
+        add ("life", "Life", "Leben", DestKind::PartParam, 0, "life"); // p15
         // p16: the morph pad's position
         add ("morphx", "Morph X", "Morph X", DestKind::PartParam, 0, "morph.x");
         add ("morphy", "Morph Y", "Morph Y", DestKind::PartParam, 0, "morph.y");

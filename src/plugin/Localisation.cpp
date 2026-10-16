@@ -395,6 +395,10 @@ const std::map<juce::String, juce::String>& table()
         { "Mod wheel (modulation matrix source); right-click: MIDI learn", "Mod-Rad (Quelle der Modulationsmatrix); Rechtsklick: MIDI Learn" },
         { "Glide mode of the edit part: Auto, Legato or Always", "Glide-Modus des bearbeiteten Parts: Auto, Legato oder Immer" },
         { "Glide time of the edit part", "Glide-Zeit des bearbeiteten Parts" },
+        // p15: life
+        { "Life", "Leben" },
+        { "Life of the edit part: 0 = static; more = held notes keep evolving (drift, breathing filter, grain scatter). Right-click: MIDI learn",
+          "Leben des bearbeiteten Parts: 0 = statisch; mehr = gehaltene Töne entwickeln sich weiter (Drift, atmender Filter, Grain-Streuung). Rechtsklick: MIDI-Learn" },
         { "Octave -", "Oktave -" },
         { "Octave +", "Oktave +" },
         { "Keyboard one octave down", "Tastatur eine Oktave tiefer" },

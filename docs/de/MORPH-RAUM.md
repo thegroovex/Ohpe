@@ -65,7 +65,7 @@ D = x (1 − y); zusammen immer 100 %).
 | Das Pad (ziehen) | `pN.morph.x`, `pN.morph.y` – automatisierbar, **MIDI-lernbar** (Rechtsklick auf das Pad oder einen Regler) |
 | Regler (Seite *Morph*) | Morph ein, X, Y, Gleiten |
 | **X-Steuerung / Y-Steuerung** (Seite *Steuerung*) | Aus, Druck (Kanal- oder MPE-Druck), Slide (MPE / CC 74, Mitte = 0, ± halbes Pad), Modulationsrad – zu X / Y addiert |
-| Modulationsmatrix | Ziele **Morph X**, **Morph Y** (72, 73): jede Quelle bewegt das Pad, z. B. LFO 2 → Morph X für einen sich entwickelnden Klang |
+| Modulationsmatrix | Ziele **Morph X**, **Morph Y** (73, 74): jede Quelle bewegt das Pad, z. B. LFO 2 → Morph X für einen sich entwickelnden Klang |
 | Gleiten | `pN.morph.glide` 0 … 2 s – die Position folgt jeder Änderung weich (auch gestuften MIDI-CCs) |
 
 Die geglättete Position ist auch eine **Quelle der Matrix**: **Morph X**, **Morph Y** (21, 22, 0 … 1) – so kann das

@@ -84,7 +84,8 @@ Verzögerung 0 … 4 s, Attack 1 ms … 10 s (linear), Halten 0 … 4 s, Decay 1
 | 37 – 42 | FX 1 – 6 Mischung | – | Mischung des FX-Rack-Slots |
 | 43 – 66 | FX 1 – 6 Parameter 1 – 4 | – | vier Parameter des Effekts im Slot (folgt dem Typ des Slots: die ersten vier eines 0.2-Typs, die *Mod 1–4* eines [Rack-Typs](BAND-MISCHER-FX.md#effekttypen-des-racks)) |
 | 67 – 71 | Azimut, Elevation, Entfernung, Bewegungspfad Tempo / Phase | – | 1.0: die 3D-Stufe des Parts `pN.space.*` ([RAUM.md](RAUM.md)), ganzer Bereich (Azimut ±180°, Elevation −60 … 90°, Entfernung 0,2 … 40 m logarithmisch, Tempo ×−4 … 4, Phase 0 … 360°); z. B. Slide → Elevation, Notendruck → Entfernung für MPE |
-| 72, 73 | Morph X, Morph Y | – | p16: die Position des [Morph-Pads](MORPH-RAUM.md) des Parts (`pN.morph.x` / `.y`), ganze Breite; z. B. LFO 2 → Morph X, Notendruck → Morph Y |
+| 72 | Leben | – | p15: der Leben-Anteil des Parts `pN.life` ([BEDIENUNG.md](BEDIENUNG.md#leben)), 0 … 100 %; z. B. Mod-Rad → Leben, um gehaltene Töne zu beleben, Notendruck → Leben für MPE |
+| 73, 74 | Morph X, Morph Y | – | p16: die Position des [Morph-Pads](MORPH-RAUM.md) des Parts (`pN.morph.x` / `.y`), ganze Breite; z. B. LFO 2 → Morph X, Notendruck → Morph Y |
 
 Ziele ab 5 bewegen einen **Parameter** um `Menge × Quelle` seines vollen Bereichs (normiert, ein
 Cutoff bewegt sich also in Oktaven): ein Wert für den Part, berechnet aus Part-Quellen – den frei

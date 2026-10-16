@@ -23,6 +23,7 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 OUT = os.path.join(ROOT, "resources", "presets", "factory")
 sys.path.insert(0, HERE)
 import factory_parts  # noqa: E402
+import factory_parts_life  # noqa: E402
 
 try:
     import factory_projects  # noqa: E402
@@ -76,6 +77,7 @@ def main():
         params = dict(p["params"])
         if "gain" not in params:
             params["gain"] = round(levels.get(p["name"], 0.0), 1)
+        factory_parts_life.apply(p["name"], params)  # p15: LIFE on a few pads / keys
         if p["name"] in guarded:
             assert add_peak_guard(params, guarded[p["name"]]), p["name"] + ": no free rack slot for the peak guard"
         p = dict(p, params=params)

@@ -353,7 +353,7 @@ Order of the block (registry indices; 1151 parameters, 946–2096):
 | `pN.fxK.bypass`, `mfxK.bypass` | … Bypass | … Bypass | off / on | off |
 | `pN.mod.sK.src` | Part *N* Mod *K* Source | Part *N* Mod *K* Quelle | Off, LFO 1, LFO 2, LFO 3, Amp Env, Mod Env, Env 3, Velocity, Key Track, Mod Wheel, Pitch Bend, Channel Pressure, Note Pressure, Slide (Timbre), Note Bend, Random, Macro 1–4, Seq Lane | Off |
 | `pN.mod.sK.via` | … Via | … Via | as the source | Off |
-| `pN.mod.sK.dst` | … Target | … Ziel | Off, Pitch, Level, Pan, Timbre, Engine 1–24, Volume, LFO 1–3 Rate / Depth, Mod Env Amount, FX 1–6 Mix, FX 1–6 Param 1–4, Azimuth, Elevation, Distance, Motion Path Rate, Motion Path Phase (the last five reserved) | Off |
+| `pN.mod.sK.dst` | … Target | … Ziel | Off, Pitch, Level, Pan, Timbre, Engine 1–24, Volume, LFO 1–3 Rate / Depth, Mod Env Amount, FX 1–6 Mix, FX 1–6 Param 1–4, Azimuth, Elevation, Distance, Motion Path Rate, Motion Path Phase, Life (p15) | Off |
 | `pN.mod.sK.amt` | … Amount | … Menge | −100 … +100 % | 0 |
 | `pN.mod.sK.curve` | … Curve | … Kurve | Linear, Exponential, Logarithmic, S-Curve, Steps | Linear |
 | `pN.lfo2.rate` | Part *N* LFO 2 Rate | Part *N* LFO 2 Tempo | 0.01 … 40 Hz | 1 Hz |
@@ -673,9 +673,27 @@ screen. Both are MIDI-learnable (right-click) and are not stored in presets.
 | `perf.bend` | Pitch Wheel | Pitch-Rad | -1 … +1 | 0 |
 | `perf.mod` | Mod Wheel | Mod-Rad | 0 … 1 | 0 |
 
+## Life per part (p15)
+
+Appended after the performance wheels (last ID `perf.mod`), one per part in part order. Guides:
+[English](en/USER-INTERFACE.md#life) · [Deutsch](de/BEDIENUNG.md#leben).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.life` (N = 1 … 4) | Part N Life | Part N Leben | 0 … 1 (0 – 100 %) | 0 |
+
+`pN.life` makes held notes keep evolving: every voice of the part gets its own slow pitch drift (at most about ±12 cents),
+free chaos LFOs at incommensurate rates, filter / brightness breathing, a little colour motion of the engine (wavetable
+position, FM index, formant, grain density), extra grain scatter (Grain engine) and a hint of pan and level motion
+(about ±0.25 dB). 0 = static: the sound is exactly the same as without the parameter. Each voice is seeded from its
+part, its voice slot, its note and its start count, so a render is repeatable. Changes are followed over about 60 ms
+(no steps). The value is part of part presets and projects and MIDI-learnable.
+
+The modulation matrix gains the target 72 **Life** (`pN.mod.sK.dst`, key `life`), which moves `pN.life` of the routing's part.
+
 ## Morph space (p16)
 
-Appended after the performance wheels (`perf.mod`), part by part (`p1.morph.*` … `p4.morph.*`, 24 IDs). Guides:
+Appended after the life block (`p4.life`), part by part (`p1.morph.*` … `p4.morph.*`, 24 IDs). Guides:
 [English](en/MORPH.md) · [Deutsch](de/MORPH-RAUM.md). The corners themselves are not parameters: they live in
 part presets (`"morph"` block) and in projects / the plug-in state (section `"morph"`).
 
@@ -689,4 +707,4 @@ part presets (`"morph"` block) and in projects / the plug-in state (section `"mo
 | `pN.morph.ysrc` | Part N Morph Y Control | Part N Morph Y Steuerung | Off, Pressure, Slide, Mod Wheel | Off |
 
 The modulation matrix gains the sources **Morph X / Morph Y** (21, 22) and the targets **Morph X / Morph Y**
-(72, 73); the source and target choice lists grow at their end.
+(73, 74); the source and target choice lists grow at their end.

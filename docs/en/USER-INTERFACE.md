@@ -2,7 +2,7 @@
 
 *English · Deutsch: [../de/BEDIENUNG.md](../de/BEDIENUNG.md)*
 
-Ohpe's surface (p14): engine keys (left), the display (centre), mode keys (right), four encoders below the
+Ohpe's surface (p14): engine keys with the **LIFE** bar (left), the display (centre), mode keys (right), four encoders below the
 display, the **TRANSPORT** keys with the tape readout (bottom left), the **OCTAVE** keys, **MIDI** and the keyboard readout (bottom right) and the
 keyboard row – **PITCH** and **MOD** wheels, a three-octave keyboard, **glide** mode and time. The header
 holds the **part selector**, the **preset strip**, the **LIBRARY** and **PRO** keys, **RANDOM** and **SAVE**,
@@ -24,6 +24,30 @@ and EN / DE. Every function can be reached with the mouse and – through MIDI l
 
 Both wheels are host parameters (*Pitch Wheel* `perf.bend`, *Mod Wheel* `perf.mod`): right-click for MIDI
 learn, Shift / Cmd / Ctrl for fine control. They are performance controls, not part of presets.
+
+## Life
+
+![LIFE at the foot of the engine column](../images/ohpe-life.png)
+
+**LIFE** (p15) at the foot of the engine column makes the edit part's held notes keep evolving, the way a
+played instrument never sounds exactly the same twice. At **0** the sound is static and exactly as without
+it; turn it up and every voice starts to move on its own:
+
+* a slow **pitch drift** of a few cents (at most about ±12 cents at 100 %; the voices of a chord drift apart),
+* **filter breathing** – the brightness rises and falls slowly (filter engines: cutoff; FM: index; Vocal: vowel; Pluck: tone),
+* **engine colour** – wavetable position and warp, FM index, formant, grain density wander a little,
+* **grain scatter** – the Grain engine's grains start at slightly scattered positions,
+* a hint of **pan** and **level** motion (about ±0.25 dB – breathing, never a jump).
+
+The motion comes from slow random drifts and free "chaos" LFOs at uneven rates, different for every voice
+(seeded per part, voice and note, so a bounce sounds the same every time). Around 15 – 35 % brings pads and
+keys to life without sounding detuned; higher values give lush, drifting textures. Changes glide over about
+60 ms, so you can ride it while notes hold.
+
+Drag the bar (Shift / Cmd / Ctrl = fine), double-click = 0, right-click = MIDI learn. While the part plays,
+the lit bar shimmers slowly – faster with more life; a fine light tick shows where the modulation matrix
+moves it (target **Life**, [MODULATION.md](MODULATION.md)). LIFE is also on the Envelope pages (after
+Poly Glide) and is part of part presets (`pN.life`, [PARAMETERS.md](../PARAMETERS.md#life-per-part-p15)).
 
 ## Light bars
 
