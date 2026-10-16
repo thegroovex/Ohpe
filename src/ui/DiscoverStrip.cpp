@@ -10,6 +10,7 @@
 #include "plugin/ParameterBridge.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstring>
 
@@ -29,13 +30,15 @@ void DiscoverStrip::setPart (int part, const std::vector<std::string>& soundIds)
     const int pt = juce::jlimit (0, Core::numParts - 1, part);
     if (pt != partIndex || soundIds != ids)
     {
-        if (pt != partIndex)
-        {
-            variants.clear();
-            sketches.clear();
-            history.clear();
-            auditionIndex = keptTile = -1;
-        }
+        // another part or another set of genes (engine change, other page): the tiles were siblings of a sound
+        // that no longer exists - drop them (the timeline only goes with the part)
+        if (pt != partIndex) history.clear();
+        variants.clear();
+        sketches.clear();
+        base = {};
+        varyFrom = {};
+        auditionIndex = keptTile = -1;
+        dropTile = pressTile = -1;
         partIndex = pt;
         ids = soundIds;
         repaint();
@@ -114,6 +117,7 @@ void DiscoverStrip::vary()
     base = currentSound();
     if (base.empty()) return;
     if (history.size() == 0 || history.at (history.current()) == nullptr || history.at (history.current())->distance (base) > 0.0f) history.push (base);
+    varyFrom = base;
     variants = discover::siblings (base, 6, strength, seed, maskFor (base));
     seed += 101u;
     sketches.clear();
@@ -189,27 +193,59 @@ void DiscoverStrip::restore (int state)
 
 std::vector<float> DiscoverStrip::sketch (const discover::Genome& g) const
 {
-    // a waveform sketch from what the genome says about level over time and brightness (not a render)
+    // a picture of the sibling, not a render: one waveform whose harmonics come from how its genes moved away from
+    // the sound VARY started from (each gene feeds one of six partials, by a hash of its ID), shaped by the amp
+    // envelope. Siblings that differ in other genes get visibly different waves.
     auto val = [&] (const char* tail, float def) {
         for (const auto& gene : g.genes)
             if (gene.id.size() > std::strlen (tail) && gene.id.compare (gene.id.size() - std::strlen (tail), std::strlen (tail), tail) == 0) return gene.value;
         return def;
     };
     const float a = val (".amp.a", 0.1f), d = val (".amp.d", 0.4f), s = val (".amp.s", 0.7f), r = val (".amp.r", 0.4f);
-    float bright = 0.0f, hard = 0.0f, nb = 0.0f, nh = 0.0f;
+    constexpr int numPartials = 6;
+    std::array<float, numPartials> amp {}, phase {};
+    float bright = 0.0f, nb = 0.0f;
     for (const auto& gene : g.genes)
     {
+        uint32_t h = 2166136261u;
+        for (char c : gene.id) h = (h ^ (uint8_t) c) * 16777619u;
+        const int j = varyFrom.indexOf (gene.id);
+        const float delta = j >= 0 ? gene.value - varyFrom.genes[(size_t) j].value : 0.0f;
+        const auto k = (size_t) (h % (uint32_t) numPartials);
+        amp[k] += delta;
+        phase[(size_t) ((h >> 8) % (uint32_t) numPartials)] += delta * 9.0f;
         const auto dot = gene.id.rfind ('.');
-        const auto w = character::engineWeights (dot == std::string::npos ? gene.id : gene.id.substr (dot + 1));
-        if (w.w[character::Bright] > 0.0f) { bright += gene.value; nb += 1.0f; }
-        if (w.w[character::Hard] > 0.0f) { hard += gene.value; nh += 1.0f; }
+        if (character::engineWeights (dot == std::string::npos ? gene.id : gene.id.substr (dot + 1)).w[character::Bright] > 0.0f)
+        {
+            bright += gene.value;
+            nb += 1.0f;
+        }
     }
     bright = nb > 0.0f ? bright / nb : 0.5f;
-    hard = nh > 0.0f ? hard / nh : 0.3f;
-    std::vector<float> out (48);
-    uint32_t h = 0x9E3779B9u;
-    for (const auto& gene : g.genes) h ^= (uint32_t) std::lround (gene.value * 977.0f) + 0x7F4A7C15u + (h << 6) + (h >> 2);
-    const float aEnd = 0.02f + 0.3f * a, dEnd = aEnd + 0.05f + 0.35f * d, relStart = 0.7f, relLen = 0.04f + 0.26f * r;
+    float peakDelta = 1.0e-4f;
+    for (auto v : amp) peakDelta = juce::jmax (peakDelta, std::abs (v));
+    // partial weights: a fundamental always, the others from the (normalised) moves; brightness tilts towards the top
+    std::array<float, numPartials> w {};
+    for (int k = 0; k < numPartials; ++k)
+    {
+        const float move = amp[(size_t) k] / peakDelta; // -1 .. 1
+        const float tilt = 1.0f / (1.0f + (float) k * (1.6f - 1.3f * bright));
+        w[(size_t) k] = k == 0 ? 1.0f : juce::jmax (0.0f, tilt * (0.15f + 0.85f * std::abs (move)));
+    }
+    std::vector<float> out (64);
+    const float aEnd = 0.02f + 0.3f * a, dEnd = aEnd + 0.05f + 0.35f * d, relStart = 0.72f, relLen = 0.04f + 0.24f * r;
+    const float cycles = 3.0f;
+    float norm = 0.0f;
+    std::vector<float> wave (out.size());
+    for (size_t i = 0; i < out.size(); ++i)
+    {
+        const float t = (float) i / (float) (out.size() - 1);
+        float y = 0.0f;
+        for (int k = 0; k < numPartials; ++k)
+            y += w[(size_t) k] * std::sin (juce::MathConstants<float>::twoPi * cycles * (float) (k + 1) * t + phase[(size_t) k]);
+        wave[i] = y;
+        norm = juce::jmax (norm, std::abs (y));
+    }
     for (size_t i = 0; i < out.size(); ++i)
     {
         const float t = (float) i / (float) (out.size() - 1);
@@ -218,10 +254,7 @@ std::vector<float> DiscoverStrip::sketch (const discover::Genome& g) const
         else if (t < dEnd) env = s + (1.0f - s) * std::exp (-4.0f * (t - aEnd) / (dEnd - aEnd));
         else if (t < relStart) env = s;
         else env = s * juce::jmax (0.0f, 1.0f - (t - relStart) / relLen);
-        h ^= h << 13; h ^= h >> 17; h ^= h << 5;
-        const float jitter = (float) (h % 1000u) / 1000.0f;
-        const float osc = 0.55f + 0.45f * std::abs (std::sin ((float) i * (0.6f + 2.4f * bright))) * (1.0f - 0.5f * hard) + 0.35f * hard * jitter;
-        out[i] = juce::jlimit (0.0f, 1.0f, env * juce::jmin (1.0f, osc));
+        out[i] = juce::jlimit (-1.0f, 1.0f, (0.15f + 0.85f * env) * wave[i] / juce::jmax (1.0e-4f, norm));
     }
     return out;
 }
@@ -387,14 +420,41 @@ void DiscoverStrip::paint (juce::Graphics& g)
         g.drawRoundedRectangle (a, u * 0.7f, t == dropTile ? u * 0.3f : 1.0f);
         if (! hasV) continue;
         const auto& sk = sketches[(size_t) t];
-        const auto inner = a.reduced (u * 0.8f, u * 1.4f);
-        const float bw = inner.getWidth() / (float) sk.size();
-        g.setColour (aud ? colour::display : colour::displayText.withAlpha (0.85f));
+        const auto ink = aud ? colour::display : colour::displayText;
+        // number (top left) and how far the sibling is from the start sound (dots, top right)
+        g.setColour (ink.withAlpha (0.75f));
+        g.setFont (labelFont (u * 1.05f));
+        g.drawText (juce::String (t + 1), a.reduced (u * 0.6f, u * 0.35f).withHeight (u * 1.2f), juce::Justification::centredLeft, false);
+        {
+            // relative to the farthest of the six: 1 = closest .. 3 = farthest
+            float far = 1.0e-6f;
+            for (const auto& v : variants) far = juce::jmax (far, varyFrom.empty() ? 0.0f : v.distance (varyFrom));
+            const float dist = varyFrom.empty() ? 0.0f : variants[(size_t) t].distance (varyFrom);
+            const int dots = juce::jlimit (1, 3, 1 + (int) std::lround (2.0f * dist / far));
+            for (int k = 0; k < 3; ++k)
+            {
+                const auto dc = juce::Rectangle<float> (u * 0.45f, u * 0.45f).withCentre ({ a.getRight() - u * (0.9f + 0.65f * (float) k), a.getY() + u * 0.95f });
+                if (k < dots) g.fillEllipse (dc);
+                else g.drawEllipse (dc, 0.8f);
+            }
+        }
+        const auto inner = a.reduced (u * 0.7f, u * 0.6f).withTrimmedTop (u * 1.2f).withTrimmedBottom (kept ? u * 1.1f : 0.0f);
+        juce::Path wave;
         for (size_t i = 0; i < sk.size(); ++i)
         {
-            const float hh = inner.getHeight() * 0.5f * sk[i];
-            g.fillRect (inner.getX() + bw * (float) i, inner.getCentreY() - hh, juce::jmax (1.0f, bw * 0.6f), hh * 2.0f + 0.5f);
+            const float x = inner.getX() + inner.getWidth() * (float) i / (float) (sk.size() - 1);
+            const float y = inner.getCentreY() - inner.getHeight() * 0.48f * sk[i];
+            if (i == 0) wave.startNewSubPath (x, y);
+            else wave.lineTo (x, y);
         }
+        juce::Path fill (wave);
+        fill.lineTo (inner.getRight(), inner.getCentreY());
+        fill.lineTo (inner.getX(), inner.getCentreY());
+        fill.closeSubPath();
+        g.setColour (ink.withAlpha (0.18f));
+        g.fillPath (fill);
+        g.setColour (ink.withAlpha (0.95f));
+        g.strokePath (wave, juce::PathStrokeType (juce::jmax (1.0f, u * 0.2f), juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         if (kept)
         {
             g.setColour (aud ? colour::display : colour::sunYellow);

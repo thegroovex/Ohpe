@@ -97,7 +97,8 @@ private:
     std::vector<std::string> ids;
     std::vector<discover::Genome> variants;
     std::vector<std::vector<float>> sketches;
-    discover::Genome base;   ///< the sound VARY started from (the audition returns to it)
+    discover::Genome base;   ///< the sound the audition returns to
+    discover::Genome varyFrom; ///< the sound the tiles are siblings of (their pictures show how they differ from it)
     int auditionIndex = -1, keptTile = -1;
     discover::Timeline history { 20 };
     float strength = 0.4f;

@@ -290,6 +290,19 @@ TEST_CASE ("pro view 2.0: Discover - VARY, audition, keep, cross, dice, locks, t
     CHECK (plain (f.p, "p2.char.bright") > 0.05f);
     strip.mouseDoubleClick (mouseEvent (strip, c, c));
     CHECK (std::abs (plain (f.p, "p2.char.bright")) < 0.01f);
+
+    // another engine = other genes: the tiles of the old sound are cleared, the timeline of the part stays
+    strip.vary();
+    REQUIRE (strip.numVariants() == 6);
+    const auto statesBefore = strip.timeline().size();
+    e.selectEngine (EngineType::FM);
+    e.advanceAnimation (1.0f / 30.0f);
+    CHECK (strip.numVariants() == 0);
+    CHECK (strip.auditioned() == -1);
+    CHECK (strip.timeline().size() == statesBefore);
+    strip.vary();
+    CHECK (strip.numVariants() == 6);
+    for (const auto& g : strip.variant (0)->genes) CHECK (g.id.find (".wavetable.") == std::string::npos);
     e.advanceAnimation (1.0f / 30.0f);
     CHECK (e.createComponentSnapshot (e.getLocalBounds()).isValid());
 }
