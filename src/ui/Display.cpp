@@ -213,19 +213,25 @@ void Display::paintTapeTransport (juce::Graphics& g, juce::Rectangle<float> a)
         juce::String text;
         juce::Colour c = colour::displayDim;
         bool filled = false;
-        if (recording) { text = utf8 ("â ") + i18n::upper (tr ("Rec")); c = colour::signalRed; filled = blink; }
-        else if (ready) { text = utf8 ("â ") + i18n::upper (tr ("Rec ready")); c = colour::signalRed; }
-        else if (rolling) { text = utf8 ("â¶ ") + i18n::upper (tr ("Play")); c = colour::displayText; }
-        else { text = utf8 ("â  ") + i18n::upper (tr ("Stop")); }
+        Picto sign = Picto::Stop;
+        if (recording) { text = i18n::upper (tr ("Rec")); c = colour::signalRed; filled = blink; sign = Picto::Record; }
+        else if (ready) { text = i18n::upper (tr ("Rec ready")); c = colour::signalRed; sign = Picto::Record; }
+        else if (rolling) { text = i18n::upper (tr ("Play")); c = colour::displayText; sign = Picto::Play; }
+        else text = i18n::upper (tr ("Stop"));
         const auto f = labelFont (statusRow.getHeight() * 0.62f);
-        const float w = juce::GlyphArrangement::getStringWidth (f, text) + statusRow.getHeight() * 1.0f;
-        auto badge = statusRow.withWidth (juce::jmin (statusRow.getWidth() * 0.55f, w)).reduced (0, statusRow.getHeight() * 0.08f);
+        const float h = statusRow.getHeight() * 0.84f;
+        const float w = juce::GlyphArrangement::getStringWidth (f, text) + h * 1.9f;
+        auto badge = statusRow.withWidth (juce::jmin (statusRow.getWidth() * 0.55f, w)).withSizeKeepingCentre (juce::jmin (statusRow.getWidth() * 0.55f, w), h);
+        badge.setX (statusRow.getX());
         g.setColour (c);
         if (filled) g.fillRoundedRectangle (badge, badge.getHeight() * 0.3f);
         else g.drawRoundedRectangle (badge, badge.getHeight() * 0.3f, 1.2f);
-        g.setColour (filled ? colour::displayText : c);
+        const auto ink = filled ? colour::displayText : c;
+        // the sign is drawn, not a glyph: the fonts need not carry it
+        drawPictogram (g, badge.withWidth (h).translated (h * 0.2f, 0.0f).reduced (h * 0.08f), sign, PictoState {}, ink);
+        g.setColour (ink);
         g.setFont (f);
-        g.drawText (text, badge, juce::Justification::centred, true);
+        g.drawText (text, badge.withTrimmedLeft (h * 1.1f).withTrimmedRight (h * 0.3f), juce::Justification::centred, true);
 
         juce::String armed;
         for (int t = 0; t < TapeMachine::numTracks; ++t)
@@ -289,26 +295,30 @@ void Display::paintTapeTransport (juce::Graphics& g, juce::Rectangle<float> a)
 
 void Display::paintTapeHeaderStatus (juce::Graphics& g, juce::Rectangle<float> area, float height)
 {
-    // p11: the tape's state on every page: "● REC 0:12.3" (blinking) or "▶ TAPE 0:12.3"
+    // p11: the tape's state on every page: "(rec sign) REC 0:12.3" (blinking) or "(play sign) TAPE 0:12.3"
     if (! proc.tapeRolling() && ! proc.tapeRecordReady()) return;
     auto& tape = proc.core().tape();
     const double secs = (double) tape.positionFrames() / juce::jmax (1.0, tape.sampleRate());
     const bool rec = proc.tapeRecording() || proc.tapeRecordReady();
     const bool blink = std::fmod (time, 1.0f) < 0.6f;
-    juce::String text = rec ? utf8 ("â ") + i18n::upper (tr ("Rec")) : utf8 ("â¶ ") + i18n::upper (tr ("Tape"));
+    juce::String text = rec ? i18n::upper (tr ("Rec")) : i18n::upper (tr ("Tape"));
     const auto f = monoFont (height * 0.42f);
+    const float signW = height * 0.55f;
     juce::String full = text + " " + clockText (secs);
-    float w = juce::GlyphArrangement::getStringWidth (f, full) + height * 0.6f;
-    if (w > area.getWidth()) { full = text; w = juce::GlyphArrangement::getStringWidth (f, full) + height * 0.6f; }
+    float w = juce::GlyphArrangement::getStringWidth (f, full) + height * 0.6f + signW;
+    if (w > area.getWidth()) { full = text; w = juce::GlyphArrangement::getStringWidth (f, full) + height * 0.6f + signW; }
     if (w > area.getWidth()) return;
     auto pill = juce::Rectangle<float> (w, height * 0.6f).withPosition (area.getRight() - w, area.getCentreY() - height * 0.3f);
     const auto c = rec ? colour::signalRed : colour::displayText;
     g.setColour (c);
     if (rec && proc.tapeRecording() && blink) g.fillRoundedRectangle (pill, pill.getHeight() * 0.3f);
     else g.drawRoundedRectangle (pill, pill.getHeight() * 0.3f, 1.2f);
-    g.setColour (rec && proc.tapeRecording() && blink ? colour::displayText : c);
+    const auto ink = rec && proc.tapeRecording() && blink ? colour::displayText : c;
+    drawPictogram (g, pill.withWidth (pill.getHeight()).translated (height * 0.12f, 0.0f).reduced (pill.getHeight() * 0.1f),
+                   rec ? Picto::Record : Picto::Play, PictoState {}, ink);
+    g.setColour (ink);
     g.setFont (f);
-    g.drawText (full, pill, juce::Justification::centred, false);
+    g.drawText (full, pill.withTrimmedLeft (signW + height * 0.1f), juce::Justification::centred, false);
 }
 
 void Display::paintStereoScope (juce::Graphics& g, juce::Rectangle<float> area) const

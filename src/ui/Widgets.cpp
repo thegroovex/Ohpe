@@ -291,7 +291,13 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
     PictoState s;
     auto ink = available ? (active ? accent : colour::keyLight.withAlpha (0.85f)) : colour::keyLight.withAlpha (0.25f);
     if (hasPictoInk && available) ink = active ? pictoInk.brighter (0.25f) : pictoInk;
-    drawPictogram (g, cap.reduced (cap.getWidth() * 0.2f), picto, s, ink);
+    // p11: the transport signs sit in a square of the cap's height (wide keys would shrink them to dots)
+    const bool transportSign = picto == Picto::Play || picto == Picto::Stop || picto == Picto::Record
+                            || picto == Picto::ToStart || picto == Picto::Loop;
+    if (transportSign)
+        drawPictogram (g, cap.withSizeKeepingCentre (cap.getHeight(), cap.getHeight()).reduced (cap.getHeight() * 0.12f), picto, s, ink);
+    else
+        drawPictogram (g, cap.reduced (cap.getWidth() * 0.2f), picto, s, ink);
     if (active)
     {
         g.setColour (accent);
