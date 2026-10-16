@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -29,6 +30,7 @@ class Core;
           "engine": "fm",                          // part: the engine; project: engine of part 1
           "comment": "",
           "params": { "<id>": <plain value>, ... },
+          "arp": { "on": 1, "mode": 0, "oct": 2, "gate": 0.5, "rate": 2, "latch": 1 },  // part only, optional
           "sections": { "sequencer": {...}, "orbit": {...} }   // project only, optional
         }
 
@@ -38,6 +40,12 @@ class Core;
     * kind "project": full parameter IDs of the whole instrument except the remote controls
       ("lib.*", "ui.*", "tape.edit.*") and the sync setup ("sync.*"), plus the pattern sections.
       The MIDI map and the tape audio are never part of a preset.
+    * "arp" (part presets only, optional, 0.7): arpeggiator settings that travel with the sound.
+      Loading such a preset into part N switches the global arpeggiator on and points it at part N
+      (seq.arp.on = 1, seq.arp.part = N) and sets the listed keys (on, mode, oct, gate, rate,
+      latch; plain values like "params"); keys it does not list return to their defaults. Part
+      presets without "arp" leave the arpeggiator alone, except that a preset loaded into the part
+      whose arp a preset switched on (and that is still unchanged) switches it off again.
     * Values are plain values (as shown, e.g. Hz, seconds). Unknown IDs are ignored, so presets
       from newer versions load; version-1 presets (no kind / tags, "prefix" field) load as parts.
     * Loading a preset never adds, removes or reorders parameters.
@@ -74,12 +82,19 @@ struct Preset
     Meta meta;
     std::map<std::string, float> params;           ///< part: local IDs; project: full IDs
     std::map<std::string, std::string> sections;   ///< project: section name -> JSON text
+    /** part only: arpeggiator settings ("on", "mode", "oct", "gate", "rate", "latch"; local keys of
+        "seq.arp.*"), absent if the preset does not carry an arp block */
+    std::optional<std::map<std::string, float>> arp;
 };
+
+/** The keys an arp block may carry (local IDs below "seq.arp."). */
+const std::vector<std::string>& arpKeys();
 
 /** Prefixes a project preset neither saves nor loads. */
 bool isExcludedFromProject (const std::string& id) noexcept;
 
-/** Part preset of part `partIndex` (0-based) with the current values. */
+/** Part preset of part `partIndex` (0-based) with the current values. If the arpeggiator is on and
+    plays this part, its settings are captured as the preset's arp block. */
 Preset capturePart (const ParamRegistry& reg, int partIndex, Meta meta);
 /** Project preset of the whole instrument (parameters + step / orbit patterns + `extraSections`). */
 Preset captureProject (Core& core, Meta meta, const std::map<std::string, std::string>& extraSections = {});
@@ -93,10 +108,25 @@ struct ApplyResult
     bool ok = false;
     int applied = 0;
     int unknown = 0;
+    bool arpApplied = false;   ///< part: the preset's arp block was applied (arp on and retargeted)
+    bool arpReleased = false;  ///< part: a preset without arp block switched the part's arp off
+};
+
+struct PartOptions
+{
+    /** apply the preset's arp block (false: the sound only, e.g. level measurements) */
+    bool arp = true;
+    /** for presets without arp block: switch the arpeggiator off if it is on and plays this part.
+        The caller sets it when a preset switched that arp on and it has not been changed since. */
+    bool releaseArp = false;
 };
 
 /** Loads a part preset into part `partIndex` (0-based). Message thread. */
-ApplyResult applyPart (const Preset& p, ParamRegistry& reg, int partIndex);
+ApplyResult applyPart (const Preset& p, ParamRegistry& reg, int partIndex, const PartOptions& options = {});
+
+/** Current values of the arpeggiator parameters (seq.arp.*, registry order), to tell whether the
+    user changed the arp since a preset set it. */
+std::vector<float> arpSnapshot (const ParamRegistry& reg);
 /** Loads a project preset: all parameters (except remote / sync), step + orbit patterns. The MIDI
     map stays. Other sections (e.g. "samples") are handed to the core's extra state sections. */
 ApplyResult applyProject (const Preset& p, Core& core);

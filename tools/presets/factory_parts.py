@@ -53,9 +53,23 @@ def drive(cutoff=6000, reso=0.2, drv=0.3, mode=0, mix=1.0):
             "fx.filterdrive.drive": drv, "fx.filterdrive.mode": mode, "fx.filterdrive.mix": mix}
 
 
+ARP_MODE = {"up": 0, "down": 1, "updown": 2, "random": 3, "played": 4, "chord": 5}
+ARP_RATE = {"1/4": 0, "1/8": 1, "1/16": 2, "1/32": 3, "1/4T": 4, "1/8T": 5, "1/16T": 6, "1/32T": 7, "1/4.": 8, "1/8.": 9, "1/16.": 10}
+
+
+def arp(mode="up", oct=2, gate=0.5, rate="1/16", latch=1):
+    """0.7: the preset's arp block. Loading the preset into part N switches the arpeggiator on for
+    part N with these settings. Latch on: one short key press keeps the arpeggio running."""
+    return {"__arp__": {"on": 1, "mode": ARP_MODE[mode], "oct": oct, "gate": gate, "rate": ARP_RATE[rate], "latch": latch}}
+
+
 def P(name, tags, engine, comment, *dicts, **kw):
     params = {"engine": ENGINES[engine]}
+    arp_block = None
     for d in dicts:
+        if "__arp__" in d:
+            arp_block = d["__arp__"]
+            continue
         params.update(d)
     for k, v in kw.items():
         params[k.replace("__", ".")] = v
@@ -67,7 +81,10 @@ def P(name, tags, engine, comment, *dicts, **kw):
             params["mod.a"] = max(params.get("mod.a", 0.005), 0.002)
     if engine == "pluck" and tags[0] != "Drums":  # soften the excitation click a little
         params["amp.a"] = max(params.get("amp.a", 0.005), 0.002)
-    return {"name": name, "tags": tags, "engine": engine, "comment": comment, "params": params}
+    out = {"name": name, "tags": tags, "engine": engine, "comment": comment, "params": params}
+    if arp_block is not None:
+        out["arp"] = arp_block
+    return out
 
 
 def an(**kw):  # analog engine parameters
@@ -503,33 +520,33 @@ PRESETS = [
     # ================================================================ ARP
     P("Analog Arp", ["Arp", "Plucks"], "analog", "Resonant square blips with a ping-pong delay.",
       an(shape=0.45, detune=0.05, cutoff=900, reso=0.35, oscmix=0.3, sub=0.0, drive=0.5, keytrack=0.6),
-      amp(0.003, 0.24, 0.0, 0.1), mod(0.001, 0.12, 0.0, 0.1, 0.45), delay(0.45, 0.35, 0.45, 1, 0.24), voices=8),
+      amp(0.003, 0.24, 0.0, 0.1), mod(0.001, 0.12, 0.0, 0.1, 0.45), delay(0.45, 0.35, 0.45, 1, 0.24), arp("updown", 2, 0.5), voices=8),
     P("Bubble Arp", ["Arp"], "analog", "Narrow pulse through a resonant filter: bubbly and round.",
       an(shape=0.75, detune=0.0, cutoff=1100, reso=0.5, oscmix=0.0, sub=0.15, ftype=1, drive=0.15, keytrack=0.6),
-      amp(0.001, 0.15, 0.0, 0.08), mod(0.001, 0.08, 0.0, 0.08, 0.35), delay(0.3, 0.3, 0.5, 1, 0.2), voices=8),
+      amp(0.001, 0.15, 0.0, 0.08), mod(0.001, 0.08, 0.0, 0.08, 0.35), delay(0.3, 0.3, 0.5, 1, 0.2), arp("up", 2, 0.45), voices=8),
     P("FM Arp Bell", ["Arp", "Keys"], "fm", "Short glassy FM bells for sequences.",
       fm(algo=2, modratio=1.0, index=0.28, op1ratio=1, op2ratio=3.5, op3ratio=2, op4ratio=7, op1level=1.0, op2level=0.6,
          op3level=0.3, op4level=0.2, op5level=0.0, op6level=0.0),
-      amp(0.001, 0.6, 0.0, 0.3), mod(0.001, 0.2, 0.0, 0.2, 1.0), delay(0.45, 0.3, 0.5, 1, 0.22), voices=10),
+      amp(0.001, 0.6, 0.0, 0.3), mod(0.001, 0.2, 0.0, 0.2, 1.0), delay(0.45, 0.3, 0.5, 1, 0.22), arp("updown", 2, 0.5), voices=10),
     P("Sparkle Bell", ["Arp", "Plucks"], "fm", "Short, bright FM bell for sparkling arpeggios over chords.",
       fm(algo=2, modratio=1.0, index=0.3, op1ratio=1, op2ratio=4, op3ratio=2, op4ratio=9, op1level=1.0, op2level=0.55,
          op3level=0.25, op4level=0.12, op5level=0.0, op6level=0.0),
-      amp(0.001, 0.45, 0.0, 0.3), mod(0.001, 0.15, 0.0, 0.15, 1.0), delay(0.4, 0.3, 0.55, 1, 0.2), voices=10, velsens=0.6),
+      amp(0.001, 0.45, 0.0, 0.3), mod(0.001, 0.15, 0.0, 0.15, 1.0), delay(0.4, 0.3, 0.55, 1, 0.2), arp("up", 2, 0.4), voices=10, velsens=0.6),
     P("Digital Pluck Arp", ["Arp"], "fm", "Clicky digital pluck that loves fast sixteenths.",
       fm(algo=2, modratio=1.0, index=0.5, op1ratio=1, op2ratio=2, op1level=1.0, op2level=0.75, op3level=0.0, op4level=0.0,
          op5level=0.0, op6level=0.0),
-      amp(0.001, 0.25, 0.0, 0.1), mod(0.001, 0.07, 0.0, 0.1, 1.0), delay(0.3, 0.3, 0.5, 1, 0.2), voices=8),
+      amp(0.001, 0.25, 0.0, 0.1), mod(0.001, 0.07, 0.0, 0.1, 1.0), delay(0.3, 0.3, 0.5, 1, 0.2), arp("up", 2, 0.4), voices=8),
     P("Table Arp", ["Arp"], "wavetable", "Wavetable sequence sound: the position snaps with each note.",
       wt(table="harmonic", pos=0.6, warp=0.2, tone=0.55, unison=0.2, sub=0.0, reso=0.15, keytrack=0.6, envpos=-0.5),
-      amp(0.001, 0.25, 0.0, 0.12), mod(0.001, 0.12, 0.0, 0.1, 0.3), delay(0.45, 0.3, 0.5, 1, 0.2), voices=8),
+      amp(0.001, 0.25, 0.0, 0.12), mod(0.001, 0.12, 0.0, 0.1, 0.3), delay(0.45, 0.3, 0.5, 1, 0.2), arp("updown", 2, 0.55), voices=8),
     P("Formant Arp", ["Arp", "Vocal"], "wavetable", "Vowel blips for talking sequences.",
       wt(table="formant", pos=0.7, warp=0.0, tone=0.65, unison=0.1, sub=0.0, reso=0.1, keytrack=0.6, envpos=-0.6),
-      amp(0.001, 0.22, 0.0, 0.1), mod(0.001, 0.15, 0.0, 0.1, 0.2), voices=8),
+      amp(0.001, 0.22, 0.0, 0.1), mod(0.001, 0.15, 0.0, 0.1, 0.2), arp("up", 2, 0.6), voices=8),
     P("Pizzicato Arp", ["Arp", "Plucks"], "pluck", "Short plucked strings for ostinatos.",
       pl(material=0.0, damping=0.45, bright=0.32, body=0.6, excite=0.4, pickpos=0.2, bodysize=0.5),
-      amp(0.002, 0.6, 0.0, 0.15), mod(0.001, 0.2, 0.0, 0.1, 0.1), drive(15000, 0.0, 0.05, 0, 0.7), voices=10),
+      amp(0.002, 0.6, 0.0, 0.15), mod(0.001, 0.2, 0.0, 0.1, 0.1), drive(15000, 0.0, 0.05, 0, 0.7), arp("updown", 2, 0.5), voices=10),
     P("Glock Arp", ["Arp", "Keys"], "sampler", "Recorded glockenspiel for sparkling arpeggios (CC0).",
-      sm(inst="glockenspiel", tone=0.9), amp(0.001, 1.5, 0.0, 0.5), mod(0.001, 0.3, 0.0, 0.2, 0.0), delay(0.45, 0.3, 0.5, 1, 0.18), voices=12),
+      sm(inst="glockenspiel", tone=0.9), amp(0.001, 1.5, 0.0, 0.5), mod(0.001, 0.3, 0.0, 0.2, 0.0), delay(0.45, 0.3, 0.5, 1, 0.18), arp("up", 2, 0.45), voices=12),
 
     # ================================================================ TEXTURES
     P("Kalimba Dust", ["Textures"], "grain", "Tiny kalimba grains scattered like dust.",

@@ -19,6 +19,27 @@ ENG = {"fm": ("FM", "FM"), "wavetable": ("Wavetable", "Wavetable"), "analog": ("
        "grain": ("Grain", "Grain"), "vocal": ("Vocal", "Vocal"), "cluster": ("Cluster", "Cluster"), "sampler": ("Sampler", "Sampler")}
 
 
+ARP_MODES = (("Up", "Aufwärts"), ("Down", "Abwärts"), ("Up/Down", "Auf/Ab"), ("Random", "Zufall"), ("As Played", "Wie gespielt"),
+             ("Chord", "Akkord"))
+ARP_RATES = ["1/4", "1/8", "1/16", "1/32", "1/4T", "1/8T", "1/16T", "1/32T", "1/4.", "1/8.", "1/16."]
+ARP_NOTE = {
+    "en": "Presets marked *Arp:* switch the arpeggiator on for the part they load into (latched: press a key once, "
+          "it keeps playing; press a new key or chord to change it). Loading a preset without arp into that part "
+          "switches it off again. See [PRESETS.md](PRESETS.md#arp-block).\n",
+    "de": "Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie geladen werden (gehalten: eine Taste "
+          "einmal drücken, er spielt weiter; eine neue Taste oder ein neuer Akkord wechselt). Ein Preset ohne Arp in "
+          "diesem Part schaltet ihn wieder aus. Siehe [PRESETS.md](PRESETS.md#arp-block).\n",
+}
+
+
+def arp_text(a, de):
+    i = 1 if de else 0
+    parts = [ARP_MODES[a["mode"]][i], ARP_RATES[a["rate"]], "%d %s" % (a["oct"], "Okt." if de else "oct")]
+    if a.get("latch"):
+        parts.append("Halten" if de else "latch")
+    return " *Arp: %s*" % " · ".join(parts)
+
+
 def table(lang):
     de = lang == "de"
     out = []
@@ -28,11 +49,15 @@ def table(lang):
         if cat == "Boom":  # 0.6: the Boom section lists every preset tagged Boom, wherever its main category is
             rows = [p for p in parts if "Boom" in p["tags"]]
         out.append("### %s (%d)\n" % (CAT_DE[cat] if de else cat, len(rows)))
+        if cat == "Arp":
+            out.append(ARP_NOTE[lang])
         out.append("| Name | Engine | %s | %s |" % ("Weitere Kategorien" if de else "Also in", "Beschreibung" if de else "Description"))
         out.append("|---|---|---|---|")
         for p in sorted(rows, key=lambda p: p["name"]):
             also = ", ".join(CAT_DE[t] if de else t for t in p["tags"] if t != cat) or "–"
             text = DE[p["name"]] if de else p["comment"]
+            if p.get("arp"):
+                text += arp_text(p["arp"], de)
             out.append("| %s | %s | %s | %s |" % (p["name"], ENG[p["engine"]][1 if de else 0], also, text))
         out.append("")
     out.append("### %s (%d)\n" % ("Projekte / Demo-Patterns" if de else "Projects / demo patterns", len(factory_projects.PROJECTS)))

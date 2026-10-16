@@ -279,17 +279,19 @@ Werkzeuge, für Mitwirkende:
 
 ### Arp (9)
 
+Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie geladen werden (gehalten: eine Taste einmal drücken, er spielt weiter; eine neue Taste oder ein neuer Akkord wechselt). Ein Preset ohne Arp in diesem Part schaltet ihn wieder aus. Siehe [PRESETS.md](PRESETS.md#arp-block).
+
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
-| Analog Arp | Analog | Zupfer | Resonante Rechteck-Blips mit Ping-Pong-Delay. |
-| Bubble Arp | Analog | – | Schmaler Puls durch ein resonantes Filter: blubbernd und rund. |
-| Digital Pluck Arp | FM | – | Klickender digitaler Pluck für schnelle Sechzehntel. |
-| FM Arp Bell | FM | Tasten | Kurze gläserne FM-Glocken für Sequenzen. |
-| Formant Arp | Wavetable | Vokal | Vokal-Blips für sprechende Sequenzen. |
-| Glock Arp | Sampler | Tasten | Aufgenommenes Glockenspiel für funkelnde Arpeggien (CC0). |
-| Pizzicato Arp | Zupfen | Zupfer | Kurze gezupfte Saiten für Ostinati. |
-| Sparkle Bell | FM | Zupfer | Kurze, helle FM-Glocke für funkelnde Arpeggios über Akkorden. |
-| Table Arp | Wavetable | – | Wavetable-Sequenzklang: die Position springt mit jeder Note. |
+| Analog Arp | Analog | Zupfer | Resonante Rechteck-Blips mit Ping-Pong-Delay. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
+| Bubble Arp | Analog | – | Schmaler Puls durch ein resonantes Filter: blubbernd und rund. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
+| Digital Pluck Arp | FM | – | Klickender digitaler Pluck für schnelle Sechzehntel. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
+| FM Arp Bell | FM | Tasten | Kurze gläserne FM-Glocken für Sequenzen. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
+| Formant Arp | Wavetable | Vokal | Vokal-Blips für sprechende Sequenzen. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
+| Glock Arp | Sampler | Tasten | Aufgenommenes Glockenspiel für funkelnde Arpeggien (CC0). *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
+| Pizzicato Arp | Zupfen | Zupfer | Kurze gezupfte Saiten für Ostinati. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
+| Sparkle Bell | FM | Zupfer | Kurze, helle FM-Glocke für funkelnde Arpeggios über Akkorden. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
+| Table Arp | Wavetable | – | Wavetable-Sequenzklang: die Position springt mit jeder Note. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
 
 ### Texturen (11)
 

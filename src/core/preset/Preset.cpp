@@ -4,6 +4,7 @@
 
 #include "../OhpeCore.h"
 
+#include <algorithm>
 #include <cmath>
 #include <nlohmann/json.hpp>
 
@@ -40,6 +41,25 @@ bool isCategory (const std::string& tag) noexcept
     return false;
 }
 
+const std::vector<std::string>& arpKeys()
+{
+    static const std::vector<std::string> keys = { "on", "mode", "oct", "gate", "rate", "latch" };
+    return keys;
+}
+
+namespace
+{
+std::string arpId (const std::string& key) { return std::string (Core::Ids::arpPrefix) + key; }
+} // namespace
+
+std::vector<float> arpSnapshot (const ParamRegistry& reg)
+{
+    std::vector<float> v;
+    for (int i = 0; i < reg.size(); ++i)
+        if (startsWith (reg.descriptor (i).id, Core::Ids::arpPrefix)) v.push_back (reg.get (i));
+    return v;
+}
+
 bool isExcludedFromProject (const std::string& id) noexcept
 {
     return startsWith (id, "lib.") || startsWith (id, "ui.") || startsWith (id, "tape.edit.") || startsWith (id, "sync.");
@@ -67,6 +87,13 @@ Preset capturePart (const ParamRegistry& reg, int partIndex, Meta meta)
         const auto& id = reg.descriptor (i).id;
         if (id.compare (0, prefix.size(), prefix) == 0)
             p.params[id.substr (prefix.size())] = reg.get (i);
+    }
+    // the arpeggiator is global, but when it plays this part it belongs to the sound
+    if (reg.get (arpId ("on")) > 0.5f && (int) std::lround (reg.get (arpId ("part"))) == partIndex + 1)
+    {
+        std::map<std::string, float> arp;
+        for (const auto& k : arpKeys()) arp[k] = reg.get (arpId (k));
+        p.arp = std::move (arp);
     }
     return p;
 }
@@ -105,6 +132,12 @@ std::string toJson (const Preset& p)
     json params = json::object();
     for (const auto& [id, v] : p.params) params[id] = v;
     j["params"] = params;
+    if (p.meta.kind == Kind::Part && p.arp)
+    {
+        json arp = json::object();
+        for (const auto& [k, v] : *p.arp) arp[k] = v;
+        j["arp"] = arp;
+    }
     if (! p.sections.empty())
     {
         json s = json::object();
@@ -138,6 +171,17 @@ bool fromJson (const std::string& text, Preset& out, std::string* error)
     if (j.contains ("params") && j["params"].is_object())
         for (const auto& [id, v] : j["params"].items())
             if (v.is_number()) p.params[id] = v.get<float>();
+    if (p.meta.kind == Kind::Part && j.contains ("arp") && j["arp"].is_object())
+    {
+        std::map<std::string, float> arp;
+        for (const auto& [k, v] : j["arp"].items())
+        {
+            if (std::find (arpKeys().begin(), arpKeys().end(), k) == arpKeys().end()) continue; // e.g. "part": the target is where it loads
+            if (v.is_boolean()) arp[k] = v.get<bool>() ? 1.0f : 0.0f;
+            else if (v.is_number()) arp[k] = v.get<float>();
+        }
+        p.arp = std::move (arp);
+    }
     if (j.contains ("sections") && j["sections"].is_object())
         for (const auto& [name, v] : j["sections"].items())
             p.sections[name] = v.is_string() ? v.get<std::string>() : v.dump();
@@ -155,7 +199,7 @@ bool fromJson (const std::string& text, Preset& out, std::string* error)
     return true;
 }
 
-ApplyResult applyPart (const Preset& p, ParamRegistry& reg, int partIndex)
+ApplyResult applyPart (const Preset& p, ParamRegistry& reg, int partIndex, const PartOptions& options)
 {
     ApplyResult r;
     if (p.meta.kind != Kind::Part || partIndex < 0 || partIndex >= Core::numParts) return r;
@@ -173,6 +217,26 @@ ApplyResult applyPart (const Preset& p, ParamRegistry& reg, int partIndex)
         if (id == "midich") continue;
         if (reg.set (prefix + id, v)) ++r.applied;
         else ++r.unknown;
+    }
+    if (options.arp && p.arp)
+    {
+        // the arp block describes the whole arpeggiator: unlisted keys return to their defaults,
+        // "on" defaults to on, the target is the part the preset loads into
+        for (const auto& k : arpKeys())
+        {
+            const int idx = reg.indexOf (arpId (k));
+            if (idx >= 0) reg.set (idx, reg.descriptor (idx).defaultValue);
+        }
+        reg.set (arpId ("on"), 1.0f);
+        for (const auto& [k, v] : *p.arp) reg.set (arpId (k), v);
+        reg.set (arpId ("part"), (float) (partIndex + 1));
+        r.arpApplied = true;
+    }
+    else if (options.arp && options.releaseArp && reg.get (arpId ("on")) > 0.5f
+             && (int) std::lround (reg.get (arpId ("part"))) == partIndex + 1)
+    {
+        reg.set (arpId ("on"), 0.0f);
+        r.arpReleased = true;
     }
     r.ok = true;
     return r;

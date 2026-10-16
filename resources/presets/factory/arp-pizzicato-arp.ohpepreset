@@ -36,5 +36,13 @@
     "fx.filterdrive.mix": 0.7,
     "voices": 10,
     "gain": 13.8
+  },
+  "arp": {
+    "on": 1,
+    "mode": 2,
+    "oct": 2,
+    "gate": 0.5,
+    "rate": 2,
+    "latch": 1
   }
 }

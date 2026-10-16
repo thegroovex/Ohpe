@@ -278,17 +278,19 @@ Tools, for contributors:
 
 ### Arp (9)
 
+Presets marked *Arp:* switch the arpeggiator on for the part they load into (latched: press a key once, it keeps playing; press a new key or chord to change it). Loading a preset without arp into that part switches it off again. See [PRESETS.md](PRESETS.md#arp-block).
+
 | Name | Engine | Also in | Description |
 |---|---|---|---|
-| Analog Arp | Analog | Plucks | Resonant square blips with a ping-pong delay. |
-| Bubble Arp | Analog | – | Narrow pulse through a resonant filter: bubbly and round. |
-| Digital Pluck Arp | FM | – | Clicky digital pluck that loves fast sixteenths. |
-| FM Arp Bell | FM | Keys | Short glassy FM bells for sequences. |
-| Formant Arp | Wavetable | Vocal | Vowel blips for talking sequences. |
-| Glock Arp | Sampler | Keys | Recorded glockenspiel for sparkling arpeggios (CC0). |
-| Pizzicato Arp | Pluck | Plucks | Short plucked strings for ostinatos. |
-| Sparkle Bell | FM | Plucks | Short, bright FM bell for sparkling arpeggios over chords. |
-| Table Arp | Wavetable | – | Wavetable sequence sound: the position snaps with each note. |
+| Analog Arp | Analog | Plucks | Resonant square blips with a ping-pong delay. *Arp: Up/Down · 1/16 · 2 oct · latch* |
+| Bubble Arp | Analog | – | Narrow pulse through a resonant filter: bubbly and round. *Arp: Up · 1/16 · 2 oct · latch* |
+| Digital Pluck Arp | FM | – | Clicky digital pluck that loves fast sixteenths. *Arp: Up · 1/16 · 2 oct · latch* |
+| FM Arp Bell | FM | Keys | Short glassy FM bells for sequences. *Arp: Up/Down · 1/16 · 2 oct · latch* |
+| Formant Arp | Wavetable | Vocal | Vowel blips for talking sequences. *Arp: Up · 1/16 · 2 oct · latch* |
+| Glock Arp | Sampler | Keys | Recorded glockenspiel for sparkling arpeggios (CC0). *Arp: Up · 1/16 · 2 oct · latch* |
+| Pizzicato Arp | Pluck | Plucks | Short plucked strings for ostinatos. *Arp: Up/Down · 1/16 · 2 oct · latch* |
+| Sparkle Bell | FM | Plucks | Short, bright FM bell for sparkling arpeggios over chords. *Arp: Up · 1/16 · 2 oct · latch* |
+| Table Arp | Wavetable | – | Wavetable sequence sound: the position snaps with each note. *Arp: Up/Down · 1/16 · 2 oct · latch* |
 
 ### Textures (11)
 

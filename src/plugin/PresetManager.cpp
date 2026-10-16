@@ -5,6 +5,7 @@
 #include "OhpePresets.h"
 #include "PluginProcessor.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace ohpe
@@ -13,6 +14,14 @@ namespace
 {
 juce::String str (const std::string& s) { return juce::String::fromUTF8 (s.c_str()); }
 std::string std8 (const juce::String& s) { return s.toStdString(); }
+// arp values still as a preset set them (host round trips may move a float by a hair)
+bool sameArp (const std::vector<float>& a, const std::vector<float>& b)
+{
+    if (a.size() != b.size()) return false;
+    for (size_t i = 0; i < a.size(); ++i)
+        if (std::abs (a[i] - b[i]) > 1.0e-4f * std::max (1.0f, std::abs (b[i]))) return false;
+    return true;
+}
 } // namespace
 
 PresetManager::PresetManager (OhpeProcessor& p) : proc (p)
@@ -108,13 +117,35 @@ std::string PresetManager::read (const preset::Entry& e) const
     return f.existsAsFile() ? std8 (f.loadFileAsString()) : std::string();
 }
 
+int PresetManager::arpPresetPart() const
+{
+    if (arpOwner < 0) return -1;
+    // the user changed the arp (or a project / host automation did) since the preset set it
+    return sameArp (preset::arpSnapshot (proc.core().params()), arpByPreset) ? arpOwner : -1;
+}
+
 bool PresetManager::apply (const preset::Preset& p, int part)
 {
     if (part < 0) part = editPart();
     bool ok = false;
     proc.editRegistry ([&] (Core& core) {
-        if (p.meta.kind == preset::Kind::Project) ok = preset::applyProject (p, core).ok;
-        else ok = preset::applyPart (p, core.params(), part).ok;
+        if (p.meta.kind == preset::Kind::Project)
+        {
+            ok = preset::applyProject (p, core).ok;
+            arpOwner = -1; // a project brings its own arp setup
+            return;
+        }
+        preset::PartOptions opt;
+        opt.releaseArp = arpOwner == part && sameArp (preset::arpSnapshot (core.params()), arpByPreset);
+        const auto r = preset::applyPart (p, core.params(), part, opt);
+        ok = r.ok;
+        if (r.arpApplied && core.params().get (std::string (Core::Ids::arpPrefix) + "on") > 0.5f)
+        {
+            arpOwner = part;
+            arpByPreset = preset::arpSnapshot (core.params());
+        }
+        else if (r.arpApplied || r.arpReleased)
+            arpOwner = -1;
     });
     if (ok && p.meta.kind == preset::Kind::Project && p.sections.count ("samples") > 0)
         proc.sampleLoader().restoreFromState();
@@ -227,6 +258,8 @@ void PresetManager::beginPreview (int part)
     proc.editRegistry ([] (Core&) {});
     previewPart = part;
     previewIndex = currentIndex;
+    previewArpOwner = arpOwner;
+    previewArpByPreset = arpByPreset;
     previewBackup = preset::captureProject (proc.core(), {});
 }
 
@@ -237,6 +270,8 @@ void PresetManager::revertPreview()
     previewBackup.reset();
     apply (backup, previewPart);
     currentIndex = previewIndex;
+    arpOwner = previewArpOwner; // the arp is back as it was, and so is who set it
+    arpByPreset = previewArpByPreset;
     sendChangeMessage();
 }
 } // namespace ohpe
