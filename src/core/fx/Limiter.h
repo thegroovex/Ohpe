@@ -104,7 +104,10 @@ public:
             // release: fast for an isolated peak, slower while the limiter keeps working (program dependent)
             const float grDb = -dsp::gainToDb (std::max (held, 1.0e-6f));
             workDb = grDb + (workDb - grDb) * slowFollow;
-            const float rel = workDb > 2.0f ? relSlow : relFast;
+            // 0.8: the release glides from fast to slow between 1 and 4 dB of working reduction - a hard switch at 2 dB
+            // was a cliff: a little more drive locked the slow release in and the output got quieter, not louder
+            const float w = std::clamp ((workDb - 1.0f) * (1.0f / 3.0f), 0.0f, 1.0f);
+            const float rel = relFast + (relSlow - relFast) * w;
             held = m < held ? m : m + (held - m) * rel;
 
             // average over the window: the gain is down before the peak leaves the delay line
