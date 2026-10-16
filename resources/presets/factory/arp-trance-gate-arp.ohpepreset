@@ -32,7 +32,7 @@
     "mod.r": 0.1,
     "mod.amt": 0.3,
     "fx.type": 10,
-    "fx.compressor.thresh": -5.8,
+    "fx.compressor.thresh": -8.9,
     "fx.compressor.ratio": 3.0,
     "fx.compressor.attack": 1.5,
     "fx.compressor.release": 90.0,
@@ -63,15 +63,7 @@
     "lfo.shape": 1,
     "lfo.dest": 1,
     "voices": 8,
-    "gain": 19.8,
-    "fx5.type": 10,
-    "fx5.compressor.thresh": -3.4,
-    "fx5.compressor.ratio": 8.0,
-    "fx5.compressor.attack": 0.1,
-    "fx5.compressor.release": 40.0,
-    "fx5.compressor.knee": 6.0,
-    "fx5.compressor.makeup": 0.0,
-    "fx5.compressor.mix": 1.0
+    "gain": 16.7
   },
   "arp": {
     "on": 1,

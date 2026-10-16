@@ -45,7 +45,7 @@
     "fx2.compressor.attack": 15.0,
     "fx2.compressor.release": 160.0,
     "fx2.compressor.knee": 6.0,
-    "fx2.compressor.makeup": 1.8,
+    "fx2.compressor.makeup": 5.4,
     "fx2.compressor.mix": 1.0,
     "fx3.type": 15,
     "fx3.hall.mode": 1,
@@ -102,14 +102,6 @@
     "mpe.bend": 48,
     "voices": 16,
     "velsens": 0.75,
-    "gain": 18.0,
-    "fx4.type": 10,
-    "fx4.compressor.thresh": -2.8,
-    "fx4.compressor.ratio": 8.0,
-    "fx4.compressor.attack": 0.1,
-    "fx4.compressor.release": 40.0,
-    "fx4.compressor.knee": 6.0,
-    "fx4.compressor.makeup": 0.0,
-    "fx4.compressor.mix": 1.0
+    "gain": 8.2
   }
 }

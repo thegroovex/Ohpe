@@ -27,7 +27,7 @@
     "velsens": 0.5,
     "tune": 0,
     "fx.type": 10,
-    "fx.compressor.thresh": -1.0,
+    "fx.compressor.thresh": -6.5,
     "fx.compressor.ratio": 2.5,
     "fx.compressor.attack": 5.0,
     "fx.compressor.release": 140.0,
@@ -39,14 +39,6 @@
     "fx2.reverb.damping": 0.5,
     "fx2.reverb.predelay": 0.02,
     "fx2.reverb.mix": 0.22,
-    "gain": 16.5,
-    "fx3.type": 10,
-    "fx3.compressor.thresh": -4.1,
-    "fx3.compressor.ratio": 8.0,
-    "fx3.compressor.attack": 0.1,
-    "fx3.compressor.release": 40.0,
-    "fx3.compressor.knee": 6.0,
-    "fx3.compressor.makeup": 0.0,
-    "fx3.compressor.mix": 1.0
+    "gain": 11.0
   }
 }
