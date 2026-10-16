@@ -558,7 +558,7 @@ juce::Rectangle<float> BreedView::tileArea (int i) const
 {
     const float u = unit();
     const float top = u * 14.4f, bottom = (float) getHeight() - u * 3.6f;
-    const float w = (u * 112.0f - u * 2.0f) / 3.0f, h = (bottom - top - u * 1.0f) / 2.0f;
+    const float w = (u * 110.0f - u * 2.0f) / 3.0f, h = (bottom - top - u * 1.0f) / 2.0f;
     return { u * 2.0f + (float) (i % 3) * (w + u * 1.0f), top + (float) (i / 3) * (h + u * 1.0f), w, h };
 }
 
@@ -730,10 +730,10 @@ void BreedView::paintTile (juce::Graphics& g, int i, juce::Rectangle<float> r)
             g.fillRect (wave.getX() + (float) k * bw + bw * 0.15f, wave.getCentreY() - h, bw * 0.7f, juce::jmax (u * 0.08f, 2.0f * h));
         }
         g.setColour (colour::displayDim);
-        g.setFont (labelFont (u * 1.2f));
+        g.setFont (labelFont (u * 1.15f));
         const juce::String level = s.rmsDb > -90.0f ? juce::String (s.rmsDb, 1) + " dB" : tr ("silent");
         g.drawText (level + "   " + tr ("Bright") + " " + juce::String (juce::roundToInt (s.brightness * 100.0f)) + " %",
-                    wave.reduced (u * 0.6f, u * 0.3f), juce::Justification::bottomRight, true);
+                    juce::Rectangle<float> (inner.getX(), inner.getBottom() - u * 3.6f, inner.getWidth(), u * 1.6f), juce::Justification::centredRight, true);
     }
     else
     {

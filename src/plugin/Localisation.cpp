@@ -250,7 +250,7 @@ const std::map<juce::String, juce::String>& table()
         { "Click a child to hear it.", "Klicke auf ein Kind, um es zu hören." },
         { "keeps it for AGAIN.", "behält es für WEITER." },
         { "Choose two parents - the current sound, a library preset or the die - set the mutation and press BREED. Six children appear here; keep the best ones and breed again.", "Wähle zwei Eltern – den aktuellen Klang, ein Preset der Bibliothek oder den Würfel –, stelle die Mutation ein und drücke ZÜCHTEN. Hier erscheinen sechs Kinder; behalte die besten und züchte weiter." },
-        { "SAVE stores the selected child in the library as a favourite. RANDOM rolls a new parent B.", "SAVE speichert das gewählte Kind als Favorit in der Bibliothek. ZUFALL würfelt einen neuen Elternteil B." },
+        { "SAVE stores the selected child in the library as a favourite. RANDOM rolls a new parent B.", "SPEICHERN legt das gewählte Kind als Favorit in der Bibliothek ab. ZUFALL würfelt einen neuen Elternteil B." },
         { "silent", "still" },
         { "Bright", "Hell" },
         { "listening", "hört zu" },
