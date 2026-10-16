@@ -148,6 +148,8 @@ GLUE = {  # ratio, attack ms, release ms, knee dB, threshold below the incoming 
     "Bass": (4.0, 1.0, 70.0, 6.0, 9.0, 1.0), "Boom": (3.0, 2.0, 90.0, 6.0, 7.0, 1.0), "Leads": (3.5, 1.5, 80.0, 6.0, 8.0, 1.0),
     "Drums": (4.0, 0.8, 70.0, 6.0, 8.0, 0.7), "Plucks": (3.0, 1.5, 90.0, 6.0, 6.0, 1.0), "Arp": (3.0, 1.5, 90.0, 6.0, 6.0, 1.0),
     "Keys": (2.5, 5.0, 140.0, 8.0, 5.0, 1.0), "Vocal": (3.0, 3.0, 110.0, 6.0, 7.0, 1.0)}
+# struck mallets / bells / gated sparkle arps: a glue only ducks the ringing body under the strike (crest +2 dB, measured)
+NO_GLUE = {"Glock Arp", "Mallet Echo Arp", "Music Box", "Random Spark Arp", "Trance Gate Arp"}
 GLUE_DEFAULT_IN = -4.0  # assumed incoming peak before the first measurement
 _NO_CHORUS_WORDS = ("Sub", "Grand", "Piano", "Upright", "808", "Kick", "Snare", "Kit", "Hat", "Riser", "Downlifter", "Impact")
 CHORUS_ROLE = {  # rate Hz, depth, mix, voices, drift, low cut Hz
@@ -192,7 +194,7 @@ def punch_inject(name, tags, engine, fxs):
     for f in out:  # every chorus becomes an ensemble (its own rate / depth / mix kept)
         if f["__fx__"] == "chorus":
             f["params"] = dict(f["params"], **{"chorus." + k: v for k, v in ENSEMBLE.items() if "chorus." + k not in f["params"]})
-    if cat in GLUE and len(out) < room and not any(f["__fx__"] == "compressor" for f in out):
+    if cat in GLUE and name not in NO_GLUE and len(out) < room and not any(f["__fx__"] == "compressor" for f in out):
         out.append(dict(comp(9, **glue_params(name, cat)), __glue__=True))
     if wants_chorus(name, tags, engine) and len(out) < room and not any(f["__fx__"] in _MOD_KINDS for f in out):
         out.append(ensemble_chorus(cat))
@@ -217,7 +219,7 @@ def punch_legacy(p):
         fxs.append({"__fx__": kind, "slot": 0, "params": dict({"type": t}, **own)})
         for k in [k for k in params if k.startswith("fx.")]:
             del params[k]
-    if cat in GLUE:
+    if cat in GLUE and name not in NO_GLUE:
         fxs.append(comp(9, **glue_params(name, cat)))
     if wants_chorus(name, p["tags"], next((e for e, v in ENGINES.items() if v == params.get("engine")), "")) \
             and not any(f["__fx__"] in _MOD_KINDS for f in fxs):

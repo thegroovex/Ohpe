@@ -235,10 +235,6 @@
   "makeup": 6.4,
   "thresh": -19.1
  },
- "Glock Arp": {
-  "makeup": 5.1,
-  "thresh": -10.2
- },
  "Gospel Hum": {
   "makeup": 4.1,
   "thresh": -12.8
@@ -327,10 +323,6 @@
   "makeup": 2.0,
   "thresh": -9.2
  },
- "Mallet Echo Arp": {
-  "makeup": 6.0,
-  "thresh": -10.5
- },
  "Mallet Keys": {
   "makeup": 0.7,
   "thresh": -6.6
@@ -362,10 +354,6 @@
  "Moving Reese": {
   "makeup": 0.7,
   "thresh": -15.8
- },
- "Music Box": {
-  "makeup": 1.7,
-  "thresh": -6.5
  },
  "Muted Pick": {
   "makeup": 5.1,
@@ -438,10 +426,6 @@
  "Punch Sub": {
   "makeup": 4.6,
   "thresh": -11.1
- },
- "Random Spark Arp": {
-  "makeup": 11.5,
-  "thresh": -9.3
  },
  "Recorder": {
   "makeup": 6.6,
@@ -626,10 +610,6 @@
  "Tine Piano": {
   "makeup": 0.9,
   "thresh": -5.8
- },
- "Trance Gate Arp": {
-  "makeup": 5.1,
-  "thresh": -8.9
  },
  "Triplet Wobble": {
   "makeup": 8.0,

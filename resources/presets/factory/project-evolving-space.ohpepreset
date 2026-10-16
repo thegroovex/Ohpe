@@ -201,7 +201,7 @@
     "p2.fx2.compressor.attack": 15.0,
     "p2.fx2.compressor.release": 160.0,
     "p2.fx2.compressor.knee": 6.0,
-    "p2.fx2.compressor.makeup": 5.3,
+    "p2.fx2.compressor.makeup": 6.1,
     "p2.fx2.compressor.mix": 1.0,
     "p2.fx3.type": 1,
     "p2.fx3.chorus.rate": 0.2,
