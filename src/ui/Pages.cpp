@@ -4,6 +4,8 @@
 
 #include "ModFxViews.h"
 #include "SpaceView.h"
+#include "fx/FxRack.h"
+#include "mod/ModVoice.h"
 
 #include <cmath>
 
@@ -386,4 +388,70 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
         default: addPages (m, ctx); return groups;
     }
 }
+// ---------------------------------------------------------------- p14: key LEDs
+KeyLeds keyLeds (const LedInputs& in) noexcept
+{
+    KeyLeds out;
+    const int edit = juce::jlimit (0, Core::numParts - 1, in.editPart);
+    for (int p = 0; p < Core::numParts; ++p)
+    {
+        const int t = in.partEngine[(size_t) p];
+        if (t < 0 || t >= numEngineTypes) continue;
+        out.engineParts[(size_t) t] |= 1u << p;
+        out.engineSegments[(size_t) t][(size_t) p] = p == edit ? Led::Focus : Led::Active;
+        if (p == edit) out.engine[(size_t) t] = Led::Focus;
+        else if (out.engine[(size_t) t] == Led::Off) out.engine[(size_t) t] = Led::Active;
+    }
+    for (int m = 0; m < numModes; ++m)
+    {
+        bool active = false;
+        switch ((Mode) m)
+        {
+            case Mode::Sequencer: active = in.sequencerRunning; break;
+            case Mode::Tape:      active = in.tapePlaying; break;
+            case Mode::Effects:   active = in.effectsActive; break;
+            case Mode::Drum:      active = in.drumSeqRunning; break;
+            case Mode::Lfo:       active = in.modulationActive; break;
+            default: break;
+        }
+        Led led = (Mode) m == in.page ? Led::Focus : Led::Off;
+        if (active) led = (Mode) m == Mode::Tape ? Led::Play : Led::Active; // p14: playing = green
+        if ((Mode) m == Mode::Tape && in.tapeRecording) led = Led::Record;
+        out.mode[(size_t) m] = led;
+    }
+    return out;
+}
+
+LedInputs ledInputs (Core& core, int editPart, Mode page, bool tapeRecording, bool tapePlaying)
+{
+    auto& reg = core.params();
+    auto on = [&reg] (const std::string& id) { return reg.indexOf (id) >= 0 && reg.get (id) >= 0.5f; };
+    auto value = [&reg] (const std::string& id) { return reg.indexOf (id) >= 0 ? reg.get (id) : 0.0f; };
+    LedInputs in;
+    in.editPart = juce::jlimit (0, Core::numParts - 1, editPart);
+    in.page = page;
+    in.tapeRecording = tapeRecording;
+    in.tapePlaying = tapePlaying || tapeRecording;
+    in.sequencerRunning = on (Core::Ids::seqRun);
+    in.drumSeqRunning = in.sequencerRunning
+                     && (on (Core::Ids::stepDrums) || (on ("seq.euclid.on") && on (Core::Ids::euclidDrums))
+                         || (on ("seq.orbit.on") && on (Core::Ids::orbitDrums)));
+    auto slotOn = [&] (const std::string& pre) { return std::lround (value (pre + "type")) > 0 && ! on (pre + "bypass"); };
+    for (const auto& pre : FxRack::masterPrefixes()) in.effectsActive = in.effectsActive || slotOn (pre);
+    for (int p = 0; p < Core::numParts; ++p)
+    {
+        in.partEngine[(size_t) p] = (int) selectedEngine (core, p);
+        const std::string pp = "p" + std::to_string (p + 1) + ".";
+        for (const auto& pre : FxRack::partPrefixes (pp)) in.effectsActive = in.effectsActive || slotOn (pre);
+        bool routed = value (pp + "lfo.depth") > 0.0f;
+        for (int k = 1; k <= mod::numSlots && ! routed; ++k)
+        {
+            const std::string r = pp + "mod.s" + std::to_string (k) + ".";
+            routed = std::lround (value (r + "src")) != mod::SrcOff && std::lround (value (r + "dst")) != mod::DstOff && value (r + "amt") != 0.0f;
+        }
+        in.modulationActive = in.modulationActive || routed;
+    }
+    return in;
+}
+
 } // namespace ohpe::ui

@@ -260,5 +260,12 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     // ---- 0.8 punch pass: sidechain ducking (mixer), the chorus' ensemble parameters for every slot of every rack --
     mixer.registerLate08DuckParams (reg);
     FxRack::registerChorusEnsemble (reg, Core::numParts);
+
+    // ---- p14: performance wheels left of the on-screen keyboard (pitch springs back, mod stays) -------------
+    {
+        auto add = [&] (ParamDescriptor d) { d.group = "performance"; reg.add (std::move (d)); };
+        add (continuous (Core::Ids::perfBend, "Pitch Wheel", "Pitch-Rad", -1.0f, 1.0f, 0.0f));
+        add (continuous (Core::Ids::perfMod, "Mod Wheel", "Mod-Rad", 0.0f, 1.0f, 0.0f));
+    }
 }
 } // namespace ohpe

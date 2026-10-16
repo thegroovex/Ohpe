@@ -220,10 +220,11 @@ void ProView::paint (juce::Graphics& g)
 {
     const float u = unit();
     const auto b = getLocalBounds().toFloat();
-    g.setColour (colour::bodyShade);
-    g.fillRoundedRectangle (b, u * 1.4f);
+    g.setGradientFill (juce::ColourGradient (colour::bezel, 0, b.getY(), colour::bezelLow, 0, b.getBottom(), false)); // p14: dark frame
+    const float du = (float) getWidth() / 1152.0f; // p14: design units (the overlay is 1152 wide)
+    g.fillRoundedRectangle (b, radius::panel * du);
     g.setColour (colour::display);
-    g.fillRoundedRectangle (b.reduced (u * 0.5f), u * 1.1f);
+    g.fillRoundedRectangle (b.reduced (u * 0.5f), radius::inset * du);
     for (int m = 0; m < numModes; ++m)
     {
         const auto r = tabArea (m);

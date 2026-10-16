@@ -119,6 +119,29 @@ public:
     ui::PictoKey& recordKey() { return recKey; }
     ui::PictoKey& playTransportKey() { return playKey; }
     juce::String lastFlash() const { return lastFlashText; }
+    // p14: keyboard row and header
+    ui::Wheel& pitchWheelComponent() { return pitchWheel; }
+    ui::Wheel& modWheelComponent() { return modWheel; }
+    ui::SlideSwitch& glideModeSwitch() { return glideSwitch; }
+    ui::MiniKnob& glideKnobComponent() { return glideKnob; }
+    ui::Keyboard& keyboardComponent() { return keyboard; }
+    ui::PictoKey& midiKeyComponent() { return midiKey; }
+    // p14 rev 3: the bottom panels - transport keys with light bars, the readouts, the octave keys
+    ui::PictoKey& stopTransportKey() { return stopKey; }
+    ui::PictoKey& toStartTransportKey() { return toStartKey; }
+    ui::PictoKey& loopTransportKey() { return loopKey; }
+    ui::PictoKey& octaveDownKey() { return octDownKey; }
+    ui::PictoKey& octaveUpKey() { return octUpKey; }
+    ui::PictoKey& engineKey (EngineType t) { return *engineKeys[(size_t) t]; }
+    ui::PictoKey& modeKey (ui::Mode m) { return *modeKeys[(size_t) m]; }
+    ui::Readout& tapeReadoutComponent() { return tapeReadout; }
+    ui::Readout& keysReadoutComponent() { return keysReadout; }
+    /** RANDOM: new values for the sound parameters of the edit part's engine (its Synth pages). */
+    void randomiseSound (juce::int64 seed = 0);
+    /** SAVE: opens the library with the save panel for the edit part. */
+    void openSave();
+    /** The design-unit rectangles of the plate's panels and legends (layout tests). */
+    static juce::Rectangle<float> designArea (const char* name);
     void softKey (int id) { onSoftKey (id); }
     bool loadAudioFile (const juce::File& f, int pad = -1);
 
@@ -126,8 +149,11 @@ private:
     void timerCallback() override;
     void changeListenerCallback (juce::ChangeBroadcaster*) override;
     void rebindEncoders();
+    void renderBackground (float physicalScale);
+    void bindPartControls(); ///< p14: glide switch / knob follow the edit part
     void refreshKeys();
-    void refreshTransportKeys(); ///< p11: key states (REC blinks while recording)
+    void refreshTransportKeys(); ///< p11: key states (p14: REC / PLAY breathe while running)
+    void refreshLeds();          ///< p14: engine / mode key LEDs and their tooltips
     void updateOverlayVisibility(); ///< p11: hides every plate control under the library / pro view
     std::vector<juce::Component*> plateComponents();
     void refreshSoftKeys();
@@ -161,11 +187,21 @@ private:
     juce::String lastFlashText;
     int transportMessagesSeen = 0;
     float blinkClock = 0.0f;
+    std::array<unsigned, numEngineTypes> engineTipParts {}; ///< p14: part sets the engine tooltips were written for
+    bool engineTipsValid = false;
     ui::PictoKey octDownKey { ui::Picto::OctaveDown, "Octave" };
     ui::PictoKey octUpKey { ui::Picto::OctaveUp, "Octave" };
     ui::PictoKey midiKey { ui::Picto::Midi, "MIDI" };
     ui::PictoKey libraryKey { ui::Picto::Library, "Library" };
     ui::PictoKey proKey { ui::Picto::Pro, "Pro" };
+    // p14: header round keys, performance wheels (left of the keyboard), glide (right of it)
+    ui::PictoKey randomKey { ui::Picto::Random, "Random" };
+    ui::PictoKey saveKey { ui::Picto::Save, "Save" };
+    ui::Wheel pitchWheel, modWheel;
+    ui::SlideSwitch glideSwitch;
+    ui::MiniKnob glideKnob;
+    ui::Readout tapeReadout, keysReadout; ///< p14 rev 3
+    juce::Image background; ///< p14: the static housing, panels and recesses (rendered once per size)
     ui::PartSelector partSelector;
     float spatialTime = 0.0f;
     juce::TooltipWindow tooltips { this, 600 }; ///< 1.0: tooltips (3D badge, part selector)
@@ -181,7 +217,6 @@ private:
     std::array<int, ui::numSeqViews> seqPageOf {};
     int stepPage = 0, lockStepIndex = -1;
     EngineType shownEngine = EngineType::Analog;
-    juce::Image bodyTexture;
     std::unique_ptr<juce::FileChooser> chooser;
     juce::String lastLearning;
     int libraryRequestsSeen = 0;

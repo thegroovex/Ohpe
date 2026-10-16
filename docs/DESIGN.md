@@ -2,31 +2,67 @@
 
 *English · Deutsch: [de/DESIGN.md](de/DESIGN.md)*
 
-Ohpe is an instrument, not a window full of widgets. Its look follows a minimalist,
-Scandinavian-industrial idea of its own: a light anodised body, graphite keys, one deep display and
-four functional colours. Code: `src/ui/Palette.h` (colours, fonts), `src/ui/Pictograms.cpp`
-(characters), `src/ui/Display.cpp`, `src/ui/ProView.cpp`, `src/ui/LibraryBrowser.cpp`.
+Ohpe is an instrument, not a window full of widgets. Its look is functional minimalism of its own:
+less, but better. A matte warm-white housing, grey recessed panels, matte light keys with soft
+depth, one big black display and four functional colours. Nothing is decoration: every line,
+shadow and colour says what a control is or what it does. Code: `src/ui/Palette.h` (colours,
+fonts), `src/ui/Widgets.cpp` (keys, encoders, wheels, keyboard), `src/ui/PluginEditor.cpp`
+(layout, housing), `src/ui/Pictograms.cpp` (characters), `src/ui/Display.cpp`, `src/ui/ProView.cpp`,
+`src/ui/LibraryBrowser.cpp`.
+
+![The redesigned plate (p14)](images/ohpe-analog.png)
 
 ## Principles
 
-1. **One surface.** Everything sits on one aluminium plate on a 10-unit grid (1200 × 800 design
-   units, scaled uniformly). Overlays (library, pro view) lie *on* the plate like a lid, the
-   keyboard stays visible and playable.
+1. **One housing (p14).** Everything sits on one matte warm-white body with generous margins and a
+   soft shadow on the backdrop, laid out on an 8-unit grid (1200 × 800 design units, scaled
+   uniformly). No metal, no grain, no texture. Functional groups lie in grey **recessed panels**:
+   ENGINE (left), MODE (right), TRANSPORT (bottom left), OCTAVE + MIDI (bottom right), the keyboard
+   bed. Overlays (library, pro view) lie *on* the plate like a lid in a dark frame; the header and
+   the keyboard row stay visible and playable. **One radius system:** the housing has an 18-unit
+   corner radius, every recessed panel and frame (columns, transport, octave, keyboard bed, display
+   frame, the header slots, the overlays) the same 8 units, and what sits inside a panel (keys,
+   part keys, preset strip, display glass) 5 units - the curves read as concentric.
 2. **Colour means function.** The four accents belong to the four encoders and appear only where
-   the matching value is: signal red (1), sun yellow (2), ultraviolet (3), rose (4). Red also marks
-   recording and the active mode, yellow the engine and the edit part.
-3. **The display is the only screen.** Deep "night" glass with a faint dot grid, warm paper-white
-   text. Values in a monospace face, names in Space Grotesk.
-4. **Depth, not decoration (0.7).** The display is a sunk window with layers: an inset bezel (shaded
-   above, lit at the lower lip), glass with light falling in from above and darker corners, the dot
-   grid behind the content, the content, the glass surface on top (inner shadow, a faint diagonal
-   sheen). The back layers shift slightly against the front with the mouse (parallax); the
-   character casts a soft shadow. No textures, no chrome, no reflections of objects.
+   the matching value is: signal red (1), sun yellow (2), ultraviolet (3), rose (4). The encoder
+   rings and the display's macro rows share them. The keys' light bars speak the same language: **yellow =
+   your focus** (the edit part's engine, the page on the display), **ultraviolet = running / in use
+   elsewhere** (another part's engine, a running sequencer, an FX slot on, a routed modulation),
+   **green = playing** (the PLAY key, the tape playing - the one functional colour outside the four
+   accents: a calm jade, `playGreen` #19A66C on the keys, `playGreenLit` #3FD08E on the black display),
+   **red = recording**. A running light (PLAY playing, REC recording) **breathes**: a smooth pulse of
+   about 1.8 s, never fully off, no hard blink. Everything else is warm white, grey and graphite.
+3. **The display is the only screen.** Big, high-contrast and recessed in a dark frame: deep
+   "night" glass with a faint dot grid, warm paper-white text. Values in a monospace face, names in
+   Space Grotesk.
+4. **Depth, not decoration.** Keys are matte light caps with a lit upper edge and a soft two-layer
+   shadow; pressed or active keys sink a little. Panels are sunk into the housing (shadow under the
+   upper edge, light at the lower lip). The display's glass has layers (dot grid behind, content,
+   glass surface on top) with a slight parallax. No chrome, no reflections of objects.
 5. **Direct manipulation.** What you see is the control: display bars, pro-view bars, steps, pads,
-   track lanes and soft keys react to the mouse; fine control is always Shift / Cmd / Ctrl.
+   track lanes, soft keys and the wheels react to the mouse; fine control is always Shift / Cmd /
+   Ctrl.
 6. **Characters, not icons.** Each engine and mode has an animated pictogram character drawn from
    lines and dots. On the display it reacts to the four macros of its page and to the notes being
-   played; on the keys it is a static icon in the same style.
+   played; on the keys it is a static ink icon in the same style.
+7. **Pixel-clean.** The static housing is rendered once per size at the physical pixel scale (crisp
+   on 2x screens, no repaint work while playing); every legend is fitted to its width, never clipped.
+
+## Layout (p14)
+
+| Area | Content |
+|---|---|
+| Header | OHPE wordmark, PART 1–4 (segmented), preset strip (black, yellow arrows), LIBRARY and PRO (dark pills), RANDOM and SAVE (round keys with the four-colour ring), EN / DE. One row: every control is centred on the strips' centre line (y 56), every legend (PART, PRESET, LIBRARY, PRO, RANDOM, SAVE, LANGUAGE) sits above its control on one baseline (y 20 – 32; a long legend is narrowed, never lowered); 8 units between the keys, and the row ends 32 units from the housing's right edge as the wordmark starts 32 units from its left edge |
+| Left column | ENGINE: eight engine keys, 2 × 4 |
+| Centre | the display; four encoders below it, 168 units apart |
+| Right column | MODE: Synth, Envelope, LFO, Mixer, Effects, Sequencer, Tape, Drum |
+| Bottom left | TRANSPORT (tape deck): a tape readout (REC / PLAY / TAPE, time m:ss.t, bar.beat) over one segmented row of five joined, equal keys TO START · STOP · PLAY · REC · LOOP |
+| Bottom right | OCTAVE + MIDI, mirroring the transport block - same panel, same rows, same key heights: a keyboard readout (range, octave shift; MIDI learn in red) over OCTAVE − / OCTAVE + (joined, two slots each) and MIDI |
+| Keyboard row | PITCH and MOD wheels left, three-octave keyboard (C3–C6 by default); right one column: the glide mode switch (Auto / Legato / Always) under its caption PORTAMENTO, the GLIDE knob under it - both captions on one text column (x 1104), in the same typography (11 units, engraved) |
+
+Transport, keyboard row and octave block while recording (2x): REC red and PLAY green, both breathing:
+
+![Transport, keyboard row and octave block](images/ohpe-transport.png)
 
 ## Pictogram characters
 
@@ -52,18 +88,25 @@ four functional colours. Code: `src/ui/Palette.h` (colours, fonts), `src/ui/Pict
 
 | Component | Notes |
 |---|---|
-| Keys | graphite caps, pictogram, engraved legend below; active = accent dot + coloured pictogram |
-| Encoders | flat round knobs with the accent ring; small dot = MIDI-mapped; square marker = step lock |
+| Keys (p14) | matte light square caps, ink pictogram, engraved legend below; active = sunk cap. Engine, mode, transport, octave and MIDI keys carry a **light bar**. Joined keys (rev 3: the transport row, OCTAVE − / +) meet in a fine seam with square inner corners, like the keys of a tape deck |
+| Light bars (p14 rev 3) | a short horizontal window at the bottom edge of the cap, under the pictogram (3 units high, about a third of the cap wide): unlit a faint dark slot, lit a flat colour with a soft glow on the cap - no glare. **Engine keys:** the bar is split into four segments, one per part (1 – 4, left to right): a segment lights when that part plays the engine - **yellow** for the edit part, **ultraviolet** for the other parts. **Mode keys:** yellow = the page on the display; ultraviolet = SEQUENCER running, EFFECTS (any rack slot of a part or the master has a type and is not bypassed), DRUM (a running sequencer plays the drum kit), LFO (a part's LFO 1 has depth or a matrix routing has source, target and amount); green = TAPE playing, red = TAPE recording (both breathing). Status wins over the page colour; the page stays visible as the sunk cap. **Transport:** PLAY green while running (its triangle glows too), REC red (steady = ready; the circle glows), LOOP yellow while on; while PLAY runs and REC records, bar and sign breathe (a raised-cosine pulse, 1.8 s, between 35 % and 100 %; the editor's 30 Hz timer drives it, quantised so a key repaints only when its light visibly changes); STOP and TO START are momentary (unlit slot). **MIDI** red during MIDI learn; **OCTAVE − / +** yellow while the keyboard is shifted that way. The tooltips say what each bar means |
+| Readouts (p14 rev 3) | small recessed glasses in the display's colours: the tape readout (state badge REC red / PLAY green, both breathing while running / TAPE grey, time m:ss.t in mono, bar.beat), the keyboard readout (KEYS, range C3–C6, octave shift; MIDI LEARN in red) |
+| Pills (p14) | LIBRARY and PRO: dark graphite pills with a light pictogram; active = the pictogram and a short bar in the accent |
+| Round keys (p14) | RANDOM (a die) and SAVE (a preset card with a plus): light round caps inside a ring of the four accent colours |
+| Encoders | matte light knob on a soft shadow with an ink pointer line, the value arc in the encoder's accent on a light track; small dot = MIDI-mapped; square marker = step lock |
 | Modulation ring (0.7) | a thin translucent arc inside the encoder ring (a line above the bar on display rows) = reach of the matrix routings; ink dot / tick = live position |
+| Wheels (p14) | PITCH and MOD: graphite thumb wheels in dark recessed slots, ribs that roll with the value; a paper-white centre mark (pitch, springs back) or a yellow position line (mod); right-click = MIDI learn, a red dot = mapped |
+| Glide (p14) | three-position slide switch Auto / Legato / Always (the selected label in ink) under the caption PORTAMENTO, and a small knob with a graphite ring captioned GLIDE; the captions share one text column and typography; both follow the edit part |
+| Keyboard (p14) | matte warm-white and graphite keys with a narrow gap; pressed keys sink and show a short red bar; C labels at the left of each C |
 | Display rows | dot (square when locked) · name · value in the accent colour · bar with handle |
 | Display views (0.7) | character / stereo scope / spectrum terrain on the left half; click cycles, right-click = menu |
 | Stereo scope | diamond goniometer (mid up, L upper left, R upper right), trace in paper white with an ultraviolet glow, correlation bar (red when negative), M / S bars in the colours of the Mid / Side encoders |
 | Spectrum terrain | perspective waterfall: lines from paper white (front, ultraviolet glow) to dim grey (horizon), each row hides the rows behind it; flat and still in silence; off with "Animated 3D visuals" |
 | Soft keys | outlined pills at the bottom of the display; red = active |
-| Transport keys (p11) | REC / PLAY large, then to-the-start / stop / loop, bottom left; plain geometric signs (circle, triangle, square, bar + triangle, open loop with arrow); the record circle is always signal red and the key blinks while recording |
-| Tape transport panel (p11) | the tape page's left half: state badge (red fill blinking = recording), armed tracks in red, monospace clock and bar.beat, reels turning with the tape position, five outlined buttons (filled when active; record filled red), a hint line in yellow while nothing is armed |
-| Overlays | the library and the pro view hide every control and legend of the plate under them (no labels peeking over the lid's edge) |
-| Part badge | yellow pill "P1"–"P4" in the display header |
+| Transport keys (p11, p14) | in the bottom-left panel (rev 3): TO START · STOP · PLAY · REC · LOOP as one segmented row under the tape readout; plain geometric signs (circle, triangle, square, bar + triangle, open loop with arrow); the record circle is always signal red; PLAY lights green; both breathe while running |
+| Tape transport panel (p11) | the tape page's left half: state badge (red fill breathing = recording, green = playing), armed tracks in red, monospace clock and bar.beat, reels turning with the tape position, five outlined buttons (filled when active; record filled red), a hint line in yellow while nothing is armed |
+| Overlays | the library and the pro view lie in a dark frame over the plate and hide every control and legend under them (no labels peeking over the lid's edge) |
+| Part badge | yellow pill "P1"–"P4" in the display header; the 3D badge follows it |
 | 3D badge (1.0) | pill with the headphones pictogram and "3D" after the part badge in the display header: filled ultraviolet and gently pulsing while the edit part plays binaural 3D, outlined sun yellow with speakers in speaker mode, a dim outline otherwise; a click opens the Space view, the tooltip says "Binaural 3D – best with headphones". A long title is shortened with an ellipsis before it can push the badges into the tempo |
 | Part selector, library (1.0) | the part keys carry the headphones pictogram in their corner while the part uses the space (lit and pulsing = binaural, speakers = speaker mode); presets tagged "3D" carry it after their name in the library list |
 | Pro view | dark panel, mode tabs, groups in columns with a coloured tick; bars like the display rows |

@@ -661,3 +661,14 @@ order after the ducking parameters. Their defaults give the 0.2 chorus.
 Behaviour changes in the punch pass: the master limiter looks ahead 1.5 ms (latency 83 samples at 48 kHz - the look-ahead plus a 24-tap true-peak interpolator -, constant -
 also with `mix.master.limit` off and on the aux outputs - and reported to the host) and limits true peaks; the compressors (master, compressor-lite, rack Compressor) hold
 a detected peak for 12 ms; the Hyper effect restarts its voices on a new note only with *Retrigger* on.
+## Performance wheels (p14)
+
+Appended after the 0.8 punch pass IDs (last ID `mfx4.chorus.lowcut`), as the last two IDs. The PITCH and MOD wheels left of the on-screen keyboard. A change is sent as
+pitch bend / mod wheel (CC 1) on the edit part's MIDI channel, the same way the on-screen keyboard plays; the
+range of the bend is each part's `pN.bend`. The pitch wheel springs back to the centre when released on the
+screen. Both are MIDI-learnable (right-click) and are not stored in presets.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `perf.bend` | Pitch Wheel | Pitch-Rad | -1 … +1 | 0 |
+| `perf.mod` | Mod Wheel | Mod-Rad | 0 … 1 | 0 |

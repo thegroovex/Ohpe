@@ -258,9 +258,9 @@ TEST_CASE ("editor: library and pro view hide every plate control and legend")
     p.presets().setUserFolder (tmp.dir);
     std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
     auto& e = *dynamic_cast<OhpeEditor*> (ed.get());
-    // the legend glyphs (74..85); the lid starts at 86
-    const auto engineLegend = juce::Rectangle<float> (40, 74, 190, 10);
-    const auto modeLegend = juce::Rectangle<float> (970, 74, 190, 10);
+    // the legend glyphs above the lid (p14: designArea, 88..100; the lid starts at 104)
+    const auto engineLegend = OhpeEditor::designArea ("engineLegend").withTrimmedRight (100.0f);
+    const auto modeLegend = OhpeEditor::designArea ("modeLegend").withTrimmedRight (120.0f);
     const float engineClosed = darkest (e, engineLegend), modeClosed = darkest (e, modeLegend);
 
     e.showLibrary (true);

@@ -5,24 +5,37 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 /**
-    The Ohpe design system (see docs/DESIGN.md): light anodised-aluminium body, graphite keys,
-    a deep display, four functional accent colours - one per encoder - used sparingly.
+    The Ohpe design system (see docs/DESIGN.md): a matte warm-white housing with grey recessed column
+    panels, matte light keys, a deep black display and four functional accent colours - one per
+    encoder - used sparingly. Functional minimalism: less, but better.
 */
 namespace ohpe::ui
 {
 namespace colour
 {
-// body
-inline const juce::Colour body { 0xffd8dadd };          ///< "Alu 200" anodised light grey
-inline const juce::Colour bodyLight { 0xffe6e8ea };     ///< "Alu 100" highlight
-inline const juce::Colour bodyShade { 0xffc4c7cb };     ///< "Alu 300" grooves, shadows
-inline const juce::Colour engraving { 0xff5d6168 };     ///< printed legends on the body
-inline const juce::Colour ink { 0xff1d1f23 };           ///< strongest text
+// housing (p14: matte warm white - no metal, no texture)
+inline const juce::Colour backdrop { 0xffd3d0ca };      ///< behind the housing (window margin)
+inline const juce::Colour body { 0xffefede8 };          ///< housing, matte warm white
+inline const juce::Colour bodyLight { 0xfff8f7f3 };     ///< housing highlight (upper edge)
+inline const juce::Colour bodyShade { 0xffd6d3cc };     ///< grooves, rings, shadows
+inline const juce::Colour panel { 0xffe3e0d9 };         ///< recessed column panels
+inline const juce::Colour panelEdge { 0xffcdc9c1 };     ///< the panels' upper inner edge
+inline const juce::Colour engraving { 0xff54524e };     ///< printed legends on the housing
+inline const juce::Colour ink { 0xff1c1c1b };           ///< strongest text
+// p14: matte light keys on the housing
+inline const juce::Colour capTop { 0xfff3f1ec };
+inline const juce::Colour capBottom { 0xffe2dfd8 };
+inline const juce::Colour capEdge { 0xffc3bfb7 };
+inline const juce::Colour capInk { 0xff383735 };        ///< pictograms on the light keys
+inline const juce::Colour pill { 0xff2c2c2f };          ///< dark pill keys (LIBRARY, PRO)
+inline const juce::Colour pillTop { 0xff3d3d41 };
+inline const juce::Colour bezel { 0xff38383b };          ///< the display's dark frame (also the overlays' rim)
+inline const juce::Colour bezelLow { 0xff1f1f21 };
 // keys
 inline const juce::Colour keyDark { 0xff2a2c31 };       ///< graphite key cap
 inline const juce::Colour keyDarkTop { 0xff34373d };
-inline const juce::Colour keyLight { 0xffeef0f1 };      ///< natural keyboard key
-inline const juce::Colour keyLightPressed { 0xffcfd2d6 };
+inline const juce::Colour keyLight { 0xfff6f5f1 };      ///< natural keyboard key
+inline const juce::Colour keyLightPressed { 0xffdcd9d2 };
 // display
 inline const juce::Colour display { 0xff0c0d10 };       ///< "Night" display glass
 inline const juce::Colour displayGrid { 0xff1c1e23 };
@@ -33,6 +46,10 @@ inline const juce::Colour signalRed { 0xffe5243b };     ///< encoder 1
 inline const juce::Colour sunYellow { 0xfff6c20f };     ///< encoder 2
 inline const juce::Colour ultraviolet { 0xff6c4cf5 };   ///< encoder 3
 inline const juce::Colour rose { 0xffff6fa5 };          ///< encoder 4
+/** p14: the one colour for "playing" (PLAY bar and triangle, the tape playing): a calm jade green, deep
+    enough to read on the light keys at 1x, a touch brighter (playGreenLit) on the black display. */
+inline const juce::Colour playGreen { 0xff19a66c };
+inline const juce::Colour playGreenLit { 0xff3fd08e };
 
 inline juce::Colour encoder (int i)
 {
@@ -45,6 +62,24 @@ inline juce::Colour encoder (int i)
     }
 }
 } // namespace colour
+
+/** p14: one radius system (design units at 1x): the housing, a matching smaller radius on every recessed
+    panel and frame (columns, transport, octave, keyboard bed, display frame, header slots, overlays),
+    the keys and strips that sit inside a panel a smaller one again - the curves read as concentric. */
+namespace radius
+{
+inline constexpr float housing = 18.0f;
+inline constexpr float panel = 8.0f;
+inline constexpr float inset = 5.0f; ///< strips and keys inside a panel (part keys, preset strip, display glass)
+} // namespace radius
+
+/** p14: the gentle "breathing" of a running light (REC recording, PLAY playing): a smooth raised-cosine
+    pulse with a period of 1.8 s between 0.35 and 1.0 - never off, no hard edge. */
+inline float breath (float seconds) noexcept
+{
+    const float phase = std::fmod (juce::jmax (0.0f, seconds), 1.8f) / 1.8f;
+    return 0.35f + 0.65f * (0.5f - 0.5f * std::cos (phase * juce::MathConstants<float>::twoPi));
+}
 
 /** Fonts: Space Grotesk (geometric, bundled, SIL OFL) and the platform monospace for values. */
 juce::Font brandFont (float height, bool bold = true);

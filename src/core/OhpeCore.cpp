@@ -57,6 +57,9 @@ Core::Core()
     syncSmoothIndex = registry.indexOf (Ids::syncSmoothing);
     clockOutIndex = registry.indexOf (Ids::clockOut);
     notesOutIndex = registry.indexOf (Ids::notesOut);
+    perfBendIndex = registry.indexOf (Ids::perfBend);
+    perfModIndex = registry.indexOf (Ids::perfMod);
+    editPartIndex = registry.indexOf (Ids::editPart);
     stepDrumsIndex = registry.indexOf (Ids::stepDrums);
     euclidDrumsIndex = registry.indexOf (Ids::euclidDrums);
     orbitDrumsIndex = registry.indexOf (Ids::orbitDrums);
@@ -375,6 +378,27 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     while (uiNotes.pop (un))
         routeLive (un.on ? MidiEvent::noteOn (1, un.note, std::clamp ((int) (un.velocity * 127.0f), 1, 127), 0)
                          : MidiEvent::noteOff (1, un.note, 0));
+    // p14: the on-screen wheels - a changed value goes out as pitch bend / CC 1 on the edit part's channel
+    if (perfBendIndex >= 0 && perfModIndex >= 0)
+    {
+        const int edit = editPartIndex >= 0 ? std::clamp ((int) std::lround (snapshot[editPartIndex]) - 1, 0, numParts - 1) : 0;
+        const int ch = routing[(size_t) edit].channel > 0 ? routing[(size_t) edit].channel : 1;
+        if (const float b = snapshot[perfBendIndex]; ! (b == perfBendSent))
+        {
+            perfBendSent = b;
+            const int v = std::clamp ((int) std::lround (8192.0f + std::clamp (b, -1.0f, 1.0f) * 8191.0f), 0, 16383);
+            MidiEvent e;
+            e.status = (uint8_t) (0xe0 | ((ch - 1) & 0x0f));
+            e.data1 = (uint8_t) (v & 0x7f);
+            e.data2 = (uint8_t) ((v >> 7) & 0x7f);
+            routeLive (e);
+        }
+        if (const float m = snapshot[perfModIndex]; ! (m == perfModSent))
+        {
+            perfModSent = m;
+            routeLive (MidiEvent::controller (ch, 1, std::clamp ((int) std::lround (m * 127.0f), 0, 127), 0));
+        }
+    }
     for (int i = 0; i < numMidi; ++i)
         if (midi[i].status < 0xf0 && ! mapper.handleMidi (midi[i]))
             routeLive (midi[i]);

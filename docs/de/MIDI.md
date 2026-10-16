@@ -100,6 +100,11 @@ laufen sie, solange der Host spielt *und* `seq.run` an ist.
 MIDI → *Fernsteuerung*. Sie lösen beim Drücken aus (CC ≥ 64), wie die Tasten am Gehäuse; siehe
 [Band-Transport](BAND-MISCHER-FX.md#transport).
 
+**Räder auf dem Bildschirm (p14).** PITCH- und MOD-Rad links der Klaviatur senden Pitchbend und das
+Modulationsrad (CC 1) auf dem Kanal des bearbeiteten Parts, wie die Bildschirm-Klaviatur. Pitchbend und
+CC 1 vom Gerät erreichen die Parts wie bisher direkt. Die Räder sind außerdem Host-Parameter
+(`perf.bend`, `perf.mod`): Rechtsklick auf ein Rad, um einen Fader oder ein Controller-Rad zuzuordnen.
+
 ### Host-Sync (Plug-in)
 
 Ohpe liest in jedem Block Tempo und Song-Position des Hosts und setzt jeden Schritt genau auf

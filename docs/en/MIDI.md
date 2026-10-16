@@ -100,6 +100,11 @@ Return to Zero* (`tape.edit.rtz`): right-click the key on Ohpe, or MIDI → *Rem
 on a press (CC ≥ 64), like the keys on the body; see
 [tape transport](TAPE-MIXER-FX.md#transport).
 
+**On-screen wheels (p14).** The PITCH and MOD wheels left of the keyboard send pitch bend and the mod
+wheel (CC 1) on the edit part's channel, like the on-screen keyboard. Hardware pitch bend and CC 1 reach
+the parts directly as before. The wheels are also host parameters (`perf.bend`, `perf.mod`): right-click
+a wheel to map a fader or a controller wheel to it.
+
 ### Host sync (plug-in)
 
 Ohpe reads the host's tempo and song position every block and places every step at the exact

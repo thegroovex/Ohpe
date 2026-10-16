@@ -6189,3 +6189,5 @@ mfx4.chorus.voices
 mfx4.chorus.drift
 mfx4.chorus.spread
 mfx4.chorus.lowcut
+perf.bend
+perf.mod

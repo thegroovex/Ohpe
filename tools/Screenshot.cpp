@@ -5,7 +5,8 @@
 //   usage: ohpe_screenshot <output directory>
 // Writes ohpe-<view>.png (English) and ohpe-<view>-de.png (German).
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
-// p11: the tape page while recording (ohpe-tape-recording).
+// p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
+// octave block while recording (ohpe-transport, 2x crop; REC and PLAY at the top of their breathing).
 // 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack; the Mid/Side scope,
 // the master scope view and the spectrum terrain. 1.0: the 3D Space view and the 3D badge. The
 // preset library reads the user folder from OHPE_PRESET_DIR when set (otherwise the default).
@@ -92,9 +93,9 @@ void playAnimated (OhpeProcessor& p, OhpeEditor& e, int frames, std::initializer
     }
 }
 
-void save (juce::Component& c, const juce::File& f)
+void save (juce::Component& c, const juce::File& f, float scale = 1.0f, juce::Rectangle<int> area = {})
 {
-    auto img = c.createComponentSnapshot (c.getLocalBounds(), true, 1.0f);
+    auto img = c.createComponentSnapshot (area.isEmpty() ? c.getLocalBounds() : area, true, scale);
     f.deleteFile();
     juce::FileOutputStream out (f);
     juce::PNGImageFormat().writeImageToStream (img, out);
@@ -127,6 +128,18 @@ int main (int argc, char* argv[])
         playAnimated (p, e, 2, { 64 });
         playAnimated (p, e, 30, { 67 });
         save (e, dir.getChildFile ("ohpe-analog" + suffix + ".png"));
+        // p14: the same view at 2x (pixel check) and a close-up of the keyboard row at 2x: wheels, keys, glide
+        if (auto* q = p.parameter ("perf.mod")) q->setValueNotifyingHost (0.35f);
+        setChoice (p, "p1.glide.mode", "Legato");
+        setPlain (p, "p1.glide", 0.18f);
+        run (p, 2);
+        e.advanceAnimation (1.0f / 30.0f);
+        save (e, dir.getChildFile ("ohpe-analog-2x" + suffix + ".png"), 2.0f);
+        {
+            const auto bed = OhpeEditor::designArea ("keyboardBed").expanded (8.0f).toNearestInt();
+            save (e, dir.getChildFile ("ohpe-keyboard-row" + suffix + ".png"), 2.0f, bed);
+        }
+        if (auto* q = p.parameter ("perf.mod")) q->setValueNotifyingHost (0.0f);
 
         release (p, { 60, 64, 67 });
         e.selectEngine (EngineType::FM);
@@ -197,8 +210,14 @@ int main (int argc, char* argv[])
                 p.core().tape().housekeeping();
                 e.advanceAnimation (0.05f);
             }
-            for (int k = 0; k < 40 && ! e.recordKey().isActive(); ++k) e.advanceAnimation (0.05f); // REC blink "on"
+            // p14: REC and PLAY breathe while recording - shoot near the top of the pulse
+            for (int k = 0; k < 80 && e.recordKey().getLedLevel() < 0.97f; ++k) e.advanceAnimation (1.0f / 30.0f);
             save (e, dir.getChildFile ("ohpe-tape-recording" + suffix + ".png"));
+            {
+                const auto area = OhpeEditor::designArea ("transportPanel").getUnion (OhpeEditor::designArea ("octavePanel"))
+                                      .getUnion (OhpeEditor::designArea ("keyboardBed")).expanded (8.0f).toNearestInt();
+                save (e, dir.getChildFile ("ohpe-transport" + suffix + ".png"), 2.0f, area);
+            }
             e.transport (OhpeProcessor::TransportKey::Record); // punch out
             run (p, 4);
             p.core().tape().housekeeping();
@@ -389,6 +408,28 @@ int main (int argc, char* argv[])
             }
             run (p, 8);
             e.selectEngine (EngineType::Analog);
+        }
+
+        // p14: key LEDs - the parts on different engines (P1 Analog edited, P2 FM, P3 Wavetable, P4 Analog), a chorus
+        //      in part 1's rack and the sequencer running: yellow / violet engine LEDs with their part dots,
+        //      status LEDs on the mode keys (Effects, Sequencer violet; Synth yellow = the shown page)
+        {
+            setChoice (p, "p2.engine", "FM");
+            setChoice (p, "p3.engine", "Wavetable");
+            setChoice (p, "p4.engine", "Analog");
+            setChoice (p, "p1.fx.type", "Chorus");
+            prepareRack (p);
+            e.selectPart (0);
+            e.selectEngine (EngineType::Analog);
+            e.selectMode (ui::Mode::Synth);
+            setPlain (p, "seq.run", 1.0f);
+            playAnimated (p, e, 20);
+            save (e, dir.getChildFile ("ohpe-engine-leds" + suffix + ".png"));
+            setPlain (p, "seq.run", 0.0f);
+            setChoice (p, "p1.fx.type", "Off");
+            for (int part = 2; part <= 4; ++part) setChoice (p, "p" + juce::String (part) + ".engine", "Analog");
+            run (p, 8);
+            e.advanceAnimation (1.0f / 30.0f);
         }
 
         // 0.3: preset library with a category filter and a preset selected
