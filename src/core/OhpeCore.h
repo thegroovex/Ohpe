@@ -14,6 +14,7 @@
 #include "model/ParamRegistry.h"
 #include "model/ParamSnapshot.h"
 #include "model/SpscQueue.h"
+#include "model/StereoFifo.h"
 #include "seq/Arpeggiator.h"
 #include "seq/EuclidSequencer.h"
 #include "seq/OrbitSequencer.h"
@@ -66,6 +67,8 @@ public:
     InsertSlot& insertFx (int part) noexcept { return parts[(size_t) part]->fxRack().slot (0); } ///< 0.2: FX slot of a part (0.7: rack slot 1)
     FxRack& fxRack (int part) noexcept { return parts[(size_t) part]->fxRack(); } ///< 0.7: FX rack of a part
     FxRack& masterFxRack() noexcept { return masterRack; }                      ///< 0.7: master FX rack ("mfx1." ...)
+    /** 0.7: scope tap for the display (a part after its FX rack, or the main output). */
+    ScopeTap& scope() noexcept { return scopeTap; }
 
     /**
         0.7, message thread: prepares the effect types selected in FX rack slots that are not ready yet (slots 2-6,
@@ -256,6 +259,7 @@ private:
     // ---- 0.2: tape, FX slots, audio input ----
     TapeMachine tapeMachine;
     FxRack masterRack { FxRack::numMasterSlots }; ///< 0.7 (part racks: Part::fxRack)
+    ScopeTap scopeTap;                            ///< 0.7: display scope
     std::array<std::vector<float>, 2 * TapeMachine::numTracks> tapeOut;
     const float* inputL = nullptr;
     const float* inputR = nullptr;

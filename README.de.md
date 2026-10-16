@@ -34,12 +34,13 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 | **Je Stimme** | Lautstärke- und Modulationshüllkurve, LFO mit mehreren Zielen, Glide, 16 Stimmen |
 | **Sequencer** | Step-Sequencer (bis zu 64 Schritte, Wahrscheinlichkeit, Ratchets, Parameter-Locks, 16 Pattern, Song-Modus), Euklid, Arpeggiator und Orbit (Polymetrik), jeweils mit Ziel-Part – Step, Euklid und Orbit können auch das Drum-Kit spielen |
 | **Bandmaschine** | acht Stereospuren: Aufnahme / Overdub / Punch vom Eingang, von Parts oder Drums, Varispeed, rückwärts, Loop, Bandcharakter, Rückgängig, Export als WAV-Master und Stems |
-| **Mixer** | acht Kanäle mit EQ, Kompressor, Lautstärke, Panorama, Mute / Solo, zwei Sends (A: Delay, B: Hall), Master-Kompressor, Bandsättigung und Limiter; FX-Slot auf Part 1 (Chorus, Phaser, Bitcrush, Filter-Drive, Delay, Hall) |
+| **Mixer** | acht Kanäle mit EQ, Kompressor, Lautstärke, Panorama, Mute / Solo, zwei Sends (A: Delay, B: Hall), Master-Kompressor, Bandsättigung, Master-Stereo (Mitte / Seite) und Limiter; ein FX-Slot auf jedem Part (Chorus, Phaser, Bitcrush, Filter-Drive, Delay, Hall, Mitte/Seite-Stereo) |
 | **Sync** | Host-Transport im Plug-in; MIDI-Clock ein / aus und Netzwerk-Tempo-Sync (Link) in der Standalone-App |
 | **Multi-Out** | jeder Kanal geht auf den Hauptausgang oder auf einen eigenen Stereoausgang (8 Zusatzausgänge) – im Plug-in und in der Standalone-App |
 | **MIDI** | Kanal je Part, MPE, jeder Regler ist per MIDI-Learn zuweisbar (Rechtsklick → MIDI-Learn), Zuweisungen lassen sich exportieren / importieren; alle Parameter sind automatisierbar |
 | **Standalone-App** | Audiosystem, Gerät, Samplerate und Puffergröße wählen, Latenzanzeige, Multi-Out-Routing auf Gerätekanäle, MIDI-Eingänge |
 | **Preset-Bibliothek** | eine Taste BIBLIOTHEK: Kategorien (Bass, Tasten, Flächen, Leads, Zupfer, Drums, FX, Arp, Texturen, Vokal), Engine-Filter, Suche, Favoriten, Sterne-Bewertung, Sortierung, Werks- und eigene Bank, Vorhören durch Auswählen, Part- und Projekt-Presets, voriges / nächstes per MIDI |
+| **Display** | ein tiefes Display in Ebenen mit Parallaxe; Stereobild (Goniometer, Korrelation, M-/S-Pegel) und eine bewegte 3D-Spektrum-Landschaft |
 | **Direkte Bedienung** | Wertebalken im Display ziehen, Shift / Cmd / Strg für Feinregelung, Doppelklick setzt zurück; Profiansicht mit allen Parametern eines Modus auf einmal |
 | **Sprachen** | Deutsch und Englisch, jederzeit umschaltbar |
 
@@ -55,6 +56,8 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 | Drum-Kit-Seite | FM-Engine |
 | ![Mixer](docs/images/ohpe-mixer-de.png) | ![Englische Oberfläche](docs/images/ohpe-analog.png) |
 | Mixer | Englische Oberfläche |
+| ![FX-Slot Mitte/Seite mit Stereobild](docs/images/ohpe-midside-scope-de.png) | ![Spektrum-Landschaft](docs/images/ohpe-terrain-de.png) |
+| FX-Slot Mitte/Seite mit Stereobild | Spektrum-Landschaft |
 
 ## So spielst du Ohpe
 

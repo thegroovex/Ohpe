@@ -33,12 +33,13 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **Shared per voice** | amp and modulation envelopes, LFO with several destinations, glide, 16-voice polyphony |
 | **Sequencers** | step sequencer (up to 64 steps, probability, ratchets, parameter locks, 16 patterns, song mode), Euclid, arpeggiator and Orbit (polymeter), each with a target part – step, Euclid and Orbit can also play the drum kit |
 | **Tape machine** | eight stereo tracks: record / overdub / punch from the input, parts or drums, varispeed, reverse, loop, tape character, undo, export as WAV master and stems |
-| **Mixer** | eight channels with EQ, compressor, volume, pan, mute / solo, two sends (A: delay, B: reverb), master compressor, tape saturation and limiter; FX slot on part 1 (chorus, phaser, bitcrush, filter drive, delay, reverb) |
+| **Mixer** | eight channels with EQ, compressor, volume, pan, mute / solo, two sends (A: delay, B: reverb), master compressor, tape saturation, master stereo (mid / side) and limiter; an FX slot on every part (chorus, phaser, bitcrush, filter drive, delay, reverb, mid / side stereo) |
 | **Sync** | host transport in the plug-in; MIDI clock in / out and network tempo sync (Link) in the standalone app |
 | **Multi-out** | every channel can go to the main output or its own stereo output (8 aux outputs) – in the plug-in and in the standalone app |
 | **MIDI** | per-part channels, MPE, every control is MIDI-learnable (right-click → MIDI Learn), maps can be exported / imported; all parameters are automatable |
 | **Standalone app** | choose audio system, device, sample rate and buffer size, latency display, multi-out routing to device channels, MIDI inputs |
 | **Preset library** | one LIBRARY key: categories (Bass, Keys, Pads, Leads, Plucks, Drums, FX, Arp, Textures, Vocal), engine filter, search, favourites, star ratings, sorting, factory and user banks, preview by selecting, part and whole-project presets, previous / next from MIDI |
+| **Display** | a deep, layered display with parallax; stereo scope (goniometer, correlation, M / S levels) and a moving 3D spectrum terrain |
 | **Direct manipulation** | drag the value bars on the display, Shift / Cmd / Ctrl for fine control, double-click to reset; pro view with every parameter of a mode at once |
 | **Languages** | English and German, switchable at any time |
 
@@ -54,6 +55,8 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | Drum kit page | FM engine |
 | ![Mixer](docs/images/ohpe-mixer.png) | ![German interface](docs/images/ohpe-analog-de.png) |
 | Mixer | German interface |
+| ![Mid/side FX slot with the stereo scope](docs/images/ohpe-midside-scope.png) | ![Spectrum terrain](docs/images/ohpe-terrain.png) |
+| Mid/side FX slot with the stereo scope | Spectrum terrain |
 
 ## Playing Ohpe
 

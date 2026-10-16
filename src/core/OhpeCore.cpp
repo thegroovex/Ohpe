@@ -427,6 +427,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
             parts[(size_t) p]->render (partL[(size_t) p].data(), partR[(size_t) p].data(), len);
             src.left[(size_t) (source::part1 + p)] = partL[(size_t) p].data();
             src.right[(size_t) (source::part1 + p)] = partR[(size_t) p].data();
+            scopeTap.offer (p, partL[(size_t) p].data(), partR[(size_t) p].data(), len); // 0.7: display scope (after the rack)
         }
         drums.render (drumL.data(), drumR.data(), len);
         src.left[(size_t) source::drum] = drumL.data();
@@ -439,6 +440,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
             out.right[(size_t) o] = outputs.right[(size_t) o] != nullptr ? outputs.right[(size_t) o] + pos : nullptr;
         }
         mix.process (src, out, len);
+        scopeTap.offer (ScopeTap::Master, out.left[0], out.right[0], len); // 0.7: display scope
         pos = end;
     }
     while (nextEvent < numRouted) dispatch (routed[(size_t) nextEvent++]);

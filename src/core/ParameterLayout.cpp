@@ -217,5 +217,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate07Rack (reg);
     FxRack::registerMaster (reg);
     for (auto& p : parts) p->registerLate07Mod (reg);
+    // ---- 0.7: Mid/Side stereo type, for every slot of every rack (parts and master) --------------------------
+    FxRack::registerTypeBlocks (reg, Core::numParts, InsertSlot::firstStereoType, InsertSlot::numTypes);
 }
 } // namespace ohpe

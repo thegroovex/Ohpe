@@ -49,6 +49,7 @@ struct SlotRig
     SlotRig()
     {
         InsertSlot::registerParams (reg, "p1.fx.", "part1/fx");
+        InsertSlot::registerBlocks (reg, "p1.fx.", "part1/fx", InsertSlot::numLegacyTypes, InsertSlot::numTypes); // 0.7 types
         reg.freeze();
         slot.bind (reg, "p1.fx.");
         snap.prepare (reg);
@@ -137,6 +138,7 @@ TEST_CASE ("fx slot: Off is an exact bypass, every type renders finite, paramete
     {
         INFO ("type " << t);
         rig.set ("type", (float) t);
+        if (t == InsertSlot::MidSide) rig.set ("midside.width", 1.5f); // neutral by default (exact bypass)
         const auto out = rig.run (in);
         CHECK (rig.slot.currentType() == t);
         CHECK (allFinite (out.l));

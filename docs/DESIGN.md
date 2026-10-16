@@ -17,9 +17,14 @@ four functional colours. Code: `src/ui/Palette.h` (colours, fonts), `src/ui/Pict
    recording and the active mode, yellow the engine and the edit part.
 3. **The display is the only screen.** Deep "night" glass with a faint dot grid, warm paper-white
    text. Values in a monospace face, names in Space Grotesk.
-4. **Direct manipulation.** What you see is the control: display bars, pro-view bars, steps, pads,
+4. **Depth, not decoration (0.7).** The display is a sunk window with layers: an inset bezel (shaded
+   above, lit at the lower lip), glass with light falling in from above and darker corners, the dot
+   grid behind the content, the content, the glass surface on top (inner shadow, a faint diagonal
+   sheen). The back layers shift slightly against the front with the mouse (parallax); the
+   character casts a soft shadow. No textures, no chrome, no reflections of objects.
+5. **Direct manipulation.** What you see is the control: display bars, pro-view bars, steps, pads,
    track lanes and soft keys react to the mouse; fine control is always Shift / Cmd / Ctrl.
-5. **Characters, not icons.** Each engine and mode has an animated pictogram character drawn from
+6. **Characters, not icons.** Each engine and mode has an animated pictogram character drawn from
    lines and dots. On the display it reacts to the four macros of its page and to the notes being
    played; on the keys it is a static icon in the same style.
 
@@ -45,6 +50,9 @@ four functional colours. Code: `src/ui/Palette.h` (colours, fonts), `src/ui/Pict
 | Keys | graphite caps, pictogram, engraved legend below; active = accent dot + coloured pictogram |
 | Encoders | flat round knobs with the accent ring; small dot = MIDI-mapped; square marker = step lock |
 | Display rows | dot (square when locked) · name · value in the accent colour · bar with handle |
+| Display views (0.7) | character / stereo scope / spectrum terrain on the left half; click cycles, right-click = menu |
+| Stereo scope | diamond goniometer (mid up, L upper left, R upper right), trace in paper white with an ultraviolet glow, correlation bar (red when negative), M / S bars in the colours of the Mid / Side encoders |
+| Spectrum terrain | perspective waterfall: lines from paper white (front, ultraviolet glow) to dim grey (horizon), each row hides the rows behind it; flat and still in silence; off with "Animated 3D visuals" |
 | Soft keys | outlined pills at the bottom of the display; red = active |
 | Part badge | yellow pill "P1"–"P4" in the display header |
 | Pro view | dark panel, mode tabs, groups in columns with a coloured tick; bars like the display rows |

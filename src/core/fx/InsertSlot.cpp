@@ -4,6 +4,7 @@
 
 #include "Delay.h"
 #include "InsertEffects.h"
+#include "MidSide.h"
 #include "Reverb.h"
 
 #include <algorithm>
@@ -22,6 +23,7 @@ std::unique_ptr<IEffect> InsertSlot::create (int t)
         case FilterDrive: return std::make_unique<FilterDriveEffect>();
         case Delay: return std::make_unique<DelayEffect>();
         case Reverb: return std::make_unique<ReverbEffect>();
+        case MidSide: return std::make_unique<MidSideEffect>();
         default: return nullptr;
     }
 }
@@ -32,8 +34,8 @@ InsertSlot::InsertSlot()
     mixIndex.fill (-1);
 }
 
-std::vector<std::string> InsertSlot::typeNamesEn() { return { "Off", "Chorus", "Phaser", "Bitcrush", "Filter Drive", "Delay", "Reverb" }; }
-std::vector<std::string> InsertSlot::typeNamesDe() { return { "Aus", "Chorus", "Phaser", "Bitcrusher", "Filter-Drive", "Delay", "Hall" }; }
+std::vector<std::string> InsertSlot::typeNamesEn() { return { "Off", "Chorus", "Phaser", "Bitcrush", "Filter Drive", "Delay", "Reverb", "Mid/Side" }; }
+std::vector<std::string> InsertSlot::typeNamesDe() { return { "Aus", "Chorus", "Phaser", "Bitcrusher", "Filter-Drive", "Delay", "Hall", "Mitte/Seite" }; }
 
 EffectInfo InsertSlot::typeInfo (int t)
 {

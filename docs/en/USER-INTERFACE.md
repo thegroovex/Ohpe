@@ -23,6 +23,36 @@ The encoders behave the same: drag (fine with Shift / Cmd / Ctrl held at the sta
 double-click resets, right-click opens MIDI learn. The small caption above the rows names the page
 (*Macros*, *Amp Envelope*, *Track* …); the arrows in the header turn the pages.
 
+## Display views: character, stereo scope, spectrum terrain
+
+The display is built in layers like a real instrument screen: the dot grid lies behind the deep
+glass, the values float in front of it, the character casts a faint shadow and the glass itself
+carries a soft inner shadow and sheen. When you move the mouse over the display the back layers
+shift a little against the front (parallax).
+
+The left half of the display shows one of three **views** – click it to cycle, right-click for the
+view menu:
+
+| View | What it shows |
+|---|---|
+| **Character** (default) | the animated character of the engine / mode. On the Synth and Mixer pages it stands on a slowly moving **spectrum terrain** of its sound (the edit part, the master). |
+| **Stereo scope** | the master: goniometer (mid up, side across, L upper left, R upper right), correlation meter (−1 … +1; red = out of phase) and the **M** / **S** level bars. |
+| **Spectrum terrain** | the master spectrum as a perspective landscape: new rows rise at the front and recede to the horizon. It comes to rest when the sound stops. |
+
+The **stereo scope appears by itself** on the pages of the **Mid/Side** FX slot (scope of that part
+after its slot, marked *P1*–*P4*) and on the **Master Stereo** pages of the mixer (marked *Master*).
+The M and S bars use the colours of the *Mid Level* and *Side Level* encoders.
+
+![Mid/Side FX slot with the stereo scope](../images/ohpe-midside-scope.png)
+
+![Spectrum terrain](../images/ohpe-terrain.png)
+
+**Animated 3D visuals** (view menu) switches the terrain and the parallax off – the display then
+stays still, the scope keeps working. The setting belongs to the computer (it applies to every
+project); the chosen view is saved with the project. The visuals read the sound through a
+lock-free buffer: nothing waits or allocates on the audio thread, the analysis runs on the screen
+at 30 frames per second.
+
 ## Parts
 
 Ohpe has four parts, each with its own engine and sound. The **part selector** (1–4, header)

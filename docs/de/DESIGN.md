@@ -12,6 +12,16 @@ tiefes Display und vier funktionale Farben.
   Sonnengelb (2), Ultraviolett (3), Rosé (4). Rot markiert außerdem Aufnahme und aktiven Modus,
   Gelb Engine und bearbeiteten Part.
 * **Das Display ist der einzige Bildschirm:** tiefes Glas mit feinem Punktraster, warmweiße Schrift.
+* **Tiefe statt Dekoration (0.7):** Das Display ist ein versenktes Fenster mit Ebenen: eingelassene
+  Fassung (oben beschattet, an der unteren Kante beleuchtet), Glas mit von oben einfallendem Licht
+  und dunkleren Ecken, das Punktraster hinter dem Inhalt, der Inhalt, die Glasoberfläche darüber
+  (innerer Schatten, ein feiner diagonaler Glanz). Die hinteren Ebenen verschieben sich mit der Maus
+  leicht gegen die vorderen (Parallaxe); die Figur wirft einen weichen Schatten. Keine Texturen,
+  kein Chrom.
+* **Bewegte Flächen (0.7):** Stereobild (Goniometer, Korrelation, M-/S-Balken in den Farben der
+  Mitte-/Seite-Encoder) und Spektrum-Landschaft (perspektivischer Wasserfall, vorn warmweiß mit
+  ultraviolettem Schimmer, zum Horizont grau; in der Stille flach und ruhig) auf der linken
+  Display-Hälfte – Klick wechselt, Rechtsklick öffnet das Menü.
 * **Direkte Bedienung:** Balken, Schritte, Pads, Spuren und Soft-Tasten reagieren auf die Maus;
   Feinregelung ist immer Shift / Cmd / Strg.
 * **Figuren statt Icons:** Jede Engine und jeder Modus hat eine animierte Piktogramm-Figur, die auf

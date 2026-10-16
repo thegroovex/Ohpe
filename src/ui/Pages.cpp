@@ -33,7 +33,7 @@ Ids padded (Ids ids)
 std::string partPrefix (int part) { return "p" + std::to_string (juce::jlimit (0, Core::numParts - 1, part) + 1) + "."; }
 
 /** FX slot parameters of the selected slot type of a part ("pN.fx.type" + that effect's block). */
-Ids fxSlotParams (const Core& core, int part)
+Ids fxSlotParams (Core& core, int part)
 {
     const auto p = partPrefix (part);
     const auto& reg = core.params();
@@ -44,9 +44,12 @@ Ids fxSlotParams (const Core& core, int part)
     const int t = (int) std::lround (reg.get (typeIdx));
     if (t > 0 && t < (int) d.choices.size())
     {
+        // the block's ID segment is the effect's ID ("filterdrive", "midside")
         std::string seg;
-        for (char c : d.choices[(size_t) t])
-            if (c != ' ') seg += (char) std::tolower ((unsigned char) c);
+        if (auto* e = core.insertFx (juce::jlimit (0, Core::numParts - 1, part)).effect (t)) seg = e->info().id;
+        else
+            for (char c : d.choices[(size_t) t])
+                if (std::isalnum ((unsigned char) c)) seg += (char) std::tolower ((unsigned char) c);
         for (const auto& id : withPrefix (core, p + "fx." + seg + ".")) ids.push_back (id);
     }
     return ids;

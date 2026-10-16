@@ -32,7 +32,8 @@ namespace ohpe
 class InsertSlot
 {
 public:
-    enum Type { Off = 0, Chorus, Phaser, Bitcrush, FilterDrive, Delay, Reverb, numTypes };
+    enum Type { Off = 0, Chorus, Phaser, Bitcrush, FilterDrive, Delay, Reverb, MidSide, numTypes };
+    static constexpr int firstStereoType = MidSide; ///< 0.7 stereo types (their blocks: FxRack::registerTypeBlocks)
     static constexpr int numLegacyTypes = Reverb + 1; ///< the 0.2 types (their blocks: registerParams)
 
     InsertSlot();

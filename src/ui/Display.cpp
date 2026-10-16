@@ -43,6 +43,200 @@ bool euclidHit (int i, int steps, int pulses, int rot)
 
 Display::Display (OhpeProcessor& p) : proc (p) { setOpaque (false); }
 
+Display::~Display() { proc.core().scope().setSource (ScopeTap::None); }
+
+// ---------------------------------------------------------------- 0.7: visuals
+void Display::setVisual (Visual v)
+{
+    userVisual = (Visual) juce::jlimit (0, (int) Visual::numVisuals - 1, (int) v);
+    repaint();
+}
+
+void Display::setAnimatedVisuals (bool on)
+{
+    animated = on;
+    if (! on) parallax = parallaxTarget = {};
+    repaint();
+}
+
+int Display::forcedScopeSource() const
+{
+    // a Mid/Side effect on the encoders (any FX rack slot "pN.fx.", "pN.fx3.", "mfx2." ...) -> its scope
+    const auto& reg = proc.core().params();
+    for (const auto& id : ids)
+    {
+        int source = ScopeTap::None;
+        juce::String prefix;
+        if (id.startsWith ("mfx"))
+        {
+            prefix = id.upToFirstOccurrenceOf (".", true, false);
+            source = ScopeTap::Master;
+        }
+        else if (id.length() > 5 && id[0] == 'p' && id.substring (2, 5) == ".fx")
+        {
+            const int part = (int) id[1] - (int) '1';
+            if (part < 0 || part >= Core::numParts) continue;
+            prefix = id.upToFirstOccurrenceOf (".", true, false) + id.fromFirstOccurrenceOf (".", false, false).upToFirstOccurrenceOf (".", true, false);
+            source = part;
+        }
+        else
+            continue;
+        const int typeIdx = reg.indexOf ((prefix + "type").toStdString());
+        if (typeIdx >= 0 && (int) std::lround (reg.get (typeIdx)) == InsertSlot::MidSide) return source;
+    }
+    return ScopeTap::None;
+}
+
+Display::Visual Display::shownVisual() const
+{
+    if (forcedScopeSource() != ScopeTap::None) return Visual::Scope;
+    if (userVisual == Visual::Terrain && ! animated) return Visual::Character;
+    return userVisual;
+}
+
+int Display::scopeSource() const
+{
+    if (const int forced = forcedScopeSource(); forced != ScopeTap::None) return forced;
+    switch (shownVisual())
+    {
+        case Visual::Scope:
+        case Visual::Terrain: return ScopeTap::Master;
+        case Visual::Character:
+        case Visual::numVisuals: break;
+    }
+    // the character stands on a terrain of its own sound (synth: the edit part, mixer: the master)
+    if (animated && mode == Mode::Synth) return ctx.part;
+    if (animated && mode == Mode::Mixer) return ScopeTap::Master;
+    return ScopeTap::None;
+}
+
+juce::Rectangle<float> Display::characterArea() const
+{
+    auto mid = midArea();
+    if (mode == Mode::Sequencer) mid = mid.withTrimmedTop (mid.getHeight() * 0.17f);
+    return mid.withWidth (mid.getWidth() * 0.42f);
+}
+
+void Display::paintStereoScope (juce::Graphics& g, juce::Rectangle<float> area) const
+{
+    const float u = (float) getWidth() / 100.0f;
+    DisplayVisuals::Labels labels;
+    labels.correlation = tr ("Correlation");
+    visuals.paintScope (g, area.reduced (u * 0.6f, u * 0.4f), labels);
+    // which signal: the part after its FX rack, or the master
+    const int s = scopeSource();
+    const int src = s >= 0 && s < Core::numParts ? s : (int) ScopeTap::Master;
+    g.setColour (colour::displayDim);
+    g.setFont (labelFont (u * 1.7f));
+    g.drawText (src == ScopeTap::Master ? i18n::upper (tr ("Master")) : "P" + juce::String (src + 1),
+                area.reduced (u * 0.6f, u * 0.2f).withHeight (u * 2.4f), juce::Justification::topLeft, false);
+}
+
+void Display::showVisualMenu()
+{
+    juce::PopupMenu m;
+    m.addSectionHeader (tr ("Display view"));
+    const bool forced = forcedScopeSource() != ScopeTap::None;
+    m.addItem (1, tr ("Character"), ! forced, userVisual == Visual::Character);
+    m.addItem (2, tr ("Stereo scope"), ! forced, userVisual == Visual::Scope);
+    m.addItem (3, tr ("Spectrum terrain"), ! forced && animated, userVisual == Visual::Terrain);
+    m.addSeparator();
+    m.addItem (4, tr ("Animated 3D visuals"), true, animated);
+    juce::Component::SafePointer<Display> safe (this);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (this), [safe] (int r) {
+        if (safe == nullptr || r == 0) return;
+        if (r == 4) safe->setAnimatedVisuals (! safe->animated);
+        else safe->setVisual ((Visual) (r - 1));
+        if (safe->onVisualSettingsChanged) safe->onVisualSettingsChanged();
+    });
+}
+
+void Display::mouseMove (const juce::MouseEvent& e)
+{
+    if (! animated || getWidth() <= 0) return;
+    parallaxTarget = { juce::jlimit (-1.0f, 1.0f, (e.position.x / (float) getWidth()) * 2.0f - 1.0f),
+                       juce::jlimit (-1.0f, 1.0f, (e.position.y / (float) getHeight()) * 2.0f - 1.0f) };
+}
+
+void Display::mouseExit (const juce::MouseEvent&) { parallaxTarget = {}; }
+
+// ---------------------------------------------------------------- 0.7: depth layers
+void Display::resized() { renderLayers(); }
+
+void Display::renderLayers()
+{
+    const int w = getWidth(), h = getHeight();
+    if (w <= 0 || h <= 0) return;
+    const auto b = getLocalBounds().toFloat();
+    const float u = b.getWidth() / 100.0f;
+    const auto glass = b.reduced (u * 0.6f);
+    juce::Path glassPath;
+    glassPath.addRoundedRectangle (glass, u * 1.2f);
+
+    // base: an inset bezel (shaded at the top, lit at the lower lip) and deep glass with a soft
+    // light falling in from above, darker towards the corners
+    baseLayer = juce::Image (juce::Image::ARGB, w, h, true);
+    {
+        juce::Graphics g (baseLayer);
+        g.setGradientFill (juce::ColourGradient (colour::bodyShade.darker (0.22f), 0, b.getY(), colour::bodyLight, 0, b.getBottom(), false));
+        g.fillRoundedRectangle (b, u * 1.6f);
+        g.setColour (juce::Colours::black.withAlpha (0.18f));
+        g.drawRoundedRectangle (b.reduced (0.5f), u * 1.6f, 1.0f);
+        juce::ColourGradient fill (juce::Colour (0xff15171c), 0, glass.getY(), juce::Colour (0xff08090b), 0, glass.getBottom(), false);
+        fill.addColour (0.55, colour::display);
+        g.setGradientFill (fill);
+        g.fillPath (glassPath);
+        g.saveState();
+        g.reduceClipRegion (glassPath);
+        g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.035f), glass.getCentreX(), glass.getY() + glass.getHeight() * 0.3f,
+                                                 juce::Colours::transparentWhite, glass.getCentreX(), glass.getY() + glass.getHeight() * 1.1f, true));
+        g.fillRect (glass);
+        g.setGradientFill (juce::ColourGradient (juce::Colours::transparentBlack, glass.getCentreX(), glass.getCentreY(),
+                                                 juce::Colours::black.withAlpha (0.4f), glass.getX(), glass.getY(), true));
+        g.fillRect (glass);
+        g.restoreState();
+    }
+
+    // dot grid: its own layer behind the content, shifted by the parallax
+    gridLayer = juce::Image (juce::Image::ARGB, w, h, true);
+    {
+        juce::Graphics g (gridLayer);
+        g.setColour (colour::displayGrid.brighter (0.08f));
+        for (float x = glass.getX() + u; x < glass.getRight() - u * 0.5f; x += u * 2.0f)
+            for (float y = glass.getY() + u; y < glass.getBottom() - u * 0.5f; y += u * 2.0f)
+                g.fillRect (x, y, u * 0.16f, u * 0.16f);
+    }
+
+    // glass on top: inner shadow under the upper bezel, a lit lower lip and a faint diagonal sheen
+    glassLayer = juce::Image (juce::Image::ARGB, w, h, true);
+    {
+        juce::Graphics g (glassLayer);
+        g.reduceClipRegion (glassPath);
+        g.setGradientFill (juce::ColourGradient (juce::Colours::black.withAlpha (0.62f), 0, glass.getY(), juce::Colours::transparentBlack, 0,
+                                                 glass.getY() + u * 2.6f, false));
+        g.fillRect (glass.withHeight (u * 2.6f));
+        g.setGradientFill (juce::ColourGradient (juce::Colours::black.withAlpha (0.38f), glass.getX(), 0, juce::Colours::transparentBlack,
+                                                 glass.getX() + u * 1.4f, 0, false));
+        g.fillRect (glass.withWidth (u * 1.4f));
+        g.setGradientFill (juce::ColourGradient (juce::Colours::black.withAlpha (0.3f), glass.getRight(), 0, juce::Colours::transparentBlack,
+                                                 glass.getRight() - u * 1.2f, 0, false));
+        g.fillRect (glass.withLeft (glass.getRight() - u * 1.2f));
+        g.setColour (juce::Colours::white.withAlpha (0.07f));
+        g.fillRect (glass.withTop (glass.getBottom() - 1.2f).reduced (u * 1.2f, 0));
+        juce::Path sheen;
+        sheen.startNewSubPath (glass.getX(), glass.getY());
+        sheen.lineTo (glass.getX() + glass.getWidth() * 0.58f, glass.getY());
+        sheen.lineTo (glass.getX() + glass.getWidth() * 0.30f, glass.getBottom());
+        sheen.lineTo (glass.getX(), glass.getBottom());
+        sheen.closeSubPath();
+        g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.045f), glass.getX(), glass.getY(), juce::Colours::transparentWhite,
+                                                 glass.getX() + glass.getWidth() * 0.42f, glass.getY() + glass.getHeight() * 0.5f, false));
+        g.fillPath (sheen);
+        g.setColour (juce::Colours::black.withAlpha (0.7f));
+        g.strokePath (glassPath, juce::PathStrokeType (1.0f));
+    }
+}
+
 void Display::setMode (Mode m, int pg, int numPagesInMode, const std::vector<juce::String>& encoderIds, const juce::String& title)
 {
     if (m != mode) overviewAge = 1.0e9f;
@@ -64,6 +258,15 @@ void Display::flash (const juce::String& message)
 void Display::tick (float seconds)
 {
     time += seconds;
+    // 0.7: scope tap source for the current view, visuals, parallax
+    if (const int src = scopeSource(); src != lastSource)
+    {
+        proc.core().scope().setSource (src);
+        visuals.clear();
+        lastSource = src;
+    }
+    if (lastSource != ScopeTap::None) visuals.update (proc.core().scope(), proc.core().sampleRate(), seconds);
+    if (animated) parallax += (parallaxTarget - parallax) * juce::jmin (1.0f, seconds * 5.0f);
     const float target = juce::jmin (1.0f, (float) proc.core().activeVoices() / 3.0f);
     energy += (target - energy) * 0.2f;
     if (flashTime > 0.0f) flashTime -= seconds;
@@ -309,6 +512,20 @@ void Display::mouseDown (const juce::MouseEvent& e)
         return;
     }
 
+    // 0.7: the visual area - click cycles character / scope / terrain, right-click opens the view menu
+    if (characterArea().contains (p) && ! (mode == Mode::Sequencer && seqTab (0).getBottom() > p.y))
+    {
+        if (e.mods.isPopupMenu()) { showVisualMenu(); return; }
+        if (forcedScopeSource() == ScopeTap::None)
+        {
+            int v = ((int) userVisual + 1) % (int) Visual::numVisuals;
+            if (v == (int) Visual::Terrain && ! animated) v = (int) Visual::Character;
+            setVisual ((Visual) v);
+            if (onVisualSettingsChanged) onVisualSettingsChanged();
+            return;
+        }
+    }
+
     if (mode == Mode::Sequencer)
     {
         for (int v = 0; v < numSeqViews; ++v)
@@ -363,16 +580,18 @@ void Display::paint (juce::Graphics& g)
     const auto b = getLocalBounds().toFloat();
     const float u = b.getWidth() / 100.0f; // display unit
 
-    // glass: bezel, deep fill, faint dot grid
-    g.setColour (colour::bodyShade);
-    g.fillRoundedRectangle (b, u * 1.6f);
+    // glass (0.7: with depth): inset bezel and deep glass, the dot grid as a layer further back
+    // (parallax), the content, then the glass surface itself (inner shadow, sheen) on top
+    if (baseLayer.getWidth() != getWidth() || baseLayer.getHeight() != getHeight()) renderLayers();
     const auto glass = b.reduced (u * 0.6f);
-    g.setColour (colour::display);
-    g.fillRoundedRectangle (glass, u * 1.2f);
-    g.setColour (colour::displayGrid);
-    for (float x = glass.getX() + u * 2; x < glass.getRight() - u; x += u * 2.0f)
-        for (float y = glass.getY() + u * 2; y < glass.getBottom() - u; y += u * 2.0f)
-            g.fillRect (x, y, u * 0.15f, u * 0.15f);
+    g.drawImageAt (baseLayer, 0, 0);
+    {
+        juce::Graphics::ScopedSaveState save (g);
+        juce::Path clip;
+        clip.addRoundedRectangle (glass.reduced (1.0f), u * 1.2f);
+        g.reduceClipRegion (clip);
+        g.drawImageTransformed (gridLayer, juce::AffineTransform::translation (-parallax.x * u * 0.6f, -parallax.y * u * 0.45f));
+    }
 
     auto& core = proc.core();
     const auto& info = modeInfo (mode);
@@ -441,7 +660,7 @@ void Display::paint (juce::Graphics& g)
         mid = mid.withTrimmedTop (mid.getHeight() * 0.17f);
     }
 
-    // middle: pictogram character + encoder rows
+    // middle: pictogram character (0.7: or stereo scope / spectrum terrain) + encoder rows
     auto pictoArea = mid.withWidth (mid.getWidth() * 0.42f);
     PictoState ps;
     ps.large = true;
@@ -450,8 +669,28 @@ void Display::paint (juce::Graphics& g)
     for (int i = 0; i < 4; ++i) ps.macro[i] = rowValue (i);
     const Picto picto = mode == Mode::Synth ? (Picto) (int) type : info.picto;
     const bool dim = (mode == Mode::Synth && ! eng.implemented) || ! info.available;
-    drawPictogram (g, pictoArea.reduced (u * 1.5f), picto, ps, dim ? colour::displayDim : colour::displayText);
-    if (dim)
+    const auto shown = shownVisual();
+    if (shown == Visual::Scope)
+    {
+        paintStereoScope (g, pictoArea);
+    }
+    else if (shown == Visual::Terrain)
+    {
+        visuals.paintTerrain (g, pictoArea.reduced (u * 0.4f, u * 0.6f), parallax, 1.0f);
+        g.setColour (colour::displayDim);
+        g.setFont (labelFont (u * 1.7f));
+        g.drawText (i18n::upper (tr ("Master")), pictoArea.reduced (u * 0.6f, u * 0.2f).withHeight (u * 2.4f), juce::Justification::topLeft, false);
+    }
+    else
+    {
+        // the character stands on a slowly moving terrain of its sound (a layer further back)
+        if (animated && (mode == Mode::Synth || mode == Mode::Mixer))
+            visuals.paintTerrain (g, pictoArea.withTrimmedTop (pictoArea.getHeight() * 0.42f).reduced (u * 0.4f, 0), parallax * 0.6f, 0.42f);
+        const auto charArea = pictoArea.reduced (u * 1.5f);
+        drawPictogram (g, charArea.translated (u * 0.35f, u * 0.6f), picto, ps, juce::Colours::black.withAlpha (0.55f)); // cast shadow
+        drawPictogram (g, charArea, picto, ps, dim ? colour::displayDim : colour::displayText);
+    }
+    if (dim && shown == Visual::Character)
     {
         g.setColour (colour::displayDim);
         g.setFont (labelFont (u * 2.2f));
@@ -459,6 +698,7 @@ void Display::paint (juce::Graphics& g)
     }
     paintRows (g);
     paintStrip (g, stripArea());
+    g.drawImageAt (glassLayer, 0, 0);
 }
 
 void Display::paintRows (juce::Graphics& g)

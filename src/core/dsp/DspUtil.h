@@ -55,6 +55,11 @@ public:
         return current;
     }
     float value() const noexcept { return current; }
+    /** Jumps to the target once within `tolerance` of it (0.7). */
+    void settle (float tolerance) noexcept
+    {
+        if (std::abs (target - current) <= tolerance) current = target;
+    }
 
 private:
     float current = 0.0f, target = 0.0f, coeff = 1.0f;
