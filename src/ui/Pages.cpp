@@ -179,8 +179,11 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
         case Mode::Tape:
         {
             const std::string t = tapeTr (ctx.tapeTrack);
-            return { "tape.play", "tape.rec", "tape.speed", "tape.reverse", t + "arm", t + "src", t + "level", t + "out",
-                     "tape.loop", "tape.loopin", "tape.loopout", "tape.overdub", "tape.sat", "tape.wow", "tape.flutter", "tape.hiss" };
+            // p11: the selected track first (arm, source); play / record live on the transport keys
+            return { t + "arm", t + "src", t + "level", t + "out",
+                     "tape.overdub", "tape.speed", "tape.reverse", Core::Ids::tapeTxLink,
+                     "tape.loop", "tape.loopin", "tape.loopout", "",
+                     "tape.sat", "tape.wow", "tape.flutter", "tape.hiss" };
         }
         case Mode::Drum:
         {
@@ -218,7 +221,7 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
                 case SeqView::numViews: break;
             }
             break;
-        case Mode::Tape: t = { "Transport", "Track", "Loop", "Tape Character" }; break;
+        case Mode::Tape: t = { "Track", "Transport", "Loop", "Tape Character" }; break;
         case Mode::Drum: t = { "Pad", "Pad Mix", "Kit" }; break;
         case Mode::numModes: break;
     }
@@ -268,7 +271,8 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
     {
         case Mode::Tape:
         {
-            groups.push_back ({ "Transport", 0, { "tape.play", "tape.rec", "tape.speed", "tape.reverse", "tape.overdub", Core::Ids::tapeEditTrack } });
+            groups.push_back ({ "Transport", 0, { "tape.play", "tape.rec", "tape.speed", "tape.reverse", "tape.overdub", Core::Ids::tapeEditTrack,
+                                               Core::Ids::tapeTxLink } });
             groups.push_back ({ "Loop", 0, { "tape.loop", "tape.loopin", "tape.loopout" } });
             groups.push_back ({ "Tape Character", 0, { "tape.sat", "tape.wow", "tape.flutter", "tape.hiss" } });
             for (int t = 0; t < TapeMachine::numTracks; ++t)

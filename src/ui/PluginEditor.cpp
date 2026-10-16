@@ -176,9 +176,22 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
         modeKeys[(size_t) m] = std::move (key);
     }
 
+    // p11: the TRANSPORT cluster - play, record, stop, to the start, loop; right-click = MIDI learn
     playKey.setAccent (colour::signalRed);
-    playKey.onClick = [this] { setParamPlain (Core::Ids::seqRun, proc.core().params().get (Core::Ids::seqRun) >= 0.5f ? 0.0f : 1.0f); };
-    playKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::seqRun, &playKey); };
+    playKey.onClick = [this] { transport (OhpeProcessor::Transport::PlayStop); };
+    playKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::tapeTxPlay, &playKey); };
+    recKey.setAccent (colour::signalRed);
+    recKey.setPictoColour (colour::signalRed);
+    recKey.onClick = [this] { transport (OhpeProcessor::Transport::Record); };
+    recKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::tapeTxRec, &recKey); };
+    stopKey.onClick = [this] { transport (OhpeProcessor::Transport::Stop); };
+    stopKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::tapeTxStop, &stopKey); };
+    toStartKey.onClick = [this] { transport (OhpeProcessor::Transport::ToStart); };
+    toStartKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::tapeRtz, &toStartKey); };
+    loopKey.setAccent (colour::sunYellow);
+    loopKey.onClick = [this] { transport (OhpeProcessor::Transport::Loop); };
+    loopKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::tapeTxLoop, &loopKey); };
+    for (auto* k : { &recKey, &stopKey, &toStartKey, &loopKey }) addAndMakeVisible (*k);
     octDownKey.onClick = [this] { keyboard.setBaseOctave (keyboard.getBaseOctave() - 1); saveUiState(); repaint(); };
     octUpKey.onClick = [this] { keyboard.setBaseOctave (keyboard.getBaseOctave() + 1); saveUiState(); repaint(); };
     midiKey.onClick = [this] { showMidiMenu(); };
@@ -198,6 +211,8 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     for (auto* b : { &langEn, &langDe })
     {
         b->setClickingTogglesState (false);
+        b->setWantsKeyboardFocus (false); // p11: Space stays the transport shortcut
+        b->setMouseClickGrabsKeyboardFocus (false);
         addAndMakeVisible (*b);
     }
     langEn.onClick = [this] { setLanguage (i18n::Language::English); };
@@ -229,6 +244,17 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     display.onTrackClicked = [this] (int t) { selectTapeTrack (t); };
     display.onPadClicked = [this] (int pad) { selectDrumPad (pad, true); };
     display.onSoftKey = [this] (int id) { onSoftKey (id); };
+    // p11: tape page transport and arm dots
+    display.onTransportClicked = [this] (int b) {
+        using T = OhpeProcessor::Transport;
+        static const T actions[] = { T::ToStart, T::Stop, T::TapePlayStop, T::Record, T::Loop };
+        transport (actions[juce::jlimit (0, 4, b)]);
+    };
+    display.onTrackArmClicked = [this] (int t) {
+        selectTapeTrack (t);
+        transport (OhpeProcessor::Transport::Arm);
+    };
+    display.setShowShortcuts (proc.wrapperType == juce::AudioProcessor::wrapperType_Standalone);
     display.setAnimatedVisuals (loadAnimatedVisualsSetting());
     display.onVisualSettingsChanged = [this] {
         saveUiState();
@@ -240,8 +266,9 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     proView.onClose = [this] { showProView (false); };
     proView.onModeSelected = [this] (Mode m) { selectMode (m); };
     addChildComponent (proView);
-    library.onClosed = [this] { libraryKey.setActive (false); rebindEncoders(); };
+    library.onClosed = [this] { libraryKey.setActive (false); updateOverlayVisibility(); rebindEncoders(); };
     addChildComponent (library);
+    tooltipWindow = std::make_unique<juce::TooltipWindow> (this, 700); // p11: tooltips on keys and the display
 
     loadUiState();
     proc.addChangeListener (this);
@@ -257,6 +284,8 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     shownEngine = ui::selectedEngine (proc.core(), ctx.part);
     rebindEncoders();
     refreshKeys();
+    updateOverlayVisibility();
+    transportMessagesSeen = proc.transportMessageCount();
     startTimerHz (30);
 }
 
@@ -284,8 +313,13 @@ void OhpeEditor::resized()
         modeKeys[(size_t) m]->setBounds (scaled (970.0f + 100.0f * (float) (m % 2), 100.0f + 82.0f * (float) (m / 2), 90, 78));
     for (int i = 0; i < 4; ++i)
         encoders[(size_t) i]->setBounds (scaled (300.0f + 160.0f * (float) i, 440, 120, 150));
-    playKey.setBounds (scaled (60, 470, 90, 78));
-    midiKey.setBounds (scaled (160, 470, 90, 78));
+    // p11: TRANSPORT cluster - REC and PLAY large, then to the start / stop / loop; MIDI moved to the header
+    recKey.setBounds (scaled (40, 462, 100, 70));
+    playKey.setBounds (scaled (150, 462, 100, 70));
+    toStartKey.setBounds (scaled (40, 534, 66, 62));
+    stopKey.setBounds (scaled (112, 534, 66, 62));
+    loopKey.setBounds (scaled (184, 534, 66, 62));
+    midiKey.setBounds (scaled (948, 8, 78, 70));
     octDownKey.setBounds (scaled (970, 470, 90, 78));
     octUpKey.setBounds (scaled (1070, 470, 90, 78));
     // header (0.3): part selector, preset strip, library + pro keys
@@ -336,16 +370,20 @@ void OhpeEditor::paint (juce::Graphics& g)
         g.setColour (colour::bodyShade);
         g.fillRect (juce::Rectangle<float> (x * s, (y + 15) * s, w * s, 1.0f * s));
     };
-    legend (tr ("Engine") + " / P" + juce::String (ctx.part + 1), 40, 74, 190);
-    legend (tr ("Mode"), 970, 74, 190);
-    legend (tr ("Sequencer") + " / MIDI", 60, 444, 190);
-    legend (tr ("Octave") + " " + juce::String (keyboard.getBaseOctave()), 970, 444, 190);
     legend (tr ("Part"), 300, 10, 150);
     legend (tr ("Preset"), 470, 10, 290);
-
-    // encoder wells
-    g.setColour (colour::bodyShade.withAlpha (0.5f));
-    g.fillRoundedRectangle (juce::Rectangle<float> (280 * s, 430 * s, 640 * s, 166 * s), 14 * s);
+    // p11: the legends of the plate belong to its controls - hidden with them while the library or the
+    // pro view lies on the plate (the "Engine" legend sits above the lid's top edge and used to show)
+    if (! overlayOpen())
+    {
+        legend (tr ("Engine") + " / P" + juce::String (ctx.part + 1), 40, 74, 190);
+        legend (tr ("Mode"), 970, 74, 190);
+        legend (tr ("Transport"), 40, 444, 210);
+        legend (tr ("Octave") + " " + juce::String (keyboard.getBaseOctave()), 970, 444, 190);
+        // encoder wells
+        g.setColour (colour::bodyShade.withAlpha (0.5f));
+        g.fillRoundedRectangle (juce::Rectangle<float> (280 * s, 430 * s, 640 * s, 166 * s), 14 * s);
+    }
     // keyboard bed
     g.setColour (colour::bodyShade.withAlpha (0.7f));
     g.fillRoundedRectangle (juce::Rectangle<float> (30 * s, 602 * s, 1140 * s, 186 * s), 12 * s);
@@ -518,6 +556,7 @@ void OhpeEditor::showLibrary (bool show)
     else
         library.close (true);
     libraryKey.setActive (show);
+    updateOverlayVisibility();
 }
 
 void OhpeEditor::showProView (bool show)
@@ -530,7 +569,67 @@ void OhpeEditor::showProView (bool show)
         refreshProView();
         proView.toFront (false);
     }
+    updateOverlayVisibility();
     saveUiState();
+}
+
+// ---------------------------------------------------------------- p11: overlays hide the plate
+std::vector<juce::Component*> OhpeEditor::plateComponents()
+{
+    // everything that sits on the plate under the overlay area (30..1170 x 86..602)
+    std::vector<juce::Component*> c { &display, &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey };
+    for (auto& k : engineKeys) c.push_back (k.get());
+    for (auto& k : modeKeys) c.push_back (k.get());
+    for (auto& e : encoders) c.push_back (e.get());
+    return c;
+}
+
+void OhpeEditor::updateOverlayVisibility()
+{
+    // Before: the overlays only covered the plate by z-order. Legends painted by the editor above the
+    // lid's top edge ("ENGINE / P1", "MODE") stayed visible, and the controls under the lid stayed live
+    // (display animation, tooltips, hit-testing at the lid's edges). Now every plate control is hidden
+    // while an overlay is open and the editor paints no plate legends.
+    const bool plate = ! overlayOpen();
+    for (auto* c : plateComponents())
+        if (c->isVisible() != plate) c->setVisible (plate);
+    repaint();
+}
+
+// ---------------------------------------------------------------- p11: tape transport
+void OhpeEditor::transport (OhpeProcessor::Transport action)
+{
+    const auto msg = proc.runTransport (action);
+    if (msg.isNotEmpty())
+    {
+        display.flash (msg);
+        lastFlashText = msg;
+    }
+    refreshTransportKeys();
+    if (mode == Mode::Tape) rebindEncoders(); // arm / loop values on the encoders
+    display.repaint();
+}
+
+bool OhpeEditor::handleShortcut (const juce::KeyPress& key)
+{
+    if (proc.wrapperType != juce::AudioProcessor::wrapperType_Standalone) return false;
+    if (key.getModifiers().isCommandDown() || key.getModifiers().isCtrlDown() || key.getModifiers().isAltDown()) return false;
+    using T = OhpeProcessor::Transport;
+    const auto c = juce::CharacterFunctions::toLowerCase (key.getTextCharacter());
+    if (key.getKeyCode() == juce::KeyPress::spaceKey) { transport (T::PlayStop); return true; }
+    if (c == 'r') { transport (T::Record); return true; }
+    if (key.getKeyCode() == juce::KeyPress::returnKey || key.getKeyCode() == juce::KeyPress::homeKey) { transport (T::ToStart); return true; }
+    if (c == 'l') { transport (T::Loop); return true; }
+    return false;
+}
+
+void OhpeEditor::refreshTransportKeys()
+{
+    const bool seqRunning = proc.core().params().get (Core::Ids::seqRun) >= 0.5f;
+    const bool blink = std::fmod (blinkClock, 1.0f) < 0.6f;
+    playKey.setActive (seqRunning || proc.tapeRolling());
+    recKey.setActive (proc.tapeRecording() ? blink : proc.tapeRecordReady());
+    loopKey.setActive (proc.core().params().get ("tape.loop") >= 0.5f);
 }
 
 void OhpeEditor::refreshProView()
@@ -729,6 +828,8 @@ void OhpeEditor::rebindEncoders()
 void OhpeEditor::advanceAnimation (float seconds)
 {
     display.tick (seconds);
+    blinkClock += seconds;
+    refreshTransportKeys();
     // headless renders call this instead of the timer: keep the preset name current after a load
     presetStrip.setName (proc.presets().currentName());
 }
@@ -761,7 +862,7 @@ void OhpeEditor::refreshSoftKeys()
         keys = { { skLift, tr ("Lift") },     { skCut, tr ("Cut") },   { skDrop, tr ("Drop"), tape.clipboardFrames() > 0 },
                  { skSplice, tr ("Splice"), tape.clipboardFrames() > 0 },
                  { skUndo, tr ("Undo"), tape.canUndo() }, { skRedo, tr ("Redo"), tape.canRedo() },
-                 { skRtz, juce::String::fromUTF8 ("|\xe2\x97\x80") }, { skExport, tr ("Export") } };
+                 { skExport, tr ("Export") } }; // p11: "to the start" is a transport button now
     }
     else if (mode == Mode::Drum)
     {
@@ -946,7 +1047,19 @@ void OhpeEditor::refreshKeys()
 {
     for (int t = 0; t < numEngineTypes; ++t) engineKeys[(size_t) t]->setActive ((EngineType) t == shownEngine);
     for (int m = 0; m < numModes; ++m) modeKeys[(size_t) m]->setActive ((Mode) m == mode);
-    playKey.setActive (proc.core().params().get (Core::Ids::seqRun) >= 0.5f);
+    refreshTransportKeys();
+    // p11: tooltips (translated; the shortcut in brackets in the standalone app)
+    const bool sa = proc.wrapperType == juce::AudioProcessor::wrapperType_Standalone;
+    auto tip = [sa] (const char* text, const char* key) { return tr (text) + (sa ? "  (" + juce::String (key) + ")" : juce::String()); };
+    const bool linked = proc.core().params().get (Core::Ids::tapeTxLink) >= 0.5f;
+    playKey.setTooltip (tip (linked ? "Play / stop - sequencer and tape" : "Play / stop the sequencer", "Space"));
+    recKey.setTooltip (tip ("Record on the tape - arms the selected track when none is armed", "R"));
+    stopKey.setTooltip (tip ("Stop - press again to go to the start", "Space"));
+    toStartKey.setTooltip (tip ("To the start of the tape", "Enter"));
+    loopKey.setTooltip (tip ("Loop between loop in and out", "L"));
+    midiKey.setTooltip (tr ("MIDI maps and remote controls"));
+    libraryKey.setTooltip (tr ("Preset library"));
+    proKey.setTooltip (tr ("All parameters of the mode"));
     libraryKey.setActive (library.isVisible());
     proKey.setActive (proView.isVisible());
     langEn.setToggleState (i18n::current() == i18n::Language::English, juce::dontSendNotification);
@@ -956,6 +1069,7 @@ void OhpeEditor::refreshKeys()
 
 bool OhpeEditor::keyPressed (const juce::KeyPress& key)
 {
+    if (handleShortcut (key)) return true; // p11: standalone transport shortcuts
     if (key == juce::KeyPress::escapeKey)
     {
         if (library.isVisible()) { library.close (false); return true; }
@@ -1012,11 +1126,15 @@ void OhpeEditor::timerCallback()
         const auto r = modfx::modulationRange (core, e->boundId().toStdString());
         e->setModulation (r.any, r.lo, r.hi, r.live);
     }
-    const bool running = core.params().get (Core::Ids::seqRun) >= 0.5f;
-    if (running != playKey.getToggleState())
+    // p11: transport keys (REC blinks), messages of MIDI-triggered transport actions
+    blinkClock += 1.0f / 30.0f;
+    refreshTransportKeys();
+    if (const int n = proc.transportMessageCount(); n != transportMessagesSeen)
     {
-        playKey.setToggleState (running, juce::dontSendNotification);
-        refreshKeys();
+        transportMessagesSeen = n;
+        lastFlashText = proc.lastTransportMessage();
+        display.flash (lastFlashText);
+        if (mode == Mode::Tape) rebindEncoders();
     }
     const auto learning = proc.learningParamId();
     if (learning != lastLearning)
@@ -1062,7 +1180,10 @@ void OhpeEditor::showMidiMenu()
     m.addItem (3, tr ("Clear all MIDI mappings"), ! proc.core().midiMap().mappings().empty());
     m.addSeparator();
     juce::PopupMenu remote;
-    for (const char* id : { Core::Ids::libOpen, Core::Ids::libPrev, Core::Ids::libNext, Core::Ids::editPart })
+    for (const char* id : { Core::Ids::libOpen, Core::Ids::libPrev, Core::Ids::libNext, Core::Ids::editPart,
+                            // p11: tape transport
+                            Core::Ids::tapeTxPlay, Core::Ids::tapeTxTapePlay, Core::Ids::tapeTxStop, Core::Ids::tapeTxRec,
+                            Core::Ids::tapeRtz, Core::Ids::tapeTxLoop, Core::Ids::tapeTxArm, Core::Ids::tapeEditTrack })
     {
         const int idx = proc.core().params().indexOf (id);
         if (idx < 0) continue;
@@ -1146,6 +1267,7 @@ void OhpeEditor::loadUiState()
     {
         proView.setVisible ((bool) s["pro"]);
         proKey.setActive (proView.isVisible());
+        updateOverlayVisibility();
     }
 }
 } // namespace ohpe

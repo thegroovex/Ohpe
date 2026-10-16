@@ -32,6 +32,7 @@
 #include "standalone/LinkSync.h"
 #include "standalone/SyncSettingsPage.h"
 #include "ui/OhpeLookAndFeel.h"
+#include "ui/PluginEditor.h"
 #include "ui/Palette.h"
 
 namespace ohpe
@@ -50,6 +51,7 @@ public:
                 b->setVisible (false);
         settingsButton.setButtonText (tr ("Audio Settings ..."));
         settingsButton.setTriggeredOnMouseDown (true);
+        settingsButton.setWantsKeyboardFocus (false); // Space is the transport shortcut, not "open the menu"
         settingsButton.onClick = [this] { showMenu(); };
         juce::Component::addAndMakeVisible (settingsButton);
         resized();
@@ -74,6 +76,15 @@ public:
     {
         StandaloneFilterWindow::resized();
         settingsButton.setBounds (8, 4, 190, juce::jmax (18, getTitleBarHeight() - 8));
+    }
+
+    /** p11: transport shortcuts (Space, R, Enter, L) also when no control inside the editor has the focus. */
+    bool keyPressed (const juce::KeyPress& key) override
+    {
+        if (auto* proc = getAudioProcessor())
+            if (auto* ed = dynamic_cast<OhpeEditor*> (proc->getActiveEditor()); ed != nullptr && ed->handleShortcut (key))
+                return true;
+        return StandaloneFilterWindow::keyPressed (key);
     }
 
     void showAudioSettings()

@@ -28,7 +28,7 @@ const char* const* triggerIds()
                                        Core::Ids::tapeCut, Core::Ids::tapeDrop, Core::Ids::tapeSplice, Core::Ids::tapeUndo,
                                        Core::Ids::tapeRedo, Core::Ids::tapeRtz,
                                        // p11: tape transport
-                                       Core::Ids::tapeTxPlay, Core::Ids::tapeTxStop, Core::Ids::tapeTxRec, Core::Ids::tapeTxLoop,
+                                       Core::Ids::tapeTxPlay, Core::Ids::tapeTxTapePlay, Core::Ids::tapeTxStop, Core::Ids::tapeTxRec, Core::Ids::tapeTxLoop,
                                        Core::Ids::tapeTxArm };
     return ids;
 }
@@ -259,6 +259,7 @@ void OhpeProcessor::pollRemoteControls()
             else if (id.startsWith ("tape.tx."))
             {
                 const auto action = id == Core::Ids::tapeTxPlay ? Transport::PlayStop
+                                  : id == Core::Ids::tapeTxTapePlay ? Transport::TapePlayStop
                                   : id == Core::Ids::tapeTxStop ? Transport::Stop
                                   : id == Core::Ids::tapeTxRec  ? Transport::Record
                                   : id == Core::Ids::tapeTxLoop ? Transport::Loop
@@ -347,13 +348,28 @@ juce::String OhpeProcessor::runTransport (Transport action)
     {
         case Transport::PlayStop:
         {
-            const bool running = tapeRolling() || (linked && reg.get (Core::Ids::seqRun) >= 0.5f);
-            if (running) { stop(); msg = tr ("Stopped"); }
+            const bool seqRunning = reg.get (Core::Ids::seqRun) >= 0.5f;
+            if (! linked) // the sequencer alone; the tape keeps its own transport
+            {
+                setPlainFromUi (Core::Ids::seqRun, seqRunning ? 0.0f : 1.0f);
+                msg = seqRunning ? tr ("Stopped") : tr ("Play");
+                break;
+            }
+            if (tapeRolling() || seqRunning) { stop(); msg = tr ("Stopped"); }
             else { start(); msg = tr ("Play"); }
             break;
         }
-        case Transport::Stop:
-            if (tapeRolling() || tapeRecordReady() || (linked && reg.get (Core::Ids::seqRun) >= 0.5f)) { stop(); msg = tr ("Stopped"); }
+        case Transport::TapePlayStop:
+            if (tapeRolling()) { stop(); msg = tr ("Stopped"); }
+            else { start(); msg = tr ("Play"); }
+            break;
+        case Transport::Stop: // stops everything, linked or not
+            if (tapeRolling() || tapeRecordReady() || reg.get (Core::Ids::seqRun) >= 0.5f)
+            {
+                stop();
+                setPlainFromUi (Core::Ids::seqRun, 0.0f);
+                msg = tr ("Stopped");
+            }
             else { tape.locate (0.0); msg = tr ("Back to the start"); }
             break;
         case Transport::Record:

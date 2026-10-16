@@ -20,7 +20,9 @@ enum class Picto
     // functions
     Play, OctaveDown, OctaveUp, Midi,
     // 0.3
-    Library, Pro, Load, Export
+    Library, Pro, Load, Export,
+    // p11: tape transport
+    Stop, Record, ToStart, Loop
 };
 
 struct PictoState

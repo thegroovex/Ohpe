@@ -241,6 +241,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     {
         auto add = [&] (ParamDescriptor d) { d.group = "remote"; reg.add (std::move (d)); };
         add (toggle (Core::Ids::tapeTxPlay, "Transport Play/Stop", "Transport Start/Stopp", false));
+        add (toggle (Core::Ids::tapeTxTapePlay, "Tape Play/Stop", "Tape Start/Stopp", false));
         add (toggle (Core::Ids::tapeTxStop, "Transport Stop", "Transport Stopp", false));
         add (toggle (Core::Ids::tapeTxRec, "Transport Record", "Transport Aufnahme", false));
         add (toggle (Core::Ids::tapeTxLoop, "Transport Loop", "Transport Schleife", false));

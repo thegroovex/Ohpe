@@ -249,6 +249,10 @@ PictoKey::PictoKey (Picto p, juce::String legendEnglish)
     : juce::Button (legendEnglish), picto (p), legend (std::move (legendEnglish)), accent (colour::signalRed)
 {
     setMouseCursor (juce::MouseCursor::PointingHandCursor);
+    // p11: keys never take the keyboard focus - Space / R are the transport shortcuts in the
+    // standalone app, not "click the last key"
+    setWantsKeyboardFocus (false);
+    setMouseClickGrabsKeyboardFocus (false);
 }
 
 void PictoKey::mouseDown (const juce::MouseEvent& e)
@@ -285,7 +289,8 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
         g.fillRoundedRectangle (cap, r);
     }
     PictoState s;
-    const auto ink = available ? (active ? accent : colour::keyLight.withAlpha (0.85f)) : colour::keyLight.withAlpha (0.25f);
+    auto ink = available ? (active ? accent : colour::keyLight.withAlpha (0.85f)) : colour::keyLight.withAlpha (0.25f);
+    if (hasPictoInk && available) ink = active ? pictoInk.brighter (0.25f) : pictoInk;
     drawPictogram (g, cap.reduced (cap.getWidth() * 0.2f), picto, s, ink);
     if (active)
     {
