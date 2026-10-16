@@ -226,7 +226,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     // ---- 0.8 (sound revision 3): the 0.8 FX types' parameter blocks for every slot of every rack, the layer engine
     //      of every part, late engine parameters (Wavetable unison stack / FM, FM velocity, Sampler / Grain keyboard
     //      instruments), MPE / aftertouch amounts ------------------------------------------------------------------
-    FxRack::registerTypeBlocks (reg, Core::numParts, InsertSlot::firstR3Type, InsertSlot::numTypes);
+    FxRack::registerTypeBlocks (reg, Core::numParts, InsertSlot::firstR3Type, InsertSlot::firstSpaceType);
     for (auto& p : parts) p->registerLate08Params (reg);
     for (auto& p : parts)
         for (auto type : { EngineType::Wavetable, EngineType::FM, EngineType::Sampler, EngineType::Grain })
@@ -235,5 +235,14 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate08MpeParams (reg);
     // ---- 0.8: bass mono per part (side signal below the frequency removed after the FX slot) ---------------------
     for (auto& p : parts) p->registerLate08MonoParams (reg);
+    // ---- 1.0: 3D spatialiser - the per-part stage ("pN.space.on" + the Space 3D block), the master monitoring switch
+    //      and mono check, then the Space 3D rack type's block for every slot of every rack -------------------------
+    for (auto& p : parts) p->registerLate10SpaceParams (reg);
+    {
+        auto add = [&] (ParamDescriptor d) { d.group = "master"; reg.add (std::move (d)); };
+        add (choice (Core::Ids::spaceOut, "3D Monitoring", "3D-Abhöre", { "Headphones", "Speakers" }, { "Kopfhörer", "Lautsprecher" }, 0));
+        add (toggle (Core::Ids::spaceMonoCheck, "Mono Check", "Mono-Prüfung", false));
+    }
+    FxRack::registerTypeBlocks (reg, Core::numParts, InsertSlot::firstSpaceType, InsertSlot::numTypes);
 }
 } // namespace ohpe

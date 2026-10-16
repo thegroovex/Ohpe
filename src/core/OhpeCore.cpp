@@ -61,6 +61,8 @@ Core::Core()
     euclidDrumsIndex = registry.indexOf (Ids::euclidDrums);
     orbitDrumsIndex = registry.indexOf (Ids::orbitDrums);
     keyRootIndex = registry.indexOf (Ids::keyRoot);
+    spaceOutIndex = registry.indexOf (Ids::spaceOut);
+    monoCheckIndex = registry.indexOf (Ids::spaceMonoCheck);
     keyScaleIndex = registry.indexOf (Ids::keyScale);
 
     snapshot.prepare (registry);
@@ -350,6 +352,13 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         seqShaper[(size_t) i].set (quant, chord, root, scale);
     }
     clockOutOn = snapshot.getBool (clockOutIndex);
+    if (const int mon = spaceOutIndex >= 0 ? snapshot.getInt (spaceOutIndex) : 0; mon != lastMonitor) // 1.0: headphones / speakers
+    {
+        lastMonitor = mon;
+        for (auto& p : parts) p->setMonitorMode (mon);
+        masterRack.setMonitorMode (mon);
+    }
+    const bool monoCheck = monoCheckIndex >= 0 && snapshot.getBool (monoCheckIndex);
     notesOutOn = snapshot.getBool (notesOutIndex);
     midiOut.clear();
 
@@ -425,6 +434,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         SourceBuffers src;
         const double chunkPpq = tr.ppqAtBlockStart + (double) pos * tr.bpm / 60.0 / sr;
         masterRack.setTempo (tr.bpm > 0.0 ? tr.bpm : 120.0);
+        masterRack.setTransportPosition (chunkPpq, tr.playing); // 1.0: tempo-synced motion (Space 3D)
         for (int p = 0; p < numParts; ++p)
         {
             parts[(size_t) p]->setTransport (tr.bpm, chunkPpq, tr.playing); // 0.7: tempo-synced LFOs
@@ -444,6 +454,9 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
             out.right[(size_t) o] = outputs.right[(size_t) o] != nullptr ? outputs.right[(size_t) o] + pos : nullptr;
         }
         mix.process (src, out, len);
+        if (monoCheck && out.left[0] != nullptr && out.right[0] != nullptr) // 1.0: mono check of the main output
+            for (int i = 0; i < len; ++i)
+                out.left[0][i] = out.right[0][i] = 0.5f * (out.left[0][i] + out.right[0][i]);
         scopeTap.offer (ScopeTap::Master, out.left[0], out.right[0], len); // 0.7: display scope
         pos = end;
     }

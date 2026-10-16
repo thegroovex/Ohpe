@@ -44,5 +44,10 @@ public:
     /** 0.7: local index of the parameter the modulation targets "FX K Param 1-4" move (j = 0..3): the effect's most
         expressive continuous parameters. Default: the first four. */
     virtual int modulationParam (int j) const noexcept { return j; }
+    /** 1.0, audio thread: song position (quarter notes) at the start of the next block and whether the transport
+        plays (tempo-synced motion that repeats on playback). Optional. */
+    virtual void setTransportPosition (double ppq, bool playing) noexcept { (void) ppq; (void) playing; }
+    /** 1.0, audio thread: master monitoring mode for spatial effects (0 = headphones / binaural, 1 = speakers). Optional. */
+    virtual void setMonitorMode (int mode) noexcept { (void) mode; }
 };
 } // namespace ohpe

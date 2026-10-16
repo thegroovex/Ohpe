@@ -186,6 +186,52 @@ void Part::applyBassMono (float* l, float* r, int numSamples) noexcept
     }
 }
 
+void Part::registerLate10SpaceParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const auto group = "part" + n + "/space";
+    const std::string P = "Part " + n + " 3D ";
+    auto on = toggle (id ("space.on"), P + "Space", P + "Raum", false);
+    on.group = group;
+    reg.add (std::move (on));
+    for (auto d : SpaceEffect().getParamDescriptors())
+    {
+        d.id = id ("space." + d.id);
+        d.nameEn = P + d.nameEn;
+        d.nameDe = P + d.nameDe;
+        d.group = group;
+        reg.add (std::move (d));
+    }
+}
+
+void Part::applySpace (float* l, float* r, int n) noexcept
+{
+    if (! spaceOn && spaceFade <= 0.0f) return;
+    if (spaceOn && spaceFade >= 1.0f)
+    {
+        space.process (l, r, n);
+        return;
+    }
+    n = std::min (n, (int) spaceDryL.size());
+    std::memcpy (spaceDryL.data(), l, sizeof (float) * (size_t) n);
+    std::memcpy (spaceDryR.data(), r, sizeof (float) * (size_t) n);
+    space.process (l, r, n);
+    const float step = spaceOn ? spaceFadeStep : -spaceFadeStep;
+    for (int i = 0; i < n; ++i)
+    {
+        spaceFade = std::clamp (spaceFade + step, 0.0f, 1.0f);
+        const float w = spaceFade * spaceFade * (3.0f - 2.0f * spaceFade); // smooth equal-gain fade (coherent signals)
+        l[i] = spaceDryL[(size_t) i] + (l[i] - spaceDryL[(size_t) i]) * w;
+        r[i] = spaceDryR[(size_t) i] + (r[i] - spaceDryR[(size_t) i]) * w;
+    }
+    if (spaceFade <= 0.0f)
+    {
+        space.reset(); // the next switch-on starts clean (no stale delay lines)
+        spaceRunningFlag.store (false, std::memory_order_relaxed);
+    }
+}
+
 void Part::registerLate08Params (ParamRegistry& reg) const
 {
     using namespace pd;
@@ -221,6 +267,11 @@ void Part::bind (const ParamRegistry& reg)
     exprSmoothIndex = reg.indexOf (id ("mpe.smooth"));
     exprSlideIndex = reg.indexOf (id ("mpe.slide"));
     monoBassIndex = reg.indexOf (id ("monobass"));
+    spaceOnIndex = reg.indexOf (id ("space.on")); // 1.0
+    {
+        const auto ds = space.getParamDescriptors();
+        for (size_t i = 0; i < ds.size() && i < spaceIndex.size(); ++i) spaceIndex[i] = reg.indexOf (id ("space." + ds[i].id));
+    }
     static const char* names[numCommon] = { "engine", "vol", "voices", "tune", "fine", "glide", "bend", "velsens",
                                             "amp.a", "amp.d", "amp.s", "amp.r", "mod.a", "mod.d", "mod.s", "mod.r",
                                             "mod.amt", "lfo.rate", "lfo.depth", "lfo.shape", "lfo.dest" };
@@ -273,6 +324,12 @@ void Part::prepare (double sampleRate, int maxBlockSize)
     monoLp2.prepare (partSr);
     monoLp1.set (monoBassHz, 0.299f); // Q 0.707 each
     monoLp2.set (monoBassHz, 0.299f);
+    space.setSeed ((uint32_t) number * 0x51ED27u + 7u); // 1.0: every part its own random orbit
+    space.prepare (sampleRate, maxBlockSize);
+    spaceDryL.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
+    spaceDryR.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
+    spaceFadeStep = 1.0f / (0.02f * (float) sampleRate);
+    spaceLast.fill (NAN);
     reset();
 }
 
@@ -292,6 +349,8 @@ void Part::reset() noexcept
     exprBlend = 0.0f;
     monoLp1.reset();
     monoLp2.reset();
+    space.reset();
+    spaceFade = spaceOn ? 1.0f : 0.0f;
 }
 
 void Part::pullParams (const ParamSnapshot& s) noexcept
@@ -342,6 +401,17 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
         monoBassHz = std::clamp (s[monoBassIndex], 20.0f, 400.0f);
         monoLp1.set (monoBassHz, 0.299f);
         monoLp2.set (monoBassHz, 0.299f);
+    }
+
+    // 1.0 spatialiser stage
+    if (spaceOnIndex >= 0)
+    {
+        const bool on = s.getBool (spaceOnIndex);
+        if (on && ! spaceOn) spaceRunningFlag.store (true, std::memory_order_relaxed);
+        spaceOn = on;
+        for (size_t i = 0; i < spaceIndex.size(); ++i)
+            if (spaceIndex[i] >= 0)
+                if (const float val = s[spaceIndex[i]]; ! (val == spaceLast[i])) { spaceLast[i] = val; space.setParam ((int) i, val); }
     }
 
     // 0.8 layer
@@ -560,6 +630,7 @@ void Part::finishBlock (float* l, float* r, int numSamples) noexcept
     }
     rack.process (l, r, numSamples); // 0.7: the FX rack (slot 1 = the 0.2 FX slot)
     applyBassMono (l, r, numSamples); // 0.8: after the rack, so no effect widens the sub again
+    applySpace (l, r, numSamples);    // 1.0: the 3D stage last (it keeps the low band mono itself)
 }
 
 void Part::render (float* l, float* r, int numSamples) noexcept

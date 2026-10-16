@@ -1,0 +1,192 @@
+// Ohpe - designed by groovex
+// SPDX-License-Identifier: AGPL-3.0-or-later
+#pragma once
+
+#include "IEffect.h"
+
+#include <array>
+#include <atomic>
+#include <cstdint>
+#include <vector>
+
+namespace ohpe
+{
+namespace space
+{
+/** Head-centred coordinates in metres: x = right, y = front, z = up. */
+struct Vec3
+{
+    float x = 0.0f, y = 1.0f, z = 0.0f;
+};
+
+/** Motion paths (append-only, index = the "path" choice). */
+enum PathType { PathOff = 0, PathCircle, PathFigure8, PathFlyBy, PathRandom, PathPendulum, PathSpiral, numPaths };
+
+/** Path lengths of one cycle in beats ("pathlen" choice, append-only). */
+double pathLengthBeats (int choice) noexcept;
+constexpr int numPathLengths = 11;
+
+/**
+    Where a path puts the source at phase `phase` (cycles, unwrapped; the random orbit uses the integer part too).
+    Returns a position before the base rotation: direction in the path's own frame (front = +y) scaled by a distance
+    factor (1 = the base distance). Pure function - shared by the DSP, the display and the tests.
+*/
+Vec3 pathPoint (int path, double phase, float size, uint32_t seed) noexcept;
+
+/** Rotates a path-frame position by the base elevation (pitch, degrees) and azimuth (yaw, degrees, + = right). */
+Vec3 orient (Vec3 v, float azimuthDeg, float elevationDeg) noexcept;
+
+/** Azimuth (degrees, -180..180, + = right) and elevation (degrees) of a position. */
+float azimuthOf (const Vec3& v) noexcept;
+float elevationOf (const Vec3& v) noexcept;
+float lengthOf (const Vec3& v) noexcept;
+
+/** Interaural time difference of a direction in seconds (spherical head, + = the right ear leads). */
+float itdSeconds (const Vec3& unitDirection) noexcept;
+
+constexpr float headRadius = 0.0875f;  ///< metres
+constexpr float speedOfSound = 343.0f; ///< metres / second
+constexpr float minDistance = 0.2f, maxDistance = 40.0f, refDistance = 1.5f;
+} // namespace space
+
+/**
+    1.0: "Space 3D" - the 3D spatialiser. Used twice with the same parameter block:
+      * the per-part stage "pN.space.*" (Part, after the FX rack and bass mono, before the mixer; switched by "pN.space.on"),
+      * FX rack type "Space 3D" (InsertSlot::Space3D, "pN.fxK.space3d.*", "mfxK.space3d.*").
+
+    Model (own, parametric - no measured data set):
+      * low band below "lowkeep" (Linkwitz-Riley 24 dB/oct.) stays mono and unspatialised (only distance level / delay);
+      * the stereo input becomes two virtual sources (left / right channel) "spread" degrees apart around the position;
+      * per source: air absorption (one-pole, distance), distance level (rolloff), directional bands (front presence,
+        back band + pinna shadow, above band), two pinna notches that rise with elevation;
+      * per ear: fractional delay line (cubic) = distance delay (Doppler, slew-limited) + interaural time difference
+        (spherical head), spherical-head shadow filter (first order, coefficients interpolated per sample), shoulder
+        reflection tap, near-field level difference;
+      * room: six image-source early reflections of a shoebox room that follow the source + a small diffuse tail (FDN);
+      * speaker mode ("monitor" = speakers): no interaural delay, no head shadow / pinna colouration - constant-power
+        panning, depth by level, air, back darkening and the room; mono-compatible. Switching glides (30 ms).
+    Everything moves sample-smoothly: the position glides ("glide"), delays ramp per sample, filters update every
+    16 samples from the smoothed position. No allocation after prepare().
+*/
+class SpaceEffect final : public IEffect
+{
+public:
+    /// Descriptor order. The first five local IDs are the modulation-matrix targets of the per-part stage
+    /// ("space.azimuth" ...); the first four are "FX k Param 1-4" of the rack type.
+    enum Param
+    {
+        Azimuth = 0, Elevation, Distance, PathRate, PathPhase, Path, PathLength, PathSize,
+        Spread, Room, RoomSize, Doppler, Air, Rolloff, LowKeep, Glide, numParams
+    };
+    enum Monitor { Headphones = 0, Speakers };
+
+    SpaceEffect();
+
+    EffectInfo info() const noexcept override { return { "space3d", "Space 3D", "3D-Raum", "space" }; }
+    std::vector<ParamDescriptor> getParamDescriptors() const override;
+    void prepare (double sampleRate, int maxBlockSize) override;
+    void reset() noexcept override;
+    void setParam (int localIndex, float plainValue) noexcept override;
+    void process (float* left, float* right, int numSamples) noexcept override;
+    double tailSeconds() const noexcept override { return 1.5; }
+    void setTempo (double bpm) noexcept override { tempo = bpm > 1.0 ? bpm : 120.0; }
+    void setTransportPosition (double ppq, bool playing) noexcept override;
+    void setMonitorMode (int mode) noexcept override { monitor = mode == Speakers ? Speakers : Headphones; }
+    int modulationParam (int j) const noexcept override { return j; }
+
+    /** Seed of the random orbit (the part number), so parts do not move alike. */
+    void setSeed (uint32_t s) noexcept { seed = s; }
+
+    // ---- UI (any thread) ----
+    space::Vec3 uiPosition() const noexcept
+    {
+        return { uiPos[0].load (std::memory_order_relaxed), uiPos[1].load (std::memory_order_relaxed), uiPos[2].load (std::memory_order_relaxed) };
+    }
+    float uiLevel() const noexcept { return uiLevelValue.load (std::memory_order_relaxed); }
+    float uiSpread() const noexcept { return uiSpreadValue.load (std::memory_order_relaxed); }
+
+    // ---- tests ----
+    space::Vec3 currentPosition() const noexcept { return pos; }
+    float currentDirectDelaySamples() const noexcept { return directDelay; }
+    static constexpr int controlRate = 16;
+
+private:
+    struct Svf // TPT state-variable filter (bell / high shelf / low / high pass)
+    {
+        float ic1 = 0.0f, ic2 = 0.0f, a1 = 1.0f, a2 = 0.0f, a3 = 0.0f, m0 = 1.0f, m1 = 0.0f, m2 = 0.0f;
+        void bell (float g, float q, float db) noexcept;
+        void highShelf (float g, float q, float db) noexcept;
+        void lowPass (float g, float q) noexcept;
+        void highPass (float g, float q) noexcept;
+        float process (float x) noexcept;
+        void reset() noexcept { ic1 = ic2 = 0.0f; }
+    };
+    struct Line // power-of-two delay line, fractional reads
+    {
+        std::vector<float> buf;
+        int mask = 0, pos = 0;
+        void prepare (int minLength);
+        void reset() noexcept;
+        void push (float x) noexcept { pos = (pos + 1) & mask; buf[(size_t) pos] = x; }
+        float cubic (float delay) const noexcept;  ///< delay >= 1 (samples)
+        float linear (float delay) const noexcept; ///< delay >= 0
+    };
+    struct Ear // per-ear state of one virtual source (ramped per sample)
+    {
+        float delay = 0.0f, dDelay = 0.0f, b0 = 1.0f, dB0 = 0.0f, b1 = 0.0f, dB1 = 0.0f, gain = 1.0f, dGain = 0.0f;
+        float sh = 0.0f, dSh = 0.0f, shDelay = 1.0f;
+        float x1 = 0.0f, y1 = 0.0f; // head-shadow filter state
+    };
+    struct Source
+    {
+        Svf bands[6];
+        float air = 0.0f, airCoeff = 1.0f, gain = 1.0f, dGain = 0.0f;
+        Line line;
+        Ear ear[2];
+    };
+    struct Reflection
+    {
+        float delay[2] {}, dDelay[2] {}, gain[2] {}, dGain[2] {};
+    };
+
+    void control (int n) noexcept;  ///< position, delays and filter targets for the next n samples
+    void advancePhase (int n) noexcept;
+    void updateSource (int s, const space::Vec3& p, float binaural, int n) noexcept;
+    void updateRoom (const space::Vec3& p, float binaural, int n) noexcept;
+    void setRoomShape() noexcept;
+    float distanceGain (float d) const noexcept;
+
+    // parameters
+    float azimuth = 0.0f, elevation = 0.0f, distance = 1.5f, pathRate = 1.0f, pathPhase = 0.0f, pathSize = 0.5f, spread = 40.0f,
+          room = 0.25f, roomSize = 0.4f, doppler = 0.5f, air = 0.6f, rolloff = 0.7f, lowKeep = 120.0f, glide = 0.05f;
+    int path = space::PathOff, pathLen = 4;
+    int monitor = Headphones;
+    uint32_t seed = 1;
+
+    // state
+    float sr = 48000.0f;
+    double tempo = 120.0, phase = 0.0, ppq = 0.0;
+    bool playing = false, wasPlaying = false, hasPpq = false, fresh = true;
+    int64_t ppqSamples = 0;
+    space::Vec3 dir { 0.0f, 1.0f, 0.0f }, pos { 0.0f, 1.5f, 0.0f };
+    float logDist = 0.0f, binauralAmt = 1.0f, directDelay = 0.0f, lowDelay = 0.0f, dLowDelay = 0.0f, lowGain = 1.0f, dLowGain = 0.0f;
+    float lowKeepSet = -1.0f, roomSizeSet = -1.0f;
+    int countdown = 0;
+    Svf xoLp[2], xoHp[2][2]; // crossover: low pass of the mid (2 stages), high pass per channel (2 stages)
+    Line lowLine, roomLine;
+    Source src[2];
+    Reflection refl[6];
+    float roomLp = 0.0f, roomLpCoeff = 0.5f, roomAmt = 0.0f, dRoomAmt = 0.0f;
+    // diffuse tail: 4-line FDN
+    std::array<std::vector<float>, 4> fdn;
+    std::array<int, 4> fdnLen {}, fdnPos {};
+    std::array<float, 4> fdnLp {};
+    std::array<float, 4> fdnGainLine {};
+    float levelAcc = 0.0f;
+    int levelCount = 0;
+    std::array<float, 6> bandFreqG {};
+
+    std::array<std::atomic<float>, 3> uiPos {};
+    std::atomic<float> uiLevelValue { 0.0f }, uiSpreadValue { 40.0f };
+};
+} // namespace ohpe

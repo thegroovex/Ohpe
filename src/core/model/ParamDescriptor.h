@@ -27,7 +27,9 @@ enum class ParamUnit
     Semitones,
     Cents,
     Bpm,
-    Milliseconds ///< 0.7 (rack effects): plain value in ms
+    Milliseconds, ///< 0.7 (rack effects): plain value in ms
+    Degrees,      ///< 1.0 (spatialiser): angle in degrees
+    Metres        ///< 1.0 (spatialiser): distance in metres
 };
 
 /**
