@@ -6,6 +6,7 @@
 #include "InsertEffects.h"
 #include "Reverb.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 
@@ -31,24 +32,53 @@ InsertSlot::InsertSlot()
     mixIndex.fill (-1);
 }
 
+std::vector<std::string> InsertSlot::typeNamesEn() { return { "Off", "Chorus", "Phaser", "Bitcrush", "Filter Drive", "Delay", "Reverb" }; }
+std::vector<std::string> InsertSlot::typeNamesDe() { return { "Aus", "Chorus", "Phaser", "Bitcrusher", "Filter-Drive", "Delay", "Hall" }; }
+
+EffectInfo InsertSlot::typeInfo (int t)
+{
+    if (auto e = create (t)) return e->info();
+    return { nullptr, "Off", "Aus", "" };
+}
+
+std::string InsertSlot::hostNamePrefix (const std::string& prefix, bool german)
+{
+    if (prefix == "p1.fx.") return {}; // the 0.2 slot keeps its names
+    if (prefix.rfind ("mfx", 0) == 0) return (german ? "Master-FX " : "Master FX ") + prefix.substr (3, prefix.size() - 4) + " ";
+    const auto dot = prefix.find ('.');
+    std::string slot = prefix.substr (dot + 3, prefix.size() - dot - 4); // "fx3." -> "3", "fx." -> ""
+    if (slot.empty()) slot = "1";
+    return "P" + prefix.substr (1, dot - 1) + " FX" + slot + " ";
+}
+
 void InsertSlot::registerParams (ParamRegistry& reg, const std::string& prefix, const std::string& group)
 {
     using namespace pd;
+    auto t = choice (prefix + "type", hostNamePrefix (prefix, false) + "FX Slot", hostNamePrefix (prefix, true) + "FX-Slot", typeNamesEn(),
+                     typeNamesDe(), Off);
+    t.group = group;
+    reg.add (std::move (t));
+    registerBlocks (reg, prefix, group, Off + 1, numLegacyTypes);
+}
+
+void InsertSlot::registerBlocks (ParamRegistry& reg, const std::string& prefix, const std::string& group, int fromType, int toType)
+{
+    using namespace pd;
     auto add = [&] (ParamDescriptor d) { d.group = group; reg.add (std::move (d)); };
-    add (choice (prefix + "type", "FX Slot", "FX-Slot",
-                 { "Off", "Chorus", "Phaser", "Bitcrush", "Filter Drive", "Delay", "Reverb" },
-                 { "Aus", "Chorus", "Phaser", "Bitcrusher", "Filter-Drive", "Delay", "Hall" }, Off));
-    for (int t = Off + 1; t < numTypes; ++t)
+    for (int t = std::max (fromType, Off + 1); t < std::min (toType, (int) numTypes); ++t)
     {
         auto e = create (t);
         const std::string p = prefix + e->info().id + ".";
         for (auto d : e->getParamDescriptors())
         {
             d.id = p + d.id;
+            d.nameEn = hostNamePrefix (prefix, false) + d.nameEn;
+            d.nameDe = hostNamePrefix (prefix, true) + d.nameDe;
             add (std::move (d));
         }
         if (isWetOnly (t))
-            add (continuous (p + "mix", std::string (e->info().nameEn) + " Mix", std::string (e->info().nameDe) + "-Mischung", 0.0f, 1.0f, 0.35f));
+            add (continuous (p + "mix", hostNamePrefix (prefix, false) + e->info().nameEn + " Mix",
+                             hostNamePrefix (prefix, true) + e->info().nameDe + "-Mischung", 0.0f, 1.0f, 0.35f));
     }
 }
 
@@ -60,7 +90,7 @@ void InsertSlot::bind (const ParamRegistry& reg, const std::string& prefix)
         auto& e = effects[(size_t) t];
         const std::string p = prefix + e->info().id + ".";
         paramIndex[(size_t) t].clear();
-        for (const auto& d : e->getParamDescriptors()) paramIndex[(size_t) t].push_back (reg.indexOf (p + d.id));
+        for (const auto& d : e->getParamDescriptors()) paramIndex[(size_t) t].push_back (reg.indexOf (p + d.id)); // -1: not registered
         lastValue[(size_t) t].assign (paramIndex[(size_t) t].size(), NAN);
         mixIndex[(size_t) t] = isWetOnly (t) ? reg.indexOf (p + "mix") : -1;
     }
@@ -68,22 +98,49 @@ void InsertSlot::bind (const ParamRegistry& reg, const std::string& prefix)
 
 void InsertSlot::prepare (double sampleRate, int maxBlockSize)
 {
-    for (auto& e : effects)
-        if (e != nullptr) e->prepare (sampleRate, maxBlockSize);
+    const bool rateChanged = sampleRate != preparedRate || maxBlockSize != preparedBlock;
+    preparedRate = sampleRate;
+    preparedBlock = maxBlockSize;
+    for (int t = Off + 1; t < numTypes; ++t)
+    {
+        auto& r = ready[(size_t) t];
+        // lazy slots: keep (and re-prepare) the types prepared before, nothing else
+        if (lazy && ! r.load (std::memory_order_relaxed)) continue;
+        if (lazy && ! rateChanged) { effects[(size_t) t]->reset(); continue; }
+        r.store (false, std::memory_order_release);
+        effects[(size_t) t]->prepare (sampleRate, maxBlockSize);
+        r.store (true, std::memory_order_release);
+    }
     dryL.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
     dryR.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
     for (auto& v : lastValue) std::fill (v.begin(), v.end(), NAN);
 }
 
+bool InsertSlot::prepareSelected (const ParamRegistry& reg)
+{
+    if (typeIndex < 0 || preparedRate <= 0.0) return false;
+    const int t = std::clamp ((int) std::lround (reg.get (typeIndex)), 0, numTypes - 1);
+    if (t == Off || ready[(size_t) t].load (std::memory_order_acquire)) return false;
+    if (paramIndex[(size_t) t].empty() || paramIndex[(size_t) t].front() < 0) return false; // type not registered here
+    effects[(size_t) t]->prepare (preparedRate, preparedBlock);
+    std::fill (lastValue[(size_t) t].begin(), lastValue[(size_t) t].end(), NAN);
+    ready[(size_t) t].store (true, std::memory_order_release);
+    return true;
+}
+
 void InsertSlot::reset() noexcept
 {
-    for (auto& e : effects)
-        if (e != nullptr) e->reset();
+    for (int t = Off + 1; t < numTypes; ++t)
+        if (ready[(size_t) t].load (std::memory_order_acquire)) effects[(size_t) t]->reset();
 }
 
 void InsertSlot::pullParams (const ParamSnapshot& s) noexcept
 {
-    const int t = typeIndex >= 0 ? std::clamp (s.getInt (typeIndex), 0, numTypes - 1) : Off;
+    int t = typeIndex >= 0 ? std::clamp (s.getInt (typeIndex), 0, numTypes - 1) : Off;
+    if (t != Off && (paramIndex[(size_t) t].empty() || paramIndex[(size_t) t].front() < 0)) t = Off; // type not registered here
+    const bool isReady = t == Off || ready[(size_t) t].load (std::memory_order_acquire);
+    waiting.store (! isReady, std::memory_order_relaxed);
+    if (! isReady) t = Off; // lazy slot: dry until the message thread prepared the type
     if (t != type)
     {
         type = t;
@@ -94,7 +151,11 @@ void InsertSlot::pullParams (const ParamSnapshot& s) noexcept
     auto& last = lastValue[(size_t) type];
     auto* e = effects[(size_t) type].get();
     for (size_t i = 0; i < idx.size(); ++i)
-        if (const float v = s[idx[i]]; ! (v == last[i])) { last[i] = v; e->setParam ((int) i, v); }
+    {
+        if (idx[i] < 0) continue; // parameter not registered for this slot: keep the effect's default
+        const float v = s[idx[i]];
+        if (! (v == last[i])) { last[i] = v; e->setParam ((int) i, v); }
+    }
     if (mixIndex[(size_t) type] >= 0) wetMix = dsp::clamp01 (s[mixIndex[(size_t) type]]);
 }
 

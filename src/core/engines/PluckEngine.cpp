@@ -114,6 +114,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         // brightness: macro + mod envelope + LFO timbre
         float bright = p.brightness + c.modEnvAmount * modEnv.getLevel() * 0.5f;
         if (c.lfoDest == LfoDest::Timbre) bright += lfoValue * 0.3f;
+        bright += expr.timbre * 0.5f; // per-note expression / modulation matrix (0.7)
         bright = dsp::clamp01 (bright);
 
         // ---- string loop: N (integer) + all-pass + loss filter (one-pole low-pass and a DC blocker at

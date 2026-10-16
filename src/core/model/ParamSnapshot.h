@@ -47,6 +47,12 @@ public:
     {
         for (auto& l : locks) l = NAN;
     }
+    /** 0.7: the modulation matrix writes the modulated value of a parameter for the rest of the block (the next
+        pull() restores the parameter's own value; locks are kept). Audio thread. */
+    void setModulated (int index, float plain) noexcept
+    {
+        if (index >= 0 && index < (int) values.size()) values[(size_t) index] = plain;
+    }
     bool isLocked (int index) const noexcept { return index >= 0 && index < (int) locks.size() && ! std::isnan (locks[(size_t) index]); }
     int size() const noexcept { return (int) values.size(); }
 

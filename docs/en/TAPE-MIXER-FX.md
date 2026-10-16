@@ -1,4 +1,4 @@
-# Tape machine, mixer dynamics and FX slot
+# Tape machine, mixer dynamics and FX rack
 
 *English · Deutsch: [../de/BAND-MISCHER-FX.md](../de/BAND-MISCHER-FX.md) · parameter tables:
 [../PARAMETERS.md](../PARAMETERS.md)*
@@ -91,8 +91,35 @@ With every new control at its default the mixer is bit-identical to 0.1.
 between part 1 and the mixer (and in front of the tape when a track records part 1). Each
 effect keeps its own parameters (`p1.fx.chorus.rate` …); chorus, phaser, bitcrush and filter
 drive have their own mix control, delay and reverb get one from the slot
-(`p1.fx.delay.mix`, `p1.fx.reverb.mix`). *Off* is an exact bypass. More parts get their slots
-as `p2.fx.*` … when they are added.
+(`p1.fx.delay.mix`, `p1.fx.reverb.mix`). *Off* is an exact bypass. Since 0.7 this slot is slot 1
+of the part's FX rack (below).
+
+## FX rack (0.7)
+
+Every part has an **FX rack of six serial slots**, the master a rack of four:
+
+```
+ part ─ FX 1 ─ FX 2 ─ FX 3 ─ FX 4 ─ FX 5 ─ FX 6 ─▶ mixer channel / tape
+ master: sum + returns ─ MFX 1 ─ MFX 2 ─ MFX 3 ─ MFX 4 ─ compressor ─ tape saturation ─ volume ─ low-pass ─ limiter
+```
+
+* Slot 1 is the FX slot above (`pN.fx.*`), slots 2 – 6 are `pN.fx2.*` … `pN.fx6.*`, the master
+  slots `mfx1.*` … `mfx4.*`. Every slot has the same type list and its own parameter block per
+  type (`p1.fx3.chorus.rate`), so two slots can hold the same effect with different settings.
+* Per slot: **Mix** (`pN.fxK.mix`, dry / wet of the whole slot, 100 % = the effect's own output)
+  and **Bypass** (`pN.fxK.bypass`). Mix and bypass glide over 10 ms – no clicks when switching.
+* **Order:** the slots run 1, 2, … ; moving a slot rewrites the parameters of the slots in
+  between (type, mix, bypass and every block), so the order is part of the preset, undoable and
+  automatable like any other value.
+* **Compatibility:** 0.6 presets and projects load into slot 1 unchanged and sound bit-identical
+  (slot mix 100 %, the other slots Off). An empty or bypassed slot is an exact bypass.
+* **Real time:** slot 1 has every type ready at once (as before). Slots 2 – 6 and the master slots
+  allocate an effect's memory only when that type is first chosen (the plug-in does this within
+  a moment on the message thread; until then the slot passes the signal dry).
+* Host names tell the slots apart: "P2 FX3 Chorus Rate", "Master FX 1 Delay Mix" (the 0.2 slot of
+  part 1 keeps its names).
+* The modulation matrix can move each slot's mix and the first four parameters of its effect
+  ([MODULATION.md](MODULATION.md)).
 
 ## Audio input (plug-in)
 

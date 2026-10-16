@@ -74,10 +74,12 @@ TEST_CASE ("preset: part preset round-trip (save -> JSON -> load into another pa
     const int ch3 = (int) b.params().get ("p3.midich");
     const auto r = preset::applyPart (back, b.params(), 2);
     REQUIRE (r.ok);
-    int fxOnlyInPart1 = 0; // the FX slot exists for part 1 only (0.2): those IDs are unknown in part 3
-    for (int i = 0; i < reg.size(); ++i)
-        if (reg.descriptor (i).id.rfind ("p1.fx.", 0) == 0) ++fxOnlyInPart1;
-    CHECK (r.unknown == fxOnlyInPart1);
+    // since 0.7 every part has the same FX rack: a part preset of part 1 has no unknown IDs in part 3
+    int onlyInPart1 = 0;
+    for (const auto& kv : back.params)
+        if (b.params().indexOf ("p3." + kv.first) < 0) ++onlyInPart1;
+    CHECK (onlyInPart1 == 0);
+    CHECK (r.unknown == onlyInPart1);
     for (int i = 0; i < reg.size(); ++i)
     {
         const auto& id = reg.descriptor (i).id;

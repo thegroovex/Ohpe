@@ -107,6 +107,10 @@ private:
     {
         NoteExpression x;
         if (member) x.pitch = ((float) c.bend - 8192.0f) / 8192.0f * bendRange;
+        // 0.7: the raw values for the modulation matrix
+        x.pressure = c.pressure;
+        x.slide = std::clamp ((c.timbre - 64.0f) / 63.0f, -1.0f, 1.0f);
+        x.noteBend = member ? std::clamp (((float) c.bend - 8192.0f) / 8191.0f, -1.0f, 1.0f) : 0.0f;
         apply (pressTarget, c.pressure, x);
         apply (timbreTarget, std::clamp ((c.timbre - 64.0f) / 63.0f, -1.0f, 1.0f), x);
         return x;
