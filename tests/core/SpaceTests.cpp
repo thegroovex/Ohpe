@@ -178,7 +178,9 @@ TEST_CASE ("1.0 space: parameters - per-part stage, monitoring, rack type in eve
     // the whole 1.0 block comes after every older parameter
     CHECK (reg.indexOf ("p1.space.on") > reg.indexOf ("p4.monobass"));
     CHECK (reg.indexOf ("p1.space.on") > reg.indexOf ("tape.tx.link")); // appended after the tape transport IDs (p11)
-    CHECK (reg.indexOf ("mfx4.space3d.glide") == reg.size() - 1);
+    // p14: the performance wheels (perf.bend, perf.mod) are appended right after the 1.0 block
+    CHECK (reg.indexOf ("perf.bend") == reg.indexOf ("mfx4.space3d.glide") + 1);
+    CHECK (reg.indexOf ("perf.mod") == reg.size() - 1);
 }
 
 TEST_CASE ("1.0 space: motion paths and orientation (pure functions)")
