@@ -1066,6 +1066,12 @@ void OhpeEditor::advanceAnimation (float seconds)
     blinkClock += seconds;
     refreshTransportKeys();
     refreshLeds();
+    {   // p14: the part keys' 3D pictograms as in the timer (headless renders show them too)
+        std::array<int, 4> st {};
+        for (int p = 0; p < Core::numParts; ++p) st[(size_t) p] = (int) ui::space3d::partState (proc.core(), p);
+        spatialTime += seconds;
+        partSelector.setSpatial (st, spatialTime);
+    }
     // headless renders call this instead of the timer: keep the preset name current after a load
     presetStrip.setName (proc.presets().currentName());
 }

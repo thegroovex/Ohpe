@@ -350,8 +350,8 @@ void drawLed (juce::Graphics& g, juce::Point<float> c, float d, juce::Colour col
     if (level <= 0.0f) return;
     for (int i = 3; i >= 1; --i) // soft halo on the cap
     {
-        g.setColour (colour.withAlpha (0.10f * level));
-        g.fillEllipse (lens.expanded (d * 0.28f * (float) i));
+        g.setColour (colour.withAlpha (0.07f * level));
+        g.fillEllipse (lens.expanded (d * 0.22f * (float) i));
     }
     g.setColour (colour.withMultipliedAlpha (0.35f + 0.65f * level));
     g.fillEllipse (lens);
