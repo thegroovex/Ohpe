@@ -94,8 +94,25 @@ Stehen alle neuen Regler auf ihrem Standard, klingt der Mixer bit-genau wie in 0
 zwischen Part 1 und Mixer (und vor dem Band, wenn eine Spur Part 1 aufnimmt). Jeder Effekt
 behält seine eigenen Parameter (`p1.fx.chorus.rate` …); Chorus, Phaser, Bitcrusher und
 Filter-Drive haben einen eigenen Mischungsregler, Delay und Hall bekommen ihn vom Slot
-(`p1.fx.delay.mix`, `p1.fx.reverb.mix`). *Aus* ist ein exakter Bypass. Weitere Parts bekommen
-ihre Slots als `p2.fx.*` …, sobald es sie gibt.
+(`p1.fx.delay.mix`, `p1.fx.reverb.mix`). *Aus* ist ein exakter Bypass.
+
+**0.8:** Jeder Part hat seinen Slot (`p2.fx.*` … `p4.fx.*`, angehängt), und die Liste bekam acht
+neue Typen (`pN.fx.type` 7 – 14). Jeder ist ein vollständiger Insert mit eigenen Reglern:
+
+| Typ | Was er tut | Regler (`pN.fx.<id>.*`) |
+|---|---|---|
+| **Waveshaper** (`shaper`) | Waveshaper mit doppelter Abtastrate: Weich, Hart (Clip), Falten (Wavefolder), Röhre (asymmetrisch), Gleichrichter, Sinus, Crush (Bittiefe) | `type`, `drive` (0 … 36 dB, pegelkompensiert), `bias`, `tone` (Tiefpass danach), `mix`, `output` |
+| **Squash** (`squash`) | Dreiband-Kompressor auf- und abwärts (Bänder bei 120 Hz und 2,5 kHz, exakte Rekonstruktion): Lautes wird über −24 dBFS heruntergezogen, Leises unter −36 dBFS angehoben (nie unter −80 dBFS) – der dichte „Ein-Knopf“-Mehrbandklang | `depth`, `time`, `upward`, `low` / `mid` / `high` (Bandpegel), `mix`, `output`, `monolow` (tiefes Band mono: monotauglicher Bass unter breiten Stapeln) |
+| **Kammfilter** (`comb`) | modulierter Kammfilter mit gedämpftem Feedback (negativ = hohl, ungerade Obertöne), Stereoversatz | `freq`, `feedback`, `damp`, `rate`, `depth`, `spread`, `mix` |
+| **Formant** (`formant`) | drei Formant-Bandpässe, die a – e – i – o – u morphen, verschiebbar, mit LFO auf dem Vokal (frei oder tempo-synchron, startet mit jeder Note neu) | `vowel`, `shift`, `reso`, `rate`, `sync`, `depth`, `mix` |
+| **Flanger** (`flanger`) | Stereo-Flanger mit Feedback | `rate`, `depth`, `feedback`, `delay` (ms), `mix` |
+| **Wobble** (`wobble`) | resonanter Tief- / Bandpass, zwischen zwei Cutoffs von einem tempo-synchronen LFO gefahren (Sinus, Dreieck, Sägezähne, Rechteck, S&H), der mit jeder Note neu startet (`retrig`) | `rate`, `sync`, `shape`, `low`, `high`, `reso`, `mode`, `drive`, `retrig`, `mix` |
+| **Tremolo** (`tremolo`) | Tremolo oder Autopan, frei oder synchron | `rate`, `sync`, `depth`, `mode`, `shape` |
+| **Stereobreite** (`width`) | Seitenpegel 0 – 200 %, Haas-artige Spreizung, die sich in der Mono-Summe aufhebt, mono unterhalb einer Frequenz (4. Ordnung) | `width`, `spread`, `haas` (ms), `mono` (20 Hz = aus), `output` |
+
+Sync-Werte: Frei (Tempo in Hz), 1/1 … 1/32, Triolen, punktiert, 2/1, 4/1 – vom Host, von Link oder
+vom internen Tempo. Jeder Effekt ist eine eigenständige Klasse (`src/core/fx/InsertEffects2.h`),
+auch für andere Effekt-Hosts nutzbar.
 
 ## Audioeingang (Plug-in)
 

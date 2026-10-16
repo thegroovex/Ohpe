@@ -172,6 +172,7 @@ const std::map<juce::String, juce::String>& table()
         { "Gate", "Gate" },
         { "Groove", "Groove" },
         { "Keep", "Behalten" },
+        { "Layer", "Layer" },
         { "Kit", "Kit" },
         { "Lane", "Spur" },
         { "Lane 1", "Spur 1" },

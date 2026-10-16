@@ -1,0 +1,47 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Dream Tine Arp",
+  "author": "groovex",
+  "tags": [
+    "Arp",
+    "Keys"
+  ],
+  "engine": "sampler",
+  "comment": "Tine piano arpeggio in eighths with chorus, delay and hall: dreamy and full.",
+  "params": {
+    "engine": 7,
+    "sampler.tone": 0.9,
+    "sampler.inst2": 3,
+    "amp.a": 0.001,
+    "amp.d": 3.0,
+    "amp.s": 0.0,
+    "amp.r": 0.6,
+    "mod.a": 0.001,
+    "mod.d": 0.3,
+    "mod.s": 0.0,
+    "mod.r": 0.2,
+    "mod.amt": 0.0,
+    "fx.type": 5,
+    "fx.delay.time": 0.45,
+    "fx.delay.feedback": 0.4,
+    "fx.delay.tone": 0.45,
+    "fx.delay.pingpong": 1,
+    "fx.delay.mix": 0.24,
+    "lfo.rate": 0.13,
+    "lfo.depth": 0.18,
+    "lfo.shape": 0,
+    "lfo.dest": 3,
+    "voices": 12,
+    "gain": 0.0
+  },
+  "arp": {
+    "on": 1,
+    "mode": 2,
+    "oct": 2,
+    "gate": 0.6,
+    "rate": 1,
+    "latch": 1
+  }
+}

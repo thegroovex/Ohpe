@@ -48,6 +48,8 @@ struct VoiceCommon
     float pitchEnvCurve = 0.5f;     ///< 0.6: 0 = linear, 1 = fast start, slow arrival
     float pitchOffset = 0.0f;   ///< semitones: tune + fine + pitch bend (already summed)
     float velocitySens = 0.7f;  ///< 0 = no velocity, 1 = full velocity to amp
+    float exprSmooth = 0.0f;    ///< 0.8: seconds the per-note expression (pressure, timbre) glides to new values (0 = at once)
+    float exprSlide = 0.0f;     ///< 0.8: seconds per-note pitch bends glide (at least 2 ms: no zipper steps)
 };
 
 /**
@@ -61,6 +63,15 @@ struct NoteExpression
     float amp = 1.0f;    ///< gain factor 0..2
     float lfo = 0.0f;    ///< added to the LFO depth (0..1 in total)
     float pan = 0.0f;    ///< -1..+1 added to the pan position
+    // 0.8: more targets (-1..+1 unless noted; engines without the matching control ignore them)
+    float cutoff = 0.0f;   ///< filter / tone, +-3 octaves
+    float position = 0.0f; ///< Wavetable position, Grain position (+-0.5)
+    float index = 0.0f;    ///< FM index (FM engine, Wavetable FM)
+    float density = 0.0f;  ///< Grain density, +-2 octaves
+    float drive = 0.0f;    ///< saturation (Analog drive, Wavetable pre-filter drive), 0..1
+    float vibrato = 0.0f;  ///< per-note vibrato depth (0..1 = up to half a semitone)
+    float formant = 0.0f;  ///< formant shift (Vocal +-12 semitones, Wavetable warp)
+    float blend = 0.0f;    ///< layer blend of the part (latest value, part-wide: -1 = main engine only .. +1 = more layer)
 };
 
 /**
@@ -94,6 +105,8 @@ public:
         none.
     */
     virtual int firstLateParam() const noexcept { return 1 << 20; }
+    /** 0.8: index of the first descriptor added in 0.8 (registered by Part::registerLate08EngineParams). */
+    virtual int firstLate08Param() const noexcept { return 1 << 20; }
 
     virtual void prepare (double sampleRate, int maxBlockSize) = 0;
     virtual void reset() noexcept = 0;

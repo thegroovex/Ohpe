@@ -4,6 +4,7 @@
 
 #include "../model/ParamDescriptor.h"
 
+#include <string>
 #include <vector>
 
 namespace ohpe
@@ -36,5 +37,9 @@ public:
     virtual void process (float* left, float* right, int numSamples) noexcept = 0;
     /** Tail in seconds after the input goes silent (for hosts / bounce). */
     virtual double tailSeconds() const noexcept { return 0.0; }
+    /** 0.8, audio thread: the current tempo (synced effects). Optional. */
+    virtual void setTempo (double bpm) noexcept { (void) bpm; }
+    /** 0.8, audio thread: a note started on the part this insert belongs to (LFO retrigger). Optional. */
+    virtual void noteOn() noexcept {}
 };
 } // namespace ohpe

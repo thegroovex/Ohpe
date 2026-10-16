@@ -63,7 +63,9 @@ public:
         ampEnv.noteOn();
         modEnv.noteOn();
         lfo.reset();
-        expr = NoteExpression {};
+        expr = exprTarget = NoteExpression {};
+        exprFresh = true;
+        exprVibPhase = 0.0f;
         pitchEnvPhase = 0.0f;
     }
 
@@ -73,7 +75,12 @@ public:
     int getNote() const noexcept { return note; }
     /** The pitch the voice is gliding at now (semitones, -1 when it has never sounded). */
     float glidePitch() const noexcept { return currentNote; }
-    void setExpression (const NoteExpression& x) noexcept { expr = x; }
+    /** Per-note expression; a note's first value applies at once, later ones glide (0.8: exprSmooth / exprSlide). */
+    void setExpression (const NoteExpression& x) noexcept
+    {
+        exprTarget = x;
+        if (exprFresh) expr = x;
+    }
 
 protected:
     /** Per control block: updates glide, LFO and envelope settings; returns the pitch in semitones. */
@@ -89,6 +96,8 @@ protected:
         }
         else
             currentNote = (float) note;
+        if (! exprFresh) glideExpression (c, n); // 0.8: smooth per-note bend / pressure / timbre
+        exprFresh = false;
         lfo.setRate (c.lfoRate);
         lfo.setShape (c.lfoShape);
         lfoDepth = std::clamp (c.lfoDepth + expr.lfo, 0.0f, 1.0f);
@@ -101,6 +110,12 @@ protected:
             pitchEnvPhase = std::min (1.0f, pitchEnvPhase + (float) n / (std::max (0.001f, c.pitchEnvTime) * sr));
         }
         if (c.lfoDest == LfoDest::Pitch) pitch += lfoValue * 2.0f; // +-2 semitones at full depth
+        if (expr.vibrato > 0.0f) // 0.8: per-note vibrato (MPE / aftertouch target), 5.5 Hz
+        {
+            exprVibPhase += dsp::twoPi * 5.5f * (float) n / sr;
+            if (exprVibPhase > dsp::twoPi) exprVibPhase -= dsp::twoPi;
+            pitch += std::min (1.0f, expr.vibrato) * 0.5f * std::sin (exprVibPhase);
+        }
         return pitch;
     }
 
@@ -130,7 +145,26 @@ protected:
     float pitchEnvPhase = 1.0f;       ///< 0.6: 0 at note start .. 1 = arrived
     float lfoValue = 0.0f;
     float lfoDepth = 0.0f;
-    NoteExpression expr; ///< per-note expression (MPE), neutral by default
+    NoteExpression expr;       ///< per-note expression (MPE), neutral by default (the gliding, current value)
+    NoteExpression exprTarget; ///< 0.8: the value the expression glides to
+    bool exprFresh = true;     ///< 0.8: the voice just started: the first expression applies at once
+    float exprVibPhase = 0.0f;
+
+    /** 0.8: one control block of expression glide: pitch over exprSlide (at least 2 ms), the rest over exprSmooth. */
+    void glideExpression (const VoiceCommon& c, int n) noexcept
+    {
+        const float aPitch = 1.0f - std::exp (-(float) n / (std::max (0.002f, c.exprSlide) * sr));
+        expr.pitch += (exprTarget.pitch - expr.pitch) * aPitch;
+        if (std::abs (exprTarget.pitch - expr.pitch) < 1.0e-5f) expr.pitch = exprTarget.pitch;
+        const float pitchNow = expr.pitch;
+        if (c.exprSmooth <= 0.0f) { expr = exprTarget; expr.pitch = pitchNow; return; }
+        const float a = 1.0f - std::exp (-(float) n / (c.exprSmooth * sr));
+        auto g = [a] (float& v, float t) noexcept { v += (t - v) * a; if (std::abs (t - v) < 1.0e-6f) v = t; };
+        g (expr.timbre, exprTarget.timbre); g (expr.amp, exprTarget.amp); g (expr.lfo, exprTarget.lfo); g (expr.pan, exprTarget.pan);
+        g (expr.cutoff, exprTarget.cutoff); g (expr.position, exprTarget.position); g (expr.index, exprTarget.index);
+        g (expr.density, exprTarget.density); g (expr.drive, exprTarget.drive); g (expr.vibrato, exprTarget.vibrato);
+        g (expr.formant, exprTarget.formant); g (expr.blend, exprTarget.blend);
+    }
     dsp::Adsr ampEnv, modEnv;
     dsp::Lfo lfo;
 };

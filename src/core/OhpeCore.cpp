@@ -21,7 +21,10 @@ Core::Core()
     mix.bind (registry);
     drums.bind (registry);
     tapeMachine.bind (registry);
-    for (int i = 0; i < numParts; ++i) inserts[(size_t) i].bind (registry, parts[(size_t) i]->prefix() + "fx.");
+    for (int i = 0; i < numParts; ++i)
+    {
+        inserts[(size_t) i].bind (registry, parts[(size_t) i]->prefix() + "fx.");
+    }
     stepSeq.setRegistry (&registry);
     tempoIndex = registry.indexOf (Ids::tempo);
     seqRunIndex = registry.indexOf (Ids::seqRun);
@@ -49,6 +52,8 @@ Core::Core()
         r.idxMpeBend = registry.indexOf (p.id ("mpe.bend"));
         r.idxMpePress = registry.indexOf (p.id ("mpe.press"));
         r.idxMpeTimbre = registry.indexOf (p.id ("mpe.timbre"));
+        r.idxPressAmt = registry.indexOf (p.id ("mpe.pressamt"));
+        r.idxTimbreAmt = registry.indexOf (p.id ("mpe.timbreamt"));
     }
     syncSourceIndex = registry.indexOf (Ids::syncSource);
     syncSmoothIndex = registry.indexOf (Ids::syncSmoothing);
@@ -200,7 +205,12 @@ void Core::dispatch (const RoutedEvent& r) noexcept
 {
     if (r.event.isNoteOn()) lastNoteOn.store (r.event.data1, std::memory_order_relaxed);
     if (r.part == drumPart) drums.handleMidi (r.event);
-    else mpeIn[(size_t) r.part].handle (r.event, *parts[(size_t) r.part]);
+    else
+    {
+        if (r.event.isNoteOn()) // 0.8: synced FX LFOs restart with a new note
+            inserts[(size_t) r.part].noteOn();
+        mpeIn[(size_t) r.part].handle (r.event, *parts[(size_t) r.part]);
+    }
 }
 
 void Core::applyLocks (const std::vector<ParamLockEvent>& locks, size_t& next, int upTo) noexcept
@@ -325,7 +335,8 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         auto& r = routing[(size_t) i];
         r.channel = std::clamp (snapshot.getInt (r.idxChannel), 0, 16);
         r.mpe = snapshot.getBool (r.idxMpe);
-        mpeIn[(size_t) i].set (r.mpe, snapshot.getInt (r.idxMpeBend), snapshot.getInt (r.idxMpePress), snapshot.getInt (r.idxMpeTimbre));
+        mpeIn[(size_t) i].set (r.mpe, snapshot.getInt (r.idxMpeBend), snapshot.getInt (r.idxMpePress), snapshot.getInt (r.idxMpeTimbre),
+                               r.idxPressAmt >= 0 ? snapshot[r.idxPressAmt] : 1.0f, r.idxTimbreAmt >= 0 ? snapshot[r.idxTimbreAmt] : 1.0f);
         const bool quant = snapshot.getBool (r.idxQuant);
         const int chord = snapshot.getInt (r.idxChord);
         liveShaper[(size_t) i].set (quant, chord, root, scale);
@@ -339,6 +350,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     const Transport tr = makeTransport (host, midi, numMidi, numSamples);
     ppqForUi.store (tr.ppqAtBlockStart, std::memory_order_relaxed);
     bpmForUi.store (tr.bpm, std::memory_order_relaxed);
+    for (auto& f : inserts) f.setTempo (tr.bpm > 0.0 ? tr.bpm : 120.0); // 0.8: synced slot types
     playingForUi.store (tr.playing, std::memory_order_relaxed);
 
     // 3. live MIDI: on-screen keyboard (offset 0), host / device MIDI minus mapped controls and

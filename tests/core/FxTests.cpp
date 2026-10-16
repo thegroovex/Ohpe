@@ -49,6 +49,7 @@ struct SlotRig
     SlotRig()
     {
         InsertSlot::registerParams (reg, "p1.fx.", "part1/fx");
+        InsertSlot::registerLateParams (reg, "p1.fx.", "part1/fx"); // 0.8 types
         reg.freeze();
         slot.bind (reg, "p1.fx.");
         snap.prepare (reg);

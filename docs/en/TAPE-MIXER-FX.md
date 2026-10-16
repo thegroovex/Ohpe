@@ -91,8 +91,25 @@ With every new control at its default the mixer is bit-identical to 0.1.
 between part 1 and the mixer (and in front of the tape when a track records part 1). Each
 effect keeps its own parameters (`p1.fx.chorus.rate` …); chorus, phaser, bitcrush and filter
 drive have their own mix control, delay and reverb get one from the slot
-(`p1.fx.delay.mix`, `p1.fx.reverb.mix`). *Off* is an exact bypass. More parts get their slots
-as `p2.fx.*` … when they are added.
+(`p1.fx.delay.mix`, `p1.fx.reverb.mix`). *Off* is an exact bypass.
+
+**0.8:** every part has its slot (`p2.fx.*` … `p4.fx.*`, appended), and eight types were appended
+to the list (`pN.fx.type` 7 – 14). Each is a complete insert with its own controls:
+
+| Type | What it does | Controls (`pN.fx.<id>.*`) |
+|---|---|---|
+| **Shaper** (`shaper`) | waveshaper, run at twice the sample rate: Soft, Hard (clip), Fold (wavefolder), Tube (asymmetric), Rectify, Sine, Crush (bit depth) | `type`, `drive` (0 … 36 dB, level-compensated), `bias`, `tone` (post low-pass), `mix`, `output` |
+| **Squash** (`squash`) | three-band upward / downward compressor (bands at 120 Hz and 2.5 kHz, exact reconstruction): loud parts pulled down above −24 dBFS, quiet parts lifted below −36 dBFS (never below −80 dBFS) – the dense, "one-knob" multiband sound | `depth`, `time`, `upward`, `low` / `mid` / `high` (band gains), `mix`, `output`, `monolow` (low band summed to mono: a mono-safe bass under wide stacks) |
+| **Comb** (`comb`) | modulated comb filter with damped feedback (negative = hollow, odd harmonics), stereo offset | `freq`, `feedback`, `damp`, `rate`, `depth`, `spread`, `mix` |
+| **Formant** (`formant`) | three formant band-passes morphing a – e – i – o – u, shiftable, with an LFO on the vowel (free or tempo-synced, restarts with each note) | `vowel`, `shift`, `reso`, `rate`, `sync`, `depth`, `mix` |
+| **Flanger** (`flanger`) | stereo flanger with feedback | `rate`, `depth`, `feedback`, `delay` (ms), `mix` |
+| **Wobble** (`wobble`) | resonant low- / band-pass swept between two cutoffs by a tempo-synced LFO (sine, triangle, saws, square, S&H) that restarts with every note (`retrig`) | `rate`, `sync`, `shape`, `low`, `high`, `reso`, `mode`, `drive`, `retrig`, `mix` |
+| **Tremolo** (`tremolo`) | tremolo or autopan, free or synced | `rate`, `sync`, `depth`, `mode`, `shape` |
+| **Width** (`width`) | side gain 0 – 200 %, a Haas-style spread that cancels in the mono sum, mono below a frequency (4th order) | `width`, `spread`, `haas` (ms), `mono` (20 Hz = off), `output` |
+
+Sync divisions: Free (the rate in Hz), 1/1 … 1/32, triplets, dotted, 2/1, 4/1 – from the host,
+Link or internal tempo. Every effect is a self-contained class (`src/core/fx/InsertEffects2.h`), so
+other effect hosts can use them too.
 
 ## Audio input (plug-in)
 

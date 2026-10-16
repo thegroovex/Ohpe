@@ -62,6 +62,7 @@ TEST_CASE ("real-time: no allocation in Core::process with tape, FX slot and dyn
     for (int fxType = 0; fxType < InsertSlot::numTypes; ++fxType)
     {
         p.set ("p1.fx.type", (float) fxType);
+        p.set ("p1.layer.engine", (float) (1 + fxType % numEngineTypes)); // 0.8: the layer engine
         p.set ("tape.reverse", fxType % 2 ? 1.0f : 0.0f);
         for (int b = 0; b < 30; ++b)
         {

@@ -19,6 +19,7 @@ enum Param
     Algo = 0, ModRatio, Index, Feedback, // macros 1-4
     Op1Ratio, Op2Ratio, Op3Ratio, Op4Ratio, Op5Ratio, Op6Ratio,
     Op1Level, Op2Level, Op3Level, Op4Level, Op5Level, Op6Level,
+    VelocityIndex, // 0.8 (late parameter, registered at the end of the layout)
     numParams
 };
 
@@ -46,6 +47,7 @@ struct Shared
     std::array<float, numOps> ratio { 1.0f, 1.0f, 2.0f, 3.0f, 1.0f, 4.0f };
     std::array<float, numOps> level { 1.0f, 0.8f, 0.8f, 0.6f, 0.6f, 0.5f };
     Algorithm algo = morphAlgorithm (0.0f);
+    float velocityIndex = 0.0f; ///< 0.8: how much the velocity scales the index (0 = not at all)
 };
 
 class Voice : public VoiceBase
@@ -73,6 +75,7 @@ public:
     EngineInfo info() const noexcept override { return { "fm", "FM", "FM", "fm" }; }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void setParam (int localIndex, float value) noexcept override;
+    int firstLate08Param() const noexcept override { return fm::VelocityIndex; }
 
     const fm::Shared& getShared() const noexcept { return shared; }
 

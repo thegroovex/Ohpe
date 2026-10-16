@@ -86,7 +86,8 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         const float envShape = c.modEnvAmount >= 0.0f ? modEnv.getLevel() : 1.0f - modEnv.getLevel();
         idx *= (1.0f - envAmt) + envAmt * envShape;
         if (c.lfoDest == LfoDest::Timbre) idx *= std::max (0.0f, 1.0f + lfoValue);
-        idx *= std::max (0.0f, 1.0f + expr.timbre); // per-note expression (MPE)
+        idx *= std::max (0.0f, 1.0f + expr.timbre + expr.index); // per-note expression (MPE; 0.8: FM index target)
+        if (p.velocityIndex > 0.0f) idx *= 1.0f - p.velocityIndex + p.velocityIndex * 1.6f * velocity * velocity; // 0.8
         const float depth = idx * 4.0f * dsp::pi;
 
         std::array<float, numOps> inc;
@@ -155,6 +156,7 @@ std::vector<ParamDescriptor> FmEngine::getParamDescriptors() const
         const auto n = std::to_string (o + 1);
         d.push_back (continuous ("op" + n + "level", "Op " + n + " Level", "Op " + n + " Pegel", 0.0f, 1.0f, levels[o]));
     }
+    d.push_back (continuous ("velidx", "Velocity > Index", "Anschlag > Index", 0.0f, 1.0f, 0.0f)); // 0.8 (late)
     return d;
 }
 
@@ -170,5 +172,6 @@ void FmEngine::setParam (int i, float v) noexcept
     else if (i == Feedback) shared.feedback = v;
     else if (i >= Op1Ratio && i <= Op6Ratio) shared.ratio[(size_t) (i - Op1Ratio)] = v;
     else if (i >= Op1Level && i <= Op6Level) shared.level[(size_t) (i - Op1Level)] = v;
+    else if (i == VelocityIndex) shared.velocityIndex = dsp::clamp01 (v);
 }
 } // namespace ohpe

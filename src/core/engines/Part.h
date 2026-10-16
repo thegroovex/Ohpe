@@ -36,6 +36,19 @@ public:
     void registerLate05Params (ParamRegistry& reg) const;
     /** 0.6: glide mode / rate and the pitch envelope, registered at the end of the layout. */
     void registerLate06Params (ParamRegistry& reg) const;
+    /**
+        0.8: the layer - a second engine of the same part playing every note with it ("layer.engine",
+        Off = none), with its own level, tuning, stereo width, optional own amp envelope and a
+        cross-modulation of the main engine by the layer (ring, AM or fold). Registered at the end.
+    */
+    void registerLate08Params (ParamRegistry& reg) const;
+    /** 0.8: registers the engine's 0.8 parameters (ISynthEngine::firstLate08Param() onwards). */
+    void registerLate08EngineParams (ParamRegistry& reg, EngineType type) const;
+    /** 0.8: MPE / aftertouch target amounts, expression smoothing and per-note slide time (group "partN/midi"). */
+    void registerLate08MpeParams (ParamRegistry& reg) const;
+    /** 0.8: the layer engine, or nullptr when the layer is off (or set to the main engine). */
+    ISynthEngine* layerEngine() noexcept { return layerType >= 0 ? engines[(size_t) layerType].get() : nullptr; }
+    enum LayerXMod { XRing = 0, XAm, XFold, numXMods };
     /** 0.4: registers the engine's late parameters (ISynthEngine::firstLateParam() onwards). */
     void registerLateEngineParams (ParamRegistry& reg, EngineType type) const;
     /** Resolves parameter indices; call after the registry is frozen. */
@@ -95,6 +108,18 @@ private:
     float ccGlideSeconds = -1.0f, lastGlideParam = -1.0f;
     void updateGlide() noexcept;
     VoiceCommon common;
+    // ---- 0.8 layer
+    enum Late08 { lyEngine = 0, lyLevel, lyTune, lyFine, lyXMode, lyXMod, lyWidth, lyOwnEnv, lyA, lyD, lyS, lyR, numLate08 };
+    int exprSmoothIndex = -1, exprSlideIndex = -1; ///< 0.8: "pN.mpe.smooth", "pN.mpe.slide"
+    float exprBlend = 0.0f;                        ///< 0.8: latest per-note "layer blend" expression (part-wide)
+    std::array<int, numLate08> late08Index {};
+    int layerType = -1; ///< EngineType of the layer, -1 = off
+    float layerLevel = 0.7f, layerTune = 0.0f, layerXMod = 0.0f, layerWidth = 0.5f, xEnv = 0.0f, xEnvCoeff = 0.01f;
+    int layerXMode = XRing;
+    bool layerOwnEnv = false;
+    dsp::AdsrParams layerAmp;
+    std::vector<float> layerL, layerR;
+    void pushCommon() noexcept; ///< hands `common` to every engine (and the tuned copy to the layer)
     float dcX[2] = { 0.0f, 0.0f }, dcY[2] = { 0.0f, 0.0f }, dcCoeff = 0.9993f; ///< 0.4: DC blocker (about 5 Hz)
     float volume = 0.8f, gainFactor = 1.0f, bendRange = 2.0f, tune = 0.0f, bend = 0.0f;
     bool sustain = false;

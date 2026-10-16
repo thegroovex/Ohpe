@@ -286,7 +286,7 @@ TEST_CASE ("0.6: the master low-pass darkens the mix and is off at 20 kHz")
 TEST_CASE ("0.6: the Boom category is a fixed category after Vocal")
 {
     const auto& cats = preset::categories();
-    REQUIRE (cats.size() == 11);
+    REQUIRE (cats.size() >= 11); // 0.8 appends Hybrid and Piano
     CHECK (std::string (cats[9].key) == "Vocal");
     CHECK (std::string (cats[10].key) == "Boom");
     CHECK (preset::isCategory ("Boom"));

@@ -107,6 +107,11 @@ half-open, pedal and open hi-hats (pads 6, 7, 8, 17) share group 1. Note-offs ar
 * **Instrument** (`pN.grain.inst`): the Grain engine granulates one note of the chosen instrument
   instead of its built-in texture (a loaded sample or the tape source still wins). For plucked and
   struck instruments keep *Position* near the start, where the note is loudest.
+* **Keyboard Instrument** (0.8, `pN.sampler.inst2` / `pN.grain.inst2`): Grand Piano, Upright Piano
+  (recordings, every few semitones, the grand with two velocity layers), Tine Piano and Reed Piano
+  (Ohpe's own modelled electric pianos, two velocity layers: soft notes ring like bells, hard notes
+  bark). When not *Off* it replaces *Instrument*. In the Grain engine the pianos make breathing
+  piano clouds (keep *Position* near the start).
 * **Drum Kit** (`drum.kit`): Studio (the original kit), Tight, Room, Lo-Fi, Hybrid or Boom (0.5:
   synthesised deep kick / sub kit). All kits use the same pad layout; your own pad samples always win.
 

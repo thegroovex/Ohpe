@@ -30,6 +30,7 @@ enum Param
     Start = 0, Tone, LoopStart, LoopEnd, // macros 1-4
     Root, LoopMode, Reverse, Mode, SliceSensitivity, SliceBaseKey,
     Instrument, // 0.4: factory instrument (late parameter, registered at the end of the layout)
+    Instrument2, // 0.8: keyboard instruments ("inst2", 0 = off; registered at the end of the layout)
     numParams
 };
 
@@ -70,6 +71,7 @@ struct Shared
     bool reverse = false;
     RtShared<SampleMap>* map = nullptr;
     int instrument = 0;                    ///< 0.4: factory instrument index (0 = built-in tone)
+    int instSel = 0, inst2Sel = 0;         ///< 0.8: the "inst" / "inst2" values (instrument = the effective one)
     const SampleMap* factory = nullptr;    ///< 0.4: its map (process lifetime), nullptr = not loaded
 };
 
@@ -108,6 +110,7 @@ public:
     EngineInfo info() const noexcept override { return { "sampler", "Sampler", "Sampler", "sampler" }; }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     int firstLateParam() const noexcept override { return sampler::Instrument; }
+    int firstLate08Param() const noexcept override { return sampler::Instrument2; }
     void setParam (int localIndex, float value) noexcept override;
 
     // ---- message thread: samples and zones ----

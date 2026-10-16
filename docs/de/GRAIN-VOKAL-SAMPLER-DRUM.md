@@ -110,6 +110,11 @@ Hi-Hat (Pads 6, 7, 8, 17) teilen sich Gruppe 1. Note-Offs werden ignoriert.
 * **Instrument** (`pN.grain.inst`): Die Grain-Engine granuliert einen Ton des gewählten Instruments
   statt ihrer eingebauten Textur (ein geladenes Sample oder die Tape-Quelle haben Vorrang). Bei
   gezupften und angeschlagenen Instrumenten *Position* nahe am Anfang lassen, wo der Ton am lautesten ist.
+* **Tasteninstrument** (0.8, `pN.sampler.inst2` / `pN.grain.inst2`): Flügel, Klavier (Aufnahmen alle
+  paar Halbtöne, der Flügel mit zwei Anschlagsstufen), Tine-Piano und Zungen-Piano (Ohpes eigene
+  modellierte E-Pianos, zwei Anschlagsstufen: leise Töne klingen wie Glocken, harte bellen). Wenn
+  nicht *Aus*, ersetzt es *Instrument*. In der Grain-Engine werden die Pianos zu atmenden
+  Klavierwolken (*Position* nahe am Anfang lassen).
 * **Drum-Kit** (`drum.kit`): Studio (das ursprüngliche Kit), Trocken, Raum, Lo-Fi, Hybrid oder Boom
   (0.5: synthetisches Kit mit tiefer Sub-Kick). Alle Kits haben dieselbe Pad-Belegung; eigene
   Pad-Samples haben immer Vorrang.

@@ -32,14 +32,15 @@ Ids padded (Ids ids)
 
 std::string partPrefix (int part) { return "p" + std::to_string (juce::jlimit (0, Core::numParts - 1, part) + 1) + "."; }
 
-/** FX slot parameters of the selected slot type of a part ("pN.fx.type" + that effect's block). */
-Ids fxSlotParams (const Core& core, int part)
+/** FX slot parameters of the selected slot type of a part ("pN.fx.type" + that effect's block).
+*/
+Ids fxSlotParams (const Core& core, int part, const std::string& slot = "fx.")
 {
-    const auto p = partPrefix (part);
+    const auto p = partPrefix (part) + slot;
     const auto& reg = core.params();
-    const int typeIdx = reg.indexOf (p + "fx.type");
+    const int typeIdx = reg.indexOf (p + "type");
     if (typeIdx < 0) return {};
-    Ids ids { p + "fx.type" };
+    Ids ids { p + "type" };
     const auto& d = reg.descriptor (typeIdx);
     const int t = (int) std::lround (reg.get (typeIdx));
     if (t > 0 && t < (int) d.choices.size())
@@ -47,9 +48,17 @@ Ids fxSlotParams (const Core& core, int part)
         std::string seg;
         for (char c : d.choices[(size_t) t])
             if (c != ' ') seg += (char) std::tolower ((unsigned char) c);
-        for (const auto& id : withPrefix (core, p + "fx." + seg + ".")) ids.push_back (id);
+        for (const auto& id : withPrefix (core, p + seg + ".")) ids.push_back (id);
     }
     return ids;
+}
+
+/** 0.8: the layer page of a part (layer engine, level, tuning, cross-modulation, own envelope). */
+Ids layerParams (int part)
+{
+    const auto p = partPrefix (part) + "layer.";
+    return { p + "engine", p + "level", p + "tune", p + "fine", p + "xmode", p + "xmod", p + "width", p + "ownenv",
+             p + "a", p + "d", p + "s", p + "r" };
 }
 
 std::string mixCh (int ch) { return "mix.ch" + std::to_string (juce::jlimit (0, 7, ch) + 1) + "."; }
@@ -114,6 +123,8 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             ids = padded (ids);
             for (const char* k : { "glide", "glide.mode", "glide.rate", "polyglide", "pitchenv.amt", "pitchenv.time", "pitchenv.curve", "voices" })
                 ids.push_back (p + k);
+            if (core.params().indexOf (p + "layer.engine") >= 0) // 0.8: the layer engine pages
+                for (const auto& id : layerParams (partIndex)) ids.push_back (id);
             return ids;
         }
         case Mode::Envelope:
@@ -122,7 +133,7 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
         case Mode::Lfo:
             return { p + "lfo.rate", p + "lfo.depth", p + "lfo.shape", p + "lfo.dest", p + "tune", p + "fine", p + "bend", p + "vol",
                      p + "midich", p + "quant", p + "chord", "key.root", "key.scale", p + "mpe", p + "mpe.bend", p + "mpe.press",
-                     p + "mpe.timbre", "", "", "" };
+                     p + "mpe.timbre", p + "mpe.pressamt", p + "mpe.timbreamt", p + "mpe.smooth", p + "mpe.slide", "", "", "" }; // 0.8
         case Mode::Mixer:
         {
             const std::string c = mixCh (ctx.mixerChannel);
@@ -218,7 +229,14 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
     if (m == Mode::Synth)
     {
         for (size_t i = 1; i < t.size(); ++i) t[i] = "Engine";
-        if (t.size() >= 3) { t[t.size() - 2] = "Glide"; t[t.size() - 1] = "Pitch Envelope"; } // 0.6
+        const size_t layerPages = core.params().indexOf (core.part (juce::jlimit (0, Core::numParts - 1, ctx.part)).id ("layer.engine")) >= 0 ? 3 : 0;
+        if (t.size() >= 3 + layerPages)
+        {
+            const size_t g = t.size() - layerPages;
+            t[g - 2] = "Glide";
+            t[g - 1] = "Pitch Envelope"; // 0.6
+            for (size_t i = g; i < t.size(); ++i) t[i] = "Layer"; // 0.8
+        }
     }
     if (m == Mode::Effects)
         for (size_t i = 4; i < t.size(); ++i) t[i] = "FX Slot";
