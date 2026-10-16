@@ -5,7 +5,7 @@ name: CI
 # three platforms before it is merged. Each platform is built once; the tests then run as parallel
 # jobs on the build artefacts:
 #   Linux    core tests (own JUCE-free build, starts at once), plug-in tests + VST3 host test,
-#            pluginval (strictness 5)
+#            pluginval (strictness 5), documentation screenshots (not on pushes to main)
 #   macOS    all tests, auval -strict, plus the pkg/DMG installer (installed and tested on the runner)
 #   Windows  all tests
 # The doctest binaries run one test case per process on all cores (scripts/ci/run-tests.py).
@@ -112,10 +112,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-${{ runner.os }}-${{ env.ImageOS }}-gcc-core-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: ccache-${{ runner.os }}-${{ runner.arch }}-gcc-core-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            ccache-${{ runner.os }}-${{ env.ImageOS }}-gcc-core-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-
-            ccache-${{ runner.os }}-${{ env.ImageOS }}-gcc-core-
+            ccache-${{ runner.os }}-${{ runner.arch }}-gcc-core-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-
+            ccache-${{ runner.os }}-${{ runner.arch }}-gcc-core-
 
       - name: Test timings (schedules long test cases first)
         uses: actions/cache@v4
@@ -156,17 +156,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-${{ runner.os }}-${{ env.ImageOS }}-gcc-full-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: ccache-${{ runner.os }}-${{ runner.arch }}-gcc-full-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            ccache-${{ runner.os }}-${{ env.ImageOS }}-gcc-full-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-
-            ccache-${{ runner.os }}-${{ env.ImageOS }}-gcc-full-
+            ccache-${{ runner.os }}-${{ runner.arch }}-gcc-full-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-
+            ccache-${{ runner.os }}-${{ runner.arch }}-gcc-full-
 
       - name: Dependency cache (JUCE, Link, doctest, JSON, juceaide)
         uses: actions/cache@v4
         with:
           path: .deps
-          key: deps-${{ runner.os }}-${{ env.ImageOS }}-ninja-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
-          restore-keys: deps-${{ runner.os }}-${{ env.ImageOS }}-ninja-
+          key: deps-${{ runner.os }}-${{ runner.arch }}-ninja-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+          restore-keys: deps-${{ runner.os }}-${{ runner.arch }}-ninja-
 
       - name: Configure
         run: |
@@ -278,6 +278,35 @@ jobs:
           path: build/pluginval
           if-no-files-found: ignore
 
+  linux-screenshots:
+    name: Linux documentation screenshots
+    needs: linux-build
+    if: github.event_name != 'push'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Install runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2t64 libfreetype6 libfontconfig1 libx11-6 libxrandr2 \
+            libxinerama1 libxcursor1 libxext6 libgl1 xvfb xauth fonts-dejavu-core
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-linux
+
+      - name: Unpack build tree
+        run: tar -xf build-linux.tar && rm build-linux.tar
+
+      - name: Render the documentation screenshots
+        run: xvfb-run -a build/ohpe_screenshot_artefacts/Release/ohpe_screenshot screenshots
+
+      - name: Upload the screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: ohpe-screenshots
+          path: screenshots
+          if-no-files-found: error
+
   # ---------------------------------------------------------------------------------- macOS
   macos-build:
     name: macOS universal build (app, AU, VST3)
@@ -294,17 +323,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-${{ runner.os }}-${{ env.ImageOS }}-appleclang-universal-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: ccache-${{ runner.os }}-${{ runner.arch }}-appleclang-universal-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            ccache-${{ runner.os }}-${{ env.ImageOS }}-appleclang-universal-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-
-            ccache-${{ runner.os }}-${{ env.ImageOS }}-appleclang-universal-
+            ccache-${{ runner.os }}-${{ runner.arch }}-appleclang-universal-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-
+            ccache-${{ runner.os }}-${{ runner.arch }}-appleclang-universal-
 
       - name: Dependency cache (JUCE, Link, doctest, JSON, juceaide)
         uses: actions/cache@v4
         with:
           path: .deps
-          key: deps-${{ runner.os }}-${{ env.ImageOS }}-ninja-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
-          restore-keys: deps-${{ runner.os }}-${{ env.ImageOS }}-ninja-
+          key: deps-${{ runner.os }}-${{ runner.arch }}-ninja-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+          restore-keys: deps-${{ runner.os }}-${{ runner.arch }}-ninja-
 
       - name: Configure (arm64 + x86_64)
         run: |
@@ -492,17 +521,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-${{ runner.os }}-${{ env.ImageOS }}-msvc-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: ccache-${{ runner.os }}-${{ runner.arch }}-msvc-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            ccache-${{ runner.os }}-${{ env.ImageOS }}-msvc-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-
-            ccache-${{ runner.os }}-${{ env.ImageOS }}-msvc-
+            ccache-${{ runner.os }}-${{ runner.arch }}-msvc-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'tests/**/CMakeLists.txt') }}-
+            ccache-${{ runner.os }}-${{ runner.arch }}-msvc-
 
       - name: Dependency cache (JUCE, Link, doctest, JSON, juceaide)
         uses: actions/cache@v4
         with:
           path: .deps
-          key: deps-${{ runner.os }}-${{ env.ImageOS }}-ninja-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
-          restore-keys: deps-${{ runner.os }}-${{ env.ImageOS }}-ninja-
+          key: deps-${{ runner.os }}-${{ runner.arch }}-ninja-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+          restore-keys: deps-${{ runner.os }}-${{ runner.arch }}-ninja-
 
       - name: Configure
         shell: bash
@@ -576,7 +605,7 @@ jobs:
   result:
     name: CI result
     if: always()
-    needs: [changes, docs-only, linux-core, linux-build, linux-plugin-tests, linux-pluginval,
+    needs: [changes, docs-only, linux-core, linux-build, linux-plugin-tests, linux-pluginval, linux-screenshots,
             macos-build, macos-tests, macos-auval, macos-installer, windows-build, windows-tests]
     runs-on: ubuntu-latest
     steps:
@@ -596,7 +625,7 @@ jobs:
               if r in ("failure", "cancelled"):
                   bad.append(name)
               # with code changes every build / test job must have run
-              if code and r == "skipped" and name not in ("docs-only", "macos-installer"):
+              if code and r == "skipped" and name not in ("docs-only", "macos-installer", "linux-screenshots"):
                   bad.append(name)
           if needs["changes"]["result"] != "success":
               bad.append("changes")

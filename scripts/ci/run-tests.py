@@ -11,6 +11,9 @@ each test case as its own process (--first=i --last=i) on a pool of workers. Eve
 must report exactly one executed test case, and every test case of every split binary must run,
 so the coverage is exactly that of a plain `ctest` run.
 
+Test cases tagged doctest::test_suite ("sliced") (see tests/TestSlice.h) loop over many independent
+items; they run --slices times, each process with OHPE_TEST_SLICE=k/slices doing every slices-th item.
+
     scripts/ci/run-tests.py --build-dir build [-C Release] [-j N] [--split core_tests,plugin_tests]
                             [-R regex] [-E regex] [--timings file.json]
 
@@ -59,6 +62,14 @@ def run_capture(cmd, env, cwd, timeout):
     return p.returncode, p.stdout.decode("utf-8", "replace")
 
 
+def listed(out):
+    """Test case names from doctest --list-test-cases: the block between the first two rules."""
+    blocks = out.split("=" * 79)
+    if len(blocks) < 3:
+        return []
+    return [l.rstrip("\r") for l in blocks[1].splitlines() if l.strip() and not l.startswith("[doctest]")]
+
+
 def doctest_cases(test, env):
     rc, out = run_capture(test["command"] + ["--count"], env, test["cwd"], 600)
     m = re.search(r"passing the current filters:\s*(\d+)", out)
@@ -66,13 +77,14 @@ def doctest_cases(test, env):
         raise SystemExit(f"error: {test['name']} does not answer doctest --count (rc {rc}):\n{out}")
     count = int(m.group(1))
     rc, out = run_capture(test["command"] + ["--list-test-cases"], env, test["cwd"], 600)
-    names = []
-    blocks = out.split("=" * 79)
-    if len(blocks) >= 3:
-        names = [l for l in blocks[2].splitlines() if l.strip()]
+    names = listed(out)
     if len(names) != count:
         names = [""] * count  # names only label the log
-    return count, names
+    sliced = set()
+    rc, out = run_capture(test["command"] + ["--list-test-cases", "--test-suite=sliced"], env, test["cwd"], 600)
+    if rc == 0:
+        sliced = set(listed(out))
+    return count, names, sliced
 
 
 def main():
@@ -83,6 +95,7 @@ def main():
     ap.add_argument("--split", default="", help="comma-separated CTest names of doctest binaries")
     ap.add_argument("-R", "--include", default="")
     ap.add_argument("-E", "--exclude", default="")
+    ap.add_argument("--slices", type=int, default=8, help="processes per test case of the 'sliced' suite")
     ap.add_argument("--timeout", type=int, default=3600, help="seconds per process")
     ap.add_argument("--timings", default="", help="json file: read to schedule long test cases first, rewritten after the run")
     args = ap.parse_args()
@@ -101,19 +114,28 @@ def main():
         raise SystemExit(f"error: --split names unknown tests: {sorted(missing)}")
 
     base_env = dict(os.environ)
-    jobs = []  # (key, test, index or None, label)
+    jobs = []  # (key, test, index or None, label, slice "k/n" or None)
     expected = {}
     for t in tests:
         env = dict(base_env, **t["env"])
         if t["name"] in split:
-            count, names = doctest_cases(t, env)
+            count, names, sliced = doctest_cases(t, env)
             if count == 0:
                 raise SystemExit(f"error: {t['name']} has no test cases")
-            expected[t["name"]] = count
+            n = 0
             for i in range(1, count + 1):
-                jobs.append((f"{t['name']}#{i}", t, i, names[i - 1]))
+                if names[i - 1] and names[i - 1] in sliced and args.slices > 1:
+                    for k in range(args.slices):
+                        jobs.append((f"{t['name']}#{i}.{k}", t, i, names[i - 1], f"{k}/{args.slices}"))
+                        n += 1
+                else:
+                    jobs.append((f"{t['name']}#{i}", t, i, names[i - 1], None))
+                    n += 1
+            expected[t["name"]] = n
+            if sliced:
+                print(f"{t['name']}: {len(sliced)} test cases in {args.slices} slices each", flush=True)
         else:
-            jobs.append((t["name"], t, None, ""))
+            jobs.append((t["name"], t, None, "", None))
 
     timings = {}
     if args.timings and os.path.exists(args.timings):
@@ -123,11 +145,13 @@ def main():
         except Exception:
             timings = {}
     # longest first (known timings), unknown ones keep their order after the known long ones
-    jobs.sort(key=lambda j: -timings.get(j[0], 0.0))
+    def tkey(j):  # timings follow the test case name (indices move when cases are added)
+        return f"{j[1]['name']}:{j[3]}{'@' + j[4] if j[4] else ''}" if j[3] else j[0]
+    jobs.sort(key=lambda j: -timings.get(tkey(j), 0.0))
 
     total_cases = sum(expected.values())
     print(f"{len(tests)} CTest tests, {len(jobs)} processes "
-          f"({total_cases} doctest cases split from {', '.join(sorted(split)) or '-'}), {args.jobs} workers", flush=True)
+          f"({total_cases} of them from splitting {', '.join(sorted(split)) or '-'}), {args.jobs} workers", flush=True)
 
     slots = list(range(args.jobs))
     slot_lock = threading.Lock()
@@ -136,7 +160,7 @@ def main():
     results = []
 
     def run(job):
-        key, t, idx, label = job
+        key, t, idx, label, sl = job
         with slot_lock:
             slot = slots.pop()
         try:
@@ -144,6 +168,8 @@ def main():
             tmp = os.path.join(home, "tmp")
             os.makedirs(tmp, exist_ok=True)
             env = dict(base_env, **t["env"])
+            if sl:
+                env["OHPE_TEST_SLICE"] = sl
             if os.name == "nt":
                 env["TEMP"] = env["TMP"] = tmp
             else:
@@ -169,7 +195,7 @@ def main():
                     label = executed[0].strip()
                 if ran != 1:
                     ok, note = False, f" (expected exactly 1 executed test case, got {ran})"
-            res = (key, label, ok, dur, rc, out, note)
+            res = (key, label, ok, dur, rc, out, note, tkey(job))
             with print_lock:
                 status = "PASS" if ok else "FAIL"
                 print(f"{status} {key:<18} {dur:7.1f} s  {label}{note}", flush=True)
@@ -195,12 +221,12 @@ def main():
     failed = [r for r in results if not r[2]]
     ran = {}
     for key, *_ in results:
-        name = key.split("#")[0]
+        name = key.split("#")[0]  # noqa
         ran[name] = ran.get(name, 0) + 1
     for name, count in expected.items():
         if ran.get(name) != count:
-            failed.append((name, "", False, 0, 0, "", f"ran {ran.get(name)} of {count} test cases"))
-            print(f"FAIL {name}: ran {ran.get(name)} of {count} test cases")
+            failed.append((name, "", False, 0, 0, "", f"ran {ran.get(name)} of {count} processes", name))
+            print(f"FAIL {name}: ran {ran.get(name)} of {count} processes")
 
     cpu = sum(r[3] for r in results)
     print("\nslowest:")
@@ -212,7 +238,7 @@ def main():
     if args.timings:
         new = dict(timings)
         for r in results:
-            new[r[0]] = round(r[3], 2)
+            new[r[7]] = round(r[3], 2)
         with open(args.timings, "w") as f:
             json.dump(new, f, indent=1, sort_keys=True)
 
