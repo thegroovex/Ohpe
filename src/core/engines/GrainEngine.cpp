@@ -25,6 +25,7 @@ void Voice::start (int midiNote, float vel, bool legato, const VoiceCommon& c) n
         for (auto& g : grains) g.active = false;
         for (auto& f : filter) f.reset();
         filterMix = -1.0f;
+        rampGain = -1.0f;
         rng.seed ((uint32_t) (midiNote * 2654435761u + 17u));
         scanOffset = 0.0;
         untilNext = 0.0;
@@ -119,6 +120,12 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         const float overlap = std::max (1.0f, density * p.sizeMs * 0.001f);
         const float gain = velocityGain (c) * lfoAmp (c) * 1.2f / std::sqrt (overlap);
         const double interval = (double) sr / std::max (0.1f, density);
+        // 0.8: gain and pan glide over the block (a square / S&H auto-pan or tremolo stepped at every block boundary)
+        if (rampGain < 0.0f) { rampGain = gain; rampL = panL; rampR = panR; }
+        const float g0 = rampGain, l0 = rampL, r0 = rampR, inv = 1.0f / (float) n;
+        rampGain = gain;
+        rampL = panL;
+        rampR = panR;
 
         const float* ch0 = source != nullptr ? source->channel (0) : nullptr;
         const float* ch1 = source != nullptr ? source->channel (1) : nullptr;
@@ -153,9 +160,10 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
                 b += (fb - b) * filterMix;
             }
             modEnv.next();
-            const float env = ampEnv.next() * gain;
-            l[done + i] += a * env * panL * 1.41421356f;
-            r[done + i] += b * env * panR * 1.41421356f;
+            const float k = (float) (i + 1) * inv;
+            const float env = ampEnv.next() * (g0 + (gain - g0) * k);
+            l[done + i] += a * env * (l0 + (panL - l0) * k) * 1.41421356f;
+            r[done + i] += b * env * (r0 + (panR - r0) * k) * 1.41421356f;
         }
 
         if (source != nullptr && frames > 0)
