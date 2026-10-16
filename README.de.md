@@ -41,6 +41,7 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 | **3D-Raum** | jeder Part kann sich um deinen Kopf bewegen – vorn, seitlich, hinten, oben, nah und fern – auf tempo-synchronen Bewegungspfaden (Kreis, Acht, Vorbeiflug mit Doppler, Zufallsorbit, Pendel, Spirale); binaural über Kopfhörer mit Ohpes eigenem parametrischem Kopfmodell (kein gemessener Datensatz), monokompatibel über Lautsprecher; auch als Rack-Effekt *3D-Raum*; 13 „3D“-Presets – siehe [3D-Raum](docs/de/RAUM.md) |
 | **Leben** | ein LEBEN-Regler pro Part lässt gehaltene Töne weiterleben: jede Stimme driftet für sich (wenige Cent Tonhöhe, atmender Filter, wandernde Engine-Farbe, Grain-Streuung) – 0 = statisch, auf jeder Engine, ein Modulationsziel – siehe [Leben](docs/de/BEDIENUNG.md#leben) |
 | **Morph-Raum** | ein XY-Pad je Part zwischen vier vollständigen Klängen – auch über verschiedene Engines: Parameter morphen, wo die Klänge gleich aufgebaut sind, sonst spielen die Klänge parallel und werden gleich laut überblendet; spielbar mit Maus, Automation, MIDI, Modulationsmatrix, Modulationsrad oder MPE-Druck / -Slide; 4 Morph-Presets – siehe [Morph-Raum](docs/de/MORPH-RAUM.md) |
+| **Preset-Zucht** | zwei Klänge kreuzen (auch über Engines hinweg – ein Hybrid behält die andere Engine als Layer) mit wählbarer Mutation, sechs Kinder mit Wellenform- / Helligkeits-Bildchen in der Lautstärke ihrer Eltern hören, die besten behalten und weitere Generationen mit Rückgängig züchten; Kinder landen als Favoriten in der Bibliothek – siehe [Preset-Zucht](docs/de/ZUCHT.md) |
 | **Modulationsmatrix** | 16 Verbindungen pro Part aus 20 Quellen (drei LFOs, drei Hüllkurven, Anschlag, MPE, Makros, eine Sequencer-Spur …) auf Tonhöhe, Pegel, Panorama, 24 Engine-Parameter, die LFOs und jeden Rack-Slot; Ringe an den Drehreglern zeigen, was sich bewegt – siehe [Modulation](docs/de/MODULATION.md) |
 | **Sync** | Host-Transport im Plug-in; MIDI-Clock ein / aus und Netzwerk-Tempo-Sync (Link) in der Standalone-App |
 | **Multi-Out** | jeder Kanal geht auf den Hauptausgang oder auf einen eigenen Stereoausgang (8 Zusatzausgänge) – im Plug-in und in der Standalone-App |
@@ -138,6 +139,7 @@ Alle Tests laufen mit `scripts/test-all.sh` – siehe [Mitwirken](docs/de/MITWIR
 * [Bandmaschine, Mixer-Dynamik und FX-Rack](docs/de/BAND-MISCHER-FX.md) – Effekttypen des Racks, Slot-Reihenfolge, Master-Rack
 * [3D-Raum](docs/de/RAUM.md) – binaurale Bewegung, Pfade, Abhöre, 3D-Ansicht und Abzeichen
 * [Morph-Raum](docs/de/MORPH-RAUM.md) – das XY-Pad zwischen vier vollständigen Klängen je Part
+* [Preset-Zucht](docs/de/ZUCHT.md) – zwei Klänge kreuzen, die besten Kinder behalten, Generationen züchten
 * [Modulationsmatrix](docs/de/MODULATION.md) – Verbindungen, Quellen, Ziele, LFO 2 / 3, Hüllkurve 3, Makros
 * [Parameter](docs/PARAMETERS.md) – alle Host-Parameter-IDs
 * [Architektur](docs/de/ARCHITEKTUR.md) – Kurzfassung; ausführlich auf Englisch in [ARCHITECTURE.md](docs/ARCHITECTURE.md)

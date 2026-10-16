@@ -40,6 +40,7 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **3D space** | every part can move around your head – front, sides, behind, above, near and far – on tempo-synced motion paths (circle, figure-8, fly-by with Doppler, random orbit, pendulum, spiral); binaural on headphones with Ohpe's own parametric head model (no measured data set), mono-compatible on speakers; also as rack effect *Space 3D*; 13 "3D" presets – see [3D Space](docs/en/SPACE.md) |
 | **Life** | one LIFE control per part keeps held notes evolving: every voice drifts on its own (a few cents of pitch, breathing filter, wandering engine colour, grain scatter) – 0 = static, on every engine, a modulation target – see [Life](docs/en/USER-INTERFACE.md#life) |
 | **Morph space** | an XY pad per part between four complete sounds – also across different engines: parameters morph where the sounds share their structure, otherwise the sounds play in parallel and cross-fade at even loudness; play it by mouse, automation, MIDI, the modulation matrix, mod wheel or MPE pressure / slide; 4 morph presets – see [Morph space](docs/en/MORPH.md) |
+| **Preset breeding** | cross two sounds (also across engines – a hybrid keeps the other engine as its layer) with a chosen mutation, hear six children with waveform / brightness thumbnails at their parents' loudness, keep the best and breed further generations with undo; children save to the library as favourites – see [Preset breeding](docs/en/BREEDING.md) |
 | **Modulation matrix** | 16 routings per part from 20 sources (three LFOs, three envelopes, velocity, MPE, macros, a sequencer lane …) to pitch, level, pan, 24 engine parameters, the LFOs and every rack slot; rings on the encoders show what moves – see [Modulation](docs/en/MODULATION.md) |
 | **Sync** | host transport in the plug-in; MIDI clock in / out and network tempo sync (Link) in the standalone app |
 | **Multi-out** | every channel can go to the main output or its own stereo output (8 aux outputs) – in the plug-in and in the standalone app |
@@ -133,6 +134,7 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 * [Tape machine, mixer dynamics and FX rack](docs/en/TAPE-MIXER-FX.md) – rack effect types, slot order, master rack
 * [3D Space](docs/en/SPACE.md) – binaural motion, paths, monitoring, the 3D view and badge
 * [Morph space](docs/en/MORPH.md) – the XY pad between four complete sounds per part
+* [Preset breeding](docs/en/BREEDING.md) – cross two sounds, keep the best children, breed generations
 * [Modulation matrix](docs/en/MODULATION.md) – routings, sources, targets, LFO 2 / 3, envelope 3, macros
 * [Parameters](docs/PARAMETERS.md) – every host parameter ID
 * [Architecture](docs/ARCHITECTURE.md) – core, plug-in shell, threading, parameters, extension points
