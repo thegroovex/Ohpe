@@ -700,3 +700,7 @@ PRESETS = [
 from factory_parts_r3 import PRESETS_R3  # noqa: E402
 
 PRESETS += PRESETS_R3
+# 1.0: the 3D presets (spatialiser stage, motion paths) - factory_parts_space.py
+from factory_parts_space import PRESETS_SPACE  # noqa: E402
+
+PRESETS += PRESETS_SPACE

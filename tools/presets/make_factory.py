@@ -78,7 +78,9 @@ def main():
         with open(os.path.join(OUT, fn), "w", encoding="utf-8") as f:
             json.dump(doc(p, "part"), f, indent=2, ensure_ascii=False)
             f.write("\n")
+    import factory_parts_space  # 1.0: 3D motion added to two projects
     for p in PROJECTS:
+        p = factory_parts_space.apply_project(p)
         assert p["name"] not in names, p["name"]
         names.add(p["name"])
         fn = "project-%s.ohpepreset" % slug(p["name"])
