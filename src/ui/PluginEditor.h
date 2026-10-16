@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
+#include "BreedView.h"
 #include "Display.h"
 #include "LibraryBrowser.h"
 #include "OhpeLookAndFeel.h"
@@ -97,6 +98,11 @@ public:
     void setLanguage (i18n::Language lang);
     void showLibrary (bool show);
     void showProView (bool show);
+    /** p18: the breeding view (RANDOM held / right-clicked, the library's Breed button, MIDI "lib.breed").
+        `libraryEntry` >= 0: that preset becomes parent B (A = the current sound) and a brood is bred at once. */
+    void showBreeding (bool show, int libraryEntry = -1);
+    bool breedingVisible() const { return breedView.isVisible(); }
+    ui::BreedView& breedingComponent() { return breedView; }
     bool libraryVisible() const { return library.isVisible(); }
     bool proViewVisible() const { return proView.isVisible(); }
     ui::Mode currentMode() const noexcept { return mode; }
@@ -115,7 +121,7 @@ public:
         A = arm the edit track. Returns false for other keys and in plug-in hosts (the host owns them). */
     bool handleShortcut (const juce::KeyPress& key);
     /** The library or the pro view lies on the plate: the plate's controls are hidden. */
-    bool overlayOpen() const { return library.isVisible() || proView.isVisible(); }
+    bool overlayOpen() const { return library.isVisible() || proView.isVisible() || breedView.isVisible(); }
     ui::PictoKey& recordKey() { return recKey; }
     ui::PictoKey& playTransportKey() { return playKey; }
     juce::String lastFlash() const { return lastFlashText; }
@@ -217,6 +223,9 @@ private:
     ui::Keyboard keyboard;
     ui::ProView proView;
     ui::LibraryBrowser library;
+    ui::BreedView breedView; ///< p18
+    juce::uint32 randomPressedAt = 0; ///< p18: RANDOM held >= 450 ms opens the breeding view
+    std::array<int, 3> breedRequestsSeen {};
 
     ui::Mode mode = ui::Mode::Synth;
     ui::PageContext ctx;
