@@ -85,6 +85,7 @@ public:
     Worker() : juce::Thread ("Ohpe breeding") { startThread(); }
     ~Worker() override
     {
+        abort.store (true); // renders stop within one block, so the thread always ends well inside the timeout
         signalThreadShouldExit();
         notify();
         stopThread (8000);
@@ -133,7 +134,11 @@ public:
                 wait (250);
                 continue;
             }
-            if (audition == nullptr) audition = std::make_unique<breed::Audition>();
+            if (audition == nullptr)
+            {
+                audition = std::make_unique<breed::Audition>();
+                audition->setAbortFlag (&abort);
+            }
             const auto sa = audition->render (job.a), sb = audition->render (job.b);
             float target = std::max (sa.rmsDb, sb.rmsDb);
             if (sa.rmsDb > -90.0f && sb.rmsDb > -90.0f) target = 0.5f * (sa.rmsDb + sb.rmsDb);
@@ -150,6 +155,7 @@ public:
                 r.genome = k.genome;
                 r.matched = k.match && target > -90.0f;
                 r.sketch = r.matched ? audition->matchLevel (r.genome, target) : audition->render (r.genome);
+                if (threadShouldExit() || audition->aborted()) break;
                 const juce::ScopedLock sl (lock);
                 results.push_back (std::move (r));
             }
@@ -163,6 +169,7 @@ private:
     Job pending;
     bool hasJob = false, busy = false;
     std::vector<Result> results;
+    std::atomic<bool> abort { false };
     std::unique_ptr<breed::Audition> audition;
 };
 
@@ -179,6 +186,7 @@ BreedView::BreedView (OhpeProcessor& p) : proc (p)
 BreedView::~BreedView()
 {
     stopTimer();
+    worker.reset(); // stop the audition thread first, before anything else of the view goes away
     if (noteOn >= 0) proc.keyboardState.noteOff (noteChannel, noteOn, 0.0f);
 }
 

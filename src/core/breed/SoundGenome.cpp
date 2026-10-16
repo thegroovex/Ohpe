@@ -766,6 +766,7 @@ Audition::Sketch Audition::render (const Genome& g, float seconds)
     constexpr int block = 256;
     for (int64_t pos = 0; pos < total; pos += block)
     {
+        if (aborted()) break;
         const int nb = (int) std::min<int64_t> (block, total - pos);
         MidiEvent ev[2];
         int ne = 0;
@@ -844,6 +845,7 @@ Audition::Sketch Audition::matchLevel (Genome& g, float targetDb, float maxBoost
     const float ceiling = std::min (gene.maxValue, base + std::max (0.0f, maxBoostDb));
     for (int pass = 0; pass < 4; ++pass)
     {
+        if (aborted()) break;
         float delta = targetDb - s.rmsDb;
         delta = std::min (delta, -1.5f - s.peakDb); // the peak stays below -1.5 dBFS
         if (std::abs (delta) < 0.5f && s.peakDb < -1.0f) break;

@@ -5,6 +5,7 @@
 #include "../model/ParamRegistry.h"
 
 #include <array>
+#include <atomic>
 #include <cstdint>
 #include <map>
 #include <memory>
@@ -269,9 +270,14 @@ public:
     */
     Sketch matchLevel (Genome& g, float targetDb, float maxBoostDb = 6.0f);
     Core& core() noexcept { return *engineCore; }
+    /** Optional cancel flag (owned by the caller, e.g. a worker thread): when set, render / matchLevel stop within one
+        block and return what they have (the sketch is then incomplete and should be discarded). */
+    void setAbortFlag (const std::atomic<bool>* flag) noexcept { abortFlag = flag; }
+    bool aborted() const noexcept { return abortFlag != nullptr && abortFlag->load (std::memory_order_relaxed); }
 
 private:
     std::unique_ptr<Core> engineCore;
     Schema sch;
+    const std::atomic<bool>* abortFlag = nullptr;
 };
 } // namespace ohpe::breed
