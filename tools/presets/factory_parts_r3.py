@@ -140,7 +140,7 @@ def P(name, tags, engine, comment, *dicts, **kw):
               if isinstance(d, dict) and d.get("fx.type") in _OLD_FX else d) for d in dicts]
     role = next((r for r, names in _FLAG.items() if name in names), None)
     if role is not None:  # flagship presets: real multi-slot rack chains and matrix routings
-        up = {"bass": lambda: up_bass(engine, _SYNC.get(name, "1/4")), "lead": lambda: up_lead(engine),
+        up = {"bass": lambda: up_bass(engine, _SYNC.get(name, "1/4")), "lead": lambda: up_lead(engine, name),
               "keys": lambda: up_keys(engine, name), "atmos": lambda: up_atmos(engine), "pluck": lambda: up_pluck(engine)}[role]()
         drop = set(up.get("drop", ()))
         dicts = [d for d in dicts if not (isinstance(d, dict) and d.get("__fx__") in drop)] + list(up.get("add", ()))
@@ -391,11 +391,15 @@ def up_bass(engine, sync="1/4", grit=0.25, wobble=None):
                              lfo3=lfo_n(3, rate=0.45, shape="smooth", mode="free"))}
 
 
-def up_lead(engine):
+# leads whose drive / resonance sits in the presence band: a deeper, wider cut there, the bite kept just below it
+_LEAD_TAME = {"Hyper Saw Lead": ((1900.0, 1.5, 0.9), (3900.0, -3.5, 0.8)), "Screamer Lead": ((1700.0, 1.0, 1.0), (3600.0, -6.0, 0.7))}
+
+
+def up_lead(engine, name=""):
+    b2, b3 = _LEAD_TAME.get(name, ((2200.0, 1.0, 0.9), (4800.0, -2.5, 1.0)))
     return {"drop": ("delay", "reverb", "width"),
             "add": [midside(3, 1.2, 0.0, 0.0, True, 150.0, 0.15, 11.0, 0.0, 1.5), hyper(4, 0.45, 0.28, 5, 0.9, 0.45, 0, 0.32), echo(5, "1/8.", fb=0.33, highcut=6500.0, mix=0.18),
-                    hall(6, 0.72, 2.6, 0.45, 18.0, 1.0, 0.2), eq(9, (120.0, -1.0), (400.0, -1.5, 0.8), (2200.0, 1.0, 0.9),
-                                                                    (4800.0, -2.5, 1.0), (12000.0, -1.0))],
+                    hall(6, 0.72, 2.6, 0.45, 18.0, 1.0, 0.2), eq(9, (120.0, -1.0), (400.0, -1.5, 0.8), b2, b3, (12000.0, -1.0))],
             "motion": motion(("lfo2", ("fx", "hyper", 2), 0.22), ("lfo3", "pan", 0.1), ("lfo3", "timbre", 0.14),
                              ("env3", "timbre", 0.2), ("pressure", "timbre", 0.25), ("slide", ("fx", "echo", 1), 0.25),
                              ("macro1", ("fxmix", "hall"), 0.4), ("lfo2", ("eng", MAIN_TARGET[engine]), 0.1),
@@ -474,7 +478,7 @@ PRESETS_R3 = [
       cho(1, 0.3, 0.4, 0.3), MONO, glide=0.03),
     B("Hollow Reese", "Reese through a negative-feedback comb that drifts slowly: hollow, metallic and dark.",
       "wavetable", wt(table="classic", pos=SAW, tone=0.58, unison=0.5, univoices=4, uniwidth=0.6, sub=0.35, keytrack=0.3),
-      amp(0.004, 0.5, 1.0, 0.12), mod(0.01, 0.4, 0.5, 0.2, 0.05), comb(2, 180, -0.7, 0.35, 0.09, 0.45, 0.4, 0.55),
+      amp(0.004, 0.5, 1.0, 0.12), mod(0.01, 0.4, 0.5, 0.2, 0.05), comb(2, 180, -0.58, 0.42, 0.09, 0.45, 0.4, 0.55),
       width(3, 1.25, 0.0, 12, 130), cho(1, 0.18, 0.35, 0.2), MONO, glide=0.03),
     B("Flanged Reese", "Saw stack with a slow jet flanger and chorus: swirling stereo top, solid mono bottom.",
       "wavetable", wt(table="classic", pos=SAW, tone=0.57, unison=0.45, univoices=5, uniwidth=0.75, sub=0.3, keytrack=0.3),
@@ -610,8 +614,8 @@ PRESETS_R3 = [
       amp(0.005, 0.6, 0.85, 0.35), mod(0.01, 0.5, 0.5, 0.3, 0.15), cho(1, 0.4, 0.4, 0.25), dly(2, 0.36, 0.35, 0.45, 1, 0.22),
       rev(3, 0.75, 0.45, 0.02, 0.25), voices=6, glide=0.0),
     P("Hyper Saw Lead", ["Leads"], "cluster", "Huge detuned saw stack squashed upfront, with a stereo delay: festival main-room energy.",
-      cl(detune=0.35, spread=0.9, tone=0.58, chord="unison", stack=7, shape=0.0, side=0.8, reso=0.1, keytrack=0.5, drift=0.15),
-      amp(0.004, 0.5, 0.9, 0.3), mod(0.01, 0.4, 0.5, 0.3, 0.1), squash(2, 0.55, 0.4, 0.5, -3, 0, 2), dly(3, 0.33, 0.3, 0.5, 1, 0.2),
+      cl(detune=0.35, spread=0.9, tone=0.54, chord="unison", stack=7, shape=0.0, side=0.8, reso=0.1, keytrack=0.5, drift=0.15),
+      amp(0.004, 0.5, 0.9, 0.3), mod(0.01, 0.4, 0.5, 0.3, 0.1), squash(2, 0.55, 0.4, 0.5, -3, 0, -1), dly(3, 0.33, 0.3, 0.5, 1, 0.2),
       voices=6),
     P("Mono Glide Lead", ["Leads"], "wavetable", "Expressive mono lead with legato glide, light drive and a dotted ping-pong delay.",
       wt(table="classic", pos=0.5, tone=0.7, unison=0.3, univoices=3, keytrack=0.5, envpos=0.1),
@@ -623,8 +627,8 @@ PRESETS_R3 = [
       amp(0.004, 0.8, 0.7, 0.4), mod(0.005, 0.6, 0.4, 0.3, 0.6), cho(1, 0.5, 0.5, 0.35), dly(2, 0.375, 0.3, 0.6, 1, 0.18),
       rev(3, 0.85, 0.3, 0.03, 0.3), voices=6),
     P("Screamer Lead", ["Leads"], "analog", "Resonant, overdriven saw lead that screams on high notes; ping-pong delay keeps it wide.",
-      an(shape=0.05, detune=0.12, cutoff=1800, reso=0.42, oscmix=0.5, sub=0.0, drive=0.7, keytrack=0.45),
-      amp(0.004, 0.5, 0.9, 0.2), mod(0.01, 0.35, 0.5, 0.2, 0.3), shaper(2, "tube", 0.35, 0.05, 2600), dly(3, 0.3, 0.35, 0.4, 1, 0.22),
+      an(shape=0.05, detune=0.12, cutoff=1400, reso=0.42, oscmix=0.5, sub=0.0, drive=0.6, keytrack=0.45),
+      amp(0.004, 0.5, 0.9, 0.2), mod(0.01, 0.35, 0.5, 0.2, 0.3), shaper(2, "tube", 0.3, 0.05, 2200), dly(3, 0.3, 0.35, 0.4, 1, 0.22),
       MONO, glide=0.03),
     P("Twist Lead", ["Leads"], "wavetable", "Twisted, sync-like lead: the envelope bends the warp, the stack spreads it wide.",
       wt(table="classic", pos=0.5, warp=0.35, warpmode=1, tone=0.75, unison=0.3, univoices=5, uniwidth=0.8, keytrack=0.5, envpos=0.15),

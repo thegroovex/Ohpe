@@ -51,7 +51,7 @@
     "lfo.shape": 1,
     "lfo.dest": 1,
     "voices": 10,
-    "gain": 18.1
+    "gain": 17.6
   },
   "arp": {
     "on": 1,

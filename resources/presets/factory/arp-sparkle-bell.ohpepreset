@@ -42,7 +42,7 @@
     "fx.delay.mix": 0.2,
     "voices": 10,
     "velsens": 0.6,
-    "gain": 20.9
+    "gain": 19.0
   },
   "arp": {
     "on": 1,

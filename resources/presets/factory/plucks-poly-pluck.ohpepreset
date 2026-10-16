@@ -35,6 +35,6 @@
     "fx.delay.pingpong": 1,
     "fx.delay.mix": 0.2,
     "voices": 12,
-    "gain": 22.0
+    "gain": 20.1
   }
 }

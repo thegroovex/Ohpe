@@ -55,6 +55,14 @@
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
     "voices": 4,
-    "gain": 9.5
+    "gain": 9.5,
+    "fx3.type": 10,
+    "fx3.compressor.thresh": -4.0,
+    "fx3.compressor.ratio": 8.0,
+    "fx3.compressor.attack": 0.1,
+    "fx3.compressor.release": 180.0,
+    "fx3.compressor.knee": 6.0,
+    "fx3.compressor.makeup": 0.0,
+    "fx3.compressor.mix": 1.0
   }
 }

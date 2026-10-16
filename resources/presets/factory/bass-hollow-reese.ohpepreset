@@ -32,8 +32,8 @@
     "voices": 1,
     "fx.type": 17,
     "fx.comb.freq": 180,
-    "fx.comb.feedback": -0.7,
-    "fx.comb.damp": 0.35,
+    "fx.comb.feedback": -0.58,
+    "fx.comb.damp": 0.42,
     "fx.comb.rate": 0.09,
     "fx.comb.depth": 0.45,
     "fx.comb.spread": 0.4,
@@ -111,6 +111,14 @@
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
     "glide": 0.03,
-    "gain": 11.4
+    "gain": 11.4,
+    "fx5.type": 10,
+    "fx5.compressor.thresh": -4.0,
+    "fx5.compressor.ratio": 8.0,
+    "fx5.compressor.attack": 0.1,
+    "fx5.compressor.release": 180.0,
+    "fx5.compressor.knee": 6.0,
+    "fx5.compressor.makeup": 0.0,
+    "fx5.compressor.mix": 1.0
   }
 }

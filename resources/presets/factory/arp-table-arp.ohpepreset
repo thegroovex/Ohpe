@@ -36,7 +36,7 @@
     "fx.delay.pingpong": 1,
     "fx.delay.mix": 0.2,
     "voices": 8,
-    "gain": 15.3
+    "gain": 15.4
   },
   "arp": {
     "on": 1,

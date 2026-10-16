@@ -128,6 +128,14 @@
     "mpe.smooth": 0.06,
     "mpe.bend": 48,
     "voices": 6,
-    "gain": 4.3
+    "gain": 4.3,
+    "fx6.type": 10,
+    "fx6.compressor.thresh": -4.0,
+    "fx6.compressor.ratio": 8.0,
+    "fx6.compressor.attack": 0.1,
+    "fx6.compressor.release": 180.0,
+    "fx6.compressor.knee": 6.0,
+    "fx6.compressor.makeup": 0.0,
+    "fx6.compressor.mix": 1.0
   }
 }

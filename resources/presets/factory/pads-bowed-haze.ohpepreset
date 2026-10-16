@@ -31,6 +31,14 @@
     "mod.r": 2.0,
     "mod.amt": 0.05,
     "voices": 10,
-    "gain": -0.5
+    "gain": -0.5,
+    "fx.type": 10,
+    "fx.compressor.thresh": -4.0,
+    "fx.compressor.ratio": 8.0,
+    "fx.compressor.attack": 0.1,
+    "fx.compressor.release": 180.0,
+    "fx.compressor.knee": 6.0,
+    "fx.compressor.makeup": 0.0,
+    "fx.compressor.mix": 1.0
   }
 }

@@ -153,7 +153,7 @@
     "p3.mpe.smooth": 0.03,
     "p3.mpe.bend": 48,
     "p3.voices": 10,
-    "p3.gain": 16.7,
+    "p3.gain": 14.6,
     "p4.engine": 6,
     "p4.cluster.detune": 0.2,
     "p4.cluster.spread": 1.0,
