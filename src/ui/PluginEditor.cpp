@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "PluginEditor.h"
 
+#include "ModFxViews.h"
+
 #include "Palette.h"
 #include "plugin/Localisation.h"
 #include "plugin/ParameterBridge.h"
@@ -24,7 +26,9 @@ enum SoftKeyId
     skLoadSample = 10, skClearSample,
     skLift = 20, skCut, skDrop, skSplice, skUndo, skRedo, skRtz, skExport,
     skPadLoad = 30, skPadClear,
-    skClearLocks = 40, skLockDone
+    skClearLocks = 40, skLockDone,
+    skModPrev = 50, skModNext, skModClear,           // 0.7: matrix
+    skSlotLeft = 60, skSlotRight, skSlotClear        // 0.7: FX rack
 };
 
 bool isAudioFile (const juce::String& path)
@@ -193,6 +197,11 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     display.onStepPageClicked = [this] (int pg) { stepPage = pg; display.setStepPage (pg); };
     display.onChannelClicked = [this] (int ch) { ctx.mixerChannel = ch; rebindEncoders(); saveUiState(); };
     display.onSeqViewClicked = [this] (SeqView v) { selectSeqView (v); };
+    // 0.7: LFO / Mod and Sends / Rack / Master views, the routing list, the FX chain
+    display.onViewTabClicked = [this] (int v) { selectView (v); };
+    display.onModRoutingClicked = [this] (int r) { selectModRouting (r); };
+    display.onFxSlotClicked = [this] (int s) { selectFxSlot (s); };
+    display.onFxSlotMoved = [this] (int from, int to) { moveFxSlot (from, to); };
     display.onTrackClicked = [this] (int t) { selectTapeTrack (t); };
     display.onPadClicked = [this] (int pad) { selectDrumPad (pad, true); };
     display.onSoftKey = [this] (int id) { onSoftKey (id); };
@@ -316,7 +325,56 @@ void OhpeEditor::paint (juce::Graphics& g)
 int& OhpeEditor::currentPage()
 {
     if (mode == Mode::Sequencer) return seqPageOf[(size_t) ctx.seqView];
+    if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMod) return modPage;       // 0.7
+    if (mode == Mode::Effects && ctx.fxView != modfx::FxViewSends) return rackPage;  // 0.7
     return pageOf[(size_t) mode];
+}
+
+// ---------------------------------------------------------------- 0.7: matrix and FX rack views
+void OhpeEditor::selectView (int v)
+{
+    if (mode == Mode::Lfo) ctx.lfoView = juce::jlimit (0, modfx::numLfoViews - 1, v);
+    else if (mode == Mode::Effects)
+    {
+        if (ctx.fxView != v) rackPage = 0;
+        ctx.fxView = juce::jlimit (0, modfx::numFxViews - 1, v);
+        const int n = ctx.fxView == modfx::FxViewMaster ? FxRack::numMasterSlots : FxRack::numPartSlots;
+        ctx.fxSlot = juce::jlimit (0, n - 1, ctx.fxSlot);
+    }
+    rebindEncoders();
+    refreshKeys();
+    saveUiState();
+}
+
+void OhpeEditor::selectModRouting (int r)
+{
+    ctx.modRouting = juce::jlimit (0, mod::numSlots - 1, r);
+    modPage = 0;
+    rebindEncoders();
+    saveUiState();
+}
+
+void OhpeEditor::selectFxSlot (int s)
+{
+    const int n = ctx.fxView == modfx::FxViewMaster ? FxRack::numMasterSlots : FxRack::numPartSlots;
+    if (s != ctx.fxSlot) rackPage = 0;
+    ctx.fxSlot = juce::jlimit (0, n - 1, s);
+    rebindEncoders();
+    saveUiState();
+}
+
+void OhpeEditor::moveFxSlot (int from, int to)
+{
+    auto& core = proc.core();
+    const auto prefixes = modfx::rackPrefixes (ctx.fxView, ctx.part);
+    if (FxRack::moveSlot (core.params(), prefixes, from, to,
+                          [this, &core] (int idx, float v) { setParamPlain (juce::String (core.params().descriptor (idx).id), v); }))
+    {
+        core.prepareEffects();
+        ctx.fxSlot = juce::jlimit (0, (int) prefixes.size() - 1, to);
+        rebindEncoders();
+        saveUiState();
+    }
 }
 
 void OhpeEditor::selectMode (Mode m)
@@ -681,6 +739,22 @@ void OhpeEditor::refreshSoftKeys()
         keys = { { skPadLoad, tr ("Load") }, { skPadClear, tr ("Clear"), core.drumKit().padSample (ctx.drumPad) != nullptr } };
         if (auto s = core.drumKit().padSample (ctx.drumPad)) status = tr ("Pad") + " " + juce::String (ctx.drumPad + 1) + ": " + sampleName (s);
     }
+    else if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMod) // 0.7
+    {
+        const auto r = "p" + std::to_string (ctx.part + 1) + ".mod.s" + std::to_string (ctx.modRouting + 1) + ".";
+        keys = { { skModPrev, juce::String::fromUTF8 ("\xe2\x97\x80 ") + tr ("Mod") },
+                 { skModNext, tr ("Mod") + juce::String::fromUTF8 (" \xe2\x96\xb6") },
+                 { skModClear, tr ("Clear"), std::lround (core.params().get (r + "src")) != 0 || std::lround (core.params().get (r + "dst")) != 0 } };
+    }
+    else if (mode == Mode::Effects && ctx.fxView != modfx::FxViewSends) // 0.7
+    {
+        const auto prefixes = modfx::rackPrefixes (ctx.fxView, ctx.part);
+        const int n = (int) prefixes.size();
+        keys = { { skSlotLeft, juce::String::fromUTF8 ("\xe2\x97\x80 ") + tr ("Move"), ctx.fxSlot > 0 },
+                 { skSlotRight, tr ("Move") + juce::String::fromUTF8 (" \xe2\x96\xb6"), ctx.fxSlot < n - 1 },
+                 { skSlotClear, tr ("Clear"), std::lround (core.params().get (prefixes[(size_t) juce::jlimit (0, n - 1, ctx.fxSlot)] + "type")) != 0 } };
+        if (core.effectsWaiting()) status = tr ("Preparing effect...");
+    }
     else if (mode == Mode::Sequencer && ctx.seqView == SeqView::Step && lockStepIndex >= 0)
     {
         keys = { { skClearLocks, tr ("Clear locks") }, { skLockDone, tr ("Done"), true, true } };
@@ -719,6 +793,28 @@ void OhpeEditor::onSoftKey (int id)
             }
             break;
         case skLockDone: selectLockStep (-1); return;
+        case skModPrev: selectModRouting ((ctx.modRouting + mod::numSlots - 1) % mod::numSlots); return;
+        case skModNext: selectModRouting ((ctx.modRouting + 1) % mod::numSlots); return;
+        case skModClear:
+        {
+            const auto r = "p" + juce::String (ctx.part + 1) + ".mod.s" + juce::String (ctx.modRouting + 1) + ".";
+            for (const char* k : { "src", "via", "dst", "amt", "curve" })
+                if (auto* prm = proc.parameter (r + k)) setParamPlain (r + k, prm->convertFrom0to1 (prm->getDefaultValue()));
+            rebindEncoders();
+            return;
+        }
+        case skSlotLeft: moveFxSlot (ctx.fxSlot, ctx.fxSlot - 1); return;
+        case skSlotRight: moveFxSlot (ctx.fxSlot, ctx.fxSlot + 1); return;
+        case skSlotClear:
+        {
+            const auto prefixes = modfx::rackPrefixes (ctx.fxView, ctx.part);
+            const auto& pre = prefixes[(size_t) juce::jlimit (0, (int) prefixes.size() - 1, ctx.fxSlot)];
+            setParamPlain (pre + "type", 0.0f);
+            setParamPlain (pre + "mix", 1.0f);
+            setParamPlain (pre + "bypass", 0.0f);
+            rebindEncoders();
+            return;
+        }
         default: break;
     }
     refreshSoftKeys();
@@ -864,11 +960,28 @@ void OhpeEditor::timerCallback()
         if (mode == Mode::Synth || proView.isVisible()) rebindEncoders();
         refreshKeys();
     }
-    // the FX slot page follows the slot type
+    // the FX slot page follows the slot type (0.7: the selected slot of the shown rack)
     if (mode == Mode::Effects)
     {
-        const int fx = (int) std::lround (core.params().get ("p" + std::to_string (ctx.part + 1) + ".fx.type"));
+        const auto pre = ctx.fxView == modfx::FxViewSends ? "p" + std::to_string (ctx.part + 1) + ".fx."
+                                                          : modfx::rackPrefixes (ctx.fxView, ctx.part)[(size_t) juce::jlimit (0, (ctx.fxView == modfx::FxViewMaster ? FxRack::numMasterSlots : FxRack::numPartSlots) - 1, ctx.fxSlot)];
+        const int fx = (int) std::lround (core.params().get (pre + "type"));
         if (fx != lastFxType) { lastFxType = fx; rebindEncoders(); }
+        if (ctx.fxView != modfx::FxViewSends) refreshSoftKeys();
+    }
+    if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMod)
+    {
+        // the routing's target name follows the engine / FX type; soft key states follow the routing
+        const auto r = "p" + std::to_string (ctx.part + 1) + ".mod.s" + std::to_string (ctx.modRouting + 1) + ".";
+        const int sig = (int) std::lround (core.params().get (r + "src")) * 1000 + (int) std::lround (core.params().get (r + "dst"));
+        if (sig != lastModSignature) { lastModSignature = sig; refreshSoftKeys(); }
+    }
+    if (core.effectsWaiting()) core.prepareEffects(); // 0.7: a rack slot got a new type (UI, host, preset)
+    // 0.7: modulation rings on the encoders
+    for (auto& e : encoders)
+    {
+        const auto r = modfx::modulationRange (core, e->boundId().toStdString());
+        e->setModulation (r.any, r.lo, r.hi, r.live);
     }
     const bool running = core.params().get (Core::Ids::seqRun) >= 0.5f;
     if (running != playKey.getToggleState())
@@ -967,6 +1080,10 @@ void OhpeEditor::saveUiState()
     obj->setProperty ("octave", keyboard.getBaseOctave());
     obj->setProperty ("seqView", (int) ctx.seqView);
     obj->setProperty ("drumPad", ctx.drumPad);
+    obj->setProperty ("lfoView", ctx.lfoView);    // 0.7
+    obj->setProperty ("fxView", ctx.fxView);
+    obj->setProperty ("modRouting", ctx.modRouting);
+    obj->setProperty ("fxSlot", ctx.fxSlot);
     obj->setProperty ("pro", proView.isVisible());
     juce::Array<juce::var> pages;
     for (int pg : pageOf) pages.add (pg);
@@ -987,6 +1104,10 @@ void OhpeEditor::loadUiState()
     if (s.hasProperty ("octave")) keyboard.setBaseOctave ((int) s["octave"]);
     if (s.hasProperty ("seqView")) ctx.seqView = (SeqView) juce::jlimit (0, numSeqViews - 1, (int) s["seqView"]);
     if (s.hasProperty ("drumPad")) ctx.drumPad = juce::jlimit (0, drum::DrumKit::numPads - 1, (int) s["drumPad"]);
+    if (s.hasProperty ("lfoView")) ctx.lfoView = juce::jlimit (0, modfx::numLfoViews - 1, (int) s["lfoView"]); // 0.7
+    if (s.hasProperty ("fxView")) ctx.fxView = juce::jlimit (0, modfx::numFxViews - 1, (int) s["fxView"]);
+    if (s.hasProperty ("modRouting")) ctx.modRouting = juce::jlimit (0, mod::numSlots - 1, (int) s["modRouting"]);
+    if (s.hasProperty ("fxSlot")) ctx.fxSlot = juce::jlimit (0, FxRack::numPartSlots - 1, (int) s["fxSlot"]);
     if (auto* arr = s["pages"].getArray())
         for (int i = 0; i < juce::jmin (numModes, arr->size()); ++i) pageOf[(size_t) i] = (int) (*arr)[i];
     ctx.tapeTrack = juce::jlimit (0, TapeMachine::numTracks - 1, (int) std::lround (proc.core().params().get (Core::Ids::tapeEditTrack)) - 1);

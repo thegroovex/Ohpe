@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Widgets.h"
+#include "ModFxViews.h"
 
 #include "Palette.h"
 #include "plugin/Localisation.h"
@@ -159,6 +160,21 @@ void Encoder::resized()
     knob.setBounds (getLocalBounds().withHeight ((int) (s * 0.78f)).reduced ((int) (s * 0.06f)));
 }
 
+void Encoder::setModulation (bool any, float lo, float hi, float live)
+{
+    auto& props = knob.getProperties();
+    const bool had = props.getWithDefault ("modAny", false);
+    if (! any && ! had) return;
+    const float q = 1.0f / 512.0f; // repaint only on visible changes
+    auto changed = [&] (const char* k, float v) { return std::abs ((float) props.getWithDefault (k, -1.0f) - v) > q; };
+    if (any == had && ! changed ("modLo", lo) && ! changed ("modHi", hi) && ! changed ("modLive", live)) return;
+    props.set ("modAny", any);
+    props.set ("modLo", lo);
+    props.set ("modHi", hi);
+    props.set ("modLive", live);
+    knob.repaint();
+}
+
 void Encoder::paint (juce::Graphics& g)
 {
     const float w = (float) getWidth();
@@ -174,8 +190,13 @@ void Encoder::paint (juce::Graphics& g)
     else if (idx >= 0)
     {
         const auto& d = proc.core().params().descriptor (idx);
-        name = i18n::pick (d.nameEn, d.nameDe);
-        if (auto* p = proc.parameter (paramId)) value = formatValue (d, p->convertFrom0to1 (p->getValue()));
+        name = modfx::compactName (d.id, d.nameEn, d.nameDe); // 0.7: short names in the Mod / Rack views
+        if (auto* p = proc.parameter (paramId))
+        {
+            const float plain = p->convertFrom0to1 (p->getValue());
+            value = modfx::specialValueText (proc.core(), d.id, plain);
+            if (value.isEmpty()) value = formatValue (d, plain);
+        }
     }
     // legend printed on the body: small caps, engraved grey
     g.setColour (learning ? colour::encoder (index) : colour::engraving);

@@ -60,7 +60,11 @@ public:
     /** 0.7: the block snapshot the modulation matrix writes its modulated parameter values into (owner: the core). */
     void setSnapshot (ParamSnapshot* s) noexcept { liveSnapshot = s; }
     /** 0.7, audio thread: tempo and song position at the start of the next render() (tempo-synced LFOs). */
-    void setTransport (double bpm, double ppq, bool playing) noexcept { matrix.setTransport (bpm, ppq, playing); }
+    void setTransport (double bpm, double ppq, bool playing) noexcept
+    {
+        matrix.setTransport (bpm, ppq, playing);
+        rack.setTempo (bpm > 0.0 ? bpm : 120.0);
+    }
     /** 0.7: the FX rack (insert effects after the engine; slot 1 = the 0.2 FX slot) and the modulation matrix. */
     FxRack& fxRack() noexcept { return rack; }
     const FxRack& fxRack() const noexcept { return rack; }

@@ -32,7 +32,13 @@ namespace ohpe
 class InsertSlot
 {
 public:
-    enum Type { Off = 0, Chorus, Phaser, Bitcrush, FilterDrive, Delay, Reverb, numTypes };
+    enum Type
+    {
+        Off = 0, Chorus, Phaser, Bitcrush, FilterDrive, Delay, Reverb,
+        Hyper, Distortion, Flanger, Compressor, Multiband, Eq, Filter, Echo, Hall, // 0.7 (rack types, RackEffects.h)
+        numTypes
+    };
+    static constexpr int firstRackType = Hyper; ///< the 0.7 types (their blocks: FxRack::registerTypeBlocks)
     static constexpr int numLegacyTypes = Reverb + 1; ///< the 0.2 types (their blocks: registerParams)
 
     InsertSlot();
@@ -62,6 +68,12 @@ public:
     /** Audio thread: the selected type is waiting for prepareSelected(). */
     bool isWaiting() const noexcept { return waiting.load (std::memory_order_relaxed); }
     bool isReady (int t) const noexcept { return t > Off && t < numTypes && ready[(size_t) t].load (std::memory_order_acquire); }
+    /** 0.7: registry index of the parameter modulation target "Param j+1" (j = 0..3) moves for type `t`. */
+    int modParamIndexOf (int t, int j) const noexcept
+    {
+        const IEffect* e = t > Off && t < numTypes ? effects[(size_t) t].get() : nullptr;
+        return paramIndexOf (t, e != nullptr ? e->modulationParam (j) : j);
+    }
     /** Registry index of parameter `local` of type `t` (-1 when not registered). */
     int paramIndexOf (int t, int local) const noexcept
     {
@@ -73,6 +85,9 @@ public:
 
     /** In place; numSamples <= maxBlockSize. */
     void process (float* left, float* right, int numSamples) noexcept;
+    /** 0.7: tempo for the synced types, note starts of the part (retrigger). Audio thread. */
+    void setTempo (double bpm) noexcept;
+    void noteOn() noexcept;
 
     int currentType() const noexcept { return type; }
     IEffect* effect (int t) noexcept { return t > Off && t < numTypes ? effects[(size_t) t].get() : nullptr; }

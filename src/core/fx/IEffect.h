@@ -41,5 +41,8 @@ public:
     virtual void setTempo (double bpm) noexcept { (void) bpm; }
     /** 0.8, audio thread: a note started on the part this insert belongs to (LFO retrigger). Optional. */
     virtual void noteOn() noexcept {}
+    /** 0.7: local index of the parameter the modulation targets "FX K Param 1-4" move (j = 0..3): the effect's most
+        expressive continuous parameters. Default: the first four. */
+    virtual int modulationParam (int j) const noexcept { return j; }
 };
 } // namespace ohpe

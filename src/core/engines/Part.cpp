@@ -261,6 +261,7 @@ void Part::noteOn (int note, float velocity) noexcept
     if (note < 0 || note > 127) return;
     sustained[(size_t) note] = false;
     matrix.noteOn (note, velocity); // first: the voice reads the new note's seed
+    rack.noteOn();                  // 0.7: retriggered rack effects
     if (auto* e = engines[(size_t) current].get()) e->noteOn (note, velocity);
 }
 
@@ -419,7 +420,7 @@ int Part::destParamIndex (int dest) const noexcept
             const int k = d.arg / numFxDestParams, j = d.arg % numFxDestParams;
             if (k >= rack.numSlots()) return -1;
             const auto& sl = rack.slot (k);
-            return sl.paramIndexOf (sl.currentType(), j);
+            return sl.modParamIndexOf (sl.currentType(), j);
         }
         default: return -1; // off, per voice
     }
