@@ -272,5 +272,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate15LifeParams (reg);
     // ---- p16: the morph space - per part: on, X / Y, glide, X / Y control (pressure, slide, mod wheel) -------
     MorphSpace::registerParams (reg, Core::numParts);
+    // ---- p21: the character macros per part (BRIGHT / HARD / ALIVE / WIDE, -1..1, 0 = neutral) -------------
+    for (auto& p : parts) p->registerLate21CharacterParams (reg);
 }
 } // namespace ohpe

@@ -85,6 +85,11 @@ const std::vector<DestInfo>& destTable()
         // p16: the morph pad's position
         add ("morphx", "Morph X", "Morph X", DestKind::PartParam, 0, "morph.x");
         add ("morphy", "Morph Y", "Morph Y", DestKind::PartParam, 0, "morph.y");
+        // p21: the character macros
+        add ("charbright", "Bright", "Hell", DestKind::PartParam, 0, "char.bright");
+        add ("charhard", "Hard", "Hart", DestKind::PartParam, 0, "char.hard");
+        add ("charalive", "Alive", "Lebendig", DestKind::PartParam, 0, "char.alive");
+        add ("charwide", "Wide", "Weit", DestKind::PartParam, 0, "char.wide");
         return v;
     }();
     return t;

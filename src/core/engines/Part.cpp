@@ -196,6 +196,20 @@ void Part::registerLate15LifeParams (ParamRegistry& reg) const
     reg.add (std::move (d));
 }
 
+void Part::registerLate21CharacterParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const std::string P = "Part " + n + " ";
+    for (int m = 0; m < character::numMacros; ++m)
+    {
+        auto d = continuous (id (std::string ("char.") + character::key (m)), P + character::nameEn (m), P + character::nameDe (m), -1.0f, 1.0f,
+                             0.0f, ParamUnit::Percent);
+        d.group = "part" + n;
+        reg.add (std::move (d));
+    }
+}
+
 void Part::registerLate10SpaceParams (ParamRegistry& reg) const
 {
     using namespace pd;
@@ -278,6 +292,7 @@ void Part::bind (const ParamRegistry& reg)
     exprSlideIndex = reg.indexOf (id ("mpe.slide"));
     monoBassIndex = reg.indexOf (id ("monobass"));
     lifeIndex = reg.indexOf (id ("life")); // p15
+    for (int m = 0; m < character::numMacros; ++m) charIndex[(size_t) m] = reg.indexOf (id (std::string ("char.") + character::key (m))); // p21
     spaceOnIndex = reg.indexOf (id ("space.on")); // 1.0
     {
         const auto ds = space.getParamDescriptors();
@@ -306,6 +321,7 @@ void Part::bind (const ParamRegistry& reg)
         auto& slot = slots[(size_t) t];
         slot.paramIndex.clear();
         slot.lastValue.clear();
+        slot.charWeights.clear();
         if (engines[(size_t) t] == nullptr)
             continue;
         const std::string enginePrefix = idPrefix + engineTypeInfo ((EngineType) t).id + ".";
@@ -313,6 +329,7 @@ void Part::bind (const ParamRegistry& reg)
         {
             slot.paramIndex.push_back (reg.indexOf (enginePrefix + d.id));
             slot.lastValue.push_back (NAN);
+            slot.charWeights.push_back (d.kind == ParamKind::Continuous ? character::engineWeights (d.id) : character::Weights {}); // p21
         }
     }
 }
@@ -395,7 +412,20 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
     common.pitchEnvCurve = late (lPitchEnvCurve, 0.5f);
     common.polyGlide = polyGlideIndex >= 0 && s.getBool (polyGlideIndex);
     common.velocitySens = v (cVelSens);
+    // p21: the character macros (0 = neutral: every line below leaves the value untouched)
+    charActive = false;
+    for (int m = 0; m < character::numMacros; ++m)
+    {
+        const int ci = charIndex[(size_t) m];
+        charAmount[(size_t) m] = ci >= 0 ? std::clamp (s[ci], -1.0f, 1.0f) : 0.0f;
+        charActive = charActive || charAmount[(size_t) m] != 0.0f;
+    }
     common.amp = { v (cAmpA), v (cAmpD), v (cAmpS), v (cAmpR) };
+    if (charActive && registry != nullptr && charAmount[character::Hard] != 0.0f)
+    {
+        const auto& d = registry->descriptor (commonIndex[cAmpA]);
+        common.amp.attack = d.fromNormalised (character::moved (d.toNormalised (common.amp.attack), character::ampAttackHard * charAmount[character::Hard]));
+    }
     common.mod = { v (cModA), v (cModD), v (cModS), v (cModR) };
     common.modEnvAmount = v (cModAmount);
     common.lfoRate = v (cLfoRate);
@@ -409,6 +439,7 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
     common.exprSmooth = exprSmoothIndex >= 0 ? s[exprSmoothIndex] : 0.0f;
     common.exprSlide = exprSlideIndex >= 0 ? s[exprSlideIndex] : 0.0f;
     common.life = lifeIndex >= 0 ? dsp::clamp01 (s[lifeIndex]) : 0.0f; // p15 (the matrix may move it: "life" target)
+    if (charActive) common.life = dsp::clamp01 (common.life + character::lifeAlive * charAmount[character::Alive]); // p21 ALIVE
     common.lifeSeed = 0x51ED27u * (uint32_t) number;
     if (monoBassIndex >= 0 && s[monoBassIndex] != monoBassHz) // 0.8 bass mono
     {
@@ -442,7 +473,7 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
         layerTune = ly (lyTune, 0.0f) + 0.01f * ly (lyFine, 0.0f);
         layerXMode = std::clamp ((int) std::lround (ly (lyXMode, 0.0f)), 0, numXMods - 1);
         layerXMod = dsp::clamp01 (ly (lyXMod, 0.0f));
-        layerWidth = dsp::clamp01 (ly (lyWidth, 0.5f));
+        layerWidth = dsp::clamp01 (ly (lyWidth, 0.5f) + (charActive ? character::layerWidthWide * charAmount[character::Wide] : 0.0f)); // p21 WIDE
         layerOwnEnv = ly (lyOwnEnv, 0.0f) >= 0.5f;
         layerAmp = { ly (lyA, 0.005f), ly (lyD, 0.3f), ly (lyS, 0.8f), ly (lyR, 0.3f) };
     }
@@ -454,7 +485,12 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
         auto& slot = slots[(size_t) t];
         for (size_t i = 0; i < slot.paramIndex.size(); ++i)
         {
-            const float val = s[slot.paramIndex[i]];
+            float val = s[slot.paramIndex[i]];
+            if (charActive && registry != nullptr && i < slot.charWeights.size() && slot.charWeights[i].any()) // p21
+            {
+                const auto& d = registry->descriptor (slot.paramIndex[i]);
+                val = d.fromNormalised (character::moved (d.toNormalised (val), character::offset (slot.charWeights[i], charAmount)));
+            }
             if (! (val == slot.lastValue[i]))
             {
                 slot.lastValue[i] = val;

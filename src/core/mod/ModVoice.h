@@ -39,6 +39,7 @@ enum Dest
     DstAzimuth = DstFx1Param1 + 24, DstElevation, DstDistance, DstPathRate, DstPathPhase, // reserved: 3D spatialiser (1.0)
     DstLife, // p15: the part's life amount ("pN.life")
     DstMorphX, DstMorphY, // p16: the morph pad's position ("pN.morph.x" / "pN.morph.y")
+    DstCharBright, DstCharHard, DstCharAlive, DstCharWide, // p21: the character macros ("pN.char.*")
     numDests
 };
 static constexpr int numEngineDests = 24;

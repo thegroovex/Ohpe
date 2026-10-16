@@ -69,7 +69,9 @@ target_sources(ohpe_core PRIVATE sample/FactoryBank.cpp)
 target_sources(ohpe_core PRIVATE
     fx/FxRack.cpp
     fx/RackEffects.cpp
-    mod/ModMatrix.cpp)
+    mod/ModMatrix.cpp
+    mod/Character.cpp
+    discover/Discover.cpp)
 
 # 0.7: Mid/Side stereo effect (FX rack type)
 target_sources(ohpe_core PRIVATE fx/MidSide.cpp)
