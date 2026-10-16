@@ -364,12 +364,12 @@ void OhpeEditor::resized()
     for (int i = 0; i < 4; ++i)
         encoders[(size_t) i]->setBounds (scaled (288.0f + 168.0f * (float) i, 460, 120, 148));
     // transport panel (bottom left): REC PLAY STOP / TO START LOOP MIDI
-    recKey.setBounds (scaled (44, 472, 60, 64));
-    playKey.setBounds (scaled (112, 472, 60, 64));
-    stopKey.setBounds (scaled (180, 472, 60, 64));
-    toStartKey.setBounds (scaled (44, 540, 60, 64));
-    loopKey.setBounds (scaled (112, 540, 60, 64));
-    midiKey.setBounds (scaled (180, 540, 60, 64));
+    recKey.setBounds (scaled (40, 472, 56, 64));
+    playKey.setBounds (scaled (108, 472, 56, 64));
+    stopKey.setBounds (scaled (176, 472, 56, 64));
+    toStartKey.setBounds (scaled (40, 540, 56, 64));
+    loopKey.setBounds (scaled (108, 540, 56, 64));
+    midiKey.setBounds (scaled (176, 540, 56, 64));
     // octave panel (bottom right): keys like the mode keys, centred in the panel
     octDownKey.setBounds (scaled (972, 500, 88, 72));
     octUpKey.setBounds (scaled (1068, 500, 88, 72));
