@@ -130,7 +130,13 @@ std::string toJson (const Preset& p)
     j["engine"] = p.meta.engine;
     j["comment"] = p.meta.comment;
     json params = json::object();
-    for (const auto& [id, v] : p.params) params[id] = v;
+    bool hasMod = false;
+    for (const auto& [id, v] : p.params)
+    {
+        params[id] = v;
+        hasMod = hasMod || id.compare (0, 5, "mod.s") == 0 || id.find (".mod.s") != std::string::npos;
+    }
+    if (hasMod) j["modSchema"] = mod::schemaVersion; // 0.7
     j["params"] = params;
     if (p.meta.kind == Kind::Part && p.arp)
     {
@@ -171,6 +177,8 @@ bool fromJson (const std::string& text, Preset& out, std::string* error)
     if (j.contains ("params") && j["params"].is_object())
         for (const auto& [id, v] : j["params"].items())
             if (v.is_number()) p.params[id] = v.get<float>();
+    p.meta.modSchema = j.value ("modSchema", 0);
+    if (p.meta.modSchema < mod::schemaVersion) mod::migrate (p.meta.modSchema, p.params); // 0.7
     if (p.meta.kind == Kind::Part && j.contains ("arp") && j["arp"].is_object())
     {
         std::map<std::string, float> arp;

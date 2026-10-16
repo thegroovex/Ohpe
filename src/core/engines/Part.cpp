@@ -12,6 +12,8 @@ Part::Part (int partNumber) : number (partNumber), idPrefix ("p" + std::to_strin
 {
     for (int t = 0; t < numEngineTypes; ++t)
         engines[(size_t) t] = createEngine ((EngineType) t);
+    for (auto& u : uiTargetIndex) u.store (-1);
+    for (auto& u : uiTargetDelta) u.store (0.0f);
 }
 
 void Part::registerCommonParams (ParamRegistry& reg) const
@@ -85,6 +87,16 @@ void Part::registerLate06Params (ParamRegistry& reg) const
     add (continuous (id ("pitchenv.curve"), "Part " + n + " Pitch Env Curve", "Part " + n + " Tonhöhen-Hüllkurve Kurve", 0.0f, 1.0f, 0.5f));
 }
 
+void Part::registerLate07Rack (ParamRegistry& reg) const
+{
+    const auto group = "part" + std::to_string (number) + "/fx";
+    if (number > 1) InsertSlot::registerParams (reg, FxRack::partSlotPrefix (idPrefix, 0), group); // slot 1 of parts 2-4
+    FxRack::registerExtraSlots (reg, idPrefix, group);
+    FxRack::registerSlotControls (reg, idPrefix, group);
+}
+
+void Part::registerLate07Mod (ParamRegistry& reg) const { mod::PartMatrix::registerParams (reg, idPrefix, number); }
+
 void Part::registerEngineParams (ParamRegistry& reg, EngineType type) const
 {
     const auto& eng = engines[(size_t) type];
@@ -127,6 +139,14 @@ void Part::bind (const ParamRegistry& reg)
                                             "mod.amt", "lfo.rate", "lfo.depth", "lfo.shape", "lfo.dest" };
     for (int i = 0; i < numCommon; ++i)
         commonIndex[(size_t) i] = reg.indexOf (id (names[i]));
+    registry = &reg;
+    for (int d = 0; d < mod::numDests; ++d) // matrix targets that name a part parameter (inert while it does not exist)
+    {
+        const auto& info = mod::destTable()[(size_t) d];
+        partDestIndex[(size_t) d] = info.kind == mod::DestKind::PartParam && info.paramSuffix != nullptr ? reg.indexOf (id (info.paramSuffix)) : -1;
+    }
+    rack.bindPart (reg, idPrefix);
+    matrix.bind (reg, idPrefix);
     gainIndex = reg.indexOf (id ("gain"));
     polyGlideIndex = reg.indexOf (id ("polyglide"));
     static const char* late06[numLate06] = { "glide.mode", "glide.rate", "pitchenv.amt", "pitchenv.time", "pitchenv.curve" };
@@ -155,6 +175,9 @@ void Part::prepare (double sampleRate, int maxBlockSize)
     for (auto& s : slots)
         for (auto& v : s.lastValue) v = NAN;
     dcCoeff = 1.0f - (float) (2.0 * 3.14159265358979 * 5.0 / sampleRate);
+    rack.prepare (sampleRate, maxBlockSize);
+    matrix.prepare (sampleRate);
+    lastGain = -1.0f;
     reset();
 }
 
@@ -168,9 +191,17 @@ void Part::reset() noexcept
     portaSwitch = true;
     ccGlideSeconds = -1.0f;
     dcX[0] = dcX[1] = dcY[0] = dcY[1] = 0.0f;
+    rack.reset();
+    matrix.reset();
 }
 
 void Part::pullParams (const ParamSnapshot& s) noexcept
+{
+    applyParams (s);
+    captureModBases (s);
+}
+
+void Part::applyParams (const ParamSnapshot& s) noexcept
 {
     auto v = [&] (Common c) { return s[commonIndex[(size_t) c]]; };
     const auto newType = (EngineType) std::clamp (s.getInt (commonIndex[cEngine]), 0, numEngineTypes - 1);
@@ -202,6 +233,9 @@ void Part::pullParams (const ParamSnapshot& s) noexcept
     common.lfoShape = s.getInt (commonIndex[cLfoShape]);
     common.lfoDest = (LfoDest) std::clamp (s.getInt (commonIndex[cLfoDest]), 0, (int) LfoDest::numDests - 1);
     common.pitchOffset = tune + bend * bendRange;
+    common.modProgram = &matrix.voiceProgram();
+    matrix.pull (s, common.amp, common.mod, common.lfoRate, common.lfoShape);
+    rack.pullParams (s);
 
     for (int t = 0; t < numEngineTypes; ++t)
     {
@@ -226,6 +260,7 @@ void Part::noteOn (int note, float velocity) noexcept
 {
     if (note < 0 || note > 127) return;
     sustained[(size_t) note] = false;
+    matrix.noteOn (note, velocity); // first: the voice reads the new note's seed
     if (auto* e = engines[(size_t) current].get()) e->noteOn (note, velocity);
 }
 
@@ -233,6 +268,7 @@ void Part::noteOff (int note) noexcept
 {
     if (note < 0 || note > 127) return;
     if (sustain) { sustained[(size_t) note] = true; return; }
+    matrix.noteOff (note);
     for (auto& e : engines)
         if (e != nullptr) e->noteOff (note);
 }
@@ -240,12 +276,14 @@ void Part::noteOff (int note) noexcept
 void Part::allNotesOff (bool hard) noexcept
 {
     sustained.fill (false);
+    matrix.allNotesOff();
     for (auto& e : engines)
         if (e != nullptr) e->allNotesOff (hard);
 }
 
 void Part::noteExpression (int note, const NoteExpression& x) noexcept
 {
+    matrix.setNoteExpression (note, x.pressure, x.slide, x.noteBend);
     for (auto& e : engines)
         if (e != nullptr) e->noteExpression (note, x);
 }
@@ -257,6 +295,7 @@ void Part::handleMidi (const MidiEvent& m) noexcept
     else if (m.isPitchBend())
     {
         bend = ((float) m.pitchBendValue() - 8192.0f) / 8192.0f;
+        matrix.setPitchBend (bend);
         common.pitchOffset = tune + bend * bendRange;
         for (auto& e : engines)
             if (e != nullptr) e->setCommon (common);
@@ -282,35 +321,163 @@ void Part::handleMidi (const MidiEvent& m) noexcept
             for (auto& e : engines)
                 if (e != nullptr) e->setCommon (common);
         }
+        else if (m.data1 == 1) matrix.setModWheel ((float) m.data2 / 127.0f); // 0.7: matrix source
         else if (m.data1 == 120) allNotesOff (true);
         else if (m.data1 == 123) allNotesOff (false);
     }
 }
 
-void Part::render (float* l, float* r, int numSamples) noexcept
+void Part::renderEngines (float* l, float* r, int numSamples) noexcept
 {
     std::memset (l, 0, sizeof (float) * (size_t) numSamples);
     std::memset (r, 0, sizeof (float) * (size_t) numSamples);
     for (auto& e : engines)
         if (e != nullptr && e->activeVoiceCount() > 0)
             e->render (l, r, numSamples);
+}
+
+void Part::finishBlock (float* l, float* r, int numSamples) noexcept
+{
     // 0.4: a gentle DC blocker (one pole at ~5 Hz): pulse shapes and asymmetric waves must not
-    // push a DC offset into the mix
+    // push a DC offset into the mix. 0.7: the volume glides over the block when it changed (automation, matrix).
     const float g = volume * gainFactor;
+    const float g0 = lastGain < 0.0f ? g : lastGain;
+    lastGain = g;
+    const float step = (g - g0) / (float) std::max (1, numSamples);
     float* ch[2] = { l, r };
     for (int c = 0; c < 2; ++c)
     {
         float x1 = dcX[c], y1 = dcY[c];
-        for (int i = 0; i < numSamples; ++i)
+        if (g0 == g)
         {
-            const float x = ch[c][i];
-            y1 = x - x1 + dcCoeff * y1;
-            x1 = x;
-            ch[c][i] = y1 * g;
+            for (int i = 0; i < numSamples; ++i)
+            {
+                const float x = ch[c][i];
+                y1 = x - x1 + dcCoeff * y1;
+                x1 = x;
+                ch[c][i] = y1 * g;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < numSamples; ++i)
+            {
+                const float x = ch[c][i];
+                y1 = x - x1 + dcCoeff * y1;
+                x1 = x;
+                ch[c][i] = y1 * (g0 + step * (float) (i + 1));
+            }
         }
         dcX[c] = x1;
         dcY[c] = (std::abs (y1) < 1.0e-20f) ? 0.0f : y1; // no denormals in silence
     }
+    rack.process (l, r, numSamples); // 0.7: the FX rack (slot 1 = the 0.2 FX slot)
+}
+
+void Part::render (float* l, float* r, int numSamples) noexcept
+{
+    if (! matrix.hasParamRoutes() || liveSnapshot == nullptr || numModTargets == 0)
+    {
+        matrix.advance (numSamples);
+        matrix.tickParamRoutes (numSamples); // display values
+        renderEngines (l, r, numSamples);
+        finishBlock (l, r, numSamples);
+    }
+    else
+    {
+        // routings to parameters: modulated values every control block (32 samples), glided by the matrix
+        for (int pos = 0; pos < numSamples; pos += controlBlock)
+        {
+            const int len = std::min (controlBlock, numSamples - pos);
+            matrix.advance (len);
+            matrix.tickParamRoutes (len);
+            writeModulation();
+            applyParams (*liveSnapshot);
+            renderEngines (l + pos, r + pos, len);
+            finishBlock (l + pos, r + pos, len);
+        }
+    }
+    matrix.publishUi();
+}
+
+int Part::destParamIndex (int dest) const noexcept
+{
+    using namespace mod;
+    if (dest <= DstOff || dest >= numDests) return -1;
+    const auto& d = destTable()[(size_t) dest];
+    switch (d.kind)
+    {
+        case DestKind::EngineParam:
+        {
+            const auto& slot = slots[(size_t) current];
+            return d.arg < (int) slot.paramIndex.size() ? slot.paramIndex[(size_t) d.arg] : -1;
+        }
+        case DestKind::PartParam: return partDestIndex[(size_t) dest];
+        case DestKind::FxMix: return d.arg < rack.numSlots() ? rack.mixParamIndex (d.arg) : -1;
+        case DestKind::FxParam:
+        {
+            const int k = d.arg / numFxDestParams, j = d.arg % numFxDestParams;
+            if (k >= rack.numSlots()) return -1;
+            const auto& sl = rack.slot (k);
+            return sl.paramIndexOf (sl.currentType(), j);
+        }
+        default: return -1; // off, per voice
+    }
+}
+
+bool Part::destAvailable (int dest) const noexcept
+{
+    if (dest <= mod::DstOff || dest >= mod::numDests) return dest == mod::DstOff;
+    const auto& d = mod::destTable()[(size_t) dest];
+    return d.kind != mod::DestKind::PartParam || partDestIndex[(size_t) dest] >= 0;
+}
+
+void Part::captureModBases (const ParamSnapshot& s) noexcept
+{
+    numModTargets = 0;
+    slotTarget.fill (-1);
+    if (! matrix.hasParamRoutes() || registry == nullptr) { for (auto& u : uiTargetIndex) u.store (-1, std::memory_order_relaxed); return; }
+    const auto& routes = matrix.routes();
+    for (int k = 0; k < mod::numSlots; ++k)
+    {
+        if (! matrix.isParamRoute (k)) continue;
+        const int idx = destParamIndex (routes[(size_t) k].dst);
+        if (idx < 0 || idx >= s.size()) continue;
+        int t = 0;
+        while (t < numModTargets && modTargets[(size_t) t].index != idx) ++t;
+        if (t == numModTargets)
+        {
+            modTargets[(size_t) t] = { idx, registry->descriptor (idx).toNormalised (s[idx]) };
+            ++numModTargets;
+        }
+        slotTarget[(size_t) k] = t;
+    }
+    for (int t = 0; t < mod::numSlots; ++t)
+        uiTargetIndex[(size_t) t].store (t < numModTargets ? modTargets[(size_t) t].index : -1, std::memory_order_relaxed);
+}
+
+void Part::writeModulation() noexcept
+{
+    std::array<float, mod::numSlots> delta {};
+    for (int k = 0; k < mod::numSlots; ++k)
+        if (const int t = slotTarget[(size_t) k]; t >= 0) delta[(size_t) t] += matrix.routeValue (k);
+    for (int t = 0; t < numModTargets; ++t)
+    {
+        const auto& m = modTargets[(size_t) t];
+        const auto& d = registry->descriptor (m.index);
+        const float norm = dsp::clamp01 (m.baseNorm + delta[(size_t) t]);
+        liveSnapshot->setModulated (m.index, d.fromNormalised (norm));
+        uiTargetDelta[(size_t) t].store (norm - m.baseNorm, std::memory_order_relaxed);
+    }
+}
+
+float Part::modulationOf (int registryIndex) const noexcept
+{
+    if (registryIndex < 0) return 0.0f;
+    for (int t = 0; t < mod::numSlots; ++t)
+        if (uiTargetIndex[(size_t) t].load (std::memory_order_relaxed) == registryIndex)
+            return uiTargetDelta[(size_t) t].load (std::memory_order_relaxed);
+    return 0.0f;
 }
 
 void Part::updateGlide() noexcept

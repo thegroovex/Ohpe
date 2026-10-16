@@ -46,6 +46,8 @@ class Core;
       latch; plain values like "params"); keys it does not list return to their defaults. Part
       presets without "arp" leave the arpeggiator alone, except that a preset loaded into the part
       whose arp a preset switched on (and that is still unchanged) switches it off again.
+    * "modSchema" (0.7, optional): schema version of the modulation matrix routings ("mod.sK.*" / "pN.mod.sK.*")
+      the preset contains; presets of older schemas are migrated when they are read.
     * Values are plain values (as shown, e.g. Hz, seconds). Unknown IDs are ignored, so presets
       from newer versions load; version-1 presets (no kind / tags, "prefix" field) load as parts.
     * Loading a preset never adds, removes or reorders parameters.
@@ -75,6 +77,9 @@ struct Meta
     std::string engine;           ///< engine id ("analog", "fm" ...), empty if unknown
     Kind kind = Kind::Part;
     int version = formatVersion;  ///< version of the document it was read from
+    /** 0.7: schema of the modulation matrix parameters ("modSchema", 0 = none; see mod::schemaVersion). Written when
+        the preset contains matrix routings; older schemas are migrated on load (mod::migrate). */
+    int modSchema = 0;
 };
 
 struct Preset

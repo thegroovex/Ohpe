@@ -4,6 +4,7 @@
 
 #include "drum/DrumKit.h"
 #include "engines/Part.h"
+#include "fx/FxRack.h"
 #include "fx/InsertSlot.h"
 #include "midi/MidiClock.h"
 #include "midi/MidiMap.h"
@@ -62,7 +63,18 @@ public:
     Mixer& mixer() noexcept { return mix; }
     drum::DrumKit& drumKit() noexcept { return drums; }   ///< mixer source "drum", MIDI channel 10
     TapeMachine& tape() noexcept { return tapeMachine; }             ///< 0.2: eight-track tape
-    InsertSlot& insertFx (int part) noexcept { return inserts[(size_t) part]; } ///< 0.2: FX slot of a part
+    InsertSlot& insertFx (int part) noexcept { return parts[(size_t) part]->fxRack().slot (0); } ///< 0.2: FX slot of a part (0.7: rack slot 1)
+    FxRack& fxRack (int part) noexcept { return parts[(size_t) part]->fxRack(); } ///< 0.7: FX rack of a part
+    FxRack& masterFxRack() noexcept { return masterRack; }                      ///< 0.7: master FX rack ("mfx1." ...)
+
+    /**
+        0.7, message thread: prepares the effect types selected in FX rack slots that are not ready yet (slots 2-6,
+        master). Call after changing a slot type from the message thread; the core calls it after prepare() and
+        loadState(), the plug-in also from a timer (host automation of a slot type). True when it prepared anything.
+    */
+    bool prepareEffects();
+    /** 0.7, any thread: a rack slot waits for prepareEffects() (its type passes dry until then). */
+    bool effectsWaiting() const noexcept;
 
     /** 0.2, audio thread: the audio input for the next process() call (plug-in input bus;
         null = silent). Valid for that one call only. */
@@ -243,7 +255,7 @@ private:
 
     // ---- 0.2: tape, FX slots, audio input ----
     TapeMachine tapeMachine;
-    std::array<InsertSlot, numParts> inserts;
+    FxRack masterRack { FxRack::numMasterSlots }; ///< 0.7 (part racks: Part::fxRack)
     std::array<std::vector<float>, 2 * TapeMachine::numTracks> tapeOut;
     const float* inputL = nullptr;
     const float* inputR = nullptr;

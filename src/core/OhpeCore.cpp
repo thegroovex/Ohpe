@@ -21,7 +21,8 @@ Core::Core()
     mix.bind (registry);
     drums.bind (registry);
     tapeMachine.bind (registry);
-    for (int i = 0; i < numParts; ++i) inserts[(size_t) i].bind (registry, parts[(size_t) i]->prefix() + "fx.");
+    masterRack.bindMaster (registry); // 0.7 (the part racks belong to the parts)
+    mix.setMasterRack (&masterRack);
     stepSeq.setRegistry (&registry);
     tempoIndex = registry.indexOf (Ids::tempo);
     seqRunIndex = registry.indexOf (Ids::seqRun);
@@ -61,6 +62,7 @@ Core::Core()
     keyScaleIndex = registry.indexOf (Ids::keyScale);
 
     snapshot.prepare (registry);
+    for (auto& p : parts) p->setSnapshot (&snapshot); // 0.7: the matrix writes modulated values into it
     lockStorage.reserve (1024);
     seqOut.locks = &lockStorage;
     seqOut.maxLocks = 1024;
@@ -108,11 +110,27 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     clockIn.prepare (sr);
     clockGen.prepare (sr);
     tapeMachine.prepare (sr, chunk);
-    for (auto& f : inserts) f.prepare (sr, chunk);
+    masterRack.prepare (sr, chunk);
     for (auto& t : tapeOut) t.assign ((size_t) chunk, 0.0f);
     std::fill (stepParamLast.begin(), stepParamLast.end(), NAN);
     for (auto* b : { &euclidBinding, &arpBinding, &orbitBinding }) std::fill (b->last.begin(), b->last.end(), NAN);
     reset();
+    prepareEffects();
+}
+
+bool Core::prepareEffects()
+{
+    bool any = masterRack.prepareSelected (registry);
+    for (auto& p : parts) any = p->fxRack().prepareSelected (registry) || any;
+    return any;
+}
+
+bool Core::effectsWaiting() const noexcept
+{
+    if (masterRack.isWaiting()) return true;
+    for (const auto& p : parts)
+        if (p->fxRack().isWaiting()) return true;
+    return false;
 }
 
 void Core::reset() noexcept
@@ -121,7 +139,7 @@ void Core::reset() noexcept
     drums.reset();
     mix.reset();
     tapeMachine.resetDsp();
-    for (auto& f : inserts) f.reset();
+    masterRack.reset();
     stepSeq.reset();
     euclid.reset();
     arp.reset();
@@ -226,14 +244,11 @@ void Core::applyLocks (const std::vector<ParamLockEvent>& locks, size_t& next, i
 void Core::pullPhase2Params() noexcept
 {
     tapeMachine.pullParams (snapshot);
-    for (auto& f : inserts) f.pullParams (snapshot);
+    masterRack.pullParams (snapshot); // 0.7 (part racks: Part::pullParams)
 }
 
 void Core::renderTapeChunk (SourceBuffers& src, int pos, int len) noexcept
 {
-    for (int p = 0; p < numParts; ++p) // FX slot of each part (Off while a part has no slot parameters)
-        inserts[(size_t) p].process (partL[(size_t) p].data(), partR[(size_t) p].data(), len);
-
     TapeInputs tin;
     tin.left[tapesource::input] = inputL != nullptr ? inputL + pos : nullptr;
     tin.right[tapesource::input] = inputR != nullptr ? inputR + pos : nullptr;
@@ -405,8 +420,10 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         const int len = end - pos;
 
         SourceBuffers src;
+        const double chunkPpq = tr.ppqAtBlockStart + (double) pos * tr.bpm / 60.0 / sr;
         for (int p = 0; p < numParts; ++p)
         {
+            parts[(size_t) p]->setTransport (tr.bpm, chunkPpq, tr.playing); // 0.7: tempo-synced LFOs
             parts[(size_t) p]->render (partL[(size_t) p].data(), partR[(size_t) p].data(), len);
             src.left[(size_t) (source::part1 + p)] = partL[(size_t) p].data();
             src.right[(size_t) (source::part1 + p)] = partR[(size_t) p].data();
@@ -469,6 +486,7 @@ bool Core::loadState (const std::string& json, std::string* uiJsonOut)
     if (auto it = r.sections.find ("tape"); it != r.sections.end()) tapeMachine.loadSettingsJson (it->second);
     if (auto it = r.sections.find ("orbit"); it != r.sections.end()) orbit.fromJson (it->second);
     else orbit.clearPattern();
+    prepareEffects(); // 0.7: effect types of the loaded racks
     if (uiJsonOut != nullptr)
     {
         auto it = r.sections.find ("ui");

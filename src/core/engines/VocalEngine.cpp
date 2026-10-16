@@ -112,6 +112,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
         float vowel = p.vowel + c.modEnvAmount * modEnv.getLevel() * 2.0f;
         if (c.lfoDest == LfoDest::Timbre) vowel += lfoValue * 2.0f;
+        vowel += expr.timbre * 2.0f; // per-note expression / modulation matrix (0.7)
         const FormantSet fs = morphVowel (vowel);
         const float shift = dsp::semitonesToRatio (p.formantShift);
         for (int k = 0; k < numFormants; ++k)

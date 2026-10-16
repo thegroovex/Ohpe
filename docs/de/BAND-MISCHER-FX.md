@@ -1,4 +1,4 @@
-# Bandmaschine, Mixer-Dynamik und FX-Slot
+# Bandmaschine, Mixer-Dynamik und FX-Rack
 
 *Deutsch · English: [../en/TAPE-MIXER-FX.md](../en/TAPE-MIXER-FX.md) · Parametertabellen:
 [../PARAMETERS.md](../PARAMETERS.md)*
@@ -94,8 +94,39 @@ Stehen alle neuen Regler auf ihrem Standard, klingt der Mixer bit-genau wie in 0
 zwischen Part 1 und Mixer (und vor dem Band, wenn eine Spur Part 1 aufnimmt). Jeder Effekt
 behält seine eigenen Parameter (`p1.fx.chorus.rate` …); Chorus, Phaser, Bitcrusher und
 Filter-Drive haben einen eigenen Mischungsregler, Delay und Hall bekommen ihn vom Slot
-(`p1.fx.delay.mix`, `p1.fx.reverb.mix`). *Aus* ist ein exakter Bypass. Weitere Parts bekommen
-ihre Slots als `p2.fx.*` …, sobald es sie gibt.
+(`p1.fx.delay.mix`, `p1.fx.reverb.mix`). *Aus* ist ein exakter Bypass. Seit 0.7 ist dieser Slot
+Slot 1 im FX-Rack des Parts (unten).
+
+## FX-Rack (0.7)
+
+Jeder Part hat ein **FX-Rack mit sechs Slots in Reihe**, der Master eines mit vier:
+
+```
+ Part ─ FX 1 ─ FX 2 ─ FX 3 ─ FX 4 ─ FX 5 ─ FX 6 ─▶ Mixerkanal / Band
+ Master: Summe + Returns ─ MFX 1 ─ MFX 2 ─ MFX 3 ─ MFX 4 ─ Kompressor ─ Bandsättigung ─ Lautstärke ─ Tiefpass ─ Limiter
+```
+
+* Slot 1 ist der FX-Slot oben (`pN.fx.*`), Slots 2 – 6 sind `pN.fx2.*` … `pN.fx6.*`, die
+  Master-Slots `mfx1.*` … `mfx4.*`. Jeder Slot hat dieselbe Typenliste und pro Typ einen eigenen
+  Parameterblock (`p1.fx3.chorus.rate`), zwei Slots können also denselben Effekt mit
+  verschiedenen Einstellungen tragen.
+* Pro Slot: **Mischung** (`pN.fxK.mix`, trocken / nass des ganzen Slots, 100 % = der Ausgang des
+  Effekts) und **Bypass** (`pN.fxK.bypass`). Mischung und Bypass gleiten über 10 ms – kein Klicken
+  beim Umschalten.
+* **Reihenfolge:** Die Slots laufen 1, 2, … ; ein Slot wird verschoben, indem die Parameter der
+  betroffenen Slots umgeschrieben werden (Typ, Mischung, Bypass und alle Blöcke) – die
+  Reihenfolge ist Teil des Presets, rückgängig zu machen und automatisierbar wie jeder Wert.
+* **Kompatibilität:** Presets und Projekte aus 0.6 landen unverändert in Slot 1 und klingen
+  bitgenau gleich (Slot-Mischung 100 %, die anderen Slots aus). Ein leerer oder umgangener Slot
+  ist ein exakter Bypass.
+* **Echtzeit:** Slot 1 hat jeden Typ sofort bereit (wie bisher). Slots 2 – 6 und die Master-Slots
+  belegen den Speicher eines Effekts erst, wenn der Typ zum ersten Mal gewählt wird (das Plug-in
+  erledigt das einen Augenblick später im Message-Thread; bis dahin reicht der Slot das Signal
+  trocken durch).
+* Die Namen im Host unterscheiden die Slots: „P2 FX3 Chorus-Tempo“, „Master-FX 1 Delay-Mischung“
+  (der 0.2-Slot von Part 1 behält seine Namen).
+* Die Modulationsmatrix kann die Mischung jedes Slots und die ersten vier Parameter seines
+  Effekts bewegen ([MODULATION.md](MODULATION.md)).
 
 ## Audioeingang (Plug-in)
 

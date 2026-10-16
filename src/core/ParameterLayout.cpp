@@ -207,5 +207,15 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate06Params (reg);
     for (auto& p : parts) p->registerLateEngineParams (reg, EngineType::Analog);
     mixer.registerLate06Params (reg);
+
+    // ---- 0.7: FX rack and modulation matrix ------------------------------------------------------------------
+    //      Part racks: slot 1 of parts 2-4 ("pN.fx.*"), slots 2-6 ("pN.fx2.*" ... "pN.fx6.*", type + the 0.2 type
+    //      blocks), mix / bypass of every slot; then the master rack ("mfx1.*" ... "mfx4.*"); then the matrix of every
+    //      part (routings, LFO 2 / 3, envelope 3, macros, sequencer lane).
+    //      New FX types: append to InsertSlot::Type and register their blocks for every slot of every rack with
+    //      FxRack::registerTypeBlocks (reg, Core::numParts, firstNewType, InsertSlot::numTypes) below.
+    for (auto& p : parts) p->registerLate07Rack (reg);
+    FxRack::registerMaster (reg);
+    for (auto& p : parts) p->registerLate07Mod (reg);
 }
 } // namespace ohpe

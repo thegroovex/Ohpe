@@ -59,3 +59,8 @@ target_sources(ohpe_core PRIVATE
 
 # 0.4 (package F): factory sample bank (instruments, drum kits)
 target_sources(ohpe_core PRIVATE sample/FactoryBank.cpp)
+
+# 0.7: FX rack (serial insert slots per part + master) and modulation matrix
+target_sources(ohpe_core PRIVATE
+    fx/FxRack.cpp
+    mod/ModMatrix.cpp)

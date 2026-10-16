@@ -18,6 +18,7 @@
 
 namespace ohpe
 {
+class FxRack;
 /**
     Mixer sources: what feeds a channel ("mix.chN.src"). The numbers are permanent
     (append-only, 0..31 reserved). Unavailable sources are silent.
@@ -68,6 +69,8 @@ public:
     void registerLate05Params (ParamRegistry& reg) const;
     /** 0.6: "mix.master.lowpass" (master low-pass filter, 20 kHz = off). */
     void registerLate06Params (ParamRegistry& reg) const;
+    /** 0.7: the master FX rack (owner: the core), between the send returns and the master dynamics. */
+    void setMasterRack (FxRack* rack) noexcept { masterRack = rack; }
     /** 0.5: note lengths of the "fxa.delay.sync" choices in quarter notes (index 0 = Off -> 0). */
     static double delaySyncBeats (int choice) noexcept;
     /** 0.5: tempo for the synced delay (audio thread, before pullParams). */
@@ -140,5 +143,6 @@ private:
     std::array<std::atomic<float>, numChannels + 1> reductions {};
     std::vector<float> chL, chR, sendAL, sendAR, sendBL, sendBR, masterL, masterR;
     std::array<std::atomic<float>, numChannels + 1> meters {};
+    FxRack* masterRack = nullptr; ///< 0.7
 };
 } // namespace ohpe

@@ -102,6 +102,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
         float octaves = p.keyTrack * (pitch - 60.0f) / 12.0f + c.modEnvAmount * modEnv.getLevel() * 5.0f;
         if (c.lfoDest == LfoDest::Timbre) octaves += lfoValue * 2.0f;
+        octaves += expr.timbre * 3.0f; // per-note expression / modulation matrix (0.7)
         // cutoff in octaves above 20 Hz, glided over ~4 ms so jumps never ring the filter hard
         const float target = std::clamp (std::log2 (2.0f * std::pow (500.0f, dsp::clamp01 (p.tone))) + octaves, 0.0f, 9.97f);
         cutoffOct = cutoffOct < 0.0f ? target : cutoffOct + (target - cutoffOct) * (1.0f - std::exp (-(float) n / (sr * 0.004f)));

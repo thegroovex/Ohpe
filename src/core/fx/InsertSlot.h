@@ -7,6 +7,7 @@
 #include "IEffect.h"
 
 #include <array>
+#include <atomic>
 #include <memory>
 #include <string>
 #include <vector>
@@ -20,19 +21,53 @@ namespace ohpe
     Delay, Reverb - append-only list) and one parameter block per effect type
     ("p1.fx.chorus.rate", ...). Delay and reverb are 100 % wet effects; the slot adds a
     "mix" parameter for them ("p1.fx.delay.mix"). Type Off is an exact bypass.
+
+    0.7 (FX rack): the slot is the building block of FxRack (six slots per part, four on the master).
+    Effect types whose parameter blocks are not registered for a prefix act as Off. Slots of a rack
+    other than slot 1 are "lazy": an effect type allocates its buffers (prepare) only when it is
+    selected, on the message thread (prepareSelected); until then the slot passes the signal dry.
+    Adding a type: append it to Type, create() and the name lists, and register its parameter block
+    for every slot at the end of the layout (FxRack::registerTypeBlocks).
 */
 class InsertSlot
 {
 public:
     enum Type { Off = 0, Chorus, Phaser, Bitcrush, FilterDrive, Delay, Reverb, numTypes };
+    static constexpr int numLegacyTypes = Reverb + 1; ///< the 0.2 types (their blocks: registerParams)
 
     InsertSlot();
 
-    /** Registers the slot parameters for a prefix such as "p1.fx." (append-only). */
+    /** English / German names of the types (append-only, index = "type" value). */
+    static std::vector<std::string> typeNamesEn();
+    static std::vector<std::string> typeNamesDe();
+
+    /** Registers the slot parameters for a prefix such as "p1.fx." (append-only): the type choice
+        (every type) and the parameter blocks of the 0.2 types. */
     static void registerParams (ParamRegistry& reg, const std::string& prefix, const std::string& group);
+    /** Registers the parameter blocks of the types [fromType, toType) for one prefix (later types). */
+    static void registerBlocks (ParamRegistry& reg, const std::string& prefix, const std::string& group, int fromType, int toType);
+    /** Host name prefix of a slot prefix: "" for the 0.2 slot "p1.fx.", "P2 FX3 " for "p2.fx3.", "Master FX 1 " ... */
+    static std::string hostNamePrefix (const std::string& prefix, bool german);
+    /** Effect info of a type (Off: nullptr id). Message thread. */
+    static EffectInfo typeInfo (int t);
 
     void bind (const ParamRegistry& reg, const std::string& prefix);
+    /** Lazy slots prepare only the selected types (see class comment). Default: every type at prepare(). */
+    void setLazy (bool lazyPrepare) noexcept { lazy = lazyPrepare; }
     void prepare (double sampleRate, int maxBlockSize);
+    /** Message thread: prepares the type selected in `reg` if it is not ready (lazy slots). Returns true when
+        it prepared something. Never call while the audio thread could process that type (it cannot: an
+        unready type is not processed). */
+    bool prepareSelected (const ParamRegistry& reg);
+    /** Audio thread: the selected type is waiting for prepareSelected(). */
+    bool isWaiting() const noexcept { return waiting.load (std::memory_order_relaxed); }
+    bool isReady (int t) const noexcept { return t > Off && t < numTypes && ready[(size_t) t].load (std::memory_order_acquire); }
+    /** Registry index of parameter `local` of type `t` (-1 when not registered). */
+    int paramIndexOf (int t, int local) const noexcept
+    {
+        return t > Off && t < numTypes && local >= 0 && local < (int) paramIndex[(size_t) t].size() ? paramIndex[(size_t) t][(size_t) local] : -1;
+    }
+    int typeParamIndex() const noexcept { return typeIndex; }
     void reset() noexcept;
     void pullParams (const ParamSnapshot& snap) noexcept;
 
@@ -51,6 +86,11 @@ private:
     std::array<std::vector<int>, numTypes> paramIndex;
     std::array<std::vector<float>, numTypes> lastValue;
     std::array<int, numTypes> mixIndex {};
+    std::array<std::atomic<bool>, numTypes> ready {};
+    std::atomic<bool> waiting { false };
+    bool lazy = false;
+    double preparedRate = 0.0;
+    int preparedBlock = 0;
     int typeIndex = -1, type = Off;
     float wetMix = 0.35f;
     std::vector<float> dryL, dryR;

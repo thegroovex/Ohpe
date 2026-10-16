@@ -9,6 +9,8 @@
 
 namespace ohpe
 {
+namespace mod { struct VoiceProgram; }
+
 /** Static facts about an engine type (for the UI and the parameter IDs). */
 struct EngineInfo
 {
@@ -48,6 +50,7 @@ struct VoiceCommon
     float pitchEnvCurve = 0.5f;     ///< 0.6: 0 = linear, 1 = fast start, slow arrival
     float pitchOffset = 0.0f;   ///< semitones: tune + fine + pitch bend (already summed)
     float velocitySens = 0.7f;  ///< 0 = no velocity, 1 = full velocity to amp
+    const mod::VoiceProgram* modProgram = nullptr; ///< 0.7: per-voice routings of the modulation matrix (owned by the part)
 };
 
 /**
@@ -61,6 +64,10 @@ struct NoteExpression
     float amp = 1.0f;    ///< gain factor 0..2
     float lfo = 0.0f;    ///< added to the LFO depth (0..1 in total)
     float pan = 0.0f;    ///< -1..+1 added to the pan position
+    // 0.7: the raw expression of the note, as modulation matrix sources (independent of the targets above)
+    float pressure = 0.0f; ///< 0..1 channel / poly pressure or MPE pressure
+    float slide = 0.0f;    ///< -1..+1 timbre (CC 74, MPE "slide"), 0 = centre
+    float noteBend = 0.0f; ///< -1..+1 per-note pitch bend of an MPE member channel
 };
 
 /**

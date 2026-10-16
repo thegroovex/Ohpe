@@ -96,6 +96,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
         float octaves = c.modEnvAmount * modEnv.getLevel() * 6.0f;
         if (c.lfoDest == LfoDest::Timbre) octaves += lfoValue * 2.0f;
+        octaves += expr.timbre * 3.0f; // per-note expression / modulation matrix (0.7)
         const float cutoff = std::clamp (40.0f * std::pow (2.0f, p.tone * 9.0f + octaves), 20.0f, 20000.0f);
         const bool useFilter = cutoff < 18000.0f;
         if (useFilter)

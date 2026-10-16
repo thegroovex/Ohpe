@@ -4,6 +4,7 @@
 
 #include "../dsp/Envelope.h"
 #include "../dsp/Lfo.h"
+#include "../mod/ModVoice.h"
 #include "ISynthEngine.h"
 #include "VoiceAllocator.h"
 
@@ -12,6 +13,39 @@
 
 namespace ohpe
 {
+/**
+    0.7: the amplitude envelope of a voice with the modulation matrix's level on top: next() returns the
+    envelope times a gain that ramps sample by sample to its target (no zipper noise at control rate).
+    With the gain at 1 the result is exactly the envelope.
+*/
+class ModulatedAdsr : public dsp::Adsr
+{
+public:
+    float next() noexcept
+    {
+        const float e = dsp::Adsr::next();
+        if (rampLeft > 0)
+        {
+            gain += gainStep;
+            if (--rampLeft == 0) gain = gainTarget;
+        }
+        return e * gain;
+    }
+    /** Ramps the gain to `target` over n samples. */
+    void rampGain (float target, int n) noexcept
+    {
+        if (target == gainTarget && rampLeft == 0) return;
+        gainTarget = target;
+        rampLeft = std::max (1, n);
+        gainStep = (target - gain) / (float) rampLeft;
+    }
+    void resetGain (float g = 1.0f) noexcept { gain = gainTarget = g; rampLeft = 0; gainStep = 0.0f; }
+
+private:
+    float gain = 1.0f, gainTarget = 1.0f, gainStep = 0.0f;
+    int rampLeft = 0;
+};
+
 /**
     Everything a voice of any engine shares: note / glide, velocity, amp + mod envelopes, LFO.
     Engine voices derive from this and implement renderVoice().
@@ -63,17 +97,30 @@ public:
         ampEnv.noteOn();
         modEnv.noteOn();
         lfo.reset();
-        expr = NoteExpression {};
+        expr = exprIn = NoteExpression {};
         pitchEnvPhase = 0.0f;
+        ampEnv.resetGain();
+        if (c.modProgram != nullptr) vmod.start (midiNote, vel, *c.modProgram); // 0.7: modulation matrix (LFO 2 / 3, env 3, random)
     }
 
-    void releaseBase() noexcept { ampEnv.noteOff(); modEnv.noteOff(); }
-    void killBase() noexcept { ampEnv.reset(); modEnv.reset(); currentNote = -1.0f; pitchEnvPhase = 1.0f; }
+    void releaseBase() noexcept { ampEnv.noteOff(); modEnv.noteOff(); vmod.release(); }
+    void killBase() noexcept
+    {
+        ampEnv.reset();
+        modEnv.reset();
+        vmod.kill();
+        currentNote = -1.0f;
+        pitchEnvPhase = 1.0f;
+    }
     bool isActive() const noexcept { return ampEnv.isActive(); }
     int getNote() const noexcept { return note; }
     /** The pitch the voice is gliding at now (semitones, -1 when it has never sounded). */
     float glidePitch() const noexcept { return currentNote; }
-    void setExpression (const NoteExpression& x) noexcept { expr = x; }
+    void setExpression (const NoteExpression& x) noexcept
+    {
+        exprIn = x;
+        applyVoiceMod();
+    }
 
 protected:
     /** Per control block: updates glide, LFO and envelope settings; returns the pitch in semitones. */
@@ -92,8 +139,18 @@ protected:
         lfo.setRate (c.lfoRate);
         lfo.setShape (c.lfoShape);
         lfoDepth = std::clamp (c.lfoDepth + expr.lfo, 0.0f, 1.0f);
-        lfoValue = lfo.advance (n) * lfoDepth;
+        const float lfoRaw = lfo.advance (n);
+        lfoValue = lfoRaw * lfoDepth;
         float pitch = currentNote + c.pitchOffset + expr.pitch;
+        if (c.modProgram != nullptr && (c.modProgram->numRoutes > 0 || modActive)) // 0.7: per-voice routings of the modulation matrix
+        {
+            const auto& o = vmod.tick (*c.modProgram, n, sr, ampEnv.getLevel(), modEnv.getLevel(), lfoRaw, exprIn.pressure, exprIn.slide,
+                                       exprIn.noteBend);
+            modActive = c.modProgram->numRoutes > 0;
+            ampEnv.rampGain (modActive ? o.level : 1.0f, n);
+            pitch += modActive ? o.pitch : 0.0f;
+            applyVoiceMod();
+        }
         if (pitchEnvPhase < 1.0f) // 0.6 pitch envelope: starts `pitchEnvAmount` away, arrives after `pitchEnvTime`
         {
             if (c.pitchEnvAmount != 0.0f)
@@ -102,6 +159,16 @@ protected:
         }
         if (c.lfoDest == LfoDest::Pitch) pitch += lfoValue * 2.0f; // +-2 semitones at full depth
         return pitch;
+    }
+
+    /** expr = the note's expression + the matrix's per-voice pan / timbre. */
+    void applyVoiceMod() noexcept
+    {
+        expr = exprIn;
+        if (! modActive) return;
+        const auto& o = vmod.output();
+        expr.timbre += o.timbre;
+        if (o.pan != 0.0f) expr.pan = std::clamp (expr.pan + o.pan, -1.0f, 1.0f);
     }
 
     float velocityGain (const VoiceCommon& c) const noexcept { return 1.0f - c.velocitySens + c.velocitySens * velocity; }
@@ -130,8 +197,12 @@ protected:
     float pitchEnvPhase = 1.0f;       ///< 0.6: 0 at note start .. 1 = arrived
     float lfoValue = 0.0f;
     float lfoDepth = 0.0f;
-    NoteExpression expr; ///< per-note expression (MPE), neutral by default
-    dsp::Adsr ampEnv, modEnv;
+    NoteExpression expr;   ///< per-note expression (MPE) plus the matrix's per-voice pan / timbre (what engines read)
+    NoteExpression exprIn; ///< 0.7: the note's own expression (MPE input)
+    mod::VoiceMod vmod;    ///< 0.7: per-voice modulation matrix state
+    bool modActive = false;
+    ModulatedAdsr ampEnv;
+    dsp::Adsr modEnv;
     dsp::Lfo lfo;
 };
 

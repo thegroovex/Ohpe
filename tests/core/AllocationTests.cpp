@@ -6,6 +6,7 @@
 // The global operator new of this test executable counts calls while `counting` is set.
 
 #include "OhpeCore.h"
+#include "fx/FxRack.h"
 #include "TestHelpers.h"
 
 #include <doctest/doctest.h>
@@ -81,4 +82,49 @@ TEST_CASE ("real-time: no allocation in Core::process with tape, FX slot and dyn
     counting = false;
     CHECK (allocations.exchange (0) == 0);
     CHECK (core.tape().housekeeping()); // the pass becomes one undo step
+}
+
+TEST_CASE ("real-time: no allocation in Core::process with FX racks and the modulation matrix active (0.7)")
+{
+    Core core;
+    core.prepare (48000.0, 512);
+    auto& p = core.params();
+    const int types[6] = { 1, 2, 3, 4, 5, 6 };
+    for (int part = 1; part <= 4; ++part)
+    {
+        const auto pp = "p" + std::to_string (part) + ".";
+        for (int s = 0; s < 6; ++s) p.set (FxRack::partSlotPrefix (pp, s) + "type", (float) types[(s + part) % 6]);
+        p.set (pp + "fx3.mix", 0.5f);
+        for (int k = 1; k <= 16; ++k)
+        {
+            const auto s = pp + "mod.s" + std::to_string (k) + ".";
+            p.set (s + "src", (float) (k % 20 + 1));
+            p.set (s + "via", (float) (k % 3 == 0 ? mod::SrcModWheel : 0));
+            p.set (s + "dst", (float) (k % 3 == 0 ? mod::DstLevel : (k % 3 == 1 ? mod::DstEngine1 + k % 6 : mod::DstFx1Param1 + k % 12)));
+            p.set (s + "amt", 0.3f);
+            p.set (s + "curve", (float) (k % 5));
+        }
+        p.set (pp + "lfo2.sync", 5.0f);
+        p.set (pp + "lfo3.shape", 6.0f);
+    }
+    for (int s = 0; s < 4; ++s) p.set (FxRack::masterSlotPrefix (s) + "type", (float) (s + 1));
+    core.prepareEffects();
+    std::vector<float> l (512), r (512);
+    OutputBuffers out;
+    out.left[0] = l.data();
+    out.right[0] = r.data();
+    std::vector<MidiEvent> midi { MidiEvent::noteOn (1, 60, 100, 10), MidiEvent::controller (1, 1, 90, 20), MidiEvent::noteOff (1, 60, 400) };
+    Transport t;
+    t.playing = true;
+    t.hostDriven = true;
+    int total = 0;
+    for (int b = 0; b < 40; ++b)
+    {
+        t.ppqAtBlockStart = b * 0.0213;
+        counting = true;
+        core.process (out, 512, midi.data(), (int) midi.size(), t);
+        counting = false;
+        total += allocations.exchange (0);
+    }
+    CHECK (total == 0);
 }
