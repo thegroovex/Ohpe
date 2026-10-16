@@ -137,12 +137,13 @@ private:
         float sh = 0.0f, dSh = 0.0f, shDelay = 1.0f;
         float x1 = 0.0f, y1 = 0.0f; // head-shadow filter state
     };
-    struct Source
+    struct Source // src[0] = mid (one point source), src[1] = side (a pair +-spread/2 apart, opposite polarity)
     {
         Svf bands[6];
         float air = 0.0f, airCoeff = 1.0f, gain = 1.0f, dGain = 0.0f;
         Line line;
-        Ear ear[2];
+        Ear ear[4]; // mid: left, right; side: A left, A right, B left, B right
+        int numEars = 2;
     };
     struct Reflection
     {
@@ -151,7 +152,8 @@ private:
 
     void control (int n) noexcept;  ///< position, delays and filter targets for the next n samples
     void advancePhase (int n) noexcept;
-    void updateSource (int s, const space::Vec3& p, float binaural, int n) noexcept;
+    void updateSources (const space::Vec3& p, float binaural, int n) noexcept;
+    void setEar (Ear& e, const space::Vec3& unitDir, float d, float binaural, float sign, int ear, float invN) noexcept;
     void updateRoom (const space::Vec3& p, float binaural, int n) noexcept;
     void setRoomShape() noexcept;
     float distanceGain (float d) const noexcept;

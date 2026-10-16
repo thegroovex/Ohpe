@@ -278,6 +278,7 @@ void SpaceEffect::reset() noexcept
         s.air = 0.0f;
         for (auto& e : s.ear) e.x1 = e.y1 = 0.0f;
     }
+    src[1].numEars = 4;
     lowLine.reset();
     roomLine.reset();
     for (auto& f : xoLp) f.reset();
@@ -416,14 +417,7 @@ void SpaceEffect::control (int n) noexcept
     dLowDelay = (lowTarget - lowDelay) * invN;
     dLowGain = (distanceGain (d) - lowGain) * invN;
 
-    // the two virtual sources: rotated by +-spread/2 around the vertical axis
-    const float half = 0.5f * spread * pi / 180.0f;
-    for (int s = 0; s < 2; ++s)
-    {
-        const float a = s == 0 ? -half : half, ca = std::cos (a), sa = std::sin (a);
-        const Vec3 p { pos.x * ca + pos.y * sa, -pos.x * sa + pos.y * ca, pos.z };
-        updateSource (s, p, b, n);
-    }
+    updateSources (pos, b, n);
     updateRoom (pos, b, n);
 
     uiPos[0].store (pos.x, std::memory_order_relaxed);
@@ -433,62 +427,84 @@ void SpaceEffect::control (int n) noexcept
     fresh = false;
 }
 
-void SpaceEffect::updateSource (int s, const Vec3& p, float b, int n) noexcept
+void SpaceEffect::setEar (Ear& E, const Vec3& u, float d, float b, float sign, int e, float invN) noexcept
 {
-    auto& S = src[(size_t) s];
+    // interaural delay, spherical-head shadow, near-field level, shoulder reflection; speakers: constant-power pan
+    const float K = 2.0f * sr;
+    const float axis = e == 0 ? -1.0f : 1.0f;
+    const float cosT = std::clamp (u.x * axis, -1.0f, 1.0f);
+    const float alpha = std::min (2.8f, shadowAlpha (std::acos (cosT)) / alphaFront);
+    const float aEff = 1.0f + b * (alpha - 1.0f);
+    const float b0 = (shadowBeta + aEff * K) / (shadowBeta + K), b1 = (shadowBeta - aEff * K) / (shadowBeta + K);
+    const float itd = itdSeconds (u) * sr * 0.5f * b;
+    const float dTarget = 1.0f + itdMax * 0.5f * sr + directDelay + (e == 0 ? itd : -itd); // source right: left ear later
+    const float nf = d < 1.0f ? std::clamp ((1.0f / d - 1.0f) * 0.5f, 0.0f, 1.5f) : 0.0f;
+    const float hp = std::max (0.1f, 1.0f + nf * (0.5f * std::max (0.0f, cosT) - 0.4f * std::max (0.0f, -cosT)));
+    const float panAngle = (std::clamp (u.x, -1.0f, 1.0f) + 1.0f) * pi * 0.25f;
+    const float pan = sqrt2 * (e == 0 ? std::cos (panAngle) : std::sin (panAngle));
+    const float gT = sign * (b * hp + (1.0f - b) * pan);
+    const float shT = b * 0.22f * (0.5f + 0.5f * u.z);
+    E.shDelay = (0.0003f + 0.0006f * (0.5f + 0.5f * u.z)) * sr;
+    if (fresh) { E.delay = dTarget; E.b0 = b0; E.b1 = b1; E.gain = gT; E.sh = shT; }
+    E.dDelay = (dTarget - E.delay) * invN;
+    E.dB0 = (b0 - E.b0) * invN;
+    E.dB1 = (b1 - E.b1) * invN;
+    E.dGain = (gT - E.gain) * invN;
+    E.dSh = (shT - E.sh) * invN;
+}
+
+void SpaceEffect::updateSources (const Vec3& p, float b, int n) noexcept
+{
     const float d = std::max (minDistance, lengthOf (p));
     const Vec3 u { p.x / d, p.y / d, p.z / d };
     const float invN = 1.0f / (float) n;
-    const bool snap = fresh;
-
-    // level: distance rolloff, the two sources together keep the energy of the input
-    const float spreadGain = 0.5f * (1.0f + 0.414f * spread / 180.0f);
     const float back = std::max (0.0f, -u.y), front = std::max (0.0f, u.y), above = std::max (0.0f, u.z), below = std::max (0.0f, -u.z);
-    const float gTarget = distanceGain (d) * spreadGain * (1.0f - (1.0f - b) * 0.16f * back);
-    if (snap) S.gain = gTarget;
-    S.dGain = (gTarget - S.gain) * invN;
+
+    // level: distance rolloff (speakers: a little quieter behind); the side pair keeps the input's width
+    const float g = distanceGain (d) * (1.0f - (1.0f - b) * 0.16f * back);
+    const float gTarget[2] = { g, g * 0.8f };
 
     // air absorption
     const float fc = 24000.0f / (1.0f + air * 0.15f * std::max (0.0f, d - refDistance));
-    S.airCoeff = fc >= 0.45f * sr ? 1.0f : 1.0f - std::exp (-2.0f * pi * fc / sr);
+    const float airCoeff = fc >= 0.45f * sr ? 1.0f : 1.0f - std::exp (-2.0f * pi * fc / sr);
 
-    // directional bands: binaural set (b = 1) blended with the speaker set (b = 0)
+    // directional bands (computed for the mid, shared by the side): binaural set (b = 1) blended with the speaker set
+    auto& M = src[0];
     const float el = std::asin (std::clamp (u.z, -1.0f, 1.0f)) * 180.0f / pi;
-    S.bands[BPresence].bell (bandFreqG[0], 1.0f, b * (3.0f * front - 1.5f * below - 1.5f * back));
-    S.bands[BBack].bell (bandFreqG[1], 1.4f, b * 2.5f * back);
-    S.bands[BShadow].highShelf (bandFreqG[2], 0.7071f, b * (-8.0f * back * (1.0f - 0.5f * above)) + (1.0f - b) * (-4.0f * back));
-    S.bands[BAbove].bell (bandFreqG[3], 2.0f, b * 5.0f * above + (1.0f - b) * 2.5f * above);
+    M.bands[BPresence].bell (bandFreqG[0], 1.0f, b * (2.0f * front - 1.5f * below - 1.5f * back));
+    M.bands[BBack].bell (bandFreqG[1], 1.4f, b * 2.5f * back);
+    M.bands[BShadow].highShelf (bandFreqG[2], 0.7071f, b * (-7.0f * back * (1.0f - 0.5f * above)) + (1.0f - b) * (-4.0f * back));
+    M.bands[BAbove].bell (bandFreqG[3], 2.0f, b * 5.0f * above + (1.0f - b) * 2.5f * above);
     const float notch = std::clamp (6000.0f * std::pow (2.0f, (el + 45.0f) / 135.0f), 3000.0f, 0.42f * sr);
     const float notchDepth = b * (1.0f - 0.7f * above);
-    S.bands[BNotch1].bell (fastTan (pi * notch / sr), 2.5f, -13.0f * notchDepth);
-    S.bands[BNotch2].bell (fastTan (pi * std::min (1.55f * notch, 0.44f * sr) / sr), 3.0f, -7.0f * notchDepth);
-
-    // ears: interaural delay, head shadow, near-field level, shoulder reflection; speakers: constant-power pan
-    const float base = 1.0f + itdMax * 0.5f * sr + directDelay;
-    const float itd = itdSeconds (u) * sr * 0.5f * b;
-    const float nf = d < 1.0f ? std::clamp ((1.0f / d - 1.0f) * 0.5f, 0.0f, 1.5f) : 0.0f;
-    const float panAngle = (std::clamp (u.x, -1.0f, 1.0f) + 1.0f) * pi * 0.25f;
-    const float K = 2.0f * sr;
-    for (int e = 0; e < 2; ++e)
+    M.bands[BNotch1].bell (fastTan (pi * notch / sr), 4.0f, -12.0f * notchDepth);
+    M.bands[BNotch2].bell (fastTan (pi * std::min (1.55f * notch, 0.44f * sr) / sr), 4.0f, -6.0f * notchDepth);
+    for (int s = 0; s < 2; ++s)
     {
-        auto& E = S.ear[(size_t) e];
-        const float axis = e == 0 ? -1.0f : 1.0f;
-        const float cosT = std::clamp (u.x * axis, -1.0f, 1.0f);
-        const float alpha = std::min (2.8f, shadowAlpha (std::acos (cosT)) / alphaFront);
-        const float aEff = 1.0f + b * (alpha - 1.0f);
-        const float b0 = (shadowBeta + aEff * K) / (shadowBeta + K), b1 = (shadowBeta - aEff * K) / (shadowBeta + K);
-        const float dTarget = base + (e == 0 ? itd : -itd); // + itd: source on the right, the left ear hears it later
-        const float hp = std::max (0.1f, 1.0f + nf * (0.5f * std::max (0.0f, cosT) - 0.4f * std::max (0.0f, -cosT)));
-        const float pan = sqrt2 * (e == 0 ? std::cos (panAngle) : std::sin (panAngle));
-        const float gTargetEar = b * hp + (1.0f - b) * pan;
-        const float shTarget = b * 0.22f * (0.5f + 0.5f * u.z);
-        E.shDelay = (0.0003f + 0.0006f * (0.5f + 0.5f * u.z)) * sr;
-        if (snap) { E.delay = dTarget; E.b0 = b0; E.b1 = b1; E.gain = gTargetEar; E.sh = shTarget; }
-        E.dDelay = (dTarget - E.delay) * invN;
-        E.dB0 = (b0 - E.b0) * invN;
-        E.dB1 = (b1 - E.b1) * invN;
-        E.dGain = (gTargetEar - E.gain) * invN;
-        E.dSh = (shTarget - E.sh) * invN;
+        auto& S = src[(size_t) s];
+        if (s == 1)
+            for (int k = 0; k < 6; ++k) // same coefficients, own state
+            {
+                auto& t = S.bands[k];
+                const auto& f = M.bands[k];
+                t.a1 = f.a1; t.a2 = f.a2; t.a3 = f.a3; t.m0 = f.m0; t.m1 = f.m1; t.m2 = f.m2;
+            }
+        S.airCoeff = airCoeff;
+        if (fresh) S.gain = gTarget[s];
+        S.dGain = (gTarget[s] - S.gain) * invN;
+    }
+
+    // mid: one point source at the position
+    src[0].numEars = 2;
+    for (int e = 0; e < 2; ++e) setEar (src[0].ear[e], u, d, b, 1.0f, e, invN);
+    // side: a pair rotated by -+spread/2 around the vertical axis, B with opposite polarity (L = M + S, R = M - S)
+    src[1].numEars = 4;
+    const float half = 0.5f * spread * pi / 180.0f;
+    for (int k = 0; k < 2; ++k)
+    {
+        const float a = k == 0 ? -half : half, ca = std::cos (a), sa = std::sin (a);
+        const Vec3 q { u.x * ca + u.y * sa, -u.x * sa + u.y * ca, u.z };
+        for (int e = 0; e < 2; ++e) setEar (src[1].ear[k * 2 + e], q, d, b, k == 0 ? 1.0f : -1.0f, e, invN);
     }
 }
 
@@ -546,7 +562,8 @@ void SpaceEffect::process (float* left, float* right, int numSamples) noexcept
         const float inL = left[i], inR = right[i];
         // crossover: the low band of the mid stays mono and unspatialised
         const float low = xoLp[1].process (xoLp[0].process (0.5f * (inL + inR)));
-        const float hi[2] = { xoHp[0][1].process (xoHp[0][0].process (inL)), xoHp[1][1].process (xoHp[1][0].process (inR)) };
+        const float hl = xoHp[0][1].process (xoHp[0][0].process (inL)), hr = xoHp[1][1].process (xoHp[1][0].process (inR));
+        const float hi[2] = { 0.5f * (hl + hr), 0.5f * (hl - hr) }; // mid, side
         lowLine.push (low);
         const float lowOut = lowLine.linear (lowDelay) * lowGain;
         lowDelay += dLowDelay;
@@ -562,10 +579,11 @@ void SpaceEffect::process (float* left, float* right, int numSamples) noexcept
             x = S.air;
             for (auto& band : S.bands) x = band.process (x);
             S.line.push (x);
-            raw += x;
-            for (int e = 0; e < 2; ++e)
+            if (s == 0) raw = x;
+            for (int k = 0; k < S.numEars; ++k)
             {
-                auto& E = S.ear[(size_t) e];
+                const int e = k & 1;
+                auto& E = S.ear[(size_t) k];
                 const float y = S.line.cubic (E.delay) + E.sh * S.line.linear (E.delay + E.shDelay);
                 const float a = (shadowBeta - 2.0f * sr) / (shadowBeta + 2.0f * sr);
                 const float out = E.b0 * y + E.b1 * E.x1 - a * E.y1;
