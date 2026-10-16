@@ -143,7 +143,7 @@ Tools, for contributors:
 ## Preset list
 
 <!-- presets:begin -->
-### Bass (65)
+### Bass (68)
 
 | Name | Engine | Also in | Description |
 |---|---|---|---|
@@ -180,6 +180,9 @@ Tools, for contributors:
 | Moving Reese | Wavetable | MPE | Reese whose table position and filter breathe with a slow LFO - movement on held notes without automation. |
 | Neuro Hybrid | FM | Hybrid, MPE | FM growl and a wavetable reese ring-modulating each other, folded and squashed: a neuro monster. |
 | Neuro Reese | Wavetable | MPE | Distorted six-voice reese: driven filter, folded harmonics and a hard mono low end - made to be automated. |
+| Neuro Swirl | Wavetable | 3D, MPE | Talking formant growl swirling in a figure eight once a bar - the vowel moves, the space moves, the sub does not. |
+| Orbit Reese | Wavetable | 3D, MPE | Neurofunk reese whose growling mid range circles your head every two bars while the sub below 160 Hz stays dead centre and mono - club-safe movement. |
+| Pendulum Wobble | Wavetable | 3D, MPE | Half-time dubstep wobble that swings over your head and back with the bar: the wobble and the space breathe together. |
 | Phase Reese | Wavetable | MPE | Four-voice saw stack through a slow, deep phaser: the classic sweeping drum & bass reese. |
 | Punch FM Bass | FM | – | Solid digital bass with a bright attack and a clean sine body. |
 | Punch Sub | Analog | Boom | Short, punchy sub with a snappy filter click; locks in with the kick. |
@@ -255,7 +258,7 @@ Tools, for contributors:
 | Vibraphone | Sampler | – | Recorded vibraphone with a gentle motor tremolo. |
 | Wide Organ | Wavetable | – | Drawbar-like organ with a rotating stereo pan and a short hall. |
 
-### Pads (44)
+### Pads (47)
 
 | Name | Engine | Also in | Description |
 |---|---|---|---|
@@ -282,11 +285,14 @@ Tools, for contributors:
 | Glass Grains | Grain | Textures | Grains of a singing wine glass (CC0 recording), slowly scanned. |
 | Glass Shimmer | Wavetable | Textures | Glass table with wide unison: airy, glittering pad. |
 | Glide Strings | Analog | – | Ensemble strings whose chords slide into each other (poly glide); legato chord changes. |
+| Halo Drift | Cluster | 3D, MPE | Detuned cluster choir wandering around and above you on a slow random orbit - never the same place twice. |
 | Harmonic Swell | Wavetable | – | Harmonics bloom in as the pad swells. |
 | Infinite Hall | Cluster | MPE | Major-seventh stack in an enormous hall that never seems to end. |
 | Metal Strings | Pluck | Hybrid, MPE | Metallic plucked strings folded into a slow cluster pad - an orchestra made of wire. |
 | Night Drive | Analog | Textures | Dark resonant pad breathing with a slow filter LFO. |
+| Orbit Atmos | Wavetable | 3D, MPE | Wide wavetable atmosphere circling your head once every eight bars on a gently tilted orbit, in a soft room. Best with headphones: slide lifts it, pressure pulls it closer. |
 | Orbit Pad | Grain | Hybrid, MPE | Harp grains orbiting an FM layer, ring-modulated softly and panning over two bars. |
+| Overhead Choir | Vocal | Vocal, 3D, MPE | Breathy 'ooh' choir swinging from in front of you, over your head to behind you and back - a pendulum through the room. |
 | Piano Grains | Grain | Textures, Piano, MPE | Grand piano recordings frozen into a slow-moving grain cloud: a piano that breathes. |
 | Rise Bloom | FM | – | Shimmering FM pad blooming up from an octave below; long and bright. |
 | Rise Choir | Vocal | Vocal | Airy 'ah' choir that scoops up a fourth into every chord. |
@@ -304,10 +310,11 @@ Tools, for contributors:
 | Warm Horizon | Cluster | MPE | Soft, wide add-nine pad with gentle drift: warm and open, sits behind everything. |
 | Warm Strings | Analog | – | Ensemble strings: detuned saws, an octave up, gentle chorus. |
 
-### Leads (32)
+### Leads (33)
 
 | Name | Engine | Also in | Description |
 |---|---|---|---|
+| Binaural Lead | Wavetable | 3D, MPE | Expressive lead placed in front of you: slide moves it up over your head, pressure brings it right up to your ear, a slow drift keeps it alive. Made for MPE controllers and headphones. |
 | Breath Lead | Vocal | Hybrid, MPE | Breathy sung tone fused with a soft saw stack: a lead between a voice and a synth. |
 | Chip Square Lead | Wavetable | MPE | Narrow pulse lead with a crunchy bit crusher and a quick vibrato - retro, but wide. |
 | Classic Mono Lead | Analog | – | Saw lead with a little vibrato, glide and a dotted delay. |
@@ -382,12 +389,13 @@ Tools, for contributors:
 | Wood Block | Pluck | – | Hard mallet on a short wooden bar. |
 | Zap Perc | Wavetable | FX | Digital table snapped shut: zaps, clicks and lasers. |
 
-### FX (17)
+### FX (19)
 
 | Name | Engine | Also in | Description |
 |---|---|---|---|
 | Alien Signal | FM | – | Random-stepping FM timbre: radio chatter from far away. |
 | Detune Swarm | Cluster | Textures | Seven wildly drifting oscillators: a swarm. |
+| Doppler Fly-By | Wavetable | 3D | A siren tone racing past from left to right and back - the pitch bends with the Doppler effect as it passes. |
 | Downlifter | Analog | – | Falling noise and saw sweep over three seconds with a jet flanger - the end of the build. |
 | Glitch Spray | Grain | Textures | Tiny, fast grains crushed and scattered into a stereo delay: digital spray. |
 | Gong Hit | FM | Textures | Inharmonic FM gong with a long shimmer. |
@@ -398,13 +406,14 @@ Tools, for contributors:
 | Noise Riser | Analog | – | Hold a key: filtered noise climbs for four seconds. |
 | Reverse Spray | Grain | Textures | Mostly reversed harp grains sprayed across the stereo field. |
 | Siren Pan | FM | – | Wailing FM siren whose pitch swings and pans across the speakers. |
+| Spiral Riser | Analog | 3D | Hold a key: noise and saws climb for four seconds while spiralling from below your ears to high above your head. |
 | Stereo Zap | Wavetable | – | Laser zap diving two octaves, thrown left and right by a ping-pong delay. |
 | Stutter Glitch | Grain | – | Tiny, sparse grains: glitchy stutters from the marimba. |
 | Table Scanner | Wavetable | Textures | Digital table swept by a slow LFO: robotic movement. |
 | Whoosh | Analog | – | Filtered noise swept by a one-bar band-pass wobble, spread wide: a passing whoosh. |
 | Wide Riser | Analog | – | Noise and saws rising over four seconds, flanged and wide, into a long hall. |
 
-### Arp (18)
+### Arp (21)
 
 Presets marked *Arp:* switch the arpeggiator on for the part they load into (latched: press a key once, it keeps playing; press a new key or chord to change it). Loading a preset without arp into that part switches it off again. See [PRESETS.md](PRESETS.md#arp-block).
 
@@ -417,19 +426,22 @@ Presets marked *Arp:* switch the arpeggiator on for the part they load into (lat
 | Digital Pluck Arp | FM | – | Clicky digital pluck that loves fast sixteenths. *Arp: Up · 1/16 · 2 oct · latch* |
 | Dream Tine Arp | Sampler | Keys | Tine piano arpeggio in eighths with chorus, delay and hall: dreamy and full. *Arp: Up/Down · 1/8 · 2 oct · latch* |
 | FM Arp Bell | FM | Keys | Short glassy FM bells for sequences. *Arp: Up/Down · 1/16 · 2 oct · latch* |
+| Figure Eight Arp | Wavetable | 3D | Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. Latched. *Arp: Up/Down · 1/16 · 2 oct · latch* |
 | Formant Arp | Wavetable | Vocal | Vowel blips for talking sequences. *Arp: Up · 1/16 · 2 oct · latch* |
 | Glock Arp | Sampler | Keys | Recorded glockenspiel for sparkling arpeggios (CC0). *Arp: Up · 1/16 · 2 oct · latch* |
 | Mallet Echo Arp | Sampler | Plucks | Glockenspiel arpeggio with long dotted echoes - sparkling and wide. *Arp: Up · 1/8 · 3 oct · latch* |
 | Neuro Arp | Wavetable | Bass | Growling FM sixteenths in one octave: a rolling neuro sequence from a single held note. *Arp: As Played · 1/16 · 1 oct · latch* |
+| Orbit Arp | Pluck | 3D | Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast. Latched: hold a chord. *Arp: Up · 1/16 · 2 oct · latch* |
 | Pizzicato Arp | Pluck | Plucks | Short plucked strings for ostinatos. *Arp: Up/Down · 1/16 · 2 oct · latch* |
 | Random Spark Arp | FM | FX | Random thirty-second FM blips over four octaves through a ping-pong delay: sparks. *Arp: Random · 1/32 · 4 oct · latch* |
 | Ripple Arp | Analog | – | Analog saw arp in sixteenth triplets with a sweeping phaser and stereo echo. *Arp: Up · 1/16T · 2 oct · latch* |
 | Sparkle Bell | FM | Plucks | Short, bright FM bell for sparkling arpeggios over chords. *Arp: Up · 1/16 · 2 oct · latch* |
+| Spiral Arp | FM | 3D | Bell arpeggio spiralling up from ear height to above your head over four bars, then dropping back for the next round. *Arp: Up · 1/16 · 3 oct · latch* |
 | Table Arp | Wavetable | – | Wavetable sequence sound: the position snaps with each note. *Arp: Up/Down · 1/16 · 2 oct · latch* |
 | Trance Gate Arp | Cluster | Leads | Supersaw stack on a sixteenth arp over two octaves, ping-pong delay and hall. *Arp: Up · 1/16 · 2 oct · latch* |
 | Wide Pluck Arp | Wavetable | Plucks | Six-voice stereo pluck, up / down over three octaves, dotted ping-pong delay. *Arp: Up/Down · 1/16 · 3 oct · latch* |
 
-### Textures (24)
+### Textures (25)
 
 | Name | Engine | Also in | Description |
 |---|---|---|---|
@@ -451,6 +463,7 @@ Presets marked *Arp:* switch the arpeggiator on for the part they load into (lat
 | Marimba Rain | Grain | – | Sparse marimba grains falling like rain. |
 | Metal Choir | Grain | Pads, MPE | Bowed-metal grains stacked into a choir; slow scan, shimmering stereo. |
 | Night Rain | Grain | MPE | Random kalimba droplets falling into a ping-pong delay and a dark hall. |
+| Night Swarm | FM | 3D, MPE | Glassy FM bells scattered on a fast random orbit at different distances: a swarm of lights around your head. |
 | Recorder Breath | Grain | Vocal | Breathy recorder grains: airy, vocal-like tones. |
 | Rust Texture | Grain | FX, MPE | Bowed metal grains played backwards through a slow comb: rusty, creaking, alive. |
 | Singing Glass | Sampler | Pads | Rubbed wine-glass recordings (CC0), looped: pure and haunting. |
@@ -530,6 +543,24 @@ Presets marked *Arp:* switch the arpeggiator on for the part they load into (lat
 | Tine Bloom | Grain | Pads, Textures, MPE | Tine-piano grains blooming slowly, chorused, with a dotted echo. |
 | Upright Keys | Sampler | Keys, MPE | Upright piano recordings with a little room: honest and close. |
 
+### 3D (13)
+
+| Name | Engine | Also in | Description |
+|---|---|---|---|
+| Binaural Lead | Wavetable | Leads, MPE | Expressive lead placed in front of you: slide moves it up over your head, pressure brings it right up to your ear, a slow drift keeps it alive. Made for MPE controllers and headphones. |
+| Doppler Fly-By | Wavetable | FX | A siren tone racing past from left to right and back - the pitch bends with the Doppler effect as it passes. |
+| Figure Eight Arp | Wavetable | Arp | Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. Latched. *Arp: Up/Down · 1/16 · 2 oct · latch* |
+| Halo Drift | Cluster | Pads, MPE | Detuned cluster choir wandering around and above you on a slow random orbit - never the same place twice. |
+| Neuro Swirl | Wavetable | Bass, MPE | Talking formant growl swirling in a figure eight once a bar - the vowel moves, the space moves, the sub does not. |
+| Night Swarm | FM | Textures, MPE | Glassy FM bells scattered on a fast random orbit at different distances: a swarm of lights around your head. |
+| Orbit Arp | Pluck | Arp | Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast. Latched: hold a chord. *Arp: Up · 1/16 · 2 oct · latch* |
+| Orbit Atmos | Wavetable | Pads, MPE | Wide wavetable atmosphere circling your head once every eight bars on a gently tilted orbit, in a soft room. Best with headphones: slide lifts it, pressure pulls it closer. |
+| Orbit Reese | Wavetable | Bass, MPE | Neurofunk reese whose growling mid range circles your head every two bars while the sub below 160 Hz stays dead centre and mono - club-safe movement. |
+| Overhead Choir | Vocal | Pads, Vocal, MPE | Breathy 'ooh' choir swinging from in front of you, over your head to behind you and back - a pendulum through the room. |
+| Pendulum Wobble | Wavetable | Bass, MPE | Half-time dubstep wobble that swings over your head and back with the bar: the wobble and the space breathe together. |
+| Spiral Arp | FM | Arp | Bell arpeggio spiralling up from ear height to above your head over four bars, then dropping back for the next round. *Arp: Up · 1/16 · 3 oct · latch* |
+| Spiral Riser | Analog | FX | Hold a key: noise and saws climb for four seconds while spiralling from below your ears to high above your head. |
+
 ### Projects / demo patterns (14)
 
 | Name | Categories | Description |
@@ -544,10 +575,10 @@ Presets marked *Arp:* switch the arpeggiator on for the part they load into (lat
 | Sub & Glide | Pads, Bass, Drums, Boom | Seventh chords that slide into each other (Glide Strings, poly glide), a long sliding sub on Orbit lane 1 and a half-time beat on the Boom kit from Orbit lanes 2-4, sparkle bells from Euclid. Cm7 - Abmaj7 - Ebmaj7 - Bb7. |
 | Lofi Kit | Drums | The Lo-Fi kit set up for lo-fi hip-hop: muffled, round kick, soft snare with ghost notes and a rim, dull shuffled hats with velocity variation (Orbit, lazy swing), vinyl crackle on part 4 (Orbit lane 4) and a dark master. Play your own keys on part 1. |
 | Boom Kit | Drums, Bass, Boom | The synthesised Boom kit in a half-time beat with rolling hats (Orbit), Boom Slide on the step sequencer - overlapping notes glide (legato portamento) - and a dark pad that rises into its chord (Rise Glass, Euclid). C minor, 70 BPM. |
-| Neuro Engine | Bass, Drums, Hybrid | Neurofunk at 174 BPM in F minor: a two-step beat on the Hybrid kit (Orbit), Neuro Reese riffing on the step sequencer, Growl Machine answering from Euclid and a dark seventh-chord pad underneath. Mono low end, squashed and loud. Press Play. |
+| Neuro Engine | Bass, Drums, Hybrid, 3D | Neurofunk at 174 BPM in F minor: a two-step beat on the Hybrid kit (Orbit), Neuro Reese riffing on the step sequencer, Growl Machine answering from Euclid and a dark seventh-chord pad underneath. Mono low end, squashed and loud. Press Play. In 3D: the growl answers swirl around your head, the pad drifts above you (best with headphones). |
 | Halftime Pressure | Bass, Drums | Modern dubstep at 140 BPM in E minor: half-time drums on the Studio kit (Orbit), Wub Machine on the step sequencer - its eighth-note wobble restarts with every note - Vowel Growl answering from Euclid and a cold glass texture. Press Play. |
 | Liquid Roll | Bass, Drums, Keys | Liquid drum & bass at 174 BPM in D minor: a rolling beat on the Tight kit (Orbit), dreamy tine-piano seventh chords and a warm pad (Orbit lanes 3 and 4), a smooth sliding sub (step sequencer) and glassy plucks from Euclid. Press Play. |
-| Evolving Space | Pads, Textures, Hybrid | Ambient at 66 BPM in A minor: Evolving Tide chords drifting through their wavetable (step sequencer), a generative grand piano with a grain halo from three Orbit lanes of 5, 7 and 11 steps, a glacial grain drone and random starfield bells (Euclid). Let it run. |
+| Evolving Space | Pads, Textures, Hybrid, 3D | Ambient at 66 BPM in A minor: Evolving Tide chords drifting through their wavetable (step sequencer), a generative grand piano with a grain halo from three Orbit lanes of 5, 7 and 11 steps, a glacial grain drone and random starfield bells (Euclid). Let it run. In 3D: the chords circle you slowly, the starfield bells scatter all around and the drone sways overhead (best with headphones). |
 
-**Engines:** FM 40, Wavetable 72, Analog 65, Pluck 13, Grain 27, Vocal 18, Cluster 21, Sampler 26
+**Engines:** FM 42, Wavetable 79, Analog 66, Pluck 14, Grain 27, Vocal 19, Cluster 22, Sampler 26
 <!-- presets:end -->

@@ -192,7 +192,7 @@ void Part::registerLate10SpaceParams (ParamRegistry& reg) const
     const auto n = std::to_string (number);
     const auto group = "part" + n + "/space";
     const std::string P = "Part " + n + " 3D ";
-    auto on = toggle (id ("space.on"), P + "Space", P + "Raum", false);
+    auto on = toggle (id ("space.on"), P + "Space", P + "Raum", false); // display: "3D Space" / "3D Raum"
     on.group = group;
     reg.add (std::move (on));
     for (auto d : SpaceEffect().getParamDescriptors())

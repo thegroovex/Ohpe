@@ -581,3 +581,46 @@ Hall (existing values keep their meaning). The MPE pressure / timbre targets (`p
 gain Cutoff, Position, FM Index, Grain Density, Drive, Vibrato, Formant and Layer Blend after Pan. Per-note pitch
 bend glides over `pN.mpe.slide` seconds (at least 2 ms); the other per-note expressions glide over
 `pN.mpe.smooth` seconds.
+
+## 1.0 – 3D spatialiser
+
+Appended after `p4.monobass`. Guide: [English](en/SPACE.md) · [Deutsch](de/RAUM.md). 518 parameters:
+
+1. **Per-part stage** `pN.space.*` for parts 1 – 4 (17 each, group `partN/space`; host names "Part N 3D …"):
+   `pN.space.on` and the Space 3D block below.
+2. **Monitoring** (group `master`; not stored in project presets):
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `space.out` | 3D Monitoring | 3D-Abhöre | Headphones, Speakers | 0 |
+| `space.monocheck` | Mono Check | Mono-Prüfung | 0 … 1 | 0 |
+
+3. **Rack type Space 3D** (DE 3D-Raum, `pN.fxK.type` / `mfxK.type` value 22, appended after Width): its block
+   `<slot>space3d.*` for every slot of every rack, in the order parts 1 – 4 slots 1 – 6, then master slots 1 – 4
+   (28 × 16). FX Param 1 – 4 (matrix) = Azimuth, Elevation, Distance, Motion Rate.
+
+### The Space 3D block (`pN.space.*`, `<slot>space3d.*`)
+
+| Local ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `on` (stage only) | Space | Raum | 0 … 1 | 0 |
+| `azimuth` | Azimuth | Azimut | -180 … 180 ° | 0 |
+| `elevation` | Elevation | Elevation | -60 … 90 ° | 0 |
+| `distance` | Distance | Entfernung | 0.2 … 40 m (skew 0.3) | 1.5 |
+| `pathrate` | Motion Rate | Bewegungstempo | -4 … 4 | 1 |
+| `pathphase` | Motion Phase | Bewegungsphase | 0 … 360 ° | 0 |
+| `path` | Motion Path | Bewegungspfad | Off, Circle, Figure-8, Fly-By, Random Orbit, Pendulum, Spiral Up | 0 |
+| `pathlen` | Motion Length | Bewegungslänge | 1/16, 1/8, 1/4, 1/2, 1 Bar, 2 Bars, 4 Bars, 8 Bars, 16 Bars, 32 Bars, 1/4. | 5 (2 Bars) |
+| `pathsize` | Motion Size | Bewegungsgröße | 0 … 1 | 0.5 |
+| `spread` | Source Spread | Quellenbreite | 0 … 180 ° | 40 |
+| `room` | Room | Raumanteil | 0 … 1 | 0.25 |
+| `roomsize` | Room Size | Raumgröße | 0 … 1 | 0.4 |
+| `doppler` | Doppler | Doppler | 0 … 1 | 0.5 |
+| `air` | Air Absorption | Luftdämpfung | 0 … 1 | 0.6 |
+| `rolloff` | Distance Rolloff | Entfernungsabfall | 0 … 1 | 0.7 |
+| `lowkeep` | Mono Below | Mono unter | 40 … 300 Hz (skew 0.5) | 120 |
+| `glide` | Motion Glide | Bewegungsglättung | 0.005 … 2 s (skew 0.3) | 0.06 |
+
+Behaviour changes in 1.0: the matrix targets 67 – 71 (Azimuth, Elevation, Distance, Motion Path Rate / Phase),
+reserved in 0.7, now move `pN.space.azimuth` … `pN.space.pathphase`. The preset category list gains **3D**.
+New parameter units: degrees (°) and metres (m).

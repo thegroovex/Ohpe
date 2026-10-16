@@ -464,7 +464,8 @@ void SpaceEffect::updateSources (const Vec3& p, float b, int n) noexcept
 
     // level: distance rolloff (speakers: a little quieter behind); the side pair keeps the input's width
     const float g = distanceGain (d) * (1.0f - (1.0f - b) * 0.16f * back);
-    const float gTarget[2] = { g, g * 0.8f };
+    // (side pair: its two sources add up incoherently and sit off-centre, where the near ear hears them louder)
+    const float gTarget[2] = { g, g * 0.6f * (1.0f - 0.35f * spread / 180.0f) };
 
     // air absorption
     const float fc = 24000.0f / (1.0f + air * 0.15f * std::max (0.0f, d - refDistance));

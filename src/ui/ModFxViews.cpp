@@ -479,6 +479,12 @@ juce::String compactName (const std::string& id, const std::string& nameEn, cons
     const bool matrix = part && (rest.rfind ("mod.s", 0) == 0 || rest.rfind ("lfo2.", 0) == 0 || rest.rfind ("lfo3.", 0) == 0
                                  || rest.rfind ("env3.", 0) == 0 || rest.rfind ("macro", 0) == 0 || rest == "seqlane");
     const bool rack = (part && rest.rfind ("fx", 0) == 0) || id.rfind ("mfx", 0) == 0;
+    if (part && rest.rfind ("space.", 0) == 0) // 1.0: "Part 2 3D Azimuth" -> "Azimuth", "Part 2 3D Space" -> "3D Space"
+    {
+        const int marker = name.indexOf (" 3D ");
+        if (marker < 0) return name;
+        return rest == "space.on" ? name.substring (marker + 1) : name.substring (marker + 4);
+    }
     if (! matrix && ! rack) return name;
 
     auto dropWord = [&name] (const juce::String& word) { // "word" + optional number + space
