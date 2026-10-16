@@ -58,6 +58,9 @@ four functional colours. Code: `src/ui/Palette.h` (colours, fonts), `src/ui/Pict
 | Stereo scope | diamond goniometer (mid up, L upper left, R upper right), trace in paper white with an ultraviolet glow, correlation bar (red when negative), M / S bars in the colours of the Mid / Side encoders |
 | Spectrum terrain | perspective waterfall: lines from paper white (front, ultraviolet glow) to dim grey (horizon), each row hides the rows behind it; flat and still in silence; off with "Animated 3D visuals" |
 | Soft keys | outlined pills at the bottom of the display; red = active |
+| Transport keys (p11) | REC / PLAY large, then to-the-start / stop / loop, bottom left; plain geometric signs (circle, triangle, square, bar + triangle, open loop with arrow); the record circle is always signal red and the key blinks while recording |
+| Tape transport panel (p11) | the tape page's left half: state badge (red fill blinking = recording), armed tracks in red, monospace clock and bar.beat, reels turning with the tape position, five outlined buttons (filled when active; record filled red), a hint line in yellow while nothing is armed |
+| Overlays | the library and the pro view hide every control and legend of the plate under them (no labels peeking over the lid's edge) |
 | Part badge | yellow pill "P1"–"P4" in the display header |
 | Pro view | dark panel, mode tabs, groups in columns with a coloured tick; bars like the display rows |
 | Library | dark panel: category chips in the accent colours, engine chips, list with stars, details / save panel |

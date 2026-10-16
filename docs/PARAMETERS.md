@@ -581,3 +581,19 @@ Hall (existing values keep their meaning). The MPE pressure / timbre targets (`p
 gain Cutoff, Position, FM Index, Grain Density, Drive, Vibrato, Formant and Layer Blend after Pan. Per-note pitch
 bend glides over `pN.mpe.slide` seconds (at least 2 ms); the other per-note expressions glide over
 `pN.mpe.smooth` seconds.
+
+## Tape transport (p11)
+
+Appended after `p4.monobass`. MIDI-mappable transport keys (triggers: fire when the value rises to
+"on", CC ≥ 64) and the *Play starts tape* setting; none of them is stored in presets. Guides:
+[English](en/TAPE-MIXER-FX.md#transport) · [Deutsch](de/BAND-MISCHER-FX.md#transport).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `tape.tx.play` | Transport Play/Stop | Transport Start/Stopp | trigger | off |
+| `tape.tx.tplay` | Tape Play/Stop | Tape Start/Stopp | trigger | off |
+| `tape.tx.stop` | Transport Stop | Transport Stopp | trigger | off |
+| `tape.tx.rec` | Transport Record | Transport Aufnahme | trigger | off |
+| `tape.tx.loop` | Transport Loop | Transport Schleife | trigger | off |
+| `tape.tx.arm` | Arm Edit Track | Bearbeitungsspur aufnahmebereit | trigger | off |
+| `tape.tx.link` | Play Starts Tape | Start startet Tape | on / off | on |

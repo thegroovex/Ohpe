@@ -93,6 +93,13 @@ aftertouch keyboard the pressure mapping works right away.
 In every case the sequencers start and stop with **Sequencer Run** (`seq.run`) – in a host they
 run while the host plays *and* `seq.run` is on.
 
+**Transport keys from a controller (p11).** Map a button to *Transport Play/Stop* (`tape.tx.play`),
+*Transport Record* (`tape.tx.rec`), *Transport Stop* (`tape.tx.stop`), *Transport Loop*
+(`tape.tx.loop`), *Tape Play/Stop* (`tape.tx.tplay`), *Arm Edit Track* (`tape.tx.arm`) or *Tape
+Return to Zero* (`tape.edit.rtz`): right-click the key on Ohpe, or MIDI → *Remote controls*. They fire
+on a press (CC ≥ 64), like the keys on the body; see
+[tape transport](TAPE-MIXER-FX.md#transport).
+
 ### Host sync (plug-in)
 
 Ohpe reads the host's tempo and song position every block and places every step at the exact
