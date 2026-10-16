@@ -49,6 +49,14 @@ int rackChainHit (juce::Rectangle<float> area, int numSlots, juce::Point<float> 
 /** Visual feedback of the selected slot: transfer curve, EQ curve, compressor / multiband gain reduction ... */
 void paintSlotVisual (juce::Graphics& g, juce::Rectangle<float> area, Core& core, const std::string& slotPrefix, InsertSlot& slot);
 
+// ---- names and values on the display rows and encoders -----------------------------------------------------------
+/** Short name of a matrix / rack parameter where the view already says which part, routing and slot it is
+    ("Part 1 Mod 3 Source" -> "Source", "P2 FX3 Echo Time" -> "Time"); other parameters keep their name. */
+juce::String compactName (const std::string& paramId, const std::string& nameEn, const std::string& nameDe);
+/** Value text of a routing target ("pN.mod.sK.dst"): the real parameter name for engine / FX targets; empty for every
+    other parameter (use the normal value text). */
+juce::String specialValueText (Core& core, const std::string& paramId, float plainValue);
+
 // ---- modulation rings ----------------------------------------------------------------------------------------------
 /** What the matrix does to one parameter: the static range of its routings (normalised, around the value) and the live
     modulated position. */

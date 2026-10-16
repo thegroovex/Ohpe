@@ -53,6 +53,14 @@ void setChoice (OhpeProcessor& p, const juce::String& id, const std::string& lab
         if (d.choices[c] == labelEn) setPlain (p, id, (float) c);
 }
 
+/** Lets the processor see new rack types, prepares them (the plug-in's timer does this) and lets them settle. */
+void prepareRack (OhpeProcessor& p)
+{
+    run (p, 2);
+    while (p.core().prepareEffects()) {}
+    run (p, 4);
+}
+
 /** Renders audio and animation frames together (traces, meters). */
 void animate (OhpeProcessor& p, OhpeEditor& e, int frames)
 {
@@ -195,7 +203,7 @@ int main (int argc, char* argv[])
             setPlain (p, "p1.lfo2.rate", 0.8f);
             setPlain (p, "p1.lfo3.rate", 3.0f);
             setPlain (p, "p1.macro1", 0.6f);
-            p.core().prepareEffects();
+            prepareRack (p);
             e.selectPart (0);
             e.selectEngine (EngineType::Analog);
             run (p, 1, 60); run (p, 1, 64); run (p, 1, 67);
@@ -220,7 +228,7 @@ int main (int argc, char* argv[])
             setChoice (p, "p1.fx4.type", "Echo");
             setChoice (p, "p1.fx5.type", "Hall");
             setPlain (p, "p1.fx5.mix", 0.6f);
-            p.core().prepareEffects();
+            prepareRack (p);
             e.selectMode (ui::Mode::Effects);
             e.selectView (1);
             e.selectFxSlot (2);
@@ -236,7 +244,7 @@ int main (int argc, char* argv[])
             setPlain (p, "mfx1.compressor.makeup", 4.0f);
             setChoice (p, "mfx2.type", "Multiband");
             setPlain (p, "mfx2.multiband.depth", 0.6f);
-            p.core().prepareEffects();
+            prepareRack (p);
             e.selectView (2);
             e.selectFxSlot (0);
             animate (p, e, 20);
