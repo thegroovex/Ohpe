@@ -93,6 +93,26 @@ double hfEnergy (const std::vector<float>& v, size_t from = 1)
     return s;
 }
 
+/** Mean power of `bins` Goertzel bins evenly spaced from lo to hi (Hz): a band level that does not depend on how one
+    pure tone happens to fall on a comb or notch. */
+double bandEnergy (const std::vector<float>& v, size_t from, double lo, double hi, int bins = 25)
+{
+    double acc = 0.0;
+    for (int k = 0; k < bins; ++k)
+    {
+        const double f = lo + (hi - lo) * k / (bins - 1), c = 2.0 * std::cos (2.0 * 3.14159265358979 * f / sampleRate);
+        double s1 = 0.0, s2 = 0.0;
+        for (size_t i = from; i < v.size(); ++i)
+        {
+            const double s0 = v[i] + c * s1 - s2;
+            s2 = s1;
+            s1 = s0;
+        }
+        acc += s1 * s1 + s2 * s2 - c * s1 * s2;
+    }
+    return acc / bins;
+}
+
 double db (double ratio) { return 10.0 * std::log10 (std::max (1.0e-30, ratio)); }
 
 struct CoreRig
@@ -233,22 +253,40 @@ TEST_CASE ("1.0 space: moving sources stay click-free (orbit, jumps, motion, mon
 {
     for (int monitor : { SpaceEffect::Headphones, SpaceEffect::Speakers })
         for (int path : { space::PathCircle, space::PathFigure8, space::PathRandom, space::PathPendulum, space::PathSpiral })
-        {
-            CAPTURE (monitor);
-            CAPTURE (path);
-            Fx fx (monitor);
-            fx.set (SpaceEffect::Path, (float) path).set (SpaceEffect::PathLength, 2.0f).set (SpaceEffect::PathSize, 1.0f)
-                .set (SpaceEffect::Doppler, 1.0f).set (SpaceEffect::Room, 0.5f).set (SpaceEffect::Glide, 0.005f);
-            auto s = sine (300.0f, 96000);
-            fx.run (s, 173);
-            CHECK (allFinite (s.l));
-            CHECK (clickRatio (s.l, 300.0f, 4800) < 1.6);
-            CHECK (clickRatio (s.r, 300.0f, 4800) < 1.6);
-            // short-term level never jumps (10 ms windows, neighbours within 2 dB)
-            for (size_t w = 4800; w + 960 < s.size(); w += 480)
-                CHECK (std::abs (db (energy ({ s.l.begin() + (long) w, s.l.begin() + (long) w + 480 }) + 1e-12)
-                                 - db (energy ({ s.l.begin() + (long) w + 480, s.l.begin() + (long) w + 960 }) + 1e-12)) < 2.0);
-        }
+            for (float room : { 0.0f, 0.5f })
+            {
+                CAPTURE (monitor);
+                CAPTURE (path);
+                CAPTURE (room);
+                Fx fx (monitor);
+                fx.set (SpaceEffect::Path, (float) path).set (SpaceEffect::PathLength, 2.0f).set (SpaceEffect::PathSize, 1.0f)
+                    .set (SpaceEffect::Doppler, 1.0f).set (SpaceEffect::Room, room).set (SpaceEffect::Glide, 0.005f);
+                auto s = sine (300.0f, 96000);
+                fx.run (s, 173);
+                CHECK (allFinite (s.l));
+                if (room > 0.0f)
+                {
+                    CHECK (clickRatio (s.l, 300.0f, 4800) < 1.6);
+                    CHECK (clickRatio (s.r, 300.0f, 4800) < 1.6);
+                }
+                // The short-term level of the direct sound never jumps: 10 ms windows, neighbours within 2 dB - per ear on
+                // headphones, on the summed power of both speakers in speaker mode. Checked without the room: a pure tone
+                // beats against its moving reflections (comb notches sweeping through it - real room acoustics, not a
+                // discontinuity; the click check above covers the room). One speaker alone is not checked because
+                // constant-power panning to the far side silences it by design (cos -> 0 is a dB cliff, not a jump).
+                if (room > 0.0f) continue;
+                const bool sum = monitor == SpaceEffect::Speakers;
+                for (int ch = 0; ch < (sum ? 1 : 2); ++ch)
+                {
+                    auto power = [&s, sum, ch] (size_t from) {
+                        const auto& a = ch == 0 ? s.l : s.r;
+                        return energy ({ a.begin() + (long) from, a.begin() + (long) from + 480 })
+                               + (sum ? energy ({ s.r.begin() + (long) from, s.r.begin() + (long) from + 480 }) : 0.0);
+                    };
+                    for (size_t w = 4800; w + 960 < s.size(); w += 480)
+                        CHECK (std::abs (db (power (w) + 1e-12) - db (power (w + 480) + 1e-12)) < 2.0);
+                }
+            }
     // parameter jumps (automation without smoothing in the host) and the monitoring switch
     Fx fx;
     auto s = sine (300.0f, 96000);
@@ -261,8 +299,10 @@ TEST_CASE ("1.0 space: moving sources stay click-free (orbit, jumps, motion, mon
         fx.e.setMonitorMode (k % 6 == 3 ? SpaceEffect::Speakers : SpaceEffect::Headphones);
         fx.e.process (s.l.data() + pos, s.r.data() + pos, 256);
     }
-    CHECK (clickRatio (s.l, 300.0f, 4800) < 1.6);
-    CHECK (clickRatio (s.r, 300.0f, 4800) < 1.6);
+    // The distance jumps (0.5 <-> 20 m) make the source fly at the Doppler limit (0.12 c), so the tone legitimately rises
+    // up to 1 / 0.88 of its pitch while it approaches: the curvature is measured against that highest legal frequency.
+    CHECK (clickRatio (s.l, 300.0f / 0.88f, 4800) < 1.6);
+    CHECK (clickRatio (s.r, 300.0f / 0.88f, 4800) < 1.6);
 }
 
 TEST_CASE ("1.0 space: Doppler shifts the pitch of a fly-by, within bounds")
@@ -343,16 +383,23 @@ TEST_CASE ("1.0 space: binaural cues - front / back, elevation notch, distance l
     // the pinna notch moves up with elevation: 7.5 kHz is cut at ear height, not at 45 degrees up
     const auto n0 = render (0.0f, 0.0f, 1.5f, 7560.0f), n45 = render (0.0f, 45.0f, 1.5f, 7560.0f);
     CHECK (db (energy (n0.l, 4800) / energy (n45.l, 4800)) < -4.0);
-    // above: the 8.5 kHz band is lifted
-    const auto a0 = render (0.0f, -20.0f, 1.5f, 12000.0f), a70 = render (0.0f, 70.0f, 1.5f, 12000.0f);
-    CHECK (energy (a70.l, 4800) > energy (a0.l, 4800));
+    // above: the 8.5 kHz directional band is lifted (noise, 7-10 kHz band level). Measured on the band, not on one tone at
+    // 12 kHz: up there the pinna notch rising with elevation and the shoulder reflection make the level of a single tone
+    // swing either way, as in a real ear - the "above" cue is the band around 8 kHz.
+    const auto a0 = render (0.0f, -20.0f, 1.5f), a70 = render (0.0f, 70.0f, 1.5f);
+    CHECK (db (bandEnergy (a70.l, 4800, 7000.0, 10000.0) / bandEnergy (a0.l, 4800, 7000.0, 10000.0)) > 2.0);
     // distance: quieter and darker further away; the default position plays at the input level (+-1.5 dB, 300 Hz)
     const auto near = render (0.0f, 0.0f, 1.5f, 300.0f), far = render (0.0f, 0.0f, 12.0f, 300.0f);
     CHECK (db (energy (far.l, 9600) / energy (near.l, 9600)) < -6.0);
     const auto in = sine (300.0f, 48000);
     CHECK (std::abs (db (energy (near.l, 4800) / energy (in.l, 4800))) < 1.5);
+    // air: 30 m away the 8-14 kHz band falls at least 3 dB more than 1-3 kHz (ISO 9613-1, 20 C / 50 %: about 3-6 dB over
+    // 28.5 m there). Measured in bands: a first-difference weighting would be ruled by 15-24 kHz, where the fractional
+    // delay's interpolation (its loss depends on the delay's fraction, i.e. on the distance) outweighs the air.
     const auto farN = render (0.0f, 0.0f, 30.0f), nearN = render (0.0f, 0.0f, 1.5f);
-    CHECK (db (hfEnergy (farN.l, 9600) / energy (farN.l, 9600)) < db (hfEnergy (nearN.l, 9600) / energy (nearN.l, 9600)) - 3.0);
+    const double tilt = db (bandEnergy (farN.l, 9600, 8000.0, 14000.0) / bandEnergy (nearN.l, 9600, 8000.0, 14000.0))
+                        - db (bandEnergy (farN.l, 9600, 1000.0, 3000.0) / bandEnergy (nearN.l, 9600, 1000.0, 3000.0));
+    CHECK (tilt < -3.0);
 }
 
 TEST_CASE ("1.0 space: tempo-synced motion is locked to the song position")

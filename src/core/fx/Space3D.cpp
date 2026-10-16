@@ -96,7 +96,8 @@ Vec3 pathPoint (int path, double phase, float size, uint32_t seed) noexcept
         {                // then sinks back in the last tenth of the cycle (continuous: no jump at the cycle start)
             const float u = (float) fr;
             const float turns = std::round (1.0f + 3.0f * size);
-            const float h = u < 0.9f ? u / 0.9f : 0.5f + 0.5f * std::cos ((u - 0.9f) / 0.1f * pi);
+            const float t = u / 0.9f; // eased at both ends, so the speed never jumps either (no Doppler step)
+            const float h = u < 0.9f ? t * t * (3.0f - 2.0f * t) : 0.5f + 0.5f * std::cos ((u - 0.9f) / 0.1f * pi);
             return scaled (direction (360.0f * turns * u, -20.0f + 105.0f * h), 1.0f - 0.3f * h);
         }
         default: return { 0.0f, 1.0f, 0.0f };
@@ -387,17 +388,25 @@ void SpaceEffect::control (int n) noexcept
     const Vec3 tDir { o.x / k, o.y / k, o.z / k };
     const float tDist = std::clamp (distance * k, minDistance, maxDistance);
 
-    // glide: direction on the sphere (normalised lerp), distance in the log domain
-    const float c = fresh ? 1.0f : 1.0f - std::exp (-(float) n / (glide * sr));
-    Vec3 nd { dir.x + (tDir.x - dir.x) * c, dir.y + (tDir.y - dir.y) * c, dir.z + (tDir.z - dir.z) * c };
-    float l = lengthOf (nd);
-    if (l < 0.05f) // exactly opposite: go round the side instead of through the head
-    {
-        nd = { dir.x + 0.2f * dir.y, dir.y - 0.2f * dir.x, dir.z };
-        l = lengthOf (nd);
-    }
-    dir = { nd.x / l, nd.y / l, nd.z / l };
-    logDist = fresh ? std::log (tDist) : logDist + (std::log (tDist) - logDist) * c;
+    // glide: direction on the sphere (normalised lerp), distance in the log domain. Two cascaded stages (critically
+    // damped, each half the glide time): the source starts and stops moving smoothly instead of jumping to full speed,
+    // so a jump of the position (automation, a fresh target) never steps the Doppler pitch.
+    const float c = fresh ? 1.0f : 1.0f - std::exp (-(float) n / (0.5f * glide * sr));
+    auto slerp = [c] (const Vec3& from, const Vec3& to) {
+        Vec3 nd { from.x + (to.x - from.x) * c, from.y + (to.y - from.y) * c, from.z + (to.z - from.z) * c };
+        float l = lengthOf (nd);
+        if (l < 0.05f) // exactly opposite: go round the side instead of through the head
+        {
+            nd = { from.x + 0.2f * from.y, from.y - 0.2f * from.x, from.z };
+            l = lengthOf (nd);
+        }
+        return Vec3 { nd.x / l, nd.y / l, nd.z / l };
+    };
+    dirMid = slerp (dirMid, tDir);
+    dir = slerp (dir, dirMid);
+    const float tLog = std::log (tDist);
+    logDistMid = fresh ? tLog : logDistMid + (tLog - logDistMid) * c;
+    logDist = fresh ? tLog : logDist + (logDistMid - logDist) * c;
     const float d = std::exp (logDist);
     pos = { dir.x * d, dir.y * d, dir.z * d };
 
@@ -535,6 +544,7 @@ void SpaceEffect::updateRoom (const Vec3& p, float b, int n) noexcept
     const float d = lengthOf (p);
     const float base = 1.0f + itdMax * 0.5f * sr + directDelay;
     const float maxDelay = (float) roomLine.mask - 4.0f;
+    const float reflUp = 0.12f / 1.12f * (float) n, reflDown = 0.12f / 0.88f * (float) n;
     for (int i = 0; i < 6; ++i)
     {
         auto& R = refl[(size_t) i];
@@ -552,8 +562,9 @@ void SpaceEffect::updateRoom (const Vec3& p, float b, int n) noexcept
             const float gT = g * (b * hp + (1.0f - b) * pan);
             const float dT = std::min (maxDelay, base + extra + (e == 0 ? itd : -itd));
             if (fresh) { R.delay[e] = dT; R.gain[e] = gT; }
-            // reflections follow the source with a bounded slope too (no pitch jumps when the room size changes)
-            const float step = std::clamp (dT - R.delay[e], -0.25f * (float) n, 0.25f * (float) n);
+            // reflections follow the source with the same bounded speed as the direct sound (0.12 c, see control()):
+            // no reflection is Doppler-shifted further than the source itself, and no pitch jumps when the room size changes
+            const float step = std::clamp (dT - R.delay[e], -reflDown, reflUp);
             R.dDelay[e] = step * invN;
             R.dGain[e] = (gT - R.gain[e]) * invN;
         }

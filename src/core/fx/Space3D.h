@@ -171,8 +171,8 @@ private:
     double tempo = 120.0, phase = 0.0, ppq = 0.0;
     bool playing = false, wasPlaying = false, hasPpq = false, fresh = true;
     int64_t ppqSamples = 0;
-    space::Vec3 dir { 0.0f, 1.0f, 0.0f }, pos { 0.0f, 1.5f, 0.0f };
-    float logDist = 0.0f, binauralAmt = 1.0f, directDelay = 0.0f, lowDelay = 0.0f, dLowDelay = 0.0f, lowGain = 1.0f, dLowGain = 0.0f;
+    space::Vec3 dir { 0.0f, 1.0f, 0.0f }, dirMid { 0.0f, 1.0f, 0.0f }, pos { 0.0f, 1.5f, 0.0f };
+    float logDist = 0.0f, logDistMid = 0.0f, binauralAmt = 1.0f, directDelay = 0.0f, lowDelay = 0.0f, dLowDelay = 0.0f, lowGain = 1.0f, dLowGain = 0.0f;
     float lowKeepSet = -1.0f, roomSizeSet = -1.0f;
     int countdown = 0;
     Svf xoLp[2], xoHp[2][2]; // crossover: low pass of the mid (2 stages), high pass per channel (2 stages)
