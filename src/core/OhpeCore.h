@@ -192,6 +192,7 @@ private:
     struct PartRouting
     {
         int idxChannel = -1, idxQuant = -1, idxChord = -1, idxMpe = -1, idxMpeBend = -1, idxMpePress = -1, idxMpeTimbre = -1;
+        int idxPressAmt = -1, idxTimbreAmt = -1; ///< 0.8: target amounts
         int channel = 1;
         bool mpe = false;
     };

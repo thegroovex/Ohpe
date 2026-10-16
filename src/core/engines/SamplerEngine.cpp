@@ -122,7 +122,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
         float octaves = c.modEnvAmount * modEnv.getLevel() * 6.0f;
         if (c.lfoDest == LfoDest::Timbre) octaves += lfoValue * 2.0f;
-        octaves += expr.timbre * 3.0f; // per-note expression / modulation matrix (0.7)
+        octaves += (expr.timbre + expr.cutoff) * 3.0f; // per-note expression / modulation matrix (0.7), cutoff target (0.8)
         const float cutoff = std::clamp (40.0f * std::pow (2.0f, p.tone * 9.0f + octaves), 20.0f, 20000.0f);
         const bool useFilter = cutoff < 18000.0f;
         if (useFilter)
@@ -209,6 +209,8 @@ std::vector<ParamDescriptor> SamplerEngine::getParamDescriptors() const
     d.push_back (integer ("slicebase", "First Slice Key", "Erste Slice-Taste", 0, 127, 36));
     // 0.4 (late parameter, see firstLateParam())
     d.push_back (choice ("inst", "Instrument", "Instrument", factory::instrumentNamesEn(), factory::instrumentNamesDe(), 0));
+    // 0.8 (late parameter): the keyboard instruments; when not Off it replaces "inst"
+    d.push_back (choice ("inst2", "Keyboard Instrument", "Tasteninstrument", factory::keyboardChoiceEn(), factory::keyboardChoiceDe(), 0));
     return d;
 }
 
@@ -228,7 +230,9 @@ void SamplerEngine::setParam (int i, float v) noexcept
         case SliceSensitivity: requestedSensitivity.store (dsp::clamp01 (v), std::memory_order_relaxed); break;
         case SliceBaseKey: shared.sliceBase = std::clamp ((int) v, 0, 127); break;
         case Instrument:
-            shared.instrument = std::clamp ((int) std::lround (v), 0, factory::numInstruments - 1);
+        case Instrument2:
+            (i == Instrument ? shared.instSel : shared.inst2Sel) = std::max (0, (int) std::lround (v));
+            shared.instrument = std::clamp (factory::effectiveInstrument (shared.instSel, shared.inst2Sel), 0, factory::numInstruments - 1);
             shared.factory = factory::instrumentMap (shared.instrument);
             break;
         default: break;

@@ -62,7 +62,7 @@ void Voice::spawn (const IAudioRegion& src, float pitch) noexcept
     const double ratio = std::pow (2.0, (double) (pitch - (float) sourceRoot + p.pitch) / 12.0) * srcRate / (double) sr;
     g->length = std::max (16, (int) (p.sizeMs * 0.001f * sr));
 
-    double centre = (double) p.position * frames + scanOffset * srcRate;
+    double centre = (double) std::clamp (p.position + 0.5f * expr.position, 0.0f, 1.0f) * frames + scanOffset * srcRate; // 0.8: MPE position
     centre += (double) (p.spray * rng.nextBipolar()) * std::min (0.5 * srcRate, frames * 0.5);
     const bool reverse = rng.next01() < p.reverseProb;
     double startPos = reverse ? centre + ratio * g->length : centre;
@@ -96,7 +96,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
         float octaves = c.modEnvAmount * modEnv.getLevel() * 6.0f;
         if (c.lfoDest == LfoDest::Timbre) octaves += lfoValue * 2.0f;
-        octaves += expr.timbre * 3.0f; // per-note expression / modulation matrix (0.7)
+        octaves += (expr.timbre + expr.cutoff) * 3.0f; // per-note expression / modulation matrix (0.7), cutoff target (0.8)
         const float cutoff = std::clamp (40.0f * std::pow (2.0f, p.tone * 9.0f + octaves), 20.0f, 20000.0f);
         const bool useFilter = cutoff < 18000.0f;
         if (useFilter)
@@ -104,9 +104,10 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
         float panL, panR;
         lfoPan (c, panL, panR);
-        const float overlap = std::max (1.0f, p.density * p.sizeMs * 0.001f);
+        const float density = std::clamp (p.density * std::exp2 (2.0f * expr.density), 0.5f, 200.0f); // 0.8: MPE density
+        const float overlap = std::max (1.0f, density * p.sizeMs * 0.001f);
         const float gain = velocityGain (c) * lfoAmp (c) * 1.2f / std::sqrt (overlap);
-        const double interval = (double) sr / std::max (0.1f, p.density);
+        const double interval = (double) sr / std::max (0.1f, density);
 
         const float* ch0 = source != nullptr ? source->channel (0) : nullptr;
         const float* ch1 = source != nullptr ? source->channel (1) : nullptr;
@@ -185,6 +186,8 @@ std::vector<ParamDescriptor> GrainEngine::getParamDescriptors() const
     d.push_back (continuous ("tone", "Tone", "Klang", 0.0f, 1.0f, 1.0f));
     // 0.4 (late parameter, see firstLateParam())
     d.push_back (choice ("inst", "Instrument", "Instrument", factory::instrumentNamesEn(), factory::instrumentNamesDe(), 0));
+    // 0.8 (late parameter): the keyboard instruments; when not Off it replaces "inst"
+    d.push_back (choice ("inst2", "Keyboard Instrument", "Tasteninstrument", factory::keyboardChoiceEn(), factory::keyboardChoiceDe(), 0));
     return d;
 }
 
@@ -203,7 +206,11 @@ void GrainEngine::setParam (int i, float v) noexcept
         case Scan: shared.scan = std::clamp (v, -2.0f, 2.0f); break;
         case Source: shared.source = std::clamp ((int) v, 0, (int) SourceTape); break;
         case Tone: shared.tone = dsp::clamp01 (v); break;
-        case Instrument: shared.instrument = std::clamp ((int) std::lround (v), 0, factory::numInstruments - 1); break;
+        case Instrument:
+        case Instrument2:
+            (i == Instrument ? shared.instSel : shared.inst2Sel) = std::max (0, (int) std::lround (v));
+            shared.instrument = std::clamp (factory::effectiveInstrument (shared.instSel, shared.inst2Sel), 0, factory::numInstruments - 1);
+            break;
         default: break;
     }
 }

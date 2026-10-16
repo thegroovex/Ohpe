@@ -220,5 +220,16 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     // ---- 0.7: the rack effect types (hyper, distortion, flanger, compressor, multiband, EQ, filter, echo, hall) -----
     //      for every slot of every rack
     FxRack::registerTypeBlocks (reg, Core::numParts, InsertSlot::firstRackType, InsertSlot::numTypes);
+
+    // ---- 0.8 (sound revision 3): the 0.8 FX types' parameter blocks for every slot of every rack, the layer engine
+    //      of every part, late engine parameters (Wavetable unison stack / FM, FM velocity, Sampler / Grain keyboard
+    //      instruments), MPE / aftertouch amounts ------------------------------------------------------------------
+    FxRack::registerTypeBlocks (reg, Core::numParts, InsertSlot::firstR3Type, InsertSlot::numTypes);
+    for (auto& p : parts) p->registerLate08Params (reg);
+    for (auto& p : parts)
+        for (auto type : { EngineType::Wavetable, EngineType::FM, EngineType::Sampler, EngineType::Grain })
+            p->registerLate08EngineParams (reg, type);
+    // ---- 0.8: MPE / aftertouch amounts, expression smoothing, per-note slide ---------------------------------------
+    for (auto& p : parts) p->registerLate08MpeParams (reg);
 }
 } // namespace ohpe

@@ -28,6 +28,9 @@ namespace ohpe
     selected, on the message thread (prepareSelected); until then the slot passes the signal dry.
     Adding a type: append it to Type, create() and the name lists, and register its parameter block
     for every slot at the end of the layout (FxRack::registerTypeBlocks).
+
+    0.8 (sound revision 3): Comb, Formant, Wobble, Tremolo and Width appended after the rack types
+    (InsertEffects2.h); their blocks are registered for every slot with FxRack::registerTypeBlocks.
 */
 class InsertSlot
 {
@@ -36,9 +39,11 @@ public:
     {
         Off = 0, Chorus, Phaser, Bitcrush, FilterDrive, Delay, Reverb,
         Hyper, Distortion, Flanger, Compressor, Multiband, Eq, Filter, Echo, Hall, // 0.7 (rack types, RackEffects.h)
+        Comb, Formant, Wobble, Tremolo, Width,                                    // 0.8 (InsertEffects2.h)
         numTypes
     };
     static constexpr int firstRackType = Hyper; ///< the 0.7 types (their blocks: FxRack::registerTypeBlocks)
+    static constexpr int firstR3Type = Comb;  ///< the 0.8 types (their blocks: FxRack::registerTypeBlocks)
     static constexpr int numLegacyTypes = Reverb + 1; ///< the 0.2 types (their blocks: registerParams)
 
     InsertSlot();
@@ -90,6 +95,7 @@ public:
 
 private:
     static std::unique_ptr<IEffect> create (int t);
+    static void registerBlocks (ParamRegistry& reg, const std::string& prefix, const std::string& group, int from, int to);
 
     std::array<std::unique_ptr<IEffect>, numTypes> effects;
     std::array<std::vector<int>, numTypes> paramIndex;

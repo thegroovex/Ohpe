@@ -1,0 +1,43 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Wide Organ",
+  "author": "groovex",
+  "tags": [
+    "Keys"
+  ],
+  "engine": "wavetable",
+  "comment": "Drawbar-like organ with a rotating stereo pan and a short hall.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 1,
+    "wavetable.pos": 0.7,
+    "wavetable.tone": 0.8,
+    "wavetable.unison": 0.1,
+    "wavetable.univoices": 3,
+    "wavetable.keytrack": 0.4,
+    "amp.a": 0.005,
+    "amp.d": 0.5,
+    "amp.s": 1.0,
+    "amp.r": 0.1,
+    "mod.a": 0.001,
+    "mod.d": 0.3,
+    "mod.s": 0.0,
+    "mod.r": 0.1,
+    "mod.amt": 0.0,
+    "fx.type": 13,
+    "fx.tremolo.rate": 5.8,
+    "fx.tremolo.sync": 0,
+    "fx.tremolo.depth": 0.4,
+    "fx.tremolo.mode": 1,
+    "fx.tremolo.shape": 0,
+    "lfo.rate": 0.13,
+    "lfo.depth": 0.18,
+    "lfo.shape": 0,
+    "lfo.dest": 3,
+    "wavetable.lfopos": 0.12,
+    "voices": 10,
+    "gain": 0.0
+  }
+}

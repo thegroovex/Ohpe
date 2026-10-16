@@ -25,6 +25,7 @@ enum Param
 {
     Position = 0, Warp, Tone, Unison, // macros 1-4
     Table, WarpMode, EnvPosition, Resonance, Sub, KeyTrack,
+    UniVoices, UniWidth, Fm, FmRatio, LfoPosition, EnvFm, // 0.8 (late parameters, registered at the end of the layout)
     numParams
 };
 
@@ -78,7 +79,12 @@ struct Shared
     float position = 0.25f, warp = 0.0f, tone = 0.75f, unison = 0.2f;
     int table = Classic, warpMode = Bend;
     float envPosition = 0.0f, resonance = 0.1f, sub = 0.0f, keyTrack = 0.5f;
+    int uniVoices = 3;          ///< 0.8: 3 = the classic centre + two sides; 1, 2, 4 .. 8 = spread stack
+    float uniWidth = 0.7f;      ///< 0.8: stereo spread of the stack (not used by the classic three)
+    float fm = 0.0f, fmRatio = 1.0f; ///< 0.8: phase modulation of the table by a sine at f0 * ratio
+    float lfoPosition = 0.0f, envFm = 0.0f; ///< 0.8: LFO -> position, mod envelope -> FM amount
 };
+constexpr int maxUnison = 8;
 
 class Voice : public VoiceBase
 {
@@ -93,7 +99,8 @@ public:
     void render (float* l, float* r, int n, const VoiceCommon& c) noexcept;
 
 private:
-    float phase[3] {};
+    float phase[maxUnison] {};
+    float fmPhase = 0.0f;
     float lastPos = -1.0f, lastWarp = -1.0f;
     float dcX[2] {}, dcY[2] {};
     dsp::SineOsc subOsc;
@@ -109,6 +116,7 @@ public:
     EngineInfo info() const noexcept override { return { "wavetable", "Wavetable", "Wavetable", "wavetable" }; }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void setParam (int localIndex, float value) noexcept override;
+    int firstLate08Param() const noexcept override { return wavetable::UniVoices; }
 
     const wavetable::Shared& getShared() const noexcept { return shared; }
 

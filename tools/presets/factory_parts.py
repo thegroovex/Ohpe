@@ -695,3 +695,8 @@ PRESETS = [
       an(shape=0.5, detune=0.0, cutoff=260, reso=0.05, oscmix=0.0, sub=1.0, noise=0.35, drive=0.45, keytrack=1.0, osclevel=0.0),
       amp(0.001, 2.2, 0.0, 0.3), mod(0.001, 0.012, 0.0, 0.02, 0.9), pitchenv(12, 0.03, 0.8), MONO, velsens=0.3, tune=12),
 ]
+
+# 0.8 (sound revision 3): 120 presets using FX slots 2 / 3, the layer engine, the unison stack and the keyboard instruments
+from factory_parts_r3 import PRESETS_R3  # noqa: E402
+
+PRESETS += PRESETS_R3

@@ -30,6 +30,8 @@ const std::vector<Category>& categories()
         { "Bass", "Bass" },     { "Keys", "Tasten" }, { "Pads", "Flächen" }, { "Leads", "Leads" },        { "Plucks", "Zupfer" },
         { "Drums", "Drums" },   { "FX", "FX" },       { "Arp", "Arp" },       { "Textures", "Texturen" }, { "Vocal", "Vokal" },
         { "Boom", "Boom" }, // 0.6: deep tuned kicks and sub basses
+        { "Hybrid", "Hybrid" }, // 0.8: layered engines, cross-modulation
+        { "Piano", "Klavier" }, // 0.8: acoustic and electric pianos
     };
     return list;
 }

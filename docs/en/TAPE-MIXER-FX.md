@@ -121,6 +121,22 @@ Every part has an **FX rack of six serial slots**, the master a rack of four:
 * The modulation matrix can move each slot's mix and the first four parameters of its effect
   ([MODULATION.md](MODULATION.md)).
 
+### More FX types (0.8)
+
+Five types are appended to the type list of every slot (`type` 16 – 20, after the rack types). Each
+is a complete insert with its own controls (`pN.fxK.<id>.*`, `mfxK.<id>.*`):
+
+| Type | What it does | Controls |
+|---|---|---|
+| **Comb** (`comb`) | modulated comb filter with damped feedback (negative = hollow, odd harmonics), stereo offset | `freq`, `feedback`, `damp`, `rate`, `depth`, `spread`, `mix` |
+| **Formant** (`formant`) | three formant band-passes morphing a – e – i – o – u, shiftable, with an LFO on the vowel (free or tempo-synced, restarts with each note) | `vowel`, `shift`, `reso`, `rate`, `sync`, `depth`, `mix` |
+| **Wobble** (`wobble`) | resonant low- / band-pass swept between two cutoffs by a tempo-synced LFO (sine, triangle, saws, square, S&H) that restarts with every note (`retrig`) | `rate`, `sync`, `shape`, `low`, `high`, `reso`, `mode`, `drive`, `retrig`, `mix` |
+| **Tremolo** (`tremolo`) | tremolo or autopan, free or synced | `rate`, `sync`, `depth`, `mode`, `shape` |
+| **Width** (`width`) | side gain 0 – 200 %, a Haas-style spread that cancels in the mono sum, mono below a frequency (4th order) | `width`, `spread`, `haas` (ms), `mono` (20 Hz = off), `output` |
+
+Sync divisions: Free (the rate in Hz), 1/1 … 1/32, dotted, triplets, then 2/1 and 4/1 – from the host,
+Link or the internal tempo. The effects are self-contained classes (`src/core/fx/InsertEffects2.h`).
+
 ## Audio input (plug-in)
 
 The plug-in has one audio input bus, **"Input"** (stereo or mono), off by default so that hosts

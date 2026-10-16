@@ -114,7 +114,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         // brightness: macro + mod envelope + LFO timbre
         float bright = p.brightness + c.modEnvAmount * modEnv.getLevel() * 0.5f;
         if (c.lfoDest == LfoDest::Timbre) bright += lfoValue * 0.3f;
-        bright += expr.timbre * 0.5f; // per-note expression / modulation matrix (0.7)
+        bright += 0.5f * expr.timbre + 0.4f * expr.cutoff; // per-note expression / modulation matrix (0.7), cutoff target (0.8)
         bright = dsp::clamp01 (bright);
 
         // ---- string loop: N (integer) + all-pass + loss filter (one-pole low-pass and a DC blocker at
@@ -138,7 +138,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         const float d = period - lossDelay - (float) N; // 0.5 .. 1.5 normally
         const float T = std::tan ((1.0f - d) * w0 * 0.5f);
         const float eta = std::clamp (T / (sw - cw * T), -0.99f, 0.99f);
-        const float t60 = stringT60 (p.damping, f0);
+        const float t60 = stringT60 (std::clamp (p.damping - 0.3f * expr.drive, 0.0f, 1.0f), f0); // 0.8: MPE drive = longer ring
         // dark settings also close a gentle output low-pass, so the tone darkens without killing the sustain
         const float toneA = std::exp (-dsp::twoPi * std::min (0.45f * sr, f0 * (2.5f + 80.0f * bright * bright)) / sr);
         const float loopGain = std::min (std::pow (0.001f, 1.0f / (f0 * t60)) / std::abs (h1), 0.99995f / maxMag);

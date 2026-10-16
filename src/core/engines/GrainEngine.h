@@ -27,6 +27,7 @@ enum Param
     Position = 0, Size, Density, Spray, // macros 1-4
     Pitch, ReverseProb, Spread, Scan, Source, Tone,
     Instrument, // 0.4: factory instrument as source (late parameter)
+    Instrument2, // 0.8: keyboard instruments ("inst2", 0 = off; registered at the end of the layout)
     numParams
 };
 
@@ -43,6 +44,7 @@ struct Shared
     const RtShared<SampleData>* sample = nullptr;
     const std::atomic<const IAudioRegion*>* tapeRegion = nullptr;
     int instrument = 0;                        ///< 0.4: factory instrument (0 = built-in texture)
+    int instSel = 0, inst2Sel = 0;             ///< 0.8: the "inst" / "inst2" values (instrument = the effective one)
     const std::atomic<bool>* userLoaded = nullptr; ///< 0.4: a user sample is loaded (it wins)
 
     /**
@@ -105,6 +107,7 @@ public:
     EngineInfo info() const noexcept override { return { "grain", "Grain", "Grain", "grain" }; }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     int firstLateParam() const noexcept override { return grain::Instrument; }
+    int firstLate08Param() const noexcept override { return grain::Instrument2; }
     void setParam (int localIndex, float value) noexcept override;
 
     /** Message thread: the sample to granulate (nullptr = built-in tone). */

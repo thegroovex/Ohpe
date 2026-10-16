@@ -128,6 +128,22 @@ Jeder Part hat ein **FX-Rack mit sechs Slots in Reihe**, der Master eines mit vi
 * Die Modulationsmatrix kann die Mischung jedes Slots und die ersten vier Parameter seines
   Effekts bewegen ([MODULATION.md](MODULATION.md)).
 
+### Weitere FX-Typen (0.8)
+
+Fünf Typen sind an die Typenliste jedes Slots angehängt (`type` 16 – 20, nach den Rack-Typen). Jeder
+ist ein vollständiger Insert mit eigenen Reglern (`pN.fxK.<id>.*`, `mfxK.<id>.*`):
+
+| Typ | Was er tut | Regler |
+|---|---|---|
+| **Kammfilter** (`comb`) | modulierter Kammfilter mit gedämpftem Feedback (negativ = hohl, ungerade Obertöne), Stereoversatz | `freq`, `feedback`, `damp`, `rate`, `depth`, `spread`, `mix` |
+| **Formant** (`formant`) | drei Formant-Bandpässe, die a – e – i – o – u morphen, verschiebbar, mit LFO auf dem Vokal (frei oder tempo-synchron, startet mit jeder Note neu) | `vowel`, `shift`, `reso`, `rate`, `sync`, `depth`, `mix` |
+| **Wobble** (`wobble`) | resonanter Tief- / Bandpass, zwischen zwei Cutoffs von einem tempo-synchronen LFO gefahren (Sinus, Dreieck, Sägezähne, Rechteck, S&H), der mit jeder Note neu startet (`retrig`) | `rate`, `sync`, `shape`, `low`, `high`, `reso`, `mode`, `drive`, `retrig`, `mix` |
+| **Tremolo** (`tremolo`) | Tremolo oder Autopan, frei oder synchron | `rate`, `sync`, `depth`, `mode`, `shape` |
+| **Stereobreite** (`width`) | Seitenpegel 0 – 200 %, Haas-artige Spreizung, die sich in der Mono-Summe aufhebt, mono unterhalb einer Frequenz (4. Ordnung) | `width`, `spread`, `haas` (ms), `mono` (20 Hz = aus), `output` |
+
+Sync-Werte: Frei (Tempo in Hz), 1/1 … 1/32, punktiert, Triolen, dann 2/1 und 4/1 – vom Host, von Link
+oder vom internen Tempo. Die Effekte sind eigenständige Klassen (`src/core/fx/InsertEffects2.h`).
+
 ## Audioeingang (Plug-in)
 
 Das Plug-in hat einen Audio-Eingangsbus **„Input“** (Stereo oder Mono), standardmäßig aus,

@@ -5,6 +5,7 @@
 #include "Delay.h"
 #include "InsertEffects.h"
 #include "RackEffects.h"
+#include "InsertEffects2.h"
 #include "Reverb.h"
 
 #include <algorithm>
@@ -32,6 +33,11 @@ std::unique_ptr<IEffect> InsertSlot::create (int t)
         case Filter: return std::make_unique<FilterRackEffect>();
         case Echo: return std::make_unique<EchoEffect>();
         case Hall: return std::make_unique<HallEffect>();
+        case Comb: return std::make_unique<CombEffect>();
+        case Formant: return std::make_unique<FormantEffect>();
+        case Wobble: return std::make_unique<WobbleEffect>();
+        case Tremolo: return std::make_unique<TremoloEffect>();
+        case Width: return std::make_unique<WidthEffect>();
         default: return nullptr;
     }
 }
@@ -47,12 +53,14 @@ InsertSlot::InsertSlot()
 std::vector<std::string> InsertSlot::typeNamesEn()
 {
     return { "Off", "Chorus", "Phaser", "Bitcrush", "Filter Drive", "Delay", "Reverb",
-             "Hyper", "Distortion", "Flanger", "Compressor", "Multiband", "EQ", "Filter", "Echo", "Hall" };
+             "Hyper", "Distortion", "Flanger", "Compressor", "Multiband", "EQ", "Filter", "Echo", "Hall",
+             "Comb", "Formant", "Wobble", "Tremolo", "Width" }; // 0.8
 }
 std::vector<std::string> InsertSlot::typeNamesDe()
 {
     return { "Aus", "Chorus", "Phaser", "Bitcrusher", "Filter-Drive", "Delay", "Hall",
-             "Hyper", "Verzerrung", "Flanger", "Kompressor", "Multiband", "EQ", "Filter", "Echo", "Raum" };
+             "Hyper", "Verzerrung", "Flanger", "Kompressor", "Multiband", "EQ", "Filter", "Echo", "Raum",
+             "Kammfilter", "Formant", "Wobble", "Tremolo", "Stereobreite" }; // 0.8
 }
 
 EffectInfo InsertSlot::typeInfo (int t)

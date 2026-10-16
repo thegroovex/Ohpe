@@ -1,0 +1,53 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Wide Pluck Arp",
+  "author": "groovex",
+  "tags": [
+    "Arp",
+    "Plucks"
+  ],
+  "engine": "wavetable",
+  "comment": "Six-voice stereo pluck, up / down over three octaves, dotted ping-pong delay.",
+  "params": {
+    "engine": 1,
+    "wavetable.table": 0,
+    "wavetable.pos": 0.45,
+    "wavetable.tone": 0.55,
+    "wavetable.unison": 0.35,
+    "wavetable.univoices": 6,
+    "wavetable.uniwidth": 1.0,
+    "wavetable.keytrack": 0.6,
+    "amp.a": 0.003,
+    "amp.d": 0.3,
+    "amp.s": 0.0,
+    "amp.r": 0.25,
+    "mod.a": 0.002,
+    "mod.d": 0.12,
+    "mod.s": 0.0,
+    "mod.r": 0.1,
+    "mod.amt": 0.5,
+    "fx.type": 5,
+    "fx.delay.time": 0.45,
+    "fx.delay.feedback": 0.45,
+    "fx.delay.tone": 0.5,
+    "fx.delay.pingpong": 1,
+    "fx.delay.mix": 0.25,
+    "lfo.rate": 0.09,
+    "lfo.depth": 0.22,
+    "lfo.shape": 1,
+    "lfo.dest": 1,
+    "wavetable.lfopos": 0.12,
+    "voices": 8,
+    "gain": 0.0
+  },
+  "arp": {
+    "on": 1,
+    "mode": 2,
+    "oct": 3,
+    "gate": 0.5,
+    "rate": 2,
+    "latch": 1
+  }
+}

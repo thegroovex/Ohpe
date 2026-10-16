@@ -188,3 +188,8 @@ DE = {
     "Sub & Glide": "Septakkorde, die ineinander gleiten (Glide Strings, Poly-Glide), ein langer gleitender Sub auf Orbit-Spur 1 und ein Halftime-Beat auf dem Boom-Kit aus den Orbit-Spuren 2–4, funkelnde Glocken aus Euklid. Cm7 – Abmaj7 – Ebmaj7 – Bb7.",
     "Deep House": "Geshuffelte Hats und eine tiefe Kick auf dem Tight-Kit (Orbit), ein synkopierter Orgel-Bass (Step-Sequenzer) und Euklid-Akkord-Stabs.",
 }
+
+# 0.8 (sound revision 3)
+from comments_de_r3 import DE_R3  # noqa: E402
+
+DE.update(DE_R3)

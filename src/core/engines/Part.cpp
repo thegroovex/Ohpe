@@ -105,7 +105,7 @@ void Part::registerEngineParams (ParamRegistry& reg, EngineType type) const
     const std::string enginePrefix = idPrefix + engineTypeInfo (type).id + ".";
     const auto group = "part" + std::to_string (number) + "/" + engineTypeInfo (type).id;
     const auto list = eng->getParamDescriptors();
-    const int late = std::min ((int) list.size(), eng->firstLateParam());
+    const int late = std::min ((int) list.size(), std::min (eng->firstLateParam(), eng->firstLate08Param()));
     for (int i = 0; i < late; ++i)
     {
         auto d = list[(size_t) i];
@@ -123,7 +123,8 @@ void Part::registerLateEngineParams (ParamRegistry& reg, EngineType type) const
     const std::string enginePrefix = idPrefix + engineTypeInfo (type).id + ".";
     const auto group = "part" + std::to_string (number) + "/" + engineTypeInfo (type).id;
     const auto list = eng->getParamDescriptors();
-    for (int i = std::min ((int) list.size(), eng->firstLateParam()); i < (int) list.size(); ++i)
+    const int end = std::min ((int) list.size(), eng->firstLate08Param());
+    for (int i = std::min ((int) list.size(), eng->firstLateParam()); i < end; ++i)
     {
         auto d = list[(size_t) i];
         d.id = enginePrefix + d.id;
@@ -132,8 +133,70 @@ void Part::registerLateEngineParams (ParamRegistry& reg, EngineType type) const
     }
 }
 
+void Part::registerLate08EngineParams (ParamRegistry& reg, EngineType type) const
+{
+    const auto& eng = engines[(size_t) type];
+    if (eng == nullptr)
+        return;
+    const std::string enginePrefix = idPrefix + engineTypeInfo (type).id + ".";
+    const auto group = "part" + std::to_string (number) + "/" + engineTypeInfo (type).id;
+    const auto list = eng->getParamDescriptors();
+    for (int i = std::min ((int) list.size(), eng->firstLate08Param()); i < (int) list.size(); ++i)
+    {
+        auto d = list[(size_t) i];
+        d.id = enginePrefix + d.id;
+        d.group = group;
+        reg.add (std::move (d));
+    }
+}
+
+void Part::registerLate08MpeParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const auto group = "part" + n + "/midi";
+    auto add = [&] (ParamDescriptor d) { d.group = group; reg.add (std::move (d)); };
+    const std::string P = "Part " + n + " ";
+    add (continuous (id ("mpe.pressamt"), P + "Pressure Amount", P + "Druck-Menge", -1.0f, 1.0f, 1.0f));
+    add (continuous (id ("mpe.timbreamt"), P + "Timbre Amount", P + "Timbre-Menge", -1.0f, 1.0f, 1.0f));
+    add (continuous (id ("mpe.smooth"), P + "Expression Smoothing", P + "Ausdrucks-Glättung", 0.0f, 0.5f, 0.0f, ParamUnit::Seconds, 0.5f));
+    add (continuous (id ("mpe.slide"), P + "Per-Note Slide", P + "Pro-Noten-Slide", 0.0f, 1.0f, 0.0f, ParamUnit::Seconds, 0.5f));
+}
+
+void Part::registerLate08Params (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const auto group = "part" + n + "/layer";
+    auto add = [&] (ParamDescriptor d) { d.group = group; reg.add (std::move (d)); };
+    std::vector<std::string> en { "Off" }, de { "Aus" };
+    for (int t = 0; t < numEngineTypes; ++t)
+    {
+        en.emplace_back (engineTypeInfo ((EngineType) t).nameEn);
+        de.emplace_back (engineTypeInfo ((EngineType) t).nameDe);
+    }
+    const std::string P = "Part " + n + " ";
+    add (choice (id ("layer.engine"), P + "Layer Engine", P + "Layer-Engine", en, de, 0));
+    add (continuous (id ("layer.level"), P + "Layer Level", P + "Layer-Pegel", 0.0f, 1.0f, 0.7f));
+    add (integer (id ("layer.tune"), P + "Layer Tune", P + "Layer-Stimmung", -24, 24, 0, ParamUnit::Semitones));
+    add (continuous (id ("layer.fine"), P + "Layer Fine", P + "Layer-Feinstimmung", -50.0f, 50.0f, 0.0f, ParamUnit::Cents));
+    add (choice (id ("layer.xmode"), P + "Cross-Mod Mode", P + "Kreuzmod.-Art", { "Ring", "AM", "Fold" }, { "Ring", "AM", "Falten" }, XRing));
+    add (continuous (id ("layer.xmod"), P + "Cross-Mod", P + "Kreuzmodulation", 0.0f, 1.0f, 0.0f));
+    add (continuous (id ("layer.width"), P + "Layer Width", P + "Layer-Breite", 0.0f, 1.0f, 0.5f));
+    add (toggle (id ("layer.ownenv"), P + "Layer Own Envelope", P + "Layer eigene Hüllkurve", false));
+    add (continuous (id ("layer.a"), P + "Layer Attack", P + "Layer Attack", 0.001f, 10.0f, 0.005f, ParamUnit::Seconds, 0.3f));
+    add (continuous (id ("layer.d"), P + "Layer Decay", P + "Layer Decay", 0.001f, 10.0f, 0.3f, ParamUnit::Seconds, 0.3f));
+    add (continuous (id ("layer.s"), P + "Layer Sustain", P + "Layer Sustain", 0.0f, 1.0f, 0.8f));
+    add (continuous (id ("layer.r"), P + "Layer Release", P + "Layer Release", 0.001f, 10.0f, 0.3f, ParamUnit::Seconds, 0.3f));
+}
+
 void Part::bind (const ParamRegistry& reg)
 {
+    static const char* late08[numLate08] = { "layer.engine", "layer.level", "layer.tune", "layer.fine", "layer.xmode", "layer.xmod",
+                                             "layer.width", "layer.ownenv", "layer.a", "layer.d", "layer.s", "layer.r" };
+    for (int i = 0; i < numLate08; ++i) late08Index[(size_t) i] = reg.indexOf (id (late08[i]));
+    exprSmoothIndex = reg.indexOf (id ("mpe.smooth"));
+    exprSlideIndex = reg.indexOf (id ("mpe.slide"));
     static const char* names[numCommon] = { "engine", "vol", "voices", "tune", "fine", "glide", "bend", "velsens",
                                             "amp.a", "amp.d", "amp.s", "amp.r", "mod.a", "mod.d", "mod.s", "mod.r",
                                             "mod.amt", "lfo.rate", "lfo.depth", "lfo.shape", "lfo.dest" };
@@ -178,6 +241,9 @@ void Part::prepare (double sampleRate, int maxBlockSize)
     rack.prepare (sampleRate, maxBlockSize);
     matrix.prepare (sampleRate);
     lastGain = -1.0f;
+    layerL.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
+    layerR.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
+    xEnvCoeff = 1.0f - (float) std::exp (-1.0 / (0.004 * sampleRate));
     reset();
 }
 
@@ -193,6 +259,8 @@ void Part::reset() noexcept
     dcX[0] = dcX[1] = dcY[0] = dcY[1] = 0.0f;
     rack.reset();
     matrix.reset();
+    xEnv = 0.0f;
+    exprBlend = 0.0f;
 }
 
 void Part::pullParams (const ParamSnapshot& s) noexcept
@@ -236,6 +304,27 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
     common.modProgram = &matrix.voiceProgram();
     matrix.pull (s, common.amp, common.mod, common.lfoRate, common.lfoShape);
     rack.pullParams (s);
+    common.exprSmooth = exprSmoothIndex >= 0 ? s[exprSmoothIndex] : 0.0f;
+    common.exprSlide = exprSlideIndex >= 0 ? s[exprSlideIndex] : 0.0f;
+
+    // 0.8 layer
+    {
+        auto ly = [&] (Late08 k, float def) { return late08Index[(size_t) k] >= 0 ? s[late08Index[(size_t) k]] : def; };
+        int lt = (int) std::lround (ly (lyEngine, 0.0f)) - 1;
+        if (lt < 0 || lt >= numEngineTypes || lt == (int) current || engines[(size_t) lt] == nullptr) lt = -1;
+        if (lt != layerType)
+        {
+            if (auto* old = layerEngine()) old->allNotesOff (false); // let it ring out (as a plain engine)
+            layerType = lt;
+        }
+        layerLevel = dsp::clamp01 (ly (lyLevel, 0.7f));
+        layerTune = ly (lyTune, 0.0f) + 0.01f * ly (lyFine, 0.0f);
+        layerXMode = std::clamp ((int) std::lround (ly (lyXMode, 0.0f)), 0, numXMods - 1);
+        layerXMod = dsp::clamp01 (ly (lyXMod, 0.0f));
+        layerWidth = dsp::clamp01 (ly (lyWidth, 0.5f));
+        layerOwnEnv = ly (lyOwnEnv, 0.0f) >= 0.5f;
+        layerAmp = { ly (lyA, 0.005f), ly (lyD, 0.3f), ly (lyS, 0.8f), ly (lyR, 0.3f) };
+    }
 
     for (int t = 0; t < numEngineTypes; ++t)
     {
@@ -251,8 +340,21 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
                 e->setParam ((int) i, val);
             }
         }
-        e->setCommon (common);
         e->setPolyphony (polyphony);
+    }
+    pushCommon();
+}
+
+void Part::pushCommon() noexcept
+{
+    for (auto& e : engines)
+        if (e != nullptr) e->setCommon (common);
+    if (auto* le = layerEngine())
+    {
+        VoiceCommon c = common;
+        c.pitchOffset += layerTune;
+        if (layerOwnEnv) c.amp = layerAmp;
+        le->setCommon (c);
     }
 }
 
@@ -263,6 +365,7 @@ void Part::noteOn (int note, float velocity) noexcept
     matrix.noteOn (note, velocity); // first: the voice reads the new note's seed
     rack.noteOn();                  // 0.7: retriggered rack effects
     if (auto* e = engines[(size_t) current].get()) e->noteOn (note, velocity);
+    if (auto* le = layerEngine()) le->noteOn (note, velocity); // 0.8 layer
 }
 
 void Part::noteOff (int note) noexcept
@@ -285,6 +388,7 @@ void Part::allNotesOff (bool hard) noexcept
 void Part::noteExpression (int note, const NoteExpression& x) noexcept
 {
     matrix.setNoteExpression (note, x.pressure, x.slide, x.noteBend);
+    exprBlend = std::clamp (x.blend, -1.0f, 1.0f); // 0.8: part-wide (the mix of two engines is not per note)
     for (auto& e : engines)
         if (e != nullptr) e->noteExpression (note, x);
 }
@@ -298,8 +402,7 @@ void Part::handleMidi (const MidiEvent& m) noexcept
         bend = ((float) m.pitchBendValue() - 8192.0f) / 8192.0f;
         matrix.setPitchBend (bend);
         common.pitchOffset = tune + bend * bendRange;
-        for (auto& e : engines)
-            if (e != nullptr) e->setCommon (common);
+        pushCommon();
     }
     else if (m.isController())
     {
@@ -319,8 +422,7 @@ void Part::handleMidi (const MidiEvent& m) noexcept
                 ccGlideSeconds = 2.0f * x * x; // same range as the "glide" parameter, finer at short times
             }
             updateGlide();
-            for (auto& e : engines)
-                if (e != nullptr) e->setCommon (common);
+            pushCommon();
         }
         else if (m.data1 == 1) matrix.setModWheel ((float) m.data2 / 127.0f); // 0.7: matrix source
         else if (m.data1 == 120) allNotesOff (true);
@@ -332,9 +434,56 @@ void Part::renderEngines (float* l, float* r, int numSamples) noexcept
 {
     std::memset (l, 0, sizeof (float) * (size_t) numSamples);
     std::memset (r, 0, sizeof (float) * (size_t) numSamples);
+    auto* le = layerEngine();
     for (auto& e : engines)
-        if (e != nullptr && e->activeVoiceCount() > 0)
+        if (e != nullptr && e.get() != le && e->activeVoiceCount() > 0)
             e->render (l, r, numSamples);
+    if (le != nullptr && le->activeVoiceCount() > 0 && numSamples <= (int) layerL.size()) // 0.8 layer
+    {
+        float* a = layerL.data();
+        float* b = layerR.data();
+        std::memset (a, 0, sizeof (float) * (size_t) numSamples);
+        std::memset (b, 0, sizeof (float) * (size_t) numSamples);
+        le->render (a, b, numSamples);
+        const float side = 2.0f * layerWidth, x = layerXMod;
+        // 0.8: the "layer blend" expression (MPE / aftertouch) moves the balance between main engine and layer
+        const float layerScale = std::clamp (1.0f + exprBlend, 0.0f, 2.0f), mainScale = std::clamp (1.0f - 0.5f * exprBlend, 0.5f, 1.5f);
+        if (exprBlend != 0.0f)
+            for (int i = 0; i < numSamples; ++i) { l[i] *= mainScale; r[i] *= mainScale; }
+        for (int i = 0; i < numSamples; ++i)
+        {
+            const float m = 0.5f * (a[i] + b[i]), sd = 0.5f * (a[i] - b[i]) * side;
+            const float la = (m + sd) * layerLevel * layerScale, lb = (m - sd) * layerLevel * layerScale;
+            if (x <= 0.0f) { l[i] += la; r[i] += lb; continue; }
+            const float lm = 0.5f * (la + lb);
+            switch (layerXMode)
+            {
+                case XAm: // the layer's envelope shapes the main engine (chopped / gated / talking)
+                {
+                    xEnv = dsp::flush (xEnv + (std::abs (lm) - xEnv) * xEnvCoeff);
+                    const float g = (1.0f - x) + x * std::min (2.5f, 4.0f * xEnv);
+                    l[i] = l[i] * g + la;
+                    r[i] = r[i] * g + lb;
+                    break;
+                }
+                case XFold: // the sum is folded: harmonics move with both engines
+                {
+                    const float k = 1.0f + 5.0f * x;
+                    const float sl = l[i] + la, sr2 = r[i] + lb;
+                    l[i] = (1.0f - x) * sl + x * 0.6f * std::sin (k * sl * 1.5707963f);
+                    r[i] = (1.0f - x) * sr2 + x * 0.6f * std::sin (k * sr2 * 1.5707963f);
+                    break;
+                }
+                default: // ring: the main engine multiplied by the layer
+                {
+                    const float ring = dsp::softClip (4.0f * lm) * 1.4f;
+                    l[i] = l[i] * (1.0f - x) + l[i] * ring * x + la * (1.0f - 0.5f * x);
+                    r[i] = r[i] * (1.0f - x) + r[i] * ring * x + lb * (1.0f - 0.5f * x);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 void Part::finishBlock (float* l, float* r, int numSamples) noexcept
