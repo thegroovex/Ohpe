@@ -168,7 +168,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     : AudioProcessorEditor (p), proc (p), display (p),
       pitchWheel (p, Core::Ids::perfBend, "Pitch", true), modWheel (p, Core::Ids::perfMod, "Mod", false),
       glideSwitch (p), glideKnob (p, "Glide"), lifeBar (p),
-      keyboard (p.keyboardState), proView (p), library (p)
+      keyboard (p.keyboardState), proView (p), library (p), breedView (p)
 {
     setLookAndFeel (&lnf);
     setWantsKeyboardFocus (false);
