@@ -245,7 +245,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
         add (toggle (Core::Ids::tapeTxStop, "Transport Stop", "Transport Stopp", false));
         add (toggle (Core::Ids::tapeTxRec, "Transport Record", "Transport Aufnahme", false));
         add (toggle (Core::Ids::tapeTxLoop, "Transport Loop", "Transport Schleife", false));
-        add (toggle (Core::Ids::tapeTxArm, "Arm Edit Track", "Bearbeitungsspur scharf", false));
+        add (toggle (Core::Ids::tapeTxArm, "Arm Edit Track", "Bearbeitungsspur aufnahmebereit", false));
         add (toggle (Core::Ids::tapeTxLink, "Play Starts Tape", "Start startet Tape", true));
     }
 }

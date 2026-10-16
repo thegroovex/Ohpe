@@ -100,6 +100,7 @@ public:
     PictoKey (Picto picto, juce::String legendEnglish);
 
     void setActive (bool a) { if (a != active) { active = a; repaint(); } }
+    bool isActive() const noexcept { return active; }
     void setAvailable (bool a) { available = a; repaint(); }
     void setAccent (juce::Colour c) { accent = c; repaint(); }
     void setLegend (juce::String englishText) { legend = std::move (englishText); repaint(); }

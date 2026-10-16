@@ -718,6 +718,7 @@ int Display::rowAt (juce::Point<float> p) const
 void Display::mouseDown (const juce::MouseEvent& e)
 {
     const auto p = e.position;
+    lastMouse = p; // p11: tooltips
     dragRow = -1;
     if (pages > 1 && pageArrow (false).contains (p)) { if (onPageChange) onPageChange (-1); return; }
     if (pages > 1 && pageArrow (true).contains (p)) { if (onPageChange) onPageChange (1); return; }
