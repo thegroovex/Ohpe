@@ -100,6 +100,7 @@ private:
     int loopMode = LoopOff;
     float declick = 1.0f;
     dsp::Svf filter[2];
+    float filterMix = -1.0f; ///< 0.8: tone-filter crossfade (0 = bypassed, 1 = filtering, < 0 = set at the next block)
 };
 } // namespace sampler
 

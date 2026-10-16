@@ -24,6 +24,7 @@ void Voice::start (int midiNote, float vel, bool legato, const VoiceCommon& c) n
     {
         for (auto& g : grains) g.active = false;
         for (auto& f : filter) f.reset();
+        filterMix = -1.0f;
         rng.seed ((uint32_t) (midiNote * 2654435761u + 17u));
         scanOffset = 0.0;
         untilNext = 0.0;
@@ -65,9 +66,15 @@ void Voice::spawn (const IAudioRegion& src, float pitch) noexcept
     double centre = (double) std::clamp (p.position + 0.5f * expr.position, 0.0f, 1.0f) * frames + scanOffset * srcRate; // 0.8: MPE position
     centre += (double) (p.spray * rng.nextBipolar()) * std::min (0.5 * srcRate, frames * 0.5);
     const bool reverse = rng.next01() < p.reverseProb;
-    double startPos = reverse ? centre + ratio * g->length : centre;
-    startPos = std::fmod (startPos, frames);
-    if (startPos < 0.0) startPos += frames;
+    // 0.8 punch pass: a grain never reads across the end of the sample. Wrapping (end -> start) jumped from the
+    // quiet tail of a one-shot into its attack in the middle of the window: a click. The centre still wraps (the
+    // scan and spray cycle through the sample), then the whole span of the grain is moved inside it.
+    const double span = ratio * (double) g->length;
+    centre = std::fmod (centre, frames);
+    if (centre < 0.0) centre += frames;
+    const double hi = std::max (0.0, frames - 3.0 - span);
+    const double first = std::clamp (centre, 0.0, hi);
+    double startPos = reverse ? first + std::min (span, frames - 3.0) : first;
 
     g->pos = startPos;
     g->inc = reverse ? -ratio : ratio;
@@ -98,9 +105,13 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         if (c.lfoDest == LfoDest::Timbre) octaves += lfoValue * 2.0f;
         octaves += (expr.timbre + expr.cutoff) * 3.0f; // per-note expression / modulation matrix (0.7), cutoff target (0.8)
         const float cutoff = std::clamp (40.0f * std::pow (2.0f, p.tone * 9.0f + octaves), 20.0f, 20000.0f);
-        const bool useFilter = cutoff < 18000.0f;
-        if (useFilter)
-            for (auto& f : filter) f.set (cutoff, 0.1f);
+        // 0.8 punch pass: the tone filter always runs (its state stays continuous) and fades in / out over ~3 ms
+        // when the cutoff crosses 18 kHz. Switching it on with a stale state (LFO / expression sweeping the tone
+        // across the bypass point) put a one-sample spike into the sound - an audible click.
+        const float filterTarget = cutoff < 18000.0f ? 1.0f : 0.0f;
+        if (filterMix < 0.0f) filterMix = filterTarget;
+        const float filterFade = 1.0f / (0.003f * sr);
+        for (auto& f : filter) f.set (cutoff, 0.1f);
 
         float panL, panR;
         lfoPan (c, panL, panR);
@@ -132,15 +143,14 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
                 const float s1 = ch1 == ch0 ? s0 : readHermite (ch1, frames, g.pos);
                 a += s0 * w * g.gainL;
                 b += s1 * w * g.gainR;
-                g.pos += g.inc;
-                if (g.pos >= framesD) g.pos -= framesD;
-                else if (g.pos < 0.0) g.pos += framesD;
+                g.pos = std::clamp (g.pos + g.inc, 0.0, framesD - 2.0); // the span fits (spawn); pitch modulation cannot wrap either
                 if (++g.age >= g.length) g.active = false;
             }
-            if (useFilter)
             {
-                a = filter[0].process (a, dsp::Svf::LowPass);
-                b = filter[1].process (b, dsp::Svf::LowPass);
+                filterMix += std::clamp (filterTarget - filterMix, -filterFade, filterFade);
+                const float fa = filter[0].process (a, dsp::Svf::LowPass), fb = filter[1].process (b, dsp::Svf::LowPass);
+                a += (fa - a) * filterMix;
+                b += (fb - b) * filterMix;
             }
             modEnv.next();
             const float env = ampEnv.next() * gain;

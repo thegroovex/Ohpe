@@ -185,6 +185,7 @@ void HyperEffect::prepare (double sampleRate, int)
     lineL.prepare ((int) (0.05f * sr));
     lineR.prepare ((int) (0.05f * sr));
     for (auto& d : dim) d.prepare ((int) (0.03f * sr));
+    tapC = 1.0f - std::exp (-1.0f / (0.002f * sr));
     depthG.prepare (sr, 0.03f);
     mixG.prepare (sr, 0.02f);
     reset();
@@ -195,12 +196,20 @@ void HyperEffect::reset() noexcept
     lineL.reset();
     lineR.reset();
     for (auto& d : dim) d.reset();
-    noteOn();
+    resetPhases();
+    tapSnap = true;
     depthG.snap (detune);
     mixG.snap (mix);
 }
 
 void HyperEffect::noteOn() noexcept
+{
+    // 0.8 punch pass: the voices restart only with Retrigger on (every note used to jump the taps: a click at
+    // each new chord), and the taps glide to their new position (see process) instead of jumping
+    if (retrigger) resetPhases();
+}
+
+void HyperEffect::resetPhases() noexcept
 {
     // fixed, irrational-ish rate ratios and spread phases: the voices never line up
     static constexpr float ratios[maxVoices] = { 1.0f, 1.13f, 0.87f, 1.31f, 0.71f, 1.53f, 0.61f };
@@ -253,11 +262,14 @@ void HyperEffect::process (float* l, float* r, int n) noexcept
             // triangle motion of the tap: a constant pitch offset up, then down (Doppler detune)
             const float tri = 1.0f - 4.0f * std::abs (ph - 0.5f);
             const float dMs = 8.0f + 3.0f * (float) v + depth * 6.0f * tri;
-            const float dSamples = dMs * 0.001f * sr;
+            float& tap = tapSm[(size_t) v];
+            tap = tapSnap ? dMs * 0.001f * sr : tap + (dMs * 0.001f * sr - tap) * tapC; // ~2 ms glide
+            const float dSamples = tap;
             const float x = (v % 2 ? lineR : lineL).read (dSamples) * 0.6f + (v % 2 ? lineL : lineR).read (dSamples) * 0.4f;
             wl += x * panL[(size_t) v];
             wr += x * panR[(size_t) v];
         }
+        tapSnap = false;
         wl *= norm * 1.41f;
         wr *= norm * 1.41f;
         // dimension: cross-fed short delays, opposite polarity - width without a hole in the middle

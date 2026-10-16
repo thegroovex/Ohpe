@@ -89,6 +89,7 @@ void Voice::start (int midiNote, float vel, bool legato, const VoiceCommon& c) n
     }
     declick = 1.0f;
     for (auto& f : filter) f.reset();
+    filterMix = -1.0f;
 }
 
 void Voice::kill() noexcept
@@ -124,9 +125,13 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         if (c.lfoDest == LfoDest::Timbre) octaves += lfoValue * 2.0f;
         octaves += (expr.timbre + expr.cutoff) * 3.0f; // per-note expression / modulation matrix (0.7), cutoff target (0.8)
         const float cutoff = std::clamp (40.0f * std::pow (2.0f, p.tone * 9.0f + octaves), 20.0f, 20000.0f);
-        const bool useFilter = cutoff < 18000.0f;
-        if (useFilter)
-            for (auto& f : filter) f.set (cutoff, 0.1f);
+        // 0.8 punch pass: the tone filter always runs (its state stays continuous) and fades in / out over ~3 ms
+        // when the cutoff crosses 18 kHz. Switching it on with a stale state (LFO / expression sweeping the tone
+        // across the bypass point) put a one-sample spike into the sound - an audible click.
+        const float filterTarget = cutoff < 18000.0f ? 1.0f : 0.0f;
+        if (filterMix < 0.0f) filterMix = filterTarget;
+        const float filterFade = 1.0f / (0.003f * sr);
+        for (auto& f : filter) f.set (cutoff, 0.1f);
 
         float panL, panR;
         lfoPan (c, panL, panR);
@@ -136,10 +141,11 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         {
             float a = readHermite (ch0, frames, pos);
             float b = ch1 == ch0 ? a : readHermite (ch1, frames, pos);
-            if (useFilter)
             {
-                a = filter[0].process (a, dsp::Svf::LowPass);
-                b = ch1 == ch0 ? a : filter[1].process (b, dsp::Svf::LowPass);
+                filterMix += std::clamp (filterTarget - filterMix, -filterFade, filterFade);
+                const float fa = filter[0].process (a, dsp::Svf::LowPass), fb = filter[1].process (b, dsp::Svf::LowPass);
+                a += (fa - a) * filterMix;
+                b += (fb - b) * filterMix;
             }
 
             pos += ratio * (double) direction;

@@ -145,7 +145,11 @@ public:
 private:
     rackdsp::DelayLine lineL, lineR;
     std::array<rackdsp::DelayLine, 2> dim;
+    void resetPhases() noexcept;
     std::array<float, maxVoices> phase {}, rateMul {}, panL {}, panR {};
+    std::array<float, maxVoices> tapSm {}; ///< 0.8: smoothed tap delays (samples)
+    bool tapSnap = true;
+    float tapC = 0.01f;
     float sr = 48000.0f, rate = 0.6f, detune = 0.35f, spread = 0.8f, dimension = 0.4f, mix = 0.5f;
     int voices = 5;
     bool retrigger = false;
