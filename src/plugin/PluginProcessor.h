@@ -89,6 +89,8 @@ public:
         no processor-side action: the editor polls libraryToggleRequests().
     */
     int libraryToggleRequests() const noexcept { return libraryToggles.load(); }
+    /** p18: presses of "lib.breed" (0), "lib.breed.go" (1), "lib.breed.next" (2) - the editor polls them. */
+    int breedRequestCount (int which) const noexcept { return breedRequests[(size_t) juce::jlimit (0, 2, which)].load(); }
     /** Runs a tape edit on the edit track ("tape.edit.track"); lift / cut use loop in .. out,
         drop / splice the play position. Returns false if the tape refused it. */
     bool runTapeEdit (const char* triggerId);
@@ -160,7 +162,7 @@ private:
     int syncSourceParam = -1, tempoParam = -1;
 
     // 0.3: remote controls
-    static constexpr int numTriggers = 16; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm
+    static constexpr int numTriggers = 19; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*
     void setPlainFromUi (const char* id, float plain);
     juce::CriticalSection transportLock;
     juce::String transportMessage;
@@ -169,6 +171,7 @@ private:
     std::array<float, numTriggers> triggerLast {};
     std::array<std::atomic<int>, numTriggers> triggerPresses {};
     std::atomic<int> libraryToggles { 0 };
+    std::array<std::atomic<int>, 3> breedRequests {}; ///< p18
     std::unique_ptr<PresetManager> presetManager;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OhpeProcessor)

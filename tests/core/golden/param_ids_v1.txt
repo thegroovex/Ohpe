@@ -6219,3 +6219,6 @@ p4.morph.y
 p4.morph.glide
 p4.morph.xsrc
 p4.morph.ysrc
+lib.breed
+lib.breed.go
+lib.breed.next

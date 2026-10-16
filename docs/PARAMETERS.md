@@ -708,3 +708,16 @@ part presets (`"morph"` block) and in projects / the plug-in state (section `"mo
 
 The modulation matrix gains the sources **Morph X / Morph Y** (21, 22) and the targets **Morph X / Morph Y**
 (73, 74); the source and target choice lists grow at their end.
+
+## Preset breeding (p18)
+
+Appended after the morph block (`p4.morph.ysrc`), 3 IDs. Remote controls for the breeding view (triggers like
+`lib.open`, group "remote", not part of presets). Guides: [English](en/BREEDING.md) · [Deutsch](de/ZUCHT.md).
+Breeding itself adds no sound parameters: a child is an ordinary part sound; the breeding session (parents,
+generations, kept children) is stored in the plug-in state (section `"breed"`).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `lib.breed` | Breeding | Zucht | trigger | off |
+| `lib.breed.go` | Breed Again | Weiterzüchten | trigger | off |
+| `lib.breed.next` | Next Child | Nächstes Kind | trigger | off |

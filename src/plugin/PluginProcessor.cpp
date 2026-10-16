@@ -29,7 +29,9 @@ const char* const* triggerIds()
                                        Core::Ids::tapeRedo, Core::Ids::tapeRtz,
                                        // p11: tape transport
                                        Core::Ids::tapeTxPlay, Core::Ids::tapeTxTapePlay, Core::Ids::tapeTxStop, Core::Ids::tapeTxRec, Core::Ids::tapeTxLoop,
-                                       Core::Ids::tapeTxArm };
+                                       Core::Ids::tapeTxArm,
+                                       // p18: preset breeding
+                                       Core::Ids::libBreed, Core::Ids::libBreedGo, Core::Ids::libBreedNext };
     return ids;
 }
 } // namespace
@@ -258,6 +260,9 @@ void OhpeProcessor::pollRemoteControls()
             if (id == Core::Ids::libOpen) libraryToggles.fetch_add (1);
             else if (id == Core::Ids::libPrev) presetManager->step (-1);
             else if (id == Core::Ids::libNext) presetManager->step (1);
+            else if (id == Core::Ids::libBreed) breedRequests[0].fetch_add (1); // p18: the editor polls these
+            else if (id == Core::Ids::libBreedGo) breedRequests[1].fetch_add (1);
+            else if (id == Core::Ids::libBreedNext) breedRequests[2].fetch_add (1);
             else if (id.startsWith ("tape.tx."))
             {
                 const auto action = id == Core::Ids::tapeTxPlay ? TransportKey::PlayStop
