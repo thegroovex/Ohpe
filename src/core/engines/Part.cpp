@@ -180,7 +180,7 @@ void Part::applyBassMono (float* l, float* r, int numSamples) noexcept
     {
         const float m = 0.5f * (l[i] + r[i]);
         float s = 0.5f * (l[i] - r[i]);
-        s -= monoLp2.process (monoLp1.process (s, dsp::Svf::LowPass), dsp::Svf::LowPass);
+        s = monoLp2.process (monoLp1.process (s, dsp::Svf::HighPass), dsp::Svf::HighPass); // 4th-order high-pass of the side
         l[i] = m + s;
         r[i] = m - s;
     }

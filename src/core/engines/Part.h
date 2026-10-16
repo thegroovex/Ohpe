@@ -155,7 +155,7 @@ private:
     int exprSmoothIndex = -1, exprSlideIndex = -1; ///< 0.8: "pN.mpe.smooth", "pN.mpe.slide"
     int monoBassIndex = -1;                        ///< 0.8: "pN.monobass"
     float monoBassHz = 20.0f, partSr = 48000.0f;
-    dsp::Svf monoLp1, monoLp2;                     ///< 4th-order Linkwitz-Riley low-pass of the side signal
+    dsp::Svf monoLp1, monoLp2;                     ///< 4th-order Butterworth high-pass of the side signal
     float exprBlend = 0.0f;                        ///< 0.8: latest per-note "layer blend" expression (part-wide)
     std::array<int, numLate08> late08Index {};
     int layerType = -1; ///< EngineType of the layer, -1 = off

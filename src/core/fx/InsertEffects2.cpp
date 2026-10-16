@@ -449,7 +449,7 @@ void WidthEffect::process (float* l, float* r, int n) noexcept
         buf[(size_t) writePos] = m;
         if (spread > 0.0f) s += spread * 0.7f * readFrac (buf, (float) writePos - d); // cancels in the mono sum
         s *= width;
-        if (mono) s -= lp2.process (lp1.process (s, dsp::Svf::LowPass), dsp::Svf::LowPass);
+        if (mono) s = lp2.process (lp1.process (s, dsp::Svf::HighPass), dsp::Svf::HighPass); // 4th-order high-pass of the side
         l[i] = (m + s) * outGain;
         r[i] = (m - s) * outGain;
         if (++writePos >= len) writePos = 0;

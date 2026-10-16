@@ -257,13 +257,20 @@ TEST_CASE ("0.8: bass mono removes the low side signal of a part and leaves the 
     CHECK (allFinite (mono.l));
     CHECK (lowSide (wide, 60.0f) > 0.05);
     CHECK (lowSide (mono, 60.0f) < 0.25 * lowSide (wide, 60.0f));
-    double sideW = 0, sideM = 0;
-    for (size_t i = 4800; i < wide.size(); ++i)
-    {
-        sideW += std::abs (wide.l[i] - wide.r[i]);
-        sideM += std::abs (mono.l[i] - mono.r[i]);
-    }
-    CHECK (sideM > 0.3 * sideW); // the highs stay wide
+    // the highs stay wide: the side signal above ~1 kHz (side minus its 1 kHz two-pole low-pass) is (almost) unchanged
+    auto highSide = [] (const Stereo& s) {
+        const float a = std::exp (-dsp::twoPi * 1000.0f / (float) sampleRate);
+        float l1 = 0, l2 = 0;
+        double e = 0;
+        for (size_t i = 0; i < s.size(); ++i)
+        {
+            const float sd = 0.5f * (s.l[i] - s.r[i]);
+            l1 = sd + a * (l1 - sd); l2 = l1 + a * (l2 - l1);
+            if (i > 4800) e += (double) (sd - l2) * (sd - l2);
+        }
+        return std::sqrt (e);
+    };
+    CHECK (highSide (mono) > 0.6 * highSide (wide));
 }
 
 TEST_CASE ("0.8: the layer engine plays with the main engine, tuned, and cross-modulates it; Off changes nothing")
@@ -285,7 +292,7 @@ TEST_CASE ("0.8: the layer engine plays with the main engine, tuned, and cross-m
     const auto same = render (1 + (int) EngineType::Wavetable, 0.7f, 0, 0.5f);  // the main engine as layer = off
     for (size_t i = 0; i < plain.size(); ++i) REQUIRE (plain.l[i] == same.l[i]);
 
-    const auto layered = render (1 + (int) EngineType::Analog, 0.7f, 0, 0.0f);
+    const auto layered = render (1 + (int) EngineType::FM, 0.7f, 0, 0.0f); // (the Analog defaults are far quieter than the Wavetable)
     CHECK (rms (layered.l, 4000) > rms (plain.l, 4000) * 1.05f);
     for (int x = 0; x < Part::numXMods; ++x)
     {
@@ -442,6 +449,7 @@ TEST_CASE ("0.8 MPE: pressure and timbre reach the new targets with their amount
         rig.set ("p1.mpe", mpe ? 1.0f : 0.0f);
         rig.set ("p1.mpe.press", (float) target);
         rig.set ("p1.mpe.pressamt", amount);
+        rig.set ("p2.vol", 0.0f); // part 2 listens on channel 2 (the MPE member channel) with its own pressure target
         const int ch = mpe ? 2 : 1;
         std::vector<MidiEvent> ev { MidiEvent::noteOn (ch, 48, 100) };
         MidiEvent at;

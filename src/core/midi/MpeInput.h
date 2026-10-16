@@ -45,7 +45,7 @@ public:
     }
 
     void set (bool mpeOn, int memberBendRange, int pressureTarget, int timbreTargetIn, float pressureAmount = 1.0f,
-              float timbreAmount = 1.0f) noexcept
+              float timbreAmountIn = 1.0f) noexcept
     {
         if (mpeOn != mpe) reset();
         mpe = mpeOn;
@@ -53,7 +53,7 @@ public:
         pressTarget = pressureTarget;
         timbreTarget = timbreTargetIn;
         pressAmount = pressureAmount;
-        timbreAmount = timbreAmount;
+        timbreAmount = timbreAmountIn;
     }
     bool isMpe() const noexcept { return mpe; }
 

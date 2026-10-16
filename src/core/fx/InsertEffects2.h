@@ -33,6 +33,11 @@ class CombEffect final : public IEffect
 public:
     enum Param { Freq = 0, Feedback, Damp, Rate, Depth, Spread, Mix, numParams };
     EffectInfo info() const noexcept override { return { "comb", "Comb", "Kammfilter", "comb" }; }
+    int modulationParam (int j) const noexcept override // 0.8: the modulation targets FX Param 1-4 (freq, feedback, damp, mix)
+    {
+        static constexpr int p[4] = { 0, 1, 2, 6 };
+        return j >= 0 && j < 4 ? p[j] : -1;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
@@ -53,6 +58,11 @@ class FormantEffect final : public IEffect
 public:
     enum Param { Vowel = 0, Shift, Resonance, Rate, Sync, Depth, Mix, numParams };
     EffectInfo info() const noexcept override { return { "formant", "Formant", "Formant", "formant" }; }
+    int modulationParam (int j) const noexcept override // 0.8: the modulation targets FX Param 1-4 (vowel, shift, resonance, LFO depth)
+    {
+        static constexpr int p[4] = { 0, 1, 2, 5 };
+        return j >= 0 && j < 4 ? p[j] : -1;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
@@ -77,6 +87,11 @@ class WobbleEffect final : public IEffect
 public:
     enum Param { Rate = 0, Sync, Shape, Low, High, Resonance, Mode, Drive, Retrigger, Mix, numParams };
     EffectInfo info() const noexcept override { return { "wobble", "Wobble", "Wobble", "wobble" }; }
+    int modulationParam (int j) const noexcept override // 0.8: the modulation targets FX Param 1-4 (high cutoff, resonance, drive, low cutoff)
+    {
+        static constexpr int p[4] = { 4, 5, 7, 3 };
+        return j >= 0 && j < 4 ? p[j] : -1;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
@@ -101,6 +116,11 @@ class TremoloEffect final : public IEffect
 public:
     enum Param { Rate = 0, Sync, Depth, Mode, Shape, numParams };
     EffectInfo info() const noexcept override { return { "tremolo", "Tremolo", "Tremolo", "tremolo" }; }
+    int modulationParam (int j) const noexcept override // 0.8: the modulation targets FX Param 1-4 (depth, rate (two continuous parameters))
+    {
+        static constexpr int p[4] = { 2, 0, -1, -1 };
+        return j >= 0 && j < 4 ? p[j] : -1;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
@@ -124,6 +144,11 @@ class WidthEffect final : public IEffect
 public:
     enum Param { Width = 0, Spread, Haas, MonoBelow, Output, numParams };
     EffectInfo info() const noexcept override { return { "width", "Width", "Stereobreite", "width" }; }
+    int modulationParam (int j) const noexcept override // 0.8: the modulation targets FX Param 1-4 (width, spread, Haas time)
+    {
+        static constexpr int p[4] = { 0, 1, 2, -1 };
+        return j >= 0 && j < 4 ? p[j] : -1;
+    }
     std::vector<ParamDescriptor> getParamDescriptors() const override;
     void prepare (double sampleRate, int maxBlockSize) override;
     void reset() noexcept override;
@@ -134,7 +159,7 @@ public:
 private:
     std::vector<float> buf;
     int writePos = 0;
-    dsp::Svf lp1, lp2;
+    dsp::Svf lp1, lp2; ///< 4th-order high-pass of the side (below Mono Below: mono)
     float sr = 48000.0f, width = 1.0f, spread = 0.0f, haasMs = 12.0f, monoHz = 20.0f, outGain = 1.0f;
 };
 } // namespace ohpe

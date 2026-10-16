@@ -137,18 +137,33 @@ def P(name, tags, engine, comment, *dicts, **kw):
     """0.8 preset: an FX chain over the rack, movement when held, MPE mapping and tag."""
     dicts = [({"__fx__": _OLD_FX[d["fx.type"]], "slot": 0, "params": {k[3:]: v for k, v in d.items()}}
               if isinstance(d, dict) and d.get("fx.type") in _OLD_FX else d) for d in dicts]
+    role = next((r for r, names in _FLAG.items() if name in names), None)
+    if role is not None:  # flagship presets: real multi-slot rack chains and matrix routings
+        up = {"bass": lambda: up_bass(engine, _SYNC.get(name, "1/4")), "lead": lambda: up_lead(engine),
+              "keys": lambda: up_keys(engine), "atmos": lambda: up_atmos(engine), "pluck": lambda: up_pluck(engine)}[role]()
+        drop = set(up.get("drop", ()))
+        dicts = [d for d in dicts if not (isinstance(d, dict) and d.get("__fx__") in drop)] + list(up.get("add", ()))
+        if "motion" in up:
+            dicts.append(up["motion"])
+        if "params" in up:
+            dicts.append(up["params"])
     fxs = [d for d in dicts if isinstance(d, dict) and "__fx__" in d]
     mpes = [d for d in dicts if isinstance(d, dict) and "__mpe__" in d]
-    rest = [d for d in dicts if not (isinstance(d, dict) and ("__fx__" in d or "__mpe__" in d))]
+    motions = [d for d in dicts if isinstance(d, dict) and "__motion__" in d]
+    rest = [d for d in dicts if not (isinstance(d, dict) and ("__fx__" in d or "__mpe__" in d or "__motion__" in d))]
+    kinds = []
     tags = list(tags)
     if fxs:
         ch = chain(fxs)
-        cal = calib_slot([f["__fx__"] for f in ch])
+        kinds = [f["__fx__"] for f in ch]
+        cal = calib_slot(kinds)
         for i, f in enumerate(ch):
             p = dict(f["params"])
             if i == cal and name in FX_LEVELS:
                 p[f["__fx__"] + ".output"] = FX_LEVELS[name]
             rest.append({slot_prefix(i) + k: v for k, v in p.items()})
+    for m in motions:
+        rest.append(resolve_motion(m, engine, kinds))
     merged = {}
     for d in rest:
         if "__arp__" not in d:
@@ -174,6 +189,77 @@ def P(name, tags, engine, comment, *dicts, **kw):
         if "MPE" not in tags:
             tags.append("MPE")
     return _P(name, tags, engine, comment, *rest, **kw)
+
+
+
+# ---- modulation matrix (0.7) for the flagship presets: every held sound moves --------------------------------------
+MOD_SRC = ["off", "lfo1", "lfo2", "lfo3", "ampenv", "modenv", "env3", "velocity", "key", "modwheel", "bend", "chpressure",
+           "pressure", "slide", "notebend", "random", "macro1", "macro2", "macro3", "macro4", "seqlane"]
+MOD_DST = (["off", "pitch", "level", "pan", "timbre"] + ["engine%d" % (i + 1) for i in range(24)] +
+           ["volume", "lfo1rate", "lfo1depth", "lfo2rate", "lfo2depth", "lfo3rate", "lfo3depth", "modenvamt"] +
+           ["fx%dmix" % (k + 1) for k in range(6)] + ["fx%dp%d" % (k + 1, j + 1) for k in range(6) for j in range(4)])
+MOD_SYNC = ["free", "4/1", "2/1", "1/1", "1/2", "1/4", "1/8", "1/16", "1/32", "1/2.", "1/4.", "1/8.", "1/16.", "1/2T", "1/4T",
+            "1/8T", "1/16T"]
+MOD_SHAPE = {"sine": 0, "tri": 1, "sawup": 2, "sawdown": 3, "square": 4, "sh": 5, "smooth": 6}
+MOD_MODE = {"free": 0, "retrig": 1, "oneshot": 2}
+# engine parameters as matrix targets ("Engine n" = parameter n of the engine's list)
+ENGINE_PARAMS = {
+    "wavetable": ["pos", "warp", "tone", "unison", "table", "warpmode", "envpos", "reso", "sub", "keytrack", "univoices", "uniwidth",
+                  "fm", "fmratio", "lfopos", "envfm"],
+    "fm": ["algo", "modratio", "index", "feedback"],
+    "analog": ["shape", "detune", "cutoff", "reso", "osc2oct", "oscmix", "sub", "noise", "ftype", "drive"],
+    "grain": ["pos", "size", "density", "spray", "pitch", "reverse", "spread", "scan", "source", "tone"],
+    "cluster": ["detune", "spread", "tone", "chord", "stack", "shape", "side", "reso", "keytrack", "drift"],
+    "vocal": ["vowel", "formant", "breath", "tension", "vibdepth", "vibrate", "jitter"],
+    "pluck": ["material", "damping", "bright", "body", "excite", "pickpos", "bodysize"],
+    "sampler": ["start", "tone"],
+}
+
+
+def lfo_n(n, rate=1.0, sync="free", shape="sine", mode="retrig", depth=1.0, fade=0.0, phase=0.0):
+    """LFO 2 / 3 of the modulation matrix."""
+    pre = "lfo%d." % n
+    return {pre + "rate": rate, pre + "sync": MOD_SYNC.index(sync), pre + "shape": MOD_SHAPE[shape], pre + "mode": MOD_MODE[mode],
+            pre + "depth": depth, pre + "fade": fade, pre + "phase": phase}
+
+
+def env3(a=0.5, d=1.0, s=0.5, r=1.0, delay=0.0, hold=0.0):
+    return {"env3.delay": delay, "env3.a": a, "env3.hold": hold, "env3.d": d, "env3.s": s, "env3.r": r}
+
+
+def motion(*routes, **settings):
+    """Routings of the modulation matrix: (source, target, amount[, via]). Targets: "pitch", "level", "pan", "timbre",
+    ("eng", name) for an engine parameter, ("fx", kind, j) for "FX Param j" of the rack slot holding that effect,
+    ("fxmix", kind), or a plain matrix target name ("lfo2rate", ...). Settings: lfo2=lfo_n(2, ...), lfo3=..., env3=...,
+    macros=(m1, m2, m3, m4)."""
+    return {"__motion__": True, "routes": list(routes), "settings": settings}
+
+
+def resolve_motion(m, engine, kinds):
+    out, k = {}, 0
+    for r in m["routes"]:
+        src, dst, amt = r[0], r[1], r[2]
+        via = r[3] if len(r) > 3 else "off"
+        if isinstance(dst, tuple) and dst[0] == "eng":
+            name = "engine%d" % (ENGINE_PARAMS[engine].index(dst[1]) + 1)
+        elif isinstance(dst, tuple) and dst[0] in ("fx", "fxmix"):
+            if dst[1] not in kinds:
+                continue  # effect not in the chain (more than six): routing dropped
+            slot = kinds.index(dst[1]) + 1
+            name = "fx%dp%d" % (slot, dst[2]) if dst[0] == "fx" else "fx%dmix" % slot
+        else:
+            name = dst
+        k += 1
+        pre = "mod.s%d." % k
+        out.update({pre + "src": MOD_SRC.index(src), pre + "via": MOD_SRC.index(via), pre + "dst": MOD_DST.index(name),
+                    pre + "amt": amt})
+    st = m["settings"]
+    for key in ("lfo2", "lfo3", "env3"):
+        if key in st:
+            out.update(st[key])
+    for i, v in enumerate(st.get("macros", ())):
+        out["macro%d" % (i + 1)] = v
+    return out
 
 
 def shaper(slot, curve="soft", drv=0.4, bias=0.0, tone=12000, mix=1.0, out=0.0):
@@ -276,6 +362,84 @@ WIDE = {"voices": 8}
 
 def B(name, comment, engine, *d, tags=("Bass",), **kw):
     return P(name, list(tags), engine, comment, *d, **kw)
+
+
+
+# ---- flagship upgrades (sound revision 3, rack + matrix): multi-slot chains and routings so every held sound moves ---
+MAIN_TARGET = {"wavetable": "pos", "grain": "pos", "fm": "index", "analog": "cutoff", "cluster": "tone", "vocal": "vowel",
+               "pluck": "bright", "sampler": "tone"}
+
+
+def up_bass(engine, sync="1/4", grit=0.25, wobble=None):
+    """Neuro / dubstep bass: an EQ after the drive (mid bite, controlled low mids), the matrix on the drive, vowel, comb and
+    table position - a synced LFO for rhythmic grit, a smooth random for constant motion, pressure / slide / macros live."""
+    return {"add": [eq(9, (70.0, 1.0), (260.0, -2.0, 0.8), (1100.0, 2.0, 1.1), (3800.0, 1.0, 1.0), (11000.0, -2.5))],
+            "motion": motion(("lfo2", ("fx", "distortion", 1), grit), ("lfo2", ("fx", "formant", 1), 0.35),
+                             ("lfo2", ("fx", "comb", 1), 0.25), ("lfo3", "timbre", 0.22),
+                             ("lfo3", ("eng", MAIN_TARGET[engine]), 0.12), ("pressure", ("fx", "distortion", 1), 0.3),
+                             ("pressure", ("fx", "wobble", 1), 0.3), ("slide", ("fx", "eq", 4), 0.45),
+                             ("macro1", ("fx", "distortion", 1), 0.5), ("macro1", ("fx", "multiband", 1), 0.35),
+                             ("macro2", ("fx", "wobble", 2), 0.45), ("lfo3", ("fx", "eq", 3), 0.15),
+                             lfo2=lfo_n(2, sync=sync, shape="tri", mode="retrig"),
+                             lfo3=lfo_n(3, rate=0.45, shape="smooth", mode="free"))}
+
+
+def up_lead(engine):
+    return {"drop": ("delay", "reverb"),
+            "add": [hyper(4, 0.45, 0.28, 5, 0.9, 0.45, 0, 0.32), echo(5, "1/8.", fb=0.33, highcut=6500.0, mix=0.18),
+                    hall(6, 0.72, 2.6, 0.45, 18.0, 1.0, 0.2), eq(9, (120.0, -1.0), (400.0, -1.5, 0.8), (2200.0, 1.0, 0.9),
+                                                                    (5200.0, -1.0, 1.2), (12000.0, 1.5))],
+            "motion": motion(("lfo2", ("fx", "hyper", 2), 0.22), ("lfo3", "pan", 0.1), ("lfo3", "timbre", 0.14),
+                             ("env3", "timbre", 0.2), ("pressure", "timbre", 0.25), ("slide", ("fx", "echo", 1), 0.25),
+                             ("macro1", ("fxmix", "hall"), 0.4), ("lfo2", ("eng", MAIN_TARGET[engine]), 0.1),
+                             lfo2=lfo_n(2, rate=0.17, shape="tri", mode="free"), lfo3=lfo_n(3, rate=0.3, shape="smooth", mode="free"),
+                             env3=env3(a=1.2, d=2.0, s=0.6, r=0.6))}
+
+
+def up_keys(engine):
+    return {"drop": ("reverb",),
+            "add": [comp(1, -20.0, 2.5, 15.0, 160.0, 6.0, 1.5), eq(9, (90.0, 0.5), (250.0, -1.0, 0.8), (2500.0, 1.0, 0.8),
+                                                                (5200.0, -0.5, 1.0), (11000.0, 1.5)),
+                    hall(6, 0.7, 2.4, 0.4, 25.0, 1.0, 0.2)],
+            "motion": motion(("lfo3", "pan", 0.08), ("lfo2", ("fx", "hall", 3), 0.15), ("pressure", "timbre", 0.2),
+                             ("macro1", ("fxmix", "hall"), 0.4), ("lfo3", ("eng", MAIN_TARGET[engine]), 0.05),
+                             lfo2=lfo_n(2, rate=0.11, shape="tri", mode="free"), lfo3=lfo_n(3, rate=0.2, shape="smooth", mode="free"))}
+
+
+def up_atmos(engine):
+    return {"drop": ("delay", "reverb"),
+            "add": [hyper(3, 0.3, 0.35, 6, 1.0, 0.6, 0, 0.4), echo(4, "1/4.", fb=0.45, highcut=5000.0, mix=0.2),
+                    hall(6, 0.9, 6.0, 0.45, 40.0, 1.0, 0.36)],
+            "motion": motion(("lfo2", ("eng", MAIN_TARGET[engine]), 0.28), ("lfo3", "pan", 0.25), ("lfo3", ("fx", "echo", 3), 0.25),
+                             ("env3", "timbre", 0.3), ("pressure", ("fx", "hyper", 2), 0.3), ("macro1", ("fxmix", "hall"), 0.4),
+                             ("lfo2", ("fx", "comb", 1), 0.2), ("lfo2", ("fx", "formant", 1), 0.3),
+                             lfo2=lfo_n(2, rate=0.07, shape="tri", mode="free"), lfo3=lfo_n(3, rate=0.13, shape="smooth", mode="free"),
+                             env3=env3(a=3.0, d=4.0, s=0.7, r=3.0))}
+
+
+def up_pluck(engine):
+    return {"drop": ("delay", "reverb"),
+            "add": [hyper(4, 0.4, 0.25, 4, 0.9, 0.4, 0, 0.3), echo(5, "1/8.", fb=0.38, highcut=6000.0, mix=0.22),
+                    hall(6, 0.75, 3.0, 0.45, 20.0, 1.0, 0.24)],
+            "motion": motion(("lfo3", "pan", 0.18), ("lfo2", ("eng", MAIN_TARGET[engine]), 0.15), ("lfo2", ("fx", "comb", 1), 0.25),
+                             ("velocity", "timbre", 0.25), ("pressure", ("fx", "echo", 1), 0.25), ("macro1", ("fxmix", "hall"), 0.4),
+                             lfo2=lfo_n(2, sync="1/2", shape="tri", mode="free"), lfo3=lfo_n(3, rate=0.25, shape="smooth", mode="free"))}
+
+
+_FLAG = {
+    "bass": ["Neuro Reese", "Moving Reese", "Distorted Reese", "Tear Reese", "Hollow Reese", "Vowel Reese", "Wub Machine",
+             "Triplet Wobble", "Square Wobble", "Riddim Saw", "Growl Machine", "Vowel Growl", "Metal Growl", "Screech Bass",
+             "Laser Wobble", "Grind Bass", "Talker Bass", "Half-Step Wobble", "Vox Reese", "Fold Bass", "Neuro Hybrid",
+             "Digital Monster"],
+    "lead": ["Super Wide Lead", "Hyper Saw Lead", "Screamer Lead", "Growl Lead", "Stereo Saw Lead", "Ring Machine", "Breath Lead"],
+    "keys": ["Concert Grand", "Bright Grand", "Felt Grand", "Halo Grand", "Tape Ghost Keys", "Crystal Organ"],
+    "atmos": ["Evolving Tide", "Aurora Scan", "Deep Space Drone", "Dark Matter", "Infinite Hall", "Glacier", "Glass Engine",
+              "FM Grains", "Chop Pad", "Spectral Morph", "Choir Grains", "Metal Strings", "Orbit Pad"],
+    "pluck": ["Pluck Nebula", "Resonator Hit"],
+}
+_SYNC = {"Triplet Wobble": "1/8T", "Half-Step Wobble": "1/2", "Square Wobble": "1/8", "Riddim Saw": "1/8T", "Laser Wobble": "1/16",
+         "Digital Monster": "1/8T", "Wub Machine": "1/8"}
+_UP_ENGINE = {}  # filled lazily in P() (the engine is known there)
 
 
 PRESETS_R3 = [
