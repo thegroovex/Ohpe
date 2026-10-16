@@ -21,7 +21,7 @@
     "analog.keytrack": 0.3,
     "amp.a": 0.01,
     "amp.d": 3.0,
-    "amp.s": 0.0,
+    "amp.s": 0.35,
     "amp.r": 1.0,
     "mod.a": 0.01,
     "mod.d": 3.0,
@@ -49,6 +49,6 @@
     "lfo.shape": 1,
     "lfo.dest": 1,
     "voices": 2,
-    "gain": 24.0
+    "gain": 12.0
   }
 }

@@ -19,11 +19,11 @@
     "analog.noise": 0.6,
     "analog.drive": 0.3,
     "analog.keytrack": 0.3,
-    "amp.a": 4.0,
+    "amp.a": 2.0,
     "amp.d": 1.0,
     "amp.s": 1.0,
     "amp.r": 2.0,
-    "mod.a": 4.0,
+    "mod.a": 3.0,
     "mod.d": 0.5,
     "mod.s": 1.0,
     "mod.r": 1.0,
@@ -49,6 +49,6 @@
     "lfo.shape": 1,
     "lfo.dest": 1,
     "voices": 2,
-    "gain": 24.0
+    "gain": 12.0
   }
 }

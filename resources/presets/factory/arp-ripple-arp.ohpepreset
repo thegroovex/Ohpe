@@ -13,14 +13,14 @@
     "engine": 2,
     "analog.shape": 0.1,
     "analog.detune": 0.12,
-    "analog.cutoff": 1400,
+    "analog.cutoff": 2000,
     "analog.reso": 0.3,
     "analog.oscmix": 0.5,
-    "analog.drive": 0.3,
+    "analog.drive": 0.45,
     "analog.keytrack": 0.6,
     "amp.a": 0.003,
-    "amp.d": 0.2,
-    "amp.s": 0.2,
+    "amp.d": 0.25,
+    "amp.s": 0.5,
     "amp.r": 0.12,
     "mod.a": 0.002,
     "mod.d": 0.15,
@@ -48,7 +48,7 @@
     "lfo.shape": 1,
     "lfo.dest": 1,
     "voices": 8,
-    "gain": 24.0
+    "gain": 12.0
   },
   "arp": {
     "on": 1,

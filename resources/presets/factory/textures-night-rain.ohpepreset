@@ -14,8 +14,8 @@
     "engine": 4,
     "grain.inst": 1,
     "grain.pos": 0.3,
-    "grain.size": 60,
-    "grain.density": 12,
+    "grain.size": 80,
+    "grain.density": 30,
     "grain.spray": 0.9,
     "grain.reverse": 0.1,
     "grain.spread": 1.0,
@@ -54,6 +54,6 @@
     "mpe.smooth": 0.06,
     "mpe.bend": 48,
     "voices": 8,
-    "gain": 24.0
+    "gain": 12.0
   }
 }

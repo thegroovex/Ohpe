@@ -645,8 +645,8 @@ void MultibandEffect::reset() noexcept
 {
     for (auto* arr : { &lowLp, &lowHp, &highLp, &highHp, &lowAp })
         for (auto& s : *arr) { s.a.reset(); s.b.reset(); }
-    env.fill (-120.0f);
-    envFast.fill (-120.0f);
+    env.fill (0.0f);
+    envFast.fill (0.0f);
     gain.fill (0.0f);
     outG.v = outG.t;
     mixG.v = mixG.t;
@@ -666,7 +666,7 @@ void MultibandEffect::setParam (int i, float v) noexcept
             atk = std::exp (-1.0f / (sr * (0.001f + 0.029f * time)));
             rel = std::exp (-1.0f / (sr * (0.03f + 0.57f * time)));
             gainA = 1.0f - std::exp (-1.0f / (sr * 0.002f));
-            fastRel = std::exp (-1.0f / (sr * 0.04f)); // slow enough not to flicker over a 40 Hz cycle
+            fastRel = std::exp (-1.0f / (sr * 0.03f)); // slow enough not to flicker over a 40 Hz cycle
             break;
         case LowGain: bandLevel[0] = dsp::dbToGain (v); break;
         case MidGain: bandLevel[1] = dsp::dbToGain (v); break;
@@ -716,13 +716,15 @@ void MultibandEffect::process (float* l, float* r, int n) noexcept
         for (int b = 0; b < numBands; ++b)
         {
             const float pk = std::max (std::abs (band[0][(size_t) b]), std::abs (band[1][(size_t) b]));
-            const float lv = dsp::gainToDb (pk);
-            env[(size_t) b] = lv > env[(size_t) b] ? lv + (env[(size_t) b] - lv) * atk : lv + (env[(size_t) b] - lv) * rel;
-            // 0.8: the lift follows a fast envelope (instant attack): after a pause the band no longer starts
-            // the next note with up to +30 dB of lift still applied (onset spikes of 6-10 dB)
-            envFast[(size_t) b] = lv > envFast[(size_t) b] ? lv : lv + (envFast[(size_t) b] - lv) * fastRel;
-            const float target = downGainDb (env[(size_t) b], depth, downward)
-                               + upGainDb (std::max (env[(size_t) b], envFast[(size_t) b]), depth, upward);
+            // 0.8: the envelopes follow the linear peak (release = a steady dB-per-second fall), not the dB value: in
+            // dB a pause drops the detector by 40 dB in 100 ms, so the next note started uncompressed (6-10 dB onset
+            // spikes). The lift follows a fast envelope (instant attack) and lets go as soon as a note starts.
+            auto& e = env[(size_t) b];
+            e = dsp::flush (pk > e ? pk + (e - pk) * atk : pk + (e - pk) * rel);
+            auto& ef = envFast[(size_t) b];
+            ef = dsp::flush (pk > ef ? pk : pk + (ef - pk) * fastRel);
+            const float target = downGainDb (dsp::gainToDb (e), depth, downward)
+                               + upGainDb (dsp::gainToDb (std::max (e, ef)), depth, upward);
             gain[(size_t) b] += (target - gain[(size_t) b]) * gainA;
             worst[(size_t) b] = gain[(size_t) b];
             const float g = std::pow (10.0f, gain[(size_t) b] * 0.05f) * bandLevel[(size_t) b];

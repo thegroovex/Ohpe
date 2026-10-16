@@ -283,8 +283,8 @@ private:
     void setSplits() noexcept;
     std::array<Split, 2> lowLp, lowHp, highLp, highHp; ///< [channel]
     std::array<Split, 2> lowAp;                        ///< low band through the high split's all-pass (phase match)
-    std::array<float, numBands> env {}, gain {};
-    std::array<float, numBands> envFast {}; ///< instant attack, 40 ms release: the upward lift lets go at a note onset
+    std::array<float, numBands> env {}, gain {}; ///< env: linear peak follower
+    std::array<float, numBands> envFast {}; ///< instant attack, 30 ms release (linear): the upward lift lets go at a note onset
     float fastRel = 0.0f;
     float sr = 48000.0f, depth = 0.5f, upward = 1.0f, downward = 1.0f, time = 0.5f, lowSplit = 120.0f, highSplit = 2500.0f;
     std::array<float, numBands> bandLevel { 1.0f, 1.0f, 1.0f };

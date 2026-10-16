@@ -51,7 +51,7 @@
     "fx2.eq.p3q": 1.2,
     "fx2.eq.highfreq": 12000.0,
     "fx2.eq.highgain": 1.5,
-    "fx2.eq.output": 8.9,
+    "fx2.eq.output": 9.1,
     "fx3.type": 7,
     "fx3.hyper.rate": 0.45,
     "fx3.hyper.detune": 0.28,
