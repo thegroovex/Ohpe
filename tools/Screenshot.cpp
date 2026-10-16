@@ -373,6 +373,7 @@ int main (int argc, char* argv[])
             route (1, mod::SrcLfo2, "p2.analog.cutoff", 0.25f);
             route (2, mod::SrcModEnv, "p2.analog.shape", 0.3f);
             pv.setSimple (true);
+            pv.discoverStrip().vary(); // six relatives of the analog sound (none auditioned)
             playAnimated (p, e, 16, { 48, 55, 64 }, 2);
             save (e, dir.getChildFile ("ohpe-pro-simple" + suffix + ".png"));
             pv.setSimple (false);

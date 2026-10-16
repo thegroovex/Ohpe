@@ -442,7 +442,7 @@ void DiscoverStrip::paint (juce::Graphics& g)
             const int dots = farD - nearD > 1.0e-6f ? juce::jlimit (1, 3, 1 + (int) std::lround (2.0f * (dist - nearD) / (farD - nearD))) : 2;
             for (int k = 0; k < 3; ++k)
             {
-                const auto dc = juce::Rectangle<float> (u * 0.45f, u * 0.45f).withCentre ({ a.getRight() - u * (0.9f + 0.65f * (float) k), a.getY() + u * 0.95f });
+                const auto dc = juce::Rectangle<float> (u * 0.45f, u * 0.45f).withCentre ({ a.getRight() - u * (0.9f + 0.65f * (float) (2 - k)), a.getY() + u * 0.95f }); // fill from the left
                 if (k < dots) g.fillEllipse (dc);
                 else g.drawEllipse (dc, 0.8f);
             }
