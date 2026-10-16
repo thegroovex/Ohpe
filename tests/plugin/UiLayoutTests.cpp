@@ -50,7 +50,8 @@ void checkLayout (OhpeEditor& e)
     const auto housing = juce::Rectangle<float> (h.getX() * s, h.getY() * s, h.getWidth() * s, h.getHeight() * s).toNearestInt();
     std::vector<juce::Component*> shown;
     for (auto* c : e.getChildren())
-        if (c->isVisible() && dynamic_cast<juce::TooltipWindow*> (c) == nullptr) shown.push_back (c);
+        if (c->isVisible() && dynamic_cast<juce::TooltipWindow*> (c) == nullptr && dynamic_cast<juce::ResizableCornerComponent*> (c) == nullptr)
+            shown.push_back (c); // the host window's resize corner sits on the window edge by design
     for (size_t i = 0; i < shown.size(); ++i)
     {
         CAPTURE (shown[i]->getName());
@@ -197,7 +198,8 @@ TEST_CASE ("glide controls follow the edit part; RANDOM changes the engine's sou
     // a click on "Always" (third position)
     auto& sw = e.glideModeSwitch();
     sw.mouseDown (mouseEvent (sw, sw.labelArea (2).getCentre()));
-    CHECK (std::lround (p.core().params().get ("p3.glide.mode")) == 2);
+    auto* gm = p.parameter ("p3.glide.mode");
+    CHECK (std::lround (gm->convertFrom0to1 (gm->getValue())) == 2);
     CHECK (sw.position() == 2);
 
     e.selectPart (0);

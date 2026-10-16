@@ -332,7 +332,7 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
         g.setColour (colour::capEdge);
         g.drawEllipse (cap.reduced (0.5f), 1.0f);
         if (over && ! down) { g.setColour (juce::Colours::white.withAlpha (0.25f)); g.fillEllipse (cap); }
-        drawPictogram (g, cap.reduced (cap.getWidth() * 0.2f), picto, ps, available ? ink : ink.withAlpha (0.3f));
+        drawPictogram (g, cap.reduced (cap.getWidth() * 0.06f), picto, ps, available ? ink : ink.withAlpha (0.3f));
     }
     else if (style == Style::Pill)
     {
@@ -375,7 +375,7 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
         if (transportSign)
             drawPictogram (g, cap.withSizeKeepingCentre (cap.getHeight(), cap.getHeight()).reduced (cap.getHeight() * 0.18f), picto, ps, ink);
         else
-            drawPictogram (g, cap.reduced (cap.getWidth() * 0.22f, cap.getHeight() * 0.16f).translated (0, -cap.getHeight() * 0.04f), picto, ps, ink);
+            drawPictogram (g, cap.reduced (cap.getWidth() * 0.2f, cap.getHeight() * 0.12f), picto, ps, ink);
         if (active) // the lit bar of the active key, in its function colour
         {
             g.setColour (accent);
@@ -395,7 +395,7 @@ Keyboard::Keyboard (juce::MidiKeyboardState& s) : juce::MidiKeyboardComponent (s
     setBlackNoteLengthProportion (0.62f);
     setMidiChannel (1);
     setVelocity (0.8f, true);
-    setColour (juce::MidiKeyboardComponent::whiteNoteColourId, colour::keyLight);
+    setColour (juce::MidiKeyboardComponent::whiteNoteColourId, colour::capEdge.darker (0.08f)); // p14: the gaps between the keys
     setColour (juce::MidiKeyboardComponent::blackNoteColourId, colour::keyDark);
     setColour (juce::MidiKeyboardComponent::keySeparatorLineColourId, juce::Colours::transparentBlack);
     setColour (juce::MidiKeyboardComponent::shadowColourId, juce::Colours::transparentBlack);

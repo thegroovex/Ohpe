@@ -67,9 +67,9 @@ void fm (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juce:
     const int levels = 1 + (int) std::round (s.macro[0] * 3.0f);
     const float speed = 0.4f + s.macro[1] * 1.5f;
     juce::Point<float> centre = c;
-    float orbit = rad * 0.62f;
+    float orbit = rad * (s.large ? 0.62f : 0.78f);
     g.setColour (accent (0, s, ink));
-    g.fillEllipse (juce::Rectangle<float> (lw * 4.0f, lw * 4.0f).withCentre (c));
+    g.fillEllipse (juce::Rectangle<float> (lw * (s.large ? 4.0f : 2.6f), lw * (s.large ? 4.0f : 2.6f)).withCentre (c));
     for (int l = 0; l < levels; ++l)
     {
         const float wobble = 1.0f + s.macro[2] * 0.25f * std::sin (s.time * 5.0f + (float) l);
@@ -78,8 +78,8 @@ void fm (juce::Graphics& g, juce::Rectangle<float> r, const PictoState& s, juce:
         const float a = (s.large ? s.time * speed * (1.0f + (float) l * 0.7f) : 0.6f + (float) l) + (float) l;
         centre = centre + juce::Point<float> (std::cos (a), std::sin (a)) * orbit * wobble;
         g.setColour (accent ((l + 1) % 4, s, ink));
-        g.fillEllipse (juce::Rectangle<float> (lw * 3.0f, lw * 3.0f).withCentre (centre));
-        orbit *= 0.45f;
+        g.fillEllipse (juce::Rectangle<float> (lw * (s.large ? 3.0f : 2.2f), lw * (s.large ? 3.0f : 2.2f)).withCentre (centre));
+        orbit *= s.large ? 0.45f : 0.5f;
     }
     if (s.large && s.macro[3] > 0.05f)
     {
@@ -581,7 +581,7 @@ void glyph (juce::Graphics& g, juce::Rectangle<float> r, Picto id, juce::Colour 
 
 void drawPictogram (juce::Graphics& g, juce::Rectangle<float> area, Picto id, const PictoState& s, juce::Colour ink)
 {
-    const float lw = juce::jmax (1.0f, juce::jmin (area.getWidth(), area.getHeight()) * (s.large ? 0.022f : 0.075f));
+    const float lw = juce::jmax (1.0f, juce::jmin (area.getWidth(), area.getHeight()) * (s.large ? 0.022f : 0.062f)); // p14: finer key icons
     const auto r = area.reduced (lw * 2.0f);
     switch (id)
     {
