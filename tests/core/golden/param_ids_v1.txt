@@ -5539,3 +5539,10 @@ p1.monobass
 p2.monobass
 p3.monobass
 p4.monobass
+# p11 (tape transport UI): transport triggers (play/stop, stop, record, loop, arm edit track) and "Play starts tape"
+tape.tx.play
+tape.tx.stop
+tape.tx.rec
+tape.tx.loop
+tape.tx.arm
+tape.tx.link
