@@ -491,6 +491,8 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
             }
             drawPictogram (g, sign, picto, ps, ink);
         }
+        else if (cap.getWidth() < cap.getHeight()) // rev 3: a narrow key (MIDI in the octave row): a square sign area
+            drawPictogram (g, cap.withSizeKeepingCentre (cap.getWidth(), cap.getWidth()).reduced (cap.getWidth() * 0.12f), picto, ps, ink);
         else
             drawPictogram (g, cap.reduced (cap.getWidth() * 0.2f, cap.getHeight() * 0.12f), picto, ps, ink);
         if (hasLed)
