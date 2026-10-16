@@ -199,12 +199,19 @@ juce::File PresetManager::save (const preset::Meta& metaIn, bool project, int pa
     else
         p = preset::capturePart (proc.core().params(), part, meta);
 
-    const auto sub = folder.getChildFile (project ? "Projects" : "Parts");
-    if (! sub.createDirectory()) return {};
-    const auto base = str (preset::safeFileName (meta.name));
-    auto file = sub.getChildFile (base + preset::fileExtension);
+    auto file = userFileFor (meta.name, project);
+    if (! file.getParentDirectory().createDirectory()) return {};
     if (file.exists() && ! overwrite)
-        file = sub.getNonexistentChildFile (base, preset::fileExtension, false);
+    {
+        // keep both: the new preset gets the first free name, in the file and in the list
+        const auto base = meta.name;
+        for (int n = 2; file.exists(); ++n)
+        {
+            meta.name = base + " " + std::to_string (n);
+            file = userFileFor (meta.name, project);
+        }
+        p.meta.name = meta.name;
+    }
     if (! file.replaceWithText (str (preset::toJson (p)))) return {};
     if (! meta.author.empty() && meta.author != userData.author)
     {
@@ -212,10 +219,22 @@ juce::File PresetManager::save (const preset::Meta& metaIn, bool project, int pa
         saveUserData();
     }
     rescan();
-    for (int i = 0; i < (int) list.size(); ++i)
-        if (! list[(size_t) i].factory && juce::File (str (list[(size_t) i].location)) == file) currentIndex = i;
+    if (const int i = indexOfFile (file); i >= 0) currentIndex = i;
     sendChangeMessage();
     return file;
+}
+
+juce::File PresetManager::userFileFor (const std::string& name, bool project) const
+{
+    return folder.getChildFile (project ? "Projects" : "Parts")
+        .getChildFile (str (preset::safeFileName (name.empty() ? std::string ("Preset") : name)) + preset::fileExtension);
+}
+
+int PresetManager::indexOfFile (const juce::File& file) const
+{
+    for (int i = 0; i < (int) list.size(); ++i)
+        if (! list[(size_t) i].factory && juce::File (str (list[(size_t) i].location)) == file) return i;
+    return -1;
 }
 
 bool PresetManager::remove (int index)

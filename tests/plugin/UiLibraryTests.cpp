@@ -526,3 +526,136 @@ TEST_CASE ("library: Arp presets switch the arpeggiator on for their part; plain
     pm.revertPreview();
     CHECK (plain (p, "seq.arp.on") == 0.0f);
 }
+
+// ------------------------------------------------------------------ 0.7: user presets show under "User"
+namespace
+{
+void setEnv (const char* name, const juce::String& value)
+{
+#if JUCE_WINDOWS
+    _putenv_s (name, value.toRawUTF8());
+#else
+    if (value.isEmpty()) unsetenv (name);
+    else setenv (name, value.toRawUTF8(), 1);
+#endif
+}
+
+int userCount (const PresetManager& pm)
+{
+    int n = 0;
+    for (const auto& e : pm.entries()) n += e.factory ? 0 : 1;
+    return n;
+}
+} // namespace
+
+TEST_CASE ("library: a sound saved under a new name shows under User at once, with filters set, and after a restart")
+{
+    TempFolder tmp;
+    setEnv ("OHPE_PRESET_DIR", tmp.dir.getFullPathName()); // the default user folder, as after a restart
+    {
+        OhpeProcessor p;
+        REQUIRE (p.presets().userFolder() == tmp.dir);
+        p.prepareToPlay (48000.0, 256);
+        std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
+        auto& e = *dynamic_cast<OhpeEditor*> (ed.get());
+        auto& pm = p.presets();
+        e.showLibrary (true);
+        auto& lib = e.libraryComponent();
+
+        // browse the Bass category with a search, pick a factory sound and edit it
+        lib.toggleTag ("Bass");
+        lib.setSearchText ("slap");
+        REQUIRE (lib.numRows() == 1);
+        lib.selectRow (0);
+        const int factory = pm.current();
+        REQUIRE (factory >= 0);
+        REQUIRE (pm.entries()[(size_t) factory].factory);
+        p.parameter ("p1.fm.index")->setValueNotifyingHost (0.77f);
+
+        // the save panel starts with the loaded sound's name and tags
+        lib.showSavePanel (true);
+        CHECK (lib.saveTagSelection().contains ("Bass"));
+
+        // saved under a new name and without any tag (the case from the bug report)
+        lib.setSaveFields ("My Own Bass", "Tester", {}, false);
+        REQUIRE (lib.commitSave());
+        CHECK (lib.statusMessage().contains ("My Own Bass"));
+        const int saved = pm.current();
+        REQUIRE (saved >= 0);
+        CHECK_FALSE (pm.entries()[(size_t) saved].factory);
+        CHECK (pm.entries()[(size_t) saved].meta.name == "My Own Bass");
+        // ... it is in the list right away, selected, and the bank shows the user presets
+        CHECK (pm.filter.bank == preset::Bank::User);
+        CHECK (pm.filter.tags.empty());
+        CHECK (pm.filter.text.empty());
+        REQUIRE (lib.rowOfEntry (saved) >= 0);
+        CHECK (lib.selectedListRow() == lib.rowOfEntry (saved));
+        CHECK (lib.numRows() == 1);
+        // the User / Eigene bank chip on its own also lists it
+        pm.filter = {};
+        pm.filter.bank = preset::Bank::User;
+        lib.setSearchText ({});
+        CHECK (lib.numRows() == 1);
+        CHECK (lib.entryAtRow (0) == saved);
+        // the panel takes the tags of the loaded user preset (none here)
+        lib.showSavePanel (true);
+        CHECK (lib.saveTagSelection().isEmpty());
+        lib.showSavePanel (false);
+
+        // saving with a filter that does not hide it leaves the filter alone
+        pm.filter = {};
+        pm.filter.bank = preset::Bank::User;
+        pm.filter.kind = 0;
+        lib.showSavePanel (true);
+        lib.setSaveFields ("Second Sound", "Tester", { "Keys" }, false);
+        REQUIRE (lib.commitSave());
+        CHECK (pm.filter.kind == 0);
+        CHECK (lib.numRows() == 2);
+        CHECK (lib.rowOfEntry (pm.current()) >= 0);
+
+        // name clash: replace overwrites the file (favourite stays), keep both picks a free name
+        pm.setFavourite (pm.current(), true);
+        const auto first = tmp.dir.getChildFile ("Parts").getChildFile ("Second Sound.ohpepreset");
+        REQUIRE (first.existsAsFile());
+        CHECK (pm.userFileFor ("Second Sound", false) == first);
+        lib.showSavePanel (true);
+        lib.setSaveFields ("Second Sound", "Tester", { "Pads" }, false);
+        REQUIRE (lib.commitSave (ui::LibraryBrowser::SaveConflict::Replace));
+        CHECK (userCount (pm) == 2);
+        CHECK (pm.entries()[(size_t) pm.current()].meta.tags == std::vector<std::string> { "Pads" });
+        CHECK (pm.entries()[(size_t) pm.current()].favourite);
+        lib.showSavePanel (true);
+        lib.setSaveFields ("Second Sound", "Tester", { "Pads" }, false);
+        REQUIRE (lib.commitSave (ui::LibraryBrowser::SaveConflict::KeepBoth));
+        CHECK (userCount (pm) == 3);
+        CHECK (pm.entries()[(size_t) pm.current()].meta.name == "Second Sound 2");
+        CHECK (tmp.dir.getChildFile ("Parts").getChildFile ("Second Sound 2.ohpepreset").existsAsFile());
+        CHECK (lib.rowOfEntry (pm.current()) >= 0);
+        CHECK (e.createComponentSnapshot (e.getLocalBounds()).isValid());
+        e.showLibrary (false);
+    }
+    {
+        // restart: a new instance finds them in the default folder, under User
+        OhpeProcessor q;
+        auto& pm = q.presets();
+        CHECK (userCount (pm) == 3);
+        pm.filter.bank = preset::Bank::User;
+        CHECK (pm.view().size() == 3);
+        CHECK (entryIndex (pm, "My Own Bass") >= 0);
+        CHECK (pm.author() == "Tester");
+        const int idx = entryIndex (pm, "Second Sound");
+        REQUIRE (idx >= 0);
+        CHECK (pm.entries()[(size_t) idx].favourite);
+    }
+    setEnv ("OHPE_PRESET_DIR", {});
+}
+
+TEST_CASE ("library: the default user folder")
+{
+    const auto f = PresetManager::defaultUserFolder();
+    CHECK (f.getFileName() == "Presets");
+    CHECK (f.getParentDirectory().getFileName() == "Ohpe");
+#if JUCE_MAC
+    CHECK (f.getFullPathName().contains ("/Library/Application Support/groovex/Ohpe/Presets"));
+#endif
+}
