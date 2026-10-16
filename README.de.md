@@ -2,6 +2,8 @@
 
 *designed by groovex* · [English](README.md)
 
+**[⬇ Ohpe herunterladen (macOS · Windows)](https://github.com/thegroovex/Ohpe/releases)**
+
 **Ohpe** ist eine kompakte, verspielte Synthesizer-Workstation für deinen Computer: acht
 Klangerzeuger auf vier Parts, ein Drum-Kit, vier Sequencer, eine Achtspur-Bandmaschine, ein
 Achtkanal-Mixer mit Dynamik und Effekten und eine ruhige, minimalistische Oberfläche rund um vier
@@ -13,8 +15,8 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 > **Stand: Phase 4 (0.4).** Acht Engines, vier Parts, Drum-Kit, Step-, Euklid-, Arpeggiator- und
 > Orbit-Sequencer, Bandmaschine, Mixer-Dynamik, FX-Slot, MPE und MIDI-Clock-Sync, Preset-Bibliothek,
 > Profiansicht und direkte Bedienung – jetzt mit den **Werksklängen**: 120 Part-Presets, 7
-> Demo-Projekte, fünf Drum-Kits und zehn aufgenommene Instrumente. Noch kein Release: selbst bauen
-> oder die unsignierten Builds aus einem manuellen CI-Lauf laden.
+> Demo-Projekte, fünf Drum-Kits und zehn aufgenommene Instrumente. Erste Vorabversion: unsignierte Builds
+> auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Funktionen
 
@@ -89,7 +91,8 @@ Ausführlich: [Bedienung](docs/de/BEDIENUNG.md).
 
 ## Installation auf dem Mac
 
-Jeder Pull Request und jeder manuelle CI-Lauf baut einen macOS-Installer – Artefakt
+Jeder Push auf main, jeder manuelle CI-Lauf und jeder Pull Request mit dem Label `installer` baut
+einen macOS-Installer – Artefakt
 **Ohpe-macOS-Installer** am Lauf (*Actions → CI*). Das Disk-Image enthält `Ohpe-Installer.pkg`
 (Standalone-App, VST3 und Audio Unit, einzeln wählbar; universell für Apple Silicon und Intel,
 ab macOS 11), ein Gatekeeper-Fix-Skript, ein Deinstallations-Skript und Hinweise auf Deutsch und

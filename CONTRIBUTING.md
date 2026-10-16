@@ -25,9 +25,14 @@ Useful variables: `OHPE_JUCE_PATH` (local JUCE 8.0.15), `OHPE_CMAKE_ARGS="-DOHPE
 (much faster local links), `OHPE_CORE_ONLY=1` (core tests only). On headless Linux the GUI
 steps run under `xvfb-run` automatically.
 
-Never push a red build. CI runs the same script on Linux for every push to main; every pull
-request (and a manual run of the CI workflow) additionally builds and tests macOS universal (app,
-AU incl. `auval -strict`, VST3) and Windows. Merge only when all three are green.
+Never push a red build. CI runs the same steps on Linux, macOS universal (app, AU incl.
+`auval -strict`, VST3) and Windows for every push to main, every pull request and every manual run
+of the CI workflow. Merge only when all three are green ("CI result"). Each platform is built once
+(ccache, cached dependencies); the tests then run in parallel jobs, every doctest test case as its
+own process (`scripts/ci/run-tests.py`, also used by `test-all.sh`). Long test cases that loop over
+many items (every factory preset ...) are tagged `doctest::test_suite ("sliced")` and split with
+`tests/TestSlice.h`. The macOS installer is built on main, on manual runs and for pull requests with
+the label `installer`. Pull requests that only touch `docs/**` or `*.md` skip the builds.
 
 Factory presets are `*.ohpepreset` files in `resources/presets/factory/` (embedded at build time);
 the format is described in [docs/en/PRESETS.md](docs/en/PRESETS.md).

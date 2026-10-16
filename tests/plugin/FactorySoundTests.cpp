@@ -11,6 +11,7 @@
 #include "plugin/FactoryKit.h"
 #include "render/PresetRender.h"
 #include "sample/FactoryBank.h"
+#include "../TestSlice.h"
 
 using namespace ohpe;
 
@@ -57,9 +58,10 @@ TEST_CASE ("factory sounds: every drum kit plays every pad")
     }
 }
 
-TEST_CASE ("factory sounds: every factory preset renders cleanly with the recordings, inside its level window")
+TEST_CASE ("factory sounds: every factory preset renders cleanly with the recordings, inside its level window" * doctest::test_suite ("sliced"))
 {
     factorykit::loadBank();
+    const auto slice = test::testSlice(); // CI renders the presets in several processes
     int parts = 0, projects = 0;
     for (int i = 0; i < OhpePresets::namedResourceListSize; ++i)
     {
@@ -68,6 +70,11 @@ TEST_CASE ("factory sounds: every factory preset renders cleanly with the record
         preset::Preset p;
         REQUIRE (preset::fromJson (std::string (data, (size_t) size), p));
         CAPTURE (p.meta.name);
+        if (! slice.has (i))
+        {
+            ++(p.meta.kind == preset::Kind::Part ? parts : projects); // counted, rendered by another slice
+            continue;
+        }
         Core core;
         core.prepare (48000.0, 256);
         factorykit::load (core);
