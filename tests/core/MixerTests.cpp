@@ -144,3 +144,32 @@ TEST_CASE ("mixer: EQ boosts and cuts")
     m.run();
     CHECK (m.last (0) > 0.5f * 3.0f);
 }
+
+TEST_CASE ("mixer: one constant latency (limiter look-ahead), limiter on or off, main and aux outputs alike")
+{
+    for (int target : { 0, 2 })
+        for (float on : { 0.0f, 1.0f })
+        {
+            CAPTURE (target);
+            CAPTURE (on);
+            MixerRig m;
+            m.set ("mix.master.limit", on);
+            m.set ("mix.ch1.out", (float) target);
+            m.run(); // gains settle on the constant source
+            std::fill (m.srcL.begin(), m.srcL.end(), 0.0f);
+            std::fill (m.srcR.begin(), m.srcR.end(), 0.0f);
+            m.run ({ true, true, true, true, true, true, true, true, true }, 2); // flush
+            for (auto& v : m.outL) std::fill (v.begin(), v.end(), 0.0f);
+            m.srcL[0] = m.srcR[0] = 0.25f;
+            m.run ({ true, true, true, true, true, true, true, true, true }, 1);
+            const int lat = m.mixer.latencySamples();
+            CHECK (lat == 71);
+            const auto& o = m.outL[(size_t) target];
+            int at = -1;
+            float best = 0.0f;
+            for (int i = 0; i < MixerRig::n; ++i)
+                if (std::abs (o[(size_t) i]) > best) { best = std::abs (o[(size_t) i]); at = i; }
+            CHECK (best > 0.1f);
+            CHECK (at == lat);
+        }
+}
