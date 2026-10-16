@@ -87,7 +87,7 @@ With every new control at its default the mixer is bit-identical to 0.1.
 
 ## FX slot of the part
 
-`p1.fx.type`: Off, Chorus, Phaser, Bitcrush, Filter Drive, Delay, Reverb – an insert effect
+`p1.fx.type`: Off, Chorus, Phaser, Bitcrush, Filter Drive, Delay, Reverb, Hyper, Distortion, Flanger, Compressor, Multiband, EQ, Filter, Echo, Hall (0.7), Mid/Side (0.7) – an insert effect
 between part 1 and the mixer (and in front of the tape when a track records part 1). Each
 effect keeps its own parameters (`p1.fx.chorus.rate` …); chorus, phaser, bitcrush and filter
 drive have their own mix control, delay and reverb get one from the slot
@@ -144,9 +144,39 @@ stages run oversampled.
 
 IDs, ranges and defaults: [PARAMETERS.md](../PARAMETERS.md#07--rack-effect-types--effekttypen-des-racks).
 
+### Mid/Side stereo (0.7)
+
+**Mid/Side** (type 16, appended to the type list after the nine 0.7 rack types) works on the stereo image. It is available in every
+slot of every rack – the six slots of each part and the four master slots – with its own parameter
+block per slot (`p1.fx.midside.width`, `p2.fx4.midside.width`, `mfx1.midside.width` …). It splits the
+signal into mid M = (L + R) / 2 and side S = (L − R) / 2, shapes both and puts them back together:
+
+| Parameter (`<slot>.midside.*`) | Range | What it does |
+|---|---|---|
+| Stereo Width `width` | 0 … 200 % | side × width: 0 % = mono, 100 % = unchanged, 200 % = twice as wide |
+| Mid Level `mid` / Side Level `side` | −24 … +12 dB | level of M and of S |
+| Balance `balance` | −100 … +100 % | left / right balance |
+| Bass Mono `bassmono` + Mono Below `monofreq` | on / off, 40 … 500 Hz | removes the side below the frequency (24 dB/oct.): tight, mono-safe lows, wide highs |
+| Micro-Shift `haas` + Shift Time `haastime` | 0 … 100 %, 1 … 30 ms | adds the mid, delayed by a few milliseconds, to the side: wider without changing the mono sum |
+| Mid Tilt `midtilt` / Side Tilt `sidetilt` | −6 … +6 dB | a tilt EQ each for M and S around 650 Hz (+ = brighter, − = darker) |
+
+* **Mono-safe:** width, side level, bass mono, side tilt and micro-shift only touch S, and S cancels
+  in the mono sum L + R = 2 M – folding to mono never loses or colours the mid.
+* **Clean:** all gains glide (20 ms), so turning the encoders or modulating never clicks; no
+  allocation after the slot is prepared. With every parameter at its default (width 100 %, 0 dB,
+  balance centre, bass mono off, micro-shift 0) the effect passes the signal **bit-identically**.
+* **Modulation:** the matrix targets *FX k Param 1–4* are width, mid level, side level and balance.
+* **In the master rack** (`mfx1` … `mfx4`, before the master compressor and limiter) it shapes the
+  whole mix: *Bass Mono* keeps the low end of the mix centred, *Width* narrows or widens it.
+* While the encoders show a Mid/Side slot the display shows the **stereo scope** of that part after
+  its rack, or of the master output for a master slot (goniometer, correlation, M / S levels; see
+  [USER-INTERFACE.md](USER-INTERFACE.md)).
+
+![Mid/Side FX slot with the stereo scope](../images/ohpe-midside-scope.png)
+
 ### More FX types (0.8)
 
-Five types are appended to the type list of every slot (`type` 16 – 20, after the rack types). Each
+Five types are appended to the type list of every slot (`type` 17 – 21, after Mid/Side). Each
 is a complete insert with its own controls (`pN.fxK.<id>.*`, `mfxK.<id>.*`):
 
 | Type | What it does | Controls |
@@ -203,4 +233,9 @@ gain reduction, mixer dynamics and ceiling, bit-identical defaults, FX slot in t
 `tests/core/AllocationTests.cpp` (no heap allocation in `Core::process()` with tape recording,
 every FX type and the dynamics on), `tests/plugin/TapeExportTests.cpp` (input bus layouts,
 recording from the input bus, tape audio in get / setStateInformation, bounce file format and
-content).
+content), `tests/core/StereoTests.cpp` (0.7: Mid/Side width 100 % = bit-exact bypass, width 0 =
+mono, bass mono below the frequency, micro-shift mono-compatible, no NaN at extremes; scope FIFO
+order / overflow / threads; correlation and spectrum; parameter blocks in every rack slot and MIDI
+learn; Mid/Side in a part rack and the master rack inside the core), `tests/plugin/StereoDisplayTests.cpp`
+(scope on Mid/Side slot pages of parts and master, views, animation setting, headless rendering of
+every mode).

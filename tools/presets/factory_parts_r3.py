@@ -20,7 +20,7 @@ from factory_parts import (P as _P, ENGINES, an, fm, wt, pl, cl, gr, vo, sm, amp
 # FX slot types (InsertSlot::Type, append-only): 0.2 types, the 0.7 rack types, the 0.8 types
 TYPES = {"off": 0, "chorus": 1, "phaser": 2, "bitcrush": 3, "filterdrive": 4, "delay": 5, "reverb": 6,
          "hyper": 7, "distortion": 8, "flange": 9, "compressor": 10, "multiband": 11, "eq": 12, "filter": 13, "echo": 14,
-         "hall": 15, "comb": 16, "formant": 17, "wobble": 18, "tremolo": 19, "width": 20}
+         "hall": 15, "midside": 16, "comb": 17, "formant": 18, "wobble": 19, "tremolo": 20, "width": 21}
 # sync divisions: the rack's list (RackEffects.h), the 0.8 types add 2/1 and 4/1
 SYNC = {"free": 0, "1/1": 1, "1/2": 2, "1/4": 3, "1/8": 4, "1/16": 5, "1/32": 6, "1/2.": 7, "1/4.": 8, "1/8.": 9, "1/16.": 10,
         "1/2T": 11, "1/4T": 12, "1/8T": 13, "1/16T": 14, "2/1": 15, "4/1": 16}
@@ -56,7 +56,7 @@ def fx(slot, kind, **kw):
 
 # chain order: tone shaping / drive, then dynamics, modulation, width, echoes, space
 RANK = {"filterdrive": 0, "distortion": 0, "bitcrush": 0, "comb": 0, "formant": 0, "wobble": 0, "filter": 0, "eq": 0,
-        "multiband": 1, "compressor": 1, "chorus": 2, "phaser": 2, "flange": 2, "tremolo": 2, "hyper": 2, "width": 3,
+        "multiband": 1, "compressor": 1, "chorus": 2, "phaser": 2, "flange": 2, "tremolo": 2, "hyper": 2, "width": 3, "midside": 3,
         "delay": 4, "echo": 4, "reverb": 5, "hall": 5}
 NONLINEAR = ("distortion", "multiband", "compressor", "filterdrive", "bitcrush")
 OUTPUT = ("distortion", "multiband", "width", "eq")  # types with an output trim (level calibration after a non-linear stage)
@@ -274,6 +274,12 @@ def squash(slot, depth=0.5, time=0.4, up=0.6, low=0.0, mid=0.0, high=0.0, mix=1.
     return fx(slot, "multiband", depth=depth, upward=up, downward=1.0, time=time, low=low, mid=mid, high=high, mix=mix, output=out)
 
 
+def midside(slot, w=1.3, mid=0.0, side=0.0, bassmono=True, monofreq=120.0, haas=0.0, haastime=12.0, midtilt=0.0, sidetilt=0.0):
+    """The 0.7 Mid/Side stereo type: side width / level, bass mono (24 dB/oct.), micro-shift, tilt EQs (mono-safe)."""
+    return fx(slot, "midside", width=w, mid=mid, side=side, balance=0.0, bassmono=1 if bassmono else 0, monofreq=monofreq,
+              haas=haas, haastime=haastime * 0.001, midtilt=midtilt, sidetilt=sidetilt)
+
+
 def width(slot, w=1.3, spread=0.0, haas=12.0, mono=120.0, out=0.0):
     return fx(slot, "width", width=w, spread=spread, haas=haas, mono=mono, output=out)
 
@@ -385,8 +391,8 @@ def up_bass(engine, sync="1/4", grit=0.25, wobble=None):
 
 
 def up_lead(engine):
-    return {"drop": ("delay", "reverb"),
-            "add": [hyper(4, 0.45, 0.28, 5, 0.9, 0.45, 0, 0.32), echo(5, "1/8.", fb=0.33, highcut=6500.0, mix=0.18),
+    return {"drop": ("delay", "reverb", "width"),
+            "add": [midside(3, 1.35, 0.0, 0.0, True, 150.0, 0.25, 11.0, 0.0, 1.5), hyper(4, 0.45, 0.28, 5, 0.9, 0.45, 0, 0.32), echo(5, "1/8.", fb=0.33, highcut=6500.0, mix=0.18),
                     hall(6, 0.72, 2.6, 0.45, 18.0, 1.0, 0.2), eq(9, (120.0, -1.0), (400.0, -1.5, 0.8), (2200.0, 1.0, 0.9),
                                                                     (5200.0, -1.0, 1.2), (12000.0, 1.5))],
             "motion": motion(("lfo2", ("fx", "hyper", 2), 0.22), ("lfo3", "pan", 0.1), ("lfo3", "timbre", 0.14),
@@ -407,8 +413,8 @@ def up_keys(engine):
 
 
 def up_atmos(engine):
-    return {"drop": ("delay", "reverb"),
-            "add": [hyper(3, 0.3, 0.35, 6, 1.0, 0.6, 0, 0.4), echo(4, "1/4.", fb=0.45, highcut=5000.0, mix=0.2),
+    return {"drop": ("delay", "reverb", "width"),
+            "add": [midside(3, 1.5, 0.0, 0.0, True, 180.0, 0.35, 14.0, -0.5, 1.0), hyper(3, 0.3, 0.35, 6, 1.0, 0.6, 0, 0.4), echo(4, "1/4.", fb=0.45, highcut=5000.0, mix=0.2),
                     hall(6, 0.9, 6.0, 0.45, 40.0, 1.0, 0.36)],
             "motion": motion(("lfo2", ("eng", MAIN_TARGET[engine]), 0.28), ("lfo3", "pan", 0.25), ("lfo3", ("fx", "echo", 3), 0.25),
                              ("env3", "timbre", 0.3), ("pressure", ("fx", "hyper", 2), 0.3), ("macro1", ("fxmix", "hall"), 0.4),

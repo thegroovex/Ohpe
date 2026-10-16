@@ -74,6 +74,9 @@ juce_add_binary_data(ohpe_presets
 set_target_properties(ohpe_presets PROPERTIES POSITION_INDEPENDENT_CODE ON)
 list(APPEND OHPE_JUCE_MODULES ohpe_presets)
 
+# 0.7: display visuals (stereo scope, spectrum terrain)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/Visuals.cpp)
+
 set(OHPE_FORMATS VST3 Standalone)
 if(APPLE)
     list(APPEND OHPE_FORMATS AU)
@@ -152,4 +155,9 @@ endif()
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/FactorySoundTests.cpp)
     target_include_directories(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tools)
+endif()
+
+# ---------------------------------------------------------------- 0.7: stereo FX / display visuals
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/StereoDisplayTests.cpp)
 endif()

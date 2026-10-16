@@ -219,7 +219,9 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate07Mod (reg);
     // ---- 0.7: the rack effect types (hyper, distortion, flanger, compressor, multiband, EQ, filter, echo, hall) -----
     //      for every slot of every rack
-    FxRack::registerTypeBlocks (reg, Core::numParts, InsertSlot::firstRackType, InsertSlot::firstR3Type);
+    FxRack::registerTypeBlocks (reg, Core::numParts, InsertSlot::firstRackType, InsertSlot::endRackTypes);
+    // ---- 0.7: Mid/Side stereo type, for every slot of every rack (parts and master) --------------------------
+    FxRack::registerTypeBlocks (reg, Core::numParts, InsertSlot::firstStereoType, InsertSlot::firstR3Type);
 
     // ---- 0.8 (sound revision 3): the 0.8 FX types' parameter blocks for every slot of every rack, the layer engine
     //      of every part, late engine parameters (Wavetable unison stack / FM, FM velocity, Sampler / Grain keyboard

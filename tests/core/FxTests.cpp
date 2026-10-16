@@ -134,11 +134,15 @@ TEST_CASE ("fx slot: Off is an exact bypass, every type renders finite, paramete
     SlotRig rig;
     const auto in = testSignal (6000);
     CHECK (rig.run (in).l == in.l);
-    // the 0.2 types; the rack types (registered per rack by FxRack) are covered in RackFxTests.cpp
-    for (int t = InsertSlot::Chorus; t < InsertSlot::firstRackType; ++t)
+    // the 0.2 types and Mid/Side; the rack types (registered per rack by FxRack) are covered in RackFxTests.cpp
+    std::vector<int> types;
+    for (int t = InsertSlot::Chorus; t < InsertSlot::firstRackType; ++t) types.push_back (t);
+    types.push_back (InsertSlot::MidSide);
+    for (int t : types)
     {
         INFO ("type " << t);
         rig.set ("type", (float) t);
+        if (t == InsertSlot::MidSide) rig.set ("midside.width", 1.5f); // neutral by default (exact bypass)
         const auto out = rig.run (in);
         CHECK (rig.slot.currentType() == t);
         CHECK (allFinite (out.l));

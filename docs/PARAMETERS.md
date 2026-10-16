@@ -461,3 +461,34 @@ The table shows the block with the prefix `p1.fx2`; host names carry the slot ("
 
 The modulation targets *FX K Param 1–4* move the first four parameters of the slot's selected type in this table's
 order (for the echo: mode, sync, time, ratio).
+
+## 0.7 – Mid/Side stereo effect
+
+Appended after the blocks of the nine 0.7 rack effect types (Hyper … Hall, last ID `mfx4.hall.mix`). Guide: [English](en/TAPE-MIXER-FX.md#midside-stereo-07) ·
+[Deutsch](de/BAND-MISCHER-FX.md#mitteseite-stereo-07). The FX type list gains **Mid/Side** (DE: Mitte/Seite) at index 16
+(append-only list, after Hall at 15) in every rack slot. Its block of 10 parameters is registered for every slot, in rack order: part 1
+slots 1–6 (`p1.fx.midside.*`, `p1.fx2.midside.*` … `p1.fx6.midside.*`), then parts 2, 3, 4, then the master slots
+`mfx1.midside.*` … `mfx4.midside.*` – 28 slots × 10 = 280 parameters. Host names carry the slot prefix like the other
+rack blocks ("P2 FX3 Stereo Width", "Master FX 1 Stereo Width").
+
+| Range | Block |
+|---|---|
+| 4197–4256 | part 1: `p1.fx.midside.*`, `p1.fx2.midside.*` … `p1.fx6.midside.*` (60 = 6 × 10) |
+| 4257–4316, 4317–4376, 4377–4436 | part 2, 3, 4 – the same |
+| 4437–4476 | master rack: `mfx1.midside.*` … `mfx4.midside.*` (40 = 4 × 10) |
+
+| ID (`<slot>.midside.*`) | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `width` | Stereo Width | Stereobreite | 0 … 200 % (0 = mono) | 100 % |
+| `mid` | Mid Level | Mitte-Pegel | −24 … +12 dB | 0 dB |
+| `side` | Side Level | Seite-Pegel | −24 … +12 dB | 0 dB |
+| `balance` | Balance | Balance | −100 … +100 % | 0 |
+| `bassmono` | Bass Mono | Bass mono | Off, On | Off |
+| `monofreq` | Mono Below | Mono unter | 40 … 500 Hz | 120 Hz |
+| `haas` | Micro-Shift | Mikroversatz | 0 … 100 % | 0 |
+| `haastime` | Shift Time | Versatzzeit | 1 … 30 ms | 12 ms |
+| `midtilt` | Mid Tilt | Mitte-Tilt | −6 … +6 dB | 0 dB |
+| `sidetilt` | Side Tilt | Seite-Tilt | −6 … +6 dB | 0 dB |
+
+All defaults together are an exact (bit-identical) bypass. The modulation targets *FX k Param 1–4* of a Mid/Side slot
+are `width`, `mid`, `side`, `balance`.
