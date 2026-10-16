@@ -33,6 +33,15 @@ tiefes Display und vier funktionale Farben.
   Pegelreduktion); ein dünner Modulationsring im Encoder zeigt Reichweite und aktuelle Position der
   Modulation. Die vollständige Tabelle steht in der
   [englischen Fassung](../DESIGN.md#pictogram-characters).
+* **Transport (p11):** REC und START groß, darunter zum Anfang / Stopp / Schleife, unten links;
+  schlichte geometrische Zeichen (Kreis, Dreieck, Quadrat, Strich + Dreieck, offene Schleife mit
+  Pfeil). Der Aufnahmekreis ist immer signalrot, die Taste blinkt während der Aufnahme. Auf der
+  Tape-Seite ersetzt das Transportfeld die Spulen-Figur: Zustandsschild (rot blinkend = Aufnahme),
+  aufnahmebereite Spuren in Rot, Zeit und Takt.Schlag in Monospace, Spulen, die sich mit dem Band
+  drehen, fünf umrandete Tasten (gefüllt, wenn aktiv) und eine Hinweiszeile (gelb, solange keine Spur
+  bereit ist).
+* **Deckel:** Bibliothek und Profiansicht blenden alle Bedienelemente und Beschriftungen der Platte
+  unter sich aus – keine Beschriftung schaut über die Kante.
 
 * **3D-Raum (1.0):** Die Raum-Ansicht im Effekt-Modus (und die Display-Ansicht „3D-Raum“) zeigt die
   Kugel um den Hörer: einen Kopf von leicht hinten oben, Bodenringe und den Mittelbogen; jeder Part

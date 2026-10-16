@@ -3,8 +3,9 @@
 *Deutsch · English: [../en/USER-INTERFACE.md](../en/USER-INTERFACE.md)*
 
 Die Oberfläche von Ohpe: Engine-Tasten (links), Display (Mitte), Modus-Tasten (rechts), vier
-Encoder unter dem Display, Transport- und Oktavtasten, die Klaviatur. In der Kopfzeile liegen die
-**Part-Auswahl**, der **Preset-Streifen** und die Tasten **BIBLIOTHEK** und **PRO**. Jede Funktion
+Encoder unter dem Display, die **TRANSPORT**-Tasten (unten links) und die Oktavtasten, die Klaviatur.
+In der Kopfzeile liegen die **Part-Auswahl**, der **Preset-Streifen** und die Tasten **BIBLIOTHEK**,
+**PRO** und **MIDI**. Jede Funktion
 ist mit der Maus und – über MIDI Learn – vom Controller aus erreichbar.
 
 ## Display: Balken ziehen
@@ -116,18 +117,44 @@ Schritt-Ansicht:
 * **Locks löschen** entfernt alle Locks des Schritts; **Fertig**, ein Klick auf das *LOCK*-Schild,
   Esc oder ein zweiter Shift-Klick beenden das Bearbeiten.
 
+## Transport-Tasten
+
+Die **TRANSPORT**-Tasten unten links wirken auf jeder Seite:
+
+| Taste | Aktion |
+|---|---|
+| **REC** (rot) | Aufnahme mit einem Druck: ist keine Spur aufnahmebereit, wird die gewählte bereit geschaltet; die Aufnahme geht an und das Band läuft los. Während der Aufnahme gedrückt: aussteigen (das Band läuft weiter). Leuchtet bei bereiter Aufnahme, blinkt während der Aufnahme. |
+| **START** | startet / stoppt Sequencer und Band zusammen (*Start startet Tape*, ab Werk an; aus: START lässt nur den Sequencer laufen) |
+| **\|◀** | Band zurück zum Anfang |
+| **STOPP** | hält Band, Aufnahme und Sequencer an; im Stillstand noch einmal gedrückt: zurück zum Anfang |
+| **SCHLEIFE** | Band-Schleife an / aus; ohne Schleifenbereich schleift sie das Aufgenommene (oder vier Takte) |
+
+Solange das Band läuft, zeigt jede Seite **● REC 0:12.3** (blinkend) oder **▶ TAPE 0:12.3** in der
+Kopfzeile des Displays. In der Standalone-App: **Leertaste** = START, **R** = REC, **Enter / Pos1** =
+zum Anfang, **L** = Schleife (im Plug-in behält der Host seine Tasten). Rechtsklick auf eine
+Transport-Taste (oder eine Taste der Tape-Seite) öffnet MIDI-Learn – jede Transportfunktion hat einen
+Trigger, siehe [MIDI](MIDI.md).
+
 ## Tape-Seite
 
 ![Tape-Seite](../images/ohpe-tape-de.png)
 
-Der Tape-Modus zeigt die acht Spuren mit ihrem Inhalt, die Abspielposition, den Schleifenbereich
-(gelb) und die aufnahmebereiten Spuren (roter Punkt). Klick wählt eine Spur. Encoder-Seiten:
+Die linke Hälfte des Displays ist das **Transportfeld**: der Zustand (**● REC** blinkend, *REC
+BEREIT*, *START*, *STOPP*), die aufnahmebereiten Spuren, Zeit und Takt.Schlag, die Spulen (sie drehen
+sich mit dem Band) und fünf Tasten – **|◀ · ■ · ▶ · ● · SCHLEIFE** – dazu eine Zeile, die sagt, was als
+Nächstes zu tun ist (*Spur wählen, REC drücken*). Darunter: die acht Spuren mit ihrem Inhalt, die
+Abspielposition (rot während der Aufnahme), der Schleifenbereich (gelb) und die **Bereit-Punkte** –
+Klick auf einen Punkt schaltet die Spur aufnahmebereit oder wieder ab, Klick auf eine Spur wählt sie.
+
+![Tape-Seite während der Aufnahme](../images/ohpe-tape-recording-de.png)
+
+Encoder-Seiten:
 
 | Seite | Encoder |
 |---|---|
-| Transport | Wiedergabe, Aufnahme, Geschwindigkeit (Varispeed 0,5–2×), Rückwärts |
 | Spur | Aufnahmebereit, Quelle (Eingang, Part 1–4, Drum), Pegel, Direktausgang der gewählten Spur |
-| Schleife | Schleife an/aus, Start, Ende, Overdub |
+| Transport | Overdub, Geschwindigkeit (Varispeed 0,5–2×), Rückwärts, Start startet Tape |
+| Schleife | Schleife an/aus, Start, Ende |
 | Bandcharakter | Sättigung, Wow, Flutter, Rauschen |
 
 Soft-Tasten im Display:
@@ -139,11 +166,12 @@ Soft-Tasten im Display:
 | **Einsetzen** | legt die Zwischenablage an die Abspielposition (überschreibt) |
 | **Einfügen** | fügt die Zwischenablage an der Abspielposition ein (späteres rückt nach hinten) |
 | **Rückgängig / Wiederholen** | unbegrenztes Rückgängig für Aufnahmen und Schnitte |
-| **\|◀** | zurück an den Bandanfang |
 | **Export** | rendert Master + die acht Spuren als **24-Bit-WAV** in einen wählbaren Ordner (offline, schneller als Echtzeit; das laufende Audio wird nicht unterbrochen) |
 
-Jede Bandbearbeitung ist per MIDI steuerbar: *Tape-Bearbeitungsspur* (`tape.edit.track`), *Tape
-Heben / Schneiden / Einsetzen / Einfügen / Rückgängig / Wiederholen / zum Anfang* (`tape.edit.*`).
+Die Zeile links der Soft-Tasten zeigt den Schleifenbereich, mit dem Heben und Schneiden arbeiten. Jede
+Bandbearbeitung ist per MIDI steuerbar: *Tape-Bearbeitungsspur* (`tape.edit.track`), *Tape Heben /
+Schneiden / Einsetzen / Einfügen / Rückgängig / Wiederholen / zum Anfang* (`tape.edit.*`). Kurzanleitung:
+[erste Aufnahme in 30 Sekunden](BAND-MISCHER-FX.md#erste-aufnahme-in-30-sekunden).
 
 ## Drum-Kit-Seite
 
@@ -234,6 +262,10 @@ die Bibliothek hinter dem Namen jedes Presets mit dem Schlagwort **3D**.
 | Taste | Aktion |
 |---|---|
 | Esc | schließt die Bibliothek (Abbrechen) oder die Profiansicht oder beendet das Schritt-Bearbeiten |
+| Leertaste (Standalone) | START / Stopp |
+| R (Standalone) | REC: aufs Band aufnehmen / aussteigen |
+| Enter oder Pos1 (Standalone) | Band zum Anfang |
+| L (Standalone) | Band-Schleife an / aus |
 | Enter (Bibliothek) | gewähltes Preset behalten und schließen |
 | ↑ / ↓ (Bibliothek) | voriges / nächstes Preset der Liste |
 

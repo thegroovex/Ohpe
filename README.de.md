@@ -84,6 +84,10 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 * **Sequencer**: Schritte antippen zum Einschalten, Shift-Tippen wählt einen Schritt zum
   Bearbeiten und für Parameter-Locks, Start drücken (im Host folgt der Sequencer dem Transport des
   Hosts, solange Start an ist).
+* **Transport** (unten links): **REC** nimmt sofort aufs Band auf (ist keine Spur aufnahmebereit,
+  wird die gewählte bereit geschaltet), **START** lässt Sequencer und Band laufen, **STOPP** hält an
+  (zweimal = zurück zum Anfang), **|◀** und **SCHLEIFE**. Standalone: Leertaste, R, Enter, L. Siehe
+  [erste Aufnahme in 30 Sekunden](docs/de/BAND-MISCHER-FX.md#erste-aufnahme-in-30-sekunden).
 * Eine Audiodatei auf das Instrument ziehen lädt sie in Sampler / Grain oder auf ein Drum-Pad.
 
 Ausführlich: [Bedienung](docs/de/BEDIENUNG.md).

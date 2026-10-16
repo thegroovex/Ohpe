@@ -5539,6 +5539,14 @@ p1.monobass
 p2.monobass
 p3.monobass
 p4.monobass
+# p11 (tape transport UI): transport triggers (play/stop, tape play/stop, stop, record, loop, arm edit track) and "Play starts tape"
+tape.tx.play
+tape.tx.tplay
+tape.tx.stop
+tape.tx.rec
+tape.tx.loop
+tape.tx.arm
+tape.tx.link
 # 1.0: 3D spatialiser - per-part stage (pN.space.*), master monitoring / mono check, Space 3D rack type for every rack slot
 p1.space.on
 p1.space.azimuth

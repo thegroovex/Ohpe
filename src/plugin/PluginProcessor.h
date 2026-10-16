@@ -95,6 +95,30 @@ public:
     /** Handles pending remote-control presses (called by the processor's timer; public for tests). */
     void pollRemoteControls();
 
+    /**
+        Tape transport (p11): the actions of the transport keys, the same for the keys on the body,
+        the buttons on the tape page, the standalone shortcuts and the MIDI triggers "tape.tx.*".
+        - PlayStop (the PLAY key): starts / stops the sequencer; with "Play starts tape" (tape.tx.link,
+          default on) the tape runs with it. Stopping also ends a recording.
+        - TapePlayStop (the tape page): starts / stops the tape; linked, the sequencer runs with it.
+        - Stop: stops tape, recording and (linked) the sequencer; when already stopped: to the start.
+        - Record: one-touch record. Arms the edit track when no track is armed, switches recording on
+          and starts the tape (and the linked sequencer). While recording: punch out (keeps playing).
+        - ToStart: tape back to 0:00.
+        - Loop: loop on / off; without a loop range it loops the recorded length (or 4 bars).
+        - Arm: arms / disarms the edit track.
+        Message thread. Returns a short, translated message for the display ("Recording track 2").
+    */
+    enum class TransportKey { PlayStop = 0, TapePlayStop, Stop, Record, ToStart, Loop, Arm };
+    juce::String runTransport (TransportKey action);
+    bool tapeRolling() const;       ///< the tape plays (tape.play on)
+    bool tapeRecording() const;     ///< the tape really records (play + rec + an armed track)
+    bool tapeRecordReady() const;   ///< recording is switched on (tape.rec), maybe not rolling yet
+    int armedTrackMask() const;     ///< bit t = track t+1 armed
+    /** Transport messages from MIDI triggers, for the editor's display (counter + last text). */
+    int transportMessageCount() const noexcept { return transportMessages.load(); }
+    juce::String lastTransportMessage() const { const juce::ScopedLock sl (transportLock); return transportMessage; }
+
     /** UI state stored with the session (language, mode, page). */
     juce::var uiState;
 
@@ -136,7 +160,11 @@ private:
     int syncSourceParam = -1, tempoParam = -1;
 
     // 0.3: remote controls
-    static constexpr int numTriggers = 10;
+    static constexpr int numTriggers = 16; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm
+    void setPlainFromUi (const char* id, float plain);
+    juce::CriticalSection transportLock;
+    juce::String transportMessage;
+    std::atomic<int> transportMessages { 0 };
     std::array<int, numTriggers> triggerParam {};
     std::array<float, numTriggers> triggerLast {};
     std::array<std::atomic<int>, numTriggers> triggerPresses {};

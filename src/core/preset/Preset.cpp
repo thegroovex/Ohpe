@@ -65,7 +65,7 @@ std::vector<float> arpSnapshot (const ParamRegistry& reg)
 
 bool isExcludedFromProject (const std::string& id) noexcept
 {
-    return startsWith (id, "lib.") || startsWith (id, "ui.") || startsWith (id, "tape.edit.") || startsWith (id, "sync.")
+    return startsWith (id, "lib.") || startsWith (id, "ui.") || startsWith (id, "tape.edit.") || startsWith (id, "tape.tx.") || startsWith (id, "sync.")
         || startsWith (id, "space."); // 1.0: monitoring (headphones / speakers, mono check) belongs to the listener
 }
 

@@ -38,7 +38,7 @@ class Core;
       preset loads into any of the four parts. Parameters of the part that the preset does not
       list return to their defaults (presets may be sparse).
     * kind "project": full parameter IDs of the whole instrument except the remote controls
-      ("lib.*", "ui.*", "tape.edit.*") and the sync setup ("sync.*"), plus the pattern sections.
+      ("lib.*", "ui.*", "tape.edit.*", "tape.tx.*") and the sync setup ("sync.*"), plus the pattern sections.
       The MIDI map and the tape audio are never part of a preset.
     * "arp" (part presets only, optional, 0.7): arpeggiator settings that travel with the sound.
       Loading such a preset into part N switches the global arpeggiator on and points it at part N

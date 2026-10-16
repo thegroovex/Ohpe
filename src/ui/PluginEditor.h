@@ -107,6 +107,18 @@ public:
     ui::ProView& proViewComponent() { return proView; }
     ui::LibraryBrowser& libraryComponent() { return library; }
     void advanceAnimation (float seconds);
+
+    // p11: tape transport
+    /** Runs a transport action (keys, tape page, shortcuts) and shows its message on the display. */
+    void transport (OhpeProcessor::TransportKey action);
+    /** Standalone shortcuts: Space = play / stop, R = record, Enter / Home = to the start, L = loop,
+        A = arm the edit track. Returns false for other keys and in plug-in hosts (the host owns them). */
+    bool handleShortcut (const juce::KeyPress& key);
+    /** The library or the pro view lies on the plate: the plate's controls are hidden. */
+    bool overlayOpen() const { return library.isVisible() || proView.isVisible(); }
+    ui::PictoKey& recordKey() { return recKey; }
+    ui::PictoKey& playTransportKey() { return playKey; }
+    juce::String lastFlash() const { return lastFlashText; }
     void softKey (int id) { onSoftKey (id); }
     bool loadAudioFile (const juce::File& f, int pad = -1);
 
@@ -115,6 +127,9 @@ private:
     void changeListenerCallback (juce::ChangeBroadcaster*) override;
     void rebindEncoders();
     void refreshKeys();
+    void refreshTransportKeys(); ///< p11: key states (REC blinks while recording)
+    void updateOverlayVisibility(); ///< p11: hides every plate control under the library / pro view
+    std::vector<juce::Component*> plateComponents();
     void refreshSoftKeys();
     void refreshProView();
     void showMidiMenu();
@@ -137,6 +152,15 @@ private:
     std::array<std::unique_ptr<ui::PictoKey>, numEngineTypes> engineKeys;
     std::array<std::unique_ptr<ui::PictoKey>, ui::numModes> modeKeys;
     ui::PictoKey playKey { ui::Picto::Play, "Play" };
+    // p11: tape transport keys (with Play: the TRANSPORT cluster)
+    ui::PictoKey recKey { ui::Picto::Record, "Rec" };
+    ui::PictoKey stopKey { ui::Picto::Stop, "Stop" };
+    ui::PictoKey toStartKey { ui::Picto::ToStart, "To start" };
+    ui::PictoKey loopKey { ui::Picto::Loop, "Loop" };
+    std::unique_ptr<juce::TooltipWindow> tooltipWindow;
+    juce::String lastFlashText;
+    int transportMessagesSeen = 0;
+    float blinkClock = 0.0f;
     ui::PictoKey octDownKey { ui::Picto::OctaveDown, "Octave" };
     ui::PictoKey octUpKey { ui::Picto::OctaveUp, "Octave" };
     ui::PictoKey midiKey { ui::Picto::Midi, "MIDI" };

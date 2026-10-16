@@ -21,7 +21,8 @@ namespace ohpe::ui
     0.3: the parameter bars are controls themselves - drag a bar (right / up = more; Shift, Cmd
     or Ctrl = fine), click on a bar to jump, double-click to reset, right-click for MIDI learn.
 */
-class Display : public juce::Component, public juce::TooltipClient
+class Display : public juce::Component,
+                public juce::TooltipClient
 {
 public:
     explicit Display (OhpeProcessor& p);
@@ -84,11 +85,16 @@ public:
     std::function<void (int slot)> onFxSlotClicked;      ///< 0.7: a block of the FX chain
     std::function<void (int from, int to)> onFxSlotMoved; ///< 0.7: a block dropped on another one
     std::function<void()> onSpaceBadgeClicked;           ///< 1.0: the 3D badge in the header (opens the Space view)
-
-    /** 1.0: tooltip of the 3D badge (TooltipClient). */
-    juce::String getTooltip() override;
     /** 1.0: where the 3D badge is (header; tests / screenshots). */
     juce::Rectangle<float> spaceBadgeArea() const;
+    /** p11: the transport buttons of the tape page (TransportButton) and the arm dots of the tracks. */
+    std::function<void (int button)> onTransportClicked;
+    std::function<void (int track)> onTrackArmClicked;
+    enum TransportButton { TxToStart = 0, TxStop, TxPlay, TxRecord, TxLoop, numTransportButtons };
+    /** p11: shortcuts shown in the tooltips (standalone app only). */
+    void setShowShortcuts (bool show) { shortcuts = show; }
+
+    juce::String getTooltip() override; ///< p11: depends on what the mouse is over (1.0: the 3D badge too)
 
     void paint (juce::Graphics& g) override;
     void resized() override;
@@ -108,6 +114,10 @@ public:
     juce::Rectangle<float> trackLane (int track) const;
     juce::Rectangle<float> seqTab (int view) const;
     juce::Rectangle<float> characterArea() const; ///< 0.7: the character / scope / terrain area
+    juce::Rectangle<float> transportButton (int b) const; ///< p11: tape page transport buttons
+    juce::Rectangle<float> trackArmArea (int track) const; ///< p11: the arm dot of a track lane
+    /** p11: the one-line hint of the tape page ("Pick a track, press REC"), translated. */
+    juce::String tapeHint() const;
 
 private:
     juce::Rectangle<float> headerArea() const;
@@ -134,6 +144,8 @@ private:
     void paintStepStrip (juce::Graphics& g, juce::Rectangle<float> area);
     void paintSeqViewStrip (juce::Graphics& g, juce::Rectangle<float> area);
     void paintTapeStrip (juce::Graphics& g, juce::Rectangle<float> area);
+    void paintTapeTransport (juce::Graphics& g, juce::Rectangle<float> area); ///< p11
+    void paintTapeHeaderStatus (juce::Graphics& g, juce::Rectangle<float> rightOf, float height); ///< p11: on every page
     void paintDrumStrip (juce::Graphics& g, juce::Rectangle<float> area);
     void paintSoftKeys (juce::Graphics& g);
     void paintHint (juce::Graphics& g, juce::Rectangle<float> area, const juce::String& text);
@@ -178,5 +190,9 @@ private:
     std::array<std::array<float, overviewPoints>, TapeMachine::numTracks> overview {};
     int64_t overviewFrames = 0;
     float overviewAge = 1.0e9f;
+
+    // p11: tooltips (last mouse position), shortcut hints
+    juce::Point<float> lastMouse;
+    bool shortcuts = false;
 };
 } // namespace ohpe::ui
