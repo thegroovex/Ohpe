@@ -90,15 +90,15 @@ void ChorusEffect::process (float* l, float* r, int n) noexcept
         gl[(size_t) v] = a * 1.41421356f;
         gr[(size_t) v] = b * 1.41421356f;
     }
-    const float driftK = std::min (1.0f, 32.0f / (0.3f * sr));
+    const float driftK = std::min (1.0f, 1.0f / (0.3f * sr));
     for (int i = 0; i < n; ++i)
     {
         bufL[(size_t) writePos] = l[i];
         bufR[(size_t) writePos] = r[i];
         float wl = 0.0f, wr = 0.0f;
-        if (drift > 0.0f && (writePos & 31) == 0) // drift: a new random target every ~85 ms, glided to over ~0.3 s
-        {
-            const bool pick = (++driftTick & 127) == 0;
+        if (drift > 0.0f) // drift: a new random target every ~85 ms, glided to over ~0.3 s - per sample (a delay time
+        {                 // stepped every 32 samples was a staircase phase modulation: a faint HF hash under held notes)
+            const bool pick = (++driftTick & 4095) == 0;
             for (int v = 0; v < voices; ++v)
             {
                 if (pick)

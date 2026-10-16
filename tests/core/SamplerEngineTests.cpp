@@ -6,6 +6,9 @@
 
 #include <doctest/doctest.h>
 
+#include <algorithm>
+#include <cmath>
+
 using namespace ohpe;
 using namespace ohpe::test;
 
@@ -204,4 +207,34 @@ TEST_CASE ("sampler: finite, no denormals at extremes; replacing samples while p
     CHECK (rig.e.activeVoiceCount() == 0);
     rig.e.setSample (nullptr);
     CHECK (rig.e.zones().empty());
+}
+
+TEST_CASE ("sampler: a held forward loop whose points do not meet never clicks (0.8 punch pass)")
+{
+    // 437 Hz over a loop of 0.25..0.75 s: the loop holds a non-whole number of periods, so the end and the start differ in
+    // phase (and the decay makes them differ in level). Before 0.8 every pass jumped - a click per loop of a held note.
+    std::vector<float> x (48000);
+    for (size_t i = 0; i < x.size(); ++i)
+        x[i] = 0.6f * std::exp (-0.8f * (float) i / 48000.0f) * (float) std::sin (2.0 * 3.14159265358979323846 * 437.0 * (double) i / 48000.0);
+    for (float rev : { 0.0f, 1.0f })
+    {
+        CAPTURE (rev);
+        SamplerRig rig;
+        rig.e.setSample (SampleData::fromMono (std::move (std::vector<float> (x)), 48000.0), 69);
+        rig.e.setParam (sampler::LoopMode, (float) sampler::LoopForward);
+        rig.e.setParam (sampler::LoopStart, 0.25f);
+        rig.e.setParam (sampler::LoopEnd, 0.75f);
+        rig.e.setParam (sampler::Reverse, rev);
+        auto held = rig.play (69, 48000 * 4); // eight loop passes
+        float pk = 0.0f, d2 = 0.0f;
+        for (size_t i = 4800; i < held.l.size(); ++i)
+        {
+            pk = std::max (pk, std::abs (held.l[i]));
+            d2 = std::max (d2, std::abs (held.l[i] - 2.0f * held.l[i - 1] + held.l[i - 2]));
+        }
+        REQUIRE (pk > 0.05f);
+        CHECK (rig.e.activeVoiceCount() == 1);
+        // a 437 Hz sine: second difference ~0.75 % of the peak; a loop jump is of the order of the peak itself
+        CHECK (d2 < 0.03f * pk);
+    }
 }
