@@ -63,7 +63,7 @@ private:
     std::vector<float> readL, readR, histL, histR, mono;
     int histPos = 0;
     size_t seen = 0;
-    dsp::SpectrumBands spectrum { 10, numBands };
+    dsp::SpectrumBands spectrum { 11, numBands }; // 2048 points: ~23 Hz bins, clean low bands
     std::array<std::array<float, numBands>, numRows> rows {};
     int head = 0;       ///< index of the newest (front) row
     float rowClock = 0.0f, liveTime = 0.0f;
