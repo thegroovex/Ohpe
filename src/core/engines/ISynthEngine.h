@@ -136,6 +136,9 @@ public:
     virtual void render (float* left, float* right, int numSamples) noexcept = 0;
     virtual int activeVoiceCount() const noexcept = 0;
 
+    /** p20: play the user material (user wavetable / user formants) instead of the built-in one. Optional. */
+    virtual void setUserSource (bool on) noexcept { (void) on; }
+
     /** Per-note expression for every voice playing `note` (-1 = all voices). Optional. */
     virtual void noteExpression (int note, const NoteExpression& expression) noexcept { (void) note; (void) expression; }
 };

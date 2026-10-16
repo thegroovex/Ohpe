@@ -149,6 +149,17 @@ Ogg) from your file manager onto the instrument: it goes to the edit part's Grai
 is selected, otherwise to its Sampler (the part switches to the Sampler). Each part has its own
 samples. Sample paths are saved with the project.
 
+## User wavetables and formants (p20)
+
+With the Wavetable or Vocal engine on the edit part, the Synth page shows **IMPORT**, **USER** and
+**CLEAR**. Drag a sound or a wavetable file onto the instrument (or use IMPORT: file, tape track, live
+input, library; frames 8 … 256, smoothing): the sound is analysed in the background – a progress bar
+on the display – into a user wavetable (Wavetable engine) or formant tracks (Vocal engine), saved in
+the user wavetable library and switched on. The display then shows the frame stack (the frame at the
+current position in yellow) or the five formant tracks. **USER** switches between the user and the
+built-in material (`pN.usertable.wt` / `pN.usertable.vocal`), **CLEAR** removes it. Details:
+[Wavetable engine](engines/wavetable.md#user-wavetables-audio-to-wavetable-p20).
+
 ## Pro view
 
 ![Pro view](../images/ohpe-pro-view.png)

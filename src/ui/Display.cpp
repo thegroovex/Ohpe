@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Display.h"
+#include "UserTableView.h"
 
 #include "ModFxViews.h"
 #include "ResoView.h"
@@ -1108,8 +1109,13 @@ void Display::paint (juce::Graphics& g)
             return;
         }
         const auto charArea = pictoArea.reduced (u * 1.5f);
-        drawPictogram (g, charArea.translated (u * 0.35f, u * 0.6f), picto, ps, juce::Colours::black.withAlpha (0.55f)); // cast shadow
-        drawPictogram (g, charArea, picto, ps, dim ? colour::displayDim : colour::displayText);
+        if (mode == Mode::Synth && usertableview::wants (proc, ctx.part, type)) // p20: the user wavetable / formants
+            usertableview::paint (g, pictoArea.reduced (u * 0.6f), proc, ctx.part, type, -1.0f, time);
+        else
+        {
+            drawPictogram (g, charArea.translated (u * 0.35f, u * 0.6f), picto, ps, juce::Colours::black.withAlpha (0.55f)); // cast shadow
+            drawPictogram (g, charArea, picto, ps, dim ? colour::displayDim : colour::displayText);
+        }
     }
     if (dim && shown == Visual::Character)
     {

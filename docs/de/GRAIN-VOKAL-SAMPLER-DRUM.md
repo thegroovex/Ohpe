@@ -45,6 +45,18 @@ Formant-Resonatoren.
 
 Mod-Hüllkurve und LFO-Ziel *Klangfarbe* verschieben die Vokal-Position.
 
+### Eigene Formanten (p20)
+
+Die Synth-Seite der Vokal-Engine hat die Softkeys **IMPORT**, **EIGENE** und **LEEREN**, wie die
+Wavetable-Engine ([eigene Wavetables](engines/wavetable.md#eigene-wavetables-klang-zu-wavetable-p20)). Ein
+importierter Klang (Datei, Tape-Spur, Live-Eingang) wird per linearer Prädiktion analysiert: jeder
+Frame des Klangs ergibt fünf Formanten (Frequenz, Pegel, Bandbreite – die fünf stärksten Spitzen der
+Spektralhülle zwischen 150 Hz und 5 kHz), bis zu 64 Formant-Frames. Mit **EIGENE** an
+(`pN.usertable.vocal`) fährt *Vokal* 0 … 4 statt A – E – I – O – U vom Anfang bis zum Ende des Klangs
+durch diese Formantspuren; Formant-Verschiebung, Atem, Spannung und Vibrato wirken wie bisher. Das
+Display zeichnet die fünf Spuren mit der aktuellen Vokal-Position. Gespeichert wird wie bei eigenen
+Wavetables (Bibliothek, Presets, Projekte).
+
 ## Sampler
 
 Spielt Samples über die Tastatur, entweder als **Zonen** (Multisampling) oder als **Slices**.

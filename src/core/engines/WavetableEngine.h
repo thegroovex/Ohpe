@@ -4,6 +4,8 @@
 
 #include "../dsp/Filters.h"
 #include "../dsp/Oscillators.h"
+#include "../sample/SampleData.h"
+#include "../wavetable/UserTable.h"
 #include "PolyEngine.h"
 
 #include <vector>
@@ -83,6 +85,8 @@ struct Shared
     float uniWidth = 0.7f;      ///< 0.8: stereo spread of the stack (not used by the classic three)
     float fm = 0.0f, fmRatio = 1.0f; ///< 0.8: phase modulation of the table by a sine at f0 * ratio
     float lfoPosition = 0.0f, envFm = 0.0f; ///< 0.8: LFO -> position, mod envelope -> FM amount
+    /** p20: the user table the voices play instead of the built-in one (nullptr = built-in), set every block. */
+    const usertable::UserTable* user = nullptr;
 };
 constexpr int maxUnison = 8;
 
@@ -120,7 +124,23 @@ public:
 
     const wavetable::Shared& getShared() const noexcept { return shared; }
 
+    /** p20: a user wavetable (message thread; nullptr = none). Played while "pN.usertable.wt" is on. */
+    void setUserTable (usertable::UserTablePtr table) { user.set (std::move (table)); }
+    const usertable::UserTablePtr& userTable() const noexcept { return user.owner(); }
+    void setUserSource (bool on) noexcept override { useUser = on; }
+    /** Audio thread: the table the voices play now (nullptr = built-in). */
+    const usertable::UserTable* playingUserTable() const noexcept { return shared.user; }
+
+    void render (float* l, float* r, int numSamples) noexcept override
+    {
+        const auto* t = useUser ? user.get() : nullptr;
+        shared.user = t != nullptr && t->hasWave() ? t : nullptr;
+        PolyEngine<wavetable::Voice>::render (l, r, numSamples);
+    }
+
 private:
     wavetable::Shared shared;
+    RtShared<usertable::UserTable> user;
+    bool useUser = false;
 };
 } // namespace ohpe

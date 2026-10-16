@@ -145,8 +145,8 @@ TEST_CASE ("p19 resonator: parameters - per-part stage, rack type in every slot,
     CHECK (InsertSlot::typeNamesEn()[(size_t) InsertSlot::Resonator] == "Resonator");
     CHECK (InsertSlot::typeNamesDe()[(size_t) InsertSlot::Resonator] == "Resonanzkörper");
     CHECK (std::string (InsertSlot::typeInfo (InsertSlot::Resonator).id) == "resonator");
-    // the block follows the p16 morph block; the master racks' blocks end the list
-    CHECK (reg.indexOf ("p1.reso.on") == reg.indexOf ("p4.morph.ysrc") + 1);
+    // the block follows the p20 audio to wavetable block; the master racks' blocks end the list
+    CHECK (reg.indexOf ("p1.reso.on") == reg.indexOf ("p4.usertable.vocal") + 1);
     CHECK (reg.indexOf ("mfx4.resonator.slideamt") == reg.size() - 1);
     // matrix targets, appended after Morph Y
     const char* keys[] = { "resotune", "resosize", "resomaterial", "resodecay", "resoposition", "resomix" };

@@ -53,6 +53,9 @@ class Core;
       C bottom left, D bottom right; null = the part's own sound). Each corner lists its name and its sound
       parameters like "params" (local IDs, sparse: missing = default). Project presets and states keep the corners
       of all parts in the section "morph".
+    * "usertables" (part presets only, optional, p20): the part's user wavetable and user formant tracks
+      ({"wavetable": {"name", "path", "file", "data"?}, "vocal": {...}}). Projects and states keep them in the
+      section "usertables" ({"format": "ohpe-usertables", "parts": {"p1": {...}}}). See docs/en/engines/wavetable.md.
     * Values are plain values (as shown, e.g. Hz, seconds). Unknown IDs are ignored, so presets
       from newer versions load; version-1 presets (no kind / tags, "prefix" field) load as parts.
     * Loading a preset never adds, removes or reorders parameters.
@@ -97,6 +100,9 @@ struct Preset
     std::optional<std::map<std::string, float>> arp;
     /** part only, p16: the morph corners of the part (JSON of MorphSpace::partToJson), absent if no corner is set */
     std::optional<std::string> morph;
+    /** part only, p20: the user wavetable / formant material of the part (JSON of usertable::partToJson: name, path,
+        library file name and, for tables up to 64 frames, the table itself), absent when the part has none */
+    std::optional<std::string> userTables;
 };
 
 /** The keys an arp block may carry (local IDs below "seq.arp."). */

@@ -23,11 +23,11 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 |---|---|
 | **Analog engine** | two band-limited oscillators (shape morph, detune, octave, mix), sub, noise, ladder and state-variable filters (LP / BP / HP), drive, key tracking |
 | **FM engine** | six operators, eight algorithms with smooth morphing between neighbours, feedback, per-operator ratio and level |
-| **Wavetable engine** | six built-in tables of eight frames with smooth morphing, warp modes, unison, sub oscillator |
+| **Wavetable engine** | six built-in tables of eight frames with smooth morphing, warp modes, unison, sub oscillator; own tables from any sound (audio to wavetable: pitch-synchronous analysis, 8–256 frames), single-cycle sets and a user library |
 | **Pluck engine** | waveguide string and tuned mallet resonators for plucked and struck sounds |
 | **Cluster engine** | up to seven detuned oscillators per key as unison or chord shapes, slow drift, resonant low-pass |
 | **Grain engine** | granular synthesis from a loaded sample, the tape or a built-in texture |
-| **Vocal engine** | formant voice with vowels, breath, vibrato and jitter |
+| **Vocal engine** | formant voice with vowels, breath, vibrato and jitter; formant tracks analysed from your own sounds |
 | **Sampler engine** | key zones or automatic slices from WAV / AIFF / FLAC files, loop modes, built-in keys sound and ten recorded factory instruments (kalimba, marimba, vibraphone, harp, harpsichord, recorder …) |
 | **Drum kit** | 24 pads on MIDI channel 10: five recorded factory kits (Studio, Tight, Room, Lo-Fi, Hybrid – CC0), own samples or synth models, choke groups |
 | **Factory sounds** | 120 part presets across all engines and categories, level-matched; 7 demo projects using all four parts, the sequencers and the drum kit – see [Factory sounds](docs/en/FACTORY-SOUNDS.md) |

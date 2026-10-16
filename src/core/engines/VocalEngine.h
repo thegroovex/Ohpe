@@ -3,6 +3,8 @@
 #pragma once
 
 #include "../dsp/Filters.h"
+#include "../sample/SampleData.h"
+#include "../wavetable/UserTable.h"
 #include "PolyEngine.h"
 
 #include <array>
@@ -44,6 +46,8 @@ struct Shared
 {
     float vowel = 0.0f, formantShift = 0.0f, breath = 0.15f, tension = 0.5f;
     float vibratoDepth = 0.2f, vibratoRate = 5.5f, jitter = 0.1f;
+    /** p20: user formant tracks ("vowel" 0 .. 4 moves through their frames; nullptr = the built-in vowels), set every block. */
+    const usertable::UserTable* user = nullptr;
 };
 
 /** Constant-peak-gain band-pass biquad (RBJ), transposed direct form II. */
@@ -89,7 +93,22 @@ public:
 
     const vocal::Shared& getShared() const noexcept { return shared; }
 
+    /** p20: user formant material (message thread; nullptr = none). Used while "pN.usertable.vocal" is on. */
+    void setUserTable (usertable::UserTablePtr table) { user.set (std::move (table)); }
+    const usertable::UserTablePtr& userTable() const noexcept { return user.owner(); }
+    void setUserSource (bool on) noexcept override { useUser = on; }
+    const usertable::UserTable* playingUserTable() const noexcept { return shared.user; }
+
+    void render (float* l, float* r, int numSamples) noexcept override
+    {
+        const auto* t = useUser ? user.get() : nullptr;
+        shared.user = t != nullptr && t->hasFormants() ? t : nullptr;
+        PolyEngine<vocal::Voice>::render (l, r, numSamples);
+    }
+
 private:
     vocal::Shared shared;
+    RtShared<usertable::UserTable> user;
+    bool useUser = false;
 };
 } // namespace ohpe

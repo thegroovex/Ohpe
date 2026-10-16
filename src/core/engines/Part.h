@@ -75,6 +75,11 @@ public:
     */
     void registerLate15LifeParams (ParamRegistry& reg) const;
     /**
+        p20: "pN.usertable.wt" (the Wavetable engine plays the part's user wavetable) and "pN.usertable.vocal" (the
+        Vocal engine uses the user formant tracks). Off, or on without a loaded table = the built-in material.
+    */
+    void registerLate20UserTableParams (ParamRegistry& reg) const;
+    /**
         p19: the resonator body stage "pN.reso.*" ("on" + the Resonator block, ResonatorEffect) right after the engines and
         the layer (before the part's volume and FX rack). It follows the part's keyboard and expression (KeyState).
         Off (or mix 0) = exact bypass; switching crossfades over 20 ms.
@@ -208,6 +213,7 @@ private:
     int exprSmoothIndex = -1, exprSlideIndex = -1; ///< 0.8: "pN.mpe.smooth", "pN.mpe.slide"
     int monoBassIndex = -1;                        ///< 0.8: "pN.monobass"
     int lifeIndex = -1;                            ///< p15: "pN.life"
+    int userWtIndex = -1, userVocalIndex = -1;     ///< p20: "pN.usertable.wt" / "pN.usertable.vocal"
     float monoBassHz = 20.0f, partSr = 48000.0f;
     dsp::Svf monoLp1, monoLp2;                     ///< 4th-order Butterworth high-pass of the side signal
     float exprBlend = 0.0f;                        ///< 0.8: latest per-note "layer blend" expression (part-wide)

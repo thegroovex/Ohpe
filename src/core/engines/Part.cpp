@@ -196,6 +196,16 @@ void Part::registerLate15LifeParams (ParamRegistry& reg) const
     reg.add (std::move (d));
 }
 
+void Part::registerLate20UserTableParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const std::string P = "Part " + n + " ";
+    auto add = [&] (ParamDescriptor d) { d.group = "part" + n; reg.add (std::move (d)); };
+    add (toggle (id ("usertable.wt"), P + "User Wavetable", P + "Eigene Wavetable", false));
+    add (toggle (id ("usertable.vocal"), P + "User Formants", P + "Eigene Formanten", false));
+}
+
 void Part::registerLate19ResoParams (ParamRegistry& reg) const
 {
     using namespace pd;
@@ -332,6 +342,8 @@ void Part::bind (const ParamRegistry& reg)
     exprSlideIndex = reg.indexOf (id ("mpe.slide"));
     monoBassIndex = reg.indexOf (id ("monobass"));
     lifeIndex = reg.indexOf (id ("life")); // p15
+    userWtIndex = reg.indexOf (id ("usertable.wt"));       // p20
+    userVocalIndex = reg.indexOf (id ("usertable.vocal")); // p20
     spaceOnIndex = reg.indexOf (id ("space.on")); // 1.0
     resoOnIndex = reg.indexOf (id ("reso.on"));   // p19
     {
@@ -479,6 +491,9 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
     common.exprSlide = exprSlideIndex >= 0 ? s[exprSlideIndex] : 0.0f;
     common.life = lifeIndex >= 0 ? dsp::clamp01 (s[lifeIndex]) : 0.0f; // p15 (the matrix may move it: "life" target)
     common.lifeSeed = 0x51ED27u * (uint32_t) number;
+    // p20: user wavetable / user formants
+    if (auto* e = engines[(size_t) EngineType::Wavetable].get()) e->setUserSource (userWtIndex >= 0 && s.getBool (userWtIndex));
+    if (auto* e = engines[(size_t) EngineType::Vocal].get()) e->setUserSource (userVocalIndex >= 0 && s.getBool (userVocalIndex));
     if (monoBassIndex >= 0 && s[monoBassIndex] != monoBassHz) // 0.8 bass mono
     {
         monoBassHz = std::clamp (s[monoBassIndex], 20.0f, 400.0f);

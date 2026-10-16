@@ -67,3 +67,5 @@ target_sources(ohpe_core_tests PRIVATE SpaceTests.cpp)
 target_sources(ohpe_core_tests PRIVATE ResonatorTests.cpp)
 # p16: the morph space
 target_sources(ohpe_core_tests PRIVATE MorphTests.cpp)
+# p20: audio to wavetable
+target_sources(ohpe_core_tests PRIVATE UserTableTests.cpp)

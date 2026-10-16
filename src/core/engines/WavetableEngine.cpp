@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "WavetableEngine.h"
 
+#include "../dsp/Fft.h"
+
 #include <complex>
 
 namespace ohpe
@@ -12,34 +14,7 @@ namespace
 {
 constexpr int maxHarmonics = Bank::maxHarmonics;
 
-/** In-place iterative radix-2 FFT; sign = +1 for the inverse direction (no scaling). */
-void fft (std::vector<std::complex<double>>& x, int sign)
-{
-    const size_t n = x.size();
-    for (size_t i = 1, j = 0; i < n; ++i)
-    {
-        size_t bit = n >> 1;
-        for (; j & bit; bit >>= 1) j ^= bit;
-        j ^= bit;
-        if (i < j) std::swap (x[i], x[j]);
-    }
-    for (size_t len = 2; len <= n; len <<= 1)
-    {
-        const double ang = sign * 2.0 * 3.14159265358979323846 / (double) len;
-        const std::complex<double> wl (std::cos (ang), std::sin (ang));
-        for (size_t i = 0; i < n; i += len)
-        {
-            std::complex<double> w (1.0, 0.0);
-            for (size_t k = 0; k < len / 2; ++k)
-            {
-                const auto u = x[i + k], v = x[i + k + len / 2] * w;
-                x[i + k] = u + v;
-                x[i + k + len / 2] = u - v;
-                w *= wl;
-            }
-        }
-    }
-}
+using dsp::fft;
 
 /** Harmonic spectrum of one frame: x(t) = sum a[h] cos (2 pi h t) + b[h] sin (2 pi h t), h = 1 .. maxHarmonics. */
 struct Spectrum
@@ -239,6 +214,14 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
     const Shared& p = *shared;
     const Bank& bk = *bank;
     const int table = std::clamp (p.table, 0, numTables - 1);
+    // p20: a user table has the same frame layout (frames x levels x stride), any number of frames
+    static_assert (usertable::frameSize == Bank::size && usertable::numLevels == Bank::numLevels && usertable::stride == Bank::stride
+                       && usertable::maxHarmonics == Bank::maxHarmonics,
+                   "user tables share the bank's frame layout");
+    const usertable::UserTable* ut = p.user;
+    const int numFr = ut != nullptr ? ut->numFrames() : Bank::numFrames;
+    const float* tableBase = ut != nullptr ? ut->frame (0, 0) : bk.frame (table, 0, 0);
+    auto frameAt = [tableBase] (int f, int lv) noexcept { return tableBase + ((size_t) (f * Bank::numLevels + lv)) * (size_t) Bank::stride; };
     const float* sine = bk.frame (Classic, 0, Bank::numLevels - 1); // pure one-harmonic sine
     const float lobes = p.warpMode == Twist ? 2.0f : 1.0f;
 
@@ -322,9 +305,10 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         {
             const float ps = lastPos + dPos * (float) (i + 1);
             const float wp = lastWarp + dWarp * (float) (i + 1);
-            const float fpos = ps * (float) (Bank::numFrames - 1);
-            const int f0i = std::min ((int) fpos, Bank::numFrames - 2);
-            const float ff = fpos - (float) f0i;
+            const float fpos = ps * (float) (numFr - 1);
+            const int f0i = std::max (0, std::min ((int) fpos, numFr - 2));
+            const int f1i = std::min (f0i + 1, numFr - 1);
+            const float ff = std::clamp (fpos - (float) f0i, 0.0f, 1.0f);
 
             float sL = 0.0f, sR = 0.0f;
             float fmOff = 0.0f;
@@ -338,10 +322,10 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
             {
                 float ph = wp > 0.0f ? warpPhase (phase[o], wp, lobes, sine) : phase[o];
                 if (fmDepth > 0.0f) { ph += fmOff; ph -= std::floor (ph); }
-                const float a0 = readLinear (bk.frame (table, f0i, la[o]), ph);
-                const float a1 = readLinear (bk.frame (table, f0i + 1, la[o]), ph);
-                const float b0 = readLinear (bk.frame (table, f0i, lb[o]), ph);
-                const float b1 = readLinear (bk.frame (table, f0i + 1, lb[o]), ph);
+                const float a0 = readLinear (frameAt (f0i, la[o]), ph);
+                const float a1 = readLinear (frameAt (f1i, la[o]), ph);
+                const float b0 = readLinear (frameAt (f0i, lb[o]), ph);
+                const float b1 = readLinear (frameAt (f1i, lb[o]), ph);
                 const float va = a0 + ff * (a1 - a0), vb = b0 + ff * (b1 - b0);
                 const float v = va + lt[o] * (vb - va);
                 phase[o] += inc[o];
