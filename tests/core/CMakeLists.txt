@@ -64,6 +64,6 @@ target_link_libraries(ohpe_core_tests PRIVATE Threads::Threads)
 # 1.0: the 3D spatialiser (Space 3D)
 target_sources(ohpe_core_tests PRIVATE SpaceTests.cpp)
 # p19: the resonator body
-target_sources(ohpe_core_tests PRIVATE ResonatorTests.cpp)
+target_sources(ohpe_core_tests PRIVATE ResonatorTests.cpp ResonatorCalTests.cpp) # Cal: temporary
 # p16: the morph space
 target_sources(ohpe_core_tests PRIVATE MorphTests.cpp)

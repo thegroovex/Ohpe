@@ -1042,7 +1042,13 @@ void Display::paint (juce::Graphics& g)
         const int pt = juce::jlimit (0, Core::numParts - 1, ctx.part);
         const auto pre = "p" + std::to_string (pt + 1) + ".reso.";
         const bool on = core.params().get (pre + "on") >= 0.5f;
-        resoview::paintBody (g, visualArea(), resoview::stateOf (core.part (pt).resoStage(), core, pre, on), time, colour::encoder (pt));
+        const auto va = visualArea();
+        resoview::paintBody (g, va, resoview::stateOf (core.part (pt).resoStage(), core, pre, on), time, colour::encoder (pt));
+        g.setFont (labelFont (va.getHeight() * 0.05f)); // caption: the body model, as the 3D view names its monitoring
+        g.setColour (colour::displayDim);
+        const int mi = core.params().indexOf (pre + "model");
+        g.drawText (i18n::upper (tr ("Resonator")) + (mi >= 0 ? "  " + i18n::upper (formatValue (core.params().descriptor (mi), core.params().get (mi))) : juce::String()),
+                    va.withHeight (va.getHeight() * 0.08f), juce::Justification::topLeft, true);
         paintRows (g);
         paintStrip (g, stripArea());
         return;

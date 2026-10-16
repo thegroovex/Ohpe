@@ -16,9 +16,10 @@ constexpr float pi = 3.14159265358979f;
 constexpr int numApStages = 4;
 constexpr float minLineDelay = 2.0f;  // the Hermite read needs one newer sample than the one it starts at
 constexpr float stateLimit = 1000.0f; // guard: a state beyond this means something went wrong -> reset
-constexpr float peakExp = 0.25f;      // resonance peak gain ~ (loss per period)^-peakExp (0.5 would be unity broadband gain)
+constexpr float peakExp = 0.4f;       // resonance peak gain ~ (loss per period)^-peakExp (0.5 = unity broadband gain)
 constexpr float limitThreshold = 0.95f;
-constexpr float stringGain = 1.0f, tubeGain = 1.0f, plateGain = 1.0f; // output calibration per model
+constexpr float compThreshold = 0.35f, compRatio = 4.0f; // the body's loudness control ahead of the peak limiter
+constexpr float stringGain = 1.0f, tubeGain = 1.0f, plateGain = 1.0f, plateDrive = 2.5f; // output calibration per model
 
 /** Phase delay (samples) of the first-order allpass (c + z^-1) / (1 + c z^-1) at w (radians / sample). */
 float allpassDelay (float c, float w) noexcept
@@ -193,6 +194,8 @@ void ResonatorEffect::prepare (double sampleRate, int maxBlockSize)
     mixCoeff = 1.0f - std::exp (-1.0f / (0.02f * sr));
     dcCoeff = 1.0f - 2.0f * pi * 12.0f / sr;
     limRelease = std::exp (-1.0f / (0.12f * sr));
+    compAttack = 1.0f - std::exp (-1.0f / (0.004f * sr));
+    compRelease = 1.0f - std::exp (-1.0f / (0.2f * sr));
     reset();
 }
 
@@ -207,6 +210,7 @@ void ResonatorEffect::resetState() noexcept
     dcX[0] = dcX[1] = dcY[0] = dcY[1] = 0.0f;
     radX1[0] = radX1[1] = 0.0f;
     limEnv = 0.0f;
+    compEnv = 0.0f;
     plateEnv = 0.0f;
     levelAcc = 0.0f;
     levelCount = 0;
@@ -343,11 +347,8 @@ void ResonatorEffect::updatePlate (float f0, float t60, float bright, float pos)
         mCr[(size_t) k] = rad * std::cos (w);
         mCi[(size_t) k] = rad * std::sin (w);
         const float m = (float) modeM[(size_t) k], nn = (float) modeN[(size_t) k];
-        // normalised like one tooth of a waveguide comb (peak gain from the loss per period of the mode, as in the
-        // waveguide models): a tuned input rings equally strong at every pitch and decay
-        const float perPeriod = 1.0f - std::exp (-6.9077553f / (t * f));
-        mIn[(size_t) k] = std::sin (m * pi * xe) * std::sin (nn * pi * ye) * (1.0f - rad) * std::pow (perPeriod, -peakExp)
-                          * std::pow (ratio, tilt);
+        // every mode at unity broadband gain: a pluck or noise excites the plate at about its own level
+        mIn[(size_t) k] = plateDrive * std::sin (m * pi * xe) * std::sin (nn * pi * ye) * std::sqrt (1.0f - rad * rad) * std::pow (ratio, tilt);
         mOutL[(size_t) k] = std::sin (m * pi * xl) * std::sin (nn * pi * yl);
         mOutR[(size_t) k] = std::sin (m * pi * xr) * std::sin (nn * pi * yr);
     }
@@ -405,7 +406,7 @@ void ResonatorEffect::control (int n) noexcept
         const float g = guide[0].lossG + guide[0].dLossG * (float) n;
         // between unity broadband gain (sqrt (1 - g^2)) and unity peak gain (1 - g): tuned excitation (an engine
         // playing the note the body follows) rings strongly but not without bound, short plucks still speak
-        inNorm = 0.5f * std::pow (std::max (1.0e-7f, 1.0f - g), 1.0f - peakExp) * (closed ? 1.4f : 1.0f);
+        inNorm = 1.4f * std::pow (std::max (1.0e-7f, 1.0f - g), 1.0f - peakExp) * (closed ? 1.4f : 1.0f);
         const float theta = 0.02f;
         rotC = std::cos (theta);
         rotS = std::sin (theta);
@@ -590,7 +591,15 @@ void ResonatorEffect::process (float* left, float* right, int numSamples) noexce
             float wl = wetL[(size_t) i], wr = wetR[(size_t) i];
             dcY[0] = wl - dcX[0] + dcCoeff * dcY[0]; dcX[0] = wl; wl = dcY[0];
             dcY[1] = wr - dcX[1] + dcCoeff * dcY[1]; dcX[1] = wr; wr = dcY[1];
-            const float pk = std::max (std::abs (wl), std::abs (wr));
+            float pk = std::max (std::abs (wl), std::abs (wr));
+            compEnv = dsp::flush (compEnv + (pk - compEnv) * (pk > compEnv ? compAttack : compRelease));
+            if (compEnv > compThreshold) // soft loudness control: a strongly tuned resonance rings full, not clipped
+            {
+                const float cg = std::pow (compThreshold / compEnv, 1.0f - 1.0f / compRatio);
+                wl *= cg;
+                wr *= cg;
+                pk *= cg;
+            }
             limEnv = pk > limEnv ? pk : limEnv * limRelease;
             const float gain = limEnv > limitThreshold ? limitThreshold / limEnv : 1.0f;
             wl = std::clamp (wl * gain, -1.0f, 1.0f);

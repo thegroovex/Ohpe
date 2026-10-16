@@ -292,7 +292,7 @@ TEST_CASE ("p19 resonator: bounded level - the body at its loudest never exceeds
         CHECK (allFinite (s.l));
         CHECK (peak (s.l) <= 1.0f);
         CHECK (peak (s.r) <= 1.0f);
-        CHECK (rms (s.l, 48000) > 0.05f); // it really resonates
+        CHECK (rms (s.l, 48000) > 0.1f); // it really resonates
     }
 }
 

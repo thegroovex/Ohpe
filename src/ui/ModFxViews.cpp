@@ -494,7 +494,7 @@ juce::String compactName (const std::string& id, const std::string& nameEn, cons
         if (marker < 0) return name;
         return rest == "space.on" ? name.substring (marker + 1) : name.substring (marker + 4);
     }
-    if (part && rest.rfind ("morph.", 0) == 0 && name.startsWith ("Part ") && name.length() > 7) // p16: "Part 1 Morph X" -> "Morph X"
+    if (part && (rest.rfind ("morph.", 0) == 0 || rest.rfind ("reso.", 0) == 0) && name.startsWith ("Part ") && name.length() > 7) // p16: "Part 1 Morph X" -> "Morph X" (p19: "Part 1 Body Mix" -> "Body Mix")
         return name.substring (7).trimStart();
     if (! matrix && ! rack) return name;
 

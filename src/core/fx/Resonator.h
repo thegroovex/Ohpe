@@ -162,7 +162,7 @@ private:
     float plateShapeSize = -1.0f, plateShapeInh = -1.0f, plateEnv = 0.0f;
     int numModesActive = 0;
     // output
-    float dcX[2] {}, dcY[2] {}, dcCoeff = 0.999f, limEnv = 0.0f, limRelease = 0.999f;
+    float dcX[2] {}, dcY[2] {}, dcCoeff = 0.999f, limEnv = 0.0f, limRelease = 0.999f, compEnv = 0.0f, compAttack = 0.01f, compRelease = 0.001f;
     int guardCount = 0;
     float levelAcc = 0.0f;
     int levelCount = 0;
