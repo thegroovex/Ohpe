@@ -30,7 +30,7 @@
     "fx.delay.pingpong": 1,
     "fx.delay.mix": 0.18,
     "voices": 12,
-    "gain": 11.8,
+    "gain": 12.5,
     "fx2.type": 10,
     "fx2.compressor.thresh": -4.0,
     "fx2.compressor.ratio": 8.0,

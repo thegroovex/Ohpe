@@ -844,7 +844,7 @@ PRESETS_R3 = [
       rev(3, 0.85, 0.45, 0.03, 0.35), voices=2),
     P("Glitch Spray", ["FX", "Textures"], "grain", "Tiny, fast grains crushed and scattered into a stereo delay: digital spray.",
       gr(inst="glockenspiel", pos=0.2, size=12, density=90, spray=0.9, reverse=0.5, spread=0.85, scan=0.5, tone=0.55),
-      amp(0.005, 0.8, 0.6, 0.5), mod(0.01, 1.0, 0.5, 1.0, 0.0), crush(9, 3, 0.35), comp(1, -24.0, 4.0, 2.0, 90.0, 6.0, 14.0), dly(2, 0.19, 0.5, 0.5, 1, 0.3), voices=4),
+      amp(0.005, 0.8, 0.6, 0.5), mod(0.01, 1.0, 0.5, 1.0, 0.0), crush(9, 3, 0.35), comp(1, -24.0, 6.0, 0.3, 90.0, 6.0, 14.0), dly(2, 0.19, 0.5, 0.5, 1, 0.3), voices=4),
     P("Whoosh", ["FX"], "analog", "Filtered noise swept by a one-bar band-pass wobble, spread wide: a passing whoosh.",
       an(shape=0.0, detune=0.0, cutoff=12000, reso=0.0, oscmix=0.0, noise=1.0, drive=0.0, keytrack=0.0, osclevel=0.0),
       amp(0.4, 1.0, 0.9, 1.5), mod(0.01, 1.0, 0.5, 1.0, 0.0), wobble(2, "1/1", "tri", 300, 9000, 0.4, "bp", 0.0),

@@ -293,7 +293,7 @@ SYNTHPOP = project(
     rings([(16, 4, 0, KICK), (16, 2, 4, SNARE), (16, 8, 0, HAT), (16, 2, 4, CLAP)]), ring_vel(116, 106, 66, 72),
     {"seq.orbit.on": 1, "seq.orbit.part": 2, "seq.orbit.gate": 1.0}, lanes([16, 16, 16, 1], ["1/8", "1/8", "1/8", "1/4"]),
     lane_parts(2, 1, 4, 0),
-    mixer(ch1=(0, 0.1, 0.28), ch2=(-1, 0.0, 0.03), ch3=(-6.5, 0.22, 0.18), ch4=(-5.1, 0.35, 0.3), ch5=(4, 0.0, 0.14), master=-7.5),
+    mixer(ch1=(0, 0.1, 0.28), ch2=(-1, 0.0, 0.03), ch3=(-6.5, 0.22, 0.18), ch4=(-5.1, 0.35, 0.3), ch5=(4, 0.0, 0.14), master=-6.3),
     {"mix.ch5.comp": 0.5, "fxa.delay.sync": DELAY_SYNC["1/8."], "fxa.delay.feedback": 0.35, "fxa.delay.tone": 0.5,
      "fxb.reverb.size": 0.5, "fxb.reverb.damping": 0.45,
      "mix.master.comp": 1, "mix.master.comp.thresh": -15, "mix.master.comp.ratio": 2.2},
