@@ -45,6 +45,6 @@
     "fx.reverb.mix": 0.18,
     "voices": 8,
     "velsens": 0.8,
-    "gain": 0.0
+    "gain": 5.9
   }
 }

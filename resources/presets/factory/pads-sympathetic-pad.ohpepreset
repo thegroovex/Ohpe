@@ -53,6 +53,6 @@
     "fx.reverb.mix": 0.22,
     "voices": 10,
     "life": 0.2,
-    "gain": 0.0
+    "gain": 6.3
   }
 }

@@ -46,6 +46,6 @@
     "fx.delay.mix": 0.14,
     "voices": 8,
     "velsens": 0.9,
-    "gain": 0.0
+    "gain": 2.5
   }
 }

@@ -19,7 +19,8 @@ constexpr float stateLimit = 1000.0f; // guard: a state beyond this means someth
 constexpr float peakExp = 0.4f;       // resonance peak gain ~ (loss per period)^-peakExp (0.5 = unity broadband gain)
 constexpr float limitThreshold = 0.95f;
 constexpr float compThreshold = 0.35f, compRatio = 4.0f; // the body's loudness control ahead of the peak limiter
-constexpr float stringGain = 1.0f, tubeGain = 1.0f, plateGain = 1.0f, plateDrive = 2.5f; // output calibration per model
+constexpr float stringGain = 1.0f, tubeGain = 2.5f, plateGain = 1.0f, plateDrive = 2.5f; // output calibration per model (tubes: radiation
+                                                                                          // highpass + one bore pair need +8 dB)
 
 /** Phase delay (samples) of the first-order allpass (c + z^-1) / (1 + c z^-1) at w (radians / sample). */
 float allpassDelay (float c, float w) noexcept

@@ -25,13 +25,13 @@ def reso(model="string", follow="note", tune=0.0, size=0.5, material=0.55, decay
 
 
 RESO_GAINS = {  # level calibration (ohpe_render): about -15 dBFS active RMS
-    "Plucked Plate": 0.0,
-    "Gamelan Plate": 0.0,
-    "Bowed Tube": 0.0,
-    "Breath Bore": 0.0,
-    "Sympathetic Pad": 0.0,
-    "Drone Strings": 0.0,
-    "Glass Body Keys": 0.0,
+    "Plucked Plate": 5.9,
+    "Gamelan Plate": 2.5,
+    "Bowed Tube": 12.0,
+    "Breath Bore": 11.3,
+    "Sympathetic Pad": 6.3,
+    "Drone Strings": 11.2,
+    "Glass Body Keys": 2.3,
 }
 
 
@@ -53,7 +53,7 @@ PRESETS_RESO = [
                                        sympathetic=0.2, width=0.9, mix=0.85, drive=0.35),
       delay(0.375, 0.25, 0.45, 1, 0.14), voices=8, velsens=0.9),
     R("Bowed Tube", ["Leads"], "analog", "Breathy noise bowing a closed bore: a hollow, clarinet-like tone that swells with pressure.",
-      an(shape=0.2, detune=0.0, cutoff=2600, reso=0.1, oscmix=0.0, sub=0.0, noise=0.7, drive=0.1, keytrack=0.8, osclevel=0.25),
+      an(shape=0.15, detune=0.0, cutoff=4200, reso=0.1, oscmix=0.0, sub=0.0, noise=0.45, drive=0.15, keytrack=0.8, osclevel=0.7),
       amp(0.12, 0.4, 0.85, 0.5), mod(0.2, 0.6, 0.4, 0.4, 0.15),
       reso("closed", "note", size=0.4, material=0.45, decay=1.6, position=0.15, inharm=0.05, sympathetic=0.0, width=0.4,
            mix=0.9, drive=0.25, press=0.8, slide=0.6),

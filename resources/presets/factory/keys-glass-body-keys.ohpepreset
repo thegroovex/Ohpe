@@ -48,6 +48,6 @@
     "fx.reverb.mix": 0.2,
     "voices": 10,
     "mod.a": 0.005,
-    "gain": 0.0
+    "gain": 2.3
   }
 }
