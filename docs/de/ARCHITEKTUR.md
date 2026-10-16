@@ -130,3 +130,25 @@ Anleitung: [BAND-MISCHER-FX.md](BAND-MISCHER-FX.md) · Parameter: [../PARAMETERS
   Drive, Vibrato, Formant, Layer-Mischung), Mengen pro Quelle und Gleiten: eine Stimme hält den
   Ziel-Ausdruck und den aktuellen; die Tonhöhe pro Note gleitet über `pN.mpe.slide` (mindestens 2 ms),
   der Rest über `pN.mpe.smooth`; der erste Ausdruck einer Note gilt sofort.
+
+## 1.0: 3D-Raum
+
+* **DSP** (`src/core/fx/Space3D.*`): `SpaceEffect` (ein `IEffect`) – eigenes parametrisches binaurales Modell
+  (Kugelkopf-Schatten und Laufzeitdifferenz mit kubischen fraktionalen Verzögerungen, Ohrmuschel-Kerben und
+  Richtungsbänder, Schulterreflexion, Nahfeld-Pegel), Entfernung (Pegel, Luft, geschwindigkeitsbegrenzte
+  Doppler-Verzögerung), sechs mitwandernde Spiegelquellen-Reflexionen + ein FDN mit 4 Leitungen, Linkwitz-Riley-
+  Bassband bleibt mono, Lautsprecher-Modus (Constant-Power-Panning) mit 30 ms Übergang zwischen den Modi.
+  Steuerrate 16 Samples (Positionen, Filterkoeffizienten), alles andere pro Sample gerampt. Bewegungspfade sind reine
+  Funktionen (`space::pathPoint`, `space::orient`), gemeinsam für DSP, Display und Tests.
+* **Stufe pro Part** (`Part::applySpace`, `pN.space.*`): zuletzt in `Part::finishBlock` (nach Rack und Bass mono);
+  aus = exakter Bypass, Umschalten blendet 20 ms über. Die in 0.7 reservierten Matrix-Ziele (`DstAzimuth` …
+  `DstPathPhase`) binden sich über ihr Parameter-Suffix daran – an der Matrix musste nichts geändert werden.
+* **Rack-Typ** `InsertSlot::Space3D` (22), Block nach der Stufe für jeden Slot jedes Racks registriert.
+* **Transport / Abhöre**: `IEffect::setTransportPosition` (Song-Position; bei Tempo ×1 rastet die Bewegungsphase
+  darauf ein) und `IEffect::setMonitorMode`; `Core::process` liest `space.out` (gibt Änderungen an Parts und Racks
+  weiter) und `space.monocheck` (faltet den Hauptausgang nach dem Mixer zu mono).
+* **Oberfläche** (`src/ui/SpaceView.*`): die 3D-Szene (`space3d::Scene`, Spuren 30-mal pro Sekunde aus den Atomics
+  der Stufen), die Kopfhörer- / Lautsprecher-Piktogramme und das 3D-Abzeichen (Display-Kopf, Part-Wahl,
+  Bibliothekszeilen), die Raum-Ansicht des Effekte-Modus (`modfx::FxViewSpace`) und das Display-Bild
+  `Display::Visual::Space`.
+* Anleitung: [RAUM.md](RAUM.md) · Parameter: [PARAMETERS.md](../PARAMETERS.md#10--3d-spatialiser).
