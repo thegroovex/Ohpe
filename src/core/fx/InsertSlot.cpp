@@ -172,7 +172,12 @@ void InsertSlot::prepare (double sampleRate, int maxBlockSize)
 bool InsertSlot::prepareSelected (const ParamRegistry& reg)
 {
     if (typeIndex < 0 || preparedRate <= 0.0) return false;
-    const int t = std::clamp ((int) std::lround (reg.get (typeIndex)), 0, numTypes - 1);
+    return prepareType (std::clamp ((int) std::lround (reg.get (typeIndex)), 0, numTypes - 1));
+}
+
+bool InsertSlot::prepareType (int t)
+{
+    if (typeIndex < 0 || preparedRate <= 0.0 || t <= Off || t >= numTypes) return false;
     if (t == Off || ready[(size_t) t].load (std::memory_order_acquire)) return false;
     if (paramIndex[(size_t) t].empty() || paramIndex[(size_t) t].front() < 0) return false; // type not registered here
     effects[(size_t) t]->prepare (preparedRate, preparedBlock);

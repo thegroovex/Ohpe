@@ -70,6 +70,8 @@ Core::Core()
 
     snapshot.prepare (registry);
     for (auto& p : parts) p->setSnapshot (&snapshot); // 0.7: the matrix writes modulated values into it
+    static_assert (MorphSpace::numParts == numParts, "morph space parts");
+    morphSpace.bind (registry, snapshot, { parts[0].get(), parts[1].get(), parts[2].get(), parts[3].get() }); // p16
     lockStorage.reserve (1024);
     seqOut.locks = &lockStorage;
     seqOut.maxLocks = 1024;
@@ -108,6 +110,7 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     drumL.assign ((size_t) chunk, 0.0f);
     drumR.assign ((size_t) chunk, 0.0f);
     for (auto& p : parts) p->prepare (sr, chunk);
+    morphSpace.prepare (sr, chunk); // p16: the morph lanes
     drums.prepare (sr, chunk);
     mix.prepare (sr, chunk);
     stepSeq.prepare (sr, maxBlock);
@@ -143,6 +146,7 @@ bool Core::effectsWaiting() const noexcept
 void Core::reset() noexcept
 {
     for (auto& p : parts) p->reset();
+    morphSpace.reset();
     drums.reset();
     mix.reset();
     tapeMachine.resetDsp();
@@ -241,6 +245,7 @@ void Core::applyLocks (const std::vector<ParamLockEvent>& locks, size_t& next, i
     if (changed)
     {
         snapshot.pull (registry);
+        morphSpace.afterPull(); // p16
         for (auto& p : parts) p->pullParams (snapshot);
         drums.pullParams (snapshot);
         mix.pullParams (snapshot);
@@ -323,6 +328,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
 {
     // 1. parameters for this block
     snapshot.pull (registry);
+    morphSpace.afterPull(); // p16: the morph values over the parts' own
     for (auto& p : parts) p->pullParams (snapshot);
     drums.pullParams (snapshot);
     mix.setTempo (bpmForUi.load (std::memory_order_relaxed));
@@ -359,6 +365,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     {
         lastMonitor = mon;
         for (auto& p : parts) p->setMonitorMode (mon);
+        morphSpace.setMonitorMode (mon); // p16
         masterRack.setMonitorMode (mon);
     }
     const bool monoCheck = monoCheckIndex >= 0 && snapshot.getBool (monoCheckIndex);
@@ -462,7 +469,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         for (int p = 0; p < numParts; ++p)
         {
             parts[(size_t) p]->setTransport (tr.bpm, chunkPpq, tr.playing); // 0.7: tempo-synced LFOs
-            parts[(size_t) p]->render (partL[(size_t) p].data(), partR[(size_t) p].data(), len);
+            morphSpace.render (p, partL[(size_t) p].data(), partR[(size_t) p].data(), len, tr.bpm, chunkPpq, tr.playing); // p16: part + morph lanes
             src.left[(size_t) (source::part1 + p)] = partL[(size_t) p].data();
             src.right[(size_t) (source::part1 + p)] = partR[(size_t) p].data();
             scopeTap.offer (p, partL[(size_t) p].data(), partR[(size_t) p].data(), len); // 0.7: display scope (after the rack)
@@ -508,6 +515,8 @@ std::string Core::saveState (const std::string& uiJson) const
     s["sequencer"] = stepSeq.toJson();
     s["orbit"] = orbit.toJson();
     s["tape"] = tapeMachine.settingsJson();
+    for (int p = 0; p < numParts; ++p)
+        if (morphSpace.anyCorner (p)) { s["morph"] = morphSpace.toJson(); break; } // p16
     if (! uiJson.empty()) s["ui"] = uiJson;
     for (const auto& [name, text] : extraSections)
         if (! text.empty() && s.find (name) == s.end()) s[name] = text;
@@ -525,7 +534,9 @@ bool Core::loadState (const std::string& json, std::string* uiJsonOut)
     else stepSeq.clearPattern();
     extraSections.clear();
     for (const auto& [name, text] : r.sections)
-        if (name != "midimap" && name != "sequencer" && name != "ui" && name != "tape" && name != "orbit") extraSections[name] = text;
+        if (name != "midimap" && name != "sequencer" && name != "ui" && name != "tape" && name != "orbit" && name != "morph") extraSections[name] = text;
+    if (auto it = r.sections.find ("morph"); it != r.sections.end()) morphSpace.fromJson (it->second); // p16
+    else morphSpace.clearAll();
     if (auto it = r.sections.find ("tape"); it != r.sections.end()) tapeMachine.loadSettingsJson (it->second);
     if (auto it = r.sections.find ("orbit"); it != r.sections.end()) orbit.fromJson (it->second);
     else orbit.clearPattern();

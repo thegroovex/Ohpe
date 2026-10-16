@@ -19,6 +19,7 @@ enum Source
 {
     SrcOff = 0, SrcLfo1, SrcLfo2, SrcLfo3, SrcAmpEnv, SrcModEnv, SrcEnv3, SrcVelocity, SrcKeyTrack, SrcModWheel, SrcPitchBend,
     SrcChannelPressure, SrcNotePressure, SrcSlide, SrcNoteBend, SrcRandom, SrcMacro1, SrcMacro2, SrcMacro3, SrcMacro4, SrcSeqLane,
+    SrcMorphX, SrcMorphY, // p16: the morph pad's position (Part scope, fed by the morph space)
     numSources
 };
 /** Sources of the 0.7 list; sources appended later (from here on) are Part-scope values fed by other modules. */
@@ -37,6 +38,7 @@ enum Dest
     DstFx1Param1 = DstFx1Mix + 6, // ... FX slot k parameter j: DstFx1Param1 + 4 * (k - 1) + (j - 1)
     DstAzimuth = DstFx1Param1 + 24, DstElevation, DstDistance, DstPathRate, DstPathPhase, // reserved: 3D spatialiser (1.0)
     DstLife, // p15: the part's life amount ("pN.life")
+    DstMorphX, DstMorphY, // p16: the morph pad's position ("pN.morph.x" / "pN.morph.y")
     numDests
 };
 static constexpr int numEngineDests = 24;

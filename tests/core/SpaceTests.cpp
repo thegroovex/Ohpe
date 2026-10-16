@@ -183,6 +183,8 @@ TEST_CASE ("1.0 space: parameters - per-part stage, monitoring, rack type in eve
     // p14: the performance wheels (perf.bend, perf.mod) come right after the punch pass IDs (later blocks follow them)
     CHECK (reg.indexOf ("perf.bend") == reg.indexOf ("mfx4.chorus.lowcut") + 1);
     CHECK (reg.indexOf ("perf.mod") == reg.indexOf ("perf.bend") + 1);
+    // p16: the morph space block follows the later blocks
+    CHECK (reg.indexOf ("perf.mod") < reg.indexOf ("p1.morph.on"));
 }
 
 TEST_CASE ("1.0 space: motion paths and orientation (pure functions)")

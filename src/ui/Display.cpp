@@ -3,6 +3,7 @@
 #include "Display.h"
 
 #include "ModFxViews.h"
+#include "MorphView.h"
 
 #include "Palette.h"
 #include "plugin/Localisation.h"
@@ -586,6 +587,19 @@ int Display::selectedViewTab() const noexcept
 bool Display::showsModView() const noexcept { return mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMod; }
 bool Display::showsRackView() const noexcept { return mode == Mode::Effects && modfx::isRackView (ctx.fxView); }
 bool Display::showsSpaceView() const noexcept { return mode == Mode::Effects && ctx.fxView == modfx::FxViewSpace; }
+bool Display::showsMorphView() const noexcept { return mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMorph; }
+
+juce::Rectangle<float> Display::morphPadArea() const { return morphview::padArea (visualArea()); }
+juce::Rectangle<float> Display::morphCornerArea (int corner) const { return morphview::cornerChip (morphPadArea(), corner); }
+
+void Display::setMorphPosition (juce::Point<float> p)
+{
+    const auto pos = morphview::positionAt (morphPadArea(), p);
+    const auto pre = "p" + juce::String (ctx.part + 1) + ".morph.";
+    if (auto* x = proc.parameter (pre + "x")) x->setValueNotifyingHost (pos.x);
+    if (auto* y = proc.parameter (pre + "y")) y->setValueNotifyingHost (pos.y);
+    repaint();
+}
 
 juce::Rectangle<float> Display::visualArea() const
 {
@@ -810,6 +824,20 @@ void Display::mouseDown (const juce::MouseEvent& e)
             if (seqTab (v).contains (p)) { if (onViewTabClicked) onViewTabClicked (v); return; }
         if (showsModView())
             if (const int r = modfx::modListHit (visualArea(), p); r >= 0) { if (onModRoutingClicked) onModRoutingClicked (r); return; }
+        if (showsMorphView()) // p16: corner chips assign sounds, the pad moves the position (gesture per drag)
+        {
+            if (const int c = morphview::cornerAt (morphPadArea(), p); c >= 0) { if (onMorphCornerClicked) onMorphCornerClicked (c); return; }
+            if (morphPadArea().contains (p))
+            {
+                const auto pre = "p" + juce::String (ctx.part + 1) + ".morph.";
+                if (e.mods.isPopupMenu()) { showControlMenu (proc, pre + "x", this); return; }
+                for (const char* k : { "x", "y" })
+                    if (auto* prm = proc.parameter (pre + k)) prm->beginChangeGesture();
+                morphDrag = true;
+                setMorphPosition (p);
+                return;
+            }
+        }
         if (showsRackView())
             if (const int s = modfx::rackChainHit (visualArea(), shownRack().numSlots(), p); s >= 0)
             {
@@ -820,7 +848,7 @@ void Display::mouseDown (const juce::MouseEvent& e)
     }
 
     // 0.7: the visual area - click cycles character / scope / terrain, right-click opens the view menu
-    if (! showsModView() && ! showsRackView() && ! showsSpaceView() && mode != Mode::Tape && characterArea().contains (p)
+    if (! showsModView() && ! showsRackView() && ! showsSpaceView() && ! showsMorphView() && mode != Mode::Tape && characterArea().contains (p)
         && ! (mode == Mode::Sequencer && seqTab (0).getBottom() > p.y))
     {
         if (e.mods.isPopupMenu()) { showVisualMenu(); return; }
@@ -864,6 +892,7 @@ void Display::mouseDown (const juce::MouseEvent& e)
 
 void Display::mouseDrag (const juce::MouseEvent& e)
 {
+    if (morphDrag) { setMorphPosition (e.position); return; } // p16
     if (dragRow < 0) return;
     const float len = juce::jmax (40.0f, barArea (dragRow).getWidth());
     setRowValue (dragRow, drag.update (e.position, len, isFineDrag (e.mods)));
@@ -877,6 +906,13 @@ void Display::mouseUp (const juce::MouseEvent& e)
         if (to >= 0 && to != dragSlot && onFxSlotMoved) onFxSlotMoved (dragSlot, to);
     }
     dragSlot = -1;
+    if (morphDrag) // p16
+    {
+        morphDrag = false;
+        const auto pre = "p" + juce::String (ctx.part + 1) + ".morph.";
+        for (const char* k : { "x", "y" })
+            if (auto* prm = proc.parameter (pre + k)) prm->endChangeGesture();
+    }
     if (dragRow >= 0 && virtuals[(size_t) dragRow] == nullptr && dragRow < (int) ids.size())
         if (auto* prm = proc.parameter (ids[(size_t) dragRow])) prm->endChangeGesture();
     dragRow = -1;
@@ -997,6 +1033,13 @@ void Display::paint (juce::Graphics& g)
         paintRows (g);
         paintStrip (g, stripArea());
         g.drawImageAt (glassLayer, 0, 0);
+        return;
+    }
+    if (showsMorphView()) // p16: the morph pad of the edit part
+    {
+        morphview::paint (g, visualArea(), core, juce::jlimit (0, Core::numParts - 1, ctx.part), time);
+        paintRows (g);
+        paintStrip (g, stripArea());
         return;
     }
     if (showsModView() || showsRackView())
@@ -1412,6 +1455,17 @@ void Display::paintStrip (juce::Graphics& g, juce::Rectangle<float> s)
     if (showsModView()) // 0.7: trace of the selected routing
     {
         modfx::paintModTrace (g, hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s, core, ctx.part, ctx.modRouting, modHistory);
+        if (hasSoftKeys()) paintSoftKeys (g);
+        return;
+    }
+    if (showsMorphView()) // p16: what the pad does right now
+    {
+        const auto area = hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s;
+        auto line = area.withHeight (area.getHeight() * 0.4f).reduced (area.getHeight() * 0.05f, 0).translated (0, area.getHeight() * 0.08f);
+        g.setFont (labelFont (line.getHeight() * 0.55f));
+        g.setColour (colour::displayText);
+        g.drawText (i18n::upper (tr ("Morph")) + "   " + morphview::statusLine (core, juce::jlimit (0, Core::numParts - 1, ctx.part)), line,
+                    juce::Justification::centredLeft, true);
         if (hasSoftKeys()) paintSoftKeys (g);
         return;
     }

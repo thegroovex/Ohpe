@@ -78,6 +78,8 @@ list(APPEND OHPE_JUCE_MODULES ohpe_presets)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/Visuals.cpp)
 # 1.0: the 3D space view, the headphones pictogram / 3D badge
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/SpaceView.cpp)
+# p16: the morph pad (LFO mode, view Morph)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/MorphView.cpp)
 
 set(OHPE_FORMATS VST3 Standalone)
 if(APPLE)
@@ -172,4 +174,9 @@ endif()
 # ---------------------------------------------------------------- p14: redesigned plate, wheels, glide
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/UiLayoutTests.cpp)
+endif()
+
+# ---------------------------------------------------------------- p16: the morph pad (LFO mode, view Morph)
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/MorphUiTests.cpp)
 endif()

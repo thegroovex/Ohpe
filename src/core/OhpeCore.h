@@ -15,6 +15,7 @@
 #include "model/ParamSnapshot.h"
 #include "model/SpscQueue.h"
 #include "model/StereoFifo.h"
+#include "morph/MorphSpace.h"
 #include "seq/Arpeggiator.h"
 #include "seq/EuclidSequencer.h"
 #include "seq/OrbitSequencer.h"
@@ -69,6 +70,11 @@ public:
     InsertSlot& insertFx (int part) noexcept { return parts[(size_t) part]->fxRack().slot (0); } ///< 0.2: FX slot of a part (0.7: rack slot 1)
     FxRack& fxRack (int part) noexcept { return parts[(size_t) part]->fxRack(); } ///< 0.7: FX rack of a part
     FxRack& masterFxRack() noexcept { return masterRack; }                      ///< 0.7: master FX rack ("mfx1." ...)
+    /** p16: the morph space (XY pad per part, four corner sounds; corners and plans on the message thread). */
+    MorphSpace& morph() noexcept { return morphSpace; }
+    const MorphSpace& morph() const noexcept { return morphSpace; }
+    /** p16, message thread (timer): rebuilds morph plans when a part's own sound changed under an empty corner. */
+    bool updateMorph() { return morphSpace.update(); }
     /** 0.7: scope tap for the display (a part after its FX rack, or the main output). */
     ScopeTap& scope() noexcept { return scopeTap; }
 
@@ -193,6 +199,7 @@ public:
         // not part of presets (see preset::isExcludedFromProject)
         static constexpr const char* perfBend = "perf.bend"; ///< -1..+1, springs back to 0 on the screen
         static constexpr const char* perfMod = "perf.mod";   ///< 0..1
+        // p16: the morph space - per part "pN.morph.on / x / y / glide / xsrc / ysrc" (MorphSpace::registerParams)
     };
 
 private:
@@ -232,6 +239,7 @@ private:
     ParamRegistry registry;
     ParamSnapshot snapshot;
     std::array<std::unique_ptr<Part>, numParts> parts;
+    MorphSpace morphSpace; ///< p16 (after the parts: its lanes follow them)
     Mixer mix;
     drum::DrumKit drums;
     StepSequencer stepSeq;

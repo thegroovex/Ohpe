@@ -16,7 +16,7 @@
 namespace ohpe::ui::modfx
 {
 /** Views of the LFO mode (PageContext::lfoView) and of the Effects mode (PageContext::fxView). */
-enum LfoView { LfoViewLfo = 0, LfoViewMod, numLfoViews };
+enum LfoView { LfoViewLfo = 0, LfoViewMod, LfoViewMorph, numLfoViews }; ///< p16: Morph (the morph pad)
 enum FxView { FxViewSends = 0, FxViewRack, FxViewMaster, FxViewSpace, numFxViews }; ///< 1.0: Space (the 3D stage)
 /** The view shows an FX rack (part or master). */
 inline bool isRackView (int v) noexcept { return v == FxViewRack || v == FxViewMaster; }

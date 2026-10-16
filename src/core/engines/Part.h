@@ -130,6 +130,22 @@ public:
     /** Renders into l/r (overwrites). numSamples <= maxBlockSize. */
     void render (float* l, float* r, int numSamples) noexcept;
 
+    /**
+        p16 (morph space), audio thread: parts that play along with this one - the extra sound lanes of the morph pad
+        (other engines / effect chains). Every note, expression and controller this part receives is passed on to them.
+        Slot k = 0..maxFollowers-1, nullptr = none.
+    */
+    static constexpr int maxFollowers = 3;
+    void setFollower (int k, Part* p) noexcept
+    {
+        if (k >= 0 && k < maxFollowers) followers[(size_t) k] = p;
+    }
+    /** p16: velocity of a key that is down (0 = up; sustained keys count as up), the sustain pedal, the pitch bend
+        (-1..+1) - to start a woken morph lane with the notes being played. Audio thread. */
+    float heldVelocity (int note) const noexcept { return note >= 0 && note < 128 ? held[(size_t) note] : 0.0f; }
+    bool sustainPedal() const noexcept { return sustain; }
+    float pitchBend() const noexcept { return bend; }
+
     EngineType currentEngineType() const noexcept { return current; }
     ISynthEngine* engine (EngineType t) noexcept { return engines[(size_t) t].get(); }
     int activeVoiceCount() const noexcept;
@@ -194,6 +210,8 @@ private:
     float volume = 0.8f, gainFactor = 1.0f, bendRange = 2.0f, tune = 0.0f, bend = 0.0f;
     bool sustain = false;
     std::array<bool, 128> sustained {};
+    std::array<float, 128> held {};            ///< p16: velocities of the keys that are down
+    std::array<Part*, maxFollowers> followers {}; ///< p16: morph lanes
     int polyphony = 8;
 
     // ---- 0.7: FX rack, modulation matrix

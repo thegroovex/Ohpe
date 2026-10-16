@@ -438,6 +438,37 @@ int main (int argc, char* argv[])
             e.advanceAnimation (1.0f / 30.0f);
         }
 
+        // p16: the morph pad - four corners on four engines (two library pads, the current sound, a library bell),
+        //      a chord held, the position between the corners
+        {
+            auto byName = [&] (const char* name) {
+                const auto& list = p.presets().entries();
+                for (int i = 0; i < (int) list.size(); ++i)
+                    if (list[(size_t) i].meta.name == name && list[(size_t) i].meta.kind == preset::Kind::Part) return i;
+                return -1;
+            };
+            e.selectPart (0);
+            e.selectEngine (EngineType::Analog);
+            e.selectMode (ui::Mode::Lfo);
+            e.selectView (2); // LFO | Mod | Morph
+            const char* corners[] = { "Glass Shimmer", "Breath Choir Pad", nullptr, "Crystal FM Pad" };
+            for (int c = 0; c < 4; ++c) e.assignMorphCorner (c, corners[c] != nullptr ? byName (corners[c]) : -1);
+            setPlain (p, "p1.morph.glide", 0.0f);
+            setPlain (p, "p1.morph.x", 0.62f);
+            setPlain (p, "p1.morph.y", 0.34f);
+            prepareRack (p);
+            playAnimated (p, e, 2, { 48, 55 });
+            playAnimated (p, e, 40, { 64 });
+            save (e, dir.getChildFile ("ohpe-morph-view" + suffix + ".png"));
+            release (p, { 48, 55, 64 });
+            e.assignMorphCorner (0, -3);
+            setPlain (p, "p1.morph.on", 0.0f);
+            setPlain (p, "p1.morph.x", 0.5f);
+            setPlain (p, "p1.morph.y", 0.5f);
+            run (p, 8);
+            e.selectView (0);
+        }
+
         // 0.3: preset library with a category filter and a preset selected
         e.showLibrary (true);
         auto& lib = e.libraryComponent();

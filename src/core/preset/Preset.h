@@ -31,6 +31,7 @@ class Core;
           "comment": "",
           "params": { "<id>": <plain value>, ... },
           "arp": { "on": 1, "mode": 0, "oct": 2, "gate": 0.5, "rate": 2, "latch": 1 },  // part only, optional
+          "morph": { "corners": [ { "name": "...", "params": {...} }, null, ... ] }, // part only, optional (p16)
           "sections": { "sequencer": {...}, "orbit": {...} }   // project only, optional
         }
 
@@ -48,6 +49,10 @@ class Core;
       whose arp a preset switched on (and that is still unchanged) switches it off again.
     * "modSchema" (0.7, optional): schema version of the modulation matrix routings ("mod.sK.*" / "pN.mod.sK.*")
       the preset contains; presets of older schemas are migrated when they are read.
+    * "morph" (part presets only, optional, p16): the four corners of the part's morph pad (A top left, B top right,
+      C bottom left, D bottom right; null = the part's own sound). Each corner lists its name and its sound
+      parameters like "params" (local IDs, sparse: missing = default). Project presets and states keep the corners
+      of all parts in the section "morph".
     * Values are plain values (as shown, e.g. Hz, seconds). Unknown IDs are ignored, so presets
       from newer versions load; version-1 presets (no kind / tags, "prefix" field) load as parts.
     * Loading a preset never adds, removes or reorders parameters.
@@ -90,6 +95,8 @@ struct Preset
     /** part only: arpeggiator settings ("on", "mode", "oct", "gate", "rate", "latch"; local keys of
         "seq.arp.*"), absent if the preset does not carry an arp block */
     std::optional<std::map<std::string, float>> arp;
+    /** part only, p16: the morph corners of the part (JSON of MorphSpace::partToJson), absent if no corner is set */
+    std::optional<std::string> morph;
 };
 
 /** The keys an arp block may carry (local IDs below "seq.arp."). */
@@ -125,6 +132,12 @@ struct PartOptions
         The caller sets it when a preset switched that arp on and it has not been changed since. */
     bool releaseArp = false;
 };
+
+/** p16: the part's morph corners into the preset's "morph" block (none when no corner is set). */
+void captureMorph (const Core& core, int partIndex, Preset& p);
+/** p16: a part preset's morph corners into part `partIndex`; a preset without a "morph" block clears the part's
+    corners (a new sound replaces the morph space too). */
+void applyPartMorph (const Preset& p, Core& core, int partIndex);
 
 /** Loads a part preset into part `partIndex` (0-based). Message thread. */
 ApplyResult applyPart (const Preset& p, ParamRegistry& reg, int partIndex, const PartOptions& options = {});

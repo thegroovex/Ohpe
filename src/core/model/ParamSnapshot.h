@@ -53,6 +53,13 @@ public:
     {
         if (index >= 0 && index < (int) values.size()) values[(size_t) index] = plain;
     }
+    /** p16: the value a parameter has before modulation and morphing: its sequencer lock, else the registry value. */
+    float base (const ParamRegistry& reg, int index) const noexcept
+    {
+        if (index < 0 || index >= (int) values.size()) return 0.0f;
+        const float l = locks[(size_t) index];
+        return std::isnan (l) ? reg.get (index) : l;
+    }
     bool isLocked (int index) const noexcept { return index >= 0 && index < (int) locks.size() && ! std::isnan (locks[(size_t) index]); }
     int size() const noexcept { return (int) values.size(); }
 

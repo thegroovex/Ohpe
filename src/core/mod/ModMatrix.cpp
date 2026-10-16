@@ -32,6 +32,8 @@ const std::vector<SourceInfo>& sourceTable()
         { "macro3", "Macro 3", "Makro 3", false, S::Part },
         { "macro4", "Macro 4", "Makro 4", false, S::Part },
         { "seqlane", "Seq Lane", "Seq-Spur", false, S::Part },
+        { "morphx", "Morph X", "Morph X", false, S::Part }, // p16: the morph pad
+        { "morphy", "Morph Y", "Morph Y", false, S::Part },
     };
     return t;
 }
@@ -80,6 +82,9 @@ const std::vector<DestInfo>& destTable()
         add ("pathrate", "Motion Path Rate", "Bewegungspfad Tempo", DestKind::PartParam, 0, "space.pathrate");
         add ("pathphase", "Motion Path Phase", "Bewegungspfad Phase", DestKind::PartParam, 0, "space.pathphase");
         add ("life", "Life", "Leben", DestKind::PartParam, 0, "life"); // p15
+        // p16: the morph pad's position
+        add ("morphx", "Morph X", "Morph X", DestKind::PartParam, 0, "morph.x");
+        add ("morphy", "Morph Y", "Morph Y", DestKind::PartParam, 0, "morph.y");
         return v;
     }();
     return t;

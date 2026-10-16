@@ -690,3 +690,21 @@ part, its voice slot, its note and its start count, so a render is repeatable. C
 (no steps). The value is part of part presets and projects and MIDI-learnable.
 
 The modulation matrix gains the target 72 **Life** (`pN.mod.sK.dst`, key `life`), which moves `pN.life` of the routing's part.
+
+## Morph space (p16)
+
+Appended after the life block (`p4.life`), part by part (`p1.morph.*` … `p4.morph.*`, 24 IDs). Guides:
+[English](en/MORPH.md) · [Deutsch](de/MORPH-RAUM.md). The corners themselves are not parameters: they live in
+part presets (`"morph"` block) and in projects / the plug-in state (section `"morph"`).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.morph.on` | Part N Morph | Part N Morph | Off / On | Off |
+| `pN.morph.x` | Part N Morph X | Part N Morph X | 0 … 1 (left … right) | 0.5 |
+| `pN.morph.y` | Part N Morph Y | Part N Morph Y | 0 … 1 (bottom … top) | 0.5 |
+| `pN.morph.glide` | Part N Morph Glide | Part N Morph-Gleiten | 0 … 2 s | 0.05 |
+| `pN.morph.xsrc` | Part N Morph X Control | Part N Morph X Steuerung | Off, Pressure, Slide, Mod Wheel | Off |
+| `pN.morph.ysrc` | Part N Morph Y Control | Part N Morph Y Steuerung | Off, Pressure, Slide, Mod Wheel | Off |
+
+The modulation matrix gains the sources **Morph X / Morph Y** (21, 22) and the targets **Morph X / Morph Y**
+(73, 74); the source and target choice lists grow at their end.

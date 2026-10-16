@@ -270,5 +270,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
 
     // ---- p15: life per part ("pN.life": held notes keep evolving - drift, chaos LFOs, grain scatter, filter breathing) --
     for (auto& p : parts) p->registerLate15LifeParams (reg);
+    // ---- p16: the morph space - per part: on, X / Y, glide, X / Y control (pressure, slide, mod wheel) -------
+    MorphSpace::registerParams (reg, Core::numParts);
 }
 } // namespace ohpe

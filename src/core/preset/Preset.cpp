@@ -118,6 +118,8 @@ Preset captureProject (Core& core, Meta meta, const std::map<std::string, std::s
     }
     p.sections["sequencer"] = core.stepSequencer().toJson();
     p.sections["orbit"] = core.orbitSequencer().toJson();
+    for (int i = 0; i < Core::numParts; ++i)
+        if (core.morph().anyCorner (i)) { p.sections["morph"] = core.morph().toJson(); break; } // p16
     for (const auto& [name, text] : extraSections)
         if (! text.empty()) p.sections[name] = text;
     return p;
@@ -148,6 +150,11 @@ std::string toJson (const Preset& p)
         json arp = json::object();
         for (const auto& [k, v] : *p.arp) arp[k] = v;
         j["arp"] = arp;
+    }
+    if (p.meta.kind == Kind::Part && p.morph) // p16
+    {
+        auto parsed = json::parse (*p.morph, nullptr, false);
+        if (! parsed.is_discarded()) j["morph"] = parsed;
     }
     if (! p.sections.empty())
     {
@@ -195,6 +202,7 @@ bool fromJson (const std::string& text, Preset& out, std::string* error)
         }
         p.arp = std::move (arp);
     }
+    if (p.meta.kind == Kind::Part && j.contains ("morph") && j["morph"].is_object()) p.morph = j["morph"].dump(); // p16
     if (j.contains ("sections") && j["sections"].is_object())
         for (const auto& [name, v] : j["sections"].items())
             p.sections[name] = v.is_string() ? v.get<std::string>() : v.dump();
@@ -276,10 +284,25 @@ ApplyResult applyProject (const Preset& p, Core& core)
     if (auto it = p.sections.find ("orbit"); it != p.sections.end()) core.orbitSequencer().fromJson (it->second);
     else core.orbitSequencer().clearPattern();
     for (const auto& [name, text] : p.sections)
-        if (name != "sequencer" && name != "orbit" && name != "midimap" && name != "ui" && name != "tape")
+        if (name != "sequencer" && name != "orbit" && name != "midimap" && name != "ui" && name != "tape" && name != "morph")
             core.setStateSection (name, text);
+    if (auto it = p.sections.find ("morph"); it != p.sections.end()) core.morph().fromJson (it->second); // p16
+    else core.morph().clearAll();
     r.ok = true;
     return r;
+}
+
+void captureMorph (const Core& core, int partIndex, Preset& p)
+{
+    if (core.morph().anyCorner (partIndex)) p.morph = core.morph().partToJson (partIndex);
+    else p.morph.reset();
+}
+
+void applyPartMorph (const Preset& p, Core& core, int partIndex)
+{
+    if (p.meta.kind != Kind::Part) return;
+    if (p.morph) core.morph().partFromJson (partIndex, *p.morph);
+    else core.morph().clearPart (partIndex);
 }
 
 std::string safeFileName (const std::string& name)

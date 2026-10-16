@@ -259,8 +259,8 @@ und Lautstärke und Grundnote des Kits (Seite 3). **Laden** legt eine Audiodatei
 
 ![Mod-Ansicht](../images/ohpe-mod-view-de.png)
 
-Im **LFO**-Modus schalten die Reiter auf dem Display zwischen **LFO** (LFO 1, wie bisher) und
-**Mod**, der [Modulationsmatrix](MODULATION.md) des Edit-Parts. Die Mod-Ansicht listet alle
+Im **LFO**-Modus schalten die Reiter auf dem Display zwischen **LFO** (LFO 1, wie bisher),
+**Mod**, der [Modulationsmatrix](MODULATION.md) des Edit-Parts, und **Morph** (dem [Morph-Pad](#morph-ansicht-p16)). Die Mod-Ansicht listet alle
 **16 Verbindungen** in zwei Spalten: Quelle → Ziel, ein Balken für die Menge (nach rechts = positiv,
 nach links = negativ) und der aktuelle Wert der Verbindung. Ziele auf einer Engine oder einem Effekt
 zeigen den echten Parameternamen („Cutoff“, „FX2 Hyper-Verstimmung“) – man sieht, was sich bewegt,
@@ -329,6 +329,26 @@ sagt *Binaurales 3D – am besten mit Kopfhörern*. Die Part-Auswahl zeigt dasse
 die Bibliothek hinter dem Namen jedes Presets mit dem Schlagwort **3D**.
 
 ![Das 3D-Abzeichen im Display-Kopf](../images/ohpe-space-badge-de.png)
+
+## Morph-Ansicht (p16)
+
+![Die Morph-Ansicht](../images/ohpe-morph-view-de.png)
+
+Der dritte Reiter des **LFO**-Modus, **Morph**, zeigt das [Morph-Pad](MORPH-RAUM.md) des Edit-Parts: vier
+Ecken-Schilder (A oben links, B oben rechts, C unten links, D unten rechts) in den Farben der Regler, das Pad mit der
+geglätteten Position, ein weiches Leuchten aus jeder Ecke, so stark wie ihr Anteil, und die Kanten zwischen den Ecken
+– durchgezogen, wo zwei Ecken ihre Parameter morphen (ein Klang), gepunktet, wo sie als parallele Klänge überblendet
+werden (andere Engine oder anderer Effekt). Die Leiste darunter sagt, was das Pad gerade tut (ein Klang oder wie
+viele Klänge parallel spielen).
+
+| Aktion | Ergebnis |
+|---|---|
+| Auf dem Pad ziehen | bewegt die Position (X, Y); Rechtsklick = MIDI-Lernen |
+| Ecken-Schild anklicken oder **A … D** (Softkeys) | Menü: **Aktueller Klang**, **Preset ▸** (jedes Part-Preset der Bibliothek), **Ecke leeren**, **Alle Ecken leeren** |
+| Regler, Seite *Morph* | Morph ein, X, Y, Gleiten |
+| Regler, Seite *Steuerung* | X- / Y-Steuerung (Aus, Druck, Slide, Modulationsrad), MPE, Ausdrucks-Glättung |
+
+Wer eine Ecke belegt, schaltet den Morph ein. Eine leere Ecke steht für den eigenen Klang des Parts.
 
 ## Tasten
 

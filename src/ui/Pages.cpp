@@ -3,6 +3,7 @@
 #include "Pages.h"
 
 #include "ModFxViews.h"
+#include "MorphView.h"
 #include "SpaceView.h"
 #include "fx/FxRack.h"
 #include "mod/ModVoice.h"
@@ -126,6 +127,7 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
                      p + "mod.amt", p + "velsens", p + "glide", p + "voices", p + "polyglide", p + "life", "", "" }; // p15: life
         case Mode::Lfo:
             if (ctx.lfoView == modfx::LfoViewMod) return modfx::modParams (core, partIndex, ctx.modRouting); // 0.7
+            if (ctx.lfoView == modfx::LfoViewMorph) return morphview::morphParams (partIndex); // p16
             return { p + "lfo.rate", p + "lfo.depth", p + "lfo.shape", p + "lfo.dest", p + "tune", p + "fine", p + "bend", p + "vol",
                      p + "midich", p + "quant", p + "chord", "key.root", "key.scale", p + "mpe", p + "mpe.bend", p + "mpe.press",
                      p + "mpe.timbre", p + "mpe.pressamt", p + "mpe.timbreamt", p + "mpe.smooth", p + "mpe.slide", "", "", "" }; // 0.8
@@ -209,8 +211,9 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
         case Mode::Synth: t = { "Macros" }; break;
         case Mode::Envelope: t = { "Amp Envelope", "Mod Envelope", "Voice" }; break;
         case Mode::Lfo:
-            t = ctx.lfoView == modfx::LfoViewMod ? modfx::modTitles (core, ctx.part, ctx.modRouting)
-                                                 : std::vector<std::string> { "LFO", "Pitch & Level", "MIDI & Key", "Scale & MPE", "MPE" };
+            t = ctx.lfoView == modfx::LfoViewMod     ? modfx::modTitles (core, ctx.part, ctx.modRouting)
+                : ctx.lfoView == modfx::LfoViewMorph ? morphview::morphTitles() // p16
+                                                     : std::vector<std::string> { "LFO", "Pitch & Level", "MIDI & Key", "Scale & MPE", "MPE" };
             break;
         case Mode::Mixer: t = { "Channel", "EQ & Output", "Source & Dynamics", "Master", "Master Compressor", "Master Output", "Master Filter" }; break;
         case Mode::Effects: t = { "Delay (Send A)", "Reverb (Send B)", "Delay (Send A)", "FX Slot" }; break;
@@ -358,6 +361,7 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
                 const auto r = p + "mod.s" + std::to_string (k) + ".";
                 groups.push_back ({ "Mod", k, { r + "src", r + "via", r + "dst", r + "amt", r + "curve" } });
             }
+            groups.push_back ({ "Morph", 0, { p + "morph.on", p + "morph.x", p + "morph.y", p + "morph.glide", p + "morph.xsrc", p + "morph.ysrc" } }); // p16
             return groups;
         }
         case Mode::Effects:

@@ -144,6 +144,10 @@ public:
     /** The design-unit rectangles of the plate's panels and legends (layout tests). */
     static juce::Rectangle<float> designArea (const char* name);
     void softKey (int id) { onSoftKey (id); }
+    /** p16: assigns morph corner `corner` (0..3) of the edit part: `presetIndex` = an entry of the library (its sound),
+        -1 = the current sound, -2 = clear the corner, -3 = clear every corner. Switches the morph on when a corner
+        gets a sound. */
+    void assignMorphCorner (int corner, int presetIndex);
     bool loadAudioFile (const juce::File& f, int pad = -1);
 
 private:
@@ -160,6 +164,7 @@ private:
     void refreshSoftKeys();
     void refreshProView();
     void showMidiMenu();
+    void showCornerMenu (int corner); ///< p16
     void saveUiState();
     void loadUiState();
     void setParamPlain (const juce::String& id, float plain);
@@ -224,6 +229,7 @@ private:
     int libraryRequestsSeen = 0;
     int lastKeyboardChannel = 1, lastFxType = -1;
     int modPage = 0, rackPage = 0, lastModSignature = -1; ///< 0.7
+    int morphPage = 0; ///< p16
     std::array<ui::VirtualPtr, 4> virtuals {};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OhpeEditor)

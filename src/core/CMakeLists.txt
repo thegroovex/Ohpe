@@ -59,6 +59,9 @@ target_sources(ohpe_core PRIVATE
     preset/Preset.cpp
     preset/PresetLibrary.cpp)
 
+# p16: the morph space (XY pad between four complete sounds per part)
+target_sources(ohpe_core PRIVATE morph/MorphSpace.cpp)
+
 # 0.4 (package F): factory sample bank (instruments, drum kits)
 target_sources(ohpe_core PRIVATE sample/FactoryBank.cpp)
 
