@@ -40,6 +40,22 @@
     "lfo.dest": 2,
     "voices": 14,
     "velsens": 0.75,
+    "fx.type": 10,
+    "fx.compressor.thresh": -6.2,
+    "fx.compressor.ratio": 2.5,
+    "fx.compressor.attack": 5.0,
+    "fx.compressor.release": 140.0,
+    "fx.compressor.knee": 8.0,
+    "fx.compressor.makeup": 1.3,
+    "fx.compressor.mix": 1.0,
+    "fx2.type": 1,
+    "fx2.chorus.rate": 0.45,
+    "fx2.chorus.depth": 0.55,
+    "fx2.chorus.mix": 0.42,
+    "fx2.chorus.voices": 3,
+    "fx2.chorus.drift": 0.35,
+    "fx2.chorus.spread": 0.85,
+    "fx2.chorus.lowcut": 160.0,
     "gain": 10.4
   }
 }

@@ -35,6 +35,14 @@
     "glide": 0.035,
     "glide.mode": 1,
     "glide.rate": 0,
+    "fx.type": 10,
+    "fx.compressor.thresh": -18.0,
+    "fx.compressor.ratio": 4.0,
+    "fx.compressor.attack": 1.0,
+    "fx.compressor.release": 70.0,
+    "fx.compressor.knee": 6.0,
+    "fx.compressor.makeup": 5.5,
+    "fx.compressor.mix": 1.0,
     "gain": 8.3
   }
 }

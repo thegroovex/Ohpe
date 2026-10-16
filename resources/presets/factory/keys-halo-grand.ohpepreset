@@ -73,6 +73,10 @@
     "fx3.chorus.rate": 0.2,
     "fx3.chorus.depth": 0.4,
     "fx3.chorus.mix": 0.2,
+    "fx3.chorus.voices": 3,
+    "fx3.chorus.drift": 0.35,
+    "fx3.chorus.spread": 0.85,
+    "fx3.chorus.lowcut": 150.0,
     "fx4.type": 15,
     "fx4.hall.mode": 1,
     "fx4.hall.size": 0.7,
@@ -128,6 +132,6 @@
     "mpe.bend": 48,
     "voices": 16,
     "velsens": 0.7,
-    "gain": 9.5
+    "gain": 11.6
   }
 }

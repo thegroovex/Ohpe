@@ -1,0 +1,734 @@
+{
+ "Aah Choir": {
+  "makeup": 3.5,
+  "thresh": -10.0
+ },
+ "Acid Line": {
+  "makeup": 5.3,
+  "thresh": -15.0
+ },
+ "Analog Arp": {
+  "makeup": 7.0,
+  "thresh": -10.9
+ },
+ "Analog Reese": {
+  "makeup": 0.9,
+  "thresh": -14.6
+ },
+ "Bell Cascade Arp": {
+  "makeup": 7.4,
+  "thresh": -10.8
+ },
+ "Boom Click": {
+  "makeup": 1.9,
+  "thresh": -8.7
+ },
+ "Boom Distorted": {
+  "makeup": 3.9,
+  "thresh": -14.8
+ },
+ "Boom Kick Bass": {
+  "makeup": 3.4,
+  "thresh": -10.2
+ },
+ "Boom Long Sub": {
+  "makeup": 3.0,
+  "thresh": -12.6
+ },
+ "Boom Slide": {
+  "makeup": 3.1,
+  "thresh": -13.6
+ },
+ "Bounce Bass": {
+  "makeup": 1.6,
+  "thresh": -10.5
+ },
+ "Breath Lead": {
+  "makeup": 6.1,
+  "thresh": -10.7
+ },
+ "Bright Poly Wide": {
+  "makeup": 4.6,
+  "thresh": -9.0
+ },
+ "Bubble Arp": {
+  "makeup": 3.5,
+  "thresh": -8.6
+ },
+ "Chip Square Lead": {
+  "makeup": 6.8,
+  "thresh": -11.6
+ },
+ "Classic Mono Lead": {
+  "makeup": 8.2,
+  "thresh": -12.5
+ },
+ "Classic Reese": {
+  "makeup": 0.0,
+  "thresh": -12.9
+ },
+ "Classic Tine": {
+  "makeup": 0.7,
+  "thresh": -6.7
+ },
+ "Click Sub": {
+  "makeup": 0.4,
+  "thresh": -15.6
+ },
+ "Cluster Hat": {
+  "makeup": 1.7,
+  "thresh": -9.5
+ },
+ "Cluster Organ": {
+  "makeup": 2.9,
+  "thresh": -10.4
+ },
+ "Concert Harp": {
+  "makeup": 4.6,
+  "thresh": -9.0
+ },
+ "Dark Reese": {
+  "makeup": 0.0,
+  "thresh": -15.0
+ },
+ "Deep Pluck Sub": {
+  "makeup": 0.4,
+  "thresh": -10.9
+ },
+ "Digital EP": {
+  "makeup": 3.1,
+  "thresh": -8.1
+ },
+ "Digital Lead": {
+  "makeup": 7.4,
+  "thresh": -12.7
+ },
+ "Digital Monster": {
+  "makeup": 10.4,
+  "thresh": -13.3
+ },
+ "Digital Pluck Arp": {
+  "makeup": 6.4,
+  "thresh": -10.6
+ },
+ "Dirty Sub": {
+  "makeup": 4.8,
+  "thresh": -13.5
+ },
+ "Distorted Reese": {
+  "makeup": 4.6,
+  "thresh": -11.2
+ },
+ "Drawbar Organ": {
+  "makeup": 0.0,
+  "thresh": -7.6
+ },
+ "Dream Lead": {
+  "makeup": 7.6,
+  "thresh": -11.6
+ },
+ "Dream Tine": {
+  "makeup": 1.1,
+  "thresh": -4.1
+ },
+ "Dream Tine Arp": {
+  "makeup": 7.7,
+  "thresh": -13.1
+ },
+ "Dub Stab": {
+  "makeup": 4.1,
+  "thresh": -8.6
+ },
+ "Dusty EP": {
+  "makeup": 0.0,
+  "thresh": -5.6
+ },
+ "Dusty Keys": {
+  "makeup": 1.7,
+  "thresh": -7.6
+ },
+ "Echo Harp": {
+  "makeup": 7.2,
+  "thresh": -10.9
+ },
+ "FM Arp Bell": {
+  "makeup": 7.5,
+  "thresh": -11.3
+ },
+ "FM Bark Piano": {
+  "makeup": 0.9,
+  "thresh": -5.3
+ },
+ "FM Brass Lead": {
+  "makeup": 6.5,
+  "thresh": -15.4
+ },
+ "FM Koto": {
+  "makeup": 6.3,
+  "thresh": -13.6
+ },
+ "FM Snare": {
+  "makeup": 2.1,
+  "thresh": -9.5
+ },
+ "FM Tom": {
+  "makeup": 5.3,
+  "thresh": -12.1
+ },
+ "FM Vibes": {
+  "makeup": 1.3,
+  "thresh": -6.2
+ },
+ "Fall Lead": {
+  "makeup": 6.4,
+  "thresh": -17.4
+ },
+ "Fat Saw Bass": {
+  "makeup": 5.0,
+  "thresh": -12.9
+ },
+ "Filter Kick": {
+  "makeup": 5.0,
+  "thresh": -11.4
+ },
+ "Flanged Reese": {
+  "makeup": 7.3,
+  "thresh": -12.9
+ },
+ "Fold Bass": {
+  "makeup": 0.0,
+  "thresh": -15.1
+ },
+ "Formant Arp": {
+  "makeup": 6.5,
+  "thresh": -11.1
+ },
+ "Formant Lead": {
+  "makeup": 6.6,
+  "thresh": -12.7
+ },
+ "Formant Voices": {
+  "makeup": 6.6,
+  "thresh": -9.6
+ },
+ "Funk Clav": {
+  "makeup": 4.7,
+  "thresh": -8.0
+ },
+ "Glass Keys": {
+  "makeup": 3.1,
+  "thresh": -7.4
+ },
+ "Glass Pluck": {
+  "makeup": 6.4,
+  "thresh": -11.5
+ },
+ "Glide Poly Synth": {
+  "makeup": 1.7,
+  "thresh": -7.3
+ },
+ "Glide Reese": {
+  "makeup": 1.0,
+  "thresh": -14.2
+ },
+ "Glide Sine Bass": {
+  "makeup": 6.4,
+  "thresh": -19.1
+ },
+ "Glock Arp": {
+  "makeup": 5.1,
+  "thresh": -10.2
+ },
+ "Gospel Hum": {
+  "makeup": 4.1,
+  "thresh": -12.8
+ },
+ "Grind Bass": {
+  "makeup": 5.9,
+  "thresh": -11.8
+ },
+ "Grit Bass": {
+  "makeup": 5.2,
+  "thresh": -14.2
+ },
+ "Growl FM Bass": {
+  "makeup": 5.2,
+  "thresh": -16.8
+ },
+ "Growl Machine": {
+  "makeup": 7.5,
+  "thresh": -13.0
+ },
+ "Half-Step Wobble": {
+  "makeup": 3.5,
+  "thresh": -11.3
+ },
+ "Halftime Sub": {
+  "makeup": 8.6,
+  "thresh": -17.6
+ },
+ "Harmonic Organ": {
+  "makeup": 2.4,
+  "thresh": -9.3
+ },
+ "Harp Pluck": {
+  "makeup": 4.6,
+  "thresh": -9.2
+ },
+ "Harpsichord": {
+  "makeup": 1.3,
+  "thresh": -6.4
+ },
+ "Hollow Reese": {
+  "makeup": 5.1,
+  "thresh": -12.1
+ },
+ "Hot Wire": {
+  "makeup": 7.1,
+  "thresh": -15.7
+ },
+ "House Organ Bass": {
+  "makeup": 3.9,
+  "thresh": -13.1
+ },
+ "Kalimba": {
+  "makeup": 7.9,
+  "thresh": -10.8
+ },
+ "Koto Pluck": {
+  "makeup": 5.2,
+  "thresh": -10.0
+ },
+ "Laser Wobble": {
+  "makeup": 4.5,
+  "thresh": -10.8
+ },
+ "Legato Glide Lead": {
+  "makeup": 7.6,
+  "thresh": -12.9
+ },
+ "Liquid Sub": {
+  "makeup": 0.8,
+  "thresh": -20.0
+ },
+ "Lofi Bass": {
+  "makeup": 4.9,
+  "thresh": -16.4
+ },
+ "Log Drum Bass": {
+  "makeup": 3.3,
+  "thresh": -10.7
+ },
+ "Long Sub": {
+  "makeup": 4.3,
+  "thresh": -14.3
+ },
+ "Male Ensemble": {
+  "makeup": 2.0,
+  "thresh": -9.2
+ },
+ "Mallet Echo Arp": {
+  "makeup": 6.0,
+  "thresh": -10.5
+ },
+ "Mallet Keys": {
+  "makeup": 0.7,
+  "thresh": -6.6
+ },
+ "Marimba": {
+  "makeup": 3.0,
+  "thresh": -7.7
+ },
+ "Mellow Lofi Bass": {
+  "makeup": 5.5,
+  "thresh": -18.0
+ },
+ "Metal Growl": {
+  "makeup": 5.5,
+  "thresh": -12.4
+ },
+ "Metal Hat FM": {
+  "makeup": 3.1,
+  "thresh": -10.8
+ },
+ "Minor Stab": {
+  "makeup": 4.4,
+  "thresh": -8.4
+ },
+ "Mono Glide Lead": {
+  "makeup": 7.9,
+  "thresh": -15.0
+ },
+ "Moving Reese": {
+  "makeup": 0.7,
+  "thresh": -15.8
+ },
+ "Music Box": {
+  "makeup": 1.7,
+  "thresh": -6.5
+ },
+ "Muted Pick": {
+  "makeup": 5.1,
+  "thresh": -10.1
+ },
+ "Neuro Arp": {
+  "makeup": 5.4,
+  "thresh": -10.2
+ },
+ "Neuro Hybrid": {
+  "makeup": 11.3,
+  "thresh": -12.0
+ },
+ "Neuro Reese": {
+  "makeup": 6.5,
+  "thresh": -12.6
+ },
+ "Noise Snare": {
+  "makeup": 0.8,
+  "thresh": -9.5
+ },
+ "Nylon Guitar": {
+  "makeup": 4.8,
+  "thresh": -10.2
+ },
+ "Octave Lead": {
+  "makeup": 6.3,
+  "thresh": -14.0
+ },
+ "Ooh Choir": {
+  "makeup": 2.4,
+  "thresh": -9.5
+ },
+ "Phase Reese": {
+  "makeup": 1.1,
+  "thresh": -14.7
+ },
+ "Pizzicato Arp": {
+  "makeup": 5.8,
+  "thresh": -10.6
+ },
+ "Pluck Lead Wide": {
+  "makeup": 7.1,
+  "thresh": -10.6
+ },
+ "Pluck Nebula": {
+  "makeup": 3.7,
+  "thresh": -8.3
+ },
+ "Poly Pluck": {
+  "makeup": 8.3,
+  "thresh": -11.1
+ },
+ "Pop Brass": {
+  "makeup": 0.3,
+  "thresh": -7.0
+ },
+ "Pop Lead": {
+  "makeup": 10.5,
+  "thresh": -14.1
+ },
+ "Portamento Square": {
+  "makeup": 6.4,
+  "thresh": -17.7
+ },
+ "Punch FM Bass": {
+  "makeup": 5.3,
+  "thresh": -18.3
+ },
+ "Punch Sub": {
+  "makeup": 4.6,
+  "thresh": -11.1
+ },
+ "Random Spark Arp": {
+  "makeup": 11.5,
+  "thresh": -9.3
+ },
+ "Recorder": {
+  "makeup": 6.6,
+  "thresh": -14.7
+ },
+ "Reed Keys": {
+  "makeup": 1.8,
+  "thresh": -9.4
+ },
+ "Reed Tremolo": {
+  "makeup": 3.4,
+  "thresh": -6.5
+ },
+ "Reese Drift": {
+  "makeup": 4.7,
+  "thresh": -14.2
+ },
+ "Resonator Hit": {
+  "makeup": 4.9,
+  "thresh": -10.2
+ },
+ "Riddim Saw": {
+  "makeup": 10.1,
+  "thresh": -12.4
+ },
+ "Ring Machine": {
+  "makeup": 7.5,
+  "thresh": -13.0
+ },
+ "Ripple Arp": {
+  "makeup": 4.8,
+  "thresh": -8.3
+ },
+ "Rise Bass": {
+  "makeup": 4.4,
+  "thresh": -13.2
+ },
+ "Rise Lead": {
+  "makeup": 8.5,
+  "thresh": -13.1
+ },
+ "Roller Bass": {
+  "makeup": 0.9,
+  "thresh": -12.3
+ },
+ "Rolling Bass": {
+  "makeup": 3.3,
+  "thresh": -10.5
+ },
+ "Rolling Sub": {
+  "makeup": 0.4,
+  "thresh": -14.4
+ },
+ "Round Sub": {
+  "makeup": 5.2,
+  "thresh": -16.0
+ },
+ "Rubber Bass": {
+  "makeup": 1.7,
+  "thresh": -10.5
+ },
+ "Saw Unison Lead": {
+  "makeup": 5.2,
+  "thresh": -11.2
+ },
+ "Scoop Keys": {
+  "makeup": 0.0,
+  "thresh": -6.6
+ },
+ "Screech Bass": {
+  "makeup": 2.9,
+  "thresh": -10.5
+ },
+ "Shimmer Lead": {
+  "makeup": 6.9,
+  "thresh": -10.6
+ },
+ "Sine Slide": {
+  "makeup": 6.1,
+  "thresh": -18.8
+ },
+ "Sine Whistle": {
+  "makeup": 6.9,
+  "thresh": -17.3
+ },
+ "Slap FM Bass": {
+  "makeup": 4.0,
+  "thresh": -13.1
+ },
+ "Soft Brass": {
+  "makeup": 2.8,
+  "thresh": -9.9
+ },
+ "Soft Flute Lead": {
+  "makeup": 7.4,
+  "thresh": -16.5
+ },
+ "Solo Soprano": {
+  "makeup": 5.5,
+  "thresh": -12.8
+ },
+ "Sparkle Bell": {
+  "makeup": 8.4,
+  "thresh": -12.6
+ },
+ "Square Hero": {
+  "makeup": 7.0,
+  "thresh": -16.1
+ },
+ "Square Wobble": {
+  "makeup": 4.4,
+  "thresh": -11.2
+ },
+ "Steel Drum FM": {
+  "makeup": 5.9,
+  "thresh": -13.4
+ },
+ "Steel String": {
+  "makeup": 6.0,
+  "thresh": -11.4
+ },
+ "Step Sub": {
+  "makeup": 7.1,
+  "thresh": -16.9
+ },
+ "Stereo Pluck": {
+  "makeup": 7.0,
+  "thresh": -10.3
+ },
+ "Sub Kick": {
+  "makeup": 5.6,
+  "thresh": -13.8
+ },
+ "Sub Reese": {
+  "makeup": 0.0,
+  "thresh": -14.7
+ },
+ "Suitcase Tine": {
+  "makeup": 3.4,
+  "thresh": -6.5
+ },
+ "Super Lead": {
+  "makeup": 6.3,
+  "thresh": -11.9
+ },
+ "Table Arp": {
+  "makeup": 5.1,
+  "thresh": -9.5
+ },
+ "Table Pluck": {
+  "makeup": 4.5,
+  "thresh": -9.3
+ },
+ "Table Sub": {
+  "makeup": 5.7,
+  "thresh": -15.6
+ },
+ "Talker Bass": {
+  "makeup": 8.5,
+  "thresh": -12.4
+ },
+ "Talking Bass": {
+  "makeup": 4.6,
+  "thresh": -11.6
+ },
+ "Talking Synth": {
+  "makeup": 3.9,
+  "thresh": -14.2
+ },
+ "Tear Reese": {
+  "makeup": 4.1,
+  "thresh": -12.0
+ },
+ "Tech Stab Bass": {
+  "makeup": 2.1,
+  "thresh": -10.5
+ },
+ "Tick Hat": {
+  "makeup": 2.4,
+  "thresh": -9.6
+ },
+ "Tine Piano": {
+  "makeup": 0.9,
+  "thresh": -5.8
+ },
+ "Trance Gate Arp": {
+  "makeup": 5.1,
+  "thresh": -8.9
+ },
+ "Triplet Wobble": {
+  "makeup": 8.0,
+  "thresh": -11.8
+ },
+ "Tuned Tom": {
+  "makeup": 4.9,
+  "thresh": -9.5
+ },
+ "Twist Lead": {
+  "makeup": 7.0,
+  "thresh": -12.7
+ },
+ "Unison Bass": {
+  "makeup": 5.3,
+  "thresh": -15.6
+ },
+ "Upright Keys": {
+  "makeup": 2.0,
+  "thresh": -6.5
+ },
+ "Upright Pluck": {
+  "makeup": 3.4,
+  "thresh": -10.3
+ },
+ "Velvet Stab": {
+  "makeup": 2.4,
+  "thresh": -6.8
+ },
+ "Vibraphone": {
+  "makeup": 0.7,
+  "thresh": -6.6
+ },
+ "Vowel Growl": {
+  "makeup": 7.3,
+  "thresh": -12.5
+ },
+ "Vowel Morph": {
+  "makeup": 2.7,
+  "thresh": -11.7
+ },
+ "Vowel Reese": {
+  "makeup": 6.7,
+  "thresh": -12.7
+ },
+ "Vox Lead": {
+  "makeup": 6.4,
+  "thresh": -14.1
+ },
+ "Vox Reese": {
+  "makeup": 5.8,
+  "thresh": -11.5
+ },
+ "Vox Synth Lead": {
+  "makeup": 6.5,
+  "thresh": -11.5
+ },
+ "Warm Roller": {
+  "makeup": 0.0,
+  "thresh": -14.5
+ },
+ "Wide Glass Pluck": {
+  "makeup": 6.2,
+  "thresh": -11.5
+ },
+ "Wide Organ": {
+  "makeup": 4.8,
+  "thresh": -7.5
+ },
+ "Wide Pluck Arp": {
+  "makeup": 6.7,
+  "thresh": -9.9
+ },
+ "Wide Reese": {
+  "makeup": 0.0,
+  "thresh": -12.1
+ },
+ "Wobble Bass": {
+  "makeup": 5.8,
+  "thresh": -15.5
+ },
+ "Wood Block": {
+  "makeup": 4.4,
+  "thresh": -9.5
+ },
+ "Wub Machine": {
+  "makeup": 6.3,
+  "thresh": -12.2
+ },
+ "Zap Perc": {
+  "makeup": 2.6,
+  "thresh": -9.3
+ },
+ "Zip Pluck": {
+  "makeup": 7.7,
+  "thresh": -11.7
+ },
+ "Zither": {
+  "makeup": 5.3,
+  "thresh": -9.5
+ }
+}

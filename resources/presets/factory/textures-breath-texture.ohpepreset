@@ -33,6 +33,14 @@
     "lfo.shape": 1,
     "lfo.dest": 1,
     "voices": 8,
+    "fx.type": 1,
+    "fx.chorus.rate": 0.2,
+    "fx.chorus.depth": 0.55,
+    "fx.chorus.mix": 0.3,
+    "fx.chorus.voices": 4,
+    "fx.chorus.drift": 0.45,
+    "fx.chorus.spread": 0.85,
+    "fx.chorus.lowcut": 180.0,
     "gain": 8.4
   }
 }
