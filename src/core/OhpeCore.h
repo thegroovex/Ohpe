@@ -183,6 +183,11 @@ public:
         static constexpr const char* tapeTxLoop = "tape.tx.loop";   ///< trigger: loop on / off
         static constexpr const char* tapeTxArm = "tape.tx.arm";     ///< trigger: arm / disarm the edit track
         static constexpr const char* tapeTxLink = "tape.tx.link";   ///< toggle: PLAY runs sequencer and tape together
+        // p14: the performance wheels left of the on-screen keyboard (MIDI-learnable host parameters). A change
+        // is sent as pitch bend / mod wheel (CC 1) on the edit part's MIDI channel, like the keyboard's notes;
+        // not part of presets (see preset::isExcludedFromProject)
+        static constexpr const char* perfBend = "perf.bend"; ///< -1..+1, springs back to 0 on the screen
+        static constexpr const char* perfMod = "perf.mod";   ///< 0..1
     };
 
 private:
@@ -252,6 +257,8 @@ private:
     std::array<MpeInput, numParts> mpeIn {};
     std::array<NoteShaper, numParts> liveShaper {}, seqShaper {};
     int stepDrumsIndex = -1, euclidDrumsIndex = -1, orbitDrumsIndex = -1; ///< 0.4: sequencers -> drum kit
+    int perfBendIndex = -1, perfModIndex = -1; ///< p14
+    float perfBendSent = 0.0f, perfModSent = 0.0f;
     int syncSourceIndex = -1, syncSmoothIndex = -1, clockOutIndex = -1, notesOutIndex = -1, keyRootIndex = -1, keyScaleIndex = -1;
     bool arpWasOn = false;
     int arpLastPart = 0;

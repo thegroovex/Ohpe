@@ -392,7 +392,7 @@ Keyboard::Keyboard (juce::MidiKeyboardState& s) : juce::MidiKeyboardComponent (s
 {
     setScrollButtonsVisible (false);
     setOctaveForMiddleC (4);
-    setBlackNoteLengthProportion (0.6f);
+    setBlackNoteLengthProportion (0.62f);
     setMidiChannel (1);
     setVelocity (0.8f, true);
     setColour (juce::MidiKeyboardComponent::whiteNoteColourId, colour::keyLight);
@@ -406,50 +406,342 @@ void Keyboard::setBaseOctave (int octave)
 {
     baseOctave = juce::jlimit (0, 7, octave);
     const int low = 12 * (baseOctave + 1);
-    setAvailableRange (low, juce::jmin (127, low + 24));
+    setAvailableRange (low, juce::jmin (127, low + 12 * numOctaves));
     resized();
 }
 
 void Keyboard::resized()
 {
-    setKeyWidth ((float) getWidth() / 15.0f); // 2 octaves + top C = 15 white keys
+    setKeyWidth ((float) getWidth() / (float) (7 * numOctaves + 1)); // three octaves + top C = 22 white keys
     setLowestVisibleKey (12 * (baseOctave + 1));
     juce::MidiKeyboardComponent::resized();
 }
 
 void Keyboard::drawWhiteNote (int note, juce::Graphics& g, juce::Rectangle<float> area, bool isDown, bool isOver, juce::Colour, juce::Colour)
 {
-    auto key = area.reduced (area.getWidth() * 0.05f, 0).withTrimmedBottom (area.getHeight() * 0.02f);
-    const float r = key.getWidth() * 0.1f;
-    g.setColour (juce::Colours::black.withAlpha (0.16f));
-    g.fillRoundedRectangle (key.translated (0, isDown ? 1.0f : 3.0f), r);
-    g.setColour (isDown ? colour::keyLightPressed : (isOver ? colour::keyLight.brighter (0.05f) : colour::keyLight));
+    // matte keys with a narrow gap, a soft shadow under the front edge; pressed keys sink a little
+    auto key = area.reduced (juce::jmax (1.0f, area.getWidth() * 0.035f), 0).withTrimmedBottom (area.getHeight() * 0.03f);
+    const float r = key.getWidth() * 0.09f;
+    g.setColour (juce::Colours::black.withAlpha (0.12f));
+    g.fillRoundedRectangle (key.translated (0, isDown ? 1.0f : 2.5f), r);
+    if (isDown) key = key.withTrimmedTop (1.0f).translated (0, 1.0f);
+    const auto top = isDown ? colour::keyLightPressed : (isOver ? colour::keyLight.brighter (0.03f) : colour::keyLight);
+    g.setGradientFill (juce::ColourGradient (top, 0, key.getY(), top.darker (0.04f), 0, key.getBottom(), false));
     g.fillRoundedRectangle (key, r);
+    g.setColour (colour::capEdge.withAlpha (0.7f));
+    g.drawRoundedRectangle (key.reduced (0.5f), r, 1.0f);
     if (isDown)
     {
         g.setColour (colour::signalRed);
-        g.fillRoundedRectangle (key.withTop (key.getBottom() - key.getHeight() * 0.05f).reduced (key.getWidth() * 0.25f, 0), r * 0.5f);
+        g.fillRoundedRectangle (key.withTop (key.getBottom() - juce::jmax (2.0f, key.getHeight() * 0.03f)).reduced (key.getWidth() * 0.28f, 0)
+                                    .translated (0, -key.getHeight() * 0.03f), 1.0f);
     }
     if (note % 12 == 0)
     {
         g.setColour (colour::engraving);
-        g.setFont (labelFont (key.getWidth() * 0.28f));
-        g.drawText ("C" + juce::String (note / 12 - 1), key.withTop (key.getBottom() - key.getWidth() * 0.6f), juce::Justification::centred);
+        g.setFont (labelFont (juce::jmin (key.getWidth() * 0.34f, 13.0f * (float) getHeight() / 136.0f)));
+        g.drawText ("C" + juce::String (note / 12 - 1), key.withTop (key.getBottom() - key.getWidth() * 0.9f).withTrimmedLeft (key.getWidth() * 0.16f),
+                    juce::Justification::centredLeft);
     }
 }
 
 void Keyboard::drawBlackNote (int, juce::Graphics& g, juce::Rectangle<float> area, bool isDown, bool isOver, juce::Colour)
 {
-    auto key = area.reduced (area.getWidth() * 0.06f, 0);
-    const float r = key.getWidth() * 0.12f;
-    g.setColour (juce::Colours::black.withAlpha (0.25f));
+    auto key = area.reduced (area.getWidth() * 0.08f, 0);
+    const float r = key.getWidth() * 0.14f;
+    g.setColour (juce::Colours::black.withAlpha (0.22f));
     g.fillRoundedRectangle (key.translated (0, isDown ? 1.0f : 3.0f), r);
-    g.setColour (isDown ? colour::keyDark.brighter (0.25f) : (isOver ? colour::keyDarkTop : colour::keyDark));
+    const auto base = isDown ? colour::keyDark.brighter (0.22f) : (isOver ? colour::keyDarkTop : colour::keyDark);
+    g.setGradientFill (juce::ColourGradient (base.brighter (0.12f), 0, key.getY(), base, 0, key.getBottom(), false));
     g.fillRoundedRectangle (key, r);
+    // the lit front face of a matte black key
+    g.setColour (juce::Colours::white.withAlpha (0.07f));
+    g.fillRoundedRectangle (key.withTop (key.getBottom() - key.getHeight() * 0.1f).reduced (key.getWidth() * 0.1f, 0), r * 0.6f);
     if (isDown)
     {
         g.setColour (colour::signalRed);
-        g.fillRoundedRectangle (key.withTop (key.getBottom() - key.getHeight() * 0.06f).reduced (key.getWidth() * 0.25f, 0), r * 0.5f);
+        g.fillRoundedRectangle (key.withTop (key.getBottom() - juce::jmax (2.0f, key.getHeight() * 0.04f)).reduced (key.getWidth() * 0.25f, 0)
+                                    .translated (0, -key.getHeight() * 0.14f), 1.0f);
     }
+}
+
+// ---------------------------------------------------------------- p14: performance wheels
+Wheel::Wheel (OhpeProcessor& p, juce::String paramId, juce::String legendEnglish, bool springBack)
+    : proc (p), id (std::move (paramId)), legend (std::move (legendEnglish)), spring (springBack)
+{
+    setName (legend);
+    setMouseCursor (juce::MouseCursor::UpDownResizeCursor);
+    setWantsKeyboardFocus (false);
+}
+
+float Wheel::value() const
+{
+    if (auto* q = proc.parameter (id)) return q->getValue();
+    return spring ? 0.5f : 0.0f;
+}
+
+void Wheel::set (float norm)
+{
+    if (auto* q = proc.parameter (id)) q->setValueNotifyingHost (juce::jlimit (0.0f, 1.0f, norm));
+    refresh();
+}
+
+void Wheel::refresh()
+{
+    const float v = value();
+    if (std::abs (v - shown) > 1.0e-4f) { shown = v; repaint(); }
+}
+
+juce::Rectangle<float> Wheel::slotArea() const
+{
+    auto b = getLocalBounds().toFloat();
+    return b.withTrimmedBottom (b.getHeight() * 0.19f);
+}
+
+void Wheel::paint (juce::Graphics& g)
+{
+    const auto b = getLocalBounds().toFloat();
+    const auto slot = slotArea();
+    const float r = slot.getWidth() * 0.22f;
+    // the recess in the housing
+    g.setGradientFill (juce::ColourGradient (colour::bezelLow, 0, slot.getY(), colour::bezel, 0, slot.getBottom(), false));
+    g.fillRoundedRectangle (slot, r);
+    g.setColour (juce::Colours::white.withAlpha (0.6f));
+    g.drawRoundedRectangle (slot.expanded (0.5f), r + 0.5f, 1.0f);
+    // the wheel: a matte graphite cylinder, lit in the middle, ribs that roll with the value
+    auto wheel = slot.reduced (slot.getWidth() * 0.16f, slot.getWidth() * 0.12f);
+    juce::ColourGradient cyl (colour::keyDark.darker (0.5f), 0, wheel.getY(), colour::keyDark.darker (0.5f), 0, wheel.getBottom(), false);
+    cyl.addColour (0.5, colour::keyDarkTop.brighter (0.25f));
+    g.setGradientFill (cyl);
+    g.fillRoundedRectangle (wheel, wheel.getWidth() * 0.18f);
+    const float v = value();
+    const float travel = (spring ? v - 0.5f : v) * 2.6f;
+    const int ribs = 14;
+    for (int i = 0; i < ribs; ++i)
+    {
+        const float ph = std::fmod ((float) i / (float) ribs + travel * 0.25f + 10.0f, 1.0f); // 0..1 around the visible half
+        const float a = (ph - 0.5f) * juce::MathConstants<float>::pi;                         // -pi/2..pi/2
+        const float y = wheel.getCentreY() + std::sin (a) * wheel.getHeight() * 0.47f;
+        const float lit = std::cos (a);
+        g.setColour (juce::Colours::black.withAlpha (0.25f + 0.35f * lit));
+        g.fillRect (juce::Rectangle<float> (wheel.getX() + wheel.getWidth() * 0.12f, y - 0.5f, wheel.getWidth() * 0.76f, juce::jmax (1.0f, lit * 1.4f)));
+    }
+    // the centre mark of the pitch wheel / the position line of the mod wheel
+    const float markY = wheel.getCentreY() - (spring ? (v - 0.5f) : (v - 0.5f)) * wheel.getHeight() * 0.8f;
+    g.setColour (spring ? colour::displayText : colour::sunYellow);
+    g.fillRoundedRectangle (juce::Rectangle<float> (wheel.getWidth() * 0.86f, juce::jmax (1.5f, wheel.getHeight() * 0.02f))
+                                .withCentre ({ wheel.getCentreX(), markY }), 1.0f);
+    const bool learning = proc.learningParamId() == id;
+    g.setColour (learning ? colour::signalRed : colour::engraving);
+    drawFittedLegend (g, learning ? tr ("MIDI Learn") : i18n::upper (tr (legend)), b.withTop (slot.getBottom() + b.getHeight() * 0.03f),
+                      juce::jmin (12.0f * b.getWidth() / 40.0f, b.getHeight() * 0.11f));
+    if (proc.core().midiMap().isMapped (id.toStdString()))
+    {
+        g.setColour (colour::signalRed);
+        g.fillEllipse (juce::Rectangle<float> (4.0f, 4.0f).withCentre ({ slot.getRight() - 1.0f, slot.getY() + 1.0f }));
+    }
+}
+
+void Wheel::mouseDown (const juce::MouseEvent& e)
+{
+    if (e.mods.isPopupMenu()) { showControlMenu (proc, id, this); return; }
+    stopTimer();
+    dragging = true;
+    if (auto* q = proc.parameter (id)) q->beginChangeGesture();
+    drag.begin (value(), e.position, isFineDrag (e.mods));
+}
+
+void Wheel::mouseDrag (const juce::MouseEvent& e)
+{
+    if (! dragging) return;
+    // up = more; the slot's height covers the whole range
+    set (drag.update ({ drag.anchor.x, e.position.y }, slotArea().getHeight(), isFineDrag (e.mods)));
+}
+
+void Wheel::mouseUp (const juce::MouseEvent& e)
+{
+    if (e.mods.isPopupMenu() || ! dragging) return;
+    dragging = false;
+    if (spring) startTimerHz (60); // springs back to the centre
+    else if (auto* q = proc.parameter (id)) q->endChangeGesture();
+}
+
+void Wheel::mouseDoubleClick (const juce::MouseEvent&)
+{
+    if (auto* q = proc.parameter (id)) set (q->getDefaultValue());
+}
+
+void Wheel::timerCallback()
+{
+    const float v = value();
+    const float next = std::abs (v - 0.5f) < 0.004f ? 0.5f : 0.5f + (v - 0.5f) * 0.55f; // ~70 ms back to the centre
+    set (next);
+    if (next == 0.5f)
+    {
+        stopTimer();
+        if (auto* q = proc.parameter (id)) q->endChangeGesture();
+    }
+}
+
+// ---------------------------------------------------------------- p14: slide switch (glide mode)
+SlideSwitch::SlideSwitch (OhpeProcessor& p) : proc (p)
+{
+    setMouseCursor (juce::MouseCursor::PointingHandCursor);
+    setWantsKeyboardFocus (false);
+}
+
+void SlideSwitch::bind (const juce::String& paramId)
+{
+    id = paramId;
+    shown = -1;
+    refresh();
+}
+
+int SlideSwitch::position() const
+{
+    if (auto* q = proc.parameter (id)) return juce::jlimit (0, 2, (int) std::lround (q->convertFrom0to1 (q->getValue())));
+    return 0;
+}
+
+void SlideSwitch::refresh()
+{
+    if (const int p = position(); p != shown) { shown = p; repaint(); }
+}
+
+juce::Rectangle<float> SlideSwitch::slotArea() const
+{
+    auto b = getLocalBounds().toFloat();
+    return b.withWidth (b.getHeight() * 0.3f).reduced (0, b.getHeight() * 0.04f);
+}
+
+juce::Rectangle<float> SlideSwitch::labelArea (int i) const
+{
+    auto b = getLocalBounds().toFloat();
+    const auto s = slotArea();
+    const float h = s.getHeight() / 3.0f;
+    return { s.getRight() + b.getHeight() * 0.14f, s.getY() + h * (float) i, b.getRight() - s.getRight() - b.getHeight() * 0.14f, h };
+}
+
+void SlideSwitch::paint (juce::Graphics& g)
+{
+    const auto s = slotArea();
+    const float r = s.getWidth() * 0.5f;
+    g.setGradientFill (juce::ColourGradient (colour::bezelLow, 0, s.getY(), colour::bezel, 0, s.getBottom(), false));
+    g.fillRoundedRectangle (s, r);
+    g.setColour (juce::Colours::white.withAlpha (0.6f));
+    g.drawRoundedRectangle (s.expanded (0.5f), r + 0.5f, 1.0f);
+    const int pos = position();
+    const float h = s.getHeight() / 3.0f;
+    auto knob = juce::Rectangle<float> (s.getWidth() - 4.0f, h - 2.0f).withCentre ({ s.getCentreX(), s.getY() + h * ((float) pos + 0.5f) });
+    g.setColour (juce::Colours::black.withAlpha (0.3f));
+    g.fillRoundedRectangle (knob.translated (0, 1.0f), knob.getWidth() * 0.3f);
+    g.setGradientFill (juce::ColourGradient (colour::capTop, 0, knob.getY(), colour::capBottom, 0, knob.getBottom(), false));
+    g.fillRoundedRectangle (knob, knob.getWidth() * 0.3f);
+    g.setColour (colour::capEdge);
+    g.drawLine (knob.getX() + 3.0f, knob.getCentreY(), knob.getRight() - 3.0f, knob.getCentreY(), 1.0f);
+    const int idx = proc.core().params().indexOf (id.toStdString());
+    for (int i = 0; i < 3; ++i)
+    {
+        juce::String label;
+        if (idx >= 0)
+        {
+            const auto& d = proc.core().params().descriptor (idx);
+            if (i < (int) d.choices.size()) label = i18n::pick (d.choices[(size_t) i], i < (int) d.choicesDe.size() ? d.choicesDe[(size_t) i] : d.choices[(size_t) i]);
+        }
+        g.setColour (i == pos ? colour::ink : colour::engraving.withAlpha (0.8f));
+        drawFittedLegend (g, i18n::upper (label), labelArea (i), juce::jmin (labelArea (i).getHeight() * 0.62f, 12.0f * (float) getHeight() / 64.0f),
+                          juce::Justification::centredLeft);
+    }
+    if (proc.learningParamId() == id)
+    {
+        g.setColour (colour::signalRed);
+        g.drawRoundedRectangle (s.expanded (1.5f), r + 1.5f, 1.2f);
+    }
+}
+
+void SlideSwitch::mouseDown (const juce::MouseEvent& e)
+{
+    if (e.mods.isPopupMenu()) { showControlMenu (proc, id, this); return; }
+    int target = -1;
+    for (int i = 0; i < 3; ++i)
+        if (labelArea (i).withLeft (0).contains (e.position)) target = i;
+    if (target < 0) target = (position() + 1) % 3;
+    if (auto* q = proc.parameter (id))
+    {
+        q->beginChangeGesture();
+        q->setValueNotifyingHost (q->convertTo0to1 ((float) target));
+        q->endChangeGesture();
+    }
+    refresh();
+}
+
+// ---------------------------------------------------------------- p14: mini knob (glide)
+MiniKnob::MiniKnob (OhpeProcessor& p, juce::String legendEnglish) : proc (p), legend (std::move (legendEnglish))
+{
+    knob.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
+    knob.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
+    knob.setColour (juce::Slider::rotarySliderFillColourId, colour::capInk);
+    knob.setPopupMenuEnabled (false);
+    knob.setMouseDragSensitivity (180);
+    knob.setVelocityModeParameters (1.0, 1, 0.0, false);
+    knob.onValueChange = [this] { repaint(); };
+    knob.setWantsKeyboardFocus (false);
+    addAndMakeVisible (knob);
+}
+
+MiniKnob::~MiniKnob() { attachment.reset(); }
+
+void MiniKnob::bind (const juce::String& paramId)
+{
+    if (paramId == id && attachment != nullptr) return;
+    attachment.reset();
+    id = paramId;
+    if (auto* q = proc.parameter (id)) attachment = std::make_unique<juce::SliderParameterAttachment> (*q, knob);
+    repaint();
+}
+
+void MiniKnob::resized()
+{
+    const int d = juce::jmin (getHeight(), getWidth() / 2);
+    knob.setBounds (0, (getHeight() - d) / 2, d, d);
+}
+
+void MiniKnob::paint (juce::Graphics& g)
+{
+    auto b = getLocalBounds().toFloat().withTrimmedLeft ((float) knob.getRight() + getHeight() * 0.12f);
+    const bool learning = id.isNotEmpty() && proc.learningParamId() == id;
+    g.setColour (learning ? colour::signalRed : colour::engraving);
+    drawFittedLegend (g, learning ? tr ("MIDI Learn") : i18n::upper (tr (legend)), b.withHeight (b.getHeight() * 0.5f), b.getHeight() * 0.2f,
+                      juce::Justification::bottomLeft);
+    juce::String value;
+    const int idx = proc.core().params().indexOf (id.toStdString());
+    if (idx >= 0)
+        if (auto* q = proc.parameter (id)) value = formatValue (proc.core().params().descriptor (idx), q->convertFrom0to1 (q->getValue()));
+    g.setColour (colour::ink);
+    g.setFont (monoFont (b.getHeight() * 0.2f));
+    g.drawText (value, b.withTrimmedTop (b.getHeight() * 0.54f), juce::Justification::topLeft, true);
+    if (idx >= 0 && proc.core().midiMap().isMapped (id.toStdString()))
+    {
+        g.setColour (colour::signalRed);
+        g.fillEllipse ((float) knob.getRight() - 4.0f, (float) knob.getY(), 4.0f, 4.0f);
+    }
+}
+
+void MiniKnob::Knob::mouseDown (const juce::MouseEvent& e)
+{
+    if (e.mods.isPopupMenu()) { showControlMenu (owner.proc, owner.id, this); return; }
+    setMouseDragSensitivity (isFineDrag (e.mods) ? (int) (180.0f / fineFactor) : 180);
+    juce::Slider::mouseDown (e);
+}
+
+void MiniKnob::Knob::mouseUp (const juce::MouseEvent& e)
+{
+    juce::Slider::mouseUp (e);
+    setMouseDragSensitivity (180);
+}
+
+void MiniKnob::Knob::mouseDoubleClick (const juce::MouseEvent&)
+{
+    if (auto* q = owner.proc.parameter (owner.id)) q->setValueNotifyingHost (q->getDefaultValue());
 }
 } // namespace ohpe::ui

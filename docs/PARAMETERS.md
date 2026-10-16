@@ -597,3 +597,15 @@ Appended after `p4.monobass`. MIDI-mappable transport keys (triggers: fire when 
 | `tape.tx.loop` | Transport Loop | Transport Schleife | trigger | off |
 | `tape.tx.arm` | Arm Edit Track | Bearbeitungsspur aufnahmebereit | trigger | off |
 | `tape.tx.link` | Play Starts Tape | Start startet Tape | on / off | on |
+
+## Performance wheels (p14)
+
+Appended after `tape.tx.link`. The PITCH and MOD wheels left of the on-screen keyboard. A change is sent as
+pitch bend / mod wheel (CC 1) on the edit part's MIDI channel, the same way the on-screen keyboard plays; the
+range of the bend is each part's `pN.bend`. The pitch wheel springs back to the centre when released on the
+screen. Both are MIDI-learnable (right-click) and are not stored in presets.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `perf.bend` | Pitch Wheel | Pitch-Rad | -1 … +1 | 0 |
+| `perf.mod` | Mod Wheel | Mod-Rad | 0 … 1 | 0 |

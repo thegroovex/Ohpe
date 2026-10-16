@@ -5547,3 +5547,5 @@ tape.tx.rec
 tape.tx.loop
 tape.tx.arm
 tape.tx.link
+perf.bend
+perf.mod
