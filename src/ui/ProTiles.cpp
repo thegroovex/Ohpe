@@ -47,6 +47,13 @@ bool endsWith (const std::string& s, const char* t)
 juce::Colour edit() { return colour::sunYellow; }
 juce::Colour modc() { return colour::ultraviolet; }
 juce::Colour play() { return colour::playGreenLit; }
+
+/** The plain value the user sees now (the host parameter; the registry follows on the next audio block). */
+float plainOf (OhpeProcessor& proc, const std::string& id)
+{
+    if (auto* q = proc.parameter (juce::String (id))) return q->convertFrom0to1 (q->getValue());
+    return proc.core().params().get (id);
+}
 } // namespace
 
 // ---------------------------------------------------------------- explanations
@@ -141,7 +148,7 @@ juce::String hoverText (OhpeProcessor& proc, const std::string& id)
     const int idx = reg.indexOf (id);
     if (idx < 0) return {};
     const auto& d = reg.descriptor (idx);
-    juce::String s = i18n::pick (d.nameEn, d.nameDe) + "  " + formatValue (d, reg.get (idx));
+    juce::String s = i18n::pick (d.nameEn, d.nameDe) + "  " + formatValue (d, plainOf (proc, id));
     if (const auto e = explanation (id); e.isNotEmpty()) s << " - " << e;
     return s;
 }
@@ -163,8 +170,6 @@ int destForParam (OhpeProcessor& proc, int part, const std::string& paramId)
 
 juce::Range<float> modRange (OhpeProcessor& proc, int part, const std::string& paramId)
 {
-    auto& core = proc.core();
-    const auto& reg = core.params();
     const int dst = destForParam (proc, part, paramId);
     if (dst < 0) return {};
     const std::string p = "p" + std::to_string (juce::jlimit (0, Core::numParts - 1, part) + 1) + ".mod.s";
@@ -172,10 +177,10 @@ juce::Range<float> modRange (OhpeProcessor& proc, int part, const std::string& p
     for (int k = 1; k <= mod::numSlots; ++k)
     {
         const auto r = p + std::to_string (k) + ".";
-        if (std::lround (reg.get (r + "dst")) != dst) continue;
-        const int src = (int) std::lround (reg.get (r + "src"));
+        if (std::lround (plainOf (proc, r + "dst")) != dst) continue;
+        const int src = (int) std::lround (plainOf (proc, r + "src"));
         if (src <= mod::SrcOff || src >= mod::numSources) continue;
-        const float amt = reg.get (r + "amt");
+        const float amt = plainOf (proc, r + "amt");
         if (amt == 0.0f) continue;
         const bool bip = mod::sourceTable()[(size_t) src].bipolar;
         if (bip) { lo -= std::abs (amt); hi += std::abs (amt); }
@@ -189,7 +194,6 @@ int addRouting (OhpeProcessor& proc, int part, int source, const std::string& pa
 {
     const int dst = destForParam (proc, part, paramId);
     if (dst < 0 || source <= mod::SrcOff || source >= mod::numSources) return -1;
-    const auto& reg = proc.core().params();
     const std::string p = "p" + std::to_string (juce::jlimit (0, Core::numParts - 1, part) + 1) + ".mod.s";
     auto setPlain = [&] (const std::string& id, float v) {
         if (auto* q = proc.parameter (juce::String (id)))
@@ -202,7 +206,7 @@ int addRouting (OhpeProcessor& proc, int part, int source, const std::string& pa
     for (int k = 1; k <= mod::numSlots; ++k)
     {
         const auto r = p + std::to_string (k) + ".";
-        if (std::lround (reg.get (r + "src")) != mod::SrcOff || std::lround (reg.get (r + "dst")) != mod::DstOff) continue;
+        if (std::lround (plainOf (proc, r + "src")) != mod::SrcOff || std::lround (plainOf (proc, r + "dst")) != mod::DstOff) continue;
         setPlain (r + "dst", (float) dst);
         setPlain (r + "amt", amount);
         setPlain (r + "src", (float) source);
@@ -283,7 +287,7 @@ juce::String Tile::choiceText (const std::string& id) const
     const int idx = reg.indexOf (id);
     if (idx < 0) return {};
     const auto& d = reg.descriptor (idx);
-    const int c = (int) std::lround (reg.get (idx));
+    const int c = (int) std::lround (plainOf (proc, id));
     return c >= 0 && c < (int) d.choices.size() ? juce::String (d.choices[(size_t) c]) : juce::String();
 }
 
@@ -291,7 +295,7 @@ juce::String Tile::valueText (const std::string& id) const
 {
     const auto& reg = proc.core().params();
     const int idx = reg.indexOf (id);
-    return idx >= 0 ? formatValue (reg.descriptor (idx), reg.get (idx)) : juce::String();
+    return idx >= 0 ? formatValue (reg.descriptor (idx), plainOf (proc, id)) : juce::String();
 }
 
 void Tile::begin (const std::string& id)
@@ -351,7 +355,7 @@ void Tile::stepChoice (const std::string& id, int delta)
     const auto& d = reg.descriptor (idx);
     const int n = (int) std::lround (d.maxValue - d.minValue) + 1;
     if (n < 2) return;
-    int c = (int) std::lround (reg.get (idx) - d.minValue) + delta;
+    int c = (int) std::lround (plainOf (proc, id) - d.minValue) + delta;
     c = ((c % n) + n) % n;
     if (auto* q = proc.parameter (juce::String (id)))
     {
@@ -802,8 +806,7 @@ protected:
         g.setColour (colour::displayGrid.brighter (0.15f));
         for (int i = 1; i < 8; ++i) g.drawVerticalLine ((int) (plot.getX() + plot.getWidth() * (float) i / 8.0f), plot.getY(), plot.getBottom());
         g.drawHorizontalLine ((int) plot.getCentreY(), plot.getX(), plot.getRight());
-        const auto& reg = proc.core().params();
-        const float hz = juce::jmax (0.01f, reg.get (ids[0]));
+        const float hz = juce::jmax (0.01f, plainOf (proc, ids[0]));
         const float depth = normAt (1);
         const auto shape = choiceText (ids[2]);
         phase = std::fmod (time * hz, 1.0f);
@@ -893,8 +896,7 @@ protected:
     void paintTile (juce::Graphics& g, juce::Rectangle<float> area) override
     {
         const float u = unit();
-        const auto& reg = proc.core().params();
-        const auto algo = fm::morphAlgorithm (reg.get (ids[0]));
+        const auto algo = fm::morphAlgorithm (plainOf (proc, ids[0]));
         const float index = normAt (2);
         const auto pos = positions();
         const float rad = radiusPx();
@@ -944,14 +946,14 @@ protected:
             g.drawText (juce::String (op + 1), r.withTrimmedBottom (rad * 0.8f).translated (0.0f, rad * 0.25f), juce::Justification::centred, false);
             g.setColour (edit());
             g.setFont (monoFont (rad * 0.62f));
-            g.drawText (juce::String (reg.get (ids[(size_t) (4 + op)]), 2), r.withTrimmedTop (rad * 0.95f).translated (0.0f, -rad * 0.2f),
+            g.drawText (juce::String (plainOf (proc, ids[(size_t) (4 + op)]), 2), r.withTrimmedTop (rad * 0.95f).translated (0.0f, -rad * 0.2f),
                         juce::Justification::centred, false);
         }
         // algorithm badge + index
         const auto bd = badge();
         g.setColour (colour::displayGrid.brighter (0.3f));
         g.drawRoundedRectangle (bd, u * 0.5f, 1.0f);
-        caption (g, bd, tr ("Algorithm").toUpperCase() + " " + juce::String ((int) std::floor (reg.get (ids[0])) + 1), juce::Justification::centred, u,
+        caption (g, bd, tr ("Algorithm").toUpperCase() + " " + juce::String ((int) std::floor (plainOf (proc, ids[0])) + 1), juce::Justification::centred, u,
                  colour::displayText);
         caption (g, area.withHeight (u * 1.8f), "INDEX " + valueText (ids[2]), juce::Justification::topRight, u);
     }
@@ -966,8 +968,7 @@ private:
     }
     void stepChoiceContinuous()
     {
-        const auto& reg = proc.core().params();
-        float a = std::floor (reg.get (ids[0])) + 1.0f;
+        float a = std::floor (plainOf (proc, ids[0])) + 1.0f;
         if (a > (float) (fm::numAlgorithms - 1)) a = 0.0f;
         if (auto* q = proc.parameter (juce::String (ids[0])))
         {
@@ -986,8 +987,7 @@ private:
     /** Operators in layers: carriers at the bottom, their modulators above (by depth in the algorithm). */
     std::array<juce::Point<float>, fm::numOps> positions() const
     {
-        const auto& reg = proc.core().params();
-        const auto algo = fm::morphAlgorithm (reg.get (ids[0]));
+        const auto algo = fm::morphAlgorithm (plainOf (proc, ids[0]));
         std::array<int, fm::numOps> depth {};
         for (int op = 0; op < fm::numOps; ++op) depth[(size_t) op] = algo.out[op] > 0.01f ? 0 : -1;
         for (int pass = 0; pass < fm::numOps; ++pass)
@@ -1062,9 +1062,8 @@ protected:
     void paintTile (juce::Graphics& g, juce::Rectangle<float> area) override
     {
         const float u = unit();
-        const auto& reg = proc.core().params();
         const auto& bank = wavetable::Bank::get();
-        const int table = juce::jlimit (0, wavetable::numTables - 1, (int) std::lround (reg.get (ids[2])));
+        const int table = juce::jlimit (0, wavetable::numTables - 1, (int) std::lround (plainOf (proc, ids[2])));
         const float pos = normAt (0) + mod (ids[0]);
         const auto r = range (ids[0]);
         const int frames = wavetable::Bank::numFrames;
@@ -1671,7 +1670,7 @@ protected:
         g.fillRoundedRectangle (juce::Rectangle<float> (hr * 0.3f, hr * 0.7f).withCentre ({ c.x + hr * 1.05f, c.y }), hr * 0.1f);
         // the source
         const auto& reg = proc.core().params();
-        const float az = reg.get (ids[0]) * juce::MathConstants<float>::pi / 180.0f;
+        const float az = plainOf (proc, ids[0]) * juce::MathConstants<float>::pi / 180.0f;
         const float dn = normAt (1) + mod (ids[1]);
         const auto s = c + juce::Point<float> (std::sin (az), -std::cos (az)) * (r * juce::jlimit (0.05f, 1.0f, dn));
         // modulation range of the azimuth: a violet arc
