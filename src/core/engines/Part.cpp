@@ -339,6 +339,7 @@ void Part::reset() noexcept
         if (e != nullptr) e->reset();
     sustain = false;
     sustained.fill (false);
+    held.fill (0.0f); // p16
     bend = 0.0f;
     portaSwitch = true;
     ccGlideSeconds = -1.0f;
@@ -468,6 +469,9 @@ void Part::pushCommon() noexcept
 void Part::noteOn (int note, float velocity) noexcept
 {
     if (note < 0 || note > 127) return;
+    held[(size_t) note] = std::max (velocity, 1.0e-3f); // p16
+    for (auto* f : followers)
+        if (f != nullptr) f->noteOn (note, velocity);
     sustained[(size_t) note] = false;
     matrix.noteOn (note, velocity); // first: the voice reads the new note's seed
     rack.noteOn();                  // 0.7: retriggered rack effects
@@ -478,6 +482,9 @@ void Part::noteOn (int note, float velocity) noexcept
 void Part::noteOff (int note) noexcept
 {
     if (note < 0 || note > 127) return;
+    held[(size_t) note] = 0.0f; // p16
+    for (auto* f : followers)
+        if (f != nullptr) f->noteOff (note);
     if (sustain) { sustained[(size_t) note] = true; return; }
     matrix.noteOff (note);
     for (auto& e : engines)
@@ -487,6 +494,9 @@ void Part::noteOff (int note) noexcept
 void Part::allNotesOff (bool hard) noexcept
 {
     sustained.fill (false);
+    held.fill (0.0f); // p16
+    for (auto* f : followers)
+        if (f != nullptr) f->allNotesOff (hard);
     matrix.allNotesOff();
     for (auto& e : engines)
         if (e != nullptr) e->allNotesOff (hard);
@@ -494,6 +504,8 @@ void Part::allNotesOff (bool hard) noexcept
 
 void Part::noteExpression (int note, const NoteExpression& x) noexcept
 {
+    for (auto* f : followers) // p16
+        if (f != nullptr) f->noteExpression (note, x);
     matrix.setNoteExpression (note, x.pressure, x.slide, x.noteBend);
     exprBlend = std::clamp (x.blend, -1.0f, 1.0f); // 0.8: part-wide (the mix of two engines is not per note)
     for (auto& e : engines)
@@ -502,6 +514,9 @@ void Part::noteExpression (int note, const NoteExpression& x) noexcept
 
 void Part::handleMidi (const MidiEvent& m) noexcept
 {
+    if (! m.isNoteOn() && ! m.isNoteOff())
+        for (auto* f : followers) // p16: controllers, bend ... (notes reach them through noteOn / noteOff)
+            if (f != nullptr) f->handleMidi (m);
     if (m.isNoteOn()) noteOn (m.data1, (float) m.data2 / 127.0f);
     else if (m.isNoteOff()) noteOff (m.data1);
     else if (m.isPitchBend())

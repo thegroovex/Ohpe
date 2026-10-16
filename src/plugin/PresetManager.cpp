@@ -139,6 +139,7 @@ bool PresetManager::apply (const preset::Preset& p, int part)
         opt.releaseArp = arpOwner == part && sameArp (preset::arpSnapshot (core.params()), arpByPreset);
         const auto r = preset::applyPart (p, core.params(), part, opt);
         ok = r.ok;
+        if (ok) preset::applyPartMorph (p, core, part); // p16: the morph corners travel with the sound
         if (r.arpApplied && core.params().get (std::string (Core::Ids::arpPrefix) + "on") > 0.5f)
         {
             arpOwner = part;
@@ -197,7 +198,10 @@ juce::File PresetManager::save (const preset::Meta& metaIn, bool project, int pa
         p = preset::captureProject (proc.core(), meta, extra);
     }
     else
+    {
         p = preset::capturePart (proc.core().params(), part, meta);
+        preset::captureMorph (proc.core(), part, p); // p16
+    }
 
     auto file = userFileFor (meta.name, project);
     if (! file.getParentDirectory().createDirectory()) return {};

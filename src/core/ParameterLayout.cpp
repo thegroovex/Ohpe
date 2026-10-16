@@ -267,5 +267,8 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
         add (continuous (Core::Ids::perfBend, "Pitch Wheel", "Pitch-Rad", -1.0f, 1.0f, 0.0f));
         add (continuous (Core::Ids::perfMod, "Mod Wheel", "Mod-Rad", 0.0f, 1.0f, 0.0f));
     }
+
+    // ---- p16: the morph space - per part: on, X / Y, glide, X / Y control (pressure, slide, mod wheel) -------
+    MorphSpace::registerParams (reg, Core::numParts);
 }
 } // namespace ohpe

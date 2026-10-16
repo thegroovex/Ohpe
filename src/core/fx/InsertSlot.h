@@ -80,6 +80,9 @@ public:
         it prepared something. Never call while the audio thread could process that type (it cannot: an
         unready type is not processed). */
     bool prepareSelected (const ParamRegistry& reg);
+    /** p16 (morph space), message thread: prepares type `t` if it is not ready (lazy slots), like prepareSelected for
+        a type a morph corner selects. Returns true when it prepared something. */
+    bool prepareType (int t);
     /** Audio thread: the selected type is waiting for prepareSelected(). */
     bool isWaiting() const noexcept { return waiting.load (std::memory_order_relaxed); }
     bool isReady (int t) const noexcept { return t > Off && t < numTypes && ready[(size_t) t].load (std::memory_order_acquire); }

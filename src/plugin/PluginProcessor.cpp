@@ -236,6 +236,7 @@ void OhpeProcessor::timerCallback()
     samples.timerTick();
     pollRemoteControls();
     if (ohpeCore.effectsWaiting()) ohpeCore.prepareEffects(); // 0.7: FX rack slot types chosen by the host / a preset
+    ohpeCore.updateMorph(); // p16: morph plans follow the part's own sound under empty corners
 }
 
 void OhpeProcessor::pollRemoteControls()
