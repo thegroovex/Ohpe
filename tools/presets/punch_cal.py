@@ -6,6 +6,9 @@
   punch_cal.py makeup N          N rounds: make_factory, render (plug-in test conditions), makeup += error (a level
                                  below makeup 0 moves the part gain and the threshold together)
   punch_cal.py levels N          N rounds: the part gain of the presets WITHOUT a glue compressor outside the level window
+  punch_cal.py crest N NAMES     high-crest presets (struck keys, mallets, arps) the peaks hold under the level window: a
+                                 transient guard (peak_guard.json) shaves the loudest attacks, the part gain lifts the body
+                                 (the glue threshold and the guard move with the gain); N rounds
   punch_cal.py report OUT.json   every part preset in test conditions: active RMS, peak, crest; lists those outside
 Needs a build-core build (ohpe_render). Never run while make_factory or another render runs."""
 import glob, json, os, subprocess, sys, tempfile
@@ -162,6 +165,49 @@ def cmd_levels(rounds):
     make_factory()
 
 
+GJ = HERE + "/peak_guard.json"
+CREST_ACTIVE = -19.0  # the body of a high-crest preset, 2 dB inside the plug-in level window
+CREST_PEAK = -1.5
+
+
+def cmd_crest(rounds, names):
+    for k in range(rounds):
+        make_factory()
+        g, r3 = glued()
+        files = factory_parts_files()
+        rows = render([files[n][0] for n in names])
+        levels, guard, punch = json.load(open(LJ)), json.load(open(GJ)), json.load(open(PJ))
+        moved = 0
+        for n in names:
+            r = rows.get(n)
+            if not r:
+                continue
+            d_l = CREST_ACTIVE - r["active"]
+            excess = r["peak"] + d_l - CREST_PEAK
+            if abs(d_l) < 0.3 and abs(excess) < 0.3:
+                continue
+            moved += 1
+            levels[n] = round(max(-24.0, min(24.0, levels.get(n, 0.0) + d_l)), 1)
+            if n in g:
+                punch[n]["thresh"] = round(punch[n]["thresh"] + d_l, 1)
+            old = guard.get(n)
+            if isinstance(old, dict):
+                gt = old["thresh"]
+            elif old is None:
+                gt = r["peak"] + 0.5  # first round: the guard starts at the current peak
+            else:
+                gt = old  # a held-chord guard: kept, moved with the gain
+            new = round(min(-2.0, gt + d_l - 1.15 * excess), 1)
+            guard[n] = new if isinstance(old, (int, float)) else {"thresh": new, "release": 40.0}
+            print("  %-18s act %6.1f pk %5.1f -> gain %+.1f guard %.1f" % (n, r["active"], r["peak"], levels[n], new), flush=True)
+        for f, o in ((LJ, levels), (GJ, guard), (PJ, punch)):
+            json.dump(o, open(f, "w"), indent=1, sort_keys=True)
+        print("crest round %d: %d moved" % (k + 1, moved), flush=True)
+        if not moved:
+            break
+    make_factory()
+
+
 def cmd_report(out):
     files = factory_parts_files()
     rows = render([v[0] for v in files.values()])
@@ -185,5 +231,7 @@ if __name__ == "__main__":
         cmd_makeup(int(sys.argv[2]))
     elif c == "levels":
         cmd_levels(int(sys.argv[2]))
+    elif c == "crest":
+        cmd_crest(int(sys.argv[2]), sys.argv[3].split(","))
     elif c == "report":
         cmd_report(sys.argv[2])

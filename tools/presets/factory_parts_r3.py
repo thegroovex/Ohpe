@@ -917,7 +917,7 @@ PRESETS_R3 = [
       amp(0.9, 2.0, 0.9, 3.0), mod(1.0, 2.0, 0.6, 2.0, 0.1), cho(1, 0.25, 0.55, 0.35), rev(3, 0.88, 0.5, 0.03, 0.34), voices=6),
     P("Night Rain", ["Textures"], "grain", "Random kalimba droplets falling into a ping-pong delay and a dark hall.",
       gr(inst="kalimba", pos=0.3, size=110, density=55, spray=0.9, reverse=0.1, spread=1.0, scan=0.2, tone=0.6, pitch=12),
-      amp(0.05, 1.0, 0.85, 3.0), mod(0.01, 1.0, 0.5, 1.0, 0.0), comp(1, -30.0, 3.0, 3.0, 150.0, 8.0, 12.0), dly(2, 0.36, 0.55, 0.35, 1, 0.35), rev(3, 0.9, 0.6, 0.03, 0.4),
+      amp(0.05, 1.0, 0.85, 3.0), mod(0.01, 1.0, 0.5, 1.0, 0.0), comp(1, -25.0, 3.0, 3.0, 150.0, 8.0, 12.0), dly(2, 0.36, 0.55, 0.35, 1, 0.35), rev(3, 0.9, 0.6, 0.03, 0.4),
       voices=8),
     P("Ghost Organ", ["Pads", "Keys"], "wavetable", "Hollow harmonic organ with a slow autopan and a cavernous hall.",
       wt(table="harmonic", pos=0.55, tone=0.65, unison=0.2, univoices=3, keytrack=0.4, lfopos=0.15),

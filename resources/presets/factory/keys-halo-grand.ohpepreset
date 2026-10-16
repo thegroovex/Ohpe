@@ -132,6 +132,14 @@
     "mpe.bend": 48,
     "voices": 16,
     "velsens": 0.7,
-    "gain": 11.6
+    "gain": 24.0,
+    "fx5.type": 10,
+    "fx5.compressor.thresh": -13.1,
+    "fx5.compressor.ratio": 8.0,
+    "fx5.compressor.attack": 0.1,
+    "fx5.compressor.release": 40.0,
+    "fx5.compressor.knee": 6.0,
+    "fx5.compressor.makeup": 0.0,
+    "fx5.compressor.mix": 1.0
   }
 }

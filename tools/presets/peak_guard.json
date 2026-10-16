@@ -4,7 +4,15 @@
  "Bowed Haze": -4.0,
  "Choir Grains": -7.0,
  "Chop Pad": -4.0,
+ "Concert Grand": {
+  "release": 40.0,
+  "thresh": -2.8
+ },
  "Crystal FM Pad": -4.0,
+ "Crystal Organ": {
+  "release": 40.0,
+  "thresh": -2.0
+ },
  "Crystal Slide": -4.0,
  "Dark Matter": -4.0,
  "Deep Space Drone": -4.0,
@@ -20,21 +28,29 @@
  "Glass Engine": -4.0,
  "Glass Grains": -7.0,
  "Glitch Spray": -5.0,
- "Glock Arp": -4.0,
+ "Glock Arp": -9.0,
  "Gong Hit": -7.0,
  "Granular Rise": -5.0,
  "Grit Sweep": -7.0,
+ "Halo Grand": {
+  "release": 40.0,
+  "thresh": -13.1
+ },
  "Hollow Reese": -4.0,
  "Infinite Hall": -4.0,
  "Laser Drop": -4.0,
- "Mallet Echo Arp": -4.0,
+ "Mallet Echo Arp": -8.0,
  "Marimba Rain": -4.0,
  "Metal Choir": -4.0,
  "Metal Strings": -4.0,
+ "Music Box": {
+  "release": 40.0,
+  "thresh": -4.1
+ },
  "Neuro Hybrid": -4.0,
- "Night Rain": -7.0,
+ "Night Rain": -2.0,
  "Noise Riser": -7.0,
- "Random Spark Arp": -4.0,
+ "Random Spark Arp": -4.4,
  "Reverse Spray": -7.0,
  "Riddim Saw": -4.0,
  "Rise Bloom": -4.0,
@@ -43,6 +59,10 @@
  "Table Scanner": -7.0,
  "Talker Bass": -4.0,
  "Tear Reese": -4.0,
+ "Trance Gate Arp": {
+  "release": 40.0,
+  "thresh": -3.4
+ },
  "Triplet Wobble": -4.0,
  "Vowel Pad": -4.0,
  "Whoosh": -7.0,
