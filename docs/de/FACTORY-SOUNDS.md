@@ -145,7 +145,7 @@ Werkzeuge, für Mitwirkende:
 ## Preset-Liste
 
 <!-- presets:begin -->
-### Bass (65)
+### Bass (68)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
@@ -182,6 +182,9 @@ Werkzeuge, für Mitwirkende:
 | Moving Reese | Wavetable | MPE | Reese, dessen Tabellenposition und Filter mit einem langsamen LFO atmen – Bewegung auf gehaltenen Noten ohne Automation. |
 | Neuro Hybrid | FM | Hybrid, MPE | FM-Growl und Wavetable-Reese, die sich gegenseitig ringmodulieren, gefaltet und gesquasht: ein Neuro-Monster. |
 | Neuro Reese | Wavetable | MPE | Verzerrter sechsstimmiger Reese: angefahrenes Filter, gefaltete Obertöne und ein harter Mono-Tiefbass – zum Automatisieren gemacht. |
+| Neuro Swirl | Wavetable | 3D, MPE | Sprechender Formant-Growl, der einmal pro Takt eine Acht zieht – der Vokal bewegt sich, der Raum bewegt sich, der Sub nicht. |
+| Orbit Reese | Wavetable | 3D, MPE | Neurofunk-Reese, dessen knurrende Mitten alle zwei Takte um deinen Kopf kreisen, während der Sub unter 160 Hz genau in der Mitte und mono bleibt – clubtaugliche Bewegung. |
+| Pendulum Wobble | Wavetable | 3D, MPE | Halftime-Dubstep-Wobble, der mit dem Takt über deinen Kopf und zurück schwingt: Wobble und Raum atmen zusammen. |
 | Phase Reese | Wavetable | MPE | Vierstimmiger Sägezahn-Stapel durch einen langsamen, tiefen Phaser: der klassische schwebende Drum-&-Bass-Reese. |
 | Punch FM Bass | FM | – | Solider digitaler Bass mit hellem Anschlag und sauberem Sinus-Körper. |
 | Punch Sub | Analog | Boom | Kurzer, druckvoller Sub mit knackigem Filterklick; rastet mit der Kick ein. |
@@ -257,7 +260,7 @@ Werkzeuge, für Mitwirkende:
 | Vibraphone | Sampler | – | Aufgenommenes Vibrafon mit sanftem Motor-Tremolo. |
 | Wide Organ | Wavetable | – | Zugriegelartige Orgel mit rotierendem Stereo-Pan und kurzem Hall. |
 
-### Flächen (44)
+### Flächen (47)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
@@ -284,11 +287,14 @@ Werkzeuge, für Mitwirkende:
 | Glass Grains | Grain | Texturen | Körner eines singenden Weinglases (CC0-Aufnahme), langsam abgetastet. |
 | Glass Shimmer | Wavetable | Texturen | Glass-Tabelle mit breitem Unisono: luftige, glitzernde Fläche. |
 | Glide Strings | Analog | – | Ensemble-Streicher, deren Akkorde ineinander gleiten (Poly-Glide); Legato-Akkordwechsel. |
+| Halo Drift | Cluster | 3D, MPE | Verstimmter Cluster-Chor, der auf einem langsamen Zufallsorbit um und über dir wandert – nie zweimal am selben Ort. |
 | Harmonic Swell | Wavetable | – | Obertöne blühen auf, während die Fläche anschwillt. |
 | Infinite Hall | Cluster | MPE | Major-Septakkord-Stapel in einem riesigen Hall, der nie zu enden scheint. |
 | Metal Strings | Zupfen | Hybrid, MPE | Metallische gezupfte Saiten, gefaltet in eine langsame Cluster-Fläche – ein Orchester aus Draht. |
 | Night Drive | Analog | Texturen | Dunkle resonante Fläche, die mit einem langsamen Filter-LFO atmet. |
+| Orbit Atmos | Wavetable | 3D, MPE | Breite Wavetable-Atmosphäre, die alle acht Takte auf einer leicht geneigten Bahn um deinen Kopf kreist, in einem weichen Raum. Am besten mit Kopfhörern: Slide hebt sie an, Druck holt sie näher. |
 | Orbit Pad | Grain | Hybrid, MPE | Harfen-Grains, die einen FM-Layer umkreisen, sanft ringmoduliert und über zwei Takte pannend. |
+| Overhead Choir | Vocal | Vokal, 3D, MPE | Hauchiger „Uh“-Chor, der von vorn über deinen Kopf nach hinten und zurück schwingt – ein Pendel durch den Raum. |
 | Piano Grains | Grain | Texturen, Klavier, MPE | Flügel-Aufnahmen, eingefroren zu einer langsam ziehenden Grain-Wolke: ein Klavier, das atmet. |
 | Rise Bloom | FM | – | Schimmernde FM-Fläche, die von einer Oktave darunter aufblüht; lang und hell. |
 | Rise Choir | Vocal | Vokal | Luftiger „Ah“-Chor, der bei jedem Akkord eine Quarte von unten hineinschleift. |
@@ -306,10 +312,11 @@ Werkzeuge, für Mitwirkende:
 | Warm Horizon | Cluster | MPE | Weiche, breite Add9-Fläche mit sanftem Drift: warm und offen, sitzt hinter allem. |
 | Warm Strings | Analog | – | Ensemble-Streicher: verstimmte Sägezähne, eine Oktave höher, sanfter Chorus. |
 
-### Leads (32)
+### Leads (33)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
+| Binaural Lead | Wavetable | 3D, MPE | Ausdrucksstarkes Lead vor dir: Slide hebt es über deinen Kopf, Druck holt es bis ans Ohr, eine langsame Drift hält es lebendig. Für MPE-Controller und Kopfhörer. |
 | Breath Lead | Vocal | Hybrid, MPE | Gehauchter, gesungener Ton, verschmolzen mit einem weichen Sägezahn-Stapel: ein Lead zwischen Stimme und Synth. |
 | Chip Square Lead | Wavetable | MPE | Schmales Puls-Lead mit knusprigem Bitcrusher und schnellem Vibrato – retro, aber breit. |
 | Classic Mono Lead | Analog | – | Sägezahn-Lead mit etwas Vibrato, Glide und punktiertem Delay. |
@@ -384,12 +391,13 @@ Werkzeuge, für Mitwirkende:
 | Wood Block | Zupfen | – | Harter Schlägel auf einem kurzen Holzstab. |
 | Zap Perc | Wavetable | FX | Digital-Tabelle, schlagartig geschlossen: Zaps, Klicks und Laser. |
 
-### FX (17)
+### FX (19)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
 | Alien Signal | FM | – | Zufällig springende FM-Klangfarbe: Funkverkehr aus der Ferne. |
 | Detune Swarm | Cluster | Texturen | Sieben wild driftende Oszillatoren: ein Schwarm. |
+| Doppler Fly-By | Wavetable | 3D | Ein Sirenenton rast von links nach rechts und zurück an dir vorbei – die Tonhöhe biegt sich beim Vorbeiflug durch den Doppler-Effekt. |
 | Downlifter | Analog | – | Fallender Rauschen- und Sägezahn-Sweep über drei Sekunden mit Jet-Flanger – das Ende des Builds. |
 | Glitch Spray | Grain | Texturen | Winzige, schnelle Grains, gecrusht und in ein Stereo-Delay gestreut: digitaler Sprühnebel. |
 | Gong Hit | FM | Texturen | Unharmonischer FM-Gong mit langem Schimmer. |
@@ -400,13 +408,14 @@ Werkzeuge, für Mitwirkende:
 | Noise Riser | Analog | – | Taste halten: gefiltertes Rauschen steigt vier Sekunden lang an. |
 | Reverse Spray | Grain | Texturen | Überwiegend rückwärts gespielte Harfenkörner, über das Stereofeld verteilt. |
 | Siren Pan | FM | – | Heulende FM-Sirene, deren Tonhöhe schwingt und über die Lautsprecher wandert. |
+| Spiral Riser | Analog | 3D | Taste halten: Rauschen und Sägezähne steigen vier Sekunden lang und schrauben sich dabei von unterhalb der Ohren hoch über deinen Kopf. |
 | Stereo Zap | Wavetable | – | Laser-Zap, der zwei Oktaven abtaucht, von einem Ping-Pong-Delay nach links und rechts geworfen. |
 | Stutter Glitch | Grain | – | Winzige, spärliche Körner: glitchiges Stottern aus der Marimba. |
 | Table Scanner | Wavetable | Texturen | Digital-Tabelle, von einem langsamen LFO gefahren: robotische Bewegung. |
 | Whoosh | Analog | – | Gefiltertes Rauschen, von einem Ein-Takt-Bandpass-Wobble gefahren, breit gespreizt: ein vorbeiziehendes Whoosh. |
 | Wide Riser | Analog | – | Rauschen und Sägezähne, die über vier Sekunden ansteigen, geflangt und breit, in einen langen Hall. |
 
-### Arp (18)
+### Arp (21)
 
 Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie geladen werden (gehalten: eine Taste einmal drücken, er spielt weiter; eine neue Taste oder ein neuer Akkord wechselt). Ein Preset ohne Arp in diesem Part schaltet ihn wieder aus. Siehe [PRESETS.md](PRESETS.md#arp-block).
 
@@ -419,19 +428,22 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 | Digital Pluck Arp | FM | – | Klickender digitaler Pluck für schnelle Sechzehntel. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
 | Dream Tine Arp | Sampler | Tasten | Tine-Piano-Arpeggio in Achteln mit Chorus, Delay und Hall: verträumt und voll. *Arp: Auf/Ab · 1/8 · 2 Okt. · Halten* |
 | FM Arp Bell | FM | Tasten | Kurze gläserne FM-Glocken für Sequenzen. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
+| Figure Eight Arp | Wavetable | 3D | Digitales Arpeggio, das eine liegende Acht um dich zeichnet – links vorn, quer, rechts hinten – über zwei Takte. Gehalten. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
 | Formant Arp | Wavetable | Vokal | Vokal-Blips für sprechende Sequenzen. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
 | Glock Arp | Sampler | Tasten | Aufgenommenes Glockenspiel für funkelnde Arpeggien (CC0). *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
 | Mallet Echo Arp | Sampler | Zupfer | Glockenspiel-Arpeggio mit langen punktierten Echos – funkelnd und breit. *Arp: Aufwärts · 1/8 · 3 Okt. · Halten* |
 | Neuro Arp | Wavetable | Bass | Knurrende FM-Sechzehntel in einer Oktave: eine rollende Neuro-Sequenz aus einer gehaltenen Note. *Arp: Wie gespielt · 1/16 · 1 Okt. · Halten* |
+| Orbit Arp | Zupfen | 3D | Sechzehntel-Zupf-Arpeggio, das einmal pro Takt um deinen Kopf fliegt – nah, hell und schnell. Gehalten: Akkord drücken. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
 | Pizzicato Arp | Zupfen | Zupfer | Kurze gezupfte Saiten für Ostinati. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
 | Random Spark Arp | FM | FX | Zufällige FM-Blips in Zweiunddreißigsteln über vier Oktaven durch ein Ping-Pong-Delay: Funken. *Arp: Zufall · 1/32 · 4 Okt. · Halten* |
 | Ripple Arp | Analog | – | Analoges Sägezahn-Arp in Sechzehnteltriolen mit schwebendem Phaser und Stereo-Echo. *Arp: Aufwärts · 1/16T · 2 Okt. · Halten* |
 | Sparkle Bell | FM | Zupfer | Kurze, helle FM-Glocke für funkelnde Arpeggios über Akkorden. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
+| Spiral Arp | FM | 3D | Glocken-Arpeggio, das sich über vier Takte von Ohrhöhe bis über deinen Kopf hochschraubt und für die nächste Runde wieder fällt. *Arp: Aufwärts · 1/16 · 3 Okt. · Halten* |
 | Table Arp | Wavetable | – | Wavetable-Sequenzklang: die Position springt mit jeder Note. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
 | Trance Gate Arp | Cluster | Leads | Supersaw-Stapel auf einem Sechzehntel-Arp über zwei Oktaven, Ping-Pong-Delay und Hall. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
 | Wide Pluck Arp | Wavetable | Zupfer | Sechsstimmiger Stereo-Pluck, auf/ab über drei Oktaven, punktiertes Ping-Pong-Delay. *Arp: Auf/Ab · 1/16 · 3 Okt. · Halten* |
 
-### Texturen (24)
+### Texturen (25)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
@@ -453,6 +465,7 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 | Marimba Rain | Grain | – | Spärliche Marimba-Körner, die wie Regen fallen. |
 | Metal Choir | Grain | Flächen, MPE | Grains aus gestrichenem Metall zu einem Chor gestapelt; langsamer Scan, schimmerndes Stereo. |
 | Night Rain | Grain | MPE | Zufällige Kalimba-Tropfen, die in ein Ping-Pong-Delay und einen dunklen Hall fallen. |
+| Night Swarm | FM | 3D, MPE | Gläserne FM-Glocken auf einem schnellen Zufallsorbit in wechselnden Entfernungen: ein Lichterschwarm um deinen Kopf. |
 | Recorder Breath | Grain | Vokal | Hauchige Blockflöten-Körner: luftige, stimmähnliche Töne. |
 | Rust Texture | Grain | FX, MPE | Grains aus gestrichenem Metall, rückwärts durch einen langsamen Kammfilter: rostig, knarzend, lebendig. |
 | Singing Glass | Sampler | Flächen | Geriebene Weinglas-Aufnahmen (CC0), geloopt: rein und gespenstisch. |
@@ -532,6 +545,24 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 | Tine Bloom | Grain | Flächen, Texturen, MPE | Tine-Piano-Grains, die langsam aufblühen, mit Chorus und punktiertem Echo. |
 | Upright Keys | Sampler | Tasten, MPE | Klavier-Aufnahmen (Upright) mit etwas Raum: ehrlich und nah. |
 
+### 3D (13)
+
+| Name | Engine | Weitere Kategorien | Beschreibung |
+|---|---|---|---|
+| Binaural Lead | Wavetable | Leads, MPE | Ausdrucksstarkes Lead vor dir: Slide hebt es über deinen Kopf, Druck holt es bis ans Ohr, eine langsame Drift hält es lebendig. Für MPE-Controller und Kopfhörer. |
+| Doppler Fly-By | Wavetable | FX | Ein Sirenenton rast von links nach rechts und zurück an dir vorbei – die Tonhöhe biegt sich beim Vorbeiflug durch den Doppler-Effekt. |
+| Figure Eight Arp | Wavetable | Arp | Digitales Arpeggio, das eine liegende Acht um dich zeichnet – links vorn, quer, rechts hinten – über zwei Takte. Gehalten. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
+| Halo Drift | Cluster | Flächen, MPE | Verstimmter Cluster-Chor, der auf einem langsamen Zufallsorbit um und über dir wandert – nie zweimal am selben Ort. |
+| Neuro Swirl | Wavetable | Bass, MPE | Sprechender Formant-Growl, der einmal pro Takt eine Acht zieht – der Vokal bewegt sich, der Raum bewegt sich, der Sub nicht. |
+| Night Swarm | FM | Texturen, MPE | Gläserne FM-Glocken auf einem schnellen Zufallsorbit in wechselnden Entfernungen: ein Lichterschwarm um deinen Kopf. |
+| Orbit Arp | Zupfen | Arp | Sechzehntel-Zupf-Arpeggio, das einmal pro Takt um deinen Kopf fliegt – nah, hell und schnell. Gehalten: Akkord drücken. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
+| Orbit Atmos | Wavetable | Flächen, MPE | Breite Wavetable-Atmosphäre, die alle acht Takte auf einer leicht geneigten Bahn um deinen Kopf kreist, in einem weichen Raum. Am besten mit Kopfhörern: Slide hebt sie an, Druck holt sie näher. |
+| Orbit Reese | Wavetable | Bass, MPE | Neurofunk-Reese, dessen knurrende Mitten alle zwei Takte um deinen Kopf kreisen, während der Sub unter 160 Hz genau in der Mitte und mono bleibt – clubtaugliche Bewegung. |
+| Overhead Choir | Vocal | Flächen, Vokal, MPE | Hauchiger „Uh“-Chor, der von vorn über deinen Kopf nach hinten und zurück schwingt – ein Pendel durch den Raum. |
+| Pendulum Wobble | Wavetable | Bass, MPE | Halftime-Dubstep-Wobble, der mit dem Takt über deinen Kopf und zurück schwingt: Wobble und Raum atmen zusammen. |
+| Spiral Arp | FM | Arp | Glocken-Arpeggio, das sich über vier Takte von Ohrhöhe bis über deinen Kopf hochschraubt und für die nächste Runde wieder fällt. *Arp: Aufwärts · 1/16 · 3 Okt. · Halten* |
+| Spiral Riser | Analog | FX | Taste halten: Rauschen und Sägezähne steigen vier Sekunden lang und schrauben sich dabei von unterhalb der Ohren hoch über deinen Kopf. |
+
 ### Projekte / Demo-Patterns (14)
 
 | Name | Kategorien | Beschreibung |
@@ -546,10 +577,10 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 | Sub & Glide | Flächen, Bass, Drums, Boom | Septakkorde, die ineinander gleiten (Glide Strings, Poly-Glide), ein langer gleitender Sub auf Orbit-Spur 1 und ein Halftime-Beat auf dem Boom-Kit aus den Orbit-Spuren 2–4, funkelnde Glocken aus Euklid. Cm7 – Abmaj7 – Ebmaj7 – Bb7. |
 | Lofi Kit | Drums | Das Lo-Fi-Kit für Lo-Fi-Hip-Hop eingestellt: dumpfe, runde Kick, weiche Snare mit Ghost Notes und Rim, matte geshuffelte Hats mit Anschlags-Variation (Orbit, träger Swing), Vinyl-Knistern auf Part 4 (Orbit-Spur 4) und ein dunkler Master. Eigene Keys auf Part 1 spielen. |
 | Boom Kit | Drums, Bass, Boom | Das synthetisierte Boom-Kit in einem Halftime-Beat mit rollenden Hats (Orbit), Boom Slide auf dem Step-Sequenzer – überlappende Noten gleiten (Legato-Portamento) – und eine dunkle Fläche, die in ihren Akkord steigt (Rise Glass, Euklid). c-Moll, 70 BPM. |
-| Neuro Engine | Bass, Drums, Hybrid | Neurofunk mit 174 BPM in f-Moll: Two-Step-Beat auf dem Hybrid-Kit (Orbit), Neuro Reese riffend auf dem Step-Sequenzer, Growl Machine antwortet aus Euklid, darunter eine dunkle Septakkord-Fläche. Mono-Tiefbass, gesquasht und laut. Play drücken. |
+| Neuro Engine | Bass, Drums, Hybrid, 3D | Neurofunk mit 174 BPM in f-Moll: Two-Step-Beat auf dem Hybrid-Kit (Orbit), Neuro Reese riffend auf dem Step-Sequenzer, Growl Machine antwortet aus Euklid, darunter eine dunkle Septakkord-Fläche. Mono-Tiefbass, gesquasht und laut. Play drücken. In 3D: die Growl-Antworten wirbeln um deinen Kopf, die Fläche treibt über dir (am besten mit Kopfhörern). |
 | Halftime Pressure | Bass, Drums | Moderner Dubstep mit 140 BPM in e-Moll: Half-Time-Drums auf dem Studio-Kit (Orbit), Wub Machine auf dem Step-Sequenzer – der Achtel-Wobble startet mit jeder Note neu –, Vowel Growl antwortet aus Euklid, dazu eine kalte Glas-Textur. Play drücken. |
 | Liquid Roll | Bass, Drums, Tasten | Liquid Drum & Bass mit 174 BPM in d-Moll: rollender Beat auf dem Tight-Kit (Orbit), verträumte Tine-Piano-Septakkorde und eine warme Fläche (Orbit-Spuren 3 und 4), ein weicher, gleitender Sub (Step-Sequenzer) und gläserne Plucks aus Euklid. Play drücken. |
-| Evolving Space | Flächen, Texturen, Hybrid | Ambient mit 66 BPM in a-Moll: Evolving-Tide-Akkorde, die durch ihre Wavetable driften (Step-Sequenzer), ein generativer Flügel mit Grain-Heiligenschein aus drei Orbit-Spuren mit 5, 7 und 11 Schritten, ein Gletscher-Grain-Drone und zufällige Sternenfeld-Glocken (Euklid). Einfach laufen lassen. |
+| Evolving Space | Flächen, Texturen, Hybrid, 3D | Ambient mit 66 BPM in a-Moll: Evolving-Tide-Akkorde, die durch ihre Wavetable driften (Step-Sequenzer), ein generativer Flügel mit Grain-Heiligenschein aus drei Orbit-Spuren mit 5, 7 und 11 Schritten, ein Gletscher-Grain-Drone und zufällige Sternenfeld-Glocken (Euklid). Einfach laufen lassen. In 3D: die Akkorde kreisen langsam um dich, die Sternenfeld-Glocken verstreuen sich ringsum und die Drone schwingt über dir (am besten mit Kopfhörern). |
 
-**Engines:** FM 40, Wavetable 72, Analog 65, Zupfen 13, Grain 27, Vocal 18, Cluster 21, Sampler 26
+**Engines:** FM 42, Wavetable 79, Analog 66, Zupfen 14, Grain 27, Vocal 19, Cluster 22, Sampler 26
 <!-- presets:end -->

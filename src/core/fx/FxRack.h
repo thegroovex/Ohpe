@@ -75,6 +75,15 @@ public:
     {
         for (int s = 0; s < slotCount; ++s) slots[(size_t) s].noteOn();
     }
+    /** 1.0: song position (tempo-synced motion) and the master monitoring mode for every slot. Audio thread. */
+    void setTransportPosition (double ppq, bool playing) noexcept
+    {
+        for (int s = 0; s < slotCount; ++s) slots[(size_t) s].setTransportPosition (ppq, playing);
+    }
+    void setMonitorMode (int mode) noexcept
+    {
+        for (int s = 0; s < slotCount; ++s) slots[(size_t) s].setMonitorMode (mode);
+    }
     /** Message thread: prepares the selected types of all slots; true when something was prepared. */
     bool prepareSelected (const ParamRegistry& reg);
     /** Any slot is waiting for prepareSelected(). */

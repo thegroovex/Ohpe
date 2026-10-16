@@ -94,6 +94,7 @@ Display::Visual Display::shownVisual() const
     if (mode == Mode::Tape) return Visual::Character; // p11: the tape page always shows its transport
     if (forcedScopeSource() != ScopeTap::None) return Visual::Scope;
     if (userVisual == Visual::Terrain && ! animated) return Visual::Character;
+    if (showsSpaceView()) return Visual::Space; // 1.0
     return userVisual;
 }
 
@@ -103,7 +104,8 @@ int Display::scopeSource() const
     switch (shownVisual())
     {
         case Visual::Scope:
-        case Visual::Terrain: return ScopeTap::Master;
+        case Visual::Terrain:
+        case Visual::Space: return ScopeTap::Master; // 1.0: the 3D view shows the master correlation
         case Visual::Character:
         case Visual::numVisuals: break;
     }
@@ -175,6 +177,8 @@ juce::String Display::getTooltip()
 {
     const auto p = lastMouse;
     auto key = [this] (const char* k) { return shortcuts ? "  (" + juce::String (k) + ")" : juce::String(); };
+    if (spaceBadgeArea().contains (p)) // 1.0: the 3D badge in the header
+        return space3d::badgeTooltip (space3d::partState (proc.core(), ctx.part));
     if (mode == Mode::Tape)
     {
         for (int b = 0; b < numTransportButtons; ++b)
@@ -344,12 +348,13 @@ void Display::showVisualMenu()
     m.addItem (1, tr ("Character"), ! forced, userVisual == Visual::Character);
     m.addItem (2, tr ("Stereo scope"), ! forced, userVisual == Visual::Scope);
     m.addItem (3, tr ("Spectrum terrain"), ! forced && animated, userVisual == Visual::Terrain);
+    m.addItem (4, tr ("3D space"), ! forced, userVisual == Visual::Space); // 1.0
     m.addSeparator();
-    m.addItem (4, tr ("Animated 3D visuals"), true, animated);
+    m.addItem (10, tr ("Animated 3D visuals"), true, animated);
     juce::Component::SafePointer<Display> safe (this);
     m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (this), [safe] (int r) {
         if (safe == nullptr || r == 0) return;
-        if (r == 4) safe->setAnimatedVisuals (! safe->animated);
+        if (r == 10) safe->setAnimatedVisuals (! safe->animated);
         else safe->setVisual ((Visual) (r - 1));
         if (safe->onVisualSettingsChanged) safe->onVisualSettingsChanged();
     });
@@ -471,6 +476,7 @@ void Display::tick (float seconds)
         lastSource = src;
     }
     if (lastSource != ScopeTap::None) visuals.update (proc.core().scope(), proc.core().sampleRate(), seconds);
+    spaceScene.update (proc.core(), seconds); // 1.0: trails of the 3D sources
     if (animated) parallax += (parallaxTarget - parallax) * juce::jmin (1.0f, seconds * 5.0f);
     const float target = juce::jmin (1.0f, (float) proc.core().activeVoices() / 3.0f);
     energy += (target - energy) * 0.2f;
@@ -508,6 +514,15 @@ void Display::updateTapeOverview()
             overview[(size_t) t][(size_t) i] = juce::jmin (1.0f, peak);
         }
     }
+}
+
+// ---------------------------------------------------------------- 1.0: 3D badge
+juce::Rectangle<float> Display::spaceBadgeArea() const
+{
+    const auto h = headerArea();
+    // after the title and the part badge (placed while painting the header)
+    if (! badgeRect.isEmpty()) return badgeRect;
+    return juce::Rectangle<float> (h.getHeight() * 2.3f, h.getHeight() * 0.66f).withPosition (h.getCentreX(), h.getCentreY() - h.getHeight() * 0.33f);
 }
 
 // ---------------------------------------------------------------- layout
@@ -566,7 +581,8 @@ int Display::selectedViewTab() const noexcept
 }
 
 bool Display::showsModView() const noexcept { return mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMod; }
-bool Display::showsRackView() const noexcept { return mode == Mode::Effects && ctx.fxView != modfx::FxViewSends; }
+bool Display::showsRackView() const noexcept { return mode == Mode::Effects && modfx::isRackView (ctx.fxView); }
+bool Display::showsSpaceView() const noexcept { return mode == Mode::Effects && ctx.fxView == modfx::FxViewSpace; }
 
 juce::Rectangle<float> Display::visualArea() const
 {
@@ -780,6 +796,11 @@ void Display::mouseDown (const juce::MouseEvent& e)
         return;
     }
 
+    if (spaceBadgeArea().contains (p)) // 1.0: the 3D badge opens the Space view of the edit part
+    {
+        if (onSpaceBadgeClicked) onSpaceBadgeClicked();
+        return;
+    }
     if (mode == Mode::Lfo || mode == Mode::Effects) // 0.7: view tabs, routing list, FX chain
     {
         for (int v = 0; v < numViewTabs(); ++v)
@@ -796,7 +817,7 @@ void Display::mouseDown (const juce::MouseEvent& e)
     }
 
     // 0.7: the visual area - click cycles character / scope / terrain, right-click opens the view menu
-    if (! showsModView() && ! showsRackView() && mode != Mode::Tape && characterArea().contains (p)
+    if (! showsModView() && ! showsRackView() && ! showsSpaceView() && mode != Mode::Tape && characterArea().contains (p)
         && ! (mode == Mode::Sequencer && seqTab (0).getBottom() > p.y))
     {
         if (e.mods.isPopupMenu()) { showVisualMenu(); return; }
@@ -892,15 +913,21 @@ void Display::paint (juce::Graphics& g)
     g.setFont (brandFont (h.getHeight() * 0.62f));
     g.setColour (colour::displayText);
     juce::String title = i18n::upper (tr (info.nameEn));
-    const bool partMode = mode == Mode::Synth || mode == Mode::Envelope || mode == Mode::Lfo;
     if (mode == Mode::Synth) title << "  /  " << i18n::upper (i18n::pick (eng.nameEn, eng.nameDe));
     if (mode == Mode::Mixer) title << "  /  " << i18n::upper (tr ("Channel")) << " " << (ctx.mixerChannel + 1);
     if (mode == Mode::Tape) title << "  /  " << i18n::upper (tr ("Track")) << " " << (ctx.tapeTrack + 1);
     if (mode == Mode::Drum) title << "  /  " << i18n::upper (tr ("Pad")) << " " << (ctx.drumPad + 1);
-    const float titleW = juce::jmin (h.getWidth() * 0.62f, juce::GlyphArrangement::getStringWidth (brandFont (h.getHeight() * 0.62f), title) + 4.0f);
+    const bool partMode = mode == Mode::Synth || mode == Mode::Envelope || mode == Mode::Lfo;
+    // 1.0: a long title (engine names, German) shortens with an ellipsis before it pushes the part badge and the 3D badge
+    // into the tempo on the right: badges = 0.4 + 1.9 (part) + 2.3 (3D) header heights, tempo + page arrows = 7.8
+    const float badgesW = h.getHeight() * ((partMode || mode == Mode::Effects ? 2.3f : 0.4f) + 2.3f + 0.2f);
+    const float titleMax = juce::jmax (h.getHeight() * 4.0f, juce::jmin (h.getWidth() * 0.62f, h.getWidth() - h.getHeight() * 7.8f - badgesW));
+    const float titleW = juce::jmin (titleMax, juce::GlyphArrangement::getStringWidth (brandFont (h.getHeight() * 0.62f), title) + 4.0f);
     g.drawText (title, h.withWidth (titleW), juce::Justification::centredLeft, true);
+    float badgeX = h.getX() + titleW + h.getHeight() * 0.4f; // 1.0: where the 3D badge goes
     if (partMode || mode == Mode::Effects)
     {
+        badgeX += h.getHeight() * 1.9f;
         // part badge: which of the four parts the pages edit
         auto badge = juce::Rectangle<float> (h.getHeight() * 1.5f, h.getHeight() * 0.62f)
                          .withPosition (h.getX() + titleW + h.getHeight() * 0.4f, h.getCentreY() - h.getHeight() * 0.31f);
@@ -910,6 +937,9 @@ void Display::paint (juce::Graphics& g)
         g.setFont (brandFont (badge.getHeight() * 0.72f));
         g.drawText ("P" + juce::String (ctx.part + 1), badge, juce::Justification::centred);
     }
+    // 1.0: the 3D badge - lights up while the edit part plays binaural 3D
+    badgeRect = juce::Rectangle<float> (h.getHeight() * 2.3f, h.getHeight() * 0.66f).withPosition (badgeX, h.getCentreY() - h.getHeight() * 0.33f);
+    space3d::drawBadge (g, spaceBadgeArea(), space3d::partState (core, ctx.part), time);
     g.setFont (monoFont (h.getHeight() * 0.5f));
     g.setColour (colour::displayDim);
     const auto bpm = core.params().get (Core::Ids::tempo);
@@ -958,6 +988,14 @@ void Display::paint (juce::Graphics& g)
     }
 
     // 0.7: the matrix's routing list / the FX rack's chain instead of the pictogram
+    if (showsSpaceView()) // 1.0: the head-centred 3D view of every part's source
+    {
+        spaceScene.paint (g, visualArea(), core, ctx.part, parallax, visuals.correlation());
+        paintRows (g);
+        paintStrip (g, stripArea());
+        g.drawImageAt (glassLayer, 0, 0);
+        return;
+    }
     if (showsModView() || showsRackView())
     {
         if (showsModView()) modfx::paintModList (g, visualArea(), core, ctx.part, ctx.modRouting);
@@ -980,6 +1018,10 @@ void Display::paint (juce::Graphics& g)
     if (shown == Visual::Scope)
     {
         paintStereoScope (g, pictoArea);
+    }
+    else if (shown == Visual::Space) // 1.0
+    {
+        spaceScene.paint (g, pictoArea.reduced (u * 0.4f, u * 0.2f), core, ctx.part, parallax, visuals.correlation());
     }
     else if (shown == Visual::Terrain)
     {
@@ -1367,6 +1409,34 @@ void Display::paintStrip (juce::Graphics& g, juce::Rectangle<float> s)
     if (showsModView()) // 0.7: trace of the selected routing
     {
         modfx::paintModTrace (g, hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s, core, ctx.part, ctx.modRouting, modHistory);
+        if (hasSoftKeys()) paintSoftKeys (g);
+        return;
+    }
+    if (showsSpaceView()) // 1.0: motion summary, monitoring, mono check
+    {
+        const auto area = hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s;
+        const auto& reg = core.params();
+        const auto p = "p" + std::to_string (ctx.part + 1) + ".space.";
+        auto text = [&] (const std::string& id) {
+            const int i = reg.indexOf (id);
+            return i >= 0 ? formatValue (reg.descriptor (i), reg.get (i)) : juce::String();
+        };
+        const bool on = reg.get (p + "on") >= 0.5f;
+        auto line1 = area.withHeight (area.getHeight() * 0.4f).reduced (area.getHeight() * 0.05f, 0).translated (0, area.getHeight() * 0.08f);
+        auto line2 = line1.translated (0, area.getHeight() * 0.42f);
+        g.setFont (labelFont (line1.getHeight() * 0.55f));
+        g.setColour (on ? colour::displayText : colour::displayDim);
+        g.drawText (i18n::upper (tr ("Motion")) + "   " + text (p + "path") + "  /  " + text (p + "pathlen") + "  /  x" + text (p + "pathrate"),
+                    line1, juce::Justification::centredLeft, true);
+        g.setColour (colour::displayDim);
+        g.drawText (i18n::upper (tr ("3D Monitoring")) + "   " + text (Core::Ids::spaceOut)
+                        + (reg.get (Core::Ids::spaceMonoCheck) >= 0.5f ? "   /   " + i18n::upper (tr ("Mono Check")) : juce::String()),
+                    line2, juce::Justification::centredLeft, true);
+        if (! on)
+        {
+            g.setColour (colour::sunYellow);
+            g.drawText (tr ("Switch Space on (encoder 1) to place and move this part"), line1, juce::Justification::centredRight, true);
+        }
         if (hasSoftKeys()) paintSoftKeys (g);
         return;
     }

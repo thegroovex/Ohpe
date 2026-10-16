@@ -149,6 +149,8 @@ GLUE = {  # ratio, attack ms, release ms, knee dB, threshold below the incoming 
     "Drums": (4.0, 0.8, 70.0, 6.0, 8.0, 0.7), "Plucks": (3.0, 1.5, 90.0, 6.0, 6.0, 1.0), "Arp": (3.0, 1.5, 90.0, 6.0, 6.0, 1.0),
     "Keys": (2.5, 5.0, 140.0, 8.0, 5.0, 1.0), "Vocal": (3.0, 3.0, 110.0, 6.0, 7.0, 1.0)}
 # struck mallets / bells / gated sparkle arps: a glue only ducks the ringing body under the strike (crest +2 dB, measured)
+# presets outside the punch pass (the 3D presets: calibrated with their binaural stage by space_cal.py)
+NO_PUNCH = set()
 NO_GLUE = {"Glock Arp", "Mallet Echo Arp", "Music Box", "Random Spark Arp", "Trance Gate Arp"}
 GLUE_DEFAULT_IN = -4.0  # assumed incoming peak before the first measurement
 _NO_CHORUS_WORDS = ("Sub", "Grand", "Piano", "Upright", "808", "Kick", "Snare", "Kit", "Hat", "Riser", "Downlifter", "Impact")
@@ -190,6 +192,8 @@ def punch_inject(name, tags, engine, fxs):
     cal0 = calib_slot(kinds0)
     trim_fx = chain(fxs)[cal0] if cal0 is not None else None
     out = list(fxs)
+    if name in NO_PUNCH:
+        return out, trim_fx
     room = MAX_SLOTS - (1 if name in GUARDED else 0)
     for f in out:  # every chorus becomes an ensemble (its own rate / depth / mix kept)
         if f["__fx__"] == "chorus":

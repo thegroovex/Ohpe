@@ -185,6 +185,9 @@ public:
         static constexpr const char* tapeTxLoop = "tape.tx.loop";   ///< trigger: loop on / off
         static constexpr const char* tapeTxArm = "tape.tx.arm";     ///< trigger: arm / disarm the edit track
         static constexpr const char* tapeTxLink = "tape.tx.link";   ///< toggle: PLAY runs sequencer and tape together
+        // 1.0: 3D spatialiser - master monitoring (headphones = binaural, speakers) and the mono check of the main output
+        static constexpr const char* spaceOut = "space.out";
+        static constexpr const char* spaceMonoCheck = "space.monocheck";
     };
 
 private:
@@ -254,6 +257,7 @@ private:
     std::array<MpeInput, numParts> mpeIn {};
     std::array<NoteShaper, numParts> liveShaper {}, seqShaper {};
     int stepDrumsIndex = -1, euclidDrumsIndex = -1, orbitDrumsIndex = -1; ///< 0.4: sequencers -> drum kit
+    int spaceOutIndex = -1, monoCheckIndex = -1, lastMonitor = -1; ///< 1.0
     int syncSourceIndex = -1, syncSmoothIndex = -1, clockOutIndex = -1, notesOutIndex = -1, keyRootIndex = -1, keyScaleIndex = -1;
     bool arpWasOn = false;
     int arpLastPart = 0;

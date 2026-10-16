@@ -44,6 +44,8 @@ four functional colours. Code: `src/ui/Palette.h` (colours, fonts), `src/ui/Pict
 | Envelope, LFO, Mixer, Effects, Sequencer, Tape | the curve, the moving dot, faders, echoes, the running step, the turning reels |
 | Mod view – routing list (0.7) | takes the LFO character's place: 16 lines in two columns, source → target with an amount bar growing from the centre and the live value; below, the trace of the selected routing |
 | Rack – chain of blocks (0.7) | takes the Effects character's place: one block per slot in signal order, joined by arrows; effect name, mix bar (yellow), output level (violet), BYPASS in red; empty slots dimmed, the selected one outlined |
+| 3D space – the listener's sphere (1.0) | the Space view of the Effects mode (and the "3D space" display view): a head seen from slightly behind and above, inside floor rings and the median arc; every part with its stage on is a dot in its part colour with a fading trail and a drop line to the floor, nearer = larger, the edit part on top and labelled. While monitoring on headphones the head wears headphones, in speaker mode two speakers stand in front of it |
+| Headphones pictogram (1.0) | an own line drawing in the style of the characters: band, two cups, sound arcs when lit. Lit in ultraviolet with a slow pulsing halo while a part plays binaural 3D, a pair of speakers in sun yellow while the 3D monitoring is set to speakers, dimmed when the part does not use the space |
 | Rack – effect pictures (0.7) | the selected slot drawn as what it does: distortion transfer curve, EQ and filter response, compressor curve with its gain-reduction bar, multiband band gains, the output motion of the modulated effects |
 
 ## Components
@@ -62,6 +64,8 @@ four functional colours. Code: `src/ui/Palette.h` (colours, fonts), `src/ui/Pict
 | Tape transport panel (p11) | the tape page's left half: state badge (red fill blinking = recording), armed tracks in red, monospace clock and bar.beat, reels turning with the tape position, five outlined buttons (filled when active; record filled red), a hint line in yellow while nothing is armed |
 | Overlays | the library and the pro view hide every control and legend of the plate under them (no labels peeking over the lid's edge) |
 | Part badge | yellow pill "P1"–"P4" in the display header |
+| 3D badge (1.0) | pill with the headphones pictogram and "3D" after the part badge in the display header: filled ultraviolet and gently pulsing while the edit part plays binaural 3D, outlined sun yellow with speakers in speaker mode, a dim outline otherwise; a click opens the Space view, the tooltip says "Binaural 3D – best with headphones". A long title is shortened with an ellipsis before it can push the badges into the tempo |
+| Part selector, library (1.0) | the part keys carry the headphones pictogram in their corner while the part uses the space (lit and pulsing = binaural, speakers = speaker mode); presets tagged "3D" carry it after their name in the library list |
 | Pro view | dark panel, mode tabs, groups in columns with a coloured tick; bars like the display rows |
 | Library | dark panel: category chips in the accent colours, engine chips, list with stars, details / save panel |
 

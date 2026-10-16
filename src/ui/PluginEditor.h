@@ -9,6 +9,7 @@
 #include "Widgets.h"
 #include "plugin/Localisation.h"
 
+#include <algorithm>
 #include <array>
 #include <memory>
 
@@ -17,10 +18,17 @@ namespace ohpe
 namespace ui
 {
 /** Part selector 1-4 (header). */
-class PartSelector : public juce::Component
+class PartSelector : public juce::Component, public juce::TooltipClient
 {
 public:
     void setPart (int p) { part = p; repaint(); }
+    /** 1.0: per part 0 = no 3D, 1 = binaural 3D (headphones pictogram lit), 2 = 3D for speakers; `t` drives the pulse. */
+    void setSpatial (const std::array<int, 4>& states, float t)
+    {
+        const bool pulse = std::find (states.begin(), states.end(), 1) != states.end();
+        if (states != spatial || pulse) { spatial = states; time = t; repaint(); }
+    }
+    juce::String getTooltip() override;
     std::function<void (int)> onSelect;
     void paint (juce::Graphics& g) override;
     void mouseDown (const juce::MouseEvent& e) override;
@@ -28,6 +36,8 @@ public:
 
 private:
     int part = 0;
+    std::array<int, 4> spatial {};
+    float time = 0.0f;
 };
 
 /** Preset name with previous / next (header); a click on the name opens the library. */
@@ -157,6 +167,8 @@ private:
     ui::PictoKey libraryKey { ui::Picto::Library, "Library" };
     ui::PictoKey proKey { ui::Picto::Pro, "Pro" };
     ui::PartSelector partSelector;
+    float spatialTime = 0.0f;
+    juce::TooltipWindow tooltips { this, 600 }; ///< 1.0: tooltips (3D badge, part selector)
     ui::PresetStrip presetStrip;
     juce::TextButton langEn { "EN" }, langDe { "DE" };
     ui::Keyboard keyboard;

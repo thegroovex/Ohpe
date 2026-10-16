@@ -8,9 +8,11 @@ presets from factory_projects.py. Run it after editing either file, then re-run 
 Presets listed in peak_guard.json (a held 10 s chord / note went above -1.5 dBFS: risers, grain clouds, stacked
 chords, resonant combs) get a fast peak compressor in the first free rack slot after their chain, so a held chord
 stays below -0.5 dBFS without the master limiter (threshold -4 dB, -7 dB for the risers / clouds that
-build far above it). Its makeup stays 0 dB (the level calibration never trims it). An entry {"thresh", "release"} is a
-transient guard (punch pass, punch_cal.py crest): released fast (40 ms), it shaves only the loudest attacks of struck
-keys / mallets so their body can sit inside the level window.
+build far above it). The 3D arps tame their attacks with their own fast-release compressor instead: the binaural
+stage after the rack raises the near-ear transients again, which a slow guard only turns into a constant gain cut.
+Its makeup stays 0 dB (the level calibration never trims it). An entry {"thresh", "release"} is a transient guard
+(punch pass, punch_cal.py crest): released fast (40 ms), it shaves only the loudest attacks of struck keys / mallets
+so their body can sit inside the level window.
 
   python3 tools/presets/make_factory.py
 """
@@ -81,7 +83,9 @@ def main():
         with open(os.path.join(OUT, fn), "w", encoding="utf-8") as f:
             json.dump(doc(p, "part"), f, indent=2, ensure_ascii=False)
             f.write("\n")
+    import factory_parts_space  # 1.0: 3D motion added to two projects
     for p in PROJECTS:
+        p = factory_parts_space.apply_project(p)
         assert p["name"] not in names, p["name"]
         names.add(p["name"])
         fn = "project-%s.ohpepreset" % slug(p["name"])

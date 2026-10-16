@@ -8,6 +8,7 @@
 #include "RackEffects.h"
 #include "InsertEffects2.h"
 #include "Reverb.h"
+#include "Space3D.h"
 
 #include <algorithm>
 #include <cmath>
@@ -40,6 +41,7 @@ std::unique_ptr<IEffect> InsertSlot::create (int t)
         case Wobble: return std::make_unique<WobbleEffect>();
         case Tremolo: return std::make_unique<TremoloEffect>();
         case Width: return std::make_unique<WidthEffect>();
+        case Space3D: return std::make_unique<SpaceEffect>();
         default: return nullptr;
     }
 }
@@ -56,13 +58,15 @@ std::vector<std::string> InsertSlot::typeNamesEn()
 {
     return { "Off", "Chorus", "Phaser", "Bitcrush", "Filter Drive", "Delay", "Reverb",
              "Hyper", "Distortion", "Flanger", "Compressor", "Multiband", "EQ", "Filter", "Echo", "Hall", "Mid/Side",
-             "Comb", "Formant", "Wobble", "Tremolo", "Width" }; // 0.8
+             "Comb", "Formant", "Wobble", "Tremolo", "Width", // 0.8
+             "Space 3D" }; // 1.0
 }
 std::vector<std::string> InsertSlot::typeNamesDe()
 {
     return { "Aus", "Chorus", "Phaser", "Bitcrusher", "Filter-Drive", "Delay", "Hall",
              "Hyper", "Verzerrung", "Flanger", "Kompressor", "Multiband", "EQ", "Filter", "Echo", "Raum", "Mitte/Seite",
-             "Kammfilter", "Formant", "Wobble", "Tremolo", "Stereobreite" }; // 0.8
+             "Kammfilter", "Formant", "Wobble", "Tremolo", "Stereobreite", // 0.8
+             "3D-Raum" }; // 1.0
 }
 
 EffectInfo InsertSlot::typeInfo (int t)
@@ -216,6 +220,16 @@ void InsertSlot::setTempo (double bpm) noexcept
 void InsertSlot::noteOn() noexcept
 {
     if (auto* e = effect (type)) e->noteOn();
+}
+
+void InsertSlot::setTransportPosition (double ppq, bool playing) noexcept
+{
+    if (auto* e = effect (type)) e->setTransportPosition (ppq, playing);
+}
+
+void InsertSlot::setMonitorMode (int mode) noexcept
+{
+    effects[(size_t) Space3D]->setMonitorMode (mode); // also while another type is selected: right from the first block
 }
 
 void InsertSlot::process (float* l, float* r, int n) noexcept

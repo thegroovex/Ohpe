@@ -32,6 +32,7 @@ const std::vector<Category>& categories()
         { "Boom", "Boom" }, // 0.6: deep tuned kicks and sub basses
         { "Hybrid", "Hybrid" }, // 0.8: layered engines, cross-modulation
         { "Piano", "Klavier" }, // 0.8: acoustic and electric pianos
+        { "3D", "3D" },         // 1.0: binaural 3D sounds (the spatialiser moves them; best with headphones)
     };
     return list;
 }
@@ -64,7 +65,8 @@ std::vector<float> arpSnapshot (const ParamRegistry& reg)
 
 bool isExcludedFromProject (const std::string& id) noexcept
 {
-    return startsWith (id, "lib.") || startsWith (id, "ui.") || startsWith (id, "tape.edit.") || startsWith (id, "tape.tx.") || startsWith (id, "sync.");
+    return startsWith (id, "lib.") || startsWith (id, "ui.") || startsWith (id, "tape.edit.") || startsWith (id, "tape.tx.") || startsWith (id, "sync.")
+        || startsWith (id, "space."); // 1.0: monitoring (headphones / speakers, mono check) belongs to the listener
 }
 
 std::string engineIdOfPart (const ParamRegistry& reg, int partIndex)

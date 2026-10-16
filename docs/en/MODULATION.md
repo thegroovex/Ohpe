@@ -81,7 +81,7 @@ Release 1 ms … 10 s (exponential).
 | 36 | Mod Env Amount | – | |
 | 37 – 42 | FX 1 – 6 Mix | – | mix of the FX rack slot |
 | 43 – 66 | FX 1 – 6 Param 1 – 4 | – | four parameters of the effect in that slot (follows the slot's type: the first four of a 0.2 type, the *Mod 1–4* of a [rack type](TAPE-MIXER-FX.md#rack-effect-types)) |
-| 67 – 71 | Azimuth, Elevation, Distance, Motion Path Rate / Phase | – | reserved for the spatialiser planned for 1.0; inert and hidden until then |
+| 67 – 71 | Azimuth, Elevation, Distance, Motion Path Rate / Phase | – | 1.0: the part's 3D stage `pN.space.*` ([SPACE.md](SPACE.md)), full range (azimuth ±180°, elevation −60 … 90°, distance 0.2 … 40 m logarithmic, rate ×−4 … 4, phase 0 … 360°); e.g. Slide → Elevation, Note Pressure → Distance for MPE |
 
 Targets 5 and up move a **parameter** by `amount × source` of its full range (normalised, so a
 cutoff moves in octaves): one value for the part, computed from part-wide sources – the
