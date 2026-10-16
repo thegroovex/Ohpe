@@ -151,6 +151,20 @@ TEST_CASE ("mid/side: micro-shift widens but cancels in mono, balance, tilt; no 
     CHECK (sideAt (out, 220.0f) > 0.05f); // mid content appears in the side
     for (size_t i = 12000; i < out.size(); i += 89) CHECK (out.l[i] + out.r[i] == doctest::Approx (in.l[i] + in.r[i]).epsilon (1e-4));
 
+    // width 0 stays exactly mono even with the shift on; bass mono also keeps the shifted lows centred
+    MsRig narrow;
+    narrow.set (MidSideEffect::Haas, 1.0f);
+    narrow.set (MidSideEffect::Width, 0.0f);
+    out = narrow.run (in);
+    for (size_t i = 12000; i < out.size(); i += 61) CHECK (out.l[i] == out.r[i]);
+    MsRig lows;
+    lows.set (MidSideEffect::Haas, 1.0f);
+    lows.set (MidSideEffect::HaasTime, 0.015f);
+    lows.set (MidSideEffect::BassMono, 1.0f);
+    lows.set (MidSideEffect::MonoFreq, 500.0f);
+    out = lows.run (in);
+    CHECK (sideAt (out, 220.0f) < 0.02f);
+
     MsRig bal;
     bal.set (MidSideEffect::Balance, -1.0f);
     out = bal.run (in);

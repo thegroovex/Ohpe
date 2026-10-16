@@ -15,11 +15,11 @@ namespace ohpe
     every part rack ("pN.fx.midside.*", "pN.fx2.midside.*" ...) and of the master rack ("mfxK.midside.*").
 
         M = (L + R) / 2,  S = (L - R) / 2
-        bass mono:  S -= low part of S below "monofreq" (24 dB/oct.; mono-compatible lows)
-        tilt:       one tilt EQ each for M and S (pivot 650 Hz, -6 .. +6 dB)
-        levels:     M * mid gain, S * side gain * width (width 0 = mono, 1 = unchanged, 2 = double)
-        micro-shift: S += amount * M delayed by 1..30 ms (Haas-style widening that cancels in mono)
-        balance:    L / R gain (-1 = left only ... +1 = right only)
+        tilt:        one tilt EQ each for M and S (pivot 650 Hz, -6 .. +6 dB)
+        micro-shift: S += 0.7 * amount * M delayed by 1..30 ms (Haas-style widening that cancels in mono)
+        bass mono:   S -= low part of S below "monofreq" (24 dB/oct.; mono-compatible lows, also for the shift)
+        levels:      M * mid gain, S * side gain * width (width 0 = exactly mono, 1 = unchanged, 2 = double)
+        balance:     L / R gain (-1 = left only ... +1 = right only)
         L = M + S,  R = M - S
 
     With every parameter at its neutral value (width 100 %, levels and tilts 0 dB, bass mono

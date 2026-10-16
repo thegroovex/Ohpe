@@ -158,15 +158,11 @@ void MidSideEffect::process (float* l, float* r, int n) noexcept
         float m = 0.5f * (l[i] + r[i]);
         float s = 0.5f * (l[i] - r[i]);
 
-        // bass mono: remove the side signal below the crossover (cross-faded on / off)
-        const float mono = monoMix.next();
-        const float hp = sideHp[1].process (sideHp[0].process (s, dsp::Svf::HighPass), dsp::Svf::HighPass);
-        s += (hp - s) * mono;
-
         m = midTiltF.process (m);
         s = sideTiltF.process (s);
 
-        // micro-shift: delayed mid into the side (fractional delay, linear interpolation)
+        // micro-shift: delayed mid into the side (fractional delay, linear interpolation). It joins the side
+        // before bass mono and width, so the lows stay mono and width 0 stays exactly mono.
         delayBuf[(size_t) writePos] = m;
         const float amt = haasAmt.next();
         const float d = std::clamp (haasDelay.next(), 1.0f, (float) (len - 2));
@@ -177,9 +173,15 @@ void MidSideEffect::process (float* l, float* r, int n) noexcept
         const float frac = rp - (float) i0;
         const float delayed = delayBuf[(size_t) i0] + (delayBuf[(size_t) i1] - delayBuf[(size_t) i0]) * frac;
         if (++writePos >= len) writePos = 0;
+        s += delayed * amt * 0.7f;
+
+        // bass mono: remove the side signal below the crossover (cross-faded on / off)
+        const float mono = monoMix.next();
+        const float hp = sideHp[1].process (sideHp[0].process (s, dsp::Svf::HighPass), dsp::Svf::HighPass);
+        s += (hp - s) * mono;
 
         m *= midGain.next();
-        s = s * sideGain.next() + delayed * amt * 0.7f;
+        s *= sideGain.next();
 
         l[i] = dsp::flush ((m + s) * balL.next());
         r[i] = dsp::flush ((m - s) * balR.next());
