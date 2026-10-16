@@ -11,6 +11,8 @@ order of importance and the first one that fits (FX_ORDER, or FX_PICK per preset
 Every preset moves when held (an LFO is added where the sound has none).
 German descriptions: comments_de_r3.py. Imported by factory_parts.py.
 """
+import json, os
+
 from factory_parts import (P as _P, ENGINES, an, fm, wt, pl, cl, gr, vo, sm, amp, mod, lfo, chorus, phaser, delay, reverb, crush,
                            drive, pitchenv, porta, arp, MONO)
 
@@ -71,6 +73,10 @@ FX_PICK = {
     "Wide Riser": "flanger", "Impact Boom": "reverb", "Fold Bass": "squash", "Digital Monster": "wobble", "Neuro Hybrid": "squash",
     "Vox Reese": "formant", "Ring Machine": "delay", "Chop Pad": "reverb", "Resonator Hit": "comb", "Echo Harp": "delay",
 }
+
+FX_OUTPUT = ("shaper", "squash", "width")  # effects with an output level: calibrated there (levels_fx.json)
+_fx_levels_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "levels_fx.json")
+FX_LEVELS = json.load(open(_fx_levels_path)) if os.path.exists(_fx_levels_path) else {}
 
 # MPE / aftertouch mappings (0.8): target names of "pN.mpe.press" / "pN.mpe.timbre"
 MPE_T = {"off": 0, "timbre": 1, "level": 2, "lfo": 3, "pan": 4, "cutoff": 5, "position": 6, "index": 7, "density": 8, "drive": 9,
@@ -133,6 +139,9 @@ def P(name, tags, engine, comment, *dicts, **kw):
         fxp = dict(chosen["params"])
         if chosen["__fx__"] == "squash" and tags[0] == "Bass":
             fxp["fx.squash.monolow"] = 1  # mono-safe low end under the stack
+        if chosen["__fx__"] in FX_OUTPUT and name in FX_LEVELS:
+            # level calibration after a non-linear effect: its output, not the part gain (which would change the drive)
+            fxp["fx.%s.output" % chosen["__fx__"]] = FX_LEVELS[name]
         rest.append(fxp)
     merged = {}
     for d in rest:

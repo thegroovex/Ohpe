@@ -110,3 +110,21 @@ Anleitung: [BAND-MISCHER-FX.md](BAND-MISCHER-FX.md) · Parameter: [../PARAMETERS
 * `src/ui`: ziehbare Display-Zeilen mit Feinregelung, Soft-Tasten, Sequencer-Ansichten, Tape- und
   Drum-Seite, Profiansicht (`ProView`), Bibliothek (`LibraryBrowser`), Part-Auswahl, Drag & Drop.
   Schritt-Locks nutzen den vorhandenen Lock-Speicher des Step-Sequencers.
+
+## 0.8: Sound-Revision 3
+
+* **FX-Slot-Typen** (`src/core/fx/InsertEffects2.*`): Waveshaper, Squash, Kammfilter, Formant,
+  Flanger, Wobble, Tremolo, Stereobreite – eigenständige `IEffect`-Klassen, an die Typliste des Slots
+  angehängt; ihre Parameterblöcke werden spät registriert (`InsertSlot::registerLateParams`). `IEffect`
+  bekam `setTempo()` (der Core ruft es in jedem Block) und `noteOn()` (eine Note im Part des Slots:
+  LFO-Neustart). Die Parts 2–4 bekamen ihren Slot (`p2.fx.*` …, angehängt).
+* **Layer-Engine** (`Part`, `pN.layer.*`): eine zweite Engine des Parts spielt jede Note; sie rendert
+  in einen eigenen Puffer und wird mit Ring- / AM- / Falt-Kreuzmodulation gemischt. Aus = bitgleich
+  zu 0.7. Siehe [engines/layer.md](engines/layer.md).
+* **Späte Engine-Parameter** (`ISynthEngine::firstLate08Param()`, `Part::registerLate08EngineParams`):
+  Wavetable-Unisono-Stapel / FM / LFO > Position, FM Anschlag > Index, Tasteninstrumente für Sampler /
+  Grain (`inst2`; die Instrumentliste der Bank wuchs auf 15, die Auswahl `inst` von 0.4 behält ihre 11).
+* **Ausdruck** (`NoteExpression`, `VoiceBase`): acht weitere Ziele (Cutoff, Position, FM-Index, Dichte,
+  Drive, Vibrato, Formant, Layer-Mischung), Mengen pro Quelle und Gleiten: eine Stimme hält den
+  Ziel-Ausdruck und den aktuellen; die Tonhöhe pro Note gleitet über `pN.mpe.slide` (mindestens 2 ms),
+  der Rest über `pN.mpe.smooth`; der erste Ausdruck einer Note gilt sofort.
