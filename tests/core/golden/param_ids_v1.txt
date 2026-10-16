@@ -2100,7 +2100,7 @@ p4.macro2
 p4.macro3
 p4.macro4
 p4.seqlane
-# 0.7: rack effect types (hyper ... hall), every slot of every rack
+# 0.7: rack effect types (hyper, distortion, flanger, compressor, multiband, EQ, filter, echo, hall) for every slot of every rack
 p1.fx.hyper.rate
 p1.fx.hyper.detune
 p1.fx.hyper.voices

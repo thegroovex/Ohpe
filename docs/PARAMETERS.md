@@ -376,6 +376,92 @@ Behaviour changes in 0.7: the 0.2 FX slot is slot 1 of the part's rack (identica
 Cluster, Grain, Pluck, Sampler, Vocal and Wavetable engines (before: Analog and FM only). A change of the part
 volume glides over one block instead of jumping.
 
+## 0.7 – rack effect types / Effekttypen des Racks
+
+Appended after `p4.seqlane`. Every slot of every rack (slot 1 – 6 of each part, `mfx1` … `mfx4`) has its own block
+for each of the nine rack types, 75 parameters per slot, in this order: hyper, distortion, flanger, compressor,
+multiband, EQ, filter, echo, hall. The block of a slot is `<slot prefix>.<type>.<parameter>`, for example
+`p2.fx4.echo.time` or `mfx1.hall.decay`. Guides: [English](en/TAPE-MIXER-FX.md#rack-effect-types) ·
+[Deutsch](de/BAND-MISCHER-FX.md#effekttypen-des-racks).
+
+| Range | Block |
+|---|---|
+| 2097–2546 | part 1: `p1.fx.*`, `p1.fx2.*` … `p1.fx6.*` (450 = 6 × 75) |
+| 2547–2996, 2997–3446, 3447–3896 | part 2, 3, 4 – the same |
+| 3897–4196 | master rack: `mfx1.*` … `mfx4.*` (300 = 4 × 75) |
+
+The table shows the block with the prefix `p1.fx2`; host names carry the slot ("P1 FX2 Echo Time",
+"Master FX 1 Hall Decay").
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `p1.fx2.hyper.rate` | Hyper Rate | Hyper-Tempo | 0.05 … 5 Hz | 0.6 Hz |
+| `p1.fx2.hyper.detune` | Hyper Detune | Hyper-Verstimmung | 0 … 1 | 0.35 |
+| `p1.fx2.hyper.voices` | Hyper Voices | Hyper-Stimmen | 2 … 7 | 5 |
+| `p1.fx2.hyper.spread` | Hyper Spread | Hyper-Breite | 0 … 1 | 0.8 |
+| `p1.fx2.hyper.dimension` | Dimension | Dimension | 0 … 1 | 0.4 |
+| `p1.fx2.hyper.retrig` | Hyper Retrigger | Hyper-Neustart | off / on | off |
+| `p1.fx2.hyper.mix` | Hyper Mix | Hyper-Mischung | 0 … 1 | 0.5 |
+| `p1.fx2.distortion.mode` | Distortion Mode | Verzerrungs-Modus | Tube, Soft Clip, Hard Clip, Diode, Linear Fold, Sine Fold, Asymmetric, Downsample | Tube |
+| `p1.fx2.distortion.drive` | Distortion Drive | Verzerrung Drive | 0 … 1 | 0.4 |
+| `p1.fx2.distortion.bias` | Distortion Bias | Verzerrung Bias | −1 … 1 | 0 |
+| `p1.fx2.distortion.prefilter` | Distortion Pre-Filter | Verzerrung Vorfilter | Off, Low-pass, Band-pass, High-pass | Off |
+| `p1.fx2.distortion.prefreq` | Distortion Pre-Filter Freq | Verzerrung Vorfilter-Frequenz | 40 … 18000 Hz | 800 Hz |
+| `p1.fx2.distortion.tone` | Distortion Tone | Verzerrung Klang | 0 … 1 | 0.8 |
+| `p1.fx2.distortion.output` | Distortion Output | Verzerrung Ausgang | −24 … +12 dB | 0 dB |
+| `p1.fx2.distortion.mix` | Distortion Mix | Verzerrung Mischung | 0 … 1 | 1 |
+| `p1.fx2.flange.rate` | Flanger Rate | Flanger-Tempo | 0.02 … 8 Hz | 0.25 Hz |
+| `p1.fx2.flange.sync` | Flanger Sync | Flanger-Sync | Free, 1/1 … 1/32, dotted, triplets | Free |
+| `p1.fx2.flange.depth` | Flanger Depth | Flanger-Tiefe | 0 … 1 | 0.7 |
+| `p1.fx2.flange.delay` | Flanger Delay | Flanger-Verzögerung | 0.3 … 12 ms | 2 ms |
+| `p1.fx2.flange.feedback` | Flanger Feedback | Flanger-Feedback | −0.95 … 0.95 | 0.5 |
+| `p1.fx2.flange.stereo` | Flanger Stereo | Flanger-Stereo | 0 … 0.5 (LFO phase offset) | 0.25 |
+| `p1.fx2.flange.mix` | Flanger Mix | Flanger-Mischung | 0 … 1 | 0.5 |
+| `p1.fx2.compressor.thresh` | Compressor Threshold | Kompressor Schwelle | −60 … 0 dB | −18 dB |
+| `p1.fx2.compressor.ratio` | Compressor Ratio | Kompressor Ratio | 1 … 20 | 4 |
+| `p1.fx2.compressor.attack` | Compressor Attack | Kompressor Attack | 0.1 … 200 ms | 10 ms |
+| `p1.fx2.compressor.release` | Compressor Release | Kompressor Release | 5 … 2000 ms | 120 ms |
+| `p1.fx2.compressor.knee` | Compressor Knee | Kompressor Knie | 0 … 24 dB | 6 dB |
+| `p1.fx2.compressor.makeup` | Compressor Makeup | Kompressor Aufholverstärkung | 0 … 24 dB | 0 dB |
+| `p1.fx2.compressor.mix` | Compressor Mix | Kompressor Mischung | 0 … 1 | 1 |
+| `p1.fx2.multiband.depth` | Multiband Depth | Multiband Tiefe | 0 … 1 | 0.5 |
+| `p1.fx2.multiband.upward` / `.downward` | Multiband Upward / Downward | Multiband aufwärts / abwärts | 0 … 1 | 1 |
+| `p1.fx2.multiband.time` | Multiband Time | Multiband Zeit | 0 … 1 | 0.5 |
+| `p1.fx2.multiband.low` / `.mid` / `.high` | Multiband Low / Mid / High | Multiband Tiefen / Mitten / Höhen | −12 … +12 dB | 0 dB |
+| `p1.fx2.multiband.lowsplit` | Multiband Low Split | Multiband Trennung tief | 40 … 500 Hz | 120 Hz |
+| `p1.fx2.multiband.highsplit` | Multiband High Split | Multiband Trennung hoch | 800 … 8000 Hz | 2500 Hz |
+| `p1.fx2.multiband.output` | Multiband Output | Multiband Ausgang | −12 … +12 dB | 0 dB |
+| `p1.fx2.multiband.mix` | Multiband Mix | Multiband Mischung | 0 … 1 | 1 |
+| `p1.fx2.eq.lowfreq` / `.lowgain` | EQ Low Shelf Freq / Gain | EQ Tiefen-Kuhschwanz Frequenz / Gain | 20 … 1000 Hz / ±18 dB | 100 Hz / 0 dB |
+| `p1.fx2.eq.p1freq` / `.p1gain` / `.p1q` | EQ Band 1 Freq / Gain / Q | EQ Band 1 Frequenz / Gain / Güte | 30 … 18000 Hz / ±18 dB / 0.3 … 12 | 300 Hz / 0 dB / 1 |
+| `p1.fx2.eq.p2freq` / `.p2gain` / `.p2q` | EQ Band 2 … | EQ Band 2 … | as band 1 | 1200 Hz / 0 dB / 1 |
+| `p1.fx2.eq.p3freq` / `.p3gain` / `.p3q` | EQ Band 3 … | EQ Band 3 … | as band 1 | 4500 Hz / 0 dB / 1 |
+| `p1.fx2.eq.highfreq` / `.highgain` | EQ High Shelf Freq / Gain | EQ Höhen-Kuhschwanz Frequenz / Gain | 1000 … 20000 Hz / ±18 dB | 8000 Hz / 0 dB |
+| `p1.fx2.eq.output` | EQ Output | EQ Ausgang | −18 … +18 dB | 0 dB |
+| `p1.fx2.filter.type` | Filter Type | Filtertyp | Low-pass 12, Low-pass 24, High-pass 12, High-pass 24, Band-pass, Notch, Comb +, Comb −, Formant | Low-pass 24 |
+| `p1.fx2.filter.cutoff` | Filter Cutoff | Filter-Cutoff | 20 … 20000 Hz | 2000 Hz |
+| `p1.fx2.filter.reso` | Filter Resonance | Filter-Resonanz | 0 … 1 | 0.3 |
+| `p1.fx2.filter.drive` | Filter Drive | Filter-Drive | 0 … 1 | 0 |
+| `p1.fx2.filter.mix` | Filter Mix | Filter-Mischung | 0 … 1 | 1 |
+| `p1.fx2.echo.mode` | Echo Mode | Echo-Modus | Stereo, Ping-Pong, Tap | Ping-Pong |
+| `p1.fx2.echo.sync` | Echo Sync | Echo-Sync | Free, 1/1 … 1/32, dotted, triplets | 1/4. |
+| `p1.fx2.echo.time` | Echo Time | Echo-Zeit | 1 … 2000 ms (Free) | 375 ms |
+| `p1.fx2.echo.ratio` | Echo Right Ratio | Echo Verhältnis rechts | 0.25 … 1 (Tap) | 0.75 |
+| `p1.fx2.echo.feedback` | Echo Feedback | Echo-Feedback | 0 … 1.05 | 0.4 |
+| `p1.fx2.echo.lowcut` / `.highcut` | Echo Low Cut / High Cut | Echo Tiefensperre / Höhensperre | 20 … 2000 Hz / 1000 … 20000 Hz | 120 Hz / 8000 Hz |
+| `p1.fx2.echo.width` | Echo Width | Echo-Breite | 0 … 1 | 1 |
+| `p1.fx2.echo.mix` | Echo Mix | Echo-Mischung | 0 … 1 | 0.3 |
+| `p1.fx2.hall.mode` | Hall Mode | Raum-Modus | Plate, Hall | Hall |
+| `p1.fx2.hall.size` | Hall Size | Raumgröße | 0 … 1 | 0.6 |
+| `p1.fx2.hall.decay` | Hall Decay | Raum Nachhall | 0.2 … 20 s | 2.5 s |
+| `p1.fx2.hall.damping` | Hall Damping | Raum Dämpfung | 0 … 1 | 0.4 |
+| `p1.fx2.hall.predelay` | Hall Pre-Delay | Raum Pre-Delay | 0 … 250 ms | 12 ms |
+| `p1.fx2.hall.width` | Hall Width | Raum-Breite | 0 … 1 | 1 |
+| `p1.fx2.hall.mix` | Hall Mix | Raum-Mischung | 0 … 1 | 0.3 |
+
+The modulation targets *FX K Param 1–4* move the first four parameters of the slot's selected type in this table's
+order (for the echo: mode, sync, time, ratio).
+
 ## 0.7 – Mid/Side stereo effect
 
 Appended after the blocks of the nine 0.7 rack effect types (Hyper … Hall, last ID `mfx4.hall.mix`). Guide: [English](en/TAPE-MIXER-FX.md#midside-stereo-07) ·
@@ -384,6 +470,12 @@ Appended after the blocks of the nine 0.7 rack effect types (Hyper … Hall, las
 slots 1–6 (`p1.fx.midside.*`, `p1.fx2.midside.*` … `p1.fx6.midside.*`), then parts 2, 3, 4, then the master slots
 `mfx1.midside.*` … `mfx4.midside.*` – 28 slots × 10 = 280 parameters. Host names carry the slot prefix like the other
 rack blocks ("P2 FX3 Stereo Width", "Master FX 1 Stereo Width").
+
+| Range | Block |
+|---|---|
+| 4197–4256 | part 1: `p1.fx.midside.*`, `p1.fx2.midside.*` … `p1.fx6.midside.*` (60 = 6 × 10) |
+| 4257–4316, 4317–4376, 4377–4436 | part 2, 3, 4 – the same |
+| 4437–4476 | master rack: `mfx1.midside.*` … `mfx4.midside.*` (40 = 4 × 10) |
 
 | ID (`<slot>.midside.*`) | English | Deutsch | Range | Default |
 |---|---|---|---|---|

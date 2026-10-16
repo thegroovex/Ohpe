@@ -27,7 +27,11 @@ tiefes Display und vier funktionale Farben.
 * **Figuren statt Icons:** Jede Engine und jeder Modus hat eine animierte Piktogramm-Figur, die auf
   die vier Makros ihrer Seite und auf gespielte Noten reagiert (Grain: Wolke; Vokal: singendes
   Gesicht; Sampler: Wellenform mit Start- und Schleifenmarken; Drum: Trommel mit Modell, Stimmung,
-  Abklingen und Anschlagsblitz). Die vollständige Tabelle steht in der
+  Abklingen und Anschlagsblitz). Seit 0.7 tritt in der Mod-Ansicht die Liste der 16 Verbindungen mit
+  Mengenbalken und Spur an die Stelle der LFO-Figur, im Rack die Kette der Slot-Blöcke (Mischung gelb,
+  Pegel violett, BYPASS rot) mit dem Bild des gewählten Effekts (Kennlinie, Frequenzgang,
+  Pegelreduktion); ein dünner Modulationsring im Encoder zeigt Reichweite und aktuelle Position der
+  Modulation. Die vollständige Tabelle steht in der
   [englischen Fassung](../DESIGN.md#pictogram-characters).
 
 Texte gibt es überall auf Englisch und Deutsch; lange Texte werden gekürzt oder eingepasst, nie

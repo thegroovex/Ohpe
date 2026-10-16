@@ -890,7 +890,11 @@ void FilterRackEffect::process (float* l, float* r, int n) noexcept
     float* io[2] = { l, r };
     // vowel formants a e i o u (F1, F2, F3)
     static constexpr float vowels[5][3] = { { 800, 1150, 2900 }, { 400, 1600, 2700 }, { 270, 2100, 3000 }, { 450, 800, 2830 }, { 325, 700, 2530 } };
-    const float q = 0.5f + 20.0f * reso * reso; // 0.5 .. 20.5
+    // resonance 0 = maximally flat (Butterworth: 0.707 for 12 dB, 0.541 / 1.307 for the two 24 dB stages); the
+    // resonance lifts the Q of the single / second stage, so the pass band stays flat until the peak is asked for
+    const float q = 0.7071f + 20.0f * reso * reso;           // 0.71 .. 20.7
+    const bool four = kind == LP24 || kind == HP24;
+    const float qa = four ? 0.5412f : q, qb = 1.3066f + (q - 0.7071f) * 0.75f;
     for (int start = 0; start < n; start += 8)
     {
         const int end = std::min (n, start + 8);
@@ -899,8 +903,8 @@ void FilterRackEffect::process (float* l, float* r, int n) noexcept
         const float hz = std::exp2 (octG.v);
         for (auto& c : ch)
         {
-            c.a.set (hz, kind == LP24 || kind == HP24 ? 0.54f + q * 0.5f : q, sr);
-            c.b.set (hz, 1.31f, sr);
+            c.a.set (hz, qa, sr);
+            c.b.set (hz, qb, sr);
             if (kind == Formant)
             {
                 const float pos = std::clamp ((octG.v - std::log2 (20.0f)) / (std::log2 (20000.0f) - std::log2 (20.0f)), 0.0f, 1.0f) * 4.0f;

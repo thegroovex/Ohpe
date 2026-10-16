@@ -153,6 +153,61 @@ Modell, Stimmung, Abklingen, Klangfarbe (Seite 1), Pegel, Panorama, Choke-Gruppe
 und Lautstärke und Grundnote des Kits (Seite 3). **Laden** legt eine Audiodatei auf das gewählte Pad
 (oder eine Datei auf ein Pad ziehen), **Leeren** gibt dem Pad seinen Werksklang zurück.
 
+## Mod-Ansicht (Modulationsmatrix, 0.7)
+
+![Mod-Ansicht](../images/ohpe-mod-view-de.png)
+
+Im **LFO**-Modus schalten die Reiter auf dem Display zwischen **LFO** (LFO 1, wie bisher) und
+**Mod**, der [Modulationsmatrix](MODULATION.md) des Edit-Parts. Die Mod-Ansicht listet alle
+**16 Verbindungen** in zwei Spalten: Quelle → Ziel, ein Balken für die Menge (nach rechts = positiv,
+nach links = negativ) und der aktuelle Wert der Verbindung. Ziele auf einer Engine oder einem Effekt
+zeigen den echten Parameternamen („Cutoff“, „FX2 Hyper-Verstimmung“) – man sieht, was sich bewegt,
+ohne Slots zu zählen. Unter der Liste zeichnet eine **Spur** den Wert der gewählten Verbindung über
+die letzten drei Sekunden.
+
+| Aktion | Ergebnis |
+|---|---|
+| Klick auf eine Verbindung | wählt sie; die Encoder bearbeiten sie |
+| **◀ Mod** / **Mod ▶** (Softkeys) | vorige / nächste Verbindung |
+| **Leeren** (Softkey) | setzt die gewählte Verbindung auf Aus zurück (Quelle, Via, Ziel, Menge, Kurve) |
+| Seitenpfeile | blättern die Encoder-Seiten |
+
+Encoder-Seiten der Mod-Ansicht: **Quelle, Via, Ziel, Menge** der gewählten Verbindung · **Kurve**
+und die **Sequencer-Spur** · **Makros 1–4** · **LFO 2** (Tempo, Sync, Form, Tiefe / Modus, Phase,
+Einblenden) · **LFO 3** (ebenso) · **Hüllkurve 3** (Verzögerung, Attack, Halten, Decay / Sustain,
+Release). Alles steht auch in der Profiansicht (Reiter LFO).
+
+**Modulationsringe.** Wo immer ein Parameter Ziel einer Verbindung ist – an den Encodern und in den
+Display-Zeilen jeder Seite –, zeigt ein dünner zweiter Ring (Encoder) bzw. eine Linie über dem Balken
+(Display-Zeile) die **Reichweite** aller seiner Verbindungen um den eingestellten Wert, ein Punkt bzw.
+Strich die **aktuelle Position**, solange Noten klingen. Drehen verschiebt die Mitte; die Reichweite
+wandert mit.
+
+## FX-Rack-Ansichten (0.7)
+
+![FX-Rack eines Parts](../images/ohpe-rack-view-de.png)
+
+Im **Effekte**-Modus schalten die Reiter zwischen **Sends** (wie bisher), **Rack** – den sechs Slots
+des [FX-Racks](BAND-MISCHER-FX.md#fx-rack-07) des Edit-Parts – und **Master**, den vier Slots des
+Master-Racks. Die Kette zeigt jeden Slot als Block in Signalrichtung: Effektname, Mischungsbalken,
+Ausgangspegel, **BYPASS** wenn umgangen; leere Slots sind abgedunkelt. Der gewählte Slot ist umrandet,
+die untere Displayhälfte zeigt, **was sein Effekt tut**: die Kennlinie der Verzerrung, den Frequenzgang
+von EQ und Filter, Kennlinie und aktuelle Pegelreduktion des Kompressors, die Verstärkung jedes Bands
+des Multiband-Effekts, die Bewegung der modulierten Effekte.
+
+| Aktion | Ergebnis |
+|---|---|
+| Klick auf einen Block | wählt den Slot; die Encoder bearbeiten ihn |
+| Block auf einen anderen ziehen | verschiebt den Slot dorthin (die anderen rücken nach); rückgängig zu machen, Teil des Presets |
+| **◀ Schieben** / **Schieben ▶** (Softkeys) | verschiebt den gewählten Slot um eine Stelle nach vorn / hinten |
+| **Leeren** (Softkey) | leert den Slot (Typ Aus) |
+
+Encoder-Seiten eines Slots: **Typ, Mischung, Bypass** · danach die Parameter seines Effekts, vier pro
+Seite. Während ein zum ersten Mal gewählter Effekt vorbereitet wird, steht auf dem Display *Effekt
+wird vorbereitet …* (einen Moment; der Slot reicht den Klang so lange trocken durch).
+
+![Master-Rack](../images/ohpe-master-rack-de.png)
+
 ## Tasten
 
 | Taste | Aktion |

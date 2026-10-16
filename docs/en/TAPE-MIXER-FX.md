@@ -118,8 +118,31 @@ Every part has an **FX rack of six serial slots**, the master a rack of four:
   a moment on the message thread; until then the slot passes the signal dry).
 * Host names tell the slots apart: "P2 FX3 Chorus Rate", "Master FX 1 Delay Mix" (the 0.2 slot of
   part 1 keeps its names).
-* The modulation matrix can move each slot's mix and the first four parameters of its effect
+* The modulation matrix can move each slot's mix and four parameters of its effect – for the
+  0.2 types the first four, for the rack types the four listed below as *Mod 1–4*
   ([MODULATION.md](MODULATION.md)).
+* On screen: the **Rack** and **Master** views of the Effects mode
+  ([USER-INTERFACE.md](USER-INTERFACE.md#fx-rack-views-07)).
+
+### Rack effect types
+
+Besides the six 0.2 types every slot offers nine rack types. Everything that sweeps (cutoffs, times,
+gains, drive) glides sample by sample, so automation and modulation never zipper; the nonlinear
+stages run oversampled.
+
+| Type | What it does | Parameters | Mod 1–4 |
+|---|---|---|---|
+| **Hyper** | unison widener: up to seven slowly drifting, detuned copies across the stereo field, then a *dimension* stage of cross-fed short delays; *Retrigger* restarts the motion with every note | rate, detune, voices, spread, dimension, retrigger, mix | rate, detune, spread, dimension |
+| **Distortion** | eight modes – tube, soft clip, hard clip, diode, linear fold, sine fold, asymmetric, downsample – with bias, a pre-filter (low / band / high-pass) and a post tone control | mode, drive, bias, pre-filter, pre-filter freq, tone, output, mix | drive, bias, pre-filter freq, tone |
+| **Flanger** | stereo flanger, free or tempo-synced, positive or negative feedback | rate, sync, depth, delay, feedback, stereo, mix | rate, depth, delay, feedback |
+| **Compressor** | stereo-linked compressor with soft knee and makeup gain; *mix* gives parallel compression | threshold, ratio, attack, release, knee, makeup, mix | threshold, ratio, attack, makeup |
+| **Multiband** | three bands with upward and downward compression; at depth 0 the crossovers sum flat | depth, upward, downward, time, low / mid / high gain, low / high split, output, mix | depth, low, mid, high gain |
+| **EQ** | low shelf, three bells, high shelf | frequencies, gains, Q, output | band 1 freq / gain, band 2 freq / gain |
+| **Filter** | low-pass / high-pass 12 or 24 dB, band-pass, notch, comb + / −, vowel formant; drive in front; the cutoff glides in octaves | type, cutoff, resonance, drive, mix | cutoff, resonance, drive, mix |
+| **Echo** | stereo, ping-pong or tap delay (right tap at a ratio of the left), free or synced, filtered feedback | mode, sync, time, ratio, feedback, low cut, high cut, width, mix | feedback, time (free), high cut, width |
+| **Hall** | plate or hall reverb: input diffusion and an eight-line feedback network with gentle modulation | mode, size, decay, damping, pre-delay, width, mix | size, decay, damping, pre-delay |
+
+IDs, ranges and defaults: [PARAMETERS.md](../PARAMETERS.md#07--rack-effect-types--effekttypen-des-racks).
 
 ### Mid/Side stereo (0.7)
 

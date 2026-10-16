@@ -33,7 +33,9 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **Shared per voice** | amp and modulation envelopes, LFO with several destinations, glide, 16-voice polyphony |
 | **Sequencers** | step sequencer (up to 64 steps, probability, ratchets, parameter locks, 16 patterns, song mode), Euclid, arpeggiator and Orbit (polymeter), each with a target part – step, Euclid and Orbit can also play the drum kit |
 | **Tape machine** | eight stereo tracks: record / overdub / punch from the input, parts or drums, varispeed, reverse, loop, tape character, undo, export as WAV master and stems |
-| **Mixer** | eight channels with EQ, compressor, volume, pan, mute / solo, two sends (A: delay, B: reverb), master compressor, tape saturation and limiter; FX racks with six slots on every part and four on the master (chorus, phaser, bitcrush, filter drive, delay, reverb, mid / side stereo) |
+| **Mixer** | eight channels with EQ, compressor, volume, pan, mute / solo, two sends (A: delay, B: reverb), master compressor, tape saturation and limiter |
+| **FX racks** | six serial slots per part and four on the master: hyper (unison widener), distortion (eight modes), flanger, compressor, multiband, EQ, filter, echo, hall, chorus, phaser, bitcrush, filter drive, delay, reverb, mid / side stereo – reorder by dragging, each with mix and bypass – see [FX rack](docs/en/TAPE-MIXER-FX.md#fx-rack-07) |
+| **Modulation matrix** | 16 routings per part from 20 sources (three LFOs, three envelopes, velocity, MPE, macros, a sequencer lane …) to pitch, level, pan, 24 engine parameters, the LFOs and every rack slot; rings on the encoders show what moves – see [Modulation](docs/en/MODULATION.md) |
 | **Sync** | host transport in the plug-in; MIDI clock in / out and network tempo sync (Link) in the standalone app |
 | **Multi-out** | every channel can go to the main output or its own stereo output (8 aux outputs) – in the plug-in and in the standalone app |
 | **MIDI** | per-part channels, MPE, every control is MIDI-learnable (right-click → MIDI Learn), maps can be exported / imported; all parameters are automatable |
@@ -55,6 +57,8 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | Drum kit page | FM engine |
 | ![Mixer](docs/images/ohpe-mixer.png) | ![German interface](docs/images/ohpe-analog-de.png) |
 | Mixer | German interface |
+| ![Mod view](docs/images/ohpe-mod-view.png) | ![FX rack](docs/images/ohpe-rack-view.png) |
+| Mod view (modulation matrix) | FX rack of a part |
 | ![Master stereo scope with mid / side in the master rack](docs/images/ohpe-master-scope.png) | ![Spectrum terrain](docs/images/ohpe-terrain.png) |
 | Master stereo scope (mid / side in the master rack) | Spectrum terrain |
 
@@ -67,6 +71,8 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 * The **four encoders** always control what the display shows; in Synth mode they are the
   engine's four macros. The **bars on the display** can be dragged directly (Shift / Cmd / Ctrl =
   fine). Double-click resets a value, right-click opens MIDI learn.
+* **LFO → Mod** shows the modulation matrix, **Effects → Rack / Master** the FX racks: click a
+  routing or a slot to edit it, drag slots to reorder them.
 * **LIBRARY** opens the preset library, **PRO** shows every parameter of the mode at once.
 * **Keyboard**: play with the mouse or any MIDI keyboard; the octave keys shift it.
 * **Sequencer**: tap steps to switch them on, Shift-tap a step to edit it and lock parameters on
@@ -107,12 +113,13 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 * Engines: [Wavetable](docs/en/engines/wavetable.md), [Pluck](docs/en/engines/pluck.md),
   [Cluster](docs/en/engines/cluster.md), [Grain, Vocal, Sampler and drum kit](docs/en/GRAIN-VOCAL-SAMPLER-DRUM.md)
 * [Installing on macOS](docs/en/INSTALL.md) – installer, Gatekeeper fix, uninstall, signing
-* [Playing the interface](docs/en/USER-INTERFACE.md) – display, parts, pro view, step locks, tape and drum pages
+* [Playing the interface](docs/en/USER-INTERFACE.md) – display, parts, pro view, step locks, tape and drum pages, Mod and Rack views
 * [Factory sounds](docs/en/FACTORY-SOUNDS.md) – every preset by category, drum kits, recorded instruments
 * [Preset library](docs/en/PRESETS.md) – browsing, saving, MIDI, file format
 * [Sequencers, parts and scale mode](docs/en/SEQUENCERS.md)
 * [MIDI guide](docs/en/MIDI.md) – channels, MPE, clock, sync
-* [Tape machine, mixer dynamics and FX slot](docs/en/TAPE-MIXER-FX.md)
+* [Tape machine, mixer dynamics and FX rack](docs/en/TAPE-MIXER-FX.md) – rack effect types, slot order, master rack
+* [Modulation matrix](docs/en/MODULATION.md) – routings, sources, targets, LFO 2 / 3, envelope 3, macros
 * [Parameters](docs/PARAMETERS.md) – every host parameter ID
 * [Architecture](docs/ARCHITECTURE.md) – core, plug-in shell, threading, parameters, extension points
 * [Design language](docs/DESIGN.md) – colours, characters, components

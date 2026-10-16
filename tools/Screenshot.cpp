@@ -5,7 +5,8 @@
 //   usage: ohpe_screenshot <output directory>
 // Writes ohpe-<view>.png (English) and ohpe-<view>-de.png (German).
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
-// 0.7: the Mid/Side scope, the master scope view and the spectrum terrain. The
+// 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack; the Mid/Side scope,
+// the master scope view and the spectrum terrain. The
 // preset library reads the user folder from OHPE_PRESET_DIR when set (otherwise the default).
 
 #include "plugin/Localisation.h"
@@ -39,8 +40,34 @@ void release (OhpeProcessor& p, std::initializer_list<int> notes)
     run (p, 8);
 }
 
+void setPlain (OhpeProcessor& p, const juce::String& id, float v)
+{
+    if (auto* q = p.parameter (id)) q->setValueNotifyingHost (q->convertTo0to1 (v));
+}
+
+/** Sets a choice parameter by its English label. */
+void setChoice (OhpeProcessor& p, const juce::String& id, const std::string& labelEn)
+{
+    const auto& reg = p.core().params();
+    const int i = reg.indexOf (id.toStdString());
+    if (i < 0) return;
+    const auto& d = reg.descriptor (i);
+    for (size_t c = 0; c < d.choices.size(); ++c)
+        if (d.choices[c] == labelEn) setPlain (p, id, (float) c);
+}
+
+/** Renders audio and animation frames together (traces, meters). */
+void animate (OhpeProcessor& p, OhpeEditor& e, int frames)
+{
+    for (int f = 0; f < frames; ++f)
+    {
+        run (p, 2);
+        e.advanceAnimation (1.0f / 30.0f);
+    }
+}
+
 /** 0.7: plays and animates together, like the editor timer does (30 frames per second). */
-void animate (OhpeProcessor& p, OhpeEditor& e, int frames, std::initializer_list<int> notes = {}, int channel = 1)
+void playAnimated (OhpeProcessor& p, OhpeEditor& e, int frames, std::initializer_list<int> notes = {}, int channel = 1)
 {
     juce::AudioBuffer<float> buffer (p.getTotalNumOutputChannels(), 512);
     for (int f = 0; f < frames; ++f)
@@ -54,11 +81,6 @@ void animate (OhpeProcessor& p, OhpeEditor& e, int frames, std::initializer_list
         p.processBlock (buffer, none);
         e.advanceAnimation (1.0f / 30.0f);
     }
-}
-
-void setPlain (OhpeProcessor& p, const juce::String& id, float plain)
-{
-    if (auto* prm = p.parameter (id)) prm->setValueNotifyingHost (prm->convertTo0to1 (plain));
 }
 
 void save (juce::Component& c, const juce::File& f)
@@ -92,9 +114,9 @@ int main (int argc, char* argv[])
         p.parameter ("p1.analog.reso")->setValueNotifyingHost (0.45f);
         e.selectEngine (EngineType::Analog);
         e.displayComponent().setAnimatedVisuals (true);
-        animate (p, e, 2, { 60 });
-        animate (p, e, 2, { 64 });
-        animate (p, e, 30, { 67 });
+        playAnimated (p, e, 2, { 60 });
+        playAnimated (p, e, 2, { 64 });
+        playAnimated (p, e, 30, { 67 });
         save (e, dir.getChildFile ("ohpe-analog" + suffix + ".png"));
 
         release (p, { 60, 64, 67 });
@@ -181,6 +203,69 @@ int main (int argc, char* argv[])
         e.advanceAnimation (0.4f);
         save (e, dir.getChildFile ("ohpe-drum" + suffix + ".png"));
 
+        // 0.7: Mod view - six routings on part 1, routing 1 selected, a chord sounding
+        {
+            setChoice (p, "p1.fx2.type", "Hyper");
+            setChoice (p, "p1.mod.s1.src", "LFO 2");    setChoice (p, "p1.mod.s1.dst", "Engine 2");     setPlain (p, "p1.mod.s1.amt", 0.4f);
+            setChoice (p, "p1.mod.s2.src", "Mod Env");  setChoice (p, "p1.mod.s2.dst", "Engine 3");     setPlain (p, "p1.mod.s2.amt", -0.25f);
+            setChoice (p, "p1.mod.s3.src", "Velocity"); setChoice (p, "p1.mod.s3.dst", "Level");        setPlain (p, "p1.mod.s3.amt", 0.5f);
+            setChoice (p, "p1.mod.s4.src", "LFO 3");    setChoice (p, "p1.mod.s4.via", "Mod Wheel");
+            setChoice (p, "p1.mod.s4.dst", "Pan");      setPlain (p, "p1.mod.s4.amt", 0.35f);
+            setChoice (p, "p1.mod.s5.src", "Random");   setChoice (p, "p1.mod.s5.dst", "FX 2 Param 2"); setPlain (p, "p1.mod.s5.amt", 0.3f);
+            setChoice (p, "p1.mod.s6.src", "Macro 1");  setChoice (p, "p1.mod.s6.dst", "FX 2 Mix");     setPlain (p, "p1.mod.s6.amt", 0.5f);
+            setChoice (p, "p1.mod.s1.curve", "S-Curve");
+            setPlain (p, "p1.lfo2.rate", 0.8f);
+            setPlain (p, "p1.lfo3.rate", 3.0f);
+            setPlain (p, "p1.macro1", 0.6f);
+            p.core().prepareEffects();
+            e.selectPart (0);
+            e.selectEngine (EngineType::Analog);
+            run (p, 1, 60); run (p, 1, 64); run (p, 1, 67);
+            e.selectMode (ui::Mode::Lfo);
+            e.selectView (1);
+            e.selectModRouting (0);
+            animate (p, e, 96);
+            save (e, dir.getChildFile ("ohpe-mod-view" + suffix + ".png"));
+        }
+
+        // 0.7: FX rack of part 1 - five effects and an empty slot, the EQ selected
+        {
+            setChoice (p, "p1.fx.type", "Distortion");
+            setPlain (p, "p1.fx.distortion.drive", 0.35f);
+            setChoice (p, "p1.fx3.type", "EQ");
+            setPlain (p, "p1.fx3.eq.lowgain", 3.0f);
+            setPlain (p, "p1.fx3.eq.p1gain", -4.0f);
+            setPlain (p, "p1.fx3.eq.p2freq", 2000.0f);
+            setPlain (p, "p1.fx3.eq.p2gain", 5.0f);
+            setPlain (p, "p1.fx3.eq.p2q", 1.5f);
+            setPlain (p, "p1.fx3.eq.highgain", 2.0f);
+            setChoice (p, "p1.fx4.type", "Echo");
+            setChoice (p, "p1.fx5.type", "Hall");
+            setPlain (p, "p1.fx5.mix", 0.6f);
+            p.core().prepareEffects();
+            e.selectMode (ui::Mode::Effects);
+            e.selectView (1);
+            e.selectFxSlot (2);
+            animate (p, e, 20);
+            save (e, dir.getChildFile ("ohpe-rack-view" + suffix + ".png"));
+        }
+
+        // 0.7: master rack - compressor and multiband working on the chord, the compressor selected
+        {
+            setChoice (p, "mfx1.type", "Compressor");
+            setPlain (p, "mfx1.compressor.thresh", -30.0f);
+            setPlain (p, "mfx1.compressor.ratio", 3.0f);
+            setPlain (p, "mfx1.compressor.makeup", 4.0f);
+            setChoice (p, "mfx2.type", "Multiband");
+            setPlain (p, "mfx2.multiband.depth", 0.6f);
+            p.core().prepareEffects();
+            e.selectView (2);
+            e.selectFxSlot (0);
+            animate (p, e, 20);
+            save (e, dir.getChildFile ("ohpe-master-rack" + suffix + ".png"));
+            release (p, { 60, 64, 67 });
+        }
+
         // 0.3: pro view of the FM engine on part 2
         e.selectPart (1);
         e.selectEngine (EngineType::FM);
@@ -192,6 +277,11 @@ int main (int argc, char* argv[])
 
         // 0.7: Mid/Side FX slot on part 1 (a wide cluster chord), the stereo scope on its page
         {
+            // a clean start: the rack and modulation scenes above are switched off
+            for (int s = 2; s <= 6; ++s) setPlain (p, "p1.fx" + juce::String (s) + ".type", 0.0f);
+            for (int s = 1; s <= 4; ++s) setPlain (p, "mfx" + juce::String (s) + ".type", 0.0f);
+            for (int r = 1; r <= 6; ++r) setPlain (p, "p1.mod.s" + juce::String (r) + ".amt", 0.0f);
+            p.core().prepareEffects();
             e.selectPart (0);
             e.selectEngine (EngineType::Cluster);
             setPlain (p, "p1.cluster.spread", 1.0f);
@@ -201,9 +291,10 @@ int main (int argc, char* argv[])
             setPlain (p, "p1.fx.midside.bassmono", 1.0f);
             setPlain (p, "p1.fx.midside.haas", 0.25f);
             e.selectMode (ui::Mode::Effects);
+            e.selectView (0); // sends + FX slot pages: the scope in the display's visual area
             auto& d = e.displayComponent();
             d.onPageChange (3);
-            animate (p, e, 40, { 50, 57, 62, 65 });
+            playAnimated (p, e, 40, { 50, 57, 62, 65 });
             save (e, dir.getChildFile ("ohpe-midside-scope" + suffix + ".png"));
             release (p, { 50, 57, 62, 65 });
 
@@ -217,7 +308,7 @@ int main (int argc, char* argv[])
             p.core().prepareEffects();
             e.selectMode (ui::Mode::Mixer);
             d.setVisual (ui::Display::Visual::Scope);
-            animate (p, e, 40, { 45, 52, 60, 64 });
+            playAnimated (p, e, 40, { 45, 52, 60, 64 });
             save (e, dir.getChildFile ("ohpe-master-scope" + suffix + ".png"));
             release (p, { 45, 52, 60, 64 });
 
@@ -227,10 +318,10 @@ int main (int argc, char* argv[])
             for (int k = 0; k < 8; ++k)
             {
                 const int note = 48 + (k * 7) % 24;
-                animate (p, e, 4, { note, note + 12 });
+                playAnimated (p, e, 4, { note, note + 12 });
                 release (p, { note, note + 12 });
             }
-            animate (p, e, 6, { 55, 67, 74 });
+            playAnimated (p, e, 6, { 55, 67, 74 });
             save (e, dir.getChildFile ("ohpe-terrain" + suffix + ".png"));
             release (p, { 55, 67, 74 });
             d.setVisual (ui::Display::Visual::Character);

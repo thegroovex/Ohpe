@@ -71,6 +71,12 @@ public:
     /** Audio thread: the selected type is waiting for prepareSelected(). */
     bool isWaiting() const noexcept { return waiting.load (std::memory_order_relaxed); }
     bool isReady (int t) const noexcept { return t > Off && t < numTypes && ready[(size_t) t].load (std::memory_order_acquire); }
+    /** 0.7: registry index of the parameter modulation target "Param j+1" (j = 0..3) moves for type `t`. */
+    int modParamIndexOf (int t, int j) const noexcept
+    {
+        const IEffect* e = t > Off && t < numTypes ? effects[(size_t) t].get() : nullptr;
+        return paramIndexOf (t, e != nullptr ? e->modulationParam (j) : j);
+    }
     /** Registry index of parameter `local` of type `t` (-1 when not registered). */
     int paramIndexOf (int t, int local) const noexcept
     {
