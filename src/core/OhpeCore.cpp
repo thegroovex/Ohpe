@@ -72,6 +72,8 @@ Core::Core()
     spaceOutIndex = registry.indexOf (Ids::spaceOut);
     monoCheckIndex = registry.indexOf (Ids::spaceMonoCheck);
     keyScaleIndex = registry.indexOf (Ids::keyScale);
+    keyLockIndex = registry.indexOf (Ids::keyLock);         // p45
+    keyLockModeIndex = registry.indexOf (Ids::keyLockMode); // p45
     metro.bind (registry); // p39
     tapePlayIndex = registry.indexOf ("tape.play");
     tapeRecIndex = registry.indexOf ("tape.rec");
@@ -233,6 +235,8 @@ void Core::reset() noexcept
     for (auto& m : mpeIn) m.reset();
     for (auto& s : liveShaper) s.reset();
     for (auto& s : seqShaper) s.reset();
+    for (auto& c : soundCount) c.fill (0); // p45
+    publishSounding();
     snapshot.clearLocks();
     internalPpq = 0.0;
     internalWasRunning = false;
@@ -269,10 +273,57 @@ void Core::refreshShapers (int p) noexcept
         const uint16_t km = ks == scales::Chromatic ? (uint16_t) 0xfff : scales::mask (ks);
         liveShaper[(size_t) p].setMask (true, chord, fr, fm, kr, km);
         seqShaper[(size_t) p].setMask (true, chord, fr, fm, kr, km);
-        return;
     }
-    liveShaper[(size_t) p].set (quant, chord, blockRoot, blockScale);
-    seqShaper[(size_t) p].set (quant, chord, blockRoot, blockScale);
+    else
+    {
+        // p45: Scale Lock snaps every part's notes to the key (live and sequenced), like the part's own quantise
+        liveShaper[(size_t) p].set (quant || blockLock, chord, blockRoot, blockScale);
+        seqShaper[(size_t) p].set (quant || blockLock, chord, blockRoot, blockScale);
+    }
+    // p45: White Keys - the keyboard's white keys play the key's degrees (live input only; sequenced notes are notes)
+    liveShaper[(size_t) p].setWhiteKeys (blockLock && blockLockMode == keys::LockWhiteKeys, blockRoot, keys::scaleMask (blockScale));
+    seqShaper[(size_t) p].setWhiteKeys (false, blockRoot, keys::scaleMask (blockScale));
+}
+
+keys::KeyScale Core::keyScale() const noexcept
+{
+    keys::KeyScale k;
+    const int hk = hostKey.load (std::memory_order_relaxed);
+    if (hk >= 0)
+    {
+        k.root = hk / 16;
+        k.scale = hk % 16;
+        k.fromHost = true;
+    }
+    else
+    {
+        if (keyRootIndex >= 0) k.root = std::clamp ((int) std::lround (registry.get (keyRootIndex)), 0, 11);
+        if (keyScaleIndex >= 0) k.scale = std::clamp ((int) std::lround (registry.get (keyScaleIndex)), 0, scales::numScales - 1);
+    }
+    k.lock = keyLockIndex >= 0 && registry.get (keyLockIndex) >= 0.5f;
+    if (keyLockModeIndex >= 0) k.lockMode = std::clamp ((int) std::lround (registry.get (keyLockModeIndex)), 0, keys::numLockModes - 1);
+    return k;
+}
+
+chords::NoteSet Core::soundingNotes (int part) const noexcept
+{
+    chords::NoteSet s {};
+    for (int p = 0; p < numParts; ++p)
+        if (part < 0 || part == p)
+            for (size_t w = 0; w < 2; ++w) s[w] |= pubSounding[(size_t) p][w].load (std::memory_order_relaxed);
+    return s;
+}
+
+void Core::publishSounding() noexcept
+{
+    for (int p = 0; p < numParts; ++p)
+    {
+        std::array<uint64_t, 2> w {};
+        for (int n = 0; n < 128; ++n)
+            if (soundCount[(size_t) p][(size_t) n] > 0) w[(size_t) (n >> 6)] |= (uint64_t) 1 << (n & 63);
+        pubSounding[(size_t) p][0].store (w[0], std::memory_order_relaxed);
+        pubSounding[(size_t) p][1].store (w[1], std::memory_order_relaxed);
+    }
 }
 
 // ---------------------------------------------------------------- routing
@@ -323,7 +374,7 @@ void Core::routeLive (const MidiEvent& e) noexcept
     }
 }
 
-void Core::routeToPart (const MidiEvent& e, int p) noexcept
+void Core::routeToPart (const MidiEvent& e, int p, bool mapWhiteKeys) noexcept
 {
     const auto& r = routing[(size_t) p];
     const bool toArp = arp.enabled() && arp.targetPart() == p + 1 && ! r.mpe;
@@ -333,7 +384,7 @@ void Core::routeToPart (const MidiEvent& e, int p) noexcept
     };
     if (r.mpe) { emit (e); return; } // MPE notes keep their channel and pitch (per-note expression)
     if (harmonyBrain.followMode (p) != ohpe::harmony::FollowOff && e.isNoteOn()) refreshShapers (p); // p24: the chord heard just now
-    liveShaper[(size_t) p].process (e, emit);
+    liveShaper[(size_t) p].process (e, emit, mapWhiteKeys);
 }
 
 void Core::routeGenerated (const MidiEvent& e, bool shape, bool toDrums) noexcept
@@ -369,6 +420,14 @@ void Core::routeGenerated (const MidiEvent& e, bool shape, bool toDrums) noexcep
 void Core::dispatch (const RoutedEvent& r) noexcept
 {
     if (r.event.isNoteOn()) lastNoteOn.store (r.event.data1, std::memory_order_relaxed);
+    if (r.part >= 0 && r.part < numParts) // p45: what sounds (for the chord name)
+    {
+        auto& c = soundCount[(size_t) r.part];
+        const int type = r.event.status & 0xf0;
+        if (r.event.isNoteOn()) { if (c[r.event.data1 & 0x7f] < 255) ++c[r.event.data1 & 0x7f]; }
+        else if (r.event.isNoteOff()) { if (c[r.event.data1 & 0x7f] > 0) --c[r.event.data1 & 0x7f]; }
+        else if (type == 0xb0 && (r.event.data1 == 120 || r.event.data1 == 123)) c.fill (0); // all sound / notes off
+    }
     if (r.part == drumPart) drums.handleMidi (r.event);
     else mpeIn[(size_t) r.part].handle (r.event, *parts[(size_t) r.part]); // note starts retrigger the rack (Part::noteOn)
 }
@@ -604,9 +663,14 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     arpWasOn = arp.enabled();
     arpLastPart = arp.targetPart();
 
-    const int root = snapshot.getInt (keyRootIndex), scale = snapshot.getInt (keyScaleIndex);
+    int root = snapshot.getInt (keyRootIndex), scale = snapshot.getInt (keyScaleIndex);
+    if (const int hk = hostKey.load (std::memory_order_relaxed); hk >= 0) { root = hk / 16; scale = hk % 16; } // p45
     blockRoot = root;
     blockScale = scale;
+    blockLock = keyLockIndex >= 0 && snapshot.getBool (keyLockIndex);                                         // p45
+    blockLockMode = keyLockModeIndex >= 0 ? std::clamp (snapshot.getInt (keyLockModeIndex), 0, keys::numLockModes - 1) : 0;
+    stepSeq.setKeyLock (blockLock, root, keys::scaleMask (scale)); // p45: transpose moves in scale degrees
+    orbit.setKeyLock (blockLock, root, keys::scaleMask (scale));
     harmonyBrain.beginBlock (snapshot, tr.bpm, numSamples, root, scale); // p24: memory, follow modes
     for (int p = 0; p < numParts; ++p) // p24: the brain as matrix sources Chord Root / Chord Change / Tension
         for (int k = 0; k < HarmonyBrain::numSources; ++k)
@@ -681,7 +745,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         auto x = ge.event;
         x.status = (uint8_t) ((x.status & 0xf0) | (((r.channel > 0 ? r.channel : 1) - 1) & 0x0f));
         x.sampleOffset = 0;
-        routeToPart (x, ge.part);
+        routeToPart (x, ge.part, false); // p45: the grid's notes are already in key (no white-key mapping)
     }
 
     // 4. sequencers: their notes address parts by channel
@@ -788,6 +852,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     for (auto& p : parts) voices += p->activeVoiceCount();
     voices += drums.activeVoiceCount();
     voicesActive.store (voices, std::memory_order_relaxed);
+    publishSounding(); // p45
     sampleTime += numSamples;
     sampleCounterForUi.store (sampleTime, std::memory_order_relaxed);
 }

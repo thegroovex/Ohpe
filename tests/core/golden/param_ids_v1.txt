@@ -6819,3 +6819,5 @@ metro.accent
 metro.countin
 metro.plugin
 metro.tap
+key.lock
+key.lock.mode
