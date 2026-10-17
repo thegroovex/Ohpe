@@ -45,6 +45,12 @@ struct Rig
     ui::SettingsView& view() { return e->settingsComponent(); }
 };
 
+float hostPlain (OhpeProcessor& p, const char* id)
+{
+    auto* q = p.parameter (id);
+    return q != nullptr ? q->convertFrom0to1 (q->getValue()) : -1.0f;
+}
+
 double contrast (juce::Colour a, juce::Colour b) { return settings::contrastRatio (a.getARGB(), b.getARGB()); }
 
 void checkContrast (const char* skin)
@@ -221,9 +227,9 @@ TEST_CASE ("settings: MIDI page edits existing parameters, MIDI learn list edits
     const int numParams = r.p.core().params().size();
     e.showSettings (true, ui::SettingsView::Midi);
     CHECK (r.view().clickChip ("MIDI CLOCK"));
-    CHECK (r.p.core().params().get (Core::Ids::syncSource) == doctest::Approx (1.0f));
+    CHECK (hostPlain (r.p, Core::Ids::syncSource) == doctest::Approx (1.0f));
     CHECK (r.view().clickChip ("INTERNAL"));
-    CHECK (r.p.core().params().get (Core::Ids::syncSource) == doctest::Approx (0.0f));
+    CHECK (hostPlain (r.p, Core::Ids::syncSource) == doctest::Approx (0.0f));
     CHECK (r.p.core().params().size() == numParams); // nothing new: the page shows existing parameters
 
     MidiMapping a;

@@ -257,6 +257,8 @@ void SettingsView::stepper (juce::Graphics& g, juce::Rectangle<float> r, const j
 
 float SettingsView::plain (const juce::String& id) const
 {
+    // the host parameter is current at once (the registry follows with the next audio block)
+    if (auto* q = proc.parameter (id)) return q->convertFrom0to1 (q->getValue());
     const auto& reg = proc.core().params();
     const int i = reg.indexOf (id.toStdString());
     return i >= 0 ? reg.get (i) : 0.0f;
