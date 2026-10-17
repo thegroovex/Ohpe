@@ -77,7 +77,8 @@ are held and played one after another.
 Four lanes of up to 16 steps, each with its own **length**, **rate** and **transpose**, all
 playing into one part. Every lane has its own steps (note, velocity). Lanes drift against each
 other and meet again after the least common multiple of their lengths – long, evolving
-patterns from a few steps.
+patterns from a few steps. With **Scale Lock** on (key readout on the display header) a lane's transpose – like the
+step sequencer's – counts degrees of the key instead of semitones.
 
 * **Lane target** (`seq.orbit.lN.part`, 0.5): 0 = the Orbit target part (or the drum kit); 1–4 = this
   lane plays that part, never the kit. With the drums switched on, lanes 1–3 can play the kit while

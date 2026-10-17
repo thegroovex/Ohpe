@@ -366,6 +366,59 @@ Ohpe zählt im 4/4-Takt.
 Die Einstellungen sind Host-Parameter (mit Session / Projekt gespeichert, automatisierbar, MIDI-zuweisbar) und gehören
 dem Spieler: Presets tragen sie nicht. Parameter: [PARAMETERS.md](../PARAMETERS.md#p39--metronome-count-in-tap-tempo).
 
+## Tonart, Akkord und In Tonart (p45)
+
+![Die Vokal-Seite in Fis-Moll: F#m7 unter den Stimmen-Punkten, F#5 unter STIMMEN, die Tonart mit In Tonart in der Kopfzeile (2x)](../images/ohpe-chords-display-de.png)
+
+**Die Stimmen-Zeile.** Unter dem Hauptbereich des Displays auf den Seiten Synth, Hüllkurve und LFO: sechzehn
+Stimmen-Punkte (leuchtend = klingende Stimmen), rechts die kleine Legende **STIMMEN** über der **letzten Note** (groß).
+Der Platz der Note ist so breit wie der längste Notenname (*C#-1*, *Ab9*) – Legende und Note überlappen in keiner
+Sprache; in einem schmalen Fenster rücken stattdessen die Punkte zusammen. Noten werden **in der Tonart geschrieben**
+(*Gb5* in Es-Dur, *F#5* in Fis-Moll; deutsch *H* und *B*).
+
+**Der Akkord.** Unter den Stimmen-Punkten nennt Ohpe den **Akkord, der klingt** – alle vier Parts zusammen,
+einschließlich der Töne, die Ein-Finger-Akkorde und die folgenden Parts der Harmonie dazugeben (nicht das Drum-Kit).
+Dreiklänge, sus2 / sus4, Quint-Akkorde, Sexten, Septakkorde (maj7, 7, m7, m7b5, dim7, m(maj7), 7sus4; ein Septakkord
+auch ohne Quinte), add9 und Nonen; der tiefste Ton entscheidet zwischen zwei Lesarten (*Am7* über A, *C6* über C) und
+ergibt einen **Slash-Akkord**, wenn er nicht der Grundton ist: *C/E* (1. Umkehrung), *G7/F* (3. Umkehrung) oder ein
+Bass außerhalb des Akkords, *C/D*. Daneben die Stellung (*1. UMKEHRUNG*). Violett, solange er klingt, danach gedimmt –
+der letzte Akkord bleibt bis zum nächsten stehen. Auch Akkord-Grundtöne stehen in der Tonart (*Bmaj7* in F-Dur, *Db*
+in As-Dur, *C#* in A-Dur).
+
+**Die Tonart in der Kopfzeile.** Links von **TAP** und dem Tempo: Tonart und Skala (*F# DOR*, *H DUR*) und ein
+Vorhängeschloss für **In Tonart**. Dieselben Griffe wie beim Tempo:
+
+| Geste | Wirkung |
+|---|---|
+| nach oben / unten ziehen | Grundton in Halbtönen (Shift / Cmd / Strg: die Skala) |
+| Mausrad | Grundton ± 1 (Shift: die Skala) |
+| Klick | Menü: Tonart, Skala (alle 14), In Tonart an / aus, *Auf den nächsten Ton der Tonart* / *Weiße Tasten spielen die Tonart*, MIDI-Learn der vier Parameter |
+| Klick auf das Schloss | In Tonart an / aus |
+| Rechtsklick auf das Schloss | MIDI-Learn / Zuweisung löschen / zurücksetzen von `key.lock` |
+
+Das ist die globale Tonart `key.root` / `key.scale`, die die **Skala**-Quantisierung der Parts, die Ein-Finger-Akkorde,
+das Harmonie-Hirn (bevor es etwas gehört hat; *Tonart übernehmen* schreibt hinein) und die Raster-Tastatur in der
+Tonart schon nutzen – nichts Neues abzugleichen.
+
+**In Tonart** (`key.lock`, englisch *Scale Lock*): jeder Ton, der einen Part erreicht, spielt in der Tonart – die
+Bildschirm-Tastatur, MIDI von einer Tastatur oder vom Host, die Sequenzer, der Arpeggiator (er bekommt die
+eingerasteten Töne). Zwei Modi (`key.lock.mode`):
+
+| Modus | Was passiert |
+|---|---|
+| **Nächster Ton** (Standard) | jeder Ton rastet auf den nächsten Ton der Tonart (bei Gleichstand nach unten) |
+| **Weiße Tasten** | die weißen Tasten spielen die Stufen der Tonart aufwärts: C4 spielt den Grundton nahe dem mittleren C, D4 die 2. Stufe, … (Pentatonik: fünf weiße Tasten pro Oktave); schwarze Tasten sind stumm. Die Raster-Tastatur wird nicht umgelegt (sie spielt schon in der Tonart). |
+
+Mit In Tonart wandert das **Transponieren** des Step-Sequenzers und der Orbit-Spuren in **Tonleiterstufen** (+2 = zwei
+Töne der Tonart höher) statt in Halbtönen; ein Sequenzer, der das Drum-Kit spielt, bleibt bei Halbtönen. In Tonart aus
+lässt alles genau wie vorher. Das Schloss ist violett und geschlossen, solange es an ist; zwei kleine Tasten darunter
+zeigen *Weiße Tasten*.
+
+**Vom Host.** Die Plug-in-Formate geben einem Instrument keine Tonart oder Skala mit, also ist die Tonart Ohpes eigene:
+`key.root` / `key.scale` sind Host-Parameter und lassen sich vom Host automatisieren. Sollte ein Host einmal eine
+Tonart mitgeben, zeigt die Anzeige **HOST**, Grundton und Skala sind dann nur lesbar, In Tonart bleibt einstellbar.
+Alles ist MIDI-zuweisbar. Parameter: [PARAMETERS.md](../PARAMETERS.md#p45--scale-lock).
+
 ## Tape-Seite
 
 ![Tape-Seite](../images/ohpe-tape-de.png)

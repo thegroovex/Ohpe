@@ -963,3 +963,21 @@ monitoring switch). Defaults leave Ohpe as before: no click, no count-in. No new
 | `metro.countin` | Count-In | Vorzähler | Off, 1 Bar, 2 Bars / Aus, 1 Takt, 2 Takte | Off |
 | `metro.plugin` | Click in Plug-in | Klick im Plug-in | Off, On (standalone: always clicks when on) | Off |
 | `metro.tap` | Tap Tempo | Tempo tippen | trigger (a rising edge is one tap) | Off |
+
+## p45 – Scale Lock
+
+Guides: [English](en/USER-INTERFACE.md#key-chord-and-scale-lock-p45) · [Deutsch](de/BEDIENUNG.md#tonart-akkord-und-in-tonart-p45).
+Two parameters appended after `metro.tap` (p39), group `global` like `key.root` / `key.scale`. Host parameters –
+saved with the session, automatable, MIDI-mappable. The defaults leave Ohpe as before (lock off). The key itself stays
+`key.root` / `key.scale` (above); no new modulation sources or targets.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `key.lock` | Scale Lock | In Tonart | Off, On | Off |
+| `key.lock.mode` | Scale Lock Mode | In-Tonart-Modus | Nearest, White Keys / Nächster Ton, Weiße Tasten | Nearest |
+
+*Nearest*: every note reaching a part (on-screen keys, MIDI, sequencers, arpeggiator) snaps to the nearest note of the
+key. *White Keys*: live notes – the white keys play the key's degrees from the root nearest middle C at C4, black keys
+are silent (the grid keyboard is not remapped). While on, the transpose of the step sequencer and of the Orbit lanes
+(`seq.step.transpose`, `seq.orbit.lN.transpose`) counts scale degrees instead of semitones (not when they play the
+drum kit).

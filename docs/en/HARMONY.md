@@ -60,6 +60,18 @@ for the pitch-class memory starting at the key's root (key notes light, other no
 whether the edit part follows. Soft keys: **Take Key**, **Hold**, **Forget**. Encoders: Follow (edit part), Memory,
 Hold, Grid Layout.
 
+## Chord names and the key (p45)
+
+While notes sound, the view's **Chord** shows the chord they make – every part together, with the notes following parts
+and one-finger chords add – with the full naming of the display's voice strip: sixths, sevenths (also without the
+fifth), m7b5, dim7, sus, add9, ninths, and **slash chords** for inversions (*D/F#*) or a foreign bass (*C/D*); the
+legend adds the position (*1st inversion*). When nothing sounds it shows the remembered chord as before. The status
+line adds *Playing F#m7*. Note and chord names are spelled in the global key: flats in flat keys (*Bb*, *Eb*), sharps in
+sharp keys (*F#*, *C#*), German *H* / *B*. **Scale Lock** (on the display header, see
+[Key, chord and Scale Lock](USER-INTERFACE.md#key-chord-and-scale-lock-p45)) uses the same global key; a following
+part (Follow Scale / Chord / Root) follows the brain as before and ignores Scale Lock's snapping (White Keys still maps
+its keys first).
+
 ## The grid keyboard
 
 The **GRID** key (between OCTAVE + and MIDI, yellow bar while on) swaps the piano keys for a grid of 4 × 24

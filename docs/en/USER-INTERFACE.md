@@ -351,6 +351,58 @@ it – nothing is recorded. Punching in while the tape already rolls has no coun
 The settings are host parameters (saved with the session / project, automatable, MIDI-mappable) and belong to the
 player: presets do not carry them. Parameters: [PARAMETERS.md](../PARAMETERS.md#p39--metronome-count-in-tap-tempo).
 
+## Key, chord and Scale Lock (p45)
+
+![The vocal page in F sharp minor: F#m7 under the voice dots, F#5 under VOICES, the key with Scale Lock on the header (2x)](../images/ohpe-chords-display.png)
+
+**The voice strip.** Under the display's main area of the Synth, Envelope and LFO pages: sixteen voice dots (lit =
+voices sounding), on the right the small **VOICES** legend over the **last note** (big). The note's room is as wide
+as the longest note name (*C#-1*, *Ab9*), so the legend and the note never overlap in either language; the dots move
+closer on a narrow window instead. Notes are **spelled in the key** (*Gb5* in E flat major, *F#5* in F sharp minor;
+German: *H*, *B*).
+
+**The chord.** Under the voice dots Ohpe names the **chord that sounds** – all four parts together, including the
+notes the one-finger chords and the harmony's following parts add (not the drum kit). Triads, sus2 / sus4, power
+chords, sixths, sevenths (maj7, 7, m7, m7b5, dim7, m(maj7), 7sus4; a seventh without its fifth too), add9 and ninths;
+the lowest note decides between two readings (*Am7* over A, *C6* over C) and makes a **slash chord** when it is not
+the root: *C/E* (1st inversion), *G7/F* (3rd inversion), or a bass outside the chord, *C/D*. Next to it the position
+(*1ST INVERSION*). Violet while it sounds, dim afterwards – the last chord stays until the next one. Chord roots are
+spelled in the key as well (*Bbmaj7* in F major, *Db* in A flat major, *C#* in A major).
+
+**The key on the header.** Left of **TAP** and the tempo: the key and scale (*F# DOR*, German *FIS* is written *F#*,
+*H DUR*) and a padlock for **Scale Lock**. The same moves as the tempo:
+
+| Gesture | What it does |
+|---|---|
+| drag up / down | root by semitones (Shift / Cmd / Ctrl: the scale) |
+| mouse wheel | root ± 1 (Shift: the scale) |
+| click | menu: key, scale (all 14), Scale Lock on / off, *Snap to the nearest note* / *White keys play the key*, MIDI learn of the four parameters |
+| click on the padlock | Scale Lock on / off |
+| right-click on the padlock | MIDI learn / clear / reset of `key.lock` |
+
+This is the global key `key.root` / `key.scale` that the part's **Scale** quantise, the one-finger chords, the
+harmony brain (before it heard anything; *Take Key* writes into it) and the in-key grid already use – nothing new to
+keep in sync.
+
+**Scale Lock** (`key.lock`, German *In Tonart*): every note that reaches a part plays in the key – the on-screen
+keyboard, MIDI from a keyboard or the host, the sequencers, the arpeggiator (it gets locked notes). Two modes
+(`key.lock.mode`):
+
+| Mode | What happens |
+|---|---|
+| **Nearest** (default) | every note snaps to the nearest note of the key (a tie goes down) |
+| **White Keys** | the white keys play the key's degrees upwards: C4 plays the root nearest middle C, D4 the 2nd degree, ... (pentatonic: five white keys per octave); black keys are silent. The grid keyboard is not remapped (it is in key already). |
+
+With Scale Lock on, the **transpose** of the step sequencer and of Orbit's lanes moves in **scale degrees** (+2 = two
+notes of the key up) instead of semitones; a sequencer playing the drum kit keeps semitones. Scale Lock off leaves
+everything exactly as before. The padlock is violet and closed while it is on; two small keys under it show White
+Keys.
+
+**From the host.** The plug-in formats do not pass a key or scale to an instrument, so the key is Ohpe's own:
+`key.root` / `key.scale` are host parameters and can be automated from the host. Should a host key ever be passed in,
+the readout shows **HOST**, root and scale are read-only and Scale Lock stays editable. Everything is MIDI-mappable.
+Parameters: [PARAMETERS.md](../PARAMETERS.md#p45--scale-lock).
+
 ## Tape page
 
 ![Tape page](../images/ohpe-tape.png)
