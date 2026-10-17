@@ -6,6 +6,19 @@ Lies zuerst die [Architektur](ARCHITEKTUR.md) (ausführlich: [ARCHITECTURE.md](.
 dort stehen die Trennung von Kern und Plug-in-Hülle, die Echtzeitregeln und wie neue Engines,
 Sequencer und Effekte dazukommen.
 
+## Entscheidungen und Pull Requests
+
+Ohpe wird von [@thegroovex](https://github.com/thegroovex) betreut, der das letzte Wort darüber
+hat, was in dieses Repository kommt. Ideen, Fehlerberichte und Pull Requests sind sehr willkommen,
+aber jede Änderung an `main` läuft über einen Pull Request, den der Maintainer prüft und merged
+(siehe [`.github/CODEOWNERS`](../../.github/CODEOWNERS)). Bitte vor größeren Arbeiten ein Issue
+eröffnen, damit wir uns zuerst über die Richtung einig werden. Ein Pull Request kann auch dann
+abgelehnt werden, wenn er gut gemacht ist, aber nicht zum Konzept des Instruments passt.
+
+Forks sind willkommen, wie es die AGPL erlaubt. „Ohpe" ist der Name dieses Originalprojekts: Wer
+eine veränderte Version veröffentlicht, gibt ihr bitte einen anderen Namen, damit man beide
+unterscheiden kann.
+
 ## Vor jedem Push: alle Tests
 
 ```sh
