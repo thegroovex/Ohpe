@@ -2,7 +2,7 @@
 <!--
   Ohpe app icon - small master for 16, 24 and 32 px (32 grid). Own artwork (designed by groovex).
   Same mark as ohpe-icon.svg, redrawn for few pixels: the tile fills the square, thicker lines,
-  a wider gap, a bigger PLAY dot, one flat violet halo instead of the soft glow, no shadow.
+  a wider gap, a bigger red dot, one flat violet halo instead of the soft glow, no shadow.
   Rebuild all rasters, .icns and .ico: python3 tools/app-icon/make_icons.py
 -->
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
@@ -22,5 +22,5 @@
     <use href="#ring" stroke="#efe9de" stroke-width="2.4"/>
     <use href="#wave" stroke="#efe9de" stroke-width="2.2" stroke-linejoin="round"/>
   </g>
-  <circle cx="16" cy="5.3" r="1.9" fill="#3fd08e"/>
+  <circle cx="16" cy="5.3" r="1.9" fill="#e5243b"/>
 </svg>

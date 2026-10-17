@@ -3,6 +3,7 @@
 #include "SettingsView.h"
 
 #include "Palette.h"
+#include "Brand.h"
 #include "plugin/Localisation.h"
 #include "BinaryData.h"
 
@@ -792,13 +793,10 @@ void SettingsView::paintAbout (juce::Graphics& g, juce::Rectangle<float> a)
     const float iconSize = u * 5.6f, wx = a.getX() + iconSize + u * 1.6f;
     if (const auto icon = appIcon(); icon.isValid())
         g.drawImage (icon, juce::Rectangle<float> (a.getX(), y + u * 0.45f, iconSize, iconSize), juce::RectanglePlacement::centred);
-    g.setColour (colour::displayText);
-    g.setFont (brandFont (u * 6.0f));
-    g.drawText ("OHPE", juce::Rectangle<float> (wx, y, a.getRight() - wx, u * 6.5f), juce::Justification::centredLeft, true);
-    {
-        const float w = juce::GlyphArrangement::getStringWidth (brandFont (u * 6.0f), "OHPE");
-        g.setColour (colour::signalRed);
-        g.fillEllipse (wx + w + u * 0.8f, y + u * 4.2f, u * 1.0f, u * 1.0f);
+    {   // p47: the wordmark with its dot set like a full stop (bottom on the baseline), centred on the icon
+        const auto wordFont = brandFont (u * 6.0f);
+        const float baseline = brand::baselineCentredOn (wordFont, y + u * 3.25f);
+        brand::drawWordmark (g, wordFont, wx, baseline, colour::displayText, colour::signalRed);
     }
     y += u * 7.0f;
     g.setColour (colour::displayText.withAlpha (0.86f));

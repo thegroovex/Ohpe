@@ -11,6 +11,7 @@
 #include "HarmonyView.h"
 
 #include "Palette.h"
+#include "Brand.h"
 #include "plugin/Localisation.h"
 #include "plugin/ParameterBridge.h"
 #include "plugin/TapeIO.h"
@@ -664,15 +665,23 @@ void OhpeEditor::paint (juce::Graphics& g)
     g.drawImage (background, getLocalBounds().toFloat());
     const float s = (float) getWidth() / (float) designWidth;
 
-    // wordmark + tagline
-    g.setColour (colour::ink);
-    g.setFont (brandFont (34.0f * s)); // p14: centred on the header's line (y 56) like the strips and keys
-    g.drawText ("OHPE", juce::Rectangle<float> (40 * s, 36 * s, 200 * s, 40 * s), juce::Justification::centredLeft);
-    g.setColour (colour::engraving);
-    g.setFont (labelFont (12.0f * s));
-    g.drawText (tr ("designed by groovex"), juce::Rectangle<float> (142 * s, 46 * s, 150 * s, 20 * s), juce::Justification::centredLeft, true);
-    g.setColour (colour::signalRed);
-    g.fillEllipse (128 * s, 52.5f * s, 7 * s, 7 * s);
+    // p47: logo mark + wordmark + tagline on one baseline (the caps centred on the header's line, y 56 - like the
+    // strips and keys); the mark's ring sits on the caps' middle, the red dot after OHPE like a full stop
+    {
+        const auto wordFont = brandFont (34.0f * s); // p14
+        const float baseline = brand::baselineCentredOn (wordFont, 56.0f * s);
+        const float capMid = baseline - wordFont.getHeight() * 0.274f; // cap height 0.549 of the font height
+        const float markSize = 22.0f * s;
+        brand::drawMark (g, juce::Rectangle<float> (40.0f * s, capMid - markSize * 0.5f, markSize, markSize), colour::ink, colour::signalRed);
+        const float right = brand::drawWordmark (g, wordFont, 72.0f * s, baseline, colour::ink, colour::signalRed);
+        const auto tagFont = labelFont (12.0f * s);
+        const float tagX = right + 12.0f * s;
+        g.setColour (colour::engraving);
+        g.setFont (tagFont);
+        g.drawText (tr ("designed by groovex"),
+                    juce::Rectangle<float> (tagX, baseline - tagFont.getAscent(), 288.0f * s - tagX, tagFont.getHeight()),
+                    juce::Justification::centredLeft, true);
+    }
 
     // engraved section legends (small caps, no rules: the recessed panels carry the structure)
     auto legend = [&] (const juce::String& text, const char* area) {
