@@ -63,6 +63,8 @@ public:
     int helpTopic() const noexcept { return topic; }
     /** The line on the About page and the help pages (and nowhere else). */
     static juce::String aboutLine();
+    /** p43: the app icon (128 px image from resources/icon/png). */
+    static juce::Image appIcon();
 
     /** Changes a user setting as the view's chips do (tests). */
     void changeSettings (const std::function<void (settings::UserSettings&)>& fn);

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Ohpe app icon - vector master, macOS layout (1024 grid, tile 824 px with the platform's margin).
+  Own artwork (designed by groovex, AGPL-3.0-or-later like the rest of the repository).
+  A ring of warm-white light with a soft violet glow, a small gap at the top with the green PLAY dot,
+  and two periods of a sine wave inside that touch the ring left and right.
+  Palette (src/ui/Palette.cpp, night skin): housing #2a2826 / #1d1b19, warm white #efe9de (display text #e9e6df, lit),
+  violet #6c4cf5 / #8a74e8, PLAY green #3fd08e.
+  Glows are plain gradients and stacked strokes (no filters), so every renderer draws it alike.
+  Sizes 16-32 px use ohpe-icon-small.svg, Windows / Linux use ohpe-icon-square.svg.
+  Rebuild all rasters, .icns and .ico: python3 tools/app-icon/make_icons.py
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="100" x2="0" y2="924" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#312e2b"/>
+      <stop offset="1" stop-color="#1b1918"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="100" x2="0" y2="924" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4a4641"/>
+      <stop offset="0.5" stop-color="#2a2826" stop-opacity="0"/>
+    </linearGradient>
+    <!-- violet ambient light in the middle of the tile -->
+    <radialGradient id="ambient" cx="512" cy="512" r="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6c4cf5" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#6c4cf5" stop-opacity="0"/>
+    </radialGradient>
+    <!-- the ring's glow: a radial band centred on r = 300 -->
+    <radialGradient id="ringGlow" cx="512" cy="512" r="380" gradientUnits="userSpaceOnUse">
+      <stop offset="0.58" stop-color="#8a74e8" stop-opacity="0"/>
+      <stop offset="0.72" stop-color="#8a74e8" stop-opacity="0.22"/>
+      <stop offset="0.79" stop-color="#8a74e8" stop-opacity="0.55"/>
+      <stop offset="0.86" stop-color="#7a5ff0" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#6c4cf5" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="dotGlow" cx="512" cy="212" r="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3fd08e" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#3fd08e" stop-opacity="0"/>
+    </radialGradient>
+    <!-- y = 512 - 120 sin(2 pi (x - 212) / 300), x = 212..812 (cubic per quarter period) -->
+    <path id="wave" d="M212 512 C237 449.2 262 392 287 392 C312 392 337 449.2 362 512 C387 574.8 412 632 437 632 C462 632 487 574.8 512 512 C537 449.2 562 392 587 392 C612 392 637 449.2 662 512 C687 574.8 712 632 737 632 C762 632 787 574.8 812 512"/>
+    <clipPath id="ringClip"><circle cx="512" cy="512" r="300"/></clipPath>
+    <clipPath id="tileClip"><rect x="100" y="100" width="824" height="824" rx="185"/></clipPath>
+  </defs>
+
+  <!-- soft drop shadow under the tile -->
+  <g fill="#000000">
+    <rect x="96" y="108" width="832" height="832" rx="190" opacity="0.06"/>
+    <rect x="98" y="106" width="828" height="826" rx="188" opacity="0.08"/>
+    <rect x="100" y="104" width="824" height="824" rx="185" opacity="0.12"/>
+  </g>
+
+  <!-- tile: matte night housing -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#tile)"/>
+  <rect x="101.5" y="101.5" width="821" height="821" rx="183.5" fill="none" stroke="url(#rim)" stroke-width="3"/>
+
+  <g clip-path="url(#tileClip)">
+    <rect x="100" y="100" width="824" height="824" fill="url(#ambient)"/>
+    <circle cx="512" cy="512" r="380" fill="url(#ringGlow)"/>
+
+    <!-- sine glow (stacked violet strokes) -->
+    <g fill="none" stroke="#8a74e8" stroke-linecap="butt" stroke-linejoin="round" clip-path="url(#ringClip)">
+      <use href="#wave" stroke-width="84" stroke-opacity="0.05"/>
+      <use href="#wave" stroke-width="60" stroke-opacity="0.07"/>
+      <use href="#wave" stroke-width="42" stroke-opacity="0.12"/>
+    </g>
+
+    <!-- ring with the gap at the top (half-angle 9 degrees) -->
+    <path d="M558.93 215.69 A300 300 0 1 1 465.07 215.69" fill="none" stroke="#efe9de" stroke-width="26" stroke-linecap="round"/>
+    <!-- sine: two periods, touching the ring at its left and right -->
+    <use href="#wave" fill="none" stroke="#efe9de" stroke-width="24" stroke-linecap="round"/>
+
+    <!-- the PLAY dot in the gap -->
+    <circle cx="512" cy="212" r="48" fill="url(#dotGlow)"/>
+    <circle cx="512" cy="212" r="17" fill="#3fd08e"/>
+  </g>
+</svg>

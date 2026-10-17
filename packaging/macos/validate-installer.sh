@@ -125,6 +125,11 @@ done
 [ -x "$MNT/Uninstall Ohpe.command" ] || fail "uninstaller is not executable"
 cmp -s "$MNT/Ohpe-Installer.pkg" "$PKG" || fail "pkg in the DMG differs from the built pkg"
 pass "DMG contents"
+# p43: volume icon = the app icon, custom-icon flag set on the volume root
+cmp -s "$MNT/.VolumeIcon.icns" resources/icon/Ohpe.icns || fail "DMG volume icon missing or not resources/icon/Ohpe.icns"
+FI="$(xattr -px com.apple.FinderInfo "$MNT" 2>/dev/null | tr -d ' \n' || true)"
+[ "${FI:16:2}" = "04" ] || fail "DMG volume root lacks the custom-icon flag (FinderInfo: ${FI:-none})"
+pass "DMG volume icon"
 FIX="$MNT/Ohpe Gatekeeper Fix.command"
 UNINSTALL="$MNT/Uninstall Ohpe.command"
 
@@ -141,6 +146,9 @@ installed_ok() {
     [ -d "$b" ] || fail "$b not installed"
     lipo "$b/Contents/MacOS/Ohpe" -verify_arch arm64 x86_64 || fail "$b is not universal"
     codesign --verify --strict "$b" || fail "$b signature invalid"
+    # p43: own app icon in every bundle
+    cmp -s "$b/Contents/Resources/AppIcon.icns" "$ROOT/resources/icon/Ohpe.icns" || fail "$b lacks the Ohpe app icon"
+    [ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' "$b/Contents/Info.plist")" = "AppIcon.icns" ] || fail "$b: CFBundleIconFile is not AppIcon.icns"
     if xattr -p com.apple.quarantine "$b" >/dev/null 2>&1; then fail "$b still quarantined"; fi
     pass "$b (universal, signed, no quarantine)"
 }
