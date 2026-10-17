@@ -106,6 +106,14 @@ public:
     /** p11: the transport buttons of the tape page (TransportButton) and the arm dots of the tracks. */
     std::function<void (int button)> onTransportClicked;
     std::function<void (int track)> onTrackArmClicked;
+    /** p42: the loop readout left of the tape page's keys (opens / closes the loop keys); the loop edges on the lanes
+        can be dragged (Shift: off the grid). */
+    std::function<void()> onLoopReadoutClicked;
+    void setTapeLoopKeys (bool shown) { tapeLoopKeysShown = shown; repaint(); }
+    juce::Rectangle<float> loopReadoutArea() const;
+    juce::Rectangle<float> tapeLanesArea() const; ///< the lanes without their labels (time axis of the tape)
+    float tapeLoopEdgeX (bool inEdge) const;      ///< x of loop in / out on the lanes
+    int tapeLoopEdgeAt (juce::Point<float> p) const noexcept; ///< 1 = loop in, 2 = loop out, 0 = none
     enum TransportButton { TxToStart = 0, TxStop, TxPlay, TxRecord, TxLoop, numTransportButtons };
     /** p11: shortcuts shown in the tooltips (standalone app only). */
     void setShowShortcuts (bool show) { shortcuts = show; }
@@ -201,6 +209,11 @@ private:
     int dragSlot = -1;              ///< 0.7: FX block being dragged
     bool morphDrag = false;         ///< p16: dragging the morph pad
     int heldPad = -1;               ///< p25: the performance pad held by the mouse
+    int loopDrag = 0;               ///< p42: 1 = dragging loop in, 2 = loop out
+    int64_t loopDragShownEnd = 0;   ///< p42: the time axis stays put during a drag
+    bool tapeLoopKeysShown = false; ///< p42
+    int64_t tapeShownEndFrames() const;
+    void paintLoopReadout (juce::Graphics& g);
     std::vector<float> modHistory;  ///< 0.7: recent values of the selected routing
     BarDrag drag;
 
