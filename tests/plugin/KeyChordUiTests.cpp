@@ -205,3 +205,27 @@ TEST_CASE ("p45 scale lock through the processor: MIDI notes snap, white keys ma
     CHECK (chords::has (f.p.core().soundingNotes (0), 61));
     process (f.p, 2, notes ({ 61 }, false));
 }
+
+TEST_CASE ("p45 key control: never over the 3D badge or the title badges - compact on a crowded header (EN / DE)")
+{
+    Fixture f;
+    for (auto lang : { i18n::Language::English, i18n::Language::German })
+        for (auto mode : { ui::Mode::Synth, ui::Mode::Envelope, ui::Mode::Mixer, ui::Mode::Tape })
+            for (int scale : { (int) scales::Minor, (int) scales::HarmonicMinor })
+            {
+                f.e->setLanguage (lang);
+                f.e->selectPart (0);
+                f.e->selectMode (mode);
+                if (mode == ui::Mode::Synth) f.e->selectEngine (EngineType::Vocal);
+                f.p.setKeyFromUi (6, scale); // F# minor ("F# MOLL" is the widest common text)
+                auto& d = f.e->displayComponent();
+                f.e->advanceAnimation (0.05f);
+                (void) d.createComponentSnapshot (d.getLocalBounds()); // the header places the badges while painting
+                const auto& k = d.headerKey();
+                CHECK (k.getWidth() > 20);
+                CHECK_FALSE (k.getBounds().toFloat().intersects (d.spaceBadgeArea()));
+                CHECK (k.getRight() <= d.headerTap().getX());
+                CHECK_FALSE (k.paintedText().isEmpty());
+            }
+    f.e->setLanguage (i18n::Language::English);
+}

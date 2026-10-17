@@ -239,6 +239,9 @@ private:
     bool chordSounding = false, keyHost = false;
     void updateChord();
     void placeTempo();
+    juce::String headerTitle (bool engineOnly) const; ///< p45: "SYNTH / VOCAL" (engineOnly: "VOCAL" on the Synth page)
+    float headerBadgesWidth() const;                 ///< p45: part badge + 3D badge right of the title
+    juce::String keyLaidOut;                         ///< p45: key text + title the header was laid out for
     int shownCountIn = 0;
 };
 } // namespace ohpe::ui

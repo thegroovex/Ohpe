@@ -26,6 +26,13 @@ public:
     static juce::String shortScaleName (int scale); ///< "DOR", "MAJ", "HMOLL", ... (current language, upper case)
     /** Width the readout needs at header height h for any key (the widest root and scale name; HOST). */
     static float preferredWidth (float h, bool host);
+    /** p45: compact form for a crowded header ("F#m", "Cdor", "Hmoll" -> "Hm"): what is painted while compact. */
+    juce::String compactText() const;
+    juce::String paintedText() const { return compact ? compactText() : shownText(); }
+    /** Width the readout needs at header height h for the text it shows now (full or compact). */
+    float neededWidth (float h, bool compactForm) const;
+    void setCompact (bool c) { if (c != compact) { compact = c; repaint(); } }
+    bool isCompact() const noexcept { return compact; }
     juce::Rectangle<float> lockArea() const;
 
     // menu (public for tests): ids
@@ -46,7 +53,7 @@ private:
     OhpeProcessor& proc;
     keys::KeyScale shown;
     int dragStartRoot = 0, dragStartScale = 0;
-    bool dragging = false, moved = false, onLock = false;
+    bool dragging = false, moved = false, onLock = false, compact = false;
 };
 
 /** p45: draws a padlock (closed = on) into `area`. */

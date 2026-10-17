@@ -60,6 +60,22 @@ juce::String KeyReadout::shownText() const
     return t;
 }
 
+juce::String KeyReadout::compactText() const
+{
+    // root + a short lower-case suffix (major: none, minor: "m"); a host key keeps its violet colour instead of HOST
+    static const char* en[] = { "ch", "", "m", "do", "ph", "ly", "mx", "lo", "hm", "mm", "p", "mp", "bl", "wt" };
+    static const char* de[] = { "ch", "", "m", "do", "ph", "ly", "mx", "lo", "hm", "mm", "p", "mp", "bl", "gt" };
+    const auto k = proc.keyScale();
+    const int sc = juce::jlimit (0, scales::numScales - 1, k.scale);
+    return juce::String (keys::pitchName (k.root, k.root, k.scale, german())).toUpperCase() + (german() ? de[sc] : en[sc]);
+}
+
+float KeyReadout::neededWidth (float h, bool compactForm) const
+{
+    const auto f = monoFont (h * (compactForm ? 0.46f : 0.5f));
+    return juce::GlyphArrangement::getStringWidth (f, compactForm ? compactText() : shownText()) + h * 1.0f; // the lock and some air
+}
+
 float KeyReadout::preferredWidth (float h, bool host)
 {
     const auto f = monoFont (h * 0.5f);
@@ -103,8 +119,8 @@ void KeyReadout::paint (juce::Graphics& g)
     const bool hover = isMouseOverOrDragging();
     const auto lock = lockArea();
     auto textArea = b.withRight (lock.getX() - h * 0.12f);
-    const auto text = shownText();
-    g.setFont (monoFont (h * 0.5f));
+    const auto text = paintedText();
+    g.setFont (monoFont (h * (compact ? 0.46f : 0.5f)));
     const float w = juce::jmin (textArea.getWidth(), juce::GlyphArrangement::getStringWidth (g.getCurrentFont(), text));
     if (hover || dragging) // as the tempo: a soft yellow field behind while it is edited
     {

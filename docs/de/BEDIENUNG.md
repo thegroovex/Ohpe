@@ -386,7 +386,9 @@ der letzte Akkord bleibt bis zum nächsten stehen. Auch Akkord-Grundtöne stehen
 in As-Dur, *C#* in A-Dur).
 
 **Die Tonart in der Kopfzeile.** Links von **TAP** und dem Tempo: Tonart und Skala (*F# DOR*, *H DUR*) und ein
-Vorhängeschloss für **In Tonart**. Dieselben Griffe wie beim Tempo:
+Vorhängeschloss für **In Tonart**. In einer vollen Kopfzeile (die Part-Seiten) steht die Kurzform – *F#m*, *Cdo*,
+*Ahm* (harmonisch Moll) –, ein langer Titel zeigt nur noch den Engine-Namen; das 3D-Abzeichen wird nie verdeckt.
+Dieselben Griffe wie beim Tempo:
 
 | Geste | Wirkung |
 |---|---|

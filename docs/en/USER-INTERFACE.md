@@ -370,7 +370,9 @@ the root: *C/E* (1st inversion), *G7/F* (3rd inversion), or a bass outside the c
 spelled in the key as well (*Bbmaj7* in F major, *Db* in A flat major, *C#* in A major).
 
 **The key on the header.** Left of **TAP** and the tempo: the key and scale (*F# DOR*, German *FIS* is written *F#*,
-*H DUR*) and a padlock for **Scale Lock**. The same moves as the tempo:
+*H DUR*) and a padlock for **Scale Lock**. On a crowded header (the part pages) it shows the short form – *F#m*,
+*Cdo*, *Ahm* (harmonic minor) – and a long title keeps only the engine name; it never covers the 3D badge. The same
+moves as the tempo:
 
 | Gesture | What it does |
 |---|---|
