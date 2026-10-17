@@ -267,6 +267,11 @@ public:
     const Schema& schema() const noexcept { return sch; }
     /** Plays C4 + G4 (velocity 100) for `seconds`, then 0.25 s of tail. */
     Sketch render (const Genome& g, float seconds = 0.7f);
+    /** p37: the same render (C4 + G4 for `seconds`, then 0.25 s of tail) as stereo audio at sampleRate(). */
+    void renderAudio (const Genome& g, std::vector<float>& left, std::vector<float>& right, float seconds = 0.7f);
+    /** The sketch of rendered audio (as render() measures it). */
+    Sketch analyse (const std::vector<float>& left, const std::vector<float>& right) const;
+    double sampleRate() const noexcept;
     /**
         Sets the part gain of `g` so it plays at `targetDb` (active RMS): at most `maxBoostDb` louder than its blended
         gain, any amount quieter, peak kept below -1 dBFS. Returns the sketch of the result.

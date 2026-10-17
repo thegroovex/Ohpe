@@ -761,6 +761,15 @@ Audition::~Audition() = default;
 
 Audition::Sketch Audition::render (const Genome& g, float seconds)
 {
+    std::vector<float> l, r;
+    renderAudio (g, l, r, seconds);
+    return analyse (l, r);
+}
+
+double Audition::sampleRate() const noexcept { return engineCore->sampleRate(); }
+
+void Audition::renderAudio (const Genome& g, std::vector<float>& l, std::vector<float>& r, float seconds)
+{
     auto& core = *engineCore;
     preset::Preset p;
     p.meta.kind = preset::Kind::Part;
@@ -776,7 +785,8 @@ Audition::Sketch Audition::render (const Genome& g, float seconds)
     const int ch = std::clamp ((int) std::lround (core.params().get ("p1.midich")), 1, 16);
     const auto hold = (int64_t) (seconds * sr);
     const auto total = (int64_t) ((seconds + 0.25f) * sr);
-    std::vector<float> l ((size_t) total, 0.0f), r ((size_t) total, 0.0f);
+    l.assign ((size_t) total, 0.0f);
+    r.assign ((size_t) total, 0.0f);
     constexpr int block = 256;
     for (int64_t pos = 0; pos < total; pos += block)
     {
@@ -803,7 +813,11 @@ Audition::Sketch Audition::render (const Genome& g, float seconds)
         core.process (out, nb, ne > 0 ? ev : nullptr, ne, tr);
     }
     core.reset();
+}
 
+Audition::Sketch Audition::analyse (const std::vector<float>& l, const std::vector<float>& r) const
+{
+    const double sr = engineCore->sampleRate();
     Sketch s;
     double peak = 0.0, sx = 0.0, sd = 0.0;
     float prev = 0.0f;

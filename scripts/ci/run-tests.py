@@ -215,6 +215,10 @@ def main():
             with print_lock:
                 status = "PASS" if ok else "FAIL"
                 print(f"{status} {key:<18} {dur:7.1f} s  {label}{note}", flush=True)
+                if ok:  # p37: measurement lines a test prints on purpose (OHPE-STATS / OHPE-R) also show when it passes
+                    for line in out.splitlines():
+                        if line.startswith(("OHPE-STATS", "OHPE-R ")):
+                            print("  " + line)
                 if not ok:
                     if GH:
                         print(f"::group::output of {key} (rc {rc})")
