@@ -29,4 +29,7 @@ juce::String upper (const juce::String& text);
 
 /** All keys with a German translation (used by the localisation test). */
 juce::StringArray allKeys();
+
+/** Keys that appear more than once in the translation table (must stay empty; checked by a test). */
+juce::StringArray duplicateKeys();
 } // namespace ohpe::i18n

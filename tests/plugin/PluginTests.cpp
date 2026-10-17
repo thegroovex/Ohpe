@@ -219,6 +219,13 @@ TEST_CASE ("localisation: every key has a German text, language switch")
     CHECK (i18n::tr ("Audio Settings") == "Audio Settings");
 }
 
+TEST_CASE ("localisation: no key appears twice in the translation table")
+{
+    const auto dups = i18n::duplicateKeys();
+    INFO ("duplicate keys: " << dups.joinIntoString (", ").toStdString());
+    CHECK (dups.isEmpty());
+}
+
 TEST_CASE ("standalone audio settings: latency text")
 {
     CHECK (AudioSettingsPage::latencyText (256, 0, 48000.0).startsWith ("5.3 ms"));

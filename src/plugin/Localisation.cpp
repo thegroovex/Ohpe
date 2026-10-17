@@ -17,6 +17,12 @@ struct Entry
     const char* de; ///< UTF-8
 };
 
+juce::StringArray& duplicates()
+{
+    static juce::StringArray d;
+    return d;
+}
+
 const std::map<juce::String, juce::String>& table()
 {
     // the literals are UTF-8: convert explicitly (juce::String (const char*) would read them as ASCII)
@@ -146,7 +152,6 @@ const std::map<juce::String, juce::String>& table()
         { "Orbit", "Orbit" },
         { "Song", "Song" },
         { "Pattern", "Pattern" },
-        { "Part", "Part" },
         { "Scale", "Skala" },
         { "Chord", "Akkord" },
         // 0.3 (package E): pro view, library, lock editing, tape / drum pages
@@ -559,7 +564,11 @@ const std::map<juce::String, juce::String>& table()
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;
         for (const auto& e : entries)
-            m[juce::String::fromUTF8 (e.en)] = juce::String::fromUTF8 (e.de);
+        {
+            const auto key = juce::String::fromUTF8 (e.en);
+            if (m.count (key) != 0) duplicates().addIfNotAlreadyThere (key);
+            m[key] = juce::String::fromUTF8 (e.de);
+        }
         return m;
     }();
     return t;
@@ -622,5 +631,10 @@ juce::StringArray allKeys()
     juce::StringArray keys;
     for (const auto& [k, v] : table()) keys.add (k);
     return keys;
+}
+juce::StringArray duplicateKeys()
+{
+    (void) table();
+    return duplicates();
 }
 } // namespace ohpe::i18n
