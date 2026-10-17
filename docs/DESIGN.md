@@ -115,7 +115,7 @@ Transport, keyboard row and octave block while recording (2x): REC red and PLAY 
 ## App icon (p43)
 
 A dark matte tile in the night skin's housing colours; on it a ring of warm-white light (#efe9de) with a
-soft ultraviolet glow, a small gap at the top holding the green PLAY dot (#3fd08e), and two periods of a
+soft ultraviolet glow, a small gap at the top holding the red dot (#e5243b, with a soft red glow: the wordmark's dot, REC red), and two periods of a
 sine wave inside that touch the ring left and right - sound, a loop and "playing" in one mark. Own artwork,
 hand-written SVG in `resources/icon/`: `ohpe-icon.svg` (macOS layout with margin and shadow),
 `ohpe-icon-square.svg` (Windows / Linux / docs), `ohpe-icon-small.svg` (24 / 32 px) and `ohpe-icon-16.svg`
@@ -126,6 +126,23 @@ glow). The glow is gradients and stacked strokes only, no filters, so every rend
 `png/ohpe-icon-<size>.png`; all outputs are committed. The build puts the icon into the macOS app, VST3
 and AU bundles, the Windows exe and VST3 (icon resource) and the DMG volume; CI checks each of them.
 The About page shows it small in front of the wordmark; on Linux it is the standalone window's icon.
+
+## Wordmark and logo mark (p47)
+
+**OHPE** in the brand font (Space Grotesk bold) with the red dot after it, set like a full stop: a short gap
+after the E, its bottom on the text's baseline. On the housing the **logo mark** stands in front of the
+wordmark - the icon's mark without its tile (ring with the gap at the top, the red dot in it, two periods of a
+sine inside), drawn as vector paths (`src/ui/Brand.h`, the SVG master's geometry) in the housing's ink: graphite
+on the light skin, warm light grey on the night skin, the dot in the encoder red of each skin. The ring sits on
+the caps' middle; mark, wordmark and "designed by groovex" share one baseline. The About page keeps the app icon
+(tile) in front of the wordmark.
+
+**Header edges (p47):** the header's left block - version legend, logo mark, engine caption ("ENGINE / P1") -
+starts on one edge, x 40 (8 units inside the engine column), measured on the ink, not on the glyph box: the
+legends' side bearing is taken out, the round mark overshoots by a hair as an O does against a stem. Mirrored on
+the right, the SETTINGS key (80 units wide) is flush right: its ring and legend end on x 1160 with the CPU meter
+below (8 units inside the mode column). Every legend of the row stays on one baseline (y 20 – 32), every control
+centred on y 56.
 
 ## Text
 
