@@ -1863,7 +1863,7 @@ void OhpeEditor::showTableImportMenu()
     auto& core = proc.core();
     const auto target = tableTarget (shownEngine);
     const int part = ctx.part;
-    enum { idFile = 1, idCancel = 2, idTape = 100, idInput = 200, idFrames = 300, idSmooth = 400, idLib = 1000 };
+    enum { idFile = 1, idCancel = 2, idTape = 100, idInput = 200, idFrames = 300, idSmooth = 400, idLib = 1000, idPack = 2000 };
     juce::PopupMenu m;
     const bool busy = ut.status().busy;
     m.addItem (idFile, tr ("Audio or wavetable file ..."), ! busy);
@@ -1878,6 +1878,28 @@ void OhpeEditor::showTableImportMenu()
     juce::PopupMenu lib;
     for (int i = 0; i < juce::jmin (200, files.size()); ++i) lib.addItem (idLib + i, files[i].getFileNameWithoutExtension(), ! busy);
     m.addSubMenu (tr ("Library"), lib, ! busy && ! files.isEmpty());
+    // wavetable banks: the tables of the installed content packs (read-only), one sub menu per pack
+    const auto packTables = target == usertable::Target::Wavetable ? ut.packTables() : std::vector<UserTableManager::PackTable> {};
+    {
+        juce::PopupMenu banks;
+        juce::String packShown;
+        juce::PopupMenu one;
+        const auto current = usertable::tableOf (core, part, target);
+        const juce::String currentRef = current != nullptr ? juce::String::fromUTF8 (current->contentRef.c_str()) : juce::String();
+        for (int i = 0; i < juce::jmin (500, (int) packTables.size()); ++i)
+        {
+            const auto& t = packTables[(size_t) i];
+            if (t.pack != packShown && packShown.isNotEmpty())
+            {
+                banks.addSubMenu (packTables[(size_t) i - 1].packName, one, ! busy);
+                one = {};
+            }
+            packShown = t.pack;
+            one.addItem (idPack + i, t.item, ! busy, t.ref() == currentRef);
+        }
+        if (packShown.isNotEmpty()) banks.addSubMenu (packTables.back().packName, one, ! busy);
+        if (target == usertable::Target::Wavetable) m.addSubMenu (tr ("Content packs"), banks, ! busy && ! packTables.empty());
+    }
     m.addSeparator();
     juce::PopupMenu frames;
     for (int n : { 8, 16, 32, 64, 128, 256 }) frames.addItem (idFrames + n / 8, juce::String (n), true, ut.frameCount == n);
@@ -1893,7 +1915,7 @@ void OhpeEditor::showTableImportMenu()
         m.addItem (idCancel, tr ("Cancel import"));
     }
     juce::Component::SafePointer<OhpeEditor> safe (this);
-    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&display), [safe, target, part, files] (int r) {
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&display), [safe, target, part, files, packTables] (int r) {
         if (safe == nullptr || r == 0) return;
         auto& self = *safe;
         auto& u = self.proc.userTables();
@@ -1908,7 +1930,13 @@ void OhpeEditor::showTableImportMenu()
             return;
         }
         if (r == idCancel) u.cancel();
-        else if (r >= idLib) started = u.importFile (files[r - idLib], part, target);
+        else if (r >= idPack && r - idPack < (int) packTables.size())
+        {
+            if (! u.usePackTable (part, packTables[(size_t) (r - idPack)].ref())) self.display.flash (tr (u.lastMessage()));
+            self.refreshSoftKeys();
+            return;
+        }
+        else if (r >= idLib && r < idPack) started = u.importFile (files[r - idLib], part, target);
         else if (r >= idSmooth) u.smoothing = levels[juce::jlimit (0, 3, r - idSmooth)];
         else if (r >= idFrames) u.frameCount = (r - idFrames) * 8;
         else if (r >= idInput) started = u.recordInput ((double) (r - idInput), part, target);

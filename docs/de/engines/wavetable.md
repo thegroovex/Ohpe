@@ -60,6 +60,7 @@ Auf der Synth-Seite der Wavetable-Engine zeigt das Display drei Softkeys: **IMPO
 | Von Tape-Spur › 1 … 8 | analysiert den aufgenommenen Teil einer Tape-Spur (bis 30 s) |
 | Eingang aufnehmen › 2 / 4 / 8 s | nimmt den Audioeingang (mono) auf und analysiert ihn |
 | Bibliothek › … | lädt eine Tabelle aus der eigenen Wavetable-Bibliothek |
+| Inhaltspakete › Paket › … | nutzt eine Tabelle einer installierten Wavetable-Bank (schreibgeschützt, Wavetable-Engine) |
 | Frames › 8 … 256 | wie viele Frames die Analyse schneidet (Standard 64) |
 | Glättung › Aus / Leicht / Mittel / Stark | spektrale Glättung über benachbarte Frames |
 | Import abbrechen | während ein Import läuft |
@@ -88,6 +89,14 @@ eigenen Wavetable-Bibliothek gespeichert – `…/groovex/Ohpe/Wavetables` im An
 Plug-in-Zustand (Abschnitt `"usertables"`) verweisen über den Pfad, dann über den Dateinamen in der
 Bibliothek auf die Tabelle und enthalten bei Tabellen bis 64 Frames eine eingebettete Kopie. Fehlt
 alles, spielt der Part seine eingebaute Tabelle und das Display meldet es – sonst ändert sich nichts.
+
+**Wavetable-Bänke (Inhaltspakete).** Ein installiertes [Inhaltspaket](../INHALTSPAKETE.md) der Art `wavetables` bringt
+seine Tabellen (`wavetables/*.wav`, Single-Cycle-Sets, gelesen wie ein importierter Satz) ins Menü unter
+**Inhaltspakete › <Paket>**. Sie sind schreibgeschützt: nichts wird in die eigene Bibliothek kopiert, und Presets /
+Projekte speichern nur die Referenz `"<Paket>/<Tabelle>"` (`{"name": "Glass Choir", "content": "glass/glass-choir",
+"frames": 64}`), nie die Tabelle. Beim Laden wird die Referenz wieder aufgelöst; fehlt das Paket, meldet das Display
+**„Inhaltspaket fehlt – unter Einstellungen › Aktualisierung installieren“** mit der ID des Pakets, und der Part
+spielt seine eingebaute Tabelle. Die Statuszeile nennt das Paket einer Pakettabelle.
 
 **EIGENE** schaltet zwischen der eigenen und der eingebauten *Tabelle* um (Host-Parameter
 `pN.usertable.wt`, MIDI-lernbar; ein Import schaltet ihn ein). **LEEREN** entfernt die eigene Tabelle

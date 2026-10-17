@@ -8,7 +8,10 @@
 
 * every file in --dir becomes an asset (platform / kind / part from its name), with size and SHA-256;
 * --content-dir: each sub folder with a pack.json ({"id", "version", "kind", "name": {"en", "de"}, "minApp"}) and a
-  files/ folder is zipped to <dir>/Ohpe-content-<id>-<version>.zip and listed under "content";
+  files/ folder is zipped to <dir>/Ohpe-content-<id>-<version>.zip and listed under "content". The zip has the
+  content pack layout (packaging/content/README.md): pack.json with a SHA-256 for every file, the content in the
+  kind's folder (kind "presets": presets/*.ohpepreset, kind "wavetables": wavetables/*.wav, frames of 2048 samples) -
+  built by tools/pack/make_ohpepack.py, so both tools give the same pack;
 * the release text is split at its "## English" / "## Deutsch" headings into the EN / DE notes.
 The download URLs are the release's asset URLs (https://github.com/<repo>/releases/download/<tag>/<name>).
 """
@@ -19,7 +22,6 @@ import json
 import os
 import re
 import sys
-import zipfile
 
 MANIFEST = "ohpe-update.json"
 SUMS = "SHA256SUMS.txt"
@@ -77,25 +79,21 @@ def build_packs(content_dir, out_dir):
     packs = []
     if not content_dir or not os.path.isdir(content_dir):
         return packs
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "pack"))
+    import make_ohpepack
     for sub in sorted(os.listdir(content_dir)):
-        meta_path = os.path.join(content_dir, sub, "pack.json")
-        files = os.path.join(content_dir, sub, "files")
-        if not os.path.isfile(meta_path) or not os.path.isdir(files):
+        folder = os.path.join(content_dir, sub)
+        meta_path = os.path.join(folder, "pack.json")
+        if not os.path.isfile(meta_path) or not os.path.isdir(os.path.join(folder, "files")):
             continue
-        with open(meta_path, encoding="utf-8") as f:
-            meta = json.load(f)
+        meta, data = make_ohpepack.pack_meta(folder, "")
         pid, ver = meta["id"], meta["version"]
         if not SAFE_ID.match(pid):
             sys.exit("unsafe pack id: %s" % pid)
         zip_name = "Ohpe-content-%s-%s.zip" % (pid, ver)
-        zip_path = os.path.join(out_dir, zip_name)
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
-            for root, _, names in os.walk(files):
-                for n in sorted(names):
-                    full = os.path.join(root, n)
-                    z.write(full, os.path.relpath(full, files).replace(os.sep, "/"))
-        packs.append({"id": pid, "version": ver, "kind": meta.get("kind", "presets"),
-                      "name": {"en": meta.get("name", {}).get("en", pid), "de": meta.get("name", {}).get("de", "")},
+        make_ohpepack.write_pack(meta, data, os.path.join(out_dir, zip_name))
+        packs.append({"id": pid, "version": ver, "kind": meta["kind"],
+                      "name": {"en": meta["name"]["en"], "de": meta["name"]["de"]},
                       "minApp": meta.get("minApp", ""), "file": zip_name})
     return packs
 

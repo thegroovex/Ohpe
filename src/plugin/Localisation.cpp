@@ -625,6 +625,7 @@ const std::map<juce::String, juce::String>& table()
         { "A file of the content pack is not in its checksum list", "Eine Datei des Inhaltspakets fehlt in seiner Prüfsummenliste" },
         { "The content pack is not complete", "Das Inhaltspaket ist unvollständig" },
         { "Content pack removed", "Inhaltspaket entfernt" },
+        { "The pack table could not be read", "Die Tabelle des Pakets konnte nicht gelesen werden" },
         { "Install pack", "Paket installieren" },
         { "Manage packs", "Pakete verwalten" },
         { "Installing", "Installiere" },

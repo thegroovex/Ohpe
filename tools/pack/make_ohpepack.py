@@ -9,7 +9,9 @@
 
 A pack folder holds pack.json ({"id", "version", "kind", "name": {"en", "de"}, "description": {"en", "de"},
 "minApp", optional "license": {"type": "free" | "paid", "productId"}}) and the content in files/ (or directly in
-the kind folder next to pack.json). Content files at the root of files/ (old flat layout) move into the kind folder;
+the kind folder next to pack.json). Kinds: "presets" (*.ohpepreset in presets/) and "wavetables" (*.wav single-cycle
+sets in wavetables/: frames of 2048 samples back to back, 1 - 256 frames, or a "clm " chunk / cue points naming the
+frame size - checked when building and checking). Content files at the root of files/ (old flat layout) move into the kind folder;
 notes (*.txt, *.md) stay at the root; anything else is left out with a warning.
 
 The .ohpepack is a zip: pack.json first (format 1, "files": SHA-256 of every other file), then the files, sorted,
@@ -32,9 +34,52 @@ VERSION = re.compile(r"^\d+\.\d+\.\d+(-[0-9A-Za-z.\-]+)?$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 # the fixed folder of each kind inside a pack, and the content files it holds (keep in step with
 # src/core/update/PackFormat.cpp: kindFolder / kindExtensions)
-KINDS = {"presets": ("presets", (".ohpepreset",))}
+KINDS = {"presets": ("presets", (".ohpepreset",)), "wavetables": ("wavetables", (".wav",))}
 # size limits per kind (bytes, unpacked): whole pack, one file, number of files (PackFormat.cpp limitsFor)
-LIMITS = {"presets": (64 << 20, 2 << 20, 5000)}
+LIMITS = {"presets": (64 << 20, 2 << 20, 5000), "wavetables": (512 << 20, 16 << 20, 2000)}
+FRAME = 2048      # samples per wavetable frame (usertable::frameSize)
+MAX_FRAMES = 256  # usertable::maxFrames
+
+
+def wav_frames(data):
+    """Frames of a single-cycle set in a RIFF/WAVE file (bytes), or an error text. Same rule as Ohpe's import:
+    a "clm " chunk ("<!>2048 ...") or evenly spaced cue points give the frame size, otherwise the length must be a
+    multiple of 2048 samples (1 - 256 frames)."""
+    import struct
+    if len(data) < 12 or data[0:4] != b"RIFF" or data[8:12] != b"WAVE":
+        return None, "not a RIFF/WAVE file"
+    pos, fmt, samples, hint = 12, None, None, 0
+    while pos + 8 <= len(data):
+        cid, size = data[pos:pos + 4], struct.unpack("<I", data[pos + 4:pos + 8])[0]
+        body = data[pos + 8:pos + 8 + size]
+        if cid == b"fmt " and len(body) >= 16:
+            fmt = struct.unpack("<HHIIHH", body[:16])
+        elif cid == b"data":
+            samples = len(body)  # what is really there (a cut file claims more)
+        elif cid == b"clm " and body[:3] == b"<!>":
+            digits = body[3:].split(b" ")[0]
+            if digits.isdigit():
+                hint = int(digits)
+        elif cid == b"cue " and len(body) >= 4:
+            n = struct.unpack("<I", body[:4])[0]
+            if n >= 2:
+                hint = hint or -n  # cue points: frames = number of cues (resolved below)
+        pos += 8 + size + (size & 1)
+    if fmt is None or samples is None:
+        return None, "no fmt / data chunk"
+    tag, channels, _, _, block, bits = fmt
+    if tag not in (1, 3, 0xFFFE) or channels < 1 or channels > 2 or block <= 0:
+        return None, "not PCM / float mono or stereo"
+    n = samples // block
+    if hint < 0:
+        return min(-hint, MAX_FRAMES), None
+    if hint > 0:
+        return (min(n // hint, MAX_FRAMES), None) if n >= hint else (None, "shorter than one frame")
+    if n < FRAME or n % FRAME != 0:
+        return None, "%d samples is not a whole number of %d-sample frames" % (n, FRAME)
+    if n // FRAME > MAX_FRAMES:
+        return None, "%d frames (at most %d)" % (n // FRAME, MAX_FRAMES)
+    return n // FRAME, None
 NOTES = (".txt", ".md")
 MAX_NOTE = 256 * 1024
 ZIP_TIME = (2026, 1, 1, 0, 0, 0)
@@ -141,6 +186,11 @@ def collect(folder, meta):
         s = os.path.getsize(full)
         if rel in content and s > per_file:
             fail("%s is too big (%d bytes, at most %d)" % (rel, s, per_file))
+        if rel in content and kind == "wavetables":
+            with open(full, "rb") as f:
+                frames, err = wav_frames(f.read())
+            if err:
+                fail("%s: %s" % (rel, err))
         size += s
     if size > total:
         fail("the pack is too big (%d bytes, at most %d)" % (size, total))
@@ -161,12 +211,8 @@ def pack_meta(folder, min_app):
     return meta, data
 
 
-def build(a):
-    meta, data = pack_meta(a.folder, a.min_app)
-    if a.signature:
-        meta["signature"] = {"alg": "ed25519", "keyId": a.key_id or "", "value": a.signature}
-    os.makedirs(a.out, exist_ok=True)
-    path = os.path.join(a.out, "%s-%s.ohpepack" % (meta["id"], meta["version"]))
+def write_pack(meta, data, path):
+    """Writes the pack zip (pack.json first, then the files sorted, fixed time stamps); returns its bytes."""
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         def add(rel, b):
@@ -179,7 +225,19 @@ def build(a):
             add(rel, data[rel])
     with open(path, "wb") as f:
         f.write(buf.getvalue())
-    print("%s: %d files, %d bytes, sha256 %s" % (path, len(data), len(buf.getvalue()), hashlib.sha256(buf.getvalue()).hexdigest()))
+    return buf.getvalue()
+
+
+def build(a):
+    meta, data = pack_meta(a.folder, a.min_app)
+    if a.signature:
+        meta["signature"] = {"alg": "ed25519", "keyId": a.key_id or "", "value": a.signature}
+    os.makedirs(a.out, exist_ok=True)
+    path = os.path.join(a.out, "%s-%s.ohpepack" % (meta["id"], meta["version"]))
+    write_pack(meta, data, path)
+    with open(path, "rb") as f:
+        packed = f.read()
+    print("%s: %d files, %d bytes, sha256 %s" % (path, len(data), len(packed), hashlib.sha256(packed).hexdigest()))
 
 
 def check(a):
@@ -210,6 +268,10 @@ def check(a):
             continue
         if n not in sums:
             fail("%s is not in the checksum list" % n)
+        if is_content and kind == "wavetables":
+            frames, err = wav_frames(z.read(n))
+            if err:
+                fail("%s: %s" % (n, err))
         digest = hashlib.sha256(z.read(n)).hexdigest()
         if not SHA256.match(str(sums[n]).lower()) or digest != str(sums[n]).lower():
             fail("%s: checksum differs" % n)

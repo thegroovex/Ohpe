@@ -259,6 +259,7 @@ endif()
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/ContentLoaderTests.cpp)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/PackUiTests.cpp)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/WavetableBankTests.cpp)
 endif()
 
 # ---------------------------------------------------------------- p31: the SUB layer per part (Synth page, pro view group)

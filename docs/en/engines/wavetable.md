@@ -56,6 +56,7 @@ On the Synth page of the Wavetable engine the display shows three soft keys: **I
 | From tape track › 1 … 8 | analyses the recorded part of a tape track (up to 30 s) |
 | Record input › 2 / 4 / 8 s | records the audio input (mono), then analyses it |
 | Library › … | loads a table from the user wavetable library |
+| Content packs › pack › … | uses a table of an installed wavetable bank (read-only, Wavetable engine) |
 | Frames › 8 … 256 | how many frames the analysis cuts (default 64) |
 | Smoothing › Off / Light / Medium / Strong | spectral smoothing across neighbouring frames |
 | Cancel import | while an import runs |
@@ -82,6 +83,14 @@ wavetable library – `…/groovex/Ohpe/Wavetables` in the user application data
 plug-in state (section `"usertables"`) refer to the table by its path, then by its file name in the
 library, and carry an embedded copy for tables up to 64 frames. When none of these is found the
 part plays its built-in table and the display says so – nothing else changes.
+
+**Wavetable banks (content packs).** An installed [content pack](../CONTENT-PACKS.md) of kind `wavetables` adds its
+tables (`wavetables/*.wav`, single-cycle sets read like an imported set) to the menu under **Content packs › <pack>**.
+They are read-only: nothing is copied into the user library, and presets / projects store only the reference
+`"<pack>/<table>"` (`{"name": "Glass Choir", "content": "glass/glass-choir", "frames": 64}`), never the table. Loading
+resolves the reference again; when the pack is not installed the display says **"Content pack missing – install it in
+Settings › Updates"** with the pack's id and the part plays its built-in table. The status line names the pack of a
+pack table.
 
 **USER** switches between the user table and the built-in *Table* (host parameter
 `pN.usertable.wt`, MIDI-learnable; an import switches it on). **CLEAR** removes the part's user

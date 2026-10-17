@@ -103,6 +103,22 @@ public:
     /** Loads the pack table a reference "<pack>/<table>" points at (a single-cycle set, frames of 2048 samples,
         read like an imported set). nullptr + `state` PackMissing / ItemMissing when it is not there. */
     usertable::UserTablePtr loadPackTable (const update::ContentRef& ref, update::RefState& state) const;
+    /** Wavetable banks: the tables of the installed content packs (Content/<pack>/wavetables/, *.wav single-cycle
+        sets, frames of 2048 samples) - a read-only source next to the user library, sorted by pack and table. */
+    struct PackTable
+    {
+        juce::String pack;     ///< pack id
+        juce::String packName; ///< in the UI language
+        juce::String item;     ///< path inside wavetables/ without extension
+        juce::String ref() const { return pack + "/" + item; }
+        juce::String name() const { return item.fromLastOccurrenceOf ("/", false, false); }
+    };
+    std::vector<PackTable> packTables() const;
+    /** Uses a pack table in part `part` (wavetable target only: pack tables carry no formants). The table is read like
+        an imported set, published at once and stored by its reference "<pack>/<table>" (never copied into presets).
+        False (with a message) when the pack or table is not there. */
+    bool usePackTable (int part, const juce::String& ref);
+
     /** Packs the last restore / part preset referred to that are not installed ("content pack missing"), each once. */
     const juce::StringArray& missingPacks() const noexcept { return missing; }
 
