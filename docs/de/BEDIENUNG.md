@@ -278,7 +278,7 @@ und Lautstärke und Grundnote des Kits (Seite 3). **Laden** legt eine Audiodatei
 ![Mod-Ansicht](../images/ohpe-mod-view-de.png)
 
 Im **LFO**-Modus schalten die Reiter auf dem Display zwischen **LFO** (LFO 1, wie bisher),
-**Mod**, der [Modulationsmatrix](MODULATION.md) des Edit-Parts, und **Morph** (dem [Morph-Pad](#morph-ansicht-p16)). Die Mod-Ansicht listet alle
+**Mod**, der [Modulationsmatrix](MODULATION.md) des Edit-Parts, **Morph** (dem [Morph-Pad](#morph-ansicht-p16)) und **Bewegung** (dem [Bewegungs-Recorder](#bewegungs-ansicht-p22)). Die Mod-Ansicht listet alle
 **16 Verbindungen** in zwei Spalten: Quelle → Ziel, ein Balken für die Menge (nach rechts = positiv,
 nach links = negativ) und der aktuelle Wert der Verbindung. Ziele auf einer Engine oder einem Effekt
 zeigen den echten Parameternamen („Cutoff“, „FX2 Hyper-Verstimmung“) – man sieht, was sich bewegt,
@@ -379,6 +379,24 @@ viele Klänge parallel spielen).
 | Regler, Seite *Steuerung* | X- / Y-Steuerung (Aus, Druck, Slide, Modulationsrad), MPE, Ausdrucks-Glättung |
 
 Wer eine Ecke belegt, schaltet den Morph ein. Eine leere Ecke steht für den eigenen Klang des Parts.
+
+## Bewegungs-Ansicht (p22)
+
+![Die Bewegungs-Ansicht](../images/ohpe-motion-view-de.png)
+
+Der vierte Reiter des **LFO**-Modus, **Bewegung**, zeigt den [Bewegungs-Recorder](BEWEGUNG.md) des Edit-Parts: vier
+Spur-Zeilen mit den aufgenommenen Reglerbewegungen in den Farben der Regler über einem Sechzehntel-Raster der
+Schleife und den Abspielkopf – grün beim Abspielen, rot bei der Aufnahme. Eine gerade berührte Spur hat einen
+atmenden roten Rand; die Leiste darunter sagt, was der Recorder gerade tut.
+
+| Aktion | Ergebnis |
+|---|---|
+| **Rec** (Softkey) | aufnehmen: Bei laufendem Transport bekommen die Regler des Parts, die du berührst, Spuren (bis zu vier) |
+| **Start** (Softkey) | die Spuren als Schleife mit dem Transport abspielen |
+| **Leeren** (Softkey) | die Spuren des Parts leeren |
+| Regler, Seite *Bewegung* | Start, Rec, Länge (1 – 64 Sechzehntel, polymetrisch), Tiefe |
+
+Die Spuren sind auch die Matrix-Quellen **Bewegung 1 … 4**.
 
 ## Tasten
 
