@@ -175,6 +175,7 @@ private:
     void loadUiState();
     void setParamPlain (const juce::String& id, float plain);
     void onSoftKey (int id);
+    void showBounceMenu();                      ///< p23: the BOUNCE soft key of the Grain / Sampler page (source, loop)
     void showTableImportMenu();                 ///< p20: the IMPORT soft key (file, tape track, input, library, options)
     void importTable (const juce::File& file);  ///< p20: audio / wavetable file into the shown engine's user material
     void exportBounce();
@@ -241,6 +242,8 @@ private:
     int lastKeyboardChannel = 1, lastFxType = -1;
     int userTableMessagesSeen = 0; ///< p20
     bool userTableBusy = false;
+    int bounceMessagesSeen = 0; ///< p23
+    bool bounceRecording = false;
     int modPage = 0, rackPage = 0, lastModSignature = -1; ///< 0.7
     int morphPage = 0; ///< p16
     int motionPage = 0; ///< p22

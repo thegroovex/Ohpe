@@ -140,3 +140,8 @@ für die ganze Tastatur, weitere Multisample-Zonen, die Grain-Quelle oder ein Sa
 (es ersetzt die Werks-Aufnahme des Pads). Ohpe speichert die **Pfade** der geladenen Dateien mit dem
 Projekt, nicht das Audio; beim erneuten Öffnen werden die Dateien neu geladen. Verschobene oder
 gelöschte Dateien werden übersprungen, und die Engine oder das Pad nutzt ihren eingebauten Klang bzw. die Werks-Aufnahme.
+
+**Bounce ins Instrument** (p23): Die BOUNCE-Taste bringt eine Tape-Spur, den Tape-Mix oder ein paar Takte vom
+Live-Eingang direkt in die Grain- oder Sampler-Engine – standardmäßig als nahtlose Endlosschleife (die Körner kreisen
+über die Naht, eine gehaltene Sampler-Note hält sie). Bounces sind WAV-Dateien in der Bounce-Bibliothek und werden wie
+jedes andere Sample wieder geladen. Siehe [Bounce ins Instrument](BOUNCE-INS-INSTRUMENT.md).

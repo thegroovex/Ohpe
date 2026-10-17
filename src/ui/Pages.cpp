@@ -193,7 +193,9 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             return { t + "arm", t + "src", t + "level", t + "out",
                      "tape.overdub", "tape.speed", "tape.reverse", Core::Ids::tapeTxLink,
                      "tape.loop", "tape.loopin", "tape.loopout", "",
-                     "tape.sat", "tape.wow", "tape.flutter", "tape.hiss" };
+                     "tape.sat", "tape.wow", "tape.flutter", "tape.hiss",
+                     // p23: bounce to engine (the BOUNCE soft key uses these)
+                     Core::Ids::bounceSrc, Core::Ids::bounceTo, Core::Ids::bounceLoop, Core::Ids::bounceLen };
         }
         case Mode::Drum:
         {
@@ -233,7 +235,7 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
                 case SeqView::numViews: break;
             }
             break;
-        case Mode::Tape: t = { "Track", "Transport", "Loop", "Tape Character" }; break;
+        case Mode::Tape: t = { "Track", "Transport", "Loop", "Tape Character", "Bounce" }; break;
         case Mode::Drum: t = { "Pad", "Pad Mix", "Kit" }; break;
         case Mode::numModes: break;
     }
@@ -291,6 +293,7 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
                                                Core::Ids::tapeTxLink } });
             groups.push_back ({ "Loop", 0, { "tape.loop", "tape.loopin", "tape.loopout" } });
             groups.push_back ({ "Tape Character", 0, { "tape.sat", "tape.wow", "tape.flutter", "tape.hiss" } });
+            groups.push_back ({ "Bounce", 0, { Core::Ids::bounceSrc, Core::Ids::bounceTo, Core::Ids::bounceLoop, Core::Ids::bounceLen } }); // p23
             for (int t = 0; t < TapeMachine::numTracks; ++t)
             {
                 const auto tr = tapeTr (t);

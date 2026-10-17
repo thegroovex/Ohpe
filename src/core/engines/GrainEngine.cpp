@@ -73,6 +73,19 @@ void Voice::spawn (const IAudioRegion& src, float pitch) noexcept
     // quiet tail of a one-shot into its attack in the middle of the window: a click. The centre still wraps (the
     // scan and spray cycle through the sample), then the whole span of the grain is moved inside it.
     const double span = ratio * (double) g->length;
+    if (int64_t ls = 0, le = 0; src.seamlessLoop (ls, le)) // p23: an endless loop - grains wrap across its seam
+    {
+        const auto len = (double) (le - ls);
+        centre = std::fmod (centre, len);
+        if (centre < 0.0) centre += len;
+        double startPos = (double) ls + (reverse ? std::fmod (centre + std::min (span, len - 1.0), len) : centre);
+        g->pos = startPos;
+        g->inc = reverse ? -ratio : ratio;
+        g->age = 0;
+        dsp::panGains (p.spread * rng.nextBipolar(), g->gainL, g->gainR);
+        g->active = true;
+        return;
+    }
     centre = std::fmod (centre, frames);
     if (centre < 0.0) centre += frames;
     const double hi = std::max (0.0, frames - 3.0 - span);
@@ -133,6 +146,9 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         const float* ch1 = source != nullptr ? source->channel (1) : nullptr;
         const int64_t frames = source != nullptr ? source->numFrames() : 0;
         const auto framesD = (double) frames;
+        int64_t loopLo = 0, loopHi = 0; // p23: endless loop (grains wrap inside [loopLo, loopHi))
+        const bool wrap = source != nullptr && source->seamlessLoop (loopLo, loopHi);
+        const auto wrapLo = (double) loopLo, wrapHi = (double) loopHi, wrapLen = (double) (loopHi - loopLo);
 
         for (int i = 0; i < n; ++i)
         {
@@ -152,7 +168,14 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
                 const float s1 = ch1 == ch0 ? s0 : readHermite (ch1, frames, g.pos);
                 a += s0 * w * g.gainL;
                 b += s1 * w * g.gainR;
-                g.pos = std::clamp (g.pos + g.inc, 0.0, framesD - 2.0); // the span fits (spawn); pitch modulation cannot wrap either
+                if (wrap)
+                {
+                    g.pos += g.inc;
+                    if (g.pos >= wrapHi) g.pos -= wrapLen;
+                    else if (g.pos < wrapLo) g.pos += wrapLen;
+                }
+                else
+                    g.pos = std::clamp (g.pos + g.inc, 0.0, framesD - 2.0); // the span fits (spawn); pitch modulation cannot wrap either
                 if (++g.age >= g.length) g.active = false;
             }
             {

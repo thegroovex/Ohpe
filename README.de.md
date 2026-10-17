@@ -44,6 +44,7 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 | **Morph-Raum** | ein XY-Pad je Part zwischen vier vollständigen Klängen – auch über verschiedene Engines: Parameter morphen, wo die Klänge gleich aufgebaut sind, sonst spielen die Klänge parallel und werden gleich laut überblendet; spielbar mit Maus, Automation, MIDI, Modulationsmatrix, Modulationsrad oder MPE-Druck / -Slide; 4 Morph-Presets – siehe [Morph-Raum](docs/de/MORPH-RAUM.md) |
 | **Bewegungs-Recorder** | an den Reglern eines Parts drehen, während die Musik läuft, und bis zu vier Bewegungen je Part laufen als Schleifen-Spuren mit eigener Länge (1 – 64 Sechzehntel, polymetrisch zum Pattern); Überspielen durch erneutes Anfassen, Tiefe regelbar, auch Modulationsquellen – siehe [Bewegungs-Recorder](docs/de/BEWEGUNG.md) |
 | **Preset-Zucht** | zwei Klänge kreuzen (auch über Engines hinweg – ein Hybrid behält die andere Engine als Layer) mit wählbarer Mutation, sechs Kinder mit Wellenform- / Helligkeits-Bildchen in der Lautstärke ihrer Eltern hören, die besten behalten und weitere Generationen mit Rückgängig züchten; Kinder landen als Favoriten in der Bibliothek – siehe [Preset-Zucht](docs/de/ZUCHT.md) |
+| **Bounce ins Instrument** | eine BOUNCE-Taste bringt eine Tape-Spur, den Tape-Mix, den Schleifenbereich oder ein paar Takte vom Live-Eingang in die Grain- oder Sampler-Engine eines Parts – als nahtlose Endlosschleife (Körner kreisen über die Naht, gehaltene Sampler-Noten halten sie) oder als One-Shot; Bounces werden als WAV gespeichert und kommen mit der Session zurück – siehe [Bounce ins Instrument](docs/de/BOUNCE-INS-INSTRUMENT.md) |
 | **Modulationsmatrix** | 16 Verbindungen pro Part aus 20 Quellen (drei LFOs, drei Hüllkurven, Anschlag, MPE, Makros, eine Sequencer-Spur …) auf Tonhöhe, Pegel, Panorama, 24 Engine-Parameter, die LFOs und jeden Rack-Slot; Ringe an den Drehreglern zeigen, was sich bewegt – siehe [Modulation](docs/de/MODULATION.md) |
 | **Sync** | Host-Transport im Plug-in; MIDI-Clock ein / aus und Netzwerk-Tempo-Sync (Link) in der Standalone-App |
 | **Multi-Out** | jeder Kanal geht auf den Hauptausgang oder auf einen eigenen Stereoausgang (8 Zusatzausgänge) – im Plug-in und in der Standalone-App |
@@ -144,6 +145,7 @@ Alle Tests laufen mit `scripts/test-all.sh` – siehe [Mitwirken](docs/de/MITWIR
 * [Resonanzkörper](docs/de/RESONANZKOERPER.md) – Saiten, Platten und Rohre, die der Klang anregt, Resonanzsaiten
 * [Bewegungs-Recorder](docs/de/BEWEGUNG.md) – Reglerbewegungen je Part als polymetrische Schleifen-Spuren
 * [Preset-Zucht](docs/de/ZUCHT.md) – zwei Klänge kreuzen, die besten Kinder behalten, Generationen züchten
+* [Bounce ins Instrument](docs/de/BOUNCE-INS-INSTRUMENT.md) – Tape oder Live-Eingang in Grain / Sampler, Endlosschleifen
 * [Modulationsmatrix](docs/de/MODULATION.md) – Verbindungen, Quellen, Ziele, LFO 2 / 3, Hüllkurve 3, Makros
 * [Parameter](docs/PARAMETERS.md) – alle Host-Parameter-IDs
 * [Architektur](docs/de/ARCHITEKTUR.md) – Kurzfassung; ausführlich auf Englisch in [ARCHITECTURE.md](docs/ARCHITECTURE.md)

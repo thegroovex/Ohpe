@@ -794,9 +794,24 @@ vibrato depth, grain spray / scan; **Wide** – unison width, cluster / grain sp
 the layer's width. The modulation matrix gains the targets **Bright / Hard / Alive / Wide** (81 … 84, after the resonator body targets 75 … 80; keys
 `charbright`, `charhard`, `charalive`, `charwide`); the target choice list grows at its end.
 
+## Bounce to engine (p23)
+
+Appended after the character macros (`p4.char.wide`), 5 IDs, group "bounce" (`bounce.go`: "remote"), not part of
+presets. Guides: [English](en/BOUNCE.md) · [Deutsch](de/BOUNCE-INS-INSTRUMENT.md). A bounce adds no sound parameters:
+it loads a sample into the part's Grain or Sampler engine (stored as a WAV in the bounce library, the path in the
+`"samples"` state section). No modulation-matrix changes.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `bounce.src` | Bounce Source | Bounce-Quelle | Edit Track, Tape 1 … Tape 8, Tape Mix, Input | Edit Track |
+| `bounce.to` | Bounce Target | Bounce-Ziel | Grain, Sampler | Grain |
+| `bounce.loop` | Endless Loop | Endlosschleife | on / off | on |
+| `bounce.len` | Input Length | Eingangslänge | 1 Bar, 2 Bars, 4 Bars, 8 Bars | 4 Bars |
+| `bounce.go` | Bounce | Bounce | trigger | off |
+
 ## Motion recorder (p22)
 
-Appended after the character macros (`p4.char.wide`), part by part (`p1.motion.*` … `p4.motion.*`, 20 IDs).
+Appended after the bounce block (`bounce.go`), part by part (`p1.motion.*` … `p4.motion.*`, 20 IDs).
 Guides: [English](en/MOTION.md) · [Deutsch](de/BEWEGUNG.md). The recorded lanes (four per part: target parameter
 and 8 points per sixteenth, up to 64 sixteenths) are stored in projects and the plug-in state (section `"motion"`);
 part presets neither carry nor reset the motion block (a new sound keeps the part's lanes).
