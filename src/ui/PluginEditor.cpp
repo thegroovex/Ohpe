@@ -186,7 +186,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     : AudioProcessorEditor (p), proc (p), display (p),
       pitchWheel (p, Core::Ids::perfBend, "Pitch", true), modWheel (p, Core::Ids::perfMod, "Mod", false),
       glideSwitch (p), glideKnob (p, "Glide"), lifeBar (p),
-      keyboard (p.keyboardState), grid (p), proView (p), library (p), breedView (p)
+      keyboard (p.keyboardState), grid (p), proView (p), library (p), breedView (p), updateView (*updater)
 {
     setLookAndFeel (&lnf);
     setWantsKeyboardFocus (false);
@@ -369,6 +369,19 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     };
     breedView.onClosed = [this] { randomKey.setActive (false); updateOverlayVisibility(); rebindEncoders(); };
     addChildComponent (breedView);
+    // p27: the update view, opened from the version legend / wordmark
+    {
+        const bool standalone = proc.wrapperType == juce::AudioProcessor::wrapperType_Standalone;
+        updater->setPart (standalone ? "app" : "plugin");
+        updateView.setStandalone (standalone);
+        updateView.onClosed = [this] { updateOverlayVisibility(); rebindEncoders(); };
+        addChildComponent (updateView);
+        versionBadge.setName ("versionBadge");
+        versionBadge.onClick = [this] { showUpdates (! updateView.isVisible()); };
+        addAndMakeVisible (versionBadge);
+        contentGenerationSeen = updater->contentGeneration();
+        refreshVersionBadge();
+    }
     tooltipWindow = std::make_unique<juce::TooltipWindow> (this, 700); // p11: tooltips on keys and the display
 
     loadUiState();
@@ -422,6 +435,8 @@ juce::Rectangle<float> OhpeEditor::designArea (const char* name)
         { "randomKey", 936, 20, 64, 56 },       { "saveKey", 1008, 20, 64, 56 },
         { "langLegend", 1080, 20, 80, 12 },
         { "langEn", 1080, 44, 36, 24 },         { "langDe", 1124, 44, 36, 24 },
+        // p27: the version legend on the header's legend line above the wordmark (the click area covers the wordmark)
+        { "versionBadge", 40, 20, 248, 56 },
         { "engineLegend", 40, 88, 200, 12 },    { "modeLegend", 968, 88, 192, 12 },
         { "overlay", 24, 104, 1152, 512 },
         { "engineColumn", 32, 112, 208, 336 },  { "modeColumn", 960, 112, 208, 336 },
@@ -511,6 +526,8 @@ void OhpeEditor::resized()
     place (proView, "overlay");
     place (library, "overlay");
     place (breedView, "overlay"); // p18
+    place (updateView, "overlay"); // p27
+    place (versionBadge, "versionBadge");
     for (auto& k : engineKeys) k->setUiScale (s);
     for (auto& k : modeKeys) k->setUiScale (s);
     for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey, &gridKey, &libraryKey, &proKey, &randomKey, &saveKey })
@@ -839,6 +856,7 @@ void OhpeEditor::showLibrary (bool show)
     if (show)
     {
         if (breedView.isVisible()) showBreeding (false); // p18
+        if (updateView.isVisible()) showUpdates (false); // p27
         proView.setVisible (false);
         proKey.setActive (false);
         library.open();
@@ -849,6 +867,28 @@ void OhpeEditor::showLibrary (bool show)
     updateOverlayVisibility();
 }
 
+void OhpeEditor::refreshVersionBadge()
+{
+    const auto us = updater->snapshot();
+    versionBadge.setTexts ("V" + juce::String (OHPE_VERSION),
+                           us.hasRelease ? i18n::upper (tr ("Update")) + " " + juce::String::fromUTF8 (us.release.version.toString().c_str()) : juce::String());
+}
+
+void OhpeEditor::showUpdates (bool show)
+{
+    if (show == updateView.isVisible()) return;
+    if (show)
+    {
+        if (library.isVisible()) showLibrary (false);
+        if (breedView.isVisible()) showBreeding (false);
+        if (proView.isVisible()) showProView (false);
+        updateView.open();
+    }
+    else
+        updateView.close();
+    updateOverlayVisibility();
+}
+
 void OhpeEditor::showBreeding (bool show, int libraryEntry)
 {
     if (show == breedView.isVisible()) return;
@@ -856,6 +896,7 @@ void OhpeEditor::showBreeding (bool show, int libraryEntry)
     {
         if (library.isVisible()) showLibrary (false);
         if (proView.isVisible()) showProView (false);
+        if (updateView.isVisible()) showUpdates (false); // p27
         breedView.open (libraryEntry);
     }
     else
@@ -868,6 +909,7 @@ void OhpeEditor::showProView (bool show)
 {
     if (show && breedView.isVisible()) showBreeding (false);
     if (show && library.isVisible()) showLibrary (false);
+    if (show && updateView.isVisible()) showUpdates (false); // p27
     proView.setVisible (show);
     proKey.setActive (show);
     if (show)
@@ -1225,6 +1267,7 @@ void OhpeEditor::rebindEncoders()
     refreshProView();
     partSelector.setPart (ctx.part);
     presetStrip.setName (proc.presets().currentName());
+    refreshVersionBadge(); // p27
     repaint (scaled (30, 60, 220, 40)); // engine legend shows the part
 }
 
@@ -1253,6 +1296,7 @@ void OhpeEditor::advanceAnimation (float seconds)
     if (proView.isVisible()) proView.tick (seconds); // p21: the pro view's pictures (headless renders too)
     // headless renders call this instead of the timer: keep the preset name current after a load
     presetStrip.setName (proc.presets().currentName());
+    refreshVersionBadge(); // p27
 }
 
 void OhpeEditor::refreshSoftKeys()
@@ -1812,6 +1856,7 @@ bool OhpeEditor::keyPressed (const juce::KeyPress& key)
     {
         if (library.isVisible()) { library.close (false); return true; }
         if (breedView.isVisible()) { breedView.close (false); return true; } // p18
+        if (updateView.isVisible()) { showUpdates (false); return true; } // p27
         if (proView.isVisible()) { showProView (false); return true; }
         if (lockStepIndex >= 0) { selectLockStep (-1); return true; }
     }
@@ -1827,6 +1872,15 @@ void OhpeEditor::timerCallback()
         for (int p = 0; p < Core::numParts; ++p) st[(size_t) p] = (int) ui::space3d::partState (core, p);
         spatialTime += 1.0f / 30.0f;
         partSelector.setSpatial (st, spatialTime);
+    }
+
+    // p27: the daily update check (opt-in; never while the transport or the tape runs), the version legend, content packs
+    updater->maybeAutoCheck (core.transportPlaying() || proc.tapeRolling());
+    refreshVersionBadge();
+    if (const int gen = updater->contentGeneration(); gen != contentGenerationSeen)
+    {
+        contentGenerationSeen = gen;
+        proc.presets().rescan();
     }
 
     // remote controls / host: edit part, library key
@@ -2106,3 +2160,25 @@ void OhpeEditor::loadUiState()
     }
 }
 } // namespace ohpe
+
+// ---------------------------------------------------------------- p27: the version legend
+namespace ohpe::ui
+{
+juce::String VersionBadge::getTooltip() { return i18n::tr ("Version and updates"); }
+
+void VersionBadge::paint (juce::Graphics& g)
+{
+    const float s = (float) getHeight() / 56.0f; // design units
+    const auto legendArea = juce::Rectangle<float> (0, 0, (float) getWidth(), 12.0f * s);
+    g.setColour (colour::engraving);
+    drawBaselineLegend (g, versionText, legendArea, 11.0f * s, juce::Justification::centredLeft);
+    if (updateText.isNotEmpty())
+    {
+        const float x = juce::GlyphArrangement::getStringWidth (labelFont (11.0f * s), versionText) + 10.0f * s;
+        g.setColour (colour::sunYellow);
+        g.fillRoundedRectangle (x, 3.0f * s, 12.0f * s, 6.0f * s, 3.0f * s); // a small yellow light bar: something to act on
+        g.setColour (colour::engraving);
+        drawBaselineLegend (g, updateText, legendArea.withTrimmedLeft (x + 18.0f * s), 11.0f * s, juce::Justification::centredLeft);
+    }
+}
+} // namespace ohpe::ui

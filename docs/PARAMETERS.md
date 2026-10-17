@@ -868,3 +868,10 @@ nor reset `harmony.pN.follow` (its role in the song, not its sound).
 
 The modulation matrix gains the sources **Chord Root**, **Chord Change** and **Tension** (29 – 31), the same value in
 every part. The source choice list grows at its end. No new targets.
+
+## p27 – In-app updater
+
+No new parameters / keine neuen Parameter: the updater ([English](en/UPDATES.md) · [Deutsch](de/AKTUALISIERUNG.md)) is
+not a sound or performance control. Its settings (automatic check, channel, last check, skipped version) are stored per
+user in `Settings/update.json`, not in projects or presets / Seine Einstellungen liegen pro Benutzer in
+`Settings/update.json`, nicht in Projekten oder Presets.
