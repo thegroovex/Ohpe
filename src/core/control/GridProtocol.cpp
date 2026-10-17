@@ -110,9 +110,10 @@ std::string cellLine (const std::array<std::string, numCells>& cells)
     std::string line;
     for (int seg = 0; seg < 4; ++seg)
     {
-        line += fitCell (fold (cells[(size_t) seg * 2]), cellWidth, true);
+        // at most cellWidth - 1 characters in an 8-character cell: neighbouring cells never touch
+        line += fitCell (fitCell (fold (cells[(size_t) seg * 2]), cellWidth - 1, false), cellWidth, true);
         line += ' ';
-        line += fitCell (fold (cells[(size_t) seg * 2 + 1]), cellWidth, true);
+        line += fitCell (fitCell (fold (cells[(size_t) seg * 2 + 1]), cellWidth - 1, false), cellWidth, true);
     }
     return fitLine (line);
 }
@@ -146,6 +147,19 @@ std::string shortName (const std::string& utf8, int width)
     }
     if (! w.empty()) words.push_back (w);
     if (words.empty()) return s.substr (0, (size_t) width);
+    // a leading "Ch 1" / "Kanal 1" / "Track 3" / "Pad 12" ... (the page already says which one)
+    auto isNumber = [] (const std::string& x) { return ! x.empty() && std::all_of (x.begin(), x.end(), [] (char c) { return c >= '0' && c <= '9'; }); };
+    static const char* prefixes[] = { "Ch", "Channel", "Kanal", "Track", "Spur", "Pad", "Part", "Lane", "Slot" };
+    for (const char* pre : prefixes)
+    {
+        const std::string p (pre);
+        if (words.size() >= 3 && words[0] == p && isNumber (words[1])) { words.erase (words.begin(), words.begin() + 2); break; }
+        if (words.size() >= 2 && words[0].size() > p.size() && words[0].compare (0, p.size(), p) == 0 && isNumber (words[0].substr (p.size())))
+        {
+            words.erase (words.begin());
+            break;
+        }
+    }
     auto total = [&words] {
         size_t n = 0;
         for (const auto& x : words) n += x.size();

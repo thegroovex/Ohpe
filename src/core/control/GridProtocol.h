@@ -68,13 +68,14 @@ std::string fold (const std::string& utf8);
 /** The line exactly lineLength characters long (folded, cut or padded with spaces). */
 std::string fitLine (const std::string& utf8);
 /** One display line of 8 cells, two over each of the four display segments: "cell0... cell1..." (8 + 1 + 8 chars
-    per segment, cells cut to 8 characters, centred). */
+    per segment, cells cut to 7 characters so that neighbours never touch, centred). */
 std::string cellLine (const std::array<std::string, numCells>& cells);
 /** One display line of 4 segments of 17 characters (left aligned, cut). */
 std::string segmentLine (const std::array<std::string, 4>& segments);
-/** Short form of a name for an 8-character cell: words shortened from the end until it fits ("Filter Cutoff" ->
-    "FiltCuto"); a name that fits stays. */
-std::string shortName (const std::string& utf8, int width = cellWidth);
+/** Short form of a name for a cell: a leading channel / track / pad number ("Ch 1", "Kanal 1", "Track 3") is dropped
+    first, then vowels and last letters of the longest words until it fits ("Filter Cutoff" -> "FltrCtff"); a name
+    that fits stays. */
+std::string shortName (const std::string& utf8, int width = cellWidth - 1);
 /** The SysEx message (F0 .. F7) that writes `text` (fitLine) into display line 0 .. 3. */
 std::vector<uint8_t> displayLineSysex (int line, const std::string& utf8);
 /** The SysEx that clears display line 0 .. 3. */

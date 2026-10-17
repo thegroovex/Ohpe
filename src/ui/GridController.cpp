@@ -124,7 +124,7 @@ void GridController::closePorts()
     if (input != nullptr) input->stop();
     input = nullptr;
     output = nullptr;
-    if (isConnected) addLog ("disconnected");
+    if (isConnected && ! testSender) addLog ("disconnected");
     isConnected = testSender != nullptr;
 }
 
@@ -134,6 +134,7 @@ void GridController::attachForTests (Sender out)
     testSender = std::move (out);
     isConnected = testSender != nullptr;
     resetOutputCache();
+    if (isConnected) addLog ("virtual device");
     if (isConnected) sendSysex (g::aftertouchModeSysex (true));
 }
 
@@ -595,7 +596,8 @@ void GridController::refreshDisplay()
     const int n = numPages (modeParams (m, core, ctx));
     juce::String page = tr (modeInfo (m).nameEn);
     if (pg < (int) titles.size() && titles[(size_t) pg].size() > 0) page = tr (titles[(size_t) pg].c_str());
-    page << " " << juce::String (pg + 1) << "/" << juce::String (n);
+    const juce::String count = juce::String (pg + 1) + "/" + juce::String (n);
+    page = juce::String (g::fold (str (page)).substr (0, (size_t) juce::jmax (1, g::lineLength / 4 - 1 - count.length()))) + " " + count;
     juce::String tx = tr ("Stop");
     if (core.countInActive()) tx = tr ("Count-in");
     else if (proc.tapeRecording()) tx = "REC";
@@ -611,7 +613,7 @@ void GridController::refreshDisplay()
         const auto ln = i18n::current() == i18n::Language::German ? harmony::layoutNamesDe() : harmony::layoutNamesEn();
         padText << " " << juce::String (ln[(size_t) layout]) << " O" << juce::String (hooks.octave ? hooks.octave() : 3);
     }
-    lines[3] = g::segmentLine ({ str (page), str (tx), str (proc.tapeTimeText (secs)), str (padText) });
+    lines[3] = g::segmentLine ({ str (page), str (tx), str (proc.tapeTimeText (secs).replace (juce::String::fromUTF8 (" \xc2\xb7 "), "  ")), str (padText) });
 
     for (int l = 0; l < g::numLines; ++l)
         if (lines[(size_t) l] != sentLines[(size_t) l])

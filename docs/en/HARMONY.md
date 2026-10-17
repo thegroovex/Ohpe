@@ -355,19 +355,6 @@ keys, the grid is not sent to the MIDI output.
 
 ![The help overlay with the grid keyboard](../images/ohpe-grid-help.png)
 
-### Later: the same layouts on a grid controller
-
-A planned controller profile (**Profile 1**) will let an external pad grid play exactly like the on-screen grid:
-
-* **the same layouts** – Fourths, Thirds, Whole Tones and In Key, with the same steps right and up, so every shape on
-  this page works there too;
-* **key / scale lock** – In Key plays only key notes; the other layouts can show the key on the pads;
-* **the same mapping** – a pad plays the note of the cell at the same column and row, from the same lowest C;
-* **the same colours** – root, key notes, other notes, chord tones and pressed pads lit like the cells here;
-* **octave / shift** – buttons on the controller move it like OCTAVE − / +.
-
-Until then the on-screen grid is the reference: what you learn here carries over unchanged.
-
 ### On a grid controller
 
 **Grid controller profile 1** (standalone app, Settings > MIDI > Controller) puts this grid on an external 8 × 8 pad

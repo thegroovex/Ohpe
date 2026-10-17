@@ -49,7 +49,7 @@ TEST_CASE ("p46 grid controller: encoder cells - eight cells over four segments,
     REQUIRE (line.size() == 68u);
     CHECK (line.substr (0, 8) == " Cutoff ");
     CHECK (line[8] == ' ');
-    CHECK (line.substr (9, 8) == "Resonanc");
+    CHECK (line.substr (9, 8) == "Resonan "); // seven characters at most: cells never touch
     CHECK (line.substr (17, 8) == "        ");
     CHECK (line.substr (26, 8) == " Drive  ");
     const auto seg = g::segmentLine ({ "Preset", "Part 1", "120.0 BPM", "C Major" });
@@ -62,6 +62,12 @@ TEST_CASE ("p46 grid controller: encoder cells - eight cells over four segments,
     CHECK (g::shortName ("Filter Cutoff").front() == 'F');
     CHECK (g::shortName ("Lautst\xc3\xa4rke").size() <= 8u);
     CHECK (g::shortName ("").empty());
+    CHECK (g::shortName ("Ch 1 Volume") == "Volume"); // the page says which channel
+    CHECK (g::shortName ("Kanal 1 EQ Tiefen").rfind ("EQ", 0) == 0);
+    CHECK (g::shortName ("Ch1 Send A") == "SendA");
+    CHECK (g::shortName ("Osc 2 Octave").rfind ("Osc2", 0) == 0); // not a channel prefix: kept
+    for (const char* n : { "Filter Cutoff", "Amp Attack", "Resonance", "Lautst\xc3\xa4rke", "Ch 12 Output" })
+        CHECK (g::shortName (n).size() <= 7u);
 }
 
 TEST_CASE ("p46 grid controller: encoder deltas, light codes, pad notes")
