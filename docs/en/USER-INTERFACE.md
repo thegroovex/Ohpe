@@ -6,7 +6,7 @@ Ohpe's surface (p14): engine keys with the **LIFE** bar (left), the display (cen
 display, the **TRANSPORT** keys with the tape readout (bottom left), the **OCTAVE** keys, **MIDI** and the keyboard readout (bottom right) and the
 keyboard row – **PITCH** and **MOD** wheels, a three-octave keyboard, **glide** mode and time. The header
 holds the **part selector**, the **preset strip**, the **LIBRARY** and **PRO** keys, **RANDOM** and **SAVE**,
-and EN / DE. Every function can be reached with the mouse and – through MIDI learn – from a controller.
+and the **settings** key (gear: language EN / DE, help, light / dark skin, MIDI, updates, about). Every function can be reached with the mouse and – through MIDI learn – from a controller.
 
 ![The plate](../images/ohpe-analog.png)
 
@@ -488,18 +488,34 @@ each touch has its own channel – slide sideways to bend, up / down for slide, 
 
 ![The update view](../images/ohpe-update.png)
 
-A click on the **version legend** above the wordmark (or the wordmark) opens the update view. A small yellow light bar
+A click on the **version legend** above the wordmark (or the wordmark) opens the update view when an update is on
+offer, otherwise the **About** page of the settings (p32). A small yellow light bar
 and `UPDATE x.y.z` next to the version say that a newer version is on offer. The view shows its release notes in the
 UI language, **CHECK NOW**, **UPDATE** (background download with a violet progress bar, **CANCEL**), **INSTALL** after
 the SHA-256 check, **SKIP THIS VERSION**, **REMIND ME LATER**, the settings (daily automatic check – off until switched
 on, never while playing –, channel Stable / Preview), content packs and **PREVIOUS VERSION**. Details:
 [Updates](UPDATES.md).
 
+## Settings (p32)
+
+![The settings](../images/ohpe-settings.png)
+
+The **gear key** at the right of the header opens the settings (the language pills moved in here). They are saved for
+you on this computer – not in projects or presets – and apply to every Ohpe you open: **General** (language, tooltips,
+help overlay, help pages), **Display** (light / dark / auto skin, display brightness, animations, window size), **MIDI**
+(channel, MPE and bend ranges of the four parts, MIDI inputs, clock and sync), **MIDI learn** (every mapping: edit,
+clear, clear all, map files), **Updates**, **Help** and **About**. **F1** switches the help overlay on and off.
+
+![The night skin](../images/ohpe-dark.png)
+
+Details: [Settings](SETTINGS.md).
+
 ## Keys and shortcuts
 
 | Key | Action |
 |---|---|
-| Esc | closes the library (cancel), the pro view or the update view, or ends step editing |
+| Esc | closes the library (cancel), the pro view, the update view or the settings, or ends step editing |
+| F1 | help overlay on / off |
 | Space (standalone) | PLAY / stop |
 | R (standalone) | REC: record on the tape / punch out |
 | Enter or Home (standalone) | tape to the start |

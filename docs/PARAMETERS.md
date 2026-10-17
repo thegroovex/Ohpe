@@ -875,3 +875,11 @@ No new parameters / keine neuen Parameter: the updater ([English](en/UPDATES.md)
 not a sound or performance control. Its settings (automatic check, channel, last check, skipped version) are stored per
 user in `Settings/update.json`, not in projects or presets / Seine Einstellungen liegen pro Benutzer in
 `Settings/update.json`, nicht in Projekten oder Presets.
+
+## p32 – Settings menu / Einstellungsmenü
+
+No new parameters / keine neuen Parameter. The settings ([English](en/SETTINGS.md) · [Deutsch](de/EINSTELLUNGEN.md))
+are per user (`Settings/settings.json`: language, tooltips, help overlay, skin, display brightness, animations, window
+size) and not automatable. Their MIDI page shows existing parameters – `pN.midich`, `pN.mpe`, `pN.bend`, `pN.mpe.bend`,
+`sync.src`, `sync.clockout`, `sync.smooth` – unchanged and still automatable / MIDI-mappable / Die MIDI-Seite zeigt
+bestehende Parameter, unverändert und weiterhin automatisierbar und MIDI-zuweisbar.

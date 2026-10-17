@@ -6,7 +6,8 @@ Die Oberfläche von Ohpe (p14): Engine-Tasten mit dem **LEBEN**-Balken (links), 
 Encoder unter dem Display, die **TRANSPORT**-Tasten mit der Tape-Anzeige (unten links), die **OKTAVE**-Tasten,
 **MIDI** und die Tastatur-Anzeige (unten rechts) und die Klaviaturzeile – **PITCH**- und **MOD**-Rad, drei Oktaven Klaviatur, **Glide**-Modus
 und -Zeit. In der Kopfzeile liegen die **Part-Auswahl**, der **Preset-Streifen**, die Tasten
-**BIBLIOTHEK** und **PRO**, **ZUFALL** und **SPEICHERN** sowie EN / DE. Jede Funktion ist mit der Maus und –
+**BIBLIOTHEK** und **PRO**, **ZUFALL** und **SPEICHERN** sowie die **Einstellungen**-Taste (Zahnrad: Sprache DE / EN, Hilfe,
+helle / dunkle Erscheinung, MIDI, Updates, Über). Jede Funktion ist mit der Maus und –
 über MIDI Learn – vom Controller aus erreichbar.
 
 ![Die Platte](../images/ohpe-analog-de.png)
@@ -508,7 +509,8 @@ Druck von Touch oder Stift.
 
 ![Die Update-Ansicht](../images/ohpe-update-de.png)
 
-Ein Klick auf die **Versionsbeschriftung** über dem Schriftzug (oder den Schriftzug) öffnet die Update-Ansicht. Ein
+Ein Klick auf die **Versionsbeschriftung** über dem Schriftzug (oder den Schriftzug) öffnet die Update-Ansicht, wenn ein
+Update angeboten wird, sonst die Seite **Über** der Einstellungen (p32). Ein
 kleiner gelber Leuchtbalken und `UPDATE x.y.z` neben der Version zeigen, dass eine neuere Version angeboten wird. Die
 Ansicht zeigt ihre Release-Hinweise in der UI-Sprache, **JETZT PRÜFEN**, **UPDATE** (Download im Hintergrund mit
 violettem Fortschrittsbalken, **ABBRECHEN**), **INSTALLIEREN** nach der SHA-256-Prüfung, **DIESE VERSION ÜBERSPRINGEN**,
@@ -516,11 +518,27 @@ violettem Fortschrittsbalken, **ABBRECHEN**), **INSTALLIEREN** nach der SHA-256-
 Wiedergabe –, Kanal Stabil / Vorschau), Inhaltspakete und **VORIGE VERSION**. Einzelheiten:
 [Aktualisierung](AKTUALISIERUNG.md).
 
+## Einstellungen (p32)
+
+![Die Einstellungen](../images/ohpe-settings-de.png)
+
+Die **Zahnrad-Taste** rechts in der Kopfzeile öffnet die Einstellungen (die Sprachumschaltung ist hierher umgezogen). Sie
+werden für dich auf diesem Computer gespeichert – nicht in Projekten oder Presets – und gelten für jedes geöffnete Ohpe:
+**Allgemein** (Sprache, Tooltips, Hilfe-Overlay, Hilfeseiten), **Anzeige** (Erscheinung hell / dunkel / auto,
+Display-Helligkeit, Animationen, Fenstergröße), **MIDI** (Kanal, MPE und Bend-Bereiche der vier Parts, MIDI-Eingänge,
+Clock und Sync), **MIDI-Learn** (alle Zuweisungen: bearbeiten, löschen, alle löschen, Map-Dateien), **Updates**,
+**Hilfe** und **Über**. **F1** schaltet das Hilfe-Overlay ein und aus.
+
+![Der Nachtmodus](../images/ohpe-dark-de.png)
+
+Einzelheiten: [Einstellungen](EINSTELLUNGEN.md).
+
 ## Tasten
 
 | Taste | Aktion |
 |---|---|
-| Esc | schließt die Bibliothek (Abbrechen), die Profiansicht oder die Update-Ansicht oder beendet das Schritt-Bearbeiten |
+| Esc | schließt die Bibliothek (Abbrechen), die Profiansicht, die Update-Ansicht oder die Einstellungen oder beendet das Schritt-Bearbeiten |
+| F1 | Hilfe-Overlay ein / aus |
 | Leertaste (Standalone) | START / Stopp |
 | R (Standalone) | REC: aufs Band aufnehmen / aussteigen |
 | Enter oder Pos1 (Standalone) | Band zum Anfang |

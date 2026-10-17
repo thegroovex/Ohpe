@@ -6,6 +6,7 @@
 // Writes ohpe-<view>.png (English) and ohpe-<view>-de.png (German).
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
 // p20: the user wavetable frame stack (ohpe-user-wavetable). p27: the update view (ohpe-update).
+// p32: the settings menu (ohpe-settings*, ohpe-about*, ohpe-help-overlay*), the night skin (ohpe-dark, *-dark).
 // p23: bounce to engine - a loop bounced into Grain (ohpe-bounce).
 // p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
 // octave block while recording (ohpe-transport, 2x crop; REC and PLAY at the top of their breathing).
@@ -19,6 +20,8 @@
 #include "ui/ProTiles.h"
 #include "mod/ModVoice.h"
 #include "plugin/Updater.h"
+#include "plugin/UserSettingsStore.h"
+#include "ui/Palette.h"
 
 #include <cmath>
 #include <algorithm>
@@ -719,6 +722,80 @@ int main (int argc, char* argv[])
             animate (p, e, 2);
             save (e, dir.getChildFile ("ohpe-update" + suffix + ".png"));
             e.showUpdates (false);
+        }
+
+        // p32: the settings menu (light and night skin), the About page, the help overlay; the user settings of the
+        // render live in a temporary folder (the real ones are never touched)
+        {
+            auto& store = e.userSettingsStore();
+            const auto tmp = juce::File::getSpecialLocation (juce::File::tempDirectory).getChildFile ("ohpe-shot-settings");
+            tmp.deleteRecursively();
+            store.setFolderForTests (tmp);
+            auto set = [&] (std::function<void (settings::UserSettings&)> fn) {
+                auto v = store.get();
+                fn (v);
+                store.set (v);
+                e.applyUserSettings();
+            };
+            auto shot = [&] (const char* name) {
+                e.advanceAnimation (0.2f);
+                animate (p, e, 2);
+                save (e, dir.getChildFile (juce::String (name) + suffix + ".png"));
+            };
+            for (int dark = 0; dark < 2; ++dark)
+            {
+                set ([dark] (settings::UserSettings& v) { v.skin = dark ? settings::Skin::Dark : settings::Skin::Light; });
+                e.selectPart (0);
+                e.selectMode (ui::Mode::Synth);
+                e.selectEngine (EngineType::Analog);
+                if (dark)
+                {
+                    playAnimated (p, e, 2, { 60 });
+                    playAnimated (p, e, 20, { 67 });
+                    shot ("ohpe-dark"); // the whole plate in the night skin
+                    release (p, { 60, 67 });
+                }
+                set ([] (settings::UserSettings& v) { v.helpOverlay = true; });
+                shot (dark ? "ohpe-help-overlay-dark" : "ohpe-help-overlay");
+                set ([] (settings::UserSettings& v) { v.helpOverlay = false; });
+                e.showSettings (true, dark ? ui::SettingsView::Display : ui::SettingsView::General);
+                shot (dark ? "ohpe-settings-dark" : "ohpe-settings");
+                {   // MIDI and MIDI learn with a few mappings
+                    auto map = [&] (const char* id, MidiSourceType t, int ch, int num, MidiMapMode m, float lo = 0.0f, float hi = 1.0f) {
+                        MidiMapping mm;
+                        mm.paramId = id;
+                        mm.type = t;
+                        mm.channel = ch;
+                        mm.number = num;
+                        mm.mode = m;
+                        mm.minNorm = lo;
+                        mm.maxNorm = hi;
+                        p.core().midiMap().add (mm);
+                    };
+                    map ("p1.analog.cutoff", MidiSourceType::CC, 1, 74, MidiMapMode::Absolute);
+                    map ("p1.analog.reso", MidiSourceType::CC, 1, 71, MidiMapMode::Absolute, 0.0f, 0.5f);
+                    map ("tempo", MidiSourceType::CC, 0, 20, MidiMapMode::Relative);
+                    map ("tape.tx.play", MidiSourceType::Note, 10, 36, MidiMapMode::Toggle);
+                    map ("p2.vol", MidiSourceType::CC, 2, 7, MidiMapMode::Absolute, 1.0f, 0.0f);
+                    p.core().midiMapChanged();
+                    setPlain (p, "p2.mpe", 1.0f);
+                    e.showSettings (true, ui::SettingsView::Midi);
+                    shot (dark ? "ohpe-settings-midi-dark" : "ohpe-settings-midi");
+                    e.showSettings (true, ui::SettingsView::MidiLearn);
+                    shot (dark ? "ohpe-settings-learn-dark" : "ohpe-settings-learn");
+                    p.clearAllMidiMappings();
+                    setPlain (p, "p2.mpe", 0.0f);
+                }
+                e.settingsComponent().setHelpTopic (1);
+                e.showSettings (true, ui::SettingsView::Help);
+                shot (dark ? "ohpe-settings-help-dark" : "ohpe-settings-help");
+                e.showSettings (true, ui::SettingsView::About);
+                shot (dark ? "ohpe-about-dark" : "ohpe-about");
+                e.showSettings (false);
+            }
+            set ([] (settings::UserSettings& v) { v = settings::UserSettings {}; });
+            ui::applySkin (ui::Skin::Light);
+            e.setLanguage (lang);
         }
 
         // p20: a user wavetable from a sound whose harmonics evolve (analysed like an imported file), the frame stack
