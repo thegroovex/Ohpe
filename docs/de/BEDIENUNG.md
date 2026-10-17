@@ -183,7 +183,8 @@ die fünf Formantspuren. **EIGENE** schaltet zwischen eigenem und eingebautem Ma
 ![Profiansicht](../images/ohpe-pro-view-de.png)
 
 **PRO** öffnet die Profiansicht: **alle Parameter des aktuellen Modus auf einmal**, in Gruppen – im
-Synth-Modus Engine, Filter, Hüllkurven, LFO, Tonhöhe & Pegel, Stimme, Glide, Tonhöhen-Hüllkurve, Layer und
+Synth-Modus Engine, Filter, Hüllkurven, LFO, Tonhöhe & Pegel, Stimme, Glide (p32: mit *Glide-Druck*,
+[MIDI.md](MIDI.md)), Tonhöhen-Hüllkurve, Layer und
 MIDI des Parts; im Tape-Modus Transport, Schleife, Bandcharakter und alle acht Spuren; im Drum-Modus das Kit
 und alle 24 Pads. Die Reiter oben wechseln den Modus. Die Ansicht nutzt eine bis vier Spalten, so viele, wie
 das Fenster breit ist, und scrollt, wenn ein Modus mehr hat als passt.
