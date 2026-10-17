@@ -134,9 +134,9 @@ std::string cellLine (const std::array<std::string, numCells>& cells)
     for (int seg = 0; seg < 4; ++seg)
     {
         // at most cellWidth - 1 characters in an 8-character cell: neighbouring cells never touch
-        line += fitCell (fitCell (fold (cells[(size_t) seg * 2]), cellWidth - 1, false), cellWidth, true);
+        line += fitCell (fold (cells[(size_t) seg * 2]).substr (0, cellWidth - 1), cellWidth, true);
         line += ' ';
-        line += fitCell (fitCell (fold (cells[(size_t) seg * 2 + 1]), cellWidth - 1, false), cellWidth, true);
+        line += fitCell (fold (cells[(size_t) seg * 2 + 1]).substr (0, cellWidth - 1), cellWidth, true);
     }
     return fitLine (line);
 }
