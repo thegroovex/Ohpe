@@ -25,6 +25,7 @@ jobs:
         with:
           sparse-checkout: |
             tools/update
+            tools/pack
             packaging
       - uses: actions/download-artifact@v4
         with:
