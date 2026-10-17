@@ -129,6 +129,10 @@ jobs:
           key: timings-linux-core-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: timings-linux-core-${{ matrix.shard }}-
 
+      - name: Pack tools smoke test (make_ohpepack build/check, make_manifest)
+        if: matrix.shard == 0
+        run: bash scripts/ci/pack-tools-smoke.sh
+
       - name: Configure + build (core, no JUCE)
         run: |
           ccache -z
