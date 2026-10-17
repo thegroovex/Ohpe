@@ -106,6 +106,12 @@ public:
     void registerLate32GlidePressParams (ParamRegistry& reg) const;
     /** p32 (tests): the glide time the voices use now (seconds, after CC 65 / CC 5 and the pressure scaling). */
     float effectiveGlideSeconds() const noexcept { return common.glideSeconds; }
+    /**
+        p31: the SUB layer "pN.sub.level" (0 = off, the part sounds exactly as without it), "pN.sub.oct" (-1 / -2 octaves),
+        "pN.sub.shape" (Sine / Round / Square), "pN.sub.direct" (after the voice filter): a sub oscillator under every
+        voice of the main engine (PartSub; not the layer engine).
+    */
+    void registerLate31SubParams (ParamRegistry& reg) const;
     /** 1.0, audio thread: master monitoring mode (SpaceEffect::Headphones / Speakers) for the stage and the rack. */
     void setMonitorMode (int mode) noexcept
     {
@@ -231,6 +237,7 @@ private:
     int exprSmoothIndex = -1, exprSlideIndex = -1; ///< 0.8: "pN.mpe.smooth", "pN.mpe.slide"
     int monoBassIndex = -1;                        ///< 0.8: "pN.monobass"
     int lifeIndex = -1;                            ///< p15: "pN.life"
+    std::array<int, 4> subIndex { -1, -1, -1, -1 }; ///< p31: "pN.sub.level", ".oct", ".shape", ".direct"
     int userWtIndex = -1, userVocalIndex = -1;     ///< p20: "pN.usertable.wt" / "pN.usertable.vocal"
     std::array<int, character::numMacros> charIndex { -1, -1, -1, -1 }; ///< p21: "pN.char.*"
     std::array<float, character::numMacros> charAmount {};             ///< p21: current macro values (-1..1)

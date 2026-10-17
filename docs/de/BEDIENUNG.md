@@ -156,7 +156,9 @@ MIDI: *Bearbeiteter Part* (`ui.part`).
 
 **Synth-Modus** (0.6): nach den Seiten der Engine folgen zwei Seiten, die alle Engines teilen –
 **Glide** (Zeit, Modus, Timing, Poly-Glide) und **Tonhöhen-Hüllkurve** (Menge, Zeit, Kurve, Stimmen).
-Siehe [SEQUENZER.md](SEQUENZER.md#portamento-und-tonhöhen-hüllkurve-06).
+Siehe [SEQUENZER.md](SEQUENZER.md#portamento-und-tonhöhen-hüllkurve-06). Danach die Seite **Sub** (p31: Pegel,
+Oktave, Form, Direkt) – die [SUB-Ebene](SUB-EBENE.md) des Parts, ein Suboszillator eine oder zwei Oktaven unter jeder
+Stimme für mehr Tiefe.
 
 ## Samples für Sampler und Grain
 
@@ -188,7 +190,7 @@ die fünf Formantspuren. **EIGENE** schaltet zwischen eigenem und eingebautem Ma
 
 **PRO** öffnet die Profiansicht: **alle Parameter des aktuellen Modus auf einmal**, in Gruppen – im
 Synth-Modus Engine, Filter, Hüllkurven, LFO, Tonhöhe & Pegel, Stimme, Glide (p32: mit *Glide-Druck*,
-[MIDI.md](MIDI.md)), Tonhöhen-Hüllkurve, Layer und
+[MIDI.md](MIDI.md)), Tonhöhen-Hüllkurve, Sub, Layer und
 MIDI des Parts; im Tape-Modus Transport, Schleife, Bandcharakter und alle acht Spuren; im Drum-Modus das Kit
 und alle 24 Pads. Die Reiter oben wechseln den Modus. Die Ansicht nutzt eine bis vier Spalten, so viele, wie
 das Fenster breit ist, und scrollt, wenn ein Modus mehr hat als passt.
@@ -206,6 +208,7 @@ Bild ist das Bedienelement:
 | Grain / Sampler | die Wellenform; Grains als Wolke um die Position (grün, solange es spielt) | Grain: X = Position, Y = Größe, Mausrad = Streuung; Sampler: Start- / Loop-Marken ziehen |
 | Analog / Pluck / Cluster / Vokal | Oszillator-Mischung / Saite / verstimmter Stapel / Formantkurve | X und Y bewegen die ersten beiden Makros der Engine |
 | Tonhöhe & Pegel | Stimm-Ring und Pegelanzeige | hoch / runter am Ring = Stimmung, Mausrad = fein, am Fader = Pegel |
+| Sub (p31) | die Stimme (grau) über ihrer Sub-Welle (gelb), Pegel-Fader | hoch / runter = Pegel, Wischen = Form, Klick auf Oktav- / Weg-Beschriftung, Mausrad = Pegel – siehe [SUB-Ebene](SUB-EBENE.md) |
 | FX-Slots, Sends | die Kette als Karten mit einem Minibild jedes Effekts | X = Mischung, Y = erster Parameter des Effekts, Mausrad = Typ |
 | 3D-Raum | der Kopf von oben, der Klang als Punkt | Punkt ziehen = Richtung und Entfernung, Mausrad = Höhe |
 

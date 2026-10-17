@@ -73,6 +73,7 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
             float x = mix1 * osc1.next (f1, sr, p.shape) + mix2 * osc2.next (f2, sr, p.shape);
             x += p.sub * subOsc.next (fSub, sr);
             x += p.noise * noise.nextBipolar();
+            if (subOn && ! subDirectNow) x += 1.48f * subNext(); // p31: SUB layer into the filter (same loudness as direct)
             if (popChance > 0.0f)
             {
                 crackleState *= 0.55f;
@@ -97,9 +98,11 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
                 default: y = ladder.process (x, drive); break;
             }
             modEnv.next();
-            const float out = y * ampEnv.next() * gain;
+            const float ae = ampEnv.next();
+            const float out = y * ae * gain;
             l[done + i] += out * panL;
             r[done + i] += out * panR;
+            if (subOn && subDirectNow) subAddDirect (ae, l[done + i], r[done + i]); // p31: SUB layer after the filter
         }
         done += n;
     }

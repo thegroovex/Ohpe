@@ -340,7 +340,8 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
                     sR += side * (1.0f - toL);
                 }
             }
-            const float sub = p.sub * subOsc.next (fSub, sr);
+            float sub = p.sub * subOsc.next (fSub, sr);
+            if (subOn && ! subDirectNow) sub += 0.92f * subNext(); // p31: SUB layer into the filter (same loudness as direct)
             sL = (sL * norm + sub) * 0.8f;
             sR = (sR * norm + sub) * 0.8f;
             if (exprDrive > 0.0f) // 0.8: per-note drive
@@ -356,9 +357,11 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
             const float yL = filterL.process (dL, dsp::Svf::LowPass);
             const float yR = filterR.process (dR, dsp::Svf::LowPass);
             modEnv.next();
-            const float env = ampEnv.next() * gain;
+            const float ae = ampEnv.next();
+            const float env = ae * gain;
             l[done + i] += yL * env * panL * 1.41421356f;
             r[done + i] += yR * env * panR * 1.41421356f;
+            if (subOn && subDirectNow) subAddDirect (ae, l[done + i], r[done + i]); // p31: SUB layer after the filter
         }
         lastPos = pos;
         lastWarp = warp;
