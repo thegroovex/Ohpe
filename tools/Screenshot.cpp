@@ -895,6 +895,12 @@ int main (int argc, char* argv[])
                 }
                 set ([] (settings::UserSettings& v) { v.helpOverlay = true; });
                 shot (dark ? "ohpe-help-overlay-dark" : "ohpe-help-overlay");
+                if (! dark) // p48: the help overlay with the grid keyboard (its steps over the keyboard)
+                {
+                    e.showGridKeyboard (true);
+                    shot ("ohpe-grid-help");
+                    e.showGridKeyboard (false);
+                }
                 set ([] (settings::UserSettings& v) { v.helpOverlay = false; });
                 e.showSettings (true, dark ? ui::SettingsView::Display : ui::SettingsView::General);
                 shot (dark ? "ohpe-settings-dark" : "ohpe-settings");

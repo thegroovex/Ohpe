@@ -1049,6 +1049,9 @@ void OhpeEditor::refreshHelpOverlay()
     add ({ 32, 628, 112, 144 }, "Wheels", "Pitch bend and modulation");
     add ({ 1032, 628, 144, 144 }, "Glide", "Portamento mode and time");
     add (designArea ("settingsKey").expanded (2.0f), "Settings", "Language, help, skin, MIDI");
+    if (grid.isVisible()) // p48: the grid keyboard's steps in one line (docs: HARMONY.md / HARMONIE.md)
+        add (designArea ("keyboard"), "Grid keyboard",
+             "Same shape in every key; Fourths right +1 / up +5, Thirds +1 / +4, Whole Tones +2 / +5, In Key scale steps +1 / +3; MPE: slide = bend");
     helpOverlay.setItems (std::move (items));
     const bool show = userSettings->get().helpOverlay && ! overlayOpen();
     if (helpOverlay.isVisible() != show) helpOverlay.setVisible (show);
@@ -2457,6 +2460,7 @@ void OhpeEditor::showGridKeyboard (bool show) // p24
     grid.setVisible (show);
     keyboard.setVisible (! show);
     gridKey.setActive (show);
+    refreshHelpOverlay(); // p48: the grid's help line
 }
 
 void OhpeEditor::saveUiState()
