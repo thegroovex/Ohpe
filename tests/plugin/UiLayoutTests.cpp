@@ -120,7 +120,8 @@ TEST_CASE ("editor layout: wheels left, glide right of the keyboard; transport b
         const float s = (float) e.getWidth() / (float) OhpeEditor::designWidth;
         auto design = [s] (juce::Component& c) { return c.getBounds().toFloat() / s; };
         for (auto* c : std::initializer_list<juce::Component*> { &e.recordKey(), &e.playTransportKey(), &e.stopTransportKey(), &e.toStartTransportKey(),
-                                                                &e.loopTransportKey(), &e.tapeReadoutComponent() })
+                                                                &e.loopTransportKey(), &e.tapeReadoutComponent(), &e.tempoPanelComponent(),
+                                                                &e.clickStripComponent() })
         {
             CHECK (txPanel.reduced (11.0f).contains (design (*c)));
             CHECK (c->isVisible());
@@ -130,8 +131,10 @@ TEST_CASE ("editor layout: wheels left, glide right of the keyboard; transport b
             CHECK (octPanel.reduced (11.0f).contains (design (*c)));
             CHECK (c->isVisible());
         }
-        // the readouts sit at the same place in their panels, with the same size
-        const auto tr = design (e.tapeReadoutComponent()), kr = design (e.keysReadoutComponent());
+        // the readouts sit at the same place in their panels, with the same size (p39: the transport block's readout row
+        // is the tape readout, the tempo and the metronome / count-in keys - together as wide as the keyboard readout)
+        const auto tr = design (e.tapeReadoutComponent()).getUnion (design (e.tempoPanelComponent())).getUnion (design (e.clickStripComponent())),
+                   kr = design (e.keysReadoutComponent());
         CHECK (tr.getX() - txPanel.getX() == doctest::Approx (kr.getX() - octPanel.getX()).epsilon (0.02));
         CHECK (tr.getY() == doctest::Approx (kr.getY()).epsilon (0.02));
         CHECK (tr.getWidth() == doctest::Approx (kr.getWidth()).epsilon (0.02));
