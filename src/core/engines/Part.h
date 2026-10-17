@@ -7,6 +7,7 @@
 #include "../fx/Resonator.h"
 #include "../fx/Space3D.h"
 #include "../mod/ModMatrix.h"
+#include "../mod/Character.h"
 #include "../model/Events.h"
 #include "../model/ParamRegistry.h"
 #include "../model/ParamSnapshot.h"
@@ -91,6 +92,11 @@ public:
     bool resoRunning() const noexcept { return resoRunningFlag.load (std::memory_order_relaxed); }
     /** p19: what the keyboard of this part is doing (audio thread; tests). */
     const KeyState& keyState() const noexcept { return keys; }
+    /**
+        p21: the character macros "pN.char.bright", "pN.char.hard", "pN.char.alive", "pN.char.wide" (-1..1, 0 = neutral;
+        see mod/Character.h): each moves several parameters of the part at once (inside the part, after the matrix).
+    */
+    void registerLate21CharacterParams (ParamRegistry& reg) const;
     /** 1.0, audio thread: master monitoring mode (SpaceEffect::Headphones / Speakers) for the stage and the rack. */
     void setMonitorMode (int mode) noexcept
     {
@@ -182,6 +188,7 @@ private:
     {
         std::vector<int> paramIndex;
         std::vector<float> lastValue;
+        std::vector<character::Weights> charWeights; ///< p21: how the character macros move each parameter
     };
 
     int number;
@@ -214,6 +221,9 @@ private:
     int monoBassIndex = -1;                        ///< 0.8: "pN.monobass"
     int lifeIndex = -1;                            ///< p15: "pN.life"
     int userWtIndex = -1, userVocalIndex = -1;     ///< p20: "pN.usertable.wt" / "pN.usertable.vocal"
+    std::array<int, character::numMacros> charIndex { -1, -1, -1, -1 }; ///< p21: "pN.char.*"
+    std::array<float, character::numMacros> charAmount {};             ///< p21: current macro values (-1..1)
+    bool charActive = false;                                           ///< p21: any macro != 0
     float monoBassHz = 20.0f, partSr = 48000.0f;
     dsp::Svf monoLp1, monoLp2;                     ///< 4th-order Butterworth high-pass of the side signal
     float exprBlend = 0.0f;                        ///< 0.8: latest per-note "layer blend" expression (part-wide)

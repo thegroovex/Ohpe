@@ -285,5 +285,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
         add (toggle (Core::Ids::libBreedGo, "Breed Again", "Weiterzüchten", false));
         add (toggle (Core::Ids::libBreedNext, "Next Child", "Nächstes Kind", false));
     }
+    // ---- p21: the character macros per part (BRIGHT / HARD / ALIVE / WIDE, -1..1, 0 = neutral) -------------
+    for (auto& p : parts) p->registerLate21CharacterParams (reg);
 }
 } // namespace ohpe

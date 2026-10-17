@@ -152,7 +152,7 @@ TEST_CASE ("p19 resonator: parameters - per-part stage, rack type in every slot,
     const char* keys[] = { "resotune", "resosize", "resomaterial", "resodecay", "resoposition", "resomix" };
     const char* suffix[] = { "reso.tune", "reso.size", "reso.material", "reso.decay", "reso.position", "reso.mix" };
     CHECK (mod::DstResoTune == mod::DstMorphY + 1);
-    CHECK (mod::numDests == mod::DstResoMix + 1);
+    CHECK (mod::numDests > mod::DstResoMix); // p21: the character targets follow
     for (int k = 0; k < 6; ++k)
     {
         CHECK (mod::destIndexOfKey (keys[k]) == mod::DstResoTune + k);

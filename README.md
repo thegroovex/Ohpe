@@ -49,7 +49,7 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **Standalone app** | choose audio system, device, sample rate and buffer size, latency display, multi-out routing to device channels, MIDI inputs |
 | **Preset library** | one LIBRARY key: categories (Bass, Keys, Pads, Leads, Plucks, Drums, FX, Arp, Textures, Vocal), engine filter, search, favourites, star ratings, sorting, factory and user banks, preview by selecting, part and whole-project presets, previous / next from MIDI |
 | **Display** | a deep, layered display with parallax; stereo scope (goniometer, correlation, M / S levels), a moving 3D spectrum terrain and the head-centred 3D space view |
-| **Direct manipulation** | drag the value bars on the display, Shift / Cmd / Ctrl for fine control, double-click to reset; pro view with every parameter of a mode at once |
+| **Direct manipulation** | drag the value bars on the display, Shift / Cmd / Ctrl for fine control, double-click to reset; pro view with every parameter of a mode at once – as editable pictures (envelopes, filter, LFO, FM graph, wavetable, grains, 3D) with violet modulation ranges, plus Discover: BRIGHT / HARD / ALIVE / WIDE, VARY, cross, dice, history |
 | **Languages** | English and German, switchable at any time |
 
 ## Screenshots

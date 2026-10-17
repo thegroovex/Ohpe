@@ -335,17 +335,43 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
         }
         case Mode::Synth:
         {
-            // the whole voice of the part: engine, envelopes, LFO and pitch
-            const auto ids = modeParams (Mode::Synth, core, ctx);
-            ParamGroup macros { "Macros", 0, {} }, engine { "Engine", 0, {} };
-            for (size_t i = 0; i < ids.size(); ++i)
-                if (! ids[i].empty()) (i < 4 ? macros : engine).ids.push_back (ids[i]);
-            if (! macros.ids.empty()) groups.push_back (macros);
-            if (! engine.ids.empty()) groups.push_back (engine);
+            // the whole voice of the part. p21 (pro view 2.0): the engine, its filter as a group of its own, the
+            // envelopes, the LFO, pitch & level, then voice, glide, pitch envelope, layer and the MIDI groups
+            const int partIndex = juce::jlimit (0, Core::numParts - 1, ctx.part);
+            auto& pt = core.part (partIndex);
+            const std::string p = pt.prefix();
+            const auto type = selectedEngine (core, partIndex);
+            ParamGroup engine { "Engine", 0, {} }, filter { "Filter", 0, {} };
+            if (auto* e = pt.engine (type))
+                for (const auto& d : e->getParamDescriptors())
+                {
+                    const auto id = p + engineTypeInfo (type).id + "." + d.id;
+                    const bool isFilter = d.id == "cutoff" || d.id == "reso" || d.id == "ftype" || d.id == "drive" || d.id == "keytrack"
+                                       || (d.id == "tone" && type != EngineType::Pluck);
+                    (isFilter ? filter : engine).ids.push_back (id);
+                }
+            const auto before = groups.size();
             addPages (Mode::Envelope, ctx);
-            auto lfo = ctx;
-            lfo.lfoView = modfx::LfoViewLfo;
-            addPages (Mode::Lfo, lfo);
+            auto lfoCtx = ctx;
+            lfoCtx.lfoView = modfx::LfoViewLfo;
+            addPages (Mode::Lfo, lfoCtx);
+            std::vector<ParamGroup> pages (groups.begin() + (long) before, groups.end());
+            groups.resize (before);
+            auto take = [&] (const char* title) {
+                for (auto it = pages.begin(); it != pages.end(); ++it)
+                    if (it->title == title) { groups.push_back (*it); pages.erase (it); return; }
+            };
+            if (! engine.ids.empty()) groups.push_back (engine);
+            take ("Amp Envelope");
+            if (! filter.ids.empty()) groups.push_back (filter);
+            take ("LFO");
+            take ("Pitch & Level");
+            take ("Mod Envelope");
+            take ("Voice");
+            groups.push_back ({ "Glide", 0, { p + "glide.mode", p + "glide.rate" } });
+            groups.push_back ({ "Pitch Envelope", 0, { p + "pitchenv.amt", p + "pitchenv.time", p + "pitchenv.curve" } });
+            if (core.params().indexOf (p + "layer.engine") >= 0) groups.push_back ({ "Layer", 0, layerParams (partIndex) });
+            for (auto& rest : pages) groups.push_back (std::move (rest)); // MIDI & Key, Scale & MPE, MPE
             return groups;
         }
         case Mode::Lfo:

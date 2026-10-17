@@ -40,6 +40,7 @@ enum Dest
     DstLife, // p15: the part's life amount ("pN.life")
     DstMorphX, DstMorphY, // p16: the morph pad's position ("pN.morph.x" / "pN.morph.y")
     DstResoTune, DstResoSize, DstResoMaterial, DstResoDecay, DstResoPosition, DstResoMix, // p19: the resonator body ("pN.reso.*")
+    DstCharBright, DstCharHard, DstCharAlive, DstCharWide, // p21: the character macros ("pN.char.*")
     numDests
 };
 static constexpr int numEngineDests = 24;
