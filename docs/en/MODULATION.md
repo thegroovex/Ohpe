@@ -51,6 +51,7 @@ add up.
 | 27 | Pad Sweep | 0 … 1 | – | p25: the position of the [filter sweep pad](PADS.md) (0 = open, 1 = fully swept; the same for every part) |
 | 28 | Pads Held | 0 / 1 | – | p25: 1 while any [performance pad](PADS.md) is engaged |
 | 29 – 31 | Chord Root, Chord Change, Tension | 0 … 1 | – | p24: the [harmony brain](HARMONY.md) (the same in every part): the remembered chord's root (C = 0 … B = 1), 1 at every new chord fading in about 0.3 s, the share of held notes outside the key |
+| 32 | Vibrato (5.5 Hz) | ±1 | yes | p33: a 5.5 Hz sine, starting with each note – the Vibrato function of the [Expression page](EXPRESSION.md) (Note Pressure via Vibrato → Pitch); e.g. as *via* for a vibrato that only the wheel or pressure brings in |
 
 **Per voice** sources have their own value in every voice: with a chord, every note gets its own
 envelope, velocity and random value.
@@ -90,6 +91,10 @@ Release 1 ms … 10 s (exponential).
 | 72 | Life | – | p15: the part's life amount `pN.life` ([USER-INTERFACE.md](USER-INTERFACE.md#life)), 0 … 100 %; e.g. Mod Wheel → Life to bring held notes alive, Note Pressure → Life for MPE |
 | 73, 74 | Morph X, Morph Y | – | p16: the position of the part's [morph pad](MORPH.md) (`pN.morph.x` / `.y`), full width; e.g. LFO 2 → Morph X, Note Pressure → Morph Y |
 | 75 – 80 | Body Tune, Body Size, Body Material, Body Decay, Body Position, Body Mix | – | p19: the part's [resonator body](RESONATOR.md) (`pN.reso.tune` … `.mix`), full range (tune ±24 semitones); e.g. LFO 2 → Body Position for a moving pluck point, Env 3 → Body Mix |
+| 85 – 88 | Glide Time, Amp Attack, Amp Decay, Amp Release | – | p33: the part's glide time `pN.glide` (added to the parameter or a CC 5 portamento time) and amp envelope `pN.amp.a` / `.d` / `.r`, full range; e.g. Note Pressure → Glide Time (the factory glide sounds), Velocity → Amp Attack (negative: hard notes start faster) |
+
+The [Expression page](EXPRESSION.md) (p33) adds four more routings per part – velocity and aftertouch to two
+functions each – that work exactly like the 16 below.
 
 Targets 5 and up move a **parameter** by `amount × source` of its full range (normalised, so a
 cutoff moves in octaves): one value for the part, computed from part-wide sources – the

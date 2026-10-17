@@ -150,6 +150,13 @@ follow it. The display shows the edit part as a yellow badge (P1–P4). MIDI: *E
 (time, mode, timing, poly glide) and **Pitch Envelope** (amount, time, curve, voices). See
 [SEQUENCERS.md](SEQUENCERS.md#portamento-and-pitch-envelope-06).
 
+**Envelope mode** (p33): after the envelopes and the voice pages come the **Expression** pages – **Velocity** (target 1,
+amount 1, target 2, amount 2), **Aftertouch** (the same for channel / poly / MPE pressure) and **Expression Curves**.
+The display draws each slot's response with a dot that follows your playing; the pro view (Synth) has them as the
+group *Expression*. See [Expressive playing](EXPRESSION.md).
+
+![The Expression page (Aftertouch)](../images/ohpe-expression.png)
+
 ## Samples for the Sampler and Grain engines
 
 With the Sampler or Grain engine on the edit part, the display shows **Load sample** and

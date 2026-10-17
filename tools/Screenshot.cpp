@@ -6,7 +6,7 @@
 // Writes ohpe-<view>.png (English) and ohpe-<view>-de.png (German).
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
 // p20: the user wavetable frame stack (ohpe-user-wavetable). p27: the update view (ohpe-update).
-// p23: bounce to engine - a loop bounced into Grain (ohpe-bounce).
+// p23: bounce to engine - a loop bounced into Grain (ohpe-bounce). p33: the Expression page (ohpe-expression).
 // p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
 // octave block while recording (ohpe-transport, 2x crop; REC and PLAY at the top of their breathing).
 // 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack; the Mid/Side scope,
@@ -797,6 +797,40 @@ int main (int argc, char* argv[])
                 run (p, 8);
                 e.selectEngine ((EngineType) (int) engineBefore);
             }
+        }
+
+        // p33: the Expression page - aftertouch -> vibrato and cutoff on the analog part, a note held with pressure
+        {
+            e.selectPart (0);
+            e.selectEngine (EngineType::Analog);
+            setPlain (p, "p1.expr.vel.dst1", 1.0f); // Cutoff
+            setPlain (p, "p1.expr.vel.amt1", 0.45f);
+            setPlain (p, "p1.expr.at.dst1", 11.0f); // Vibrato
+            setPlain (p, "p1.expr.at.amt1", 0.6f);
+            setPlain (p, "p1.expr.at.dst2", 1.0f); // Cutoff
+            setPlain (p, "p1.expr.at.amt2", -0.35f);
+            setPlain (p, "p1.expr.at.curve2", 2.0f); // Logarithmic
+            e.selectMode (ui::Mode::Envelope);
+            e.displayComponent().onPageChange (5); // Velocity, Aftertouch: the sixth page
+            run (p, 2);
+            {
+                juce::AudioBuffer<float> buffer (p.getTotalNumOutputChannels(), 512);
+                juce::MidiBuffer midi;
+                midi.addEvent (juce::MidiMessage::noteOn (1, 57, (juce::uint8) 100), 0);
+                midi.addEvent (juce::MidiMessage::channelPressureChange (1, 80), 8);
+                p.processBlock (buffer, midi);
+            }
+            playAnimated (p, e, 20);
+            save (e, dir.getChildFile ("ohpe-expression" + suffix + ".png"));
+            {
+                juce::AudioBuffer<float> buffer (p.getTotalNumOutputChannels(), 512);
+                juce::MidiBuffer midi;
+                midi.addEvent (juce::MidiMessage::channelPressureChange (1, 0), 0);
+                p.processBlock (buffer, midi);
+            }
+            release (p, { 57 });
+            for (const char* id : { "p1.expr.vel.amt1", "p1.expr.at.amt1", "p1.expr.at.amt2" }) setPlain (p, id, 0.0f);
+            e.selectMode (ui::Mode::Synth);
         }
 
         // p18: the breeding view - two library sounds on two engines, a brood of six with thumbnails, two kept
