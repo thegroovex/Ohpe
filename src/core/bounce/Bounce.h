@@ -30,6 +30,7 @@ namespace ohpe
 {
 class Core;
 class TapeMachine;
+class ParamRegistry;
 
 namespace bounce
 {
@@ -71,6 +72,9 @@ struct Audio
     double rate = 48000.0;
     int64_t frames() const noexcept { return (int64_t) l.size(); }
 };
+
+/** Registers "bounce.src", "bounce.to", "bounce.loop", "bounce.len", "bounce.go" (appended after "lib.breed.next"). */
+void registerParams (ParamRegistry& reg);
 
 /** English source name ("Tape 3", "Tape Mix", "Input"); for the edit track the resolved track. */
 std::string sourceName (int source, int editTrack);

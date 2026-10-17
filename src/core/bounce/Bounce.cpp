@@ -5,12 +5,34 @@
 #include "../OhpeCore.h"
 #include "../engines/GrainEngine.h"
 #include "../engines/SamplerEngine.h"
+#include "../model/ParamRegistry.h"
 #include "../tape/TapeMachine.h"
 
 #include <cmath>
 
 namespace ohpe::bounce
 {
+#if defined(_MSC_VER)
+__declspec (noinline)
+#else
+__attribute__ ((noinline))
+#endif
+void registerParams (ParamRegistry& reg)
+{
+    using namespace pd;
+    auto add = [&] (ParamDescriptor d, const char* group) { d.group = group; reg.add (std::move (d)); };
+    add (choice (Core::Ids::bounceSrc, "Bounce Source", "Bounce-Quelle",
+                 { "Edit Track", "Tape 1", "Tape 2", "Tape 3", "Tape 4", "Tape 5", "Tape 6", "Tape 7", "Tape 8", "Tape Mix", "Input" },
+                 { "Bearbeitungsspur", "Tape 1", "Tape 2", "Tape 3", "Tape 4", "Tape 5", "Tape 6", "Tape 7", "Tape 8", "Tape-Mix", "Eingang" }, 0),
+         "bounce");
+    add (choice (Core::Ids::bounceTo, "Bounce Target", "Bounce-Ziel", { "Grain", "Sampler" }, { "Grain", "Sampler" }, 0), "bounce");
+    add (toggle (Core::Ids::bounceLoop, "Endless Loop", "Endlosschleife", true), "bounce");
+    add (choice (Core::Ids::bounceLen, "Input Length", "Eingangslänge", { "1 Bar", "2 Bars", "4 Bars", "8 Bars" },
+                 { "1 Takt", "2 Takte", "4 Takte", "8 Takte" }, 2),
+         "bounce");
+    add (toggle (Core::Ids::bounceGo, "Bounce", "Bounce", false), "remote");
+}
+
 std::string sourceName (int source, int editTrack)
 {
     if (source == SourceEditTrack) source = SourceTrack1 + std::clamp (editTrack, 0, TapeMachine::numTracks - 1);

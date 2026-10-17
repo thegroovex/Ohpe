@@ -10,6 +10,7 @@
 //     (test "parameter IDs are append-only"); extend the golden file when you append.
 
 #include "OhpeCore.h"
+#include "bounce/Bounce.h"
 
 namespace ohpe
 {
@@ -285,19 +286,8 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
         add (toggle (Core::Ids::libBreedGo, "Breed Again", "Weiterzüchten", false));
         add (toggle (Core::Ids::libBreedNext, "Next Child", "Nächstes Kind", false));
     }
-    // ---- p23: bounce to engine - source, target engine, endless loop, input length, the trigger --------------
-    {
-        auto add = [&] (ParamDescriptor d) { d.group = "bounce"; reg.add (std::move (d)); };
-        add (choice (Core::Ids::bounceSrc, "Bounce Source", "Bounce-Quelle",
-                     { "Edit Track", "Tape 1", "Tape 2", "Tape 3", "Tape 4", "Tape 5", "Tape 6", "Tape 7", "Tape 8", "Tape Mix", "Input" },
-                     { "Bearbeitungsspur", "Tape 1", "Tape 2", "Tape 3", "Tape 4", "Tape 5", "Tape 6", "Tape 7", "Tape 8", "Tape-Mix", "Eingang" }, 0));
-        add (choice (Core::Ids::bounceTo, "Bounce Target", "Bounce-Ziel", { "Grain", "Sampler" }, { "Grain", "Sampler" }, 0));
-        add (toggle (Core::Ids::bounceLoop, "Endless Loop", "Endlosschleife", true));
-        add (choice (Core::Ids::bounceLen, "Input Length", "Eingangslänge", { "1 Bar", "2 Bars", "4 Bars", "8 Bars" },
-                     { "1 Takt", "2 Takte", "4 Takte", "8 Takte" }, 2));
-        auto go = toggle (Core::Ids::bounceGo, "Bounce", "Bounce", false);
-        go.group = "remote";
-        reg.add (std::move (go));
-    }
+    // ---- p23: bounce to engine - source, target engine, endless loop, input length, the trigger (own function:
+    //      a big stack frame here overflowed the Windows test threads' stack with a Core on it) ----------------
+    bounce::registerParams (reg);
 }
 } // namespace ohpe
