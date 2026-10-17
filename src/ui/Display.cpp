@@ -422,9 +422,9 @@ void Display::placeTempo()
     keyLaidOut = keyHeader.shownText() + "|" + headerTitle (false);
 }
 
-juce::String Display::headerTitle (bool engineOnly) const
+juce::String Display::headerTitle (bool engineOnly)
 {
-    const auto& core = proc.core();
+    auto& core = proc.core();
     const auto& eng = engineTypeInfo (selectedEngine (core, ctx.part));
     if (engineOnly && mode == Mode::Synth) return i18n::upper (i18n::pick (eng.nameEn, eng.nameDe));
     juce::String title = i18n::upper (tr (modeInfo (mode).nameEn));
