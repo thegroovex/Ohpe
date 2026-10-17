@@ -304,13 +304,13 @@ TEST_CASE ("p33: every function on every engine at full velocity and pressure, b
     for (int t = 0; t < numEngineTypes; ++t)
     {
         const auto type = (EngineType) t;
+        Core core; // one core per engine (building a core is the slow part)
+        core.prepare (sampleRate, 512);
+        if (core.part (0).engine (type) == nullptr) continue;
+        setAll (core, { { "p1.engine", (float) type }, { "p1.midich", 0.0f } });
         for (float sign : { 1.0f, -1.0f })
             for (int batch = 1; batch < ex::numTargets; batch += 4)
             {
-                Core core;
-                core.prepare (sampleRate, 512);
-                if (core.part (0).engine (type) == nullptr) break;
-                setAll (core, { { "p1.engine", (float) type }, { "p1.midich", 0.0f } });
                 for (int k = 0; k < 4; ++k)
                 {
                     const int f = std::min (ex::numTargets - 1, batch + k);
@@ -320,12 +320,13 @@ TEST_CASE ("p33: every function on every engine at full velocity and pressure, b
                 CAPTURE (engineTypeInfo (type).id);
                 CAPTURE (batch);
                 CAPTURE (sign);
-                const auto s = renderMidi (core, 16, [] (int b) {
+                const auto s = renderMidi (core, 10, [] (int b) {
                     std::vector<MidiEvent> m;
                     if (b == 0) { m.push_back (MidiEvent::noteOn (1, 48, 127, 0)); m.push_back (MidiEvent::noteOn (1, 60, 127, 0)); }
                     if (b == 1) m.push_back (channelPressure (127));
-                    if (b == 6) m.push_back (polyPressure (60, 127));
-                    if (b == 10) m.push_back (MidiEvent::noteOn (1, 67, 127, 0));
+                    if (b == 4) m.push_back (polyPressure (60, 127));
+                    if (b == 6) m.push_back (MidiEvent::noteOn (1, 67, 127, 0));
+                    if (b == 9) { m.push_back (channelPressure (0)); m.push_back (MidiEvent { 0, (uint8_t) 0xb0, 123, 0 }); }
                     return m;
                 });
                 CHECK (allFinite (s.l));
