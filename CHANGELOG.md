@@ -7,6 +7,14 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: The 3D switch – per part Off / Headphones / Speakers (`p1.space.mode` … `p4.space.mode`, automatable and
+  MIDI-mappable) as a segmented switch on the Space page; a front for `pN.space.on` and `space.out`, older presets and
+  sessions load unchanged; speakers icon on the 3D badge when monitoring on speakers – see
+  [Space](docs/en/SPACE.md#the-3d-switch-p41).
+- DE: Der 3D-Schalter – pro Part Aus / Kopfhörer / Lautsprecher (`p1.space.mode` … `p4.space.mode`, automatisierbar
+  und per MIDI steuerbar) als Segmentschalter auf der Raum-Seite; Front für `pN.space.on` und `space.out`, ältere
+  Presets und Sessions laden unverändert; Lautsprecher-Symbol am 3D-Badge bei Abhören über Lautsprecher – siehe
+  [Raum](docs/de/RAUM.md#der-3d-schalter-p41).
 - EN: 52 new factory presets that show off the newer features (48 part presets, 4 projects): Life, the morph pad, user
   wavetables analysed from the factory recordings, the resonator body (stage and rack effect), the character macros,
   3D motion paths, the SUB layer, the Expression page, pressure glide and tempo-synced movement; the projects use the

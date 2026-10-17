@@ -85,6 +85,7 @@ TEST_CASE ("preset: part preset round-trip (save -> JSON -> load into another pa
         const auto& id = reg.descriptor (i).id;
         if (id.rfind ("p1.", 0) != 0 || id == "p1.midich" || b.params().indexOf ("p3." + id.substr (3)) < 0) continue;
         if (id.rfind ("p1.motion.", 0) == 0) continue; // p22: the motion block is not part of a part preset
+        if (id == "p1.space.mode") continue; // p41: the 3D switch is not stored - it follows space.on and the monitoring
         CAPTURE (id);
         CHECK (b.params().get ("p3." + id.substr (3)) == doctest::Approx (reg.get (i)));
     }
