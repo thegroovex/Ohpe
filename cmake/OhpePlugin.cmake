@@ -197,6 +197,7 @@ endif()
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/TapeTransportUiTests.cpp)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/TapeEraseUiTests.cpp) # p38
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/TapeLoopUiTests.cpp) # p42
 endif()
 
 # ---------------------------------------------------------------- p14: redesigned plate, wheels, glide

@@ -421,7 +421,7 @@ void OhpeProcessor::tapTempo()
 }
 
 // ---------------------------------------------------------------- p42: the tape loop by hand
-double OhpeProcessor::tapeLengthSeconds() const { return juce::jmax (1.0, ohpeCore.tape().lengthSeconds()); }
+double OhpeProcessor::tapeLengthSeconds() const { return juce::jmax (1.0, const_cast<Core&> (ohpeCore).tape().lengthSeconds()); }
 double OhpeProcessor::tapeBpm() const { return juce::jmax (20.0, (double) ohpeCore.params().get (Core::Ids::tempo)); }
 
 tapeloop::Range OhpeProcessor::tapeLoopRange() const

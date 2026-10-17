@@ -78,6 +78,7 @@ public:
     void setStepPage (int p) { stepPage = p; repaint(); }
     void setLockStep (int step) { lockStep = step; repaint(); } ///< -1 = no step selected
     void setSoftKeys (std::vector<SoftKey> keys) { softKeys = std::move (keys); repaint(); }
+    const std::vector<SoftKey>& softKeyList() const noexcept { return softKeys; } ///< p42: tests
     void setStatus (const juce::String& text) { status = text; repaint(); }
     void flash (const juce::String& message); ///< short message on the hint line
     void tick (float seconds); ///< advances the animation (called by the editor's timer)
