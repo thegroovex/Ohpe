@@ -504,11 +504,23 @@ Die Taste **RASTER** (zwischen OKTAVE + und MIDI) tauscht die Klaviertasten gege
 Mit MPE für den Edit-Part hat jede Berührung ihren eigenen Kanal – seitlich schieben biegt, hoch / runter für Slide,
 Druck von Touch oder Stift.
 
+## Updates (p27)
+
+![Die Update-Ansicht](../images/ohpe-update-de.png)
+
+Ein Klick auf die **Versionsbeschriftung** über dem Schriftzug (oder den Schriftzug) öffnet die Update-Ansicht. Ein
+kleiner gelber Leuchtbalken und `UPDATE x.y.z` neben der Version zeigen, dass eine neuere Version angeboten wird. Die
+Ansicht zeigt ihre Release-Hinweise in der UI-Sprache, **JETZT PRÜFEN**, **UPDATE** (Download im Hintergrund mit
+violettem Fortschrittsbalken, **ABBRECHEN**), **INSTALLIEREN** nach der SHA-256-Prüfung, **DIESE VERSION ÜBERSPRINGEN**,
+**SPÄTER ERINNERN**, die Einstellungen (tägliche automatische Prüfung – aus, bis eingeschaltet, nie während der
+Wiedergabe –, Kanal Stabil / Vorschau), Inhaltspakete und **VORIGE VERSION**. Einzelheiten:
+[Aktualisierung](AKTUALISIERUNG.md).
+
 ## Tasten
 
 | Taste | Aktion |
 |---|---|
-| Esc | schließt die Bibliothek (Abbrechen) oder die Profiansicht oder beendet das Schritt-Bearbeiten |
+| Esc | schließt die Bibliothek (Abbrechen), die Profiansicht oder die Update-Ansicht oder beendet das Schritt-Bearbeiten |
 | Leertaste (Standalone) | START / Stopp |
 | R (Standalone) | REC: aufs Band aufnehmen / aussteigen |
 | Enter oder Pos1 (Standalone) | Band zum Anfang |
