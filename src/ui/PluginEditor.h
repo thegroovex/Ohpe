@@ -248,6 +248,7 @@ private:
     int morphPage = 0; ///< p16
     int motionPage = 0; ///< p22
     int lastMotionSignature = -1; ///< p22: soft key / status refresh of the Motion view
+    int lastPadsSignature = -1;   ///< p25: soft key refresh of the Pads view
     std::array<ui::VirtualPtr, 4> virtuals {};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OhpeEditor)

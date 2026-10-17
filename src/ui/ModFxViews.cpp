@@ -87,7 +87,7 @@ juce::String typeName (const Core& core, const std::string& prefix) { return cho
 const char* lfoViewName (int v) noexcept { return v == LfoViewMod ? "Mod" : v == LfoViewMorph ? "Morph" : v == LfoViewMotion ? "Motion" : "LFO"; }
 const char* fxViewName (int v) noexcept
 {
-    return v == FxViewRack ? "Rack" : v == FxViewMaster ? "Master" : v == FxViewSpace ? "3D Space" : v == FxViewBody ? "Body" : "Sends";
+    return v == FxViewRack ? "Rack" : v == FxViewMaster ? "Master" : v == FxViewSpace ? "3D Space" : v == FxViewBody ? "Body" : v == FxViewPads ? "Pads" : "Sends";
 }
 
 // ------------------------------------------------------------------------------------------------- pages

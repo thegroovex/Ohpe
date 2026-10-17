@@ -523,6 +523,17 @@ const std::map<juce::String, juce::String>& table()
         { "Recording - all lanes taken, overdub them", "Aufnahme – alle Spuren belegt, sie werden überschrieben" },
         { "Press Rec, play, and turn knobs - each takes a lane", "Rec drücken, abspielen und an Reglern drehen – jeder bekommt eine Spur" },
         { "Off - Play loops the lanes", "Aus – Start spielt die Spuren als Schleife" },
+        // p25: the performance pads
+        { "Pads", "Pads" },
+        { "Pad Timing", "Pad-Timing" },
+        { "Sweep & Freeze", "Sweep & Freeze" },
+        { "Stutter", "Stottern" },
+        { "Tape Stop", "Bandstopp" },
+        { "Sweep", "Sweep" },
+        { "Freeze", "Freeze" },
+        { "Quantise", "Quantisierung" },
+        { "Waiting for the grid", "Wartet auf das Raster" },
+        { "Hold a pad - Shift-click latches", "Pad halten – Umschalt-Klick rastet ein" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;

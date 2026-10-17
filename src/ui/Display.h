@@ -144,6 +144,7 @@ private:
     bool showsBodyView() const noexcept;  ///< p19: Effects mode, view Body (the resonator)
     bool showsMorphView() const noexcept; ///< p16: LFO mode, view Morph
     bool showsMotionView() const noexcept; ///< p22: LFO mode, view Motion
+    bool showsPadsView() const noexcept;   ///< p25: Effects mode, view Pads
     void setMorphPosition (juce::Point<float> p); ///< p16: pad drag
     juce::Rectangle<float> visualArea() const; ///< 0.7: left of the rows (routing list / FX chain)
     FxRack& shownRack() const;
@@ -181,6 +182,7 @@ private:
     int dragRow = -1;
     int dragSlot = -1;              ///< 0.7: FX block being dragged
     bool morphDrag = false;         ///< p16: dragging the morph pad
+    int heldPad = -1;               ///< p25: the performance pad held by the mouse
     std::vector<float> modHistory;  ///< 0.7: recent values of the selected routing
     BarDrag drag;
 
