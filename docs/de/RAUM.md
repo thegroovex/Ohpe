@@ -56,7 +56,7 @@ Bypass (jeder ältere Klang spielt bitgleich); Umschalten blendet über 20 ms ü
 | Seite | Parameter | Bereich | Wirkung |
 |---|---|---|---|
 | 3D-Bewegung | Raum | aus / an | die Stufe |
-| | Bewegungspfad | Aus, Kreis, Acht, Vorbeiflug, Zufallsorbit, Pendel, Spirale aufwärts | siehe unten |
+| | Bewegungspfad | Aus, Kreis, Acht, Vorbeiflug, Zufallsorbit, Pendel, Spirale aufwärts, Ping-Pong v/h, Schwarm, Flüstern, Entfernungsgang, Über den Kopf, Wellenorbit | siehe unten |
 | | Bewegungslänge | 1/16 … 32 Takte, 1/4. | ein Durchlauf des Pfads, im Takt des Songs |
 | | Bewegungstempo | ×−4 … ×4 (Standard ×1) | multipliziert das Tempo; negativ = rückwärts, 0 = steht. Bei genau ×1 rastet die Bewegung auf die Song-Position ein (sie wiederholt sich bei jedem Abspielen gleich) |
 | 3D-Position | Azimut | −180 … 180° | Richtung (0 = vorn, +90 = rechts, ±180 = hinten); dreht den ganzen Pfad |
@@ -87,6 +87,19 @@ Bypass (jeder ältere Klang spielt bitgleich); Umschalten blendet über 20 ms ü
 | Zufallsorbit | ein weicher Zufallsweg, vier neue Punkte pro Durchlauf (jeder Part seinen eigenen) | wie weit er wandert (Richtung, Höhe, Entfernung) |
 | Pendel | schwingt von vorn über deinen Kopf nach hinten und zurück | wie weit es schwingt (100 % = vorn bis hinten) |
 | Spirale aufwärts | steigt in 1–4 Windungen von unterhalb der Ohren bis über den Kopf, dann zurück | Zahl der Windungen |
+| Ping-Pong v/h | springt im Takt von vorn nach hinten und zurück: jeder halbe Durchlauf beginnt auf dem Schlag mit einer schnellen Bewegung, dann bleibt der Klang stehen. Vorn → hinten führt rechts oben vorbei, hinten → vorn links oben | wie zackig (0 = weiches Schwingen über den ganzen halben Durchlauf, 100 % = kurzer Hüpfer in den ersten 30 %) |
+| Schwarm | ein Flirren um die Vorderseite: zwölf kleine Zufallssprünge pro Durchlauf auf einer langsamen Zufallsdrift – wie eine Biene oder eine Funkenwolke (jeder Part seinen eigenen, nie genau gleich) | wie weit es flirrt und driftet (Richtung, Höhe, Entfernung) |
+| Flüstern | ganz nah hinter deinem Kopf (0,4 m bei der Standard-Entfernung), verweilt am nächsten an einem Ohr, dann am anderen – der Nahfeld-Pegelunterschied macht es intim. *Entfernung* kleiner = noch näher | wie weit es an den Ohren nach vorn reicht |
+| Entfernungsgang | geht geradeaus in die Ferne und kommt zurück, pendelt dabei leicht links / rechts – Pegel, Luftdämpfung und Doppler ändern sich unterwegs | wie weit (2 … 16 × die Entfernung; am nächsten 0,35 ×) |
+| Über den Kopf | ein senkrechter Kreis durch beide Ohren: über dem Kopf → rechtes Ohr → unter dir → linkes Ohr | kippt die Oberseite des Kreises nach vorn (0 = genau durch die Ohren, 100 % = 45°) |
+| Wellenorbit | ein voller Orbit, der pro Runde dreimal auf und ab webt und an den Tiefpunkten etwas näher kommt | Höhe der Wellen (10 … 40°) und ihre Tiefe |
+
+Die sechs Pfade ab Ping-Pong v/h kamen später dazu; sie stehen am Ende der Liste, damit Klänge und
+Automationen mit den älteren Pfaden ihren Pfad behalten.
+
+**In der 3D-Ansicht** ist der Pfad des Edit-Parts vor seinem Punkt als zarte gepunktete Kurve gezeichnet –
+ein ganzer Durchlauf (bei Schwarm und Zufallsorbit: der nächste Durchlauf ab jetzt) – so siehst du Form,
+Größe und Ausrichtung eines Pfads, noch bevor ein Ton spielt. Der Name des Pfads steht unten links.
 
 Azimut und Elevation drehen jeden Pfad: ein Pendel bei Azimut 90° schwingt von links über rechts.
 

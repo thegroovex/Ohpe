@@ -57,7 +57,7 @@ exact bypass (every older sound plays bit-identically); switching crossfades ove
 | Page | Parameter | Range | What it does |
 |---|---|---|---|
 | 3D Motion | Space | off / on | the stage |
-| | Motion Path | Off, Circle, Figure-8, Fly-By, Random Orbit, Pendulum, Spiral Up | see below |
+| | Motion Path | Off, Circle, Figure-8, Fly-By, Random Orbit, Pendulum, Spiral Up, Ping-Pong F/B, Swarm, Whisper, Distance Walk, Over the Head, Weave | see below |
 | | Motion Length | 1/16 … 32 Bars, 1/4. | one cycle of the path, in time with the song |
 | | Motion Rate | ×−4 … ×4 (default ×1) | multiplies the speed; negative = backwards, 0 = stopped. At exactly ×1 the motion locks to the song position (it repeats identically on every playback) |
 | 3D Position | Azimuth | −180 … 180° | direction (0 = front, +90 = right, ±180 = behind); rotates the whole path |
@@ -88,6 +88,19 @@ exact bypass (every older sound plays bit-identically); switching crossfades ove
 | Random Orbit | a smooth random path, four new points per cycle (every part its own) | how far it wanders (direction, height, distance) |
 | Pendulum | swings from in front over your head to behind you and back | how far it swings (100 % = front to back) |
 | Spiral Up | climbs from below ear height to above your head in 1–4 turns, then drops back | number of turns |
+| Ping-Pong F/B | jumps from in front to behind you and back, in time: each half cycle opens with a quick move on the beat, then the sound holds. Front → back passes up on the right, back → front up on the left | how snappy (0 = a smooth swing over the whole half, 100 % = a short hop in the first 30 %) |
+| Swarm | a flutter around the front: twelve small random jumps per cycle on top of a slow random drift – like a bee or a cloud of sparks (every part its own, never repeats exactly) | how wide it flutters and drifts (direction, height, distance) |
+| Whisper | very close behind your head (0.4 m at the default distance), lingering and nearest at one ear, then the other – the near-field level difference makes it intimate. Lower *Distance* for an even closer whisper | how far round to the front it reaches at the ears |
+| Distance Walk | walks off straight ahead into the distance and comes back, swaying a little left and right – level, air absorption and Doppler change on the way | how far (2 … 16 × the distance; nearest 0.35 ×) |
+| Over the Head | a vertical circle through both ears: above your head → right ear → underneath → left ear | tilts the circle's top forward (0 = straight through the ears, 100 % = 45°) |
+| Weave | a full orbit that weaves up and down three times per turn and comes a little closer at its low points | height of the waves (10 … 40°) and their depth |
+
+The six paths from Ping-Pong F/B on were added later; they sit at the end of the list, so sounds and
+automation saved with the older paths keep their path.
+
+**In the 3D view** the edit part's path is drawn ahead of its dot as a faint dotted curve – one whole cycle
+(for Swarm and Random Orbit: the next cycle from now) – so you see the shape of a path, its size and its
+orientation before a note plays. The path's name sits bottom left.
 
 Azimuth and Elevation rotate every path: a Pendulum at azimuth 90° swings left over right.
 

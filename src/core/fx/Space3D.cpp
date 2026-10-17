@@ -118,7 +118,7 @@ Vec3 pathPoint (int path, double phase, float size, uint32_t seed) noexcept
             const double halves = fr * 2.0;
             const double h = std::floor (halves);
             const float t = (float) (halves - h);
-            const float w = 1.0f - 0.82f * size; // share of the half spent moving
+            const float w = 1.0f - 0.7f * size; // share of the half spent moving (never shorter than 30 %: no clicks)
             const float m = t < w ? smoothStep (t / w) : 1.0f;
             const float psi = pi * ((float) h + m);
             return unit ({ 0.5f * std::sin (psi), std::cos (psi), 0.7f * std::abs (std::sin (psi)) });

@@ -201,7 +201,7 @@ TEST_CASE ("1.0 space: motion paths and orientation (pure functions)")
         {
             CAPTURE (p);
             CAPTURE (size);
-            if (p != PathRandom) CHECK (near (pathPoint (p, 0.3, size, 5), pathPoint (p, 1.3, size, 5))); // periodic
+            if (pathIsPeriodic (p)) CHECK (near (pathPoint (p, 0.3, size, 5), pathPoint (p, 1.3, size, 5))); // periodic
             for (double ph = 0.0; ph < 2.0; ph += 0.01) // finite, never inside the head
             {
                 const auto v = pathPoint (p, ph, size, 5);
@@ -259,7 +259,8 @@ TEST_CASE ("1.0 space: interaural time difference has the right sign and size; s
 TEST_CASE ("1.0 space: moving sources stay click-free (orbit, jumps, motion, monitoring switch)")
 {
     for (int monitor : { SpaceEffect::Headphones, SpaceEffect::Speakers })
-        for (int path : { space::PathCircle, space::PathFigure8, space::PathRandom, space::PathPendulum, space::PathSpiral })
+        for (int path : { space::PathCircle, space::PathFigure8, space::PathRandom, space::PathPendulum, space::PathSpiral,
+                          space::PathPingPong, space::PathSwarm, space::PathWhisper, space::PathOverhead, space::PathWeave })
             for (float room : { 0.0f, 0.5f })
             {
                 CAPTURE (monitor);
@@ -527,7 +528,7 @@ TEST_CASE ("1.0 space: CPU - four part stages and eight rack instances")
         e->prepare (48000.0, 256);
         const auto d = e->getParamDescriptors();
         for (size_t k = 0; k < d.size(); ++k) e->setParam ((int) k, d[k].defaultValue);
-        e->setParam (SpaceEffect::Path, (float) (1 + i % 6));
+        e->setParam (SpaceEffect::Path, (float) (1 + i % (space::numPaths - 1))); // every path incl. the p30 ones
         e->setParam (SpaceEffect::Room, 0.5f);
         fx.push_back (std::move (e));
     }
@@ -544,4 +545,132 @@ TEST_CASE ("1.0 space: CPU - four part stages and eight rack instances")
 #ifdef NDEBUG
     CHECK (secs < 1.0); // generous: shared CI machines; typical well below 0.4 s
 #endif
+}
+
+// ------------------------------------------------------------------------------------------------ p30: more motion paths
+TEST_CASE ("p30 space: the motion path choice is append-only - old indices keep their meaning")
+{
+    Fx fx;
+    const auto d = fx.e.getParamDescriptors();
+    const auto& path = d[(size_t) SpaceEffect::Path];
+    REQUIRE (path.choices.size() == (size_t) space::numPaths);
+    REQUIRE (path.choicesDe.size() == (size_t) space::numPaths);
+    const char* before[] = { "Off", "Circle", "Figure-8", "Fly-By", "Random Orbit", "Pendulum", "Spiral Up" };
+    for (int i = 0; i < 7; ++i) CHECK (path.choices[(size_t) i] == before[i]);
+    CHECK (path.choices[(size_t) space::PathPingPong] == "Ping-Pong F/B");
+    CHECK (path.choices[(size_t) space::PathWeave] == "Weave");
+    CHECK (space::PathSpiral == 6);
+    CHECK (space::PathPingPong == 7);
+    CHECK (path.defaultValue == 0.0f);
+}
+
+TEST_CASE ("p30 space: shapes of the new paths (pure functions)")
+{
+    using namespace space;
+    auto near = [] (Vec3 a, Vec3 b) { return std::abs (a.x - b.x) < 1e-4f && std::abs (a.y - b.y) < 1e-4f && std::abs (a.z - b.z) < 1e-4f; };
+    // ping-pong: front at the cycle start, behind after half a cycle; snappy (size 1) arrives early and holds
+    CHECK (pathPoint (PathPingPong, 0.0, 1.0f, 1).y == doctest::Approx (1.0f).epsilon (0.001));
+    CHECK (pathPoint (PathPingPong, 0.5, 1.0f, 1).y == doctest::Approx (-1.0f).epsilon (0.001));
+    CHECK (pathPoint (PathPingPong, 0.3, 1.0f, 1).y < -0.99f);  // already behind, holding
+    CHECK (pathPoint (PathPingPong, 0.3, 0.0f, 1).y > -0.99f);  // smooth: still on its way
+    CHECK (pathPoint (PathPingPong, 0.08, 0.5f, 1).x > 0.0f);   // front -> back passes on the right ...
+    CHECK (pathPoint (PathPingPong, 0.58, 0.5f, 1).x < 0.0f);   // ... back -> front on the left
+    CHECK (pathPoint (PathPingPong, 0.08, 0.5f, 1).z > 0.0f);   // and above ear height
+    // swarm: stays around the front, deterministic per seed, continuous, not periodic
+    for (double ph = 0.0; ph < 8.0; ph += 0.0005)
+    {
+        const auto a = pathPoint (PathSwarm, ph, 1.0f, 3), b = pathPoint (PathSwarm, ph + 0.0005, 1.0f, 3);
+        CHECK (lengthOf ({ a.x - b.x, a.y - b.y, a.z - b.z }) < 0.03f);
+        CHECK (std::abs (azimuthOf (a)) < 145.0f);
+    }
+    CHECK_FALSE (near (pathPoint (PathSwarm, 2.3, 0.8f, 9), pathPoint (PathSwarm, 2.3, 0.8f, 10)));
+    CHECK_FALSE (near (pathPoint (PathSwarm, 0.3, 0.8f, 9), pathPoint (PathSwarm, 1.3, 0.8f, 9)));
+    // whisper: always close behind / beside the head, nearest at the ears
+    for (double ph = 0.0; ph < 1.0; ph += 0.01)
+    {
+        const auto v = pathPoint (PathWhisper, ph, 0.5f, 1);
+        CHECK (lengthOf (v) <= 0.401f);
+        CHECK (v.y < 0.5f);
+    }
+    CHECK (pathPoint (PathWhisper, 0.25, 1.0f, 1).x > 0.25f); // the right ear
+    CHECK (pathPoint (PathWhisper, 0.75, 1.0f, 1).x < -0.25f); // the left ear
+    // distance walk: far at the start, near halfway; size sets how far
+    CHECK (lengthOf (pathPoint (PathWalk, 0.0, 1.0f, 1)) == doctest::Approx (16.0f).epsilon (0.001));
+    CHECK (lengthOf (pathPoint (PathWalk, 0.0, 0.0f, 1)) == doctest::Approx (2.0f).epsilon (0.001));
+    CHECK (lengthOf (pathPoint (PathWalk, 0.5, 1.0f, 1)) == doctest::Approx (0.35f).epsilon (0.001));
+    // over the head: top, right ear, underneath, left ear
+    CHECK (near (pathPoint (PathOverhead, 0.0, 0.0f, 1), { 0.0f, 0.0f, 1.0f }));
+    CHECK (near (pathPoint (PathOverhead, 0.25, 0.0f, 1), { 1.0f, 0.0f, 0.0f }));
+    CHECK (near (pathPoint (PathOverhead, 0.5, 0.0f, 1), { 0.0f, 0.0f, -1.0f }));
+    CHECK (pathPoint (PathOverhead, 0.0, 1.0f, 1).y > 0.6f); // tilted: the top leans forward
+    // weave: a full turn with three highs and three lows
+    int crossings = 0;
+    float prev = elevationOf (pathPoint (PathWeave, 0.0, 1.0f, 1));
+    for (double ph = 0.002; ph <= 1.0; ph += 0.002)
+    {
+        const float e = elevationOf (pathPoint (PathWeave, ph, 1.0f, 1));
+        if ((prev < 0.0f) != (e < 0.0f)) ++crossings;
+        prev = e;
+    }
+    CHECK (crossings == 6);
+    CHECK (near (pathPoint (PathWeave, 0.25, 0.0f, 1), { 1.0f, 0.0f, 0.0f }));
+}
+
+TEST_CASE ("p30 space: new paths - no NaN, bounded output, click-free distance walk, near-field whisper level")
+{
+    for (int path = space::PathPingPong; path < space::numPaths; ++path)
+        for (int monitor : { SpaceEffect::Headphones, SpaceEffect::Speakers })
+        {
+            CAPTURE (path);
+            CAPTURE (monitor);
+            Fx fx (monitor);
+            fx.set (SpaceEffect::Path, (float) path).set (SpaceEffect::PathLength, 1.0f).set (SpaceEffect::PathSize, 1.0f)
+                .set (SpaceEffect::Distance, 0.2f).set (SpaceEffect::Doppler, 1.0f).set (SpaceEffect::Room, 1.0f)
+                .set (SpaceEffect::Glide, 0.005f).set (SpaceEffect::PathRate, 4.0f);
+            Stereo s = noise (48000 * 2, 11, true);
+            fx.run (s, 61);
+            CHECK (allFinite (s.l));
+            CHECK (allFinite (s.r));
+            CHECK (peak (s.l) < 8.0f); // input peak 0.3 at 0.2 m with full room: near-field gain (x2 distance, x1.75 near ear) + room stay bounded
+            CHECK (peak (s.r) < 8.0f);
+            Stereo silence (48000 * 4);
+            fx.run (silence);
+            CHECK (noDenormals (silence.l));
+            CHECK (noDenormals (silence.r));
+            CHECK (peak (silence.l, 48000 * 3) < 1.0e-4f);
+        }
+    // the distance walk is a Doppler path like the fly-by: click-free at musical lengths (1 bar and longer)
+    for (int monitor : { SpaceEffect::Headphones, SpaceEffect::Speakers })
+    {
+        Fx fx (monitor);
+        fx.set (SpaceEffect::Path, (float) space::PathWalk).set (SpaceEffect::PathLength, 4.0f).set (SpaceEffect::PathSize, 1.0f)
+            .set (SpaceEffect::Doppler, 1.0f).set (SpaceEffect::Room, 0.5f).set (SpaceEffect::Glide, 0.005f);
+        auto s = sine (300.0f, 96000 * 2);
+        fx.run (s, 173);
+        CHECK (allFinite (s.l));
+        CHECK (clickRatio (s.l, 300.0f / 0.88f, 4800) < 1.6);
+        CHECK (clickRatio (s.r, 300.0f / 0.88f, 4800) < 1.6);
+    }
+    // whisper at the right ear (headphones): much louder on the right, and louder overall than at the default distance
+    {
+        Fx fx;
+        fx.set (SpaceEffect::Path, (float) space::PathWhisper).set (SpaceEffect::PathRate, 0.0f).set (SpaceEffect::PathPhase, 90.0f)
+            .set (SpaceEffect::PathSize, 1.0f).set (SpaceEffect::Room, 0.0f).set (SpaceEffect::Spread, 0.0f).set (SpaceEffect::Doppler, 0.0f);
+        Stereo s = noise (48000, 21);
+        fx.run (s);
+        CHECK (db (energy (s.r, 9600) / energy (s.l, 9600)) > 6.0);
+        Fx far;
+        far.set (SpaceEffect::Azimuth, 70.0f).set (SpaceEffect::Room, 0.0f).set (SpaceEffect::Spread, 0.0f).set (SpaceEffect::Doppler, 0.0f);
+        Stereo t = noise (48000, 21);
+        far.run (t);
+        CHECK (energy (s.r, 9600) > 2.0 * energy (t.r, 9600));
+    }
+    // the stage reports the motion phase for the display's path preview
+    {
+        Fx fx;
+        fx.set (SpaceEffect::Path, (float) space::PathWeave).set (SpaceEffect::PathLength, 2.0f);
+        Stereo s (48000);
+        fx.run (s);
+        CHECK (fx.e.uiPhase() == doctest::Approx (2.0).epsilon (0.02)); // 1 s at 120 BPM, a cycle of one beat
+    }
 }
