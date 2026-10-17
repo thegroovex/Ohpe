@@ -15,7 +15,8 @@ add_library(ohpe_core STATIC
     midi/MidiMap.cpp
     engines/WavetableEngine.cpp
     engines/PluckEngine.cpp
-    engines/ClusterEngine.cpp)
+    engines/ClusterEngine.cpp
+    breed/SoundGenome.cpp)
 
 # phase 2, engines B: Grain, Vocal, Sampler, drum kit, sample model
 target_sources(ohpe_core PRIVATE

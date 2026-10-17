@@ -502,6 +502,11 @@ void LibraryBrowser::paint (juce::Graphics& g)
         for (int s = 1; s <= 5; ++s)
             chip (g, { r.getX() + u * 5.0f + (float) (s - 1) * u * 3.4f, ry, u * 3.0f, u * 3.0f }, s <= e.rating ? starFull() : starEmpty(),
                   s <= e.rating, colour::sunYellow, [this, sel, s, rating = e.rating] { presets.setRating (sel, rating == s ? 0 : s); });
+        if (e.meta.kind == preset::Kind::Part && onBreed) // p18
+        {
+            const juce::Rectangle<float> br { r.getX() + u * 22.6f, ry, r.getWidth() - u * 22.6f, u * 3.0f };
+            chip (g, br, i18n::upper (tr ("Breed")), false, colour::ultraviolet, [this, sel] { if (onBreed) onBreed (sel); });
+        }
         if (! e.factory)
             chip (g, { r.getX(), r.getBottom() - u * 7.2f, r.getWidth(), u * 3.0f }, tr ("Delete"), false, colour::signalRed, [this, sel] {
                 juce::Component::SafePointer<LibraryBrowser> safe (this);

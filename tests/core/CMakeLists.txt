@@ -71,3 +71,5 @@ target_sources(ohpe_core_tests PRIVATE ResonatorTests.cpp)
 target_sources(ohpe_core_tests PRIVATE MorphTests.cpp)
 # p20: audio to wavetable
 target_sources(ohpe_core_tests PRIVATE UserTableTests.cpp)
+# p18: preset breeding
+target_sources(ohpe_core_tests PRIVATE BreedTests.cpp)

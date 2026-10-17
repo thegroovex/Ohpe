@@ -79,6 +79,12 @@ waits for a MIDI message.
 **RANDOM** gives the edit part's engine new sound values (its Synth pages; level, tuning, voices and the
 sample stay). **SAVE** opens the library's save panel for the edit part.
 
+**Hold RANDOM** (or right-click it) to open **[breeding](BREEDING.md)**: cross two sounds, hear six children,
+keep the best and breed further. While the breeding view is open, RANDOM rolls a new parent B and SAVE stores
+the selected child in the library as a favourite.
+
+![The breeding view](../images/ohpe-breeding.png)
+
 ## Display: drag the bars
 
 The four rows on the display show what the four encoders control. The rows are controls too:
@@ -222,6 +228,9 @@ The strip at the top of the pro view (part modes) is for finding sounds rather t
   (it also sets how far VARY goes). Each card of the sound has its own **dice** (roll only this group) and
   **lock** (VARY and the dice leave it alone); the lock in the strip unlocks all.
 - **History** – the last 20 states as dots; click one to go back to it.
+
+VARY, the dice and crossing use the same breeding core as the [breeding view](BREEDING.md) (mutation per gene
+group with safety caps on resonance, feedback and drive; crossover per group).
 
 ## Sequencer views and parameter locks
 

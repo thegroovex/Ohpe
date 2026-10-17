@@ -81,6 +81,12 @@ auf eine MIDI-Nachricht wartet.
 **ZUFALL** gibt der Engine des bearbeiteten Parts neue Klangwerte (ihre Synth-Seiten; Pegel, Stimmung,
 Stimmen und Sample bleiben). **SPEICHERN** öffnet das Speicherfeld der Bibliothek für den bearbeiteten Part.
 
+**ZUFALL halten** (oder rechts anklicken) öffnet die **[Zucht](ZUCHT.md)**: zwei Klänge kreuzen, sechs Kinder hören,
+die besten behalten und weiterzüchten. Solange die Zucht-Ansicht offen ist, würfelt ZUFALL einen neuen
+Elternteil B, und SPEICHERN legt das gewählte Kind als Favorit in der Bibliothek ab.
+
+![Die Zucht-Ansicht](../images/ohpe-breeding-de.png)
+
 ## Display: Balken ziehen
 
 Die vier Zeilen im Display zeigen, was die vier Encoder steuern. Die Zeilen sind selbst Regler:
@@ -228,6 +234,9 @@ Der Streifen oben in der Profiansicht (Part-Modi) ist zum Finden von Klängen st
   (nur diese Gruppe) und ein **Schloss** (VARIIEREN und Würfel lassen sie in Ruhe); das Schloss im Streifen
   entsperrt alle.
 - **Verlauf** – die letzten 20 Zustände als Punkte; einen anklicken, um dorthin zurückzukehren.
+
+VARIIEREN, Würfel und Kreuzen nutzen denselben Zucht-Kern wie die [Zucht-Ansicht](ZUCHT.md) (Mutation je
+Gen-Gruppe mit Sicherheitsgrenzen für Resonanz, Feedback und Drive; Kreuzung je Gruppe).
 
 ## Sequencer-Ansichten und Parameter-Locks
 

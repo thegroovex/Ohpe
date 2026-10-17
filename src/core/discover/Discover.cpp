@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Discover.h"
 
+#include "../OhpeCore.h"
+#include "../breed/SoundGenome.h"
+
 #include <algorithm>
 #include <cmath>
+#include <memory>
 
 namespace ohpe::discover
 {
@@ -163,13 +167,93 @@ void apply (ParamRegistry& reg, const Genome& g)
     }
 }
 
+namespace
+{
+// ---- p21 + p18: the shared breeding core behind the Discover strip ------------------------------------------------
+// The strip's genomes hold full IDs ("p2.fm.index") with normalised values; the breeding core works on plain values
+// in its schema order (built once from a registry: the schema is the same for every part and every Core). Genes the
+// core leaves alone keep their exact input value (no normalise round trip).
+class CoreBreeder final : public Breeder
+{
+public:
+    Genome vary (const Genome& parent, float strength, uint32_t seed, const std::vector<bool>& mask) const override
+    {
+        const auto& s = schema();
+        auto g = toCore (s, parent);
+        const auto before = g;
+        breed::Rng rng (breed::Rng::mix (0x0D15C0u, seed));
+        breed::mutate (s, g, before, before, std::clamp (strength, 0.0f, 1.0f), rng);
+        auto out = parent;
+        for (size_t i = 0; i < out.size(); ++i)
+        {
+            if (i < mask.size() && ! mask[i]) continue;
+            const int k = s.indexOf (local (out.genes[i].id));
+            if (k < 0 || g[(size_t) k] == before[(size_t) k]) continue;
+            out.genes[i].value = std::clamp (s.gene (k).toNorm (g[(size_t) k]), 0.0f, 1.0f);
+        }
+        return out;
+    }
+
+    Genome cross (const Genome& a, const Genome& b, uint32_t seed) const override
+    {
+        const auto& s = schema();
+        const auto ga = toCore (s, a);
+        auto gb = ga; // genes of a that b does not have stay as in a
+        for (const auto& gene : b.genes)
+            if (const int k = s.indexOf (local (gene.id)); k >= 0) gb[(size_t) k] = s.gene (k).fromNorm (gene.value);
+        breed::Rng rng (breed::Rng::mix (0xC0055u, seed));
+        const auto child = breed::crossover (s, ga, gb, breed::Options {}, rng);
+        auto out = a;
+        for (auto& gene : out.genes)
+        {
+            const int k = s.indexOf (local (gene.id));
+            if (k < 0) continue;
+            const float v = child[(size_t) k];
+            if (v == ga[(size_t) k]) continue; // from a: exact
+            if (const int j = b.indexOf (gene.id); j >= 0 && v == gb[(size_t) k]) { gene.value = b.genes[(size_t) j].value; continue; }
+            // a blend: between the parents (no round-trip drift past either)
+            const float na = gene.value, nb = b.indexOf (gene.id) >= 0 ? b.genes[(size_t) b.indexOf (gene.id)].value : na;
+            gene.value = std::clamp (s.gene (k).toNorm (v), std::min (na, nb), std::max (na, nb));
+        }
+        return out;
+    }
+
+private:
+    static std::string local (const std::string& id)
+    {
+        const auto dot = id.find ('.');
+        return dot == std::string::npos ? id : id.substr (dot + 1);
+    }
+    static const breed::Schema& schema()
+    {
+        static const breed::Schema s = [] {
+            const auto core = std::make_unique<Core>();
+            return breed::Schema::forPart (core->params(), 0);
+        }();
+        return s;
+    }
+    static breed::Genome toCore (const breed::Schema& s, const Genome& g)
+    {
+        auto out = breed::fromParams (s, {});
+        for (const auto& gene : g.genes)
+            if (const int k = s.indexOf (local (gene.id)); k >= 0) out[(size_t) k] = s.gene (k).fromNorm (gene.value);
+        return out;
+    }
+};
+} // namespace
+
 const Breeder& basicBreeder()
 {
     static const BasicBreeder b;
     return b;
 }
 
-const Breeder& breeder() { return basicBreeder(); }
+const Breeder& breeder()
+{
+    // p18 merged: the shared breeding core (SoundGenome: mutation and crossover with its gene groups and safety caps)
+    static const CoreBreeder b;
+    return b;
+}
 
 std::vector<Genome> siblings (const Genome& parent, int count, float strength, uint32_t seed, const std::vector<bool>& mask)
 {

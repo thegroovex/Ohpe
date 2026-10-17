@@ -18,7 +18,9 @@ namespace ohpe::discover
 
     The breeding itself sits behind the small `Breeder` interface. The reusable breeding core of issue #13 plugs in
     there when it lands (breeder() returns it); until then `basicBreeder()` is used - a plain, deterministic
-    implementation that only knows normalised values and discrete steps.
+    implementation that only knows normalised values and discrete steps. Since the breeding core (p18, SoundGenome) is
+    merged, breeder() is an adapter onto it: its mutation and crossover (gene groups, ownership, safety caps), with the
+    strip's locks and normalised values on top; basicBreeder() stays as the dependency-free reference.
 
     Message thread only (allocates).
 */
@@ -60,7 +62,7 @@ public:
 };
 
 const Breeder& basicBreeder();
-/** The breeder the UI uses (the basic one until the shared breeding core is merged). */
+/** The breeder the UI uses: the shared breeding core (breed::mutate / breed::crossover). */
 const Breeder& breeder();
 
 /** `count` siblings of `parent` (seeds seed, seed + 1, ...); strength 0..1. */

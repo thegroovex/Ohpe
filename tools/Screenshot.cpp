@@ -597,6 +597,34 @@ int main (int argc, char* argv[])
             }
         }
 
+        // p18: the breeding view - two library sounds on two engines, a brood of six with thumbnails, two kept
+        {
+            auto byName = [&] (const char* name) {
+                const auto& list = p.presets().entries();
+                for (int i = 0; i < (int) list.size(); ++i)
+                    if (list[(size_t) i].meta.name == name && list[(size_t) i].meta.kind == preset::Kind::Part) return i;
+                return -1;
+            };
+            e.selectPart (0);
+            e.selectEngine (EngineType::Analog);
+            e.showBreeding (true);
+            auto& bv = e.breedingComponent();
+            bv.session().clear();
+            bv.setSeedBase (18);
+            bv.setParentFromLibrary (0, byName ("Glass Shimmer"));
+            bv.setParentFromLibrary (1, byName ("Crystal FM Pad"));
+            bv.setAmount (0.35f);
+            bv.breedNew();
+            bv.waitForSketches (180000);
+            bv.toggleKept (1);
+            bv.toggleKept (4);
+            bv.audition (1, false);
+            e.advanceAnimation (0.2f);
+            save (e, dir.getChildFile ("ohpe-breeding" + suffix + ".png"));
+            bv.close (false);
+            run (p, 8);
+        }
+
         // 0.3: preset library with a category filter and a preset selected
         e.showLibrary (true);
         auto& lib = e.libraryComponent();

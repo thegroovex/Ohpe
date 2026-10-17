@@ -6679,6 +6679,9 @@ mfx4.resonator.drive
 mfx4.resonator.mix
 mfx4.resonator.pressamt
 mfx4.resonator.slideamt
+lib.breed
+lib.breed.go
+lib.breed.next
 p1.char.bright
 p1.char.hard
 p1.char.alive

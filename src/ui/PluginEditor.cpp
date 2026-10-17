@@ -179,7 +179,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     : AudioProcessorEditor (p), proc (p), display (p),
       pitchWheel (p, Core::Ids::perfBend, "Pitch", true), modWheel (p, Core::Ids::perfMod, "Mod", false),
       glideSwitch (p), glideKnob (p, "Glide"), lifeBar (p),
-      keyboard (p.keyboardState), proView (p), library (p)
+      keyboard (p.keyboardState), proView (p), library (p), breedView (p)
 {
     setLookAndFeel (&lnf);
     setWantsKeyboardFocus (false);
@@ -254,8 +254,26 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     saveKey.setStyle (PictoKey::Style::Round);
     octDownKey.setLegend ("Octave -");
     octUpKey.setLegend ("Octave +");
-    randomKey.onClick = [this] { randomiseSound(); };
-    saveKey.onClick = [this] { openSave(); };
+    // p18: RANDOM rolls a sound; held (or right-clicked) it opens the breeding view, where it rolls a new parent B
+    randomKey.onStateChange = [this] {
+        if (randomKey.isDown() && randomPressedAt == 0) randomPressedAt = juce::Time::getMillisecondCounter();
+    };
+    randomKey.onClick = [this] {
+        const bool held = randomPressedAt != 0 && juce::Time::getMillisecondCounter() - randomPressedAt >= 450;
+        randomPressedAt = 0;
+        if (breedView.isVisible())
+        {
+            breedView.randomParent (1);
+            breedView.breedNew();
+        }
+        else if (held) showBreeding (true);
+        else randomiseSound();
+    };
+    randomKey.onSecondaryClick = [this] { showBreeding (! breedView.isVisible()); };
+    saveKey.onClick = [this] {
+        if (breedView.isVisible() && breedView.selectedChild() >= 0) breedView.saveChild (breedView.selectedChild()); // p18: heart + library
+        else openSave();
+    };
     for (auto* k : { &randomKey, &saveKey }) addAndMakeVisible (*k);
     for (auto* c : { (juce::Component*) &pitchWheel, (juce::Component*) &modWheel, (juce::Component*) &glideSwitch, (juce::Component*) &glideKnob })
         addAndMakeVisible (*c);
@@ -333,12 +351,19 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     addChildComponent (proView);
     library.onClosed = [this] { libraryKey.setActive (false); updateOverlayVisibility(); rebindEncoders(); };
     addChildComponent (library);
+    library.onBreed = [this] (int entry) { // p18: the library's Breed button
+        library.close (false);
+        showBreeding (true, entry);
+    };
+    breedView.onClosed = [this] { randomKey.setActive (false); updateOverlayVisibility(); rebindEncoders(); };
+    addChildComponent (breedView);
     tooltipWindow = std::make_unique<juce::TooltipWindow> (this, 700); // p11: tooltips on keys and the display
 
     loadUiState();
     proc.addChangeListener (this);
     proc.presets().addChangeListener (this);
     libraryRequestsSeen = proc.libraryToggleRequests();
+    for (int k = 0; k < 3; ++k) breedRequestsSeen[(size_t) k] = proc.breedRequestCount (k);
 
     setResizable (true, true);
     setResizeLimits (designWidth * 2 / 3, designHeight * 2 / 3, designWidth * 2, designHeight * 2);
@@ -470,6 +495,7 @@ void OhpeEditor::resized()
     place (glideKnob, "glideKnob");
     place (proView, "overlay");
     place (library, "overlay");
+    place (breedView, "overlay"); // p18
     for (auto& k : engineKeys) k->setUiScale (s);
     for (auto& k : modeKeys) k->setUiScale (s);
     for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey, &libraryKey, &proKey, &randomKey, &saveKey })
@@ -795,6 +821,7 @@ void OhpeEditor::showLibrary (bool show)
     if (show == library.isVisible()) return;
     if (show)
     {
+        if (breedView.isVisible()) showBreeding (false); // p18
         proView.setVisible (false);
         proKey.setActive (false);
         library.open();
@@ -805,8 +832,24 @@ void OhpeEditor::showLibrary (bool show)
     updateOverlayVisibility();
 }
 
+void OhpeEditor::showBreeding (bool show, int libraryEntry)
+{
+    if (show == breedView.isVisible()) return;
+    if (show)
+    {
+        if (library.isVisible()) showLibrary (false);
+        if (proView.isVisible()) showProView (false);
+        breedView.open (libraryEntry);
+    }
+    else
+        breedView.close (true);
+    randomKey.setActive (show);
+    updateOverlayVisibility();
+}
+
 void OhpeEditor::showProView (bool show)
 {
+    if (show && breedView.isVisible()) showBreeding (false);
     if (show && library.isVisible()) showLibrary (false);
     proView.setVisible (show);
     proKey.setActive (show);
@@ -1587,7 +1630,7 @@ void OhpeEditor::refreshKeys()
     keysReadout.setTooltip (tr ("Range of the on-screen keyboard and its octave shift; red during MIDI learn"));
     libraryKey.setTooltip (tr ("Preset library"));
     proKey.setTooltip (tr ("All parameters of the mode"));
-    randomKey.setTooltip (tr ("Random: new values for the sound of the edit part's engine"));
+    randomKey.setTooltip (tr ("Random: new values for the sound of the edit part's engine. Hold (or right-click) for breeding"));
     saveKey.setTooltip (tr ("Save the edit part as a user preset"));
     pitchWheel.setTooltip (tr ("Pitch bend - springs back to the centre; right-click: MIDI learn"));
     modWheel.setTooltip (tr ("Mod wheel (modulation matrix source); right-click: MIDI learn"));
@@ -1620,6 +1663,7 @@ bool OhpeEditor::keyPressed (const juce::KeyPress& key)
     if (key == juce::KeyPress::escapeKey)
     {
         if (library.isVisible()) { library.close (false); return true; }
+        if (breedView.isVisible()) { breedView.close (false); return true; } // p18
         if (proView.isVisible()) { showProView (false); return true; }
         if (lockStepIndex >= 0) { selectLockStep (-1); return true; }
     }
@@ -1648,6 +1692,15 @@ void OhpeEditor::timerCallback()
         libraryRequestsSeen = req;
         if (toggle) showLibrary (! library.isVisible());
     }
+    for (int k = 0; k < 3; ++k) // p18: MIDI remote "lib.breed" / ".go" / ".next"
+        if (const int req = proc.breedRequestCount (k); req != breedRequestsSeen[(size_t) k])
+        {
+            const int presses = req - breedRequestsSeen[(size_t) k];
+            breedRequestsSeen[(size_t) k] = req;
+            if (k == 0 && (presses & 1) != 0) showBreeding (! breedView.isVisible());
+            if (k == 1) { if (! breedView.isVisible()) showBreeding (true); breedView.breedAgain(); }
+            if (k == 2) { if (! breedView.isVisible()) showBreeding (true); breedView.auditionNext(); }
+        }
 
     const auto engine = ui::selectedEngine (core, ctx.part);
     if (engine != shownEngine)
@@ -1760,7 +1813,8 @@ void OhpeEditor::showMidiMenu()
     m.addItem (3, tr ("Clear all MIDI mappings"), ! proc.core().midiMap().mappings().empty());
     m.addSeparator();
     juce::PopupMenu remote;
-    for (const char* id : { Core::Ids::libOpen, Core::Ids::libPrev, Core::Ids::libNext, Core::Ids::editPart,
+    for (const char* id : { Core::Ids::libOpen, Core::Ids::libPrev, Core::Ids::libNext, Core::Ids::libBreed, Core::Ids::libBreedGo,
+                            Core::Ids::libBreedNext, Core::Ids::editPart,
                             // p11: tape transport
                             Core::Ids::tapeTxPlay, Core::Ids::tapeTxTapePlay, Core::Ids::tapeTxStop, Core::Ids::tapeTxRec,
                             Core::Ids::tapeRtz, Core::Ids::tapeTxLoop, Core::Ids::tapeTxArm, Core::Ids::tapeEditTrack })
