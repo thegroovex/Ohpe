@@ -297,5 +297,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     PerformancePads::registerParams (reg);
     // ---- p24: the harmony brain - memory, hold, take key, clear, grid layout; per part: follow --------------------
     HarmonyBrain::registerParams (reg, Core::numParts);
+    // ---- p32: pressure glide per part ("pN.glide.press": aftertouch makes the glide longer or shorter) ------------
+    for (auto& p : parts) p->registerLate32GlidePressParams (reg);
 }
 } // namespace ohpe
