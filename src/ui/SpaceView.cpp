@@ -439,7 +439,7 @@ void Scene::paint (juce::Graphics& g, juce::Rectangle<float> area, Core& core, i
                     + juce::String (space::lengthOf (pos), 1) + " m",
                 area.withHeight (u * 2.0f), juce::Justification::topRight, false);
 
-    // p30: the edit part's motion path by name, bottom left
+    // p30: the edit part's motion path by name, bottom left (above the correlation bar)
     {
         const auto& reg = core.params();
         const int idx = reg.indexOf (partPrefix (focusPart) + "space.path");
@@ -452,7 +452,7 @@ void Scene::paint (juce::Graphics& g, juce::Rectangle<float> area, Core& core, i
                 g.setFont (labelFont (u * 1.25f));
                 g.setColour (colour::encoder (focusPart).withAlpha (0.8f));
                 g.drawText (i18n::upper (i18n::pick (d.choices[(size_t) v], v < (int) d.choicesDe.size() ? d.choicesDe[(size_t) v] : d.choices[(size_t) v])),
-                            area.withTrimmedBottom (u * 0.2f).removeFromBottom (u * 1.8f).removeFromLeft (area.getWidth() * 0.32f),
+                            area.withTrimmedBottom (u * 1.6f).removeFromBottom (u * 1.8f).removeFromLeft (area.getWidth() * 0.4f), // above the mono bar
                             juce::Justification::bottomLeft, false);
             }
         }
