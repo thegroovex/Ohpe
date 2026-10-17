@@ -58,7 +58,8 @@ juce::Rectangle<float> ConfirmDialog::keyArea (int key) const
 void ConfirmDialog::paint (juce::Graphics& g)
 {
     const float u = unit();
-    g.fillAll (colour::ink.withAlpha (0.42f)); // the plate stays visible behind the dimmed backdrop
+    // the plate stays visible behind the dimmed backdrop (black in both skins: the night skin's ink is light)
+    g.fillAll (juce::Colours::black.withAlpha (currentSkin() == Skin::Dark ? 0.55f : 0.38f));
 
     const auto p = panelArea();
     g.setColour (juce::Colours::black.withAlpha (0.22f));
