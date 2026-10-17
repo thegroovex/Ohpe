@@ -6826,5 +6826,11 @@ tape.edit.loopredo
 tape.edit.loophalf
 tape.edit.loopdouble
 tape.loopsnap
+# p41: the 3D switch per part (Off / Headphones / Speakers) - a front for pN.space.on + space.out
+p1.space.mode
+p2.space.mode
+p3.space.mode
+p4.space.mode
+# p45: Scale Lock
 key.lock
 key.lock.mode

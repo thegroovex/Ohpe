@@ -981,10 +981,26 @@ Seven parameters appended after `metro.tap` (p39). The six triggers (group `remo
 | `tape.edit.loopdouble` | Tape Loop Double | Tape Loop verdoppeln | trigger: twice as long from loop in | off |
 | `tape.loopsnap` | Tape Loop Snap | Tape Loop-Raster | Off, Beat, Bar / Aus, Schlag, Takt | Bar |
 
+## p41 – The 3D switch
+
+Guides: [English](en/SPACE.md#the-3d-switch-p41) · [Deutsch](de/RAUM.md#der-3d-schalter-p41).
+Four parameters appended after `tape.loopsnap` (p42), group `partN/space`. Host parameters – automatable,
+MIDI-mappable, saved with the session and in presets – that are a **front** for the existing `pN.space.on` and
+`space.out`: those two stay the stored truth, no existing ID changed. The plug-in keeps the three in step on the
+message thread: a moved switch writes `pN.space.on` (and `space.out` for Headphones / Speakers); a changed
+`pN.space.on` / `space.out` (preset, session, the Monitoring page, automation of the older IDs) moves the
+switches; after every preset / session load the switches are set from the stored values (older presets and
+sessions without the switch load correctly). The monitoring is global, so choosing Headphones or Speakers on one
+part switches it for every part with 3D on. No new modulation sources or targets.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `p1.space.mode` … `p4.space.mode` | Part N 3D Space Mode | Part N 3D-Raum Modus | Off, Headphones, Speakers / Aus, Kopfhörer, Lautsprecher (Off = `space.on` off; Headphones = on + `space.out` Headphones; Speakers = on + `space.out` Speakers) | Off |
+
 ## p45 – Scale Lock
 
 Guides: [English](en/USER-INTERFACE.md#key-chord-and-scale-lock-p45) · [Deutsch](de/BEDIENUNG.md#tonart-akkord-und-in-tonart-p45).
-Two parameters appended after `tape.loopsnap` (p42), group `global` like `key.root` / `key.scale`. Host parameters –
+Two parameters appended after `p4.space.mode` (p41), group `global` like `key.root` / `key.scale`. Host parameters –
 saved with the session, automatable, MIDI-mappable. The defaults leave Ohpe as before (lock off). The key itself stays
 `key.root` / `key.scale` (above); no new modulation sources or targets.
 

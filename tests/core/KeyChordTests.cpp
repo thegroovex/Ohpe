@@ -219,7 +219,7 @@ TEST_CASE ("p45 scale lock: parameters appended at the end, KeyScale from the co
 {
     Rig rig;
     const auto& reg = rig.core.params();
-    CHECK (reg.indexOf ("key.lock") == reg.indexOf ("tape.loopsnap") + 1);
+    CHECK (reg.indexOf ("key.lock") == reg.indexOf ("p4.space.mode") + 1);
     CHECK (reg.indexOf ("key.lock.mode") == reg.indexOf ("key.lock") + 1);
     CHECK (reg.get ("key.lock") == 0.0f);
     CHECK (reg.descriptor (reg.indexOf ("key.lock.mode")).choices.size() == (size_t) keys::numLockModes);

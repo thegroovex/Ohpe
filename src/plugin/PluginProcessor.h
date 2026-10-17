@@ -4,6 +4,7 @@
 
 #include "BounceToEngine.h"
 #include "OhpeCore.h"
+#include "fx/SpaceMode.h"
 #include "model/CpuLoad.h"
 #include "PresetManager.h"
 #include "SampleLoader.h"
@@ -145,6 +146,9 @@ public:
     juce::String tapeTimeText (double seconds) const;
     /** Handles pending remote-control presses (called by the processor's timer; public for tests). */
     void pollRemoteControls();
+    /** p41: keeps every part's 3D switch (pN.space.mode) and pN.space.on / space.out in step (message thread; the
+        timer calls it, the display after a click so the stage follows at once). */
+    void syncSpaceModes();
     /** p24: writes the harmony brain's remembered key into "key.root" / "key.scale" (host notified). Message thread. */
     void takeHarmonyKey();
 
@@ -288,6 +292,7 @@ private:
     std::atomic<bool> hostTempo { false };
     int metroTapParam = -1;
     float metroTapLast = 0.0f;
+    spacemode::Link<Core::numParts> spaceModeLink; ///< p41: the 3D switch per part <-> space.on / space.out
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OhpeProcessor)
 };

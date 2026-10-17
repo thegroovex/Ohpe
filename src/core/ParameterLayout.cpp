@@ -10,6 +10,7 @@
 //     (test "parameter IDs are append-only"); extend the golden file when you append.
 
 #include "OhpeCore.h"
+#include "fx/SpaceMode.h"
 #include "bounce/Bounce.h"
 #include "tape/TapeLoop.h"
 
@@ -29,7 +30,26 @@ void addLateSeq (ParamRegistry& reg, const std::vector<ParamDescriptor>& list, s
     }
 }
 
-// p45: Scale Lock (key.lock, key.lock.mode) - appended at the very end
+/** p41: own (non-inlined) function - its string temporaries stay out of the big registration frame (Windows test
+    threads have small stacks, see bounce::registerParams). */
+#if defined(_MSC_VER)
+__declspec (noinline)
+#else
+__attribute__ ((noinline))
+#endif
+void registerSpaceModeParams (ParamRegistry& reg, int numParts)
+{
+    using namespace pd;
+    for (int i = 0; i < numParts; ++i)
+    {
+        const auto n = std::to_string (i + 1);
+        auto d = choice (spacemode::modeId (i), "Part " + n + " 3D Space Mode", "Part " + n + " 3D-Raum Modus",
+                         { "Off", "Headphones", "Speakers" }, { "Aus", "Kopfhörer", "Lautsprecher" }, 0);
+        d.group = "part" + n + "/space";
+        reg.add (std::move (d));
+    }
+}
+// p45: Scale Lock (key.lock, key.lock.mode) - appended at the very end, own function like p41 (Windows test stack)
 #if defined(_MSC_VER)
 __declspec (noinline)
 #else
@@ -333,6 +353,9 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     // ---- p42: the tape loop by hand - set in / out at the playhead, half / double, undo / redo (triggers), snap grid
     //      (own function in its own file: a big stack frame here overflows the Windows test threads' stack) -----------
     tapeloop::registerParams (reg);
+    // ---- p41: the 3D switch per part - Off / Headphones / Speakers, a front for "pN.space.on" + "space.out" (see
+    //      fx/SpaceMode.h: the older two stay the stored truth, the plug-in keeps the three in step) ---------------
+    registerSpaceModeParams (reg, Core::numParts);
     // ---- p45: Scale Lock - every incoming note snaps to the key (nearest note, or the white keys play its degrees) --
     //      (own function: a big stack frame in this one overflows the Windows test stack)
     registerScaleLockParams (reg);

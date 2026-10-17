@@ -8,6 +8,7 @@
 // p20: the user wavetable frame stack (ohpe-user-wavetable). p27: the update view (ohpe-update).
 // p32: the settings menu (ohpe-settings*, ohpe-about*, ohpe-help-overlay*), the night skin (ohpe-dark, *-dark).
 // p23: bounce to engine - a loop bounced into Grain (ohpe-bounce). p33: the Expression page (ohpe-expression).
+// p41: the 3D switch (ohpe-space-switch-{off,headphones,speakers}[-dark]).
 // p38: the tape page's clear-all confirmation (ohpe-tape-clear, ohpe-tape-clear-dark) and the tape page at night (ohpe-tape-dark).
 // p42: the tape page's loop keys and loop readout (ohpe-tape-loop, ohpe-tape-loop-dark).
 // p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
@@ -619,6 +620,7 @@ int main (int argc, char* argv[])
                 setPlain (p, pre + "distance", 1.2f + 1.1f * (float) part);
                 setPlain (p, pre + "room", 0.3f);
             }
+            p.syncSpaceModes(); // p41: the 3D switches follow (the plug-in's timer does this)
             e.selectPart (0);
             e.selectEngine (EngineType::Wavetable);
             e.selectMode (ui::Mode::Effects);
@@ -649,6 +651,7 @@ int main (int argc, char* argv[])
             }
             release (p, { 48, 55 });
             for (int part = 1; part <= 3; ++part) setPlain (p, "p" + juce::String (part) + ".space.on", 0.0f);
+            p.syncSpaceModes(); // p41
             {
                 juce::AudioBuffer<float> buffer (p.getTotalNumOutputChannels(), 512);
                 juce::MidiBuffer midi;
@@ -982,6 +985,34 @@ int main (int argc, char* argv[])
                     p.setKeyFromUi (0, scales::Major);
                     e.selectEngine (EngineType::Analog);
                     run (p, 2);
+                }
+                {   // p41: the 3D switch on the 3D Space view - Off (the hint on its own line), Headphones, Speakers
+                    e.selectPart (0);
+                    e.selectEngine (EngineType::Wavetable);
+                    setChoice (p, "p1.space.path", "Circle");
+                    setChoice (p, "p1.space.pathlen", "2 Bars");
+                    setPlain (p, "p1.space.distance", 2.0f);
+                    e.selectMode (ui::Mode::Effects);
+                    e.selectView (3);
+                    p.syncSpaceModes();
+                    const char* names[] = { "off", "headphones", "speakers" };
+                    for (int m = 0; m < 3; ++m)
+                    {
+                        setPlain (p, "p1.space.mode", (float) m);
+                        p.syncSpaceModes();
+                        playAnimated (p, e, 2, { 60 });
+                        playAnimated (p, e, 30);
+                        release (p, { 60 });
+                        save (e, dir.getChildFile (juce::String ("ohpe-space-switch-") + names[m] + (dark ? "-dark" : "") + suffix + ".png"));
+                    }
+                    setPlain (p, "p1.space.mode", 0.0f);
+                    setPlain (p, "space.out", 0.0f);
+                    p.syncSpaceModes();
+                    setChoice (p, "p1.space.path", "Off");
+                    setPlain (p, "p1.space.distance", 1.5f);
+                    run (p, 2);
+                    e.selectEngine (EngineType::Analog);
+                    e.selectMode (ui::Mode::Synth);
                 }
             }
             set ([] (settings::UserSettings& v) { v = settings::UserSettings {}; });

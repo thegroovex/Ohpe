@@ -537,17 +537,19 @@ While an effect chosen for the first time is being prepared, the display says *P
 
 ![The 3D Space view](../images/ohpe-space-view.png)
 
-The fourth tab of **Effects** mode, **3D Space**, edits the edit part's [3D stage](SPACE.md): on, motion
-path, length and rate on the first page, then position (azimuth, elevation, distance, spread), the shape
+The fourth tab of **Effects** mode, **3D Space**, edits the edit part's [3D stage](SPACE.md): the **3D switch**
+(*Off / Headphones / Speakers*, a segmented switch on encoder 1 – turn the encoder or click a segment; p41),
+motion path, length and rate on the first page, then position (azimuth, elevation, distance, spread), the shape
 of the motion, room, air and distance, and on the last page the global **3D Monitoring** (Headphones /
 Speakers) and **Mono Check**. Instead of the effect chain the display shows the head-centred 3D view of
 all four parts, with the edit part's motion path drawn ahead of its dot as a dotted curve and its name bottom
-left; the strip below sums up the motion and the monitoring. The rack soft keys (move, clear)
+left; the strip below sums up the motion and the monitoring (while the part's 3D is off, the first line of the
+strip says *Choose Headphones or Speakers (encoder 1) to place and move this part* instead of the motion). The rack soft keys (move, clear)
 belong to the **Rack** and **Master** tabs only.
 
 The **3D badge** in the display header (headphones pictogram + "3D") lights up in ultraviolet and pulses
 gently while the edit part plays binaural 3D; on speaker monitoring it is outlined in yellow with a pair
-of speakers, otherwise dim. Click it to jump to this view; hover it for *Binaural 3D – best with
+of speakers, otherwise dim (with headphones or speakers – the monitoring a switch-on would use). Click it to jump to this view; hover it for *Binaural 3D – best with
 headphones*. The part selector shows the same pictogram per part, the library shows it after the name
 of every preset tagged **3D**.
 
