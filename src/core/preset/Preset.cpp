@@ -63,11 +63,15 @@ std::vector<float> arpSnapshot (const ParamRegistry& reg)
     return v;
 }
 
+/** p22: the motion block of a part ("motion.*") is not part of a part preset (the lanes belong to the project). */
+static bool isMotionId (const std::string& localId) noexcept { return startsWith (localId, "motion."); }
+
 bool isExcludedFromProject (const std::string& id) noexcept
 {
     return startsWith (id, "lib.") || startsWith (id, "ui.") || startsWith (id, "tape.edit.") || startsWith (id, "tape.tx.") || startsWith (id, "sync.")
         || startsWith (id, "space.")  // 1.0: monitoring (headphones / speakers, mono check) belongs to the listener
-        || startsWith (id, "perf."); // p14: wheel positions are performance, not sound
+        || startsWith (id, "perf.") // p14: wheel positions are performance, not sound
+        || (id.size() > 13 && id.compare (id.size() - 13, 13, ".motion.clear") == 0); // p22: a trigger
 }
 
 std::string engineIdOfPart (const ParamRegistry& reg, int partIndex)
@@ -90,7 +94,7 @@ Preset capturePart (const ParamRegistry& reg, int partIndex, Meta meta)
     for (int i = 0; i < reg.size(); ++i)
     {
         const auto& id = reg.descriptor (i).id;
-        if (id.compare (0, prefix.size(), prefix) == 0)
+        if (id.compare (0, prefix.size(), prefix) == 0 && ! isMotionId (id.substr (prefix.size()))) // p22: motion belongs to the project
             p.params[id.substr (prefix.size())] = reg.get (i);
     }
     // the arpeggiator is global, but when it plays this part it belongs to the sound
@@ -120,6 +124,7 @@ Preset captureProject (Core& core, Meta meta, const std::map<std::string, std::s
     p.sections["orbit"] = core.orbitSequencer().toJson();
     for (int i = 0; i < Core::numParts; ++i)
         if (core.morph().anyCorner (i)) { p.sections["morph"] = core.morph().toJson(); break; } // p16
+    if (core.motion().anyLane()) p.sections["motion"] = core.motion().toJson(); // p22
     for (const auto& [name, text] : extraSections)
         if (! text.empty()) p.sections[name] = text;
     return p;
@@ -236,12 +241,12 @@ ApplyResult applyPart (const Preset& p, ParamRegistry& reg, int partIndex, const
     for (int i = 0; i < reg.size(); ++i)
     {
         const auto& d = reg.descriptor (i);
-        if (d.id.compare (0, prefix.size(), prefix) == 0 && d.id != prefix + "midich")
+        if (d.id.compare (0, prefix.size(), prefix) == 0 && d.id != prefix + "midich" && ! isMotionId (d.id.substr (prefix.size())))
             reg.set (i, d.defaultValue);
     }
     for (const auto& [id, v] : p.params)
     {
-        if (id == "midich") continue;
+        if (id == "midich" || isMotionId (id)) continue; // p22: a new sound keeps the part's motion lanes
         if (reg.set (prefix + id, v)) ++r.applied;
         else ++r.unknown;
     }
@@ -290,10 +295,12 @@ ApplyResult applyProject (const Preset& p, Core& core)
     if (auto it = p.sections.find ("orbit"); it != p.sections.end()) core.orbitSequencer().fromJson (it->second);
     else core.orbitSequencer().clearPattern();
     for (const auto& [name, text] : p.sections)
-        if (name != "sequencer" && name != "orbit" && name != "midimap" && name != "ui" && name != "tape" && name != "morph")
+        if (name != "sequencer" && name != "orbit" && name != "midimap" && name != "ui" && name != "tape" && name != "morph" && name != "motion")
             core.setStateSection (name, text);
     if (auto it = p.sections.find ("morph"); it != p.sections.end()) core.morph().fromJson (it->second); // p16
     else core.morph().clearAll();
+    if (auto it = p.sections.find ("motion"); it != p.sections.end()) core.motion().fromJson (it->second); // p22
+    else core.motion().clearAll();
     r.ok = true;
     return r;
 }

@@ -64,6 +64,9 @@ target_sources(ohpe_core PRIVATE
 # p16: the morph space (XY pad between four complete sounds per part)
 target_sources(ohpe_core PRIVATE morph/MorphSpace.cpp)
 
+# p22: the motion recorder (knob movements per part as looping lanes)
+target_sources(ohpe_core PRIVATE motion/MotionRecorder.cpp)
+
 # 0.4 (package F): factory sample bank (instruments, drum kits)
 target_sources(ohpe_core PRIVATE sample/FactoryBank.cpp)
 

@@ -285,5 +285,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
         add (toggle (Core::Ids::libBreedGo, "Breed Again", "Weiterzüchten", false));
         add (toggle (Core::Ids::libBreedNext, "Next Child", "Nächstes Kind", false));
     }
+    // ---- p22: the motion recorder - per part: play, record, length, depth, clear --------------------------------
+    MotionRecorder::registerParams (reg, Core::numParts);
 }
 } // namespace ohpe

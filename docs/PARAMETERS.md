@@ -772,3 +772,21 @@ generations, kept children) is stored in the plug-in state (section `"breed"`).
 | `lib.breed` | Breeding | Zucht | trigger | off |
 | `lib.breed.go` | Breed Again | Weiterzüchten | trigger | off |
 | `lib.breed.next` | Next Child | Nächstes Kind | trigger | off |
+
+## Motion recorder (p22)
+
+Appended after the breeding triggers (`lib.breed.next`), part by part (`p1.motion.*` … `p4.motion.*`, 20 IDs).
+Guides: [English](en/MOTION.md) · [Deutsch](de/BEWEGUNG.md). The recorded lanes (four per part: target parameter
+and 8 points per sixteenth, up to 64 sixteenths) are stored in projects and the plug-in state (section `"motion"`);
+part presets neither carry nor reset the motion block (a new sound keeps the part's lanes).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.motion.on` | Part N Motion Play | Part N Bewegung abspielen | Off / On | Off |
+| `pN.motion.rec` | Part N Motion Record | Part N Bewegung aufnehmen | Off / On | Off |
+| `pN.motion.len` | Part N Motion Length | Part N Bewegung Länge | 1 … 64 sixteenths | 16 |
+| `pN.motion.amt` | Part N Motion Depth | Part N Bewegung Tiefe | 0 … 1 (0 = the knob's own value) | 1 |
+| `pN.motion.clear` | Part N Motion Clear | Part N Bewegung löschen | trigger (not part of projects) | off |
+
+The modulation matrix gains the sources **Motion 1 … Motion 4** (23 – 26): the value of lane 1 … 4 at the play
+position (0 … 1; 0 where nothing is recorded or the transport stops). The source choice list grows at its end.

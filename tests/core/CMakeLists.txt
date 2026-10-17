@@ -71,3 +71,5 @@ target_sources(ohpe_core_tests PRIVATE MorphTests.cpp)
 target_sources(ohpe_core_tests PRIVATE UserTableTests.cpp)
 # p18: preset breeding
 target_sources(ohpe_core_tests PRIVATE BreedTests.cpp)
+# p22: the motion recorder
+target_sources(ohpe_core_tests PRIVATE MotionTests.cpp)

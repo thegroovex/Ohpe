@@ -108,7 +108,7 @@ std::array<float, MorphSpace::numCorners> MorphSpace::weights (float x, float y)
 
 bool MorphSpace::isExcluded (const std::string& id) noexcept
 {
-    return startsWith (id, "morph.") || id == "midich" || id == "quant" || id == "chord" || id == "mpe" || id == "mpe.bend"
+    return startsWith (id, "morph.") || startsWith (id, "motion.") || id == "midich" || id == "quant" || id == "chord" || id == "mpe" || id == "mpe.bend"
         || id == "mpe.press" || id == "mpe.timbre";
 }
 
