@@ -327,17 +327,17 @@ POLY = project(
 
 # ---------------------------------------------------------------------------------------------
 # 6. Arp Sequence: step -> 64-step arpeggio, Orbit -> drums (Studio kit), Euclid -> pedal bass;
-#    the arpeggiator waits on part 3 (latch) for chords you play
+#    the arpeggiator waits on part 3 for chords you hold (latch off: it stops when you let go)
 def arp_bar(chord):
     seq = [chord[0], chord[1], chord[2], chord[3], chord[2], chord[1]] * 3
     return [(n, 100 if i % 4 == 0 else 84) for i, n in enumerate(seq[:16])]
 ARP = project(
     "Arp Sequence", ["Arp", "Drums"],
-    "A 64-step arpeggio over Am, Fmaj7, G and Em on an A pedal, Studio-kit drums from Orbit. The arpeggiator is latched on part 3: play chords.",
+    "A 64-step arpeggio over Am, Fmaj7, G and Em on an A pedal, Studio-kit drums from Orbit. The arpeggiator plays part 3: hold chords.",
     {"tempo": 120, "drum.kit": KITS["studio"], "seq.orbit.drums": 1, "seq.orbit.on": 1, "seq.orbit.gate": 0.5,
      "seq.step.channel": 1, "seq.step.rate": STEP_RATE["1/16"], "seq.step.length": 64,
      "seq.arp.on": 1, "seq.arp.part": 3, "seq.arp.mode": 2, "seq.arp.oct": 2, "seq.arp.rate": RATE["1/16"], "seq.arp.gate": 0.5,
-     "seq.arp.latch": 1, "key.root": 9, "key.scale": 2},
+     "seq.arp.latch": 0, "key.root": 9, "key.scale": 2},
     lanes([16, 16, 16, 16], ["1/16"] * 4),
     part(1, "Analog Arp"), part(2, "Round Sub"), part(3, "FM Arp Bell"), part(4, "Analog Dawn"),
     {"seq.euclid.on": 1, "seq.euclid.part": 2, "seq.euclid.rate": RATE["1/8"], "seq.euclid.gate": 0.8, "seq.euclid.vel": 100},

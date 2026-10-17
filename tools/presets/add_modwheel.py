@@ -48,11 +48,12 @@ VIB_FREE = 0.03
 # Level calibration (internal renders, wheel 0 vs 127): amount factors for presets whose peak or loudness rose too
 # much with the full amount. Target: at most +1.5 dB active RMS, and the peak below -0.5 dBFS or at most +0.5 dB.
 SCALE = {
-    "arp-formant-arp": 0.6, "bass-deep-pluck-sub": 0.6, "bass-neuro-swirl": 0.5, "bass-punch-sub": 0.5,
-    "bass-rolling-bass": 0.5, "bass-screech-bass": 0.6, "bass-upright-pluck": 0.7, "boom-boom-kick-bass": 0.5,
-    "keys-dusty-ep": 0.7, "keys-dusty-keys": 0.7, "keys-music-box": 0.5, "leads-breath-lead": 0.5,
-    "pads-glass-grains": 0.6, "pads-halo-drift": 0.5, "pads-overhead-choir": 0.4, "pads-super-stack": 0.5,
-    "pads-warm-horizon": 0.5, "textures-breath-bore": 0.5, "textures-fourths-drift": 0.8,
+    "arp-formant-arp": 0.6, "bass-deep-pluck-sub": 0.6, "bass-neuro-swirl": 0.3, "bass-punch-sub": 0.3,
+    "bass-rolling-bass": 0.3, "bass-screech-bass": 0.6, "bass-upright-pluck": 0.7, "boom-boom-kick-bass": 0.3,
+    "drums-wood-block": 0.6, "keys-dusty-ep": 0.5, "keys-dusty-keys": 0.5, "keys-music-box": 0.3,
+    "leads-breath-lead": 0.5, "pads-glass-grains": 0.6, "pads-halo-drift": 0.5, "pads-overhead-choir": 0.4,
+    "pads-spectral-morph": 0.5, "pads-super-stack": 0.3, "pads-warm-horizon": 0.3, "textures-breath-bore": 0.3,
+    "textures-fourths-drift": 0.8,
 }
 
 

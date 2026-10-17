@@ -8,9 +8,8 @@ DE_SPACE = {
     "Halo Drift": "Verstimmter Cluster-Chor, der auf einem langsamen Zufallsorbit um und über dir wandert – nie zweimal am selben Ort.",
     "Overhead Choir": "Hauchiger „Uh“-Chor, der von vorn über deinen Kopf nach hinten und zurück schwingt – ein Pendel durch den Raum.",
     "Night Swarm": "Gläserne FM-Glocken auf einem schnellen Zufallsorbit in wechselnden Entfernungen: ein Lichterschwarm um deinen Kopf.",
-    "Orbit Arp": "Sechzehntel-Zupf-Arpeggio, das einmal pro Takt um deinen Kopf fliegt – nah, hell und schnell. Gehalten: Akkord drücken.",
-    "Figure Eight Arp": "Digitales Arpeggio, das eine liegende Acht um dich zeichnet – links vorn, quer, rechts hinten – über zwei Takte. "
-                        "Gehalten.",
+    "Orbit Arp": "Sechzehntel-Zupf-Arpeggio, das einmal pro Takt um deinen Kopf fliegt – nah, hell und schnell.",
+    "Figure Eight Arp": "Digitales Arpeggio, das eine liegende Acht um dich zeichnet – links vorn, quer, rechts hinten – über zwei Takte.",
     "Spiral Arp": "Glocken-Arpeggio, das sich über vier Takte von Ohrhöhe bis über deinen Kopf hochschraubt und für die nächste Runde "
                   "wieder fällt.",
     "Orbit Reese": "Neurofunk-Reese, dessen knurrende Mitten alle zwei Takte um deinen Kopf kreisen, während der Sub unter 160 Hz "
