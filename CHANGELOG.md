@@ -7,6 +7,13 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Wavetable banks – content packs of kind `wavetables` add read-only tables to the Wavetable engine's menu
+  (Content packs › pack); presets and projects store only `"<pack>/<table>"`; `make_ohpepack.py` /
+  `make_manifest.py` build wavetable packs (frame check) – see [Wavetable](docs/en/engines/wavetable.md).
+- DE: Wavetable-Bänke – Inhaltspakete der Art `wavetables` bringen schreibgeschützte Tabellen ins Menü der
+  Wavetable-Engine (Inhaltspakete › Paket); Presets und Projekte speichern nur `"<Paket>/<Tabelle>"`;
+  `make_ohpepack.py` / `make_manifest.py` bauen Wavetable-Pakete (Frame-Prüfung) – siehe
+  [Wavetable](docs/de/engines/wavetable.md).
 - EN: Content packs – install `.ohpepack` files (file dialog or drop on the window) with a SHA-256 check of every
   file, pack manager (version, size, license / signature shown, remove), library filter by pack, `"<pack>/<item>"`
   references with a clear "content pack missing" message, `tools/pack/make_ohpepack.py` – see

@@ -3,6 +3,7 @@
 #include "UserTables.h"
 
 #include "ContentLibrary.h"
+#include "Localisation.h"
 #include "Updater.h"
 #include "wavetable/TableFile.h"
 
@@ -391,6 +392,46 @@ usertable::UserTablePtr UserTableManager::loadPackTable (const update::ContentRe
     table->contentRef = ref.toString();
     state = update::RefState::Found;
     return t;
+}
+
+std::vector<UserTableManager::PackTable> UserTableManager::packTables() const
+{
+    std::vector<PackTable> out;
+    const bool german = i18n::current() == i18n::Language::German;
+    for (const auto& p : content::scan (contentDir).packs)
+        for (const auto& [kind, item] : p.items)
+            if (kind == update::PackKind::Wavetables)
+            {
+                PackTable t;
+                t.pack = juce::String::fromUTF8 (p.id.c_str());
+                t.packName = juce::String::fromUTF8 ((german && ! p.nameDe.empty() ? p.nameDe : p.nameEn).c_str());
+                t.item = juce::String::fromUTF8 (item.c_str());
+                out.push_back (std::move (t));
+            }
+    return out;
+}
+
+bool UserTableManager::usePackTable (int part, const juce::String& refText)
+{
+    if (busy.load() || inputCapture.recording()) return false;
+    update::RefState state = update::RefState::Invalid;
+    const auto ref = update::ContentRef::parse (refText.toStdString());
+    auto t = loadPackTable (ref, state);
+    if (t == nullptr)
+    {
+        if (state == update::RefState::PackMissing)
+        {
+            missing = juce::StringArray (juce::String::fromUTF8 (ref.pack.c_str()));
+            post ("Content pack missing - install it in Settings > Updates", missing[0]);
+        }
+        else
+            post ("The pack table could not be read", refText);
+        return false;
+    }
+    usertable::setTable (core, part, Target::Wavetable, t);
+    if (onPublished) onPublished (part, Target::Wavetable);
+    post ("Wavetable ready", juce::String::fromUTF8 (t->name().c_str()) + " - " + juce::String (t->numFrames()) + " frames");
+    return true;
 }
 
 usertable::ContentResolver UserTableManager::contentResolver() const

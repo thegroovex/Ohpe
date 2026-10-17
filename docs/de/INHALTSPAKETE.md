@@ -2,8 +2,9 @@
 
 Ohpe – designed by groovex. English: [Content packs](../en/CONTENT-PACKS.md)
 
-Ein Inhaltspaket bringt neue Klänge in Ohpe, ohne neue Programmversion: heute Preset-Sammlungen, als Nächstes
-Wavetable-Bänke. Ein Paket ist eine Datei mit der Endung **`.ohpepack`**. Pakete sind schreibgeschützt – deine eigenen
+Ein Inhaltspaket bringt neue Klänge in Ohpe, ohne neue Programmversion: Preset-Sammlungen (Art `presets`) und
+Wavetable-Bänke (Art `wavetables`: Single-Cycle-Sets für die Wavetable-Engine, schreibgeschützt in ihrem
+Tabellenmenü unter **Inhaltspakete** – siehe [Wavetable](engines/wavetable.md)). Ein Paket ist eine Datei mit der Endung **`.ohpepack`**. Pakete sind schreibgeschützt – deine eigenen
 Presets, Wavetables, Bounces und Einstellungen bleiben unberührt.
 
 ![Inhaltspakete in den Einstellungen](../images/ohpe-packs-de.png)

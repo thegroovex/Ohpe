@@ -137,6 +137,8 @@ juce::String statusLine (OhpeProcessor& proc, int part, EngineType engine)
     if (table == nullptr) return tr (engine == EngineType::Vocal ? "Built-in vowels - drop audio here to import" : "Built-in tables - drop audio or a wavetable here");
     juce::String s = juce::String::fromUTF8 (table->name().c_str());
     if (engine == EngineType::Wavetable) s << " - " << table->numFrames() << " " << tr ("frames");
+    if (! table->contentRef.empty()) // wavetable banks: a read-only pack table, named with its pack
+        s << "  /  " << tr ("Pack") << " " << juce::String::fromUTF8 (table->contentRef.c_str()).upToFirstOccurrenceOf ("/", false, false);
     if (! userOn (proc, part, engine)) s << " (" << tr ("off") << ")";
     return s;
 }

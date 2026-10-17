@@ -2,8 +2,9 @@
 
 Ohpe – designed by groovex. Deutsch: [Inhaltspakete](../de/INHALTSPAKETE.md)
 
-A content pack adds sounds to Ohpe without a new version of the program: preset collections today, wavetable banks
-next. A pack is one file ending in **`.ohpepack`**. Packs are read-only – your own presets, wavetables, bounces and
+A content pack adds sounds to Ohpe without a new version of the program: preset collections (kind `presets`) and
+wavetable banks (kind `wavetables`: single-cycle sets for the Wavetable engine, listed read-only in its table menu
+under **Content packs** – see [Wavetable](engines/wavetable.md)). A pack is one file ending in **`.ohpepack`**. Packs are read-only – your own presets, wavetables, bounces and
 settings are never touched.
 
 ![Content packs in the settings](../images/ohpe-packs.png)
