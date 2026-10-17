@@ -655,13 +655,15 @@ std::string Core::saveState (const std::string& uiJson) const
     if (! uiJson.empty()) s["ui"] = uiJson;
     for (const auto& [name, text] : extraSections)
         if (! text.empty() && s.find (name) == s.end()) s[name] = text;
-    return state::saveState (registry, s);
+    return state::saveState (registry, s); // pad on-states are written but never restored (p28, see loadState)
 }
 
 bool Core::loadState (const std::string& json, std::string* uiJsonOut)
 {
     auto r = state::loadState (json, registry, true);
     if (! r.ok) return false;
+    // p28: a pad held or latched while the host saved is a performance gesture, not part of the song
+    for (int p = 0; p < PerformancePads::numPads; ++p) registry.set (PerformancePads::padId (p), 0.0f);
     map.clear();
     if (auto it = r.sections.find ("midimap"); it != r.sections.end()) map.fromJson (it->second);
     mapper.publish (map);
