@@ -156,6 +156,12 @@ liegen auf denen aller anderen. Ändert man Ohpes Tempo, ändert sich das Sessio
 Stop bleiben lokal. Link ist eine Build-Option (`-DOHPE_WITH_LINK=ON`, Standard an); das Plug-in
 folgt immer seinem Host.
 
+### Grid-Controller (Standalone)
+
+Ein 8 × 8-Pad-Controller mit vierzeiligem Display kann die Raster-Tastatur spielen und die gezeigte Seite bedienen –
+**Grid-Controller (Profil 1)** und seine Ports unter Einstellungen > MIDI > Controller wählen. Sein Port wird aus den
+normalen MIDI-Eingängen genommen. Siehe [Grid-Controller](CONTROLLER.md).
+
 ## Einstellungen im Überblick
 
 | ID | Bereich | Standard |

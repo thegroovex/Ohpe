@@ -934,6 +934,36 @@ int main (int argc, char* argv[])
                     p.clearAllMidiMappings();
                     setPlain (p, "p2.mpe", 0.0f);
                 }
+                if (! dark)
+                {   // p46: the controller section with the virtual controller view (a mock device: no MIDI port needed);
+                    // the four display lines of three pages as text next to the shots
+                    auto& view = e.settingsComponent();
+                    view.setStandalone (true);
+                    auto& ctl = e.gridControllerForTests();
+                    ctl.attachForTests ([] (const juce::MidiMessage&) {});
+                    set ([] (settings::UserSettings& v) { v.controllerProfile = settings::ControllerGrid1; v.controllerIn = "Grid Port 1"; v.controllerOut = "Grid Port 1"; });
+                    ctl.attachForTests ([] (const juce::MidiMessage&) {});
+                    juce::String text;
+                    for (auto m : { ui::Mode::Synth, ui::Mode::Envelope, ui::Mode::Mixer })
+                    {
+                        e.selectMode (m);
+                        ctl.update();
+                        const auto lines = ctl.displayLines();
+                        text << "+" << juce::String::repeatedString ("-", 68) << "+\n";
+                        for (const auto& l : lines) text << "|" << juce::String (l) << "|\n";
+                        text << "+" << juce::String::repeatedString ("-", 68) << "+\n\n";
+                    }
+                    dir.getChildFile ("ohpe-controller-display" + suffix + ".txt").replaceWithText (text);
+                    e.selectMode (ui::Mode::Synth);
+                    ctl.update();
+                    view.showControllerPreview (true);
+                    e.showSettings (true, ui::SettingsView::Midi);
+                    shot ("ohpe-settings-controller");
+                    view.showControllerPreview (false);
+                    ctl.attachForTests (nullptr);
+                    set ([] (settings::UserSettings& v) { v.controllerProfile = settings::ControllerOff; v.controllerIn.clear(); v.controllerOut.clear(); });
+                    view.setStandalone (false);
+                }
                 e.settingsComponent().setHelpTopic (1);
                 e.showSettings (true, ui::SettingsView::Help);
                 shot (dark ? "ohpe-settings-help-dark" : "ohpe-settings-help");

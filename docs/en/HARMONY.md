@@ -83,6 +83,15 @@ It plays the **edit part**. With **MPE** on for that part every touch gets its o
 several notes, each with its own expression. Without MPE the notes play on the part's channel (through scale,
 chord and follow).
 
+### On a grid controller
+
+**Grid controller profile 1** (standalone app, Settings > MIDI > Controller) puts this grid on an external 8 × 8 pad
+controller: the **same layouts** (the Scales button steps through them), the **same note** for the same column and row
+from the same lowest C (the pads' four lower rows are the screen grid's four rows), the **same key** with **Scale Lock**
+(other notes dark and silent), the root lit **amber**, key notes **yellow**, chord tones **green (dim)**, held pads
+**green**, and **Octave − / +** moving pads and screen grid together. Velocity and pressure play the edit part (MPE: a
+member channel per pad). Details: [Grid controller](CONTROLLER.md).
+
 ## Modulation
 
 Three matrix sources (the same value in every part):

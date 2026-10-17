@@ -87,6 +87,16 @@ Parts), **hoch / runter** sendet Slide (CC 74), Touch- oder Stift-**Druck** send
 Touchscreen spielen mehrere Noten, jede mit eigenem Ausdruck. Ohne MPE spielen die Noten auf dem Kanal des Parts
 (durch Skala, Akkord und Folgen).
 
+### Auf einem Grid-Controller
+
+**Grid-Controller (Profil 1)** (Standalone-App, Einstellungen > MIDI > Controller) bringt dieses Raster auf einen
+externen 8 × 8-Pad-Controller: **dieselben Anordnungen** (die Taste Scales schaltet sie weiter), **derselbe Ton** für
+dieselbe Spalte und Reihe ab demselben tiefsten C (die vier unteren Pad-Reihen sind die vier Reihen des
+Bildschirm-Rasters), **dieselbe Tonart** mit **Scale Lock** (andere Töne dunkel und stumm), der Grundton leuchtet
+**bernstein**, Tonart-Töne **gelb**, Akkordtöne **grün (gedimmt)**, gehaltene Pads **grün**, und **Oktave − / +**
+verschiebt Pads und Bildschirm-Raster gemeinsam. Anschlag und Druck spielen den Edit-Part (MPE: ein Mitgliedskanal je
+Pad). Details: [Grid-Controller](CONTROLLER.md).
+
 ## Modulation
 
 Drei Matrix-Quellen (in jedem Part derselbe Wert):

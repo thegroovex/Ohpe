@@ -49,6 +49,10 @@ Textfarbe hält mindestens 4,5 : 1 Kontrast zu ihrem Hintergrund (von den Tests 
 - **MIDI-Eingänge**: in der Standalone-App jeder MIDI-Eingang mit Ein / Aus und ein Knopf zu den Audio-Einstellungen; im
   Plug-in wählt der Host die Eingänge.
 - **Clock und Sync**: Quelle Intern / MIDI-Clock / Link, MIDI-Clock senden, Clock-Glättung.
+- **Controller** (Standalone-App, p46): Profil Aus / **Grid-Controller (Profil 1)**, MIDI-Eingang und -Ausgang des
+  Controllers, Touch-Strip Bend / Mod und **Ansicht** – der virtuelle Controller (seine Displayzeilen, Pad-Lichter und
+  letzten Nachrichten) anstelle der Part-Tabelle. Gespeichert in `settings.json`, ab Werk aus – siehe
+  [Grid-Controller](CONTROLLER.md).
 
 Das sind die bestehenden Parameter (`pN.midich`, `pN.mpe`, `pN.bend`, `pN.mpe.bend`, `sync.*`) – sie hier zu ändern ist
 dasselbe wie überall sonst: der Host erfährt es, sie bleiben automatisierbar und MIDI-zuweisbar und werden mit dem Projekt
