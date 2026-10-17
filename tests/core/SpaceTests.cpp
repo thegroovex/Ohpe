@@ -548,6 +548,18 @@ TEST_CASE ("1.0 space: CPU - four part stages and eight rack instances")
 }
 
 // ------------------------------------------------------------------------------------------------ p30: more motion paths
+namespace
+{
+/** A sine with its phase in double precision: the float phase of sine() rounds by up to 3e-4 rad after a few seconds,
+    a jitter whose second difference the near ear's head-shadow treble lift (whisper: 0.4 m) turns into false clicks. */
+Stereo precSine (double hz, size_t n, float amp = 0.3f)
+{
+    Stereo s (n);
+    for (size_t i = 0; i < n; ++i) s.l[i] = s.r[i] = amp * (float) std::sin (2.0 * 3.14159265358979323846 * hz * (double) i / sampleRate);
+    return s;
+}
+} // namespace
+
 TEST_CASE ("p30 space: the motion path choice is append-only - old indices keep their meaning")
 {
     Fx fx;
@@ -650,7 +662,7 @@ TEST_CASE ("p30 space: new paths - no NaN, bounded output, click-free distance w
         Fx fx (monitor);
         fx.set (SpaceEffect::Path, (float) path).set (SpaceEffect::PathLength, 4.0f).set (SpaceEffect::PathSize, 1.0f)
             .set (SpaceEffect::Doppler, 1.0f).set (SpaceEffect::Room, 0.5f).set (SpaceEffect::Glide, 0.005f);
-        auto s = sine (300.0f, 96000 * 2);
+        auto s = precSine (300.0, 96000 * 2);
         fx.run (s, 173);
         CHECK (allFinite (s.l));
         CHECK (clickRatio (s.l, 300.0f / 0.88f, 4800) < 1.6);
