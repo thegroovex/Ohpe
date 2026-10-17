@@ -359,8 +359,13 @@ TEST_CASE ("preset arp: a part preset with an arp block switches the arp on for 
     CHECK ((int) reg.get ("seq.arp.oct") == 2);
     CHECK (reg.get ("seq.arp.gate") == doctest::Approx (0.45f));
     CHECK ((int) reg.get ("seq.arp.rate") == 2);
-    CHECK (reg.get ("seq.arp.latch") == 1.0f);
+    CHECK (reg.get ("seq.arp.latch") == 0.0f); // p28: a preset's latch is not applied - the arp stops on release
     CHECK (reg.get ("p1.analog.cutoff") == doctest::Approx (900.0f));
+    reg.set ("seq.arp.latch", 1.0f); // the player's own latch stays when a preset loads
+    preset::applyPart (arpPreset(), reg, 0);
+    CHECK (reg.get ("seq.arp.latch") == 1.0f);
+    reg.set ("seq.arp.latch", 0.0f);
+    CHECK_FALSE (preset::capturePart (reg, 0, {}).arp->count ("latch")); // not captured either
 
     // into part 4: the arp follows; unlisted keys return to their defaults
     auto p = arpPreset();
@@ -369,8 +374,9 @@ TEST_CASE ("preset arp: a part preset with an arp block switches the arp on for 
     CHECK ((int) reg.get ("seq.arp.part") == 4);
     CHECK ((int) reg.get ("seq.arp.oct") == 1);
 
-    // the core really arpeggiates part 4: a short key press keeps playing (latch), while the same
-    // sound loaded without its arp is silent long after the key was released
+    // the core really arpeggiates part 4. p28: by default (no latch) the arpeggio stops with the key;
+    // with the player's latch on a short key press keeps playing; the sound without its arp is silent
+    // long after the key was released
     auto lateSound = [] (Core& core) {
         core.prepare (48000.0, 256);
         std::vector<float> l (256), rr (256);
@@ -389,6 +395,13 @@ TEST_CASE ("preset arp: a part preset with an arp block switches the arp on for 
         }
         return late;
     };
+    {
+        Core held;
+        preset::applyPart (p, held.params(), 3);
+        CHECK (held.params().get ("seq.arp.latch") == 0.0f);
+        CHECK (lateSound (held) == 0);
+    }
+    reg.set ("seq.arp.latch", 1.0f);
     CHECK (lateSound (c) > 0);
     Core silent;
     preset::PartOptions soundOnly;

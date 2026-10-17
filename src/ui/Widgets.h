@@ -196,8 +196,11 @@ class Wheel : public juce::Component, public juce::SettableTooltipClient, privat
 {
 public:
     Wheel (OhpeProcessor& p, juce::String paramId, juce::String legendEnglish, bool springBack);
-    void refresh();                  ///< re-reads the parameter (editor timer); repaints only on change
-    float value() const;             ///< normalised 0..1
+    void refresh();                  ///< re-reads the parameter and incoming MIDI (editor timer); repaints only on change
+    float value() const;             ///< normalised 0..1 (the host parameter)
+    /** p28: what the wheel shows, normalised: the host parameter (mouse, host automation, MIDI learn), or the
+        controller's own wheel (pitch bend / CC 1 from host or device MIDI) when that moved last. */
+    float shownValue() const noexcept { return shown < 0.0f ? (spring ? 0.5f : 0.0f) : shown; }
     bool springsBack() const noexcept { return spring; }
     const juce::String& paramId() const noexcept { return id; }
 
@@ -215,6 +218,9 @@ private:
     juce::String id, legend;
     bool spring = false, dragging = false;
     float shown = -1.0f;
+    float lastParam = -1.0f;   ///< p28: the parameter at the last refresh
+    uint32_t midiSeen = 0;     ///< p28: the core's incoming wheel message count at the last refresh
+    bool midiInit = false;
     BarDrag drag;
 };
 

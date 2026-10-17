@@ -475,7 +475,7 @@ TEST_CASE ("library: Arp presets switch the arpeggiator on for their part; plain
     REQUIRE (pm.load (arp, 0));
     CHECK (plain (p, "seq.arp.on") == 1.0f);
     CHECK ((int) plain (p, "seq.arp.part") == 1);
-    CHECK (plain (p, "seq.arp.latch") == 1.0f);
+    CHECK (plain (p, "seq.arp.latch") == 0.0f); // p28: the arp runs while keys are held (latch is the player's option)
     CHECK (p.parameter ("seq.arp.on")->getValue() == doctest::Approx (1.0f));
     CHECK (p.parameter ("seq.arp.part")->getValue() == doctest::Approx (0.0f)); // 1 of 1..4
     CHECK (pm.arpPresetPart() == 0);

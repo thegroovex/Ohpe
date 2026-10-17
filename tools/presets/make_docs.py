@@ -25,20 +25,15 @@ ARP_MODES = (("Up", "Aufwärts"), ("Down", "Abwärts"), ("Up/Down", "Auf/Ab"), (
              ("Chord", "Akkord"))
 ARP_RATES = ["1/4", "1/8", "1/16", "1/32", "1/4T", "1/8T", "1/16T", "1/32T", "1/4.", "1/8.", "1/16."]
 ARP_NOTE = {
-    "en": "Presets marked *Arp:* switch the arpeggiator on for the part they load into (latched: press a key once, "
-          "it keeps playing; press a new key or chord to change it). Loading a preset without arp into that part "
-          "switches it off again. See [PRESETS.md](PRESETS.md#arp-block).\n",
-    "de": "Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie geladen werden (gehalten: eine Taste "
-          "einmal drücken, er spielt weiter; eine neue Taste oder ein neuer Akkord wechselt). Ein Preset ohne Arp in "
-          "diesem Part schaltet ihn wieder aus. Siehe [PRESETS.md](PRESETS.md#arp-block).\n",
+    "en": "Presets marked *Arp:* switch the arpeggiator on for the part they load into; it plays while you hold keys and stops when you let go (switch *Latch* on on the sequencer page to keep it running). Loading a preset without arp into that part switches it off again. See [PRESETS.md](PRESETS.md#arp-block).\n",
+    "de": "Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie geladen werden; er spielt, solange Tasten gehalten werden, und stoppt beim Loslassen (*Halten* auf der Sequenzer-Seite lässt ihn weiterlaufen). Ein Preset ohne Arp in diesem Part schaltet ihn wieder aus. Siehe [PRESETS.md](PRESETS.md#arp-block).\n",
 }
 
 
 def arp_text(a, de):
     i = 1 if de else 0
     parts = [ARP_MODES[a["mode"]][i], ARP_RATES[a["rate"]], "%d %s" % (a["oct"], "Okt." if de else "oct")]
-    if a.get("latch"):
-        parts.append("Halten" if de else "latch")
+    # p28: a preset's latch is not applied (latch is the player's choice), so it is not listed
     return " *Arp: %s*" % " · ".join(parts)
 
 

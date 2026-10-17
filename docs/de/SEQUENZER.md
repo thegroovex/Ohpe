@@ -62,8 +62,10 @@ werden gehalten und nacheinander gespielt.
 * **Modus**: Aufwärts, Abwärts, Auf/Ab (Umkehrpunkte ohne Wiederholung), Zufall, Wie gespielt,
   Akkord (alle gehaltenen Noten auf jedem Schritt).
 * **Oktaven** 1–4, **Gate** 5–100 %, **Raster** 1/4 … 1/32 mit Triolen (T) und punktiert (.).
-* **Halten** (Latch) behält die Noten nach dem Loslassen; die nächste Taste ohne gehaltene Taste
-  beginnt einen neuen Satz.
+* Standardmäßig spielt das Arpeggio, **solange Tasten gehalten werden**, und stoppt beim Loslassen.
+  **Halten** (Latch, Option, standardmäßig aus) behält die Noten nach dem Loslassen; die nächste Taste ohne
+  gehaltene Taste beginnt einen neuen Satz. Halten ist deine Spielweise: ein Part-Preset schaltet es beim Laden
+  weder ein noch aus.
 * Läuft der Transport, liegen die Schritte auf seinem Raster. Steht er, läuft der Arpeggiator
   frei im aktuellen Tempo und beginnt genau mit der ersten Taste.
 

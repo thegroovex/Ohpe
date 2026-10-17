@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "OhpeCore.h"
 
+#include "bounce/Bounce.h"
+#include "engines/GrainEngine.h"
 #include "model/StateSerializer.h"
 
+#include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <limits>
 
@@ -136,6 +140,59 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     prepareEffects();
 }
 
+bool Core::updateTapeGrain()
+{
+    tapeGrain.collect();
+    std::vector<GrainEngine*> engines;
+    bool wanted = false;
+    for (int p = 0; p < numParts; ++p)
+    {
+        if (auto* g = dynamic_cast<GrainEngine*> (parts[(size_t) p]->engine (EngineType::Grain)))
+        {
+            engines.push_back (g);
+            const int idx = registry.indexOf (parts[(size_t) p]->id ("grain.source"));
+            wanted = wanted || (idx >= 0 && (int) std::lround (registry.get (idx)) == grain::SourceTape);
+        }
+        for (auto* lane : morphSpace.laneParts (p))
+            if (auto* g = dynamic_cast<GrainEngine*> (lane->engine (EngineType::Grain)))
+            {
+                engines.push_back (g);
+                wanted = wanted || g->getShared().source == grain::SourceTape;
+            }
+    }
+
+    bool published = false;
+    if (! wanted)
+    {
+        if (tapeGrain.owner() != nullptr)
+        {
+            for (auto* g : engines) g->setTapeRegion (nullptr);
+            tapeGrain.set (nullptr); // kept alive for the grace time (a block may still read it)
+            tapeGrainRevision = 0;
+            tapeGrainTrack = -2;
+        }
+        return false;
+    }
+
+    const int idx = registry.indexOf (Ids::tapeEditTrack);
+    const int edit = std::clamp (idx >= 0 ? (int) std::lround (registry.get (idx)) - 1 : 0, 0, TapeMachine::numTracks - 1);
+    const int track = tapeMachine.contentEndFrames (edit) > 0 ? edit : -1;
+    const auto rev = tapeMachine.contentRevision();
+    if (rev != tapeGrainRevision || track != tapeGrainTrack)
+    {
+        bounce::Options o;
+        o.endless = false;
+        auto audio = bounce::readTape (tapeMachine, track);
+        auto region = audio.frames() > 0 ? bounce::prepare (std::move (audio), o, {}, "Tape") : nullptr;
+        tapeGrain.set (std::move (region)); // the old region stays alive for the grace time
+        tapeGrainRevision = rev;
+        tapeGrainTrack = track;
+        published = true;
+    }
+    for (auto* g : engines) g->setTapeRegion (tapeGrain.get()); // also engines of lanes created since
+    return published;
+}
+
 bool Core::prepareEffects()
 {
     bool any = masterRack.prepareSelected (registry);
@@ -216,6 +273,29 @@ void Core::addRouted (const MidiEvent& e, int part) noexcept
     {
         if (e.isNoteOn()) harmonyBrain.noteOn (part, e.data1, e.data2);
         else if (e.isNoteOff()) harmonyBrain.noteOff (part, e.data1);
+    }
+}
+
+void Core::followWheels (const MidiEvent& e) noexcept
+{
+    const int type = e.status & 0xf0;
+    const bool bendMsg = type == 0xe0, modMsg = type == 0xb0 && e.data1 == 1;
+    if (! bendMsg && ! modMsg) return;
+    // the edit part's channel (any for an omni part; the master channel 1 for an MPE part: member bends are per note)
+    const int edit = editPartIndex >= 0 ? std::clamp ((int) std::lround (snapshot[editPartIndex]) - 1, 0, numParts - 1) : 0;
+    const auto& r = routing[(size_t) edit];
+    const int ch = e.channel();
+    if (r.mpe ? ch != 1 : (r.channel == 0 ? ch == drumChannel : ch != r.channel)) return;
+    if (bendMsg)
+    {
+        const int v = (e.data1 & 0x7f) | ((e.data2 & 0x7f) << 7);
+        wheelMidiBend.store (std::clamp ((float) (v - 8192) / 8191.0f, -1.0f, 1.0f), std::memory_order_relaxed);
+        wheelMidiBendSeq.fetch_add (1, std::memory_order_release);
+    }
+    else
+    {
+        wheelMidiMod.store ((float) (e.data2 & 0x7f) / 127.0f, std::memory_order_relaxed);
+        wheelMidiModSeq.fetch_add (1, std::memory_order_release);
     }
 }
 
@@ -471,8 +551,11 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         }
     }
     for (int i = 0; i < numMidi; ++i)
+    {
+        if (midi[i].status < 0xf0) followWheels (midi[i]); // p28: the on-screen wheels show a controller's wheels
         if (midi[i].status < 0xf0 && ! mapper.handleMidi (midi[i]))
             routeLive (midi[i]);
+    }
     GridEvent ge; // p24: the on-screen grid keyboard plays one part
     while (gridEvents.pop (ge))
     {
@@ -598,13 +681,15 @@ std::string Core::saveState (const std::string& uiJson) const
     if (! uiJson.empty()) s["ui"] = uiJson;
     for (const auto& [name, text] : extraSections)
         if (! text.empty() && s.find (name) == s.end()) s[name] = text;
-    return state::saveState (registry, s);
+    return state::saveState (registry, s); // pad on-states are written but never restored (p28, see loadState)
 }
 
 bool Core::loadState (const std::string& json, std::string* uiJsonOut)
 {
     auto r = state::loadState (json, registry, true);
     if (! r.ok) return false;
+    // p28: a pad held or latched while the host saved is a performance gesture, not part of the song
+    for (int p = 0; p < PerformancePads::numPads; ++p) registry.set (PerformancePads::padId (p), 0.0f);
     map.clear();
     if (auto it = r.sections.find ("midimap"); it != r.sections.end()) map.fromJson (it->second);
     mapper.publish (map);

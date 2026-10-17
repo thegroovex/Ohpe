@@ -261,6 +261,19 @@ TEST_CASE ("arp: latch keeps the notes, without latch the arpeggio stops with th
     CHECK (arpNotes (Arpeggiator::Up, 1, { 60, 62 }, 6, 1.0f, true) == std::vector<int> { 60, 62, 60, 62, 60, 62 });
 }
 
+TEST_CASE ("p28 arp: the default is not latched - a fresh arpeggiator plays while keys are held, stops on release")
+{
+    Core c;
+    CHECK (c.params().get ("seq.arp.latch") == 0.0f);
+    CHECK (c.params().descriptor (c.params().indexOf ("seq.arp.latch")).defaultValue == 0.0f);
+    // the arpeggiator's own defaults (no Latch set): the arpeggio ends with the keys
+    Arpeggiator a;
+    a.prepare (sampleRate, 512);
+    const auto d = a.getParamDescriptors();
+    CHECK (d[(size_t) Arpeggiator::Latch].defaultValue == 0.0f);
+    CHECK (arpNotes (Arpeggiator::Up, 1, { 60, 64, 67 }, 8, d[(size_t) Arpeggiator::Latch].defaultValue, true) == std::vector<int> { 60 });
+}
+
 TEST_CASE ("arp: rate incl. triplets, gate length, free running when stopped starts on the key")
 {
     for (const auto& [rate, spacing] : std::vector<std::pair<int, long long>> { { seq::R1_8, 12000 }, { seq::R1_16T, 4000 }, { seq::R1_8T, 8000 }, { seq::R1_32T, 2000 }, { seq::R1_8D, 18000 } })
