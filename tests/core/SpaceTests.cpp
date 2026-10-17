@@ -260,7 +260,7 @@ TEST_CASE ("1.0 space: moving sources stay click-free (orbit, jumps, motion, mon
 {
     for (int monitor : { SpaceEffect::Headphones, SpaceEffect::Speakers })
         for (int path : { space::PathCircle, space::PathFigure8, space::PathRandom, space::PathPendulum, space::PathSpiral,
-                          space::PathPingPong, space::PathSwarm, space::PathWhisper, space::PathOverhead, space::PathWeave })
+                          space::PathPingPong, space::PathSwarm, space::PathOverhead, space::PathWeave })
             for (float room : { 0.0f, 0.5f })
             {
                 CAPTURE (monitor);
@@ -604,16 +604,17 @@ TEST_CASE ("p30 space: shapes of the new paths (pure functions)")
     CHECK (near (pathPoint (PathOverhead, 0.5, 0.0f, 1), { 0.0f, 0.0f, -1.0f }));
     CHECK (pathPoint (PathOverhead, 0.0, 1.0f, 1).y > 0.6f); // tilted: the top leans forward
     // weave: a full turn with three highs and three lows
-    int crossings = 0;
-    float prev = elevationOf (pathPoint (PathWeave, 0.0, 1.0f, 1));
-    for (double ph = 0.002; ph <= 1.0; ph += 0.002)
+    int crossings = 0; // zero crossings of the elevation inside one turn (at 1/6 ... 5/6; 0 and 1 are on the zero line)
+    float prev = elevationOf (pathPoint (PathWeave, 0.01, 1.0f, 1));
+    for (double ph = 0.012; ph < 0.99; ph += 0.002)
     {
         const float e = elevationOf (pathPoint (PathWeave, ph, 1.0f, 1));
         if ((prev < 0.0f) != (e < 0.0f)) ++crossings;
         prev = e;
     }
-    CHECK (crossings == 6);
-    CHECK (near (pathPoint (PathWeave, 0.25, 0.0f, 1), { 1.0f, 0.0f, 0.0f }));
+    CHECK (crossings == 5);
+    CHECK (azimuthOf (pathPoint (PathWeave, 0.25, 0.0f, 1)) == doctest::Approx (90.0f).epsilon (0.001));
+    CHECK (elevationOf (pathPoint (PathWeave, 0.25, 0.0f, 1)) == doctest::Approx (-10.0f).epsilon (0.01)); // a low point
 }
 
 TEST_CASE ("p30 space: new paths - no NaN, bounded output, click-free distance walk, near-field whisper level")
@@ -639,11 +640,15 @@ TEST_CASE ("p30 space: new paths - no NaN, bounded output, click-free distance w
             CHECK (noDenormals (silence.r));
             CHECK (peak (silence.l, 48000 * 3) < 1.0e-4f);
         }
-    // the distance walk is a Doppler path like the fly-by: click-free at musical lengths (1 bar and longer)
+    // the distance walk (a Doppler path like the fly-by) and the near-field whisper (the source passes right by the ear):
+    // click-free at musical lengths (1 bar and longer; the generic test above runs every path once per beat)
+    for (int path : { space::PathWalk, space::PathWhisper })
     for (int monitor : { SpaceEffect::Headphones, SpaceEffect::Speakers })
     {
+        CAPTURE (path);
+        CAPTURE (monitor);
         Fx fx (monitor);
-        fx.set (SpaceEffect::Path, (float) space::PathWalk).set (SpaceEffect::PathLength, 4.0f).set (SpaceEffect::PathSize, 1.0f)
+        fx.set (SpaceEffect::Path, (float) path).set (SpaceEffect::PathLength, 4.0f).set (SpaceEffect::PathSize, 1.0f)
             .set (SpaceEffect::Doppler, 1.0f).set (SpaceEffect::Room, 0.5f).set (SpaceEffect::Glide, 0.005f);
         auto s = sine (300.0f, 96000 * 2);
         fx.run (s, 173);
