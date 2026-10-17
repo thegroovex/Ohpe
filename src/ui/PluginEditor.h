@@ -134,7 +134,7 @@ public:
     ui::LifeBar& lifeBarComponent() { return lifeBar; } // p15
     ui::Keyboard& keyboardComponent() { return keyboard; }
     ui::PictoKey& midiKeyComponent() { return midiKey; }
-    // p24: the isomorphic grid keyboard (swapped in for the piano keys by the GRID key next to the keys readout)
+    // p24: the isomorphic grid keyboard (swapped in for the piano keys by the GRID key between OCTAVE + and MIDI)
     ui::GridKeyboard& gridKeyboard() { return grid; }
     ui::PictoKey& gridKeyComponent() { return gridKey; }
     void showGridKeyboard (bool show);

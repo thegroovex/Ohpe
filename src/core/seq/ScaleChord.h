@@ -85,8 +85,8 @@ inline int degreeAboveMask (int note, int degrees, int root, uint16_t m) noexcep
     int n = note;
     for (int k = 0; k < degrees; ++k)
     {
-        ++n;
-        while (! inMask (n, root, m) && n < note + 48) ++n;
+        const int from = n++;
+        while (! inMask (n, root, m) && n < from + 12) ++n; // the next note of the set lies within an octave
     }
     return n;
 }
