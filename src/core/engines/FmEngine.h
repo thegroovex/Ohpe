@@ -50,6 +50,9 @@ struct Shared
     float velocityIndex = 0.0f; ///< 0.8: how much the velocity scales the index (0 = not at all)
 };
 
+/** p35, tests only: true renders with the library sine (the reference form) instead of the polynomial one. */
+extern bool useLibrarySine;
+
 class Voice : public VoiceBase
 {
 public:
@@ -62,6 +65,9 @@ public:
     void render (float* l, float* r, int n, const VoiceCommon& c) noexcept;
 
 private:
+    template <bool librarySine>
+    void renderImpl (float* l, float* r, int n, const VoiceCommon& c) noexcept;
+
     std::array<float, numOps> phase {};
     float fb1 = 0.0f, fb2 = 0.0f;
 };

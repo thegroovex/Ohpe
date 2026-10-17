@@ -58,11 +58,21 @@ public:
     /** Incremented on every set(); lets UIs cheaply notice changes. */
     uint32_t changeCounter() const noexcept { return counter.load (std::memory_order_relaxed); }
 
+    /**
+        p35: which values changed since they were last taken - one bit per parameter, 64 per word, set by every set()
+        (after the value is stored) and resetToDefaults(). The core's block snapshot takes them (ParamSnapshot::
+        pullChanged) and re-reads only those parameters. There is one taker per registry: the core's snapshot.
+    */
+    int numDirtyWords() const noexcept { return dirtyWords; }
+    uint64_t takeDirty (int word) noexcept { return dirty[(size_t) word].exchange (0, std::memory_order_acquire); }
+
 private:
     std::vector<ParamDescriptor> descriptors;
     std::unordered_map<std::string, int> byId;
     std::unique_ptr<std::atomic<float>[]> values;
     std::atomic<uint32_t> counter { 0 };
+    std::unique_ptr<std::atomic<uint64_t>[]> dirty; ///< p35
+    int dirtyWords = 0;
     bool frozen = false;
 };
 } // namespace ohpe

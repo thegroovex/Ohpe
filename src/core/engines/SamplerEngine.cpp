@@ -229,7 +229,9 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
 SamplerEngine::SamplerEngine()
 {
-    builtInTone = sample::makeKeysTone (48000.0, 60.0f, 4.0f);
+    // p35: the built-in tone is the same for every instance (immutable): made once per process, not per part / lane
+    static const SamplePtr keysTone = sample::makeKeysTone (48000.0, 60.0f, 4.0f);
+    builtInTone = keysTone;
     shared.map = &map;
     for (auto& v : voices) v.shared = &shared;
     publish ({}, 0.5f);

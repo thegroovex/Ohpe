@@ -196,6 +196,19 @@ public:
     ISynthEngine* engine (EngineType t) noexcept { return engines[(size_t) t].get(); }
     int activeVoiceCount() const noexcept;
 
+    /**
+        p35: a part sleeps while it is silent. When no voice has played for `sleepHoldSeconds` and the part's output
+        (after resonator body, FX rack and 3D stage) stayed below `sleepThreshold` (-120 dBFS) all that time, the
+        effect chain stops rendering and the part outputs exact silence until a voice starts again. The hold is longer
+        than the longest delay line of any stage (4.2 s), so no echo or reverb tail above the threshold is ever cut.
+        Audio thread; isAsleep() any thread (display, tests).
+    */
+    static constexpr float sleepThreshold = 1.0e-6f;
+    static constexpr float sleepHoldSeconds = 4.5f;
+    bool isAsleep() const noexcept { return asleepFlag.load (std::memory_order_relaxed); }
+    /** p35, tests only: false keeps every part awake (the reference the sleeping output is compared with). */
+    inline static bool sleepAllowed = true;
+
     /** Local parameter ID helper: "p1." + name */
     std::string id (const std::string& name) const { return idPrefix + name; }
 
@@ -205,6 +218,7 @@ private:
     void writeModulation() noexcept;
     void renderEngines (float* l, float* r, int n) noexcept;
     void finishBlock (float* l, float* r, int n) noexcept; ///< DC blocker, volume (ramped), FX rack
+    void renderChain (float* l, float* r, int n) noexcept; ///< p35: engines + finishBlock, or silence while asleep
 
     struct EngineSlot
     {
@@ -287,6 +301,10 @@ private:
     float glideMod = 0.0f; ///< p33: the matrix's offset on the glide time (seconds; added to the parameter or CC 5 time)
     std::array<int, mod::numDests> partDestIndex {}; ///< registry index of every PartParam target (-1: not registered)
     float lastGain = -1.0f;
+    // ---- p35: sleeping while silent
+    bool asleep = false;
+    int quietSamples = 0, sleepHoldSamples = 216000;
+    std::atomic<bool> asleepFlag { false };
     // ---- 1.0: 3D spatialiser stage
     void applySpace (float* l, float* r, int n) noexcept;
     SpaceEffect space;
