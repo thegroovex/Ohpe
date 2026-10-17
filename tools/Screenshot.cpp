@@ -609,12 +609,12 @@ int main (int argc, char* argv[])
             e.selectMode (ui::Mode::Effects);
             e.selectView (5); // Sends | Rack | Master | 3D Space | Body | Pads
             setPlain (p, "seq.run", 1.0f);
-            setChoice (p, "pads.quant", "1 Bar");
+            setChoice (p, "pads.quant", "1/4");
             playAnimated (p, e, 2, { 48, 55, 60 });
             playAnimated (p, e, 10);
             setPlain (p, "pads.freeze", 1.0f);
             setPlain (p, "pads.sweep", 1.0f);
-            playAnimated (p, e, 24);
+            playAnimated (p, e, 56); // about 1.8 s: the 1-bar sweep is nearly closed, the freeze holds
             setPlain (p, "pads.stutter", 1.0f);
             playAnimated (p, e, 1);
             save (e, dir.getChildFile ("ohpe-pads-view" + suffix + ".png"));
