@@ -490,36 +490,77 @@ Result make (breed::Audition& audition, const breed::Genome& base, int engineTyp
     }
     res.usable = bestPenalty <= 0.0;
 
-    // level: the factory median, true peak below the ceiling. Effects after the gain (compressors, drive) need not
-    // follow it 1:1, so each correction uses the measured slope of the previous one.
+    // level: the factory median, true peak below the ceiling. Effects after the gain (compressors, drive, gates)
+    // need not follow it 1:1: each correction steps along the measured response (secant between the renders that
+    // bracket the target, otherwise the slope of the last step), and the best render wins.
     auto m = bestM;
     if (gainK >= 0)
     {
         const auto& gene = s.gene (gainK);
         const float top = std::min (gene.maxValue, maxGainDb);
-        float prevGain = 0.0f, prevLevel = 0.0f;
-        bool havePrev = false;
-        for (int pass = 0; pass < 4; ++pass)
+        struct Point
         {
-            const float cur = best[(size_t) gainK];
-            float slope = 1.0f;
-            if (havePrev && std::abs (cur - prevGain) > 0.5f)
-                slope = std::clamp ((m.momentaryMax - prevLevel) / (cur - prevGain), 0.25f, 1.5f);
-            float delta = (targetLufs - m.momentaryMax) / slope;
-            if (pass == 3) delta = std::min (0.0f, delta); // the last pass only ever lowers (true-peak safety)
-            delta = std::min (delta, (truePeakCeilingDb - 0.2f - m.truePeakDb) / slope);
-            if (pass > 0 && std::abs (targetLufs - m.momentaryMax) < 0.75f && m.truePeakDb <= truePeakCeilingDb) break;
-            const float next = std::clamp (cur + delta, gene.minValue, top);
-            if (std::abs (next - cur) < 0.05f) break;
-            prevGain = cur;
-            prevLevel = m.momentaryMax;
-            havePrev = true;
+            float gain;
+            Loudness m;
+        };
+        std::vector<Point> pts { { best[(size_t) gainK], bestM } };
+        auto peakOk = [] (const Loudness& x) { return x.truePeakDb <= truePeakCeilingDb; };
+        for (int pass = 0; pass < 5; ++pass)
+        {
+            const auto& last = pts.back();
+            if (peakOk (last.m) && std::abs (targetLufs - last.m.momentaryMax) < 0.75f) break;
+            const Point* lo = nullptr; // loudest render under the target (peak fine)
+            const Point* hi = nullptr; // quietest render over the target (or over the peak ceiling)
+            for (const auto& q : pts)
+            {
+                const bool over = q.m.momentaryMax > targetLufs || ! peakOk (q.m);
+                if (! over && (lo == nullptr || q.gain > lo->gain)) lo = &q;
+                if (over && (hi == nullptr || q.gain < hi->gain)) hi = &q;
+            }
+            float next;
+            if (lo != nullptr && hi != nullptr && hi->gain > lo->gain + 0.1f)
+            {
+                const float dl = hi->m.momentaryMax - lo->m.momentaryMax;
+                next = peakOk (hi->m) && dl > 0.1f ? lo->gain + (targetLufs - lo->m.momentaryMax) * (hi->gain - lo->gain) / dl
+                                                    : 0.5f * (lo->gain + hi->gain);
+                next = std::clamp (next, lo->gain + 0.05f, hi->gain - 0.05f);
+            }
+            else
+            {
+                float slope = 1.0f;
+                if (pts.size() >= 2)
+                {
+                    const auto& prev = pts[pts.size() - 2];
+                    if (std::abs (last.gain - prev.gain) > 0.5f)
+                        slope = std::clamp ((last.m.momentaryMax - prev.m.momentaryMax) / (last.gain - prev.gain), 0.25f, 1.5f);
+                }
+                float delta = (targetLufs - last.m.momentaryMax) / slope;
+                delta = std::min (delta, (truePeakCeilingDb - 0.2f - last.m.truePeakDb) / slope);
+                next = last.gain + delta;
+            }
+            next = std::clamp (next, gene.minValue, top);
+            bool seen = false;
+            for (const auto& q : pts) seen |= std::abs (q.gain - next) < 0.05f;
+            if (seen) break;
             best[(size_t) gainK] = next;
             audition.renderAudio (best, l, r, hold);
             ++res.renders;
-            m = measure (l, r, sr, hold);
+            pts.push_back ({ next, measure (l, r, sr, hold) });
         }
-        res.gainDb = best[(size_t) gainK];
+        // the best render: peak fine and nearest to the target (none fine: the lowest peak)
+        const Point* pick = nullptr;
+        for (const auto& q : pts)
+        {
+            if (pick == nullptr) { pick = &q; continue; }
+            const bool qa = peakOk (q.m), pa = peakOk (pick->m);
+            if (qa != pa) { if (qa) pick = &q; continue; }
+            if (qa ? std::abs (q.m.momentaryMax - targetLufs) < std::abs (pick->m.momentaryMax - targetLufs)
+                   : q.m.truePeakDb < pick->m.truePeakDb)
+                pick = &q;
+        }
+        best[(size_t) gainK] = pick->gain;
+        m = pick->m;
+        res.gainDb = pick->gain;
         // gain at the top and still quiet: the sound it was rolled from is the reference (its chain caps the level)
         if (res.gainDb >= top - 0.05f && m.momentaryMax < targetLufs - 3.0f)
         {

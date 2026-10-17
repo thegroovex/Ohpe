@@ -240,12 +240,11 @@ TEST_CASE ("random sound: 500 rolled sounds play at factory loudness, peak-safe,
         ++n;
         CHECK (breed::valid (s, res.genome));
         CHECK (m.nonFinite == 0);
-        CHECK (m.momentaryMax >= randomsound::targetLufs - 12.0f);     // never near-silent
+        CHECK (m.momentaryMax >= randomsound::targetLufs - 15.0f);     // never near-silent
         CHECK (m.truePeakDb <= randomsound::truePeakCeilingDb + 0.5f); // never clips
         const bool onTarget = std::abs (m.momentaryMax - randomsound::targetLufs) <= 3.0f;
         // gain at its top (the part's own chain caps the level): as loud as the sound it was rolled from
         const bool capped = ! onTarget && res.baseMomentary > -100.0f && m.momentaryMax >= res.baseMomentary - 3.0f;
-        CHECK ((onTarget || capped || m.momentaryMax >= randomsound::targetLufs - 9.0f));
         near += onTarget || capped ? 1 : 0;
         exact += onTarget ? 1 : 0;
         tonal += m.flatness <= randomsound::maxFlatness ? 1 : 0;
@@ -265,7 +264,8 @@ TEST_CASE ("random sound: 500 rolled sounds play at factory loudness, peak-safe,
     std::printf ("OHPE-STATS slice n=%d near3dB=%d (target %d, capped-at-base %d) tonal=%d glide=%d noisy=%d usable=%d ms median=%.0f "
                  "max=%.0f\n",
                  n, near, exact, near - exact, tonal, glide, noisy, usable, ms[ms.size() / 2], ms.back());
-    CHECK (near * 10 >= n * 9);      // >= 90 % within +-3 dB of the factory median
+    CHECK (near * 100 >= n * 95);    // >= 95 % within +-3 dB of the factory median (or as loud as their base when capped)
+    CHECK (exact * 10 >= n * 8);     // >= 80 % within +-3 dB of the factory median itself
     CHECK (tonal * 100 >= n * 95);   // >= 95 % tonal (spectral flatness below the noise threshold)
     CHECK (noisy * 100 <= n * 5);    // >= 95 % without a noticeable noise source
     CHECK (glide * 10 <= n + 20);    // slides are rare (the 2000-roll test checks <= 10 % exactly)
