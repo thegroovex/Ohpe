@@ -104,5 +104,22 @@ oder tut.
   Tempoanzeige schiebt. Die Part-Tasten tragen das Piktogramm in der Ecke, solange der Part den Raum
   nutzt; Presets mit dem Schlagwort „3D“ tragen es in der Bibliothek hinter ihrem Namen.
 
+## App-Symbol (p43)
+
+Eine dunkle, matte Kachel in den Gehäusefarben des Nachtmodus; darauf ein Ring aus warmweißem Licht
+(#efe9de) mit weichem ultraviolettem Schein, oben eine kleine Lücke mit dem grünen PLAY-Punkt (#3fd08e)
+und darin zwei Perioden einer Sinuswelle, die den Ring links und rechts berühren – Klang, Schleife und
+„spielt“ in einem Zeichen. Eigene Gestaltung, handgeschriebene SVG-Dateien in `resources/icon/`:
+`ohpe-icon.svg` (macOS-Raster mit Rand und Schatten), `ohpe-icon-square.svg` (Windows / Linux / Doku),
+`ohpe-icon-small.svg` (24 / 32 px) und `ohpe-icon-16.svg` (16 px) – die kleinen Vorlagen sind fürs
+Pixelraster neu gezeichnet (dickere Linien, breitere Lücke, größerer Punkt, kein weicher Schein). Der
+Schein besteht nur aus Verläufen und gestapelten Strichen, ohne Filter, damit jeder Renderer ihn gleich
+zeichnet. `python3 tools/app-icon/make_icons.py` rendert sie (rsvg-convert oder cairosvg) zu `Ohpe.icns`
+(16 – 1024 inkl. @2x), `Ohpe.ico` (16, 24, 32, 48, 64, 128, 256, gepackt mit ImageMagick) und
+`png/ohpe-icon-<Größe>.png`; alle Ergebnisse liegen im Repository. Der Build legt das Symbol in die
+macOS-Bundles (App, VST3, AU), in die Windows-Exe und das VST3 (Icon-Ressource) und auf das DMG-Volume;
+die CI prüft jedes davon. Die Seite **Über** zeigt es klein vor dem Schriftzug; unter Linux ist es das
+Fenstersymbol der Standalone-App.
+
 Texte gibt es überall auf Englisch und Deutsch; lange Texte werden gekürzt oder eingepasst, nie
 mitten im Zeichen abgeschnitten.
