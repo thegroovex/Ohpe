@@ -242,6 +242,61 @@ TEST_CASE ("wheels: dragging the pitch wheel bends, releasing springs back; the 
     CHECK_FALSE (pw.springsBack() == mw.springsBack());
 }
 
+TEST_CASE ("p28 wheels: the on-screen wheels follow a controller's pitch bend / CC 1 and host automation")
+{
+    OhpeProcessor p;
+    p.prepareToPlay (48000.0, 512);
+    std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
+    auto& e = *dynamic_cast<OhpeEditor*> (ed.get());
+    auto& pw = e.pitchWheelComponent();
+    auto& mw = e.modWheelComponent();
+    pw.refresh();
+    mw.refresh();
+    CHECK (pw.shownValue() == doctest::Approx (0.5f));
+    CHECK (mw.shownValue() == doctest::Approx (0.0f));
+
+    // incoming MIDI on the edit part's channel (part 1: channel 1)
+    juce::MidiBuffer midi;
+    midi.addEvent (juce::MidiMessage::pitchWheel (1, 16383), 0);
+    midi.addEvent (juce::MidiMessage::controllerEvent (1, 1, 127), 1);
+    process (p, 1, midi);
+    pw.refresh();
+    mw.refresh();
+    CHECK (pw.shownValue() == doctest::Approx (1.0f).epsilon (0.001));
+    CHECK (mw.shownValue() == doctest::Approx (1.0f).epsilon (0.001));
+    CHECK (p.parameter (Core::Ids::perfBend)->getValue() == doctest::Approx (0.5f)); // no feedback into the parameter
+    // the controller's wheel springs back: so does the picture
+    midi.clear();
+    midi.addEvent (juce::MidiMessage::pitchWheel (1, 8192), 0);
+    midi.addEvent (juce::MidiMessage::controllerEvent (1, 1, 64), 0);
+    process (p, 1, midi);
+    pw.refresh();
+    mw.refresh();
+    CHECK (pw.shownValue() == doctest::Approx (0.5f).epsilon (0.001));
+    CHECK (mw.shownValue() == doctest::Approx (64.0f / 127.0f).epsilon (0.001));
+
+    // another channel (part 1 listens on 1 only) is not shown
+    midi.clear();
+    midi.addEvent (juce::MidiMessage::pitchWheel (5, 0), 0);
+    process (p, 1, midi);
+    pw.refresh();
+    CHECK (pw.shownValue() == doctest::Approx (0.5f).epsilon (0.001));
+
+    // host automation of perf.mod / perf.bend moves them too
+    p.parameter (Core::Ids::perfMod)->setValueNotifyingHost (0.25f);
+    p.parameter (Core::Ids::perfBend)->setValueNotifyingHost (0.0f);
+    pw.refresh();
+    mw.refresh();
+    CHECK (mw.shownValue() == doctest::Approx (0.25f));
+    CHECK (pw.shownValue() == doctest::Approx (0.0f));
+    // ... and the next controller message takes over again
+    midi.clear();
+    midi.addEvent (juce::MidiMessage::controllerEvent (1, 1, 0), 0);
+    process (p, 1, midi);
+    mw.refresh();
+    CHECK (mw.shownValue() == doctest::Approx (0.0f));
+}
+
 TEST_CASE ("glide controls follow the edit part; RANDOM changes the engine's sound only; SAVE opens the save panel")
 {
     OhpeProcessor p;

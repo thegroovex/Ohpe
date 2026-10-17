@@ -105,7 +105,7 @@ die Arp-Einstellungen seines Klangs in einem optionalen Objekt `"arp"` mitbringe
 | `oct` | `seq.arp.oct` | Oktaven `1`–`4` |
 | `gate` | `seq.arp.gate` | `0.05`–`1.0` (Notenlänge als Anteil eines Schritts) |
 | `rate` | `seq.arp.rate` | `0` 1/4, `1` 1/8, `2` 1/16, `3` 1/32, `4` 1/4T, `5` 1/8T, `6` 1/16T, `7` 1/32T, `8` 1/4., `9` 1/8., `10` 1/16. |
-| `latch` | `seq.arp.latch` | `1` / `0` |
+| `latch` | `seq.arp.latch` | wird aus Kompatibilität gelesen, aber **nicht angewendet** (Fix-Paket p28): Halten ist die Einstellung des Spielers, standardmäßig aus; *Preset speichern* schreibt es nicht mehr |
 
 Was beim Laden eines Part-Presets in Part *N* passiert:
 
@@ -124,9 +124,9 @@ Was beim Laden eines Part-Presets in Part *N* passiert:
 * *Preset speichern → Dieser Part* schreibt den Arp-Block, wenn der Arp an ist und diesen Part
   spielt – ein gespeicherter Arp-Klang lädt mit seinem Arp.
 
-Die Werks-Arp-Presets sind gehalten (Latch): eine Taste (oder einen Akkord) einmal drücken, das
-Arpeggio läuft weiter; die nächste Taste oder der nächste Akkord ohne gehaltene Taste beginnt ein
-neues. Zum Anhalten *Halten* oder den Arp auf der Sequenzer-Seite ausschalten.
+Die Werks-Arp-Presets spielen, solange Tasten gehalten werden, und stoppen beim Loslassen. Damit ein
+Arpeggio freihändig weiterläuft, *Halten* auf der Sequenzer-Seite einschalten (`seq.arp.latch`, per
+MIDI steuerbar): dann beginnt die nächste Taste oder der nächste Akkord ohne gehaltene Taste ein neues.
 
 ### Morph-Block
 

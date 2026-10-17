@@ -129,6 +129,8 @@ public:
     void resetContent();
 
     // ---- reading the committed content (message thread) ----
+    /** p28, any thread: changes whenever the committed content changes (a finished pass, an edit, undo / redo, load). */
+    uint64_t contentRevision() const noexcept { return revision.load (std::memory_order_acquire); }
     int64_t contentEndFrames (int track) const;  ///< one past the last non-zero frame, 0 if empty
     int64_t contentEndFrames() const;            ///< over all tracks
     void readCommitted (int track, int64_t start, int numFrames, float* l, float* r) const;
@@ -187,6 +189,7 @@ private:
     // ---- shared state ----
     double sr = 48000.0, lengthSec = defaultLengthSeconds;
     int64_t lenFrames = 0;
+    std::atomic<uint64_t> revision { 1 }; ///< p28: contentRevision()
     std::array<std::vector<TapeBlock*>, numTracks> live;
     Exclusion exclusion;
     SpscQueue<TapeBlock*, 2048> pool;

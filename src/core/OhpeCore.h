@@ -18,6 +18,7 @@
 #include "morph/MorphSpace.h"
 #include "motion/MotionRecorder.h"
 #include "perform/PerformancePads.h"
+#include "sample/SampleData.h"
 #include "harmony/HarmonyBrain.h"
 #include "seq/Arpeggiator.h"
 #include "seq/EuclidSequencer.h"
@@ -88,6 +89,24 @@ public:
     const HarmonyBrain& harmony() const noexcept { return harmonyBrain; }
     /** p16, message thread (timer): rebuilds morph plans when a part's own sound changed under an empty corner. */
     bool updateMorph() { return morphSpace.update(); }
+    /**
+        p28, message thread (timer): Grain "Source = Tape". Hands the Grain engines of all parts (and their morph
+        lanes) the tape's edit track ("tape.edit.track") as their source, or the mix of all tracks while the edit
+        track is empty; normalised like a bounce, at most bounce::maxSeconds. Rebuilt when the tape content or the
+        edit track changes, only while a Grain engine uses Source = Tape. True when it published a new region.
+    */
+    bool updateTapeGrain();
+    /** p28: the region "Source = Tape" granulates (nullptr = none / the tape is empty). */
+    const SampleData* tapeGrainRegion() const noexcept { return tapeGrain.get(); }
+
+    /**
+        p28, any thread: the last pitch bend (-1..+1) / mod wheel (CC 1, 0..1) that came in from host / device MIDI on
+        the edit part's channel, and a counter that moves with every such message - the on-screen wheels follow it.
+    */
+    float midiWheelBend() const noexcept { return wheelMidiBend.load (std::memory_order_relaxed); }
+    float midiWheelMod() const noexcept { return wheelMidiMod.load (std::memory_order_relaxed); }
+    uint32_t midiWheelBendCount() const noexcept { return wheelMidiBendSeq.load (std::memory_order_acquire); }
+    uint32_t midiWheelModCount() const noexcept { return wheelMidiModSeq.load (std::memory_order_acquire); }
     /** 0.7: scope tap for the display (a part after its FX rack, or the main output). */
     ScopeTap& scope() noexcept { return scopeTap; }
 
@@ -262,6 +281,7 @@ private:
     void pullSequencerParams (SeqBinding& b) noexcept;
     Transport makeTransport (const Transport& host, const MidiEvent* midi, int numMidi, int numSamples) noexcept;
     void routeLive (const MidiEvent& e) noexcept;
+    void followWheels (const MidiEvent& e) noexcept; ///< p28
     void routeGenerated (const MidiEvent& e, bool shape, bool toDrums = false) noexcept;
     void addRouted (const MidiEvent& e, int part) noexcept;
     void routeToPart (const MidiEvent& e, int part) noexcept; ///< p24: one part, as live MIDI on its channel
@@ -274,6 +294,9 @@ private:
     ParamSnapshot snapshot;
     std::array<std::unique_ptr<Part>, numParts> parts;
     MorphSpace morphSpace; ///< p16 (after the parts: its lanes follow them)
+    RtShared<SampleData> tapeGrain;  ///< p28: Grain "Source = Tape"
+    uint64_t tapeGrainRevision = 0;  ///< p28: tape content the region was built from (0 = none)
+    int tapeGrainTrack = -2;         ///< p28: track it was built from (-1 = mix)
     MotionRecorder motionRec; ///< p22
     PerformancePads perfPads; ///< p25 (the mixer runs it in the master chain)
     HarmonyBrain harmonyBrain; ///< p24
@@ -310,6 +333,8 @@ private:
     int spaceOutIndex = -1, monoCheckIndex = -1, lastMonitor = -1; ///< 1.0
     int perfBendIndex = -1, perfModIndex = -1, editPartIndex = -1; ///< p14
     float perfBendSent = 0.0f, perfModSent = 0.0f;
+    std::atomic<float> wheelMidiBend { 0.0f }, wheelMidiMod { 0.0f };          ///< p28
+    std::atomic<uint32_t> wheelMidiBendSeq { 0 }, wheelMidiModSeq { 0 };       ///< p28
     int syncSourceIndex = -1, syncSmoothIndex = -1, clockOutIndex = -1, notesOutIndex = -1, keyRootIndex = -1, keyScaleIndex = -1;
     bool arpWasOn = false;
     int arpLastPart = 0;

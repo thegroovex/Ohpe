@@ -25,8 +25,11 @@ Granular synthesis: every voice sprays short, softly windowed grains read from a
 | **Tone** | low-pass brightness; the mod envelope and the LFO target *Timbre* move it |
 
 The played note transposes relative to **C4 (MIDI 60)**: C4 plays the source at its original pitch.
-With *Source = Tape* the engine granulates the tape region the tape machine hands over through the
-`IAudioRegion` interface; without one it falls back to the sample.
+With *Source = Tape* the engine granulates the tape: the **edit track** of the tape page (*Track* /
+`tape.edit.track`), or the **mix of all tracks** while the edit track is empty – its recorded length from the start,
+at most 60 s, normalised like a bounce. It follows the tape: after a recording pass, an edit, undo / redo or a
+change of the edit track the grains read the new material within a moment. With an empty tape the engine plays
+its sample (or built-in texture). To keep a take while the tape moves on, use **BOUNCE** instead.
 
 ## Vocal
 

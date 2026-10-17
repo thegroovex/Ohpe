@@ -46,4 +46,4 @@ Automatisiere die Würfe in deiner DAW oder lege sie per MIDI-Lernen auf Taster.
 Quellen – **Pad-Sweep** (die Sweep-Position, 0 … 1) und **Pads gehalten** (1, solange ein Pad spielt) –, so kann ein
 Part etwa sein eigenes Filter gegen den Master-Sweep öffnen oder seinen Hall-Send absenken, solange ein Pad gehalten wird.
 
-Die vier Pads selbst sind Performance: Projekt-Presets behalten die Einstellungen, aber nicht, ob ein Pad gehalten war.
+Die vier Pads selbst sind Performance: Projekt-Presets und die im Host gespeicherte Sitzung behalten die Einstellungen, aber nicht, ob ein Pad gehalten oder eingerastet war – ein wieder geöffneter Song beginnt immer mit allen Pads aus.
