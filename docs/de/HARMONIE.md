@@ -65,7 +65,7 @@ Leiste sagt, was das Hirn tut und ob der Edit-Part folgt. Softkeys: **Tonart üb
 
 ## Die Raster-Tastatur
 
-Die Taste **RASTER** (rechts neben der Tastatur-Anzeige, gelber Balken, solange sie an ist) tauscht die
+Die Taste **RASTER** (zwischen OKTAVE + und MIDI, gelber Balken, solange sie an ist) tauscht die
 Klaviertasten gegen ein Raster aus 4 × 24 Feldern. Auf einem isomorphen Raster hat jeder Akkord und jede Skala
 **in jeder Tonart dieselbe Form** – eine Form einmal lernen, überall hin verschieben.
 

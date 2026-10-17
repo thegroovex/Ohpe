@@ -247,7 +247,6 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     midiKey.onClick = [this] { showMidiMenu(); };
     // p24: GRID swaps the piano keys for the isomorphic grid keyboard (yellow bar while it is shown)
     gridKey.setHasLed (true);
-    gridKey.setShowLegend (false);
     gridKey.onClick = [this] { showGridKeyboard (! grid.isVisible()); saveUiState(); };
     addAndMakeVisible (gridKey);
     libraryKey.setAccent (colour::sunYellow);
@@ -461,7 +460,7 @@ void OhpeEditor::resized()
         encoders[(size_t) i]->setBounds (scaled (280.0f + 168.0f * (float) i, 460, 136, 148));
     // p14 rev 3: the transport block (bottom left) and the octave block (bottom right) mirror each other: the
     // same panel, the same rows and key heights, on the 8-unit grid (12 units inside the panels)
-    for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey })
+    for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &gridKey, &midiKey })
     {
         k->setJoined (false, false);
         k->setShowLegend (true);
@@ -482,10 +481,11 @@ void OhpeEditor::resized()
             box (*row[i], 44.0f + slot * (float) i, 516, slot, 80);
             row[i]->setJoined (i > 0, i < 4);
         }
-        box (keysReadout, 972, 476, 144, 32);
-        box (gridKey, 1120, 476, 36, 32); // p24
-        box (octDownKey, 972, 516, slot * 2.0f, 80);
-        box (octUpKey, 972 + slot * 2.0f, 516, slot * 2.0f, 80);
+        box (keysReadout, 972, 476, 184, 32);
+        // p24: OCTAVE - / + one and a half slots each, then GRID and MIDI
+        box (octDownKey, 972, 516, slot * 1.5f, 80);
+        box (octUpKey, 972 + slot * 1.5f, 516, slot * 1.5f, 80);
+        box (gridKey, 972 + slot * 3.0f, 516, slot, 80);
         box (midiKey, 972 + slot * 4.0f, 516, slot, 80);
         octDownKey.setJoined (false, true);
         octUpKey.setJoined (true, false);

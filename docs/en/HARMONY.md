@@ -62,7 +62,7 @@ Hold, Grid Layout.
 
 ## The grid keyboard
 
-The **GRID** key (right of the keyboard readout, yellow bar while on) swaps the piano keys for a grid of 4 × 24
+The **GRID** key (between OCTAVE + and MIDI, yellow bar while on) swaps the piano keys for a grid of 4 × 24
 cells. On an isomorphic grid every chord and scale has **the same shape in every key** – learn a shape once,
 move it anywhere.
 

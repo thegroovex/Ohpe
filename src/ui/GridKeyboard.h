@@ -11,7 +11,7 @@
 namespace ohpe::ui
 {
 /**
-    p24: the isomorphic on-screen keyboard (GRID key next to the keyboard readout swaps it in for the piano keys).
+    p24: the isomorphic on-screen keyboard (the GRID key between OCTAVE + and MIDI swaps it in for the piano keys).
 
     Four rows of 24 matte cells; every chord shape has the same form everywhere on the grid. The layout
     ("harmony.kb.layout") sets the steps: Fourths (+1 right, +5 up), Thirds (+1 / +4), Whole Tones (+2 / +5) or In Key
