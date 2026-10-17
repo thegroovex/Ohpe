@@ -303,5 +303,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate31SubParams (reg);
     // ---- p33: expressive playing - per part: velocity / aftertouch -> two functions each (amount, curve) ------------
     for (auto& p : parts) p->registerLate33ExpressionParams (reg);
+    // ---- p39: metronome and count-in - on, level, accent, count-in, click in a plug-in, tap tempo ------------------
+    Metronome::registerParams (reg);
 }
 } // namespace ohpe

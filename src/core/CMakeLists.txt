@@ -12,6 +12,7 @@ add_library(ohpe_core STATIC
     fx/Delay.cpp
     fx/Reverb.cpp
     seq/StepSequencer.cpp
+    seq/Metronome.cpp
     midi/MidiMap.cpp
     engines/WavetableEngine.cpp
     engines/PluckEngine.cpp
