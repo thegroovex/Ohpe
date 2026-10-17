@@ -359,6 +359,16 @@ Ausdruck je Note.
 In beiden Fällen hört das Harmonie-Hirn die Noten des Rasters (sie formen die gemerkte Tonart und den Akkord). Wie die
 Klaviertasten geht das Raster nicht an den MIDI-Ausgang.
 
+### Hilfe in der App
+
+**Einstellungen > Hilfe > Raster-Tastatur** fasst diese Seite zusammen (Anordnungen, Formen, Felder, MPE). Mit dem
+**Hilfe-Overlay** (Einstellungen > Allgemein oder **F1**) und sichtbarem Raster nennt eine Zeile über der Tastatur die
+Schritte jeder Anordnung.
+
+![Einstellungen – Hilfe – Raster-Tastatur](../images/ohpe-settings-help-grid-de.png)
+
+![Das Hilfe-Overlay mit der Raster-Tastatur](../images/ohpe-grid-help-de.png)
+
 ### Später: dieselben Anordnungen auf einem Grid-Controller
 
 Ein geplantes Controller-Profil (**Profil 1**) lässt ein externes Pad-Raster genauso spielen wie das Raster auf dem

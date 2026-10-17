@@ -346,6 +346,15 @@ chord, Follow, the arpeggiator when it plays this part). Sliding does nothing; t
 In both cases the harmony brain hears the grid's notes (they shape the remembered key and chord). Like the piano
 keys, the grid is not sent to the MIDI output.
 
+### Help in the app
+
+**Settings > Help > Grid keyboard** sums this page up (layouts, shapes, cells, MPE). With the **help overlay** on
+(Settings > General, or **F1**) and the grid shown, a line over the keyboard names the steps of every layout.
+
+![Settings – Help – Grid keyboard](../images/ohpe-settings-help-grid.png)
+
+![The help overlay with the grid keyboard](../images/ohpe-grid-help.png)
+
 ### Later: the same layouts on a grid controller
 
 A planned controller profile (**Profile 1**) will let an external pad grid play exactly like the on-screen grid:
