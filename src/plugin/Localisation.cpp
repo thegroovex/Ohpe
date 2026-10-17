@@ -486,6 +486,15 @@ const std::map<juce::String, juce::String>& table()
         { "The file is not an Ohpe wavetable.", "Die Datei ist keine Ohpe-Wavetable." },
         { "The wavetable file is damaged.", "Die Wavetable-Datei ist beschädigt." },
         { "The wavetable file was not found.", "Die Wavetable-Datei wurde nicht gefunden." },
+        // p21: pro view 2.0
+        { "Discover", "Entdecken" },
+        { "Simple", "Einfach" },
+        { "Vary", "Variieren" },
+        { "Kept", "Behalten" },
+        { "Gentle", "Sanft" },
+        { "Wild", "Wild" },
+        { "History", "Verlauf" },
+        { "Algorithm", "Algorithmus" },
         // p22: the motion recorder
         { "Empty", "Leer" },
         { "steps", "Schritte" },

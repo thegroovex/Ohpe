@@ -68,12 +68,12 @@ struct Rig
 float gesture (double ppq) { return 0.5f + 0.4f * (float) std::sin (2.0 * 3.14159265358979 * std::fmod (ppq, 1.0)); }
 } // namespace
 
-TEST_CASE ("p22 motion: parameters appended after the breeding triggers; matrix sources Motion 1 .. 4")
+TEST_CASE ("p22 motion: parameters appended after the character macros; matrix sources Motion 1 .. 4")
 {
     auto owner = std::make_unique<Core>();
     Core& core = *owner;
     const auto& reg = core.params();
-    CHECK (reg.indexOf ("p1.motion.on") == reg.indexOf ("lib.breed.next") + 1);
+    CHECK (reg.indexOf ("p1.motion.on") == reg.indexOf ("p4.char.wide") + 1); // after the breeding triggers and the character macros
     const char* keys[] = { "on", "rec", "len", "amt", "clear" };
     int expect = reg.indexOf ("p1.motion.on");
     for (int p = 1; p <= 4; ++p)

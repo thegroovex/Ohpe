@@ -773,9 +773,30 @@ generations, kept children) is stored in the plug-in state (section `"breed"`).
 | `lib.breed.go` | Breed Again | Weiterzüchten | trigger | off |
 | `lib.breed.next` | Next Child | Nächstes Kind | trigger | off |
 
+## Character macros (p21)
+
+Appended after the breeding triggers (`lib.breed.next`), part by part (`p1.char.*` … `p4.char.*`, 16 IDs). Guides:
+[English](en/USER-INTERFACE.md#discover) · [Deutsch](de/BEDIENUNG.md#entdecken).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.char.bright` | Part N Bright | Part N Hell | −1 … +1 (−100 … +100 %) | 0 |
+| `pN.char.hard` | Part N Hard | Part N Hart | −1 … +1 | 0 |
+| `pN.char.alive` | Part N Alive | Part N Lebendig | −1 … +1 | 0 |
+| `pN.char.wide` | Part N Wide | Part N Weit | −1 … +1 | 0 |
+
+Each macro moves several parameters of the part at once, inside the part after the modulation matrix (the stored
+parameter values, automation and the UI stay as they are; all four at 0 leave the sound bit-identical):
+**Bright** – cutoff / tone / brightness, FM index, warp, formant, a little resonance, less pluck damping;
+**Hard** – amp attack shorter (−30 % of its normalised range per unit), drive, FM feedback, pluck excitation,
+crackle, vocal tension, noise; **Alive** – `pN.life` (+0.6 per unit), cluster drift, detune, vocal jitter and
+vibrato depth, grain spray / scan; **Wide** – unison width, cluster / grain spread, cluster side, wavetable unison,
+the layer's width. The modulation matrix gains the targets **Bright / Hard / Alive / Wide** (81 … 84, after the resonator body targets 75 … 80; keys
+`charbright`, `charhard`, `charalive`, `charwide`); the target choice list grows at its end.
+
 ## Motion recorder (p22)
 
-Appended after the breeding triggers (`lib.breed.next`), part by part (`p1.motion.*` … `p4.motion.*`, 20 IDs).
+Appended after the character macros (`p4.char.wide`), part by part (`p1.motion.*` … `p4.motion.*`, 20 IDs).
 Guides: [English](en/MOTION.md) · [Deutsch](de/BEWEGUNG.md). The recorded lanes (four per part: target parameter
 and 8 points per sixteenth, up to 64 sixteenths) are stored in projects and the plug-in state (section `"motion"`);
 part presets neither carry nor reset the motion block (a new sound keeps the part's lanes).

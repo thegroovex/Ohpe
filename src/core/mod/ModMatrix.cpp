@@ -96,6 +96,11 @@ const std::vector<DestInfo>& destTable()
         add ("resodecay", "Body Decay", "Körper-Ausklang", DestKind::PartParam, 0, "reso.decay");
         add ("resoposition", "Body Position", "Körper-Position", DestKind::PartParam, 0, "reso.position");
         add ("resomix", "Body Mix", "Körper-Mischung", DestKind::PartParam, 0, "reso.mix");
+        // p21: the character macros
+        add ("charbright", "Bright", "Hell", DestKind::PartParam, 0, "char.bright");
+        add ("charhard", "Hard", "Hart", DestKind::PartParam, 0, "char.hard");
+        add ("charalive", "Alive", "Lebendig", DestKind::PartParam, 0, "char.alive");
+        add ("charwide", "Wide", "Weit", DestKind::PartParam, 0, "char.wide");
         return v;
     }();
     return t;
@@ -409,5 +414,7 @@ void PartMatrix::publishUi() noexcept
 {
     for (int k = 0; k < numSlots; ++k) uiValue[(size_t) k].store (value[(size_t) k], std::memory_order_relaxed);
     for (int s = 0; s < numSources; ++s) uiSource[(size_t) s].store (mono[(size_t) s], std::memory_order_relaxed);
+    uiStage[0].store ((int) ampEnv.getStage(), std::memory_order_relaxed); // p21: the pro view's envelope playheads
+    uiStage[1].store ((int) modEnv.getStage(), std::memory_order_relaxed);
 }
 } // namespace ohpe::mod

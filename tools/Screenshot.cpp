@@ -15,6 +15,8 @@
 #include "plugin/Localisation.h"
 #include "plugin/PluginProcessor.h"
 #include "ui/PluginEditor.h"
+#include "ui/ProTiles.h"
+#include "mod/ModVoice.h"
 
 #include <cmath>
 #include <algorithm>
@@ -35,11 +37,11 @@ void run (OhpeProcessor& p, int blocks, int note = -1)
 }
 
 /** Releases held notes so the on-screen keyboard shows no stuck keys in the next view. */
-void release (OhpeProcessor& p, std::initializer_list<int> notes)
+void release (OhpeProcessor& p, std::initializer_list<int> notes, int channel = 1)
 {
     juce::AudioBuffer<float> buffer (p.getTotalNumOutputChannels(), 512);
     juce::MidiBuffer midi;
-    for (int n : notes) midi.addEvent (juce::MidiMessage::noteOff (1, n), 0);
+    for (int n : notes) midi.addEvent (juce::MidiMessage::noteOff (channel, n), 0);
     p.processBlock (buffer, midi);
     run (p, 8);
 }
@@ -311,14 +313,80 @@ int main (int argc, char* argv[])
             release (p, { 60, 64, 67 });
         }
 
-        // 0.3: pro view of the FM engine on part 2
-        e.selectPart (1);
-        e.selectEngine (EngineType::FM);
-        e.showProView (true);
-        e.advanceAnimation (0.2f);
-        save (e, dir.getChildFile ("ohpe-pro-view" + suffix + ".png"));
-        e.showProView (false);
-        e.selectPart (0);
+        // 0.3: pro view of the FM engine on part 2. p21 (pro view 2.0): the pictures on top of the cards, a chord held
+        //      (playheads), LFO 2 -> FM index in the matrix (violet), Discover with six variations
+        {
+            auto& pv = e.proViewComponent();
+            auto route = [&] (int slot, int src, const std::string& target, float amt) {
+                const auto r = "p2.mod.s" + juce::String (slot) + ".";
+                setPlain (p, r + "dst", (float) ui::pro::destForParam (p, 1, target));
+                setPlain (p, r + "amt", amt);
+                setPlain (p, r + "src", (float) src);
+            };
+            auto unroute = [&] (int slot) {
+                const auto r = "p2.mod.s" + juce::String (slot) + ".";
+                setPlain (p, r + "src", 0.0f);
+                setPlain (p, r + "dst", 0.0f);
+                setPlain (p, r + "amt", 0.0f);
+            };
+            e.selectPart (1);
+            e.selectEngine (EngineType::FM);
+            e.selectMode (ui::Mode::Synth);
+            setPlain (p, "p2.lfo2.rate", 0.6f);
+            setPlain (p, "p2.lfo.depth", 0.35f);
+            setPlain (p, "p2.amp.a", 0.25f);
+            setPlain (p, "p2.amp.r", 1.2f);
+            e.showProView (true);
+            pv.setSimple (false);
+            route (1, mod::SrcLfo2, "p2.fm.index", 0.3f);
+            playAnimated (p, e, 18, { 60, 67 }, 2);
+            save (e, dir.getChildFile ("ohpe-pro-view" + suffix + ".png"));
+            // Discover: six variations, the third one auditioned
+            pv.discoverStrip().setStrength (0.55f);
+            pv.discoverStrip().vary();
+            pv.discoverStrip().audition (2);
+            playAnimated (p, e, 8);
+            save (e, dir.getChildFile ("ohpe-pro-discover" + suffix + ".png"));
+            save (e, dir.getChildFile ("ohpe-pro-discover-strip" + suffix + ".png"), 2.0f,
+                  pv.discoverStrip().getBounds() + pv.getPosition());
+            pv.discoverStrip().revertAudition();
+            unroute (1);
+            release (p, { 60, 67 }, 2);
+
+            // the wavetable engine: LFO 2 -> position (the violet frames), a chord
+            e.selectEngine (EngineType::Wavetable);
+            route (1, mod::SrcLfo2, "p2.wavetable.pos", 0.35f);
+            playAnimated (p, e, 16, { 57, 64 }, 2);
+            save (e, dir.getChildFile ("ohpe-pro-wavetable" + suffix + ".png"));
+            unroute (1);
+            release (p, { 57, 64 }, 2);
+
+            // the grain engine: the waveform with its grain cloud while a note plays
+            e.selectEngine (EngineType::Grain);
+            setPlain (p, "p2.grain.spray", 0.35f);
+            playAnimated (p, e, 16, { 60 }, 2);
+            save (e, dir.getChildFile ("ohpe-pro-grain" + suffix + ".png"));
+            release (p, { 60 }, 2);
+
+            // Simple: pictures and Discover only; the analog filter with a modulation shadow (LFO 2 -> cutoff),
+            // the mod envelope -> oscillator shape
+            e.selectEngine (EngineType::Analog);
+            route (1, mod::SrcLfo2, "p2.analog.cutoff", 0.25f);
+            route (2, mod::SrcModEnv, "p2.analog.shape", 0.3f);
+            pv.setSimple (true);
+            pv.discoverStrip().vary(); // six relatives of the analog sound (none auditioned)
+            playAnimated (p, e, 16, { 48, 55, 64 }, 2);
+            save (e, dir.getChildFile ("ohpe-pro-simple" + suffix + ".png"));
+            pv.setSimple (false);
+            playAnimated (p, e, 4);
+            save (e, dir.getChildFile ("ohpe-pro-modulation" + suffix + ".png"));
+            unroute (1);
+            unroute (2);
+            release (p, { 48, 55, 64 }, 2);
+            setPlain (p, "p2.lfo.depth", 0.0f);
+            e.showProView (false);
+            e.selectPart (0);
+        }
 
         // 0.7: Mid/Side FX slot on part 1 (a wide cluster chord), the stereo scope on its page
         {

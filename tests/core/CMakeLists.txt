@@ -51,6 +51,8 @@ target_sources(ohpe_core_tests PRIVATE Revision06Tests.cpp)
 target_sources(ohpe_core_tests PRIVATE Revision08Tests.cpp)
 # p15: life per part (drift, chaos LFOs, grain scatter, filter breathing)
 target_sources(ohpe_core_tests PRIVATE LifeTests.cpp)
+# p21: pro view 2.0 - character macros, Discover genome
+target_sources(ohpe_core_tests PRIVATE DiscoverTests.cpp)
 target_include_directories(ohpe_core_tests PRIVATE ${CMAKE_SOURCE_DIR}/tools)
 target_compile_definitions(ohpe_core_tests PRIVATE OHPE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
