@@ -31,7 +31,9 @@ const char* const* triggerIds()
                                        Core::Ids::tapeTxPlay, Core::Ids::tapeTxTapePlay, Core::Ids::tapeTxStop, Core::Ids::tapeTxRec, Core::Ids::tapeTxLoop,
                                        Core::Ids::tapeTxArm,
                                        // p18: preset breeding
-                                       Core::Ids::libBreed, Core::Ids::libBreedGo, Core::Ids::libBreedNext };
+                                       Core::Ids::libBreed, Core::Ids::libBreedGo, Core::Ids::libBreedNext,
+                                       // p23: bounce to engine
+                                       Core::Ids::bounceGo };
     return ids;
 }
 } // namespace
@@ -68,6 +70,8 @@ OhpeProcessor::OhpeProcessor()
         if (auto* prm = parameter (id)) prm->setValueNotifyingHost (1.0f);
         sendChangeMessage();
     };
+    // p23: a bounce switches the part's engine and its sample settings like the UI (host automation follows)
+    bounceManager.setParam = [this] (const std::string& id, float plain) { setPlainFromUi (id.c_str(), plain); };
     startTimerHz (20);
 }
 
@@ -235,6 +239,7 @@ void OhpeProcessor::captureInput (juce::AudioBuffer<float>& buffer, int n)
     }
     ohpeCore.setAudioInput (inL, inR);
     userTableManager.capture().push (inL, inR, n); // p20: recording the live input for the wavetable analysis
+    bounceManager.pushInput (inL, inR, n);         // p23: recording the live input for a bounce
 }
 
 void OhpeProcessor::timerCallback()
@@ -244,6 +249,7 @@ void OhpeProcessor::timerCallback()
         sendChangeMessage();
     samples.timerTick();
     userTableManager.timerTick(); // p20
+    bounceManager.timerTick();    // p23
     pollRemoteControls();
     if (ohpeCore.effectsWaiting()) ohpeCore.prepareEffects(); // 0.7: FX rack slot types chosen by the host / a preset
     ohpeCore.updateMorph(); // p16: morph plans follow the part's own sound under empty corners
@@ -271,6 +277,7 @@ void OhpeProcessor::pollRemoteControls()
             else if (id == Core::Ids::libBreed) breedRequests[0].fetch_add (1); // p18: the editor polls these
             else if (id == Core::Ids::libBreedGo) breedRequests[1].fetch_add (1);
             else if (id == Core::Ids::libBreedNext) breedRequests[2].fetch_add (1);
+            else if (id == Core::Ids::bounceGo) bounceManager.bounce(); // p23: the edit part, the bounce settings
             else if (id.startsWith ("tape.tx."))
             {
                 const auto action = id == Core::Ids::tapeTxPlay ? TransportKey::PlayStop

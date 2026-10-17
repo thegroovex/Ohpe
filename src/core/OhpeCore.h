@@ -173,6 +173,12 @@ public:
         static constexpr const char* libBreed = "lib.breed";
         static constexpr const char* libBreedGo = "lib.breed.go";
         static constexpr const char* libBreedNext = "lib.breed.next";
+        // p23: bounce to engine (tape / live input -> Grain or Sampler of the edit part); not part of presets
+        static constexpr const char* bounceSrc = "bounce.src";   ///< Edit Track, Tape 1-8, Tape Mix, Input
+        static constexpr const char* bounceTo = "bounce.to";     ///< Grain, Sampler
+        static constexpr const char* bounceLoop = "bounce.loop"; ///< endless loop (seamless loop) or one-shot
+        static constexpr const char* bounceLen = "bounce.len";   ///< input length: 1, 2, 4, 8 bars
+        static constexpr const char* bounceGo = "bounce.go";     ///< trigger: bounce now
         static constexpr const char* editPart = "ui.part";
         static constexpr const char* tapeEditTrack = "tape.edit.track";
         static constexpr const char* tapeLift = "tape.edit.lift";

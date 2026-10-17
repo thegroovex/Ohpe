@@ -35,7 +35,8 @@ enum SoftKeyId
     skModPrev = 50, skModNext, skModClear,           // 0.7: matrix
     skSlotLeft = 60, skSlotRight, skSlotClear,       // 0.7: FX rack
     skCornerA = 70, skCornerB, skCornerC, skCornerD, // p16: morph corners
-    skTableImport = 80, skTableUser, skTableClear     // p20: user wavetable / formants
+    skTableImport = 80, skTableUser, skTableClear,    // p20: user wavetable / formants
+    skBounce = 90                                     // p23: bounce to engine (tape page: at once; Grain / Sampler: menu)
 };
 
 bool isAudioFile (const juce::String& path)
@@ -57,7 +58,7 @@ bool isPresetFile (const juce::String& path) { return juce::File (path).hasFileE
 /** Parameters a step may lock: sound parameters, not transport / sequencer / remote controls. */
 bool lockable (const juce::String& id)
 {
-    for (const char* p : { "seq.", "tempo", "sync.", "lib.", "ui.", "tape.", "key.", "perf." })
+    for (const char* p : { "seq.", "tempo", "sync.", "lib.", "ui.", "tape.", "key.", "perf.", "bounce." })
         if (id.startsWith (p)) return false;
     return id.isNotEmpty();
 }
@@ -1235,6 +1236,7 @@ void OhpeEditor::refreshSoftKeys()
     {
         keys.push_back ({ skLoadSample, tr ("Load sample") });
         keys.push_back ({ skClearSample, tr ("Clear") });
+        keys.push_back ({ skBounce, tr ("Bounce"), true, proc.bounces().recording() }); // p23
         juce::String name;
         auto& part = core.part (ctx.part);
         if (shownEngine == EngineType::Grain)
@@ -1247,6 +1249,8 @@ void OhpeEditor::refreshSoftKeys()
             if (! zones.empty()) name = sampleName (zones.front().sample) + (zones.size() > 1 ? " +" + juce::String ((int) zones.size() - 1) : juce::String());
         }
         status = name.isNotEmpty() ? name : tr ("Built-in tone - drop an audio file here");
+        if (proc.bounces().recording()) // p23: the input recording of a bounce
+            status = tr ("Recording the input for the bounce") + " " + juce::String (juce::roundToInt (proc.bounces().progress() * 100.0f)) + " %";
     }
     else if (mode == Mode::Synth && importsTables (shownEngine)) // p20
     {
@@ -1262,7 +1266,8 @@ void OhpeEditor::refreshSoftKeys()
         keys = { { skLift, tr ("Lift") },     { skCut, tr ("Cut") },   { skDrop, tr ("Drop"), tape.clipboardFrames() > 0 },
                  { skSplice, tr ("Splice"), tape.clipboardFrames() > 0 },
                  { skUndo, tr ("Undo"), tape.canUndo() }, { skRedo, tr ("Redo"), tape.canRedo() },
-                 { skExport, tr ("Export") } }; // p11: "to the start" is a transport button now
+                 { skExport, tr ("Export") },
+                 { skBounce, tr ("Bounce"), true, proc.bounces().recording() } }; // p11: "to the start" is a transport button now; p23: bounce
     }
     else if (mode == Mode::Drum)
     {
@@ -1345,6 +1350,18 @@ void OhpeEditor::onSoftKey (int id)
         case skCornerC:
         case skCornerD: showCornerMenu (id - skCornerA); return; // p16
         case skTableImport: showTableImportMenu(); return; // p20
+        case skBounce: // p23: the tape page bounces at once (the bounce settings), the Grain / Sampler page offers the sources
+            if (mode == Mode::Tape)
+            {
+                if (proc.bounces().recording()) proc.bounces().finishRecording();
+                else proc.bounces().bounce();
+            }
+            else
+            {
+                showBounceMenu();
+                return;
+            }
+            break;
         case skTableUser:
         {
             const auto id = userTableParam (ctx.part, shownEngine);
@@ -1486,6 +1503,57 @@ void OhpeEditor::importTable (const juce::File& f)
     if (ut.status().busy) { display.flash (tr ("An import is running")); return; }
     if (! ut.importFile (f, ctx.part, tableTarget (engine))) display.flash (tr ("The file could not be loaded."));
     refreshSoftKeys();
+}
+
+void OhpeEditor::showBounceMenu()
+{
+    auto& core = proc.core();
+    auto& b = proc.bounces();
+    const int part = ctx.part;
+    const int target = shownEngine == EngineType::Sampler ? bounce::TargetSampler : bounce::TargetGrain;
+    enum { idSource = 100, idLoop = 1, idFinish = 2, idCancel = 3, idLen = 200 };
+    juce::PopupMenu m;
+    m.addSectionHeader (tr ("Bounce into this engine"));
+    if (b.recording())
+    {
+        m.addItem (idFinish, tr ("Finish the recording"));
+        m.addItem (idCancel, tr ("Cancel the bounce"));
+    }
+    else
+    {
+        const int editTrack = juce::jlimit (0, TapeMachine::numTracks - 1, (int) std::lround (core.params().get (Core::Ids::tapeEditTrack)) - 1);
+        const int current = (int) std::lround (core.params().get (Core::Ids::bounceSrc));
+        m.addItem (idSource + bounce::SourceEditTrack, tr ("Edit track") + " (" + tr ("Tape") + " " + juce::String (editTrack + 1) + ")",
+                   core.tape().contentEndFrames (editTrack) > 0, current == bounce::SourceEditTrack);
+        for (int t = 0; t < TapeMachine::numTracks; ++t)
+            m.addItem (idSource + bounce::SourceTrack1 + t, tr ("Tape") + " " + juce::String (t + 1), core.tape().contentEndFrames (t) > 0,
+                       current == bounce::SourceTrack1 + t);
+        m.addItem (idSource + bounce::SourceMix, tr ("Tape Mix"), core.tape().contentEndFrames() > 0, current == bounce::SourceMix);
+        const int len = (int) std::lround (core.params().get (Core::Ids::bounceLen));
+        m.addItem (idSource + bounce::SourceInput, tr ("Input") + " (" + juce::String (1 << juce::jlimit (0, 3, len)) + " " + tr ("bars") + ")",
+                   true, current == bounce::SourceInput);
+        juce::PopupMenu lens;
+        for (int k = 0; k < bounce::numLengths; ++k) lens.addItem (idLen + k, juce::String (1 << k) + " " + tr ("bars"), true, len == k);
+        m.addSubMenu (tr ("Input Length"), lens);
+        m.addSeparator();
+        m.addItem (idLoop, tr ("Endless loop"), true, core.params().get (Core::Ids::bounceLoop) >= 0.5f);
+    }
+    juce::Component::SafePointer<OhpeEditor> safe (this);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&display), [safe, part, target] (int r) {
+        if (safe == nullptr || r == 0) return;
+        auto& self = *safe;
+        auto& bm = self.proc.bounces();
+        if (r == idFinish) bm.finishRecording();
+        else if (r == idCancel) bm.cancel();
+        else if (r == idLoop) self.setParamPlain (Core::Ids::bounceLoop, self.proc.core().params().get (Core::Ids::bounceLoop) >= 0.5f ? 0.0f : 1.0f);
+        else if (r >= idLen && r < idLen + bounce::numLengths) self.setParamPlain (Core::Ids::bounceLen, (float) (r - idLen));
+        else if (r >= idSource && r < idSource + bounce::numSources)
+        {
+            self.setParamPlain (Core::Ids::bounceSrc, (float) (r - idSource));
+            bm.bounce (part, target, r - idSource);
+        }
+        self.refreshSoftKeys();
+    });
 }
 
 void OhpeEditor::showTableImportMenu()
@@ -1760,6 +1828,20 @@ void OhpeEditor::timerCallback()
             display.repaint();
         }
     }
+    {   // p23: bounce messages and the input recording's progress
+        auto& b = proc.bounces();
+        if (const int n = b.messageCount(); n != bounceMessagesSeen)
+        {
+            bounceMessagesSeen = n;
+            display.flash (b.lastMessage());
+            refreshSoftKeys();
+        }
+        if (b.recording() || b.recording() != bounceRecording)
+        {
+            bounceRecording = b.recording();
+            refreshSoftKeys();
+        }
+    }
     const auto learning = proc.learningParamId();
     if (learning != lastLearning)
     {
@@ -1817,7 +1899,8 @@ void OhpeEditor::showMidiMenu()
                             Core::Ids::libBreedNext, Core::Ids::editPart,
                             // p11: tape transport
                             Core::Ids::tapeTxPlay, Core::Ids::tapeTxTapePlay, Core::Ids::tapeTxStop, Core::Ids::tapeTxRec,
-                            Core::Ids::tapeRtz, Core::Ids::tapeTxLoop, Core::Ids::tapeTxArm, Core::Ids::tapeEditTrack })
+                            Core::Ids::tapeRtz, Core::Ids::tapeTxLoop, Core::Ids::tapeTxArm, Core::Ids::tapeEditTrack,
+                            Core::Ids::bounceGo }) // p23
     {
         const int idx = proc.core().params().indexOf (id);
         if (idx < 0) continue;

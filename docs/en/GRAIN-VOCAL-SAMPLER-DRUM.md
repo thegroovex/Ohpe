@@ -135,3 +135,8 @@ whole keyboard, additional multisample zones, the grain source, or a sample per 
 replaces the pad's factory recording). Ohpe saves the **paths** of the loaded files with the project, not the
 audio; when a project is opened again the files are reloaded. Files that were moved or deleted are
 skipped and that engine or pad uses its built-in sound or factory recording.
+
+**Bounce to engine** (p23): the BOUNCE key puts a tape track, the tape mix or a few bars of the live input straight
+into the Grain or Sampler engine – by default as a seamless endless loop (the grains wrap round the seam, a held
+Sampler note sustains it). Bounces are WAV files in the bounce library, so they are reloaded like any other sample.
+See [Bounce to engine](BOUNCE.md).

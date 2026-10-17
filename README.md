@@ -42,6 +42,7 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **Resonator body** | every part can play through a physically modelled body – coupled strings with sympathetic strings tuned to the note or the held chord, a modal plate, an open or closed tube; it follows the keyboard, pitch bend and MPE (pressure rings it, slide moves the excitation point); also as rack effect *Resonator*; 7 presets – see [Resonator](docs/en/RESONATOR.md) |
 | **Morph space** | an XY pad per part between four complete sounds – also across different engines: parameters morph where the sounds share their structure, otherwise the sounds play in parallel and cross-fade at even loudness; play it by mouse, automation, MIDI, the modulation matrix, mod wheel or MPE pressure / slide; 4 morph presets – see [Morph space](docs/en/MORPH.md) |
 | **Preset breeding** | cross two sounds (also across engines – a hybrid keeps the other engine as its layer) with a chosen mutation, hear six children with waveform / brightness thumbnails at their parents' loudness, keep the best and breed further generations with undo; children save to the library as favourites – see [Preset breeding](docs/en/BREEDING.md) |
+| **Bounce to engine** | one BOUNCE key moves a tape track, the tape mix, the loop range or a few bars of the live input into the Grain or Sampler engine of a part – as a seamless endless loop (grains wrap round the seam, held sampler notes sustain it) or a one-shot; bounces are saved as WAV and come back with the session – see [Bounce to engine](docs/en/BOUNCE.md) |
 | **Modulation matrix** | 16 routings per part from 20 sources (three LFOs, three envelopes, velocity, MPE, macros, a sequencer lane …) to pitch, level, pan, 24 engine parameters, the LFOs and every rack slot; rings on the encoders show what moves – see [Modulation](docs/en/MODULATION.md) |
 | **Sync** | host transport in the plug-in; MIDI clock in / out and network tempo sync (Link) in the standalone app |
 | **Multi-out** | every channel can go to the main output or its own stereo output (8 aux outputs) – in the plug-in and in the standalone app |
@@ -137,6 +138,7 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 * [Morph space](docs/en/MORPH.md) – the XY pad between four complete sounds per part
 * [Resonator body](docs/en/RESONATOR.md) – strings, plates and tubes the sound excites, sympathetic strings
 * [Preset breeding](docs/en/BREEDING.md) – cross two sounds, keep the best children, breed generations
+* [Bounce to engine](docs/en/BOUNCE.md) – tape or live input into Grain / Sampler, endless loops
 * [Modulation matrix](docs/en/MODULATION.md) – routings, sources, targets, LFO 2 / 3, envelope 3, macros
 * [Parameters](docs/PARAMETERS.md) – every host parameter ID
 * [Architecture](docs/ARCHITECTURE.md) – core, plug-in shell, threading, parameters, extension points

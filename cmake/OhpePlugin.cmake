@@ -34,6 +34,8 @@ set(OHPE_PLUGIN_SOURCES
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/SampleLoader.cpp)
 # p20: audio to wavetable (user wavetables, analysis worker, library)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/UserTables.cpp)
+# p23: bounce to engine (tape / live input -> Grain or Sampler, bounce library)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/BounceToEngine.cpp)
 
 set(OHPE_DEFINES OHPE_VERSION="${PROJECT_VERSION}" JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0 JUCE_DISPLAY_SPLASH_SCREEN=0)
@@ -202,4 +204,9 @@ endif()
 # ---------------------------------------------------------------- p21: pro view 2.0 (pictures, Discover, Simple / All)
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/ProViewTwoTests.cpp)
+endif()
+
+# ---------------------------------------------------------------- p23: bounce to engine
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/BounceUiTests.cpp)
 endif()

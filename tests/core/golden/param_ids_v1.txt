@@ -6698,3 +6698,8 @@ p4.char.bright
 p4.char.hard
 p4.char.alive
 p4.char.wide
+bounce.src
+bounce.to
+bounce.loop
+bounce.len
+bounce.go

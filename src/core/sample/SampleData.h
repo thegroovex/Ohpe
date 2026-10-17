@@ -35,6 +35,12 @@ public:
     virtual int64_t numFrames() const noexcept = 0;
     virtual double sampleRate() const noexcept = 0;
     virtual const float* channel (int ch) const noexcept = 0; ///< ch is clamped to the available channels
+    /**
+        p23 (bounce to engine): true when the region is an endless loop - [start, end) loops without a
+        seam, and the frames just before start / from end on repeat the other end (guard frames for the
+        interpolation). Readers may wrap across the seam instead of stopping at the region's end.
+    */
+    virtual bool seamlessLoop (int64_t& start, int64_t& end) const noexcept { (void) start; (void) end; return false; }
 };
 
 /** An immutable decoded sample. Create it on the message thread, then publish it via RtShared. */
@@ -57,6 +63,16 @@ public:
 
     /** Sample loop points stored in the file (-1 = none). */
     int64_t fileLoopStart = -1, fileLoopEnd = -1;
+
+    /** p23: the file loop is an endless loop (see IAudioRegion::seamlessLoop, sample::hasEndlessLayout). */
+    bool endless = false;
+    bool seamlessLoop (int64_t& start, int64_t& end) const noexcept override
+    {
+        if (! endless || fileLoopStart < 1 || fileLoopEnd <= fileLoopStart || fileLoopEnd + 3 > frames) return false;
+        start = fileLoopStart;
+        end = fileLoopEnd;
+        return true;
+    }
 
     /** Mono (or stereo) helper for tests and built-in sounds. */
     static std::shared_ptr<SampleData> fromMono (std::vector<float> mono, double rate, std::string sourcePath = {});
@@ -140,6 +156,15 @@ private:
 
 namespace sample
 {
+/**
+    p23: the layout of an endless loop sample: one guard frame (the loop's last frame) before the loop,
+    the loop, three guard frames (its first frames) after it. A file loop of [1, frames - 3) marks a
+    sample written that way (the bounce library's WAV files); loaders set SampleData::endless for it.
+*/
+inline bool hasEndlessLayout (int64_t loopStart, int64_t loopEnd, int64_t frames) noexcept
+{
+    return loopStart == 1 && loopEnd == frames - 3 && loopEnd - loopStart >= 16;
+}
 /** Built-in sounds (message thread): a decaying harmonic tone at MIDI note `rootNote`, `seconds` long. */
 SamplePtr makeHarmonicTone (double rate, float rootNote, float seconds, float decaySeconds, int numHarmonics);
 /** Built-in Sampler sound: an electric-piano-like keys tone (tine bell, warm body, hammer). */

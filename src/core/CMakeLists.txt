@@ -84,3 +84,6 @@ target_sources(ohpe_core PRIVATE
     wavetable/AudioAnalysis.cpp
     wavetable/TableFile.cpp
     wavetable/UserTableState.cpp)
+
+# p23: bounce to engine (tape / live input -> Grain or Sampler)
+target_sources(ohpe_core PRIVATE bounce/Bounce.cpp)

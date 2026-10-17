@@ -6,6 +6,7 @@
 // Writes ohpe-<view>.png (English) and ohpe-<view>-de.png (German).
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
 // p20: the user wavetable frame stack (ohpe-user-wavetable).
+// p23: bounce to engine - a loop bounced into Grain (ohpe-bounce).
 // p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
 // octave block while recording (ohpe-transport, 2x crop; REC and PLAY at the top of their breathing).
 // 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack; the Mid/Side scope,
@@ -594,6 +595,50 @@ int main (int argc, char* argv[])
                 setPlain (p, "p1.usertable.wt", 0.0f);
                 setPlain (p, "p1.wavetable.pos", 0.25f);
                 run (p, 8);
+            }
+        }
+
+        // p23: bounce to engine - two bars of a tape-like chord loop bounced into part 1's Grain (endless loop)
+        {
+            p.bounces().setLibraryFolder (juce::File::getSpecialLocation (juce::File::tempDirectory).getChildFile ("ohpe-shot-bounces"));
+            const double sr = 48000.0;
+            bounce::Audio a;
+            a.rate = sr;
+            const auto n = (size_t) (4.0 * sr);
+            a.l.assign (n, 0.0f);
+            a.r.assign (n, 0.0f);
+            const double notes[] = { 45.0, 52.0, 57.0, 60.0, 64.0 };
+            for (size_t i = 0; i < n; ++i)
+            {
+                const double t = (double) i / sr;
+                const double beat = std::fmod (t, 0.5);
+                const double env = std::exp (-beat * 3.0) * (0.6 + 0.4 * std::sin (t * 1.7));
+                for (int k = 0; k < 5; ++k)
+                {
+                    const double f = 440.0 * std::pow (2.0, (notes[k] - 69.0) / 12.0);
+                    a.l[i] += (float) (0.08 * env * std::sin (6.283185307179586 * f * t + k));
+                    a.r[i] += (float) (0.08 * env * std::sin (6.283185307179586 * f * 1.002 * t + 2 * k));
+                }
+            }
+            e.selectPart (0);
+            e.selectMode (ui::Mode::Synth);
+            const float engineBefore = p.core().params().get ("p1.engine");
+            if (p.bounces().bounceAudio (std::move (a), 0, bounce::TargetGrain, true, "Tape 1"))
+            {
+                run (p, 4);
+                e.selectEngine (EngineType::Grain);
+                setPlain (p, "p1.grain.pos", 0.9f);
+                setPlain (p, "p1.grain.scan", 0.6f);
+                playAnimated (p, e, 30, { 57 });
+                e.softKey (0); // refresh the soft keys (unknown id: no action)
+                save (e, dir.getChildFile ("ohpe-bounce" + suffix + ".png"));
+                release (p, { 57 });
+                p.sampleLoader().clearGrain (0);
+                setPlain (p, "p1.grain.pos", 0.3f);
+                setPlain (p, "p1.grain.scan", 0.1f);
+                setPlain (p, "p1.engine", engineBefore);
+                run (p, 8);
+                e.selectEngine ((EngineType) (int) engineBefore);
             }
         }
 
