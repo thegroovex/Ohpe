@@ -509,7 +509,7 @@ int main (int argc, char* argv[])
             for (int i = 0; i < len; ++i)
             {
                 const float t = (float) i / (float) len;
-                a[(size_t) i] = 0.5f + 0.38f * std::sin (6.2831853f * t) * (0.6f + 0.4f * std::cos (12.566371f * t));
+                a[(size_t) i] = 0.5f + 0.32f * std::sin (6.2831853f * t) + 0.1f * std::sin (18.849556f * t);
                 if (i >= len / 4 && i < len - 10) b[(size_t) i] = 0.2f + 0.6f * std::pow (std::sin (3.14159265f * (float) (i - len / 4) / (float) (len - 10 - len / 4)), 2.0f);
                 c[(size_t) i] = 0.15f + 0.7f * (float) ((i / 16) % 3) / 2.0f;
             }
@@ -521,7 +521,7 @@ int main (int argc, char* argv[])
             setPlain (p, "p1.motion.on", 1.0f);
             setPlain (p, "seq.run", 1.0f);
             playAnimated (p, e, 2, { 48, 55 });
-            playAnimated (p, e, 45);
+            playAnimated (p, e, 30);
             save (e, dir.getChildFile ("ohpe-motion-view" + suffix + ".png"));
             release (p, { 48, 55 });
             setPlain (p, "seq.run", 0.0f);

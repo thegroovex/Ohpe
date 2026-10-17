@@ -16,7 +16,7 @@ namespace
 {
 std::string partId (int part, const char* local) { return "p" + std::to_string (part + 1) + "." + local; }
 bool flag (Core& core, int part, const char* local) { return core.params().get (partId (part, local)) >= 0.5f; }
-constexpr float labelShare = 0.26f; ///< width of the lane names / visual area width
+constexpr float labelShare = 0.3f; ///< width of the lane names / visual area width
 } // namespace
 
 std::vector<std::string> motionParams (int part)
