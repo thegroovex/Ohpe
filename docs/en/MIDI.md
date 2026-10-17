@@ -109,7 +109,11 @@ Return to Zero* (`tape.edit.rtz`): right-click the key on Ohpe, or MIDI → *Rem
 on a press (CC ≥ 64), like the keys on the body; see
 [tape transport](TAPE-MIXER-FX.md#transport). p38: *Tape Clear Track* (`tape.edit.clear`) empties the edit
 track at once (undoable); *Tape Clear All* (`tape.edit.clearall`) opens the confirmation on the screen and
-clears only when it is confirmed.
+clears only when it is confirmed. p42: *Tape Set Loop In* (`tape.edit.loopin`) / *Tape Set Loop Out*
+(`tape.edit.loopout`) set the loop at the playhead (on the grid of *Tape Loop Snap*, `tape.loopsnap`; loop out switches
+the loop on), *Tape Loop Half* / *Double* (`tape.edit.loophalf`, `tape.edit.loopdouble`), *Tape Loop Undo* / *Redo*
+(`tape.edit.loopundo`, `tape.edit.loopredo`) – map two buttons to set in / out and play loops by hand; see
+[Setting the loop](TAPE-MIXER-FX.md#setting-the-loop-p42).
 
 **On-screen wheels (p14).** The PITCH and MOD wheels left of the keyboard send pitch bend and the mod
 wheel (CC 1) on the edit part's channel, like the on-screen keyboard. Hardware pitch bend and CC 1 reach
