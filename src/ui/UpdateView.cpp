@@ -58,6 +58,7 @@ juce::String UpdateView::plainNotes (const juce::String& markdown)
 {
     juce::StringArray out;
     auto lines = juce::StringArray::fromLines (markdown.replace ("\r", ""));
+    bool afterHeading = false;
     for (auto line : lines)
     {
         line = line.replace ("**", "").replace ("__", "").replace ("`", "");
@@ -67,11 +68,13 @@ juce::String UpdateView::plainNotes (const juce::String& markdown)
             t = t.trimCharactersAtStart ("#").trim();
             if (! out.isEmpty() && out[out.size() - 1].isNotEmpty()) out.add ({});
             out.add (i18n::upper (t));
+            afterHeading = true;
             continue;
         }
         if (t.startsWith ("- ") || t.startsWith ("* "))
             t = juce::String::fromUTF8 ("\xe2\x80\xa2 ") + t.substring (2).trim();
-        if (t.isEmpty() && (out.isEmpty() || out[out.size() - 1].isEmpty())) continue;
+        if (t.isEmpty() && (afterHeading || out.isEmpty() || out[out.size() - 1].isEmpty())) continue;
+        afterHeading = false;
         out.add (t);
     }
     while (! out.isEmpty() && out[out.size() - 1].isEmpty()) out.remove (out.size() - 1);
