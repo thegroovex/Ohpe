@@ -78,7 +78,7 @@
     "mod.s3.src": 9,
     "mod.s3.via": 0,
     "mod.s3.dst": 4,
-    "mod.s3.amt": 0.3,
+    "mod.s3.amt": 0.15,
     "mod.s3.curve": 0
   }
 }

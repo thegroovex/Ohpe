@@ -101,11 +101,11 @@ preset sounds exactly as before.
 |---|---|
 | Leads, solo voices, organs, brass | vibrato (about ±0.35 semitones; LFO 1 where it already runs at a vibrato rate, otherwise LFO 2 at 5.3 Hz with a short fade-in) |
 | Tines, reeds, vibes with an auto-pan | deeper auto-pan / tremolo (LFO 1 depth) |
-| Pads, basses, plucks, keys, FX | the filter / tone opens (Timbre: cutoff, FM index, pluck brightness) |
+| Pads, basses, plucks, keys, FX | the filter / tone opens (Timbre: cutoff, FM index, pluck brightness); where it is already fully open (recorded pianos and instruments at full tone) it closes instead – a softer, darker tone; struck bars and plates get a harder strike |
 | Grain pads, textures and FX | grain spray |
 | Vocal-engine choirs | the vowel moves |
 | Subs, booms, kicks | harder, driven character (Character Hard) |
-| Arps with a delay / echo | echo throw (the delay slot's mix) |
+| Arps with a delay / echo | echo throw (longer delay / echo feedback, at most 0.75) |
 | Morph presets | Morph X (already, through the morph pad's wheel control) |
 | Project presets | every part, by its engine (spray, vowel, tone) |
 

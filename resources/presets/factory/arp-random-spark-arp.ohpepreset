@@ -69,7 +69,7 @@
     "fx4.compressor.mix": 1.0,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
-    "mod.s1.dst": 38,
+    "mod.s1.dst": 48,
     "mod.s1.amt": 0.25,
     "mod.s1.curve": 0
   },

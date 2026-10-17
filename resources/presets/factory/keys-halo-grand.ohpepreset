@@ -136,7 +136,7 @@
     "mod.s6.src": 9,
     "mod.s6.via": 0,
     "mod.s6.dst": 4,
-    "mod.s6.amt": 0.2,
+    "mod.s6.amt": -0.45,
     "mod.s6.curve": 0
   }
 }

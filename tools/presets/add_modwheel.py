@@ -8,11 +8,13 @@ matrix to the first free slot (source or via = Mod Wheel) chosen by the preset's
   leads, solo voices, organs, brass  vibrato: LFO 1 (when it already runs at a vibrato rate) or a free LFO 2 / 3
                                      set to 5.3 Hz with a short fade-in, scaled by the wheel, to Pitch (+-0.36 st)
   tines / reeds with an auto-pan     deeper auto-pan / tremolo (wheel -> LFO 1 depth)
-  pads, basses, plucks, keys, FX     filter / tone opening (wheel -> Timbre: cutoff, FM index, pluck brightness)
+  pads, basses, plucks, keys, FX     filter / tone opening (wheel -> Timbre: cutoff, FM index, pluck brightness);
+                                     closing where the tone is already fully open (sampler at full tone, vowel
+                                     at its end); a harder strike for struck pluck bodies (bars, plates)
   grain pads, textures and FX        grain spray (wheel -> Spray)
   vocal engine choirs                vowel movement (wheel -> Timbre = vowel)
   subs, booms, kicks                 harder, driven character (wheel -> Character Hard)
-  arps with a delay / echo           echo throw (wheel -> the delay slot's mix)
+  arps with a delay / echo           echo throw (wheel -> the delay / echo feedback, at most 0.75)
   morph presets                      already drive Morph X from the wheel (morph.xsrc = Mod Wheel): unchanged
   projects                           every melodic part gets the rule of its engine (spray, vowel, timbre)
 
@@ -33,18 +35,25 @@ SRC_OFF, SRC_LFO1, SRC_LFO2, SRC_LFO3, SRC_WHEEL = 0, 1, 2, 3, 9
 DST_PITCH, DST_TIMBRE = 1, 4
 DST_ENGINE1 = 5            # engine parameter 1 (the engine's own order)
 DST_LFO1DEPTH = 31
-DST_FXMIX1 = 37            # fx1mix ... fx6mix = 37 ... 42
+DST_FXPARAM1 = 43          # fx1p1 ... fx6p4 = 43 ... 66
 DST_CHARHARD = 82
 NUM_SLOTS = 16
 GRAIN_SPRAY = 3            # 0-based engine parameter of the grain engine: pos, size, density, spray
-ENGINE_GRAIN, ENGINE_VOCAL = 4, 5
+ENGINE_PLUCK, ENGINE_GRAIN, ENGINE_VOCAL, ENGINE_SAMPLER = 3, 4, 5, 7
 FX_DELAY, FX_ECHO = 5, 14
 
 VIB_LFO1 = 0.03            # LFO 1 (-1..1 raw) x wheel x 12 st -> +-0.36 st
 VIB_FREE = 0.03
 
-# Per-preset overrides (file stem -> kind) where the role rule would pick a weaker routing
-OVERRIDES = {}
+# Level calibration (internal renders, wheel 0 vs 127): amount factors for presets whose peak or loudness rose too
+# much with the full amount. Target: at most +1.5 dB active RMS, and the peak below -0.5 dBFS or at most +0.5 dB.
+SCALE = {
+    "arp-formant-arp": 0.6, "bass-deep-pluck-sub": 0.6, "bass-neuro-swirl": 0.5, "bass-punch-sub": 0.5,
+    "bass-rolling-bass": 0.5, "bass-screech-bass": 0.6, "bass-upright-pluck": 0.7, "boom-boom-kick-bass": 0.5,
+    "keys-dusty-ep": 0.7, "keys-dusty-keys": 0.7, "keys-music-box": 0.5, "leads-breath-lead": 0.5,
+    "pads-glass-grains": 0.6, "pads-halo-drift": 0.5, "pads-overhead-choir": 0.4, "pads-super-stack": 0.5,
+    "pads-warm-horizon": 0.5, "textures-breath-bore": 0.5, "textures-fourths-drift": 0.8,
+}
 
 
 def slot_prefix(k):
@@ -84,7 +93,10 @@ class Part:
     def lfo_used(self, src):
         return any(s == src or v == src for _, s, v, d, a in self.routes() if d != 0 and a != 0.0 and s != SRC_OFF)
 
+    scale = 1.0
+
     def add(self, src, via, dst, amt):
+        amt *= self.scale
         k = self.free_slot()
         assert k is not None, "matrix full"
         s = "mod.s%d." % k
@@ -127,6 +139,17 @@ def vibrato(part, amount=VIB_LFO1):
 
 
 def timbre(part, amt, what="filter / tone opening"):
+    """Wheel -> Timbre. Where the tone is already fully open the wheel closes it instead (a sampler at full tone, a
+    vocal vowel at its end), and struck pluck bodies (bars, plates) that ignore the brightness get a harder strike."""
+    e = part.engine()
+    if e == ENGINE_SAMPLER and float(part.get("sampler.tone", 1.0)) >= 0.95:
+        part.add(SRC_WHEEL, SRC_OFF, DST_TIMBRE, -0.45)
+        return "softer, darker tone"
+    if e == ENGINE_VOCAL and float(part.get("vocal.vowel", 0.0)) + 2.0 * amt > 4.0:
+        part.add(SRC_WHEEL, SRC_OFF, DST_TIMBRE, -amt)
+        return what
+    if e == ENGINE_PLUCK and float(part.get("pluck.material", 0.0)) >= 0.6:
+        return hard(part, 0.25, "harder strike")
     part.add(SRC_WHEEL, SRC_OFF, DST_TIMBRE, amt)
     return what
 
@@ -136,17 +159,25 @@ def spray(part, amt):
     return "grain spray"
 
 
-def hard(part, amt):
+def hard(part, amt, what="harder, driven character"):
     part.add(SRC_WHEEL, SRC_OFF, DST_CHARHARD, amt)
-    return "harder, driven character"
+    return what
 
 
 def echo_throw(part, amt):
+    """Longer echo tails: the wheel raises the delay / echo feedback (FX param target of the slot), at most to 0.75.
+    (The FX Mix target moves the rack slot's own mix, which is at 100 % in these presets.)"""
     k = part.fx_slot(FX_DELAY, FX_ECHO)
     if k is None:
         return None
-    part.add(SRC_WHEEL, SRC_OFF, DST_FXMIX1 + k, amt)
-    return "echo throw (delay mix)"
+    t = int(part.get(slot_prefix(k) + "type"))
+    name, j, hi = ("delay", 1, 0.95) if t == FX_DELAY else ("echo", 0, 1.05)  # FX param 2 = Delay feedback, 1 = Echo feedback
+    base = float(part.get(slot_prefix(k) + name + ".feedback", 0.4))
+    norm = max(0.0, min(0.75, base + amt * hi) - base) / hi
+    if norm < 0.05:
+        return None
+    part.add(SRC_WHEEL, SRC_OFF, DST_FXPARAM1 + 4 * k + j, norm)
+    return "echo throw (longer delay feedback)"
 
 
 def lfo1_deeper(part, amt):
@@ -172,9 +203,6 @@ def rule(stem, doc, part):
     name = stem[len(cat) + 1:]
     tags = doc.get("tags", [])
     e = part.engine()
-    kind = OVERRIDES.get(stem)
-    if kind:
-        return kind(part)
     if cat == "leads" or (cat == "vocal" and "solo" in name):
         return vibrato(part) or timbre(part, 0.25)
     if cat == "vocal":
@@ -223,6 +251,7 @@ def process(path, dry=False):
     done = []
     if doc["kind"] == "part":
         part = Part(p)
+        part.scale = SCALE.get(stem, 1.0)
         if part.has_wheel() or morph_wheel(p):
             return stem, ["(already)"]
         done.append(rule(stem, doc, part))
@@ -231,6 +260,7 @@ def process(path, dry=False):
             if "p%d.engine" % i not in p:
                 continue
             part = Part(p, "p%d." % i)
+            part.scale = SCALE.get(stem, 1.0)
             if part.has_wheel():
                 done.append("p%d (already)" % i)
                 continue

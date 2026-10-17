@@ -72,7 +72,7 @@
     "mod.s1.src": 2,
     "mod.s1.via": 9,
     "mod.s1.dst": 1,
-    "mod.s1.amt": 0.03,
+    "mod.s1.amt": 0.021,
     "mod.s1.curve": 0
   }
 }

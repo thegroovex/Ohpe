@@ -103,11 +103,11 @@ Mit dem Rad unten klingt jedes Preset genau wie vorher.
 |---|---|
 | Leads, Solostimmen, Orgeln, Bläser | Vibrato (etwa ±0,35 Halbtöne; LFO 1, wo er schon im Vibrato-Tempo läuft, sonst LFO 2 mit 5,3 Hz und kurzem Einblenden) |
 | Tines, Reeds, Vibes mit Auto-Pan | tieferes Auto-Pan / Tremolo (LFO 1 Tiefe) |
-| Flächen, Bässe, Zupfer, Tasten, FX | Filter / Klang öffnet sich (Klangfarbe: Cutoff, FM-Index, Zupf-Helligkeit) |
+| Flächen, Bässe, Zupfer, Tasten, FX | Filter / Klang öffnet sich (Klangfarbe: Cutoff, FM-Index, Zupf-Helligkeit); wo er schon ganz offen ist (aufgenommene Klaviere und Instrumente bei vollem Klang), schließt er sich – weicher, dunkler; angeschlagene Stäbe und Platten werden härter angeschlagen |
 | Grain-Flächen, Texturen und FX | Korn-Streuung |
 | Chöre der Vokal-Engine | der Vokal wandert |
 | Subs, Booms, Kicks | härterer, angezerrter Charakter (Charakter Hart) |
-| Arps mit Delay / Echo | Echo-Wurf (Mischung des Delay-Slots) |
+| Arps mit Delay / Echo | Echo-Wurf (längeres Delay- / Echo-Feedback, höchstens 0,75) |
 | Morph-Presets | Morph X (schon bisher, über die Rad-Steuerung des Morph-Pads) |
 | Projekt-Presets | jeder Part nach seiner Engine (Streuung, Vokal, Klang) |
 

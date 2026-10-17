@@ -566,7 +566,7 @@
     "p2.mod.s6.src": 9,
     "p2.mod.s6.via": 0,
     "p2.mod.s6.dst": 4,
-    "p2.mod.s6.amt": 0.25,
+    "p2.mod.s6.amt": -0.45,
     "p2.mod.s6.curve": 0,
     "p3.mod.s1.src": 9,
     "p3.mod.s1.via": 0,
