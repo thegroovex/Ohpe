@@ -670,7 +670,9 @@ Edit-Part folgt.
 Die Taste **RASTER** (zwischen OKTAVE + und MIDI) tauscht die Klaviertasten gegen die isomorphe Raster-Tastatur:
 4 × 24 Felder in Quarten, Terzen, Ganztönen oder nur den Tönen der Tonart; Akkordtöne tragen einen violetten Balken.
 Mit MPE für den Edit-Part hat jede Berührung ihren eigenen Kanal – seitlich schieben biegt, hoch / runter für Slide,
-Druck von Touch oder Stift.
+Druck von Touch oder Stift. Jeder Akkord hat in jeder Tonart dieselbe Form; das sagt auch der Tooltip der Taste,
+und beim ersten Einschalten in einem Projekt zeigt die Tastatur-Anzeige ein paar Sekunden lang „Gleiche
+Akkordform in jeder Tonart“ (p47).
 
 ## Updates (p27)
 
