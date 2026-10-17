@@ -44,6 +44,11 @@ public:
         follows in timerTick()). False when nothing could be bounced (empty track, busy, silent).
     */
     bool bounce (int part = -1, int target = -1, int source = -1);
+    /** Bounces prepared audio (name = the source's English name, e.g. "Tape 1"); used by bounce() and tests. */
+    bool bounceAudio (bounce::Audio audio, int part, int target, bool endless, const std::string& name)
+    {
+        return finish (std::move (audio), part, target, endless, name);
+    }
     /** Ends an input recording early and bounces what was recorded (false = nothing recorded). */
     bool finishRecording();
     void cancel();

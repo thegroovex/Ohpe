@@ -155,6 +155,10 @@ Ogg) from your file manager onto the instrument: it goes to the edit part's Grai
 is selected, otherwise to its Sampler (the part switches to the Sampler). Each part has its own
 samples. Sample paths are saved with the project.
 
+**BOUNCE** (third key, p23) puts tape or live-input audio into the engine you are looking at: a menu offers the edit
+track, Tape 1 … 8, the tape mix and the input (1–8 bars), plus *Endless loop* (on by default – the bounce loops
+seamlessly). See [Bounce to engine](BOUNCE.md).
+
 ## User wavetables and formants (p20)
 
 With the Wavetable or Vocal engine on the edit part, the Synth page shows **IMPORT**, **USER** and
@@ -237,6 +241,7 @@ Encoder pages:
 | Transport | Overdub, Speed (varispeed 0.5–2×), Reverse, Play starts tape |
 | Loop | Loop on/off, Loop in, Loop out |
 | Tape character | Saturation, Wow, Flutter, Hiss |
+| Bounce | Bounce source, Bounce target (Grain / Sampler), Endless loop, Input length (p23) |
 
 Soft keys on the display:
 
@@ -248,6 +253,7 @@ Soft keys on the display:
 | **Splice** | inserts the clipboard at the play position (the rest moves back) |
 | **Undo / Redo** | unlimited undo of recordings and edits |
 | **Export** | renders master + the eight tracks as **24-bit WAV** files into a folder you choose (offline, faster than real time; the live audio is not interrupted) |
+| **Bounce** | moves the edit track (or the source on the Bounce page; the loop range while the loop is on) into the Grain or Sampler engine of the edit part, as an endless loop by default – [Bounce to engine](BOUNCE.md) |
 
 The line left of the soft keys shows the loop range that Lift and Cut use. Every tape edit is
 MIDI-mappable: *Tape Edit Track* (`tape.edit.track`), *Tape Lift / Cut / Drop / Splice / Undo / Redo /

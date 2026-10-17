@@ -159,6 +159,10 @@ FLAC, Ogg) kann auch aus dem Dateimanager auf das Instrument **gezogen** werden:
 Grain-Engine des Parts, wenn Grain gewählt ist, sonst an seinen Sampler (der Part wechselt zum
 Sampler). Jeder Part hat eigene Samples. Die Pfade werden mit dem Projekt gespeichert.
 
+**BOUNCE** (dritte Taste, p23) bringt Tape- oder Live-Eingangs-Audio in die angezeigte Engine: Ein Menü bietet die
+Bearbeitungsspur, Tape 1 … 8, den Tape-Mix und den Eingang (1–8 Takte) sowie *Endlosschleife* (standardmäßig an – der
+Bounce schleift nahtlos). Siehe [Bounce ins Instrument](BOUNCE-INS-INSTRUMENT.md).
+
 ## Eigene Wavetables und Formanten (p20)
 
 Mit der Wavetable- oder Vokal-Engine auf dem bearbeiteten Part zeigt die Synth-Seite **IMPORT**,
@@ -247,6 +251,7 @@ Encoder-Seiten:
 | Transport | Overdub, Geschwindigkeit (Varispeed 0,5–2×), Rückwärts, Start startet Tape |
 | Schleife | Schleife an/aus, Start, Ende |
 | Bandcharakter | Sättigung, Wow, Flutter, Rauschen |
+| Bounce | Bounce-Quelle, Bounce-Ziel (Grain / Sampler), Endlosschleife, Eingangslänge (p23) |
 
 Soft-Tasten im Display:
 
@@ -258,6 +263,7 @@ Soft-Tasten im Display:
 | **Einfügen** | fügt die Zwischenablage an der Abspielposition ein (späteres rückt nach hinten) |
 | **Rückgängig / Wiederholen** | unbegrenztes Rückgängig für Aufnahmen und Schnitte |
 | **Export** | rendert Master + die acht Spuren als **24-Bit-WAV** in einen wählbaren Ordner (offline, schneller als Echtzeit; das laufende Audio wird nicht unterbrochen) |
+| **Bounce** | bringt die Bearbeitungsspur (oder die Quelle der Bounce-Seite; bei eingeschalteter Schleife den Schleifenbereich) in die Grain- oder Sampler-Engine des bearbeiteten Parts, standardmäßig als Endlosschleife – [Bounce ins Instrument](BOUNCE-INS-INSTRUMENT.md) |
 
 Die Zeile links der Soft-Tasten zeigt den Schleifenbereich, mit dem Heben und Schneiden arbeiten. Jede
 Bandbearbeitung ist per MIDI steuerbar: *Tape-Bearbeitungsspur* (`tape.edit.track`), *Tape Heben /
