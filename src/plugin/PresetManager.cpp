@@ -189,6 +189,48 @@ bool PresetManager::apply (const preset::Preset& p, int part)
     return ok;
 }
 
+std::string PresetManager::currentUid() const
+{
+    return currentIndex >= 0 && currentIndex < (int) list.size() ? list[(size_t) currentIndex].uid : std::string();
+}
+
+void PresetManager::restoreCurrent (const std::string& uid)
+{
+    currentIndex = -1;
+    if (! uid.empty())
+        for (int i = 0; i < (int) list.size(); ++i)
+            if (list[(size_t) i].uid == uid) currentIndex = i;
+    arpOwner = -1; // a restored session brings its own arp setup
+    previewBackup.reset();
+    sendChangeMessage();
+}
+
+int PresetManager::startSoundIndex() const
+{
+    const preset::Filter libraryDefault; // all banks and kinds, sorted by name - the order the library opens with
+    for (const int i : preset::filterAndSort (list, libraryDefault))
+        if (list[(size_t) i].uid.rfind ("factory:", 0) == 0) return i; // built-in bank only (no pack, no user preset)
+    return -1;
+}
+
+bool PresetManager::loadStartSound()
+{
+    const int index = startSoundIndex();
+    if (index < 0) return false;
+    preset::Preset p;
+    if (! preset::fromJson (read (list[(size_t) index]), p)) return false;
+    bool ok = true;
+    if (p.meta.kind == preset::Kind::Project)
+        ok = apply (p, 0);
+    else
+        for (int part = 0; part < Core::numParts; ++part)
+            ok = apply (p, part) && ok;
+    if (! ok) return false;
+    currentIndex = index;
+    sendChangeMessage();
+    return true;
+}
+
 bool PresetManager::load (int index, int part)
 {
     if (index < 0 || index >= (int) list.size()) return false;

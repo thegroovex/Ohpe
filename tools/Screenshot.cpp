@@ -167,6 +167,23 @@ int main (int argc, char* argv[])
     const juce::File dir (argc > 1 ? juce::File::getCurrentWorkingDirectory().getChildFile (argv[1]) : juce::File::getCurrentWorkingDirectory());
     dir.createDirectory();
 
+    // p40: the views below start from the plain parameter defaults; only the first-start shot uses the start sound
+    OhpeProcessor::startWithFactorySound.store (false);
+    for (auto lang : { i18n::Language::English, i18n::Language::German })
+    {
+        const juce::String suffix = lang == i18n::Language::German ? "-de" : "";
+        OhpeProcessor::startWithFactorySound.store (true);
+        OhpeProcessor first; // p40: what a new instance shows - the first factory preset, empty tape and sequencers
+        OhpeProcessor::startWithFactorySound.store (false);
+        first.enableAllBuses();
+        first.prepareToPlay (48000.0, 512);
+        std::unique_ptr<juce::AudioProcessorEditor> firstEd (first.createEditor());
+        auto& fe = *dynamic_cast<OhpeEditor*> (firstEd.get());
+        fe.setLanguage (lang);
+        animate (first, fe, 4);
+        save (fe, dir.getChildFile ("ohpe-first-start" + suffix + ".png"));
+        firstEd = nullptr;
+    }
     for (auto lang : { i18n::Language::English, i18n::Language::German })
     {
         const juce::String suffix = lang == i18n::Language::German ? "-de" : "";
