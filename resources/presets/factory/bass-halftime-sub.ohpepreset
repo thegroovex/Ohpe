@@ -59,6 +59,9 @@
     "glide": 0.14,
     "glide.mode": 2,
     "glide.rate": 0,
-    "gain": 0.0
+    "gain": 0.0,
+    "expr.at.dst1": 12,
+    "expr.at.amt1": 0.25,
+    "expr.at.curve1": 3
   }
 }

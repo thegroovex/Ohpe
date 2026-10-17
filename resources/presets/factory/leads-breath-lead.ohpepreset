@@ -168,6 +168,9 @@
     "mpe.bend": 48,
     "voices": 4,
     "glide": 0.03,
-    "gain": 8.4
+    "gain": 8.4,
+    "expr.at.dst1": 12,
+    "expr.at.amt1": 0.3,
+    "expr.at.curve1": 3
   }
 }

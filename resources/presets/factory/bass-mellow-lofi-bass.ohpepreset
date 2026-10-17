@@ -43,6 +43,9 @@
     "fx.compressor.knee": 6.0,
     "fx.compressor.makeup": 5.5,
     "fx.compressor.mix": 1.0,
-    "gain": 8.3
+    "gain": 8.3,
+    "expr.at.dst1": 12,
+    "expr.at.amt1": 0.3,
+    "expr.at.curve1": 3
   }
 }

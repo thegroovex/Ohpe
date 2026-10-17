@@ -58,6 +58,9 @@
     "fx3.delay.tone": 0.5,
     "fx3.delay.pingpong": 1,
     "fx3.delay.mix": 0.16,
-    "gain": 18.1
+    "gain": 18.1,
+    "expr.at.dst1": 12,
+    "expr.at.amt1": 0.25,
+    "expr.at.curve1": 3
   }
 }

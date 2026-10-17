@@ -129,8 +129,15 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             return ids;
         }
         case Mode::Envelope:
-            return { p + "amp.a", p + "amp.d", p + "amp.s", p + "amp.r", p + "mod.a", p + "mod.d", p + "mod.s", p + "mod.r",
-                     p + "mod.amt", p + "velsens", p + "glide", p + "voices", p + "polyglide", p + "life", "", "" }; // p15: life
+        {
+            Ids ids { p + "amp.a", p + "amp.d", p + "amp.s", p + "amp.r", p + "mod.a", p + "mod.d", p + "mod.s", p + "mod.r",
+                      p + "mod.amt", p + "velsens", p + "glide", p + "voices", p + "polyglide", p + "life", "", "" }; // p15: life
+            if (core.params().indexOf (p + "expr.vel.dst1") >= 0) // p33: the Expression pages - Velocity, Aftertouch, Curves
+                for (const char* k : { "expr.vel.dst1", "expr.vel.amt1", "expr.vel.dst2", "expr.vel.amt2", "expr.at.dst1", "expr.at.amt1",
+                                       "expr.at.dst2", "expr.at.amt2", "expr.vel.curve1", "expr.vel.curve2", "expr.at.curve1", "expr.at.curve2" })
+                    ids.push_back (p + k);
+            return ids;
+        }
         case Mode::Lfo:
             if (ctx.lfoView == modfx::LfoViewMod) return modfx::modParams (core, partIndex, ctx.modRouting); // 0.7
             if (ctx.lfoView == modfx::LfoViewMorph) return morphview::morphParams (partIndex); // p16
@@ -221,7 +228,7 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
     switch (m)
     {
         case Mode::Synth: t = { "Macros" }; break;
-        case Mode::Envelope: t = { "Amp Envelope", "Mod Envelope", "Voice" }; break;
+        case Mode::Envelope: t = { "Amp Envelope", "Mod Envelope", "Voice", "Voice", "Velocity", "Aftertouch", "Expression Curves" }; break; // p33
         case Mode::Lfo:
             t = ctx.lfoView == modfx::LfoViewMod     ? modfx::modTitles (core, ctx.part, ctx.modRouting)
                 : ctx.lfoView == modfx::LfoViewMorph ? morphview::morphTitles() // p16
@@ -390,6 +397,15 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
             groups.push_back ({ "Pitch Envelope", 0, { p + "pitchenv.amt", p + "pitchenv.time", p + "pitchenv.curve" } });
             if (core.params().indexOf (p + "sub.level") >= 0) // p31: the SUB layer
                 groups.push_back ({ "Sub", 0, { p + "sub.level", p + "sub.oct", p + "sub.shape", p + "sub.direct" } });
+            for (const char* t : { "Velocity", "Aftertouch", "Expression Curves" }) // p33: one Expression group instead of the three pages
+                pages.erase (std::remove_if (pages.begin(), pages.end(), [t] (const ParamGroup& g) { return g.title == t; }), pages.end());
+            if (core.params().indexOf (p + "expr.vel.dst1") >= 0)
+            {
+                ParamGroup ex { "Expression", 0, {} };
+                for (const char* in : { "vel.", "at." })
+                    for (const char* k : { "dst1", "amt1", "curve1", "dst2", "amt2", "curve2" }) ex.ids.push_back (p + "expr." + in + k);
+                groups.push_back (std::move (ex));
+            }
             if (core.params().indexOf (p + "layer.engine") >= 0) groups.push_back ({ "Layer", 0, layerParams (partIndex) });
             for (auto& rest : pages) groups.push_back (std::move (rest)); // MIDI & Key, Scale & MPE, MPE
             return groups;

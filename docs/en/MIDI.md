@@ -77,7 +77,7 @@ you press (time × (1 + 3 × amount × pressure), up to four times as long at +1
 negative amount makes it faster (time × (1 + amount × pressure); at −1 and full pressure the pitch jumps).
 It scales the *Glide* time and the CC 5 portamento time alike and acts on new glides and on glides that
 are running; CC 65 off still switches glide off. At 0, or without pressure, the glide is exactly as
-before. It is in the pro view's **Glide** group and part of part presets (key `glide.press`).
+before. It is in the pro view's **Glide** group and part of part presets (key `glide.press`). For how it relates to an Expression aftertouch slot on *Glide Time* (scaling vs. adding; both together stretch twice) see [Expressive playing](EXPRESSION.md#expression-and-glide-pressure).
 
 **Without MPE** the same targets, amounts and smoothing apply to channel pressure, polyphonic
 aftertouch and CC 74 on the part's channel, so an aftertouch keyboard drives them too.

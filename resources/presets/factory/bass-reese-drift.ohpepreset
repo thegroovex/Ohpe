@@ -50,6 +50,9 @@
     "fx2.chorus.drift": 0.3,
     "fx2.chorus.spread": 0.85,
     "fx2.chorus.lowcut": 320.0,
-    "gain": 12.5
+    "gain": 12.5,
+    "expr.at.dst1": 12,
+    "expr.at.amt1": 0.3,
+    "expr.at.curve1": 3
   }
 }

@@ -261,6 +261,7 @@ void Part::registerLate31SubParams (ParamRegistry& reg) const
     add (choice (id ("sub.shape"), P + "Sub Shape", P + "Sub-Form", { "Sine", "Round", "Square" }, { "Sinus", "Rund", "Rechteck" }, 0));
     add (toggle (id ("sub.direct"), P + "Sub Direct", P + "Sub direkt", false));
 }
+void Part::registerLate33ExpressionParams (ParamRegistry& reg) const { mod::PartMatrix::registerExpressionParams (reg, idPrefix, number); }
 
 void Part::applyReso (float* l, float* r, int n) noexcept
 {
@@ -431,6 +432,36 @@ void Part::bind (const ParamRegistry& reg)
             slot.charWeights.push_back (d.kind == ParamKind::Continuous ? character::engineWeights (d.id) : character::Weights {}); // p21
         }
     }
+    // p33: what each Expression page function drives on each engine (its parameter, else a part-wide matrix target)
+    for (int t = 0; t < numEngineTypes; ++t)
+    {
+        std::vector<ParamDescriptor> descs;
+        if (engines[(size_t) t] != nullptr) descs = engines[(size_t) t]->getParamDescriptors();
+        auto engineDest = [&] (const char* pid) {
+            for (size_t i = 0; i < descs.size() && i < (size_t) mod::numEngineDests; ++i)
+                if (descs[i].id == pid && descs[i].kind == ParamKind::Continuous) return mod::DstEngine1 + (int) i;
+            return -1;
+        };
+        auto matrixDest = [&] (const char* key) {
+            if (key == nullptr) return -1;
+            const int d = mod::destIndexOfKey (key);
+            return d > mod::DstOff && destAvailable (d) ? d : -1;
+        };
+        for (int f = 0; f < mod::expr::numTargets; ++f)
+        {
+            const auto& info = mod::expr::targets()[(size_t) f];
+            int engine = -1;
+            for (const char* pid : info.engineIds)
+            {
+                if (pid == nullptr) break;
+                if ((engine = engineDest (pid)) >= 0) break;
+            }
+            const int part = matrixDest (info.matrixKey);
+            int d = info.engineFirst ? (engine >= 0 ? engine : part) : (part >= 0 ? part : engine);
+            if (f == mod::expr::Off) d = -1;
+            exprDest[(size_t) t][(size_t) f] = d;
+        }
+    }
 }
 
 void Part::prepare (double sampleRate, int maxBlockSize)
@@ -511,7 +542,14 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
     polyphony = s.getInt (commonIndex[cVoices]);
     tune = v (cTune) + v (cFine) * 0.01f;
     bendRange = v (cBendRange);
-    if (const float g = v (cGlide); g != lastGlideParam) { lastGlideParam = g; ccGlideSeconds = -1.0f; }
+    {
+        // p33: the matrix may move the glide time (Glide Time target): compare the unmodulated value, so a modulation
+        // does not count as a new parameter value (that would end a CC 5 portamento time); the offset is added on top
+        const float g = v (cGlide);
+        const float base = registry != nullptr ? s.base (*registry, commonIndex[cGlide]) : g;
+        if (base != lastGlideParam) { lastGlideParam = base; ccGlideSeconds = -1.0f; }
+        glideMod = std::isfinite (g - base) ? g - base : 0.0f;
+    }
     if (glidePressIndex >= 0) // p32
     {
         const float a = s[glidePressIndex];
@@ -548,6 +586,7 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
     common.lfoDest = (LfoDest) std::clamp (s.getInt (commonIndex[cLfoDest]), 0, (int) LfoDest::numDests - 1);
     common.pitchOffset = tune + bend * bendRange;
     common.modProgram = &matrix.voiceProgram();
+    matrix.setExpressionTargets (exprDest[(size_t) current].data()); // p33
     matrix.pull (s, common.amp, common.mod, common.lfoRate, common.lfoShape);
     rack.pullParams (s);
     common.exprSmooth = exprSmoothIndex >= 0 ? s[exprSmoothIndex] : 0.0f;
@@ -928,7 +967,7 @@ void Part::captureModBases (const ParamSnapshot& s) noexcept
     slotTarget.fill (-1);
     if (! matrix.hasParamRoutes() || registry == nullptr) { for (auto& u : uiTargetIndex) u.store (-1, std::memory_order_relaxed); return; }
     const auto& routes = matrix.routes();
-    for (int k = 0; k < mod::numSlots; ++k)
+    for (int k = 0; k < mod::numAllSlots; ++k)
     {
         if (! matrix.isParamRoute (k)) continue;
         const int idx = destParamIndex (routes[(size_t) k].dst);
@@ -942,14 +981,14 @@ void Part::captureModBases (const ParamSnapshot& s) noexcept
         }
         slotTarget[(size_t) k] = t;
     }
-    for (int t = 0; t < mod::numSlots; ++t)
+    for (int t = 0; t < mod::numAllSlots; ++t)
         uiTargetIndex[(size_t) t].store (t < numModTargets ? modTargets[(size_t) t].index : -1, std::memory_order_relaxed);
 }
 
 void Part::writeModulation() noexcept
 {
-    std::array<float, mod::numSlots> delta {};
-    for (int k = 0; k < mod::numSlots; ++k)
+    std::array<float, mod::numAllSlots> delta {};
+    for (int k = 0; k < mod::numAllSlots; ++k)
         if (const int t = slotTarget[(size_t) k]; t >= 0) delta[(size_t) t] += matrix.routeValue (k);
     for (int t = 0; t < numModTargets; ++t)
     {
@@ -964,7 +1003,7 @@ void Part::writeModulation() noexcept
 float Part::modulationOf (int registryIndex) const noexcept
 {
     if (registryIndex < 0) return 0.0f;
-    for (int t = 0; t < mod::numSlots; ++t)
+    for (int t = 0; t < mod::numAllSlots; ++t)
         if (uiTargetIndex[(size_t) t].load (std::memory_order_relaxed) == registryIndex)
             return uiTargetDelta[(size_t) t].load (std::memory_order_relaxed);
     return 0.0f;
@@ -972,7 +1011,8 @@ float Part::modulationOf (int registryIndex) const noexcept
 
 void Part::updateGlide() noexcept
 {
-    float t = ccGlideSeconds >= 0.0f ? ccGlideSeconds : std::max (0.0f, lastGlideParam);
+    // p33: the matrix offset (Glide Time target) is added to the parameter / CC 5 time first; p32: the pressure then scales it
+    float t = std::clamp ((ccGlideSeconds >= 0.0f ? ccGlideSeconds : std::max (0.0f, lastGlideParam)) + glideMod, 0.0f, 2.0f);
     if (glidePressAmt != 0.0f && t > 0.0f) // p32: aftertouch scales the glide time (0 = exactly the old time)
     {
         float p = std::max (matrix.sourceValue (mod::SrcChannelPressure), matrix.sourceValue (mod::SrcNotePressure));
