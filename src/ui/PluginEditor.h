@@ -213,6 +213,8 @@ public:
     ui::PictoKey& engineKey (EngineType t) { return *engineKeys[(size_t) t]; }
     ui::PictoKey& modeKey (ui::Mode m) { return *modeKeys[(size_t) m]; }
     ui::Readout& tapeReadoutComponent() { return tapeReadout; }
+    ui::TempoReadout& tempoPanelComponent() { return tempoPanel; } ///< p39 (tests / screenshots)
+    ui::ClickStrip& clickStripComponent() { return clickStrip; }   ///< p39
     ui::Readout& keysReadoutComponent() { return keysReadout; }
     /** RANDOM: new values for the sound parameters of the edit part's engine (its Synth pages). */
     void randomiseSound (juce::int64 seed = 0);
@@ -294,6 +296,8 @@ private:
     ui::MiniKnob glideKnob;
     ui::LifeBar lifeBar; ///< p15: the edit part's life amount (foot of the engine column)
     ui::Readout tapeReadout, keysReadout; ///< p14 rev 3
+    ui::TempoReadout tempoPanel { proc, ui::TempoReadout::Style::Panel }; ///< p39: the tempo in the transport panel
+    ui::ClickStrip clickStrip { proc };                                    ///< p39: metronome, count-in
     juce::Image background; ///< p14: the static housing, panels and recesses (rendered once per size)
     ui::PartSelector partSelector;
     float spatialTime = 0.0f;

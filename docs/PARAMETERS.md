@@ -935,3 +935,19 @@ are per user (`Settings/settings.json`: language, tooltips, help overlay, skin, 
 size) and not automatable. Their MIDI page shows existing parameters – `pN.midich`, `pN.mpe`, `pN.bend`, `pN.mpe.bend`,
 `sync.src`, `sync.clockout`, `sync.smooth` – unchanged and still automatable / MIDI-mappable / Die MIDI-Seite zeigt
 bestehende Parameter, unverändert und weiterhin automatisierbar und MIDI-zuweisbar.
+
+## p39 – Metronome, count-in, tap tempo
+
+Guides: [English](en/USER-INTERFACE.md#tempo-metronome-and-count-in-p39) · [Deutsch](de/BEDIENUNG.md#tempo-metronom-und-vorzähler-p39).
+Six parameters appended after `p4.expr.at.curve2` (p33), group `metronome` (`metro.tap`: `remote`). Host parameters –
+saved with the session, automatable, MIDI-mappable – but not part of presets (they belong to the player, like the
+monitoring switch). Defaults leave Ohpe as before: no click, no count-in. No new modulation sources or targets.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `metro.on` | Metronome | Metronom | Off, On | Off |
+| `metro.level` | Click Level | Klick-Lautstärke | 0 … 100 % (squared; 100 % = −6 dBFS peak) | 60 % |
+| `metro.accent` | Click Accent | Klick-Betonung | Off, On (beat 1 higher and louder) | On |
+| `metro.countin` | Count-In | Vorzähler | Off, 1 Bar, 2 Bars / Aus, 1 Takt, 2 Takte | Off |
+| `metro.plugin` | Click in Plug-in | Klick im Plug-in | Off, On (standalone: always clicks when on) | Off |
+| `metro.tap` | Tap Tempo | Tempo tippen | trigger (a rising edge is one tap) | Off |

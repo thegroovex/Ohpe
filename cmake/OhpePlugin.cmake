@@ -27,6 +27,7 @@ set(OHPE_PLUGIN_SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/Pages.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Widgets.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Display.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/TempoControl.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/OhpeLookAndFeel.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/PluginEditor.cpp
     ${CMAKE_SOURCE_DIR}/src/standalone/AudioSettingsPage.cpp)
@@ -270,4 +271,9 @@ endif()
 # ---------------------------------------------------------------- p32: the settings menu
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/SettingsUiTests.cpp)
+endif()
+
+# ---------------------------------------------------------------- p39: tempo editable, metronome, count-in
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/TempoUiTests.cpp)
 endif()

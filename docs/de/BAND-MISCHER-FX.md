@@ -70,6 +70,13 @@ aufgenommen wurde (Blöcke zu 4096 Frames) – ein langes, leeres Band kostet fa
 | Spurpegel | `tape.trN.level` (dB). |
 | Direktausgang | `tape.trN.out`: *Nur Mixer* oder Out 1–8. Die Spur spielt dann zusätzlich auf diesem Ausgang (nach Pegel und Bandcharakter); ist der Ausgang nicht aktiv, spielt sie auf Haupt. Mixer-Kanäle können Bandspuren ebenfalls als Quelle wählen (Kanäle 6–8 starten mit den Spuren 1–3). |
 
+**Vorzähler und Klick (p39).** Mit Vorzähler (`metro.countin`: 1 oder 2 Takte) wartet eine aus dem Stillstand
+gestartete Aufnahme auf ihn und beginnt genau auf dem ersten Sample des nächsten Takts (sample-genau, auch mitten in
+einem Audioblock); STOPP oder REC während des Vorzählers bricht ihn ab. Das Metronom (`metro.on`) klickt, solange Band
+oder Sequencer laufen; läuft nur das Band, klickt es im Takt.Schlag-Raster des Bands. Der Klick geht nur auf den
+Hauptausgang und wird nie aufgenommen (das Band nimmt die Parts, das Drum-Kit und den Eingang auf). Siehe
+[Tempo, Metronom und Vorzähler](BEDIENUNG.md#tempo-metronom-und-vorzähler-p39).
+
 ### Schnitt
 
 Alle Schnitte arbeiten auf einer Spur, nehmen Zeiten in Sekunden (oder Frames) und sind je ein
