@@ -21,7 +21,7 @@ namespace ohpe
       18 dB / octave); Square = a soft square, tanh of a sine whose steepness follows the pitch (alias products stay
       below -70 dB up to a 4 kHz sub).
     - Mono-safe: one signal, the same on both channels (never panned, no stereo width).
-    - Level-safe: the level ramps sample by sample (no zipper steps), the shapes are normalised to about the same
+    - Level-safe: the level glides sample by sample (one pole, ~5 ms: no zipper steps, no click), the shapes are normalised to about the same
       loudness, and the sub rides on the voice's amp envelope and velocity.
     - Level 0 = off: nothing runs at all, the voice renders exactly as without the sub (bit-identical).
 */
@@ -39,14 +39,13 @@ public:
         master = 0.0f;
         count = 0;
         level = target = std::clamp (levelTarget, 0.0f, 1.0f);
-        step = 0.0f;
         running = level > 0.0f;
     }
 
     /** Hard stop (voice killed). */
     void kill() noexcept
     {
-        level = target = step = 0.0f;
+        level = target = 0.0f;
         running = false;
     }
 
@@ -60,7 +59,12 @@ public:
         if (! running && t <= 0.0f) return false;
         running = true;
         target = t;
-        step = (target - level) / (float) std::max (1, n);
+        if (sampleRate != coeffRate) // level glide: one pole, ~5 ms (no zipper steps, no click when it jumps)
+        {
+            coeffRate = sampleRate;
+            coeff = 1.0f - std::exp (-1.0f / (0.005f * std::max (1000.0f, sampleRate)));
+        }
+        (void) n;
         div = octave >= 1 ? 4 : 2; // choice: 0 = one octave down, 1 = two octaves down
         if (count >= div) count %= div;
         shape = std::clamp (shapeIndex, 0, (int) numShapes - 1);
@@ -70,7 +74,7 @@ public:
             sqK = std::clamp (0.08f * (float) div / std::max (1.0e-6f, inc), 0.3f, 6.0f); // 0.08 / (sub phase increment)
             sqNorm = 1.0f / std::tanh (sqK);
         }
-        if (level <= 0.0f && target <= 0.0f)
+        if (level <= 1.0e-6f && target <= 0.0f)
         {
             running = false;
             level = 0.0f;
@@ -82,8 +86,8 @@ public:
     /** One sample of the sub, level applied (no envelope). */
     float next() noexcept
     {
-        level += step;
-        if ((step > 0.0f && level > target) || (step < 0.0f && level < target)) level = target;
+        level += (target - level) * coeff;
+        if (std::abs (target - level) < 1.0e-6f) level = target;
         master += inc;
         if (master >= 1.0f)
         {
@@ -121,7 +125,7 @@ public:
 private:
     float master = 0.0f, inc = 0.0f;
     int count = 0, div = 2, shape = Sine;
-    float level = 0.0f, target = 0.0f, step = 0.0f;
+    float level = 0.0f, target = 0.0f, coeff = 1.0f, coeffRate = 0.0f;
     float sqK = 6.0f, sqNorm = 1.0f;
     bool running = false;
 };

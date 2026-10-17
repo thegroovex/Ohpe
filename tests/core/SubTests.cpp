@@ -249,7 +249,8 @@ TEST_CASE ("p31 sub: phase-locked to the voice - follows pitch bend and glide")
     for (int i = 0; i < 48000; ++i) sub.next();
     const double voiceCycles = 440.0 * 48000.0 / 48000.0;
     const double subPhase = std::fmod (voiceCycles / 2.0, 1.0);
-    CHECK (std::abs (sub.subPhase() - subPhase) < 0.02);
+    const double dph = std::abs (sub.subPhase() - subPhase);
+    CHECK (std::min (dph, 1.0 - dph) < 0.02); // on the circle
 }
 
 TEST_CASE ("p31 sub: band-limited - no aliasing even high up, every shape")
