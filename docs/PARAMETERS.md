@@ -500,7 +500,7 @@ Appended after the 0.7 block (index 4477 onwards, 1056 parameters). Guides: FX t
 [English](en/engines/layer.md) · [Deutsch](de/engines/layer.md), wavetable unison / FM
 [English](en/engines/wavetable.md) · [Deutsch](de/engines/wavetable.md), keyboard instruments
 [English](en/GRAIN-VOCAL-SAMPLER-DRUM.md) · [Deutsch](de/GRAIN-VOKAL-SAMPLER-DRUM.md), MPE
-[English](en/MIDI.md) · [Deutsch](de/MIDI.md). Order of the block:
+[English](en/MIDI.md) · [Deutsch](de/MIDI.md#mpe-midi-polyphonic-expression). Order of the block:
 
 1. **FX types Comb, Formant, Wobble, Tremolo, Width** (`type` 16 – 20) – their parameter blocks for every
    slot of every rack: part 1 slots 1 – 6, parts 2, 3, 4, then the master slots (`FxRack::registerTypeBlocks`).
@@ -879,7 +879,7 @@ user in `Settings/update.json`, not in projects or presets / Seine Einstellungen
 ## Pressure glide (p32)
 
 Appended after the harmony brain (`harmony.p4.follow`), part by part: `p1.glide.press` … `p4.glide.press` (4 IDs,
-group `partN`). Guides: [English](en/MIDI.md#mpe-midi-polyphonic-expression) · [Deutsch](de/MIDI.md). Part presets carry it as `glide.press`.
+group `partN`). Guides: [English](en/MIDI.md#mpe-midi-polyphonic-expression) · [Deutsch](de/MIDI.md#mpe-midi-polyphonic-expression). Part presets carry it as `glide.press`.
 
 | ID | English | Deutsch | Range | Default |
 |---|---|---|---|---|
