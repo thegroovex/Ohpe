@@ -29,11 +29,16 @@ juce::String badgeTooltip (State s);
 /** The headphones pictogram (own drawing in the line style of the characters): band, two cups, sound arcs when lit.
     `glow` 0..1 adds a soft halo (active, pulsing). */
 void drawHeadphones (juce::Graphics& g, juce::Rectangle<float> area, juce::Colour ink, float glow);
-/** The speakers pictogram for the speaker-monitoring state (two cabinets with cones). */
+/** The speakers pictogram for the speaker-monitoring state (p41: a loudspeaker - box, cone, two sound arcs). */
 void drawSpeakers (juce::Graphics& g, juce::Rectangle<float> area, juce::Colour ink);
 /** The badge in the display header: pictogram + "3D"; lit (ultraviolet, pulsing) for binaural, outlined for speakers,
-    dim when off. `time` drives the pulse. */
-void drawBadge (juce::Graphics& g, juce::Rectangle<float> area, State s, float time);
+    dim when off (p41: with the speakers pictogram when `speakersWhenOff`, i.e. the monitoring is set to speakers).
+    `time` drives the pulse. */
+void drawBadge (juce::Graphics& g, juce::Rectangle<float> area, State s, float time, bool speakersWhenOff = false);
+/** p41: the part's 3D switch, "pN.space.mode": 0 = Off, 1 = Headphones, 2 = Speakers (follows space.on / space.out). */
+int partMode (Core& core, int part);
+/** p41: true for the IDs drawn as a segmented switch on the display rows ("pN.space.mode"). */
+bool isSegmentedSwitch (const std::string& id);
 
 /** Space view pages of the Effects mode for one part (four per page) and their titles. */
 std::vector<std::string> spaceParams (int part);

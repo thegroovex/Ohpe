@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "OhpeCore.h"
+#include "fx/SpaceMode.h"
 
 #include "bounce/Bounce.h"
 #include "engines/GrainEngine.h"
@@ -837,6 +838,7 @@ bool Core::loadState (const std::string& json, std::string* uiJsonOut)
     if (! r.ok) return false;
     // p28: a pad held or latched while the host saved is a performance gesture, not part of the song
     for (int p = 0; p < PerformancePads::numPads; ++p) registry.set (PerformancePads::padId (p), 0.0f);
+    spacemode::deriveAll (registry, numParts); // p41: the 3D switches follow space.on / space.out (older sessions too)
     map.clear();
     if (auto it = r.sections.find ("midimap"); it != r.sections.end()) map.fromJson (it->second);
     mapper.publish (map);

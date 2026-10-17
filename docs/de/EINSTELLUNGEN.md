@@ -88,7 +88,9 @@ Version, Größe, Inhalt, Lizenz und Signatur (angezeigt, nicht geprüft) sowie 
 ## Hilfe
 
 Hilfeseiten auf Deutsch und Englisch: erste Schritte, Leuchtbalken, Display und Encoder, Sequencer und Tape, MIDI / MPE /
-Sync, Presets, Einstellungen und Nachtmodus, Updates.
+Sync, die Raster-Tastatur (Anordnungen, Formen, MPE – die ganze Anleitung steht in [Harmonie](HARMONIE.md#die-raster-tastatur)),
+Presets, Einstellungen und Nachtmodus, Updates. Ist die Raster-Tastatur zu sehen, zeigt das Hilfe-Overlay über der
+Tastatur eine Zeile mit ihren Schritten.
 
 ![Einstellungen – Hilfe](../images/ohpe-settings-help-de.png)
 

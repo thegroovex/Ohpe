@@ -137,6 +137,20 @@ public:
     // layout (also used by tests)
     juce::Rectangle<float> rowArea (int i) const;
     juce::Rectangle<float> barArea (int i) const;
+    /** p41: one text line of the strip below the rows (what is drawn where; tests check that none overlap). */
+    struct StripLine
+    {
+        juce::String text;
+        juce::Rectangle<float> area;
+        juce::Font font;
+        juce::Colour colour;
+        float minScale = 1.0f; ///< drawFittedText's minimum horizontal scale
+    };
+    /** p41: the strip lines of the 3D Space view (motion or the switch-on hint, monitoring). */
+    std::vector<StripLine> spaceStripLines() const;
+    /** p41: segment `segment` of `numSegments` of a segmented switch row (the 3D switch). */
+    juce::Rectangle<float> segmentArea (int row, int segment, int numSegments) const;
+    int segmentAt (int row, juce::Point<float> p) const; ///< -1 = not on a segment of a switch row
     juce::Rectangle<float> stepCell (int i) const;
     juce::Rectangle<float> softKeyArea (int index) const;
     int softKeyRows() const noexcept; ///< p38: 2 on the tape page with more than eight keys
@@ -185,6 +199,7 @@ private:
     void paintDrumStrip (juce::Graphics& g, juce::Rectangle<float> area);
     void paintSoftKeys (juce::Graphics& g);
     void paintHint (juce::Graphics& g, juce::Rectangle<float> area, const juce::String& text);
+    void paintSegments (juce::Graphics& g, int row, const ParamDescriptor& d, int selected, juce::Colour c); ///< p41
     void updateTapeOverview();
     void renderLayers();
     void showVisualMenu();

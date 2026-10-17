@@ -205,6 +205,10 @@ TEST_CASE ("settings: tooltips, help overlay, animations, brightness, window siz
         CHECK_FALSE (children);
     }
     // every tag shows its name and line in full (no "SETTIN…" on the narrow gear key) and stays inside the window
+    // p48: with the grid keyboard shown its help line joins (and fits inside the keyboard area)
+    const auto plainItems = e.helpOverlayComponent().itemList().size();
+    e.showGridKeyboard (true);
+    CHECK (e.helpOverlayComponent().itemList().size() == plainItems + 1);
     for (auto lang : { i18n::Language::English, i18n::Language::German })
     {
         e.setLanguage (lang);
@@ -217,7 +221,12 @@ TEST_CASE ("settings: tooltips, help overlay, animations, brightness, window siz
             CHECK (tag.getWidth() >= ui::HelpOverlay::tagWidthNeeded (it, s) - 0.01f);
             CHECK (bounds.contains (tag));
         }
+        const auto& gridItem = e.helpOverlayComponent().itemList().back();
+        CHECK (gridItem.title == i18n::tr ("Grid keyboard"));
+        CHECK (ui::HelpOverlay::tagWidthNeeded (gridItem, s) <= gridItem.design.getWidth() * s - 8.0f * s); // inside its area
     }
+    e.showGridKeyboard (false);
+    CHECK (e.helpOverlayComponent().itemList().size() == plainItems);
     e.setLanguage (i18n::Language::English);
     CHECK (e.createComponentSnapshot (e.getLocalBounds()).isValid());
     e.showSettings (true);
