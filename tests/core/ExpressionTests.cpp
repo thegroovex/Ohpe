@@ -384,7 +384,9 @@ TEST_CASE ("p33: every gliding factory part has exactly one pressure -> glide me
             int mechanisms = get (pre + "glide.press") != 0.0f ? 1 : 0;
             for (const char* s : { "1", "2" })
                 if (std::lround (get (pre + "expr.at.dst" + s)) == ex::Glide && get (pre + "expr.at.amt" + s) != 0.0f) ++mechanisms;
-            CHECK_MESSAGE (mechanisms == 1, e.path().filename().string() + " " + pre);
+            const std::string where = e.path().filename().string() + " " + pre;
+            CAPTURE (where);
+            CHECK (mechanisms == 1);
             ++parts;
         }
     }
