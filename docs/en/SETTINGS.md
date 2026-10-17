@@ -88,7 +88,7 @@ sync, presets, settings and the night skin, updates.
 
 ## About
 
-Version and format (standalone app / plug-in), the update status with **CHECK NOW** (or **OPEN UPDATES** when a newer
+The app icon and the wordmark at the top, then version and format (standalone app / plug-in), the update status with **CHECK NOW** (or **OPEN UPDATES** when a newer
 version is on offer), the project line, licence (AGPL-3.0-or-later) and source code.
 
 ![About](../images/ohpe-about.png)

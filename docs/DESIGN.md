@@ -112,6 +112,21 @@ Transport, keyboard row and octave block while recording (2x): REC red and PLAY 
 | Pro view | dark panel, mode tabs, groups in columns with a coloured tick; bars like the display rows |
 | Library | dark panel: category chips in the accent colours, engine chips, list with stars, details / save panel |
 
+## App icon (p43)
+
+A dark matte tile in the night skin's housing colours; on it a ring of warm-white light (#efe9de) with a
+soft ultraviolet glow, a small gap at the top holding the green PLAY dot (#3fd08e), and two periods of a
+sine wave inside that touch the ring left and right - sound, a loop and "playing" in one mark. Own artwork,
+hand-written SVG in `resources/icon/`: `ohpe-icon.svg` (macOS layout with margin and shadow),
+`ohpe-icon-square.svg` (Windows / Linux / docs), `ohpe-icon-small.svg` (24 / 32 px) and `ohpe-icon-16.svg`
+(16 px) - the small masters are redrawn for the pixel grid (thicker lines, wider gap, bigger dot, no soft
+glow). The glow is gradients and stacked strokes only, no filters, so every renderer draws it the same.
+`python3 tools/app-icon/make_icons.py` renders them (rsvg-convert or cairosvg) into `Ohpe.icns`
+(16 - 1024 incl. @2x), `Ohpe.ico` (16, 24, 32, 48, 64, 128, 256, packed with ImageMagick) and
+`png/ohpe-icon-<size>.png`; all outputs are committed. The build puts the icon into the macOS app, VST3
+and AU bundles, the Windows exe and VST3 (icon resource) and the DMG volume; CI checks each of them.
+The About page shows it small in front of the wordmark; on Linux it is the standalone window's icon.
+
 ## Text
 
 English and German everywhere (`src/plugin/Localisation.cpp`, English text = key). Legends on the

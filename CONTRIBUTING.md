@@ -5,6 +5,18 @@
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) first – it explains the core / shell split, the
 real-time rules and how to add engines, sequencers and effects.
 
+## Decisions and pull requests
+
+Ohpe is maintained by [@thegroovex](https://github.com/thegroovex), who has the final say on
+what goes into this repository. Ideas, bug reports and pull requests are very welcome, but every
+change to `main` goes through a pull request that the maintainer reviews and merges (see
+[`.github/CODEOWNERS`](.github/CODEOWNERS)). Please open an issue before starting larger work so we
+can agree on the direction first. A pull request may be declined even when it is well made, when
+it does not fit the concept of the instrument.
+
+Forks are welcome, as the AGPL allows. "Ohpe" is the name of this original project: if you
+publish a modified version, please give it a different name so users can tell them apart.
+
 ## Before every push: run all tests
 
 ```sh

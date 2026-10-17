@@ -192,17 +192,38 @@ done
 chmod 755 "$STAGE/Ohpe Gatekeeper Fix.command" "$STAGE/Uninstall Ohpe.command"
 cp LICENSE "$STAGE/LICENSE.txt"
 
+# p43: the volume shows the app icon (.VolumeIcon.icns + the custom-icon Finder flag on the volume root)
+cp resources/icon/Ohpe.icns "$STAGE/.VolumeIcon.icns"
+
 DMG="$OUT/Ohpe-$VERSION-macOS-Installer.dmg"
-rm -f "$DMG"
+RWDMG="$WORK/Ohpe-rw.dmg"
+RWMNT="$WORK/dmg-mount"
+rm -f "$DMG" "$RWDMG"
 ok=0
 for attempt in 1 2 3; do
-    if hdiutil create -volname "Ohpe" -srcfolder "$STAGE" -fs HFS+ -format UDZO -ov "$DMG"; then
+    if hdiutil create -volname "Ohpe" -srcfolder "$STAGE" -fs HFS+ -format UDRW -ov "$RWDMG"; then
         ok=1; break
     fi
     echo "hdiutil failed (attempt $attempt) - retrying"
     sleep 5
 done
 [ "$ok" = 1 ] || die "hdiutil create failed"
+mkdir -p "$RWMNT"
+hdiutil attach "$RWDMG" -nobrowse -noautoopen -mountpoint "$RWMNT" >/dev/null
+# FinderInfo flags (bytes 8-9) = kHasCustomIcon 0x0400
+xattr -wx com.apple.FinderInfo "0000000000000000040000000000000000000000000000000000000000000000" "$RWMNT"
+if command -v SetFile >/dev/null 2>&1; then SetFile -a C "$RWMNT" || true; fi
+sync
+detached=0
+for attempt in 1 2 3; do
+    if hdiutil detach "$RWMNT" >/dev/null 2>&1 || hdiutil detach "$RWMNT" -force >/dev/null 2>&1; then
+        detached=1; break
+    fi
+    sleep 3
+done
+[ "$detached" = 1 ] || die "hdiutil detach failed"
+hdiutil convert "$RWDMG" -format UDZO -imagekey zlib-level=9 -ov -o "$DMG"
+rm -f "$RWDMG"
 
 if [ -n "$APP_ID" ]; then
     codesign --force --timestamp ${KEYCHAIN_ARGS[@]+"${KEYCHAIN_ARGS[@]}"} --sign "$APP_ID" "$DMG"
