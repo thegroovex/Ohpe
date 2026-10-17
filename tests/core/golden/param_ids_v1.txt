@@ -6743,3 +6743,7 @@ harmony.p1.follow
 harmony.p2.follow
 harmony.p3.follow
 harmony.p4.follow
+p1.glide.press
+p2.glide.press
+p3.glide.press
+p4.glide.press
