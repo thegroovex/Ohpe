@@ -168,6 +168,7 @@ if(OHPE_BUILD_TESTS)
     # processor / editor tests (JUCE, no host)
     juce_add_console_app(ohpe_plugin_tests PRODUCT_NAME "ohpe_plugin_tests")
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/PluginTests.cpp ${OHPE_PLUGIN_SOURCES})
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/FirstPresetTests.cpp) # p40
     target_include_directories(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/src)
     target_compile_definitions(ohpe_plugin_tests PRIVATE ${OHPE_DEFINES} OHPE_NO_PLUGIN_ENTRY=1 JUCE_MODAL_LOOPS_PERMITTED=1)
     target_link_libraries(ohpe_plugin_tests PRIVATE ohpe_core doctest::doctest ${OHPE_JUCE_MODULES} juce::juce_recommended_config_flags)

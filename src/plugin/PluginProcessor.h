@@ -59,6 +59,12 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    /** p40: a new instance (first start of the standalone app, a new plug-in instance without host
+        state) starts with the factory start sound (PresetManager::loadStartSound) instead of the
+        plain parameter defaults; a restored session or host state replaces it. Tests and the
+        screenshot tool switch this off to start from the plain defaults. */
+    static inline std::atomic<bool> startWithFactorySound { true };
+
     // ---- Ohpe ----
     Core& core() noexcept { return ohpeCore; }
     /** p35: the CPU meter (share of each block's time the processing took; any thread). */
@@ -237,6 +243,11 @@ private:
     std::atomic<int> tapeClearAllRequests { 0 }; ///< p38
     std::array<std::atomic<int>, 3> breedRequests {}; ///< p18
     std::unique_ptr<PresetManager> presetManager;
+    // p40: the loaded preset's uid for the session (getStateInformation may run off the message thread)
+    juce::SpinLock presetUidLock;
+    std::string presetUidCache, presetUidPending;
+    std::atomic<bool> presetUidRestore { false };
+    void applyPendingPresetUid();
     // p39: tap tempo (own edge detector for "metro.tap": the trigger list stays as it is)
     TapTempo tapper;
     juce::SpinLock tapLock;
