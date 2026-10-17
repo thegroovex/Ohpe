@@ -5,6 +5,7 @@
 #include "SeqCommon.h"
 
 #include <array>
+#include <cstdint>
 #include <atomic>
 
 namespace ohpe
@@ -61,6 +62,13 @@ public:
     bool enabled() const noexcept { return on; }
     /** 0.5: the core tells Orbit when it plays the drum kit (notes to the kit are never tied). */
     void setDrumsMode (bool drums) noexcept { drumsMode = drums; }
+    /** p45: Scale Lock - the transpose moves in degrees of the key (mask relative to root), the step notes snap to it. */
+    void setKeyLock (bool on, int root, uint16_t mask) noexcept
+    {
+        keyLock = on;
+        keyLockRoot = root;
+        keyLockMask = mask;
+    }
     int targetPart() const noexcept { return part; }
     int lanePosition (int lane) const noexcept { return positions[(size_t) lane].load (std::memory_order_relaxed); }
     int laneLength (int lane) const noexcept { return lanes[(size_t) lane].length; }
@@ -81,6 +89,10 @@ private:
     float gate = 0.5f;
     float swing = 0.0f, human = 0.0f;
     bool drumsMode = false;
+    bool keyLock = false;    ///< p45
+    int keyLockRoot = 0;
+    uint16_t keyLockMask = 0xfff;
+    int shiftNote (int note, int by) const noexcept; ///< p45: + transpose (semitones, or degrees with Scale Lock)
     seq::Humaniser humaniser;
     double sr = 48000.0;
     int64_t sampleClock = 0;

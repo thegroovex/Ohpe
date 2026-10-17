@@ -20,6 +20,7 @@
 #include "perform/PerformancePads.h"
 #include "sample/SampleData.h"
 #include "harmony/HarmonyBrain.h"
+#include "harmony/KeyScale.h"
 #include "seq/Arpeggiator.h"
 #include "seq/EuclidSequencer.h"
 #include "seq/Metronome.h"
@@ -106,6 +107,20 @@ public:
     /** p24: the harmony brain (scale and chord memory of all parts; published state is atomics, any thread). */
     HarmonyBrain& harmony() noexcept { return harmonyBrain; }
     const HarmonyBrain& harmony() const noexcept { return harmonyBrain; }
+    /**
+        p45: the key everything plays in (any thread): "key.root" / "key.scale", Scale Lock ("key.lock", "key.lock.mode");
+        fromHost when a host key is set (setHostKey). For in-key layouts (pads, grids) and the display.
+    */
+    keys::KeyScale keyScale() const noexcept;
+    /** p45: a key given by the host (root 0 .. 11, scale; root -1 = none). The plug-in formats pass no key today:
+        nothing calls this but tests; the key control shows HOST and is read-only while it is set. Any thread. */
+    void setHostKey (int root, int scale) noexcept
+    {
+        hostKey.store (root < 0 ? -1 : (root % 12) * 16 + std::clamp (scale, 0, scales::numScales - 1), std::memory_order_relaxed);
+    }
+    /** p45: the notes sounding now (after scale / chord / follow, i.e. including notes the harmony makes), all four parts
+        (part -1) or one part; the drum kit is not included. Any thread (published once per block). */
+    chords::NoteSet soundingNotes (int part = -1) const noexcept;
     /** p16, message thread (timer): rebuilds morph plans when a part's own sound changed under an empty corner. */
     bool updateMorph() { return morphSpace.update(); }
     /**
@@ -220,6 +235,8 @@ public:
         static constexpr const char* notesOut = "sync.notesout";
         static constexpr const char* keyRoot = "key.root";
         static constexpr const char* keyScale = "key.scale";
+        static constexpr const char* keyLock = "key.lock";          ///< p45: Scale Lock on / off
+        static constexpr const char* keyLockMode = "key.lock.mode"; ///< p45: Nearest / White Keys (keys::LockMode)
         // 0.3 (package E): remote controls (MIDI-mappable UI functions, see docs/en/PRESETS.md)
         static constexpr const char* libOpen = "lib.open";
         static constexpr const char* libPrev = "lib.prev";
@@ -315,7 +332,7 @@ private:
     void followWheels (const MidiEvent& e) noexcept; ///< p28
     void routeGenerated (const MidiEvent& e, bool shape, bool toDrums = false) noexcept;
     void addRouted (const MidiEvent& e, int part) noexcept;
-    void routeToPart (const MidiEvent& e, int part) noexcept; ///< p24: one part, as live MIDI on its channel
+    void routeToPart (const MidiEvent& e, int part, bool mapWhiteKeys = true) noexcept; ///< p24: one part, as live MIDI on its channel
     void refreshShapers (int part) noexcept;                  ///< p24: scale / chord / follow of a part's shapers
     void dispatch (const RoutedEvent& e) noexcept;
     void pullPhase2Params() noexcept;
@@ -385,6 +402,14 @@ private:
     struct GridEvent { int part; MidiEvent event; };
     SpscQueue<GridEvent, 512> gridEvents; ///< p24
     int blockRoot = 0, blockScale = 1;    ///< p24: the global key of this block
+    bool blockLock = false;               ///< p45: Scale Lock in this block
+    int blockLockMode = 0;
+    int keyLockIndex = -1, keyLockModeIndex = -1;
+    std::atomic<int> hostKey { -1 };      ///< p45: root * 16 + scale, -1 = none
+    // p45: sounding notes per part (note-on count per note; the audio thread) and their published sets
+    std::array<std::array<uint8_t, 128>, numParts> soundCount {};
+    std::array<std::array<std::atomic<uint64_t>, 2>, numParts> pubSounding {};
+    void publishSounding() noexcept;
 
     // ---- 0.2: tape, FX slots, audio input ----
     TapeMachine tapeMachine;

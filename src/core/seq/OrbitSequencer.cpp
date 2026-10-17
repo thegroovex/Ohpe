@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "OrbitSequencer.h"
 
+#include "../harmony/KeyScale.h"
+
 #include <nlohmann/json.hpp>
 
 namespace ohpe
@@ -141,7 +143,7 @@ void OrbitSequencer::process (const Transport& tr, int numSamples, SequencerOutp
                 positions[(size_t) l].store (idx, std::memory_order_relaxed);
                 const auto s = getStep (l, idx);
                 if (! s.on) return;
-                const int note = std::clamp (s.note + lane.transpose, 0, 127);
+                const int note = shiftNote (s.note, lane.transpose);
                 const int laneCh = lane.part > 0 ? lane.part + lanePartChannelOffset : ch;
                 int vel = s.velocity;
                 const double spq = seq::stepsPerQuarter (lane.rate);
@@ -153,7 +155,7 @@ void OrbitSequencer::process (const Transport& tr, int numSamples, SequencerOutp
                 if (tieable)
                 {
                     const auto prev = getStep (l, (idx + lane.length - 1) % lane.length);
-                    if (prev.on && std::clamp (prev.note + lane.transpose, 0, 127) == note && queue.extendOff (laneCh, note, off)) return;
+                    if (prev.on && shiftNote (prev.note, lane.transpose) == note && queue.extendOff (laneCh, note, off)) return;
                 }
                 queue.schedule (t, MidiEvent::noteOn (laneCh, note, vel));
                 queue.schedule (off, MidiEvent::noteOff (laneCh, note));
@@ -198,5 +200,11 @@ bool OrbitSequencer::fromJson (const std::string& text)
         setStep (js.value ("lane", -1), js.value ("i", -1), s);
     }
     return true;
+}
+
+int OrbitSequencer::shiftNote (int note, int by) const noexcept
+{
+    if (keyLock && ! drumsMode) return keys::transposeInKey (note, by, keyLockRoot, keyLockMask); // p45: in scale degrees
+    return std::clamp (note + by, 0, 127);
 }
 } // namespace ohpe

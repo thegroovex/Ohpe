@@ -49,6 +49,23 @@ void registerSpaceModeParams (ParamRegistry& reg, int numParts)
         reg.add (std::move (d));
     }
 }
+// p45: Scale Lock (key.lock, key.lock.mode) - appended at the very end, own function like p41 (Windows test stack)
+#if defined(_MSC_VER)
+__declspec (noinline)
+#else
+__attribute__ ((noinline))
+#endif
+void registerScaleLockParams (ParamRegistry& reg)
+{
+    using namespace pd;
+    auto lock = toggle (Core::Ids::keyLock, "Scale Lock", "In Tonart", false);
+    lock.group = "global";
+    reg.add (lock);
+    auto mode = choice (Core::Ids::keyLockMode, "Scale Lock Mode", "In-Tonart-Modus", keys::lockModeNamesEn(), keys::lockModeNamesDe(),
+                        keys::LockNearest);
+    mode.group = "global";
+    reg.add (mode);
+}
 } // namespace
 
 void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<Part>, Core::numParts>& parts, const Mixer& mixer,
@@ -339,5 +356,8 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     // ---- p41: the 3D switch per part - Off / Headphones / Speakers, a front for "pN.space.on" + "space.out" (see
     //      fx/SpaceMode.h: the older two stay the stored truth, the plug-in keeps the three in step) ---------------
     registerSpaceModeParams (reg, Core::numParts);
+    // ---- p45: Scale Lock - every incoming note snaps to the key (nearest note, or the white keys play its degrees) --
+    //      (own function: a big stack frame in this one overflows the Windows test stack)
+    registerScaleLockParams (reg);
 }
 } // namespace ohpe

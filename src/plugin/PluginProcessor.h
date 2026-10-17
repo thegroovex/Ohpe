@@ -189,6 +189,16 @@ public:
     void tapTempo();
     int tapCount() const noexcept { return taps.load (std::memory_order_relaxed); }
 
+    /**
+        p45: the key - root, scale, Scale Lock and its mode, and whether the host gives it (then root and scale are
+        read-only on the screen). Any thread. For in-key layouts (pad controllers, grids) and the display.
+        setKeyFromUi() sets root / scale (ignored while the host gives the key), setScaleLockFromUi() lock and mode;
+        both notify the host (message thread).
+    */
+    keys::KeyScale keyScale() const noexcept { return ohpeCore.keyScale(); }
+    void setKeyFromUi (int root, int scale);
+    void setScaleLockFromUi (bool on, int mode);
+
     /** UI state stored with the session (language, mode, page). */
     juce::var uiState;
 

@@ -55,6 +55,7 @@ Display::Display (OhpeProcessor& p) : proc (p)
     setOpaque (false);
     addAndMakeVisible (tempoHeader); // p39
     addAndMakeVisible (tapHeader);
+    addAndMakeVisible (keyHeader); // p45
 }
 
 Display::~Display() { proc.core().scope().setSource (ScopeTap::None); }
@@ -406,10 +407,43 @@ void Display::placeTempo()
     const auto bpmArea = h.withTrimmedRight (h.getHeight() * 4.0f);
     // as wide as its longest text (the play sign, three digits, the HOST / CLOCK tag when it follows), TAP right before it
     const juce::String widest = juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xb6 ")) + "300.0 BPM" + (proc.tempoFollowsHost() ? "  CLOCK" : "");
-    const float w = juce::GlyphArrangement::getStringWidth (monoFont (h.getHeight() * 0.5f), widest) + h.getHeight() * 0.6f;
+    const float w = juce::GlyphArrangement::getStringWidth (monoFont (h.getHeight() * 0.5f), widest) + h.getHeight() * 0.45f;
     tempoHeader.setBounds (bpmArea.withLeft (bpmArea.getRight() - w).toNearestInt());
-    tapHeader.setBounds (juce::Rectangle<float> (h.getHeight() * 1.5f, h.getHeight()).withPosition (bpmArea.getRight() - w - h.getHeight() * 1.6f, h.getY()).toNearestInt());
+    tapHeader.setBounds (juce::Rectangle<float> (h.getHeight() * 1.3f, h.getHeight()).withPosition (bpmArea.getRight() - w - h.getHeight() * 1.4f, h.getY()).toNearestInt());
     tapHeader.setVisible (! proc.tempoFollowsHost());
+    // p45: the key left of TAP (left of the tempo when TAP is hidden); compact ("F#m") when the full form would reach
+    // the badges after the (shortest) title - it never overlaps the 3D badge
+    const float hh = h.getHeight();
+    const float left = (float) (tapHeader.isVisible() ? tapHeader.getX() : tempoHeader.getX()) - hh * 0.1f;
+    const auto tf = brandFont (hh * 0.62f);
+    const float titleFull = juce::GlyphArrangement::getStringWidth (tf, headerTitle (false)) + 4.0f;
+    const float titleMin = mode == Mode::Synth ? juce::GlyphArrangement::getStringWidth (tf, headerTitle (true)) + 4.0f : juce::jmin (titleFull, hh * 4.0f);
+    const float leftNeed = h.getX() + juce::jmin (titleFull, titleMin) + headerBadgesWidth() + hh * 0.2f;
+    const bool full = left - keyHeader.neededWidth (hh, false) >= leftNeed;
+    keyHeader.setCompact (! full);
+    const float kw = keyHeader.neededWidth (hh, ! full);
+    keyHeader.setBounds (juce::Rectangle<float> (kw, hh).withPosition (left - kw, h.getY()).toNearestInt());
+    keyHost = proc.keyScale().fromHost;
+    keyLaidOut = keyHeader.shownText() + "|" + headerTitle (false);
+}
+
+juce::String Display::headerTitle (bool engineOnly)
+{
+    auto& core = proc.core();
+    const auto& eng = engineTypeInfo (selectedEngine (core, ctx.part));
+    if (engineOnly && mode == Mode::Synth) return i18n::upper (i18n::pick (eng.nameEn, eng.nameDe));
+    juce::String title = i18n::upper (tr (modeInfo (mode).nameEn));
+    if (mode == Mode::Synth) title << "  /  " << i18n::upper (i18n::pick (eng.nameEn, eng.nameDe));
+    if (mode == Mode::Mixer) title << "  /  " << i18n::upper (tr ("Channel")) << " " << (ctx.mixerChannel + 1);
+    if (mode == Mode::Tape) title << "  /  " << i18n::upper (tr ("Track")) << " " << (ctx.tapeTrack + 1);
+    if (mode == Mode::Drum) title << "  /  " << i18n::upper (tr ("Pad")) << " " << (ctx.drumPad + 1);
+    return title;
+}
+
+float Display::headerBadgesWidth() const
+{
+    const bool partBadge = mode == Mode::Synth || mode == Mode::Envelope || mode == Mode::Lfo || mode == Mode::Effects;
+    return headerArea().getHeight() * (0.4f + (partBadge ? 1.9f : 0.0f) + 1.75f);
 }
 
 void Display::paintOverChildren (juce::Graphics& g)
@@ -546,6 +580,9 @@ void Display::tick (float seconds)
     if (tapHeader.isVisible() == proc.tempoFollowsHost()) placeTempo();
     tempoHeader.refresh();
     tapHeader.refresh();
+    if (proc.keyScale().fromHost != keyHost || keyHeader.shownText() + "|" + headerTitle (false) != keyLaidOut) placeTempo(); // p45
+    keyHeader.refresh();
+    updateChord();
     if (const int ci = proc.core().countInBeatsLeft(); ci != shownCountIn)
     {
         shownCountIn = ci;
@@ -633,7 +670,7 @@ juce::Rectangle<float> Display::spaceBadgeArea() const
     const auto h = headerArea();
     // after the title and the part badge (placed while painting the header)
     if (! badgeRect.isEmpty()) return badgeRect;
-    return juce::Rectangle<float> (h.getHeight() * 2.3f, h.getHeight() * 0.66f).withPosition (h.getCentreX(), h.getCentreY() - h.getHeight() * 0.33f);
+    return juce::Rectangle<float> (h.getHeight() * 1.75f, h.getHeight() * 0.66f).withPosition (h.getCentreX(), h.getCentreY() - h.getHeight() * 0.33f);
 }
 
 // ---------------------------------------------------------------- layout
@@ -1189,16 +1226,14 @@ void Display::paint (juce::Graphics& g)
     auto h = headerArea();
     g.setFont (brandFont (h.getHeight() * 0.62f));
     g.setColour (colour::displayText);
-    juce::String title = i18n::upper (tr (info.nameEn));
-    if (mode == Mode::Synth) title << "  /  " << i18n::upper (i18n::pick (eng.nameEn, eng.nameDe));
-    if (mode == Mode::Mixer) title << "  /  " << i18n::upper (tr ("Channel")) << " " << (ctx.mixerChannel + 1);
-    if (mode == Mode::Tape) title << "  /  " << i18n::upper (tr ("Track")) << " " << (ctx.tapeTrack + 1);
-    if (mode == Mode::Drum) title << "  /  " << i18n::upper (tr ("Pad")) << " " << (ctx.drumPad + 1);
+    juce::String title = headerTitle (false);
     const bool partMode = mode == Mode::Synth || mode == Mode::Envelope || mode == Mode::Lfo;
     // 1.0: a long title (engine names, German) shortens with an ellipsis before it pushes the part badge and the 3D badge
     // into the tempo on the right: badges = 0.4 + 1.9 (part) + 2.3 (3D) header heights, tempo + page arrows = 7.8
-    const float badgesW = h.getHeight() * ((partMode || mode == Mode::Effects ? 2.3f : 0.4f) + 2.3f + 0.2f);
-    const float titleMax = juce::jmax (h.getHeight() * 4.0f, juce::jmin (h.getWidth() * 0.62f, h.getWidth() - h.getHeight() * 7.8f - badgesW));
+    const float badgesW = h.getHeight() * ((partMode || mode == Mode::Effects ? 2.3f : 0.4f) + 1.75f + 0.2f);
+    const float titleMax = juce::jmax (h.getHeight() * 1.0f, juce::jmin (h.getWidth() * 0.62f, h.getWidth() - juce::jmax (h.getHeight() * 7.8f, h.getRight() - (float) keyHeader.getX() + h.getHeight() * 0.3f) - badgesW));
+    // p45: a crowded Synth header keeps the engine name ("VOCAL") rather than cutting "SYNTH / VO..."
+    if (mode == Mode::Synth && juce::GlyphArrangement::getStringWidth (brandFont (h.getHeight() * 0.62f), title) + 4.0f > titleMax) title = headerTitle (true);
     const float titleW = juce::jmin (titleMax, juce::GlyphArrangement::getStringWidth (brandFont (h.getHeight() * 0.62f), title) + 4.0f);
     g.drawText (title, h.withWidth (titleW), juce::Justification::centredLeft, true);
     float badgeX = h.getX() + titleW + h.getHeight() * 0.4f; // 1.0: where the 3D badge goes
@@ -1215,7 +1250,7 @@ void Display::paint (juce::Graphics& g)
         g.drawText ("P" + juce::String (ctx.part + 1), badge, juce::Justification::centred);
     }
     // 1.0: the 3D badge - lights up while the edit part plays binaural 3D
-    badgeRect = juce::Rectangle<float> (h.getHeight() * 2.3f, h.getHeight() * 0.66f).withPosition (badgeX, h.getCentreY() - h.getHeight() * 0.33f);
+    badgeRect = juce::Rectangle<float> (h.getHeight() * 1.75f, h.getHeight() * 0.66f).withPosition (badgeX, h.getCentreY() - h.getHeight() * 0.33f);
     space3d::drawBadge (g, spaceBadgeArea(), space3d::partState (core, ctx.part), time, space3d::speakerMonitoring (core)); // p41
     g.setFont (monoFont (h.getHeight() * 0.5f));
     g.setColour (colour::displayDim);
@@ -1223,7 +1258,7 @@ void Display::paint (juce::Graphics& g)
     const auto bpmArea = h.withTrimmedRight (h.getHeight() * 4.0f);
     if (mode != Mode::Tape) // p11: the tape's state on every other page
     {
-        const float bpmW = bpmArea.getRight() - (float) (tapHeader.isVisible() ? tapHeader.getX() : tempoHeader.getX()) - h.getHeight() * 0.3f;
+        const float bpmW = bpmArea.getRight() - (float) keyHeader.getX() - h.getHeight() * 0.3f; // p45: the key, TAP, the tempo
         auto room = bpmArea.withTrimmedRight (bpmW + h.getHeight() * 0.5f);
         room = room.withLeft (h.getX() + titleW + h.getHeight() * ((partMode || mode == Mode::Effects) ? 2.4f : 0.5f));
         if (room.getWidth() > 0.0f) paintTapeHeaderStatus (g, room, h.getHeight());
@@ -2112,25 +2147,40 @@ void Display::paintStrip (juce::Graphics& g, juce::Rectangle<float> s)
         }
         return;
     }
-    // default: 16 voice dots + last note (+ soft keys / status, e.g. the loaded sample)
-    auto top = hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s;
+    // default: 16 voice dots, the VOICES legend over the last note (p45: never overlapping), the chord that sounds
+    // under the dots (+ soft keys / status, e.g. the loaded sample)
     const int voices = core.activeVoices();
-    const float d = top.getHeight() * (hasSoftKeys() ? 0.3f : 0.22f);
+    const auto l = voiceStripLayout();
     for (int i = 0; i < 16; ++i)
     {
-        auto dot = juce::Rectangle<float> (d, d).withCentre ({ top.getX() + d + (float) i * d * 1.7f, top.getCentreY() });
+        auto dot = juce::Rectangle<float> (l.dot, l.dot).withPosition (l.dots.getX() + (float) i * l.step, l.dots.getY());
         g.setColour (i < voices ? colour::rose : colour::displayGrid.brighter (0.2f));
         g.fillEllipse (dot);
     }
     g.setColour (colour::displayDim);
-    g.setFont (labelFont (top.getHeight() * (hasSoftKeys() ? 0.28f : 0.2f)));
-    g.drawText (i18n::upper (tr ("Voices")), top.withTrimmedLeft (d * 29.0f), juce::Justification::centredLeft);
+    g.setFont (labelFont (l.legendFont));
+    g.drawText (i18n::upper (tr ("Voices")), l.legend, juce::Justification::centredRight, false);
     const int note = core.lastNote();
     if (note >= 0)
     {
+        const auto k = proc.keyScale();
         g.setColour (colour::displayText);
-        g.setFont (brandFont (top.getHeight() * 0.5f));
-        g.drawText (juce::MidiMessage::getMidiNoteName (note, true, true, 4), top, juce::Justification::centredRight);
+        g.setFont (brandFont (l.noteFont));
+        g.drawText (juce::String (keys::noteName (note, k.root, k.scale, i18n::current() == i18n::Language::German)), l.note,
+                    juce::Justification::centredRight, false);
+    }
+    if (chordText.isNotEmpty()) // the chord: bright while it sounds, dim after (the last one stays)
+    {
+        g.setFont (brandFont (l.chordFont));
+        g.setColour (chordSounding ? colour::ultraviolet.brighter (0.45f) : colour::displayDim);
+        const float cw = juce::jmin (l.chord.getWidth(), juce::GlyphArrangement::getStringWidth (g.getCurrentFont(), chordText) + 2.0f);
+        g.drawText (chordText, l.chord.withWidth (cw), juce::Justification::centredLeft, true);
+        if (chordDetail.isNotEmpty() && l.chord.getWidth() - cw > l.chordFont * 3.0f)
+        {
+            g.setFont (labelFont (l.chordFont * 0.62f));
+            g.setColour (colour::displayDim);
+            g.drawText (chordDetail, l.chord.withTrimmedLeft (cw + l.chordFont * 0.5f), juce::Justification::centredLeft, true);
+        }
     }
     if (hasSoftKeys())
     {
@@ -2139,5 +2189,30 @@ void Display::paintStrip (juce::Graphics& g, juce::Rectangle<float> s)
     }
     else if (flashTime > 0.0f)
         paintHint (g, s.withTop (s.getBottom() - s.getHeight() * 0.2f), {});
+}
+
+// ---------------------------------------------------------------- p45: voice strip, chord
+VoiceStripLayout Display::voiceStripLayout() const
+{
+    const auto s = stripArea();
+    const auto top = hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s;
+    return layoutVoiceStrip (top, hasSoftKeys(), i18n::upper (tr ("Voices")));
+}
+
+void Display::updateChord()
+{
+    // the notes that sound in all four parts (with the notes the harmony makes); the last chord stays, dimmed
+    const auto notes = proc.core().soundingNotes();
+    const auto c = chords::detect (notes);
+    const bool de = i18n::current() == i18n::Language::German;
+    if (c.valid())
+    {
+        const auto k = proc.keyScale();
+        chordText = juce::String (chords::symbol (c, k.root, k.scale, de));
+        chordDetail = i18n::upper (juce::String::fromUTF8 (chords::inversionName (c, de).c_str()));
+        chordSounding = true;
+    }
+    else
+        chordSounding = false;
 }
 } // namespace ohpe::ui

@@ -63,6 +63,18 @@ zwölf Balken für das Tonklassen-Gedächtnis ab dem Grundton der Tonart (Tonart
 Leiste sagt, was das Hirn tut und ob der Edit-Part folgt. Softkeys: **Tonart übernehmen**, **Halten**,
 **Vergessen**. Regler: Folgen (Edit-Part), Gedächtnis, Halten, Raster-Anordnung.
 
+## Akkordnamen und die Tonart (p45)
+
+Solange Töne klingen, zeigt **Akkord** in der Ansicht den Akkord, den sie bilden – alle Parts zusammen, mit den Tönen,
+die folgende Parts und Ein-Finger-Akkorde dazugeben – mit der vollen Benennung der Stimmen-Zeile des Displays: Sexten,
+Septakkorde (auch ohne Quinte), m7b5, dim7, sus, add9, Nonen und **Slash-Akkorde** für Umkehrungen (*D/F#*) oder einen
+fremden Bass (*C/D*); die Legende nennt die Stellung (*1. Umkehrung*). Klingt nichts, steht dort wie bisher der
+gemerkte Akkord. Die Statuszeile ergänzt *Klingt F#m7*. Noten- und Akkordnamen folgen der globalen Tonart: b-Tonarten
+mit b (*Bb* bzw. deutsch *B*, *Eb*), Kreuz-Tonarten mit # (*F#*, *C#*), deutsch *H* / *B*. **In Tonart** (in der
+Kopfzeile des Displays, siehe [Tonart, Akkord und In Tonart](BEDIENUNG.md#tonart-akkord-und-in-tonart-p45)) nutzt
+dieselbe globale Tonart; ein folgender Part (Folgen Skala / Akkord / Grundton) folgt wie bisher dem Hirn und
+übergeht das Einrasten von In Tonart (Weiße Tasten legt seine Tasten trotzdem zuerst um).
+
 ## Die Raster-Tastatur
 
 ![Die vier Anordnungen der Raster-Tastatur, die unteren 12 Spalten](../images/ohpe-grid-layouts-de.svg)
