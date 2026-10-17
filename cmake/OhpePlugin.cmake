@@ -281,3 +281,8 @@ endif()
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/TempoUiTests.cpp)
 endif()
+
+# ---------------------------------------------------------------- p45: chords, key on the header, Scale Lock
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/KeyChordUiTests.cpp)
+endif()
