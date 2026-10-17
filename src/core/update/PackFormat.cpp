@@ -251,7 +251,10 @@ PackPlan planPack (const std::vector<ZipItem>& items, const std::string& packJso
         if (! expected.id.empty() && expected.id != plan.info.id) return fail ("The content pack does not match its description", plan.info.id);
         if (! expected.version.empty() && Version::of (expected.version) != Version::of (plan.info.version))
             return fail ("The content pack does not match its description", plan.info.version);
-        if (! expected.kind.empty() && expected.kind != plan.info.kind) return fail ("The content pack does not match its description", plan.info.kind);
+        // kind only when a description was given (manifest entry): a default PackInfo says "presets" - a local
+        // .ohpepack of any kind ("Install pack ..." / drop) must not be held to that
+        if (! expected.id.empty() && ! expected.kind.empty() && expected.kind != plan.info.kind)
+            return fail ("The content pack does not match its description", plan.info.kind);
     }
     else if (requireChecksums)
         return fail ("The content pack has no description (pack.json)");

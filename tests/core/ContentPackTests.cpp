@@ -207,6 +207,15 @@ TEST_CASE ("content packs: plan - kind folder, old flat packs, notes kept, other
         CHECK (p.kind == PackKind::Wavetables);
         CHECK (fileTo (p, "wavetables/vowels/aah.WAV") != nullptr);
     }
+    // a local .ohpepack ("Install pack ..." / drop) has no description to match: a default PackInfo (kind
+    // "presets") is no expectation - a wavetable pack plans, a presets pack still does
+    {
+        const auto p = planPack ({ { "pack.json", 100 }, { "wavetables/glass-choir.wav", 300000 } },
+                                 R"({"id":"glass","version":"1.0.0","kind":"wavetables"})", PackInfo {});
+        REQUIRE_MESSAGE (p.ok, p.error);
+        CHECK (p.kind == PackKind::Wavetables);
+        CHECK (planPack ({ { "presets/a.ohpepreset", 100 } }, atmoJson, PackInfo {}).ok);
+    }
 }
 
 TEST_CASE ("content packs: plan refuses unsafe, mismatching, unknown, empty, too big packs and the quota")
