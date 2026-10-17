@@ -392,7 +392,8 @@ The fourth tab of **Effects** mode, **3D Space**, edits the edit part's [3D stag
 path, length and rate on the first page, then position (azimuth, elevation, distance, spread), the shape
 of the motion, room, air and distance, and on the last page the global **3D Monitoring** (Headphones /
 Speakers) and **Mono Check**. Instead of the effect chain the display shows the head-centred 3D view of
-all four parts; the strip below sums up the motion and the monitoring. The rack soft keys (move, clear)
+all four parts, with the edit part's motion path drawn ahead of its dot as a dotted curve and its name bottom
+left; the strip below sums up the motion and the monitoring. The rack soft keys (move, clear)
 belong to the **Rack** and **Master** tabs only.
 
 The **3D badge** in the display header (headphones pictogram + "3D") lights up in ultraviolet and pulses

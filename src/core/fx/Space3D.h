@@ -20,7 +20,21 @@ struct Vec3
 };
 
 /** Motion paths (append-only, index = the "path" choice). */
-enum PathType { PathOff = 0, PathCircle, PathFigure8, PathFlyBy, PathRandom, PathPendulum, PathSpiral, numPaths };
+enum PathType
+{
+    PathOff = 0, PathCircle, PathFigure8, PathFlyBy, PathRandom, PathPendulum, PathSpiral,
+    // p30 (appended - the indices above keep their meaning):
+    PathPingPong, ///< tempo-synced front <-> back jumps (each half cycle starts with a quick move, then holds)
+    PathSwarm,    ///< random flutter: fast small jitter on top of a slow random drift (not periodic)
+    PathWhisper,  ///< near-field: very close behind the head, lingering at one ear, then the other
+    PathWalk,     ///< walks away into the distance and comes back (Doppler, air, level)
+    PathOverhead, ///< a vertical circle through both ears: over the head and underneath
+    PathWeave,    ///< an orbit that weaves up and down three times per turn and breathes in distance
+    numPaths
+};
+
+/** True for paths that repeat exactly every cycle (all but the random ones). */
+constexpr bool pathIsPeriodic (int path) noexcept { return path != PathRandom && path != PathSwarm; }
 
 /** Path lengths of one cycle in beats ("pathlen" choice, append-only). */
 double pathLengthBeats (int choice) noexcept;
@@ -104,6 +118,9 @@ public:
     }
     float uiLevel() const noexcept { return uiLevelValue.load (std::memory_order_relaxed); }
     float uiSpread() const noexcept { return uiSpreadValue.load (std::memory_order_relaxed); }
+    /** Current motion phase in cycles incl. the phase offset (unwrapped) - the display draws the path ahead from it. */
+    double uiPhase() const noexcept { return uiPhaseValue.load (std::memory_order_relaxed); }
+    uint32_t getSeed() const noexcept { return seed; }
 
     // ---- tests ----
     space::Vec3 currentPosition() const noexcept { return pos; }
@@ -192,5 +209,6 @@ private:
 
     std::array<std::atomic<float>, 3> uiPos {};
     std::atomic<float> uiLevelValue { 0.0f }, uiSpreadValue { 40.0f };
+    std::atomic<double> uiPhaseValue { 0.0 };
 };
 } // namespace ohpe

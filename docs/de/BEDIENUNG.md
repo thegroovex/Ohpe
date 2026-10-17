@@ -408,7 +408,8 @@ Der vierte Reiter des **Effekte**-Modus, **3D-Raum**, bearbeitet die [3D-Stufe](
 Ein/Aus, Bewegungspfad, -länge und -tempo auf der ersten Seite, danach Position (Azimut, Elevation,
 Entfernung, Quellenbreite), Form der Bewegung, Raum, Luft und Entfernung und auf der letzten Seite das
 globale **3D-Abhöre** (Kopfhörer / Lautsprecher) und die **Mono-Prüfung**. Statt der Effektkette
-zeigt das Display die kopfbezogene 3D-Ansicht aller vier Parts; der Streifen darunter fasst Bewegung
+zeigt das Display die kopfbezogene 3D-Ansicht aller vier Parts, mit dem Bewegungspfad des Edit-Parts als
+gepunktete Kurve vor seinem Punkt und seinem Namen unten links; der Streifen darunter fasst Bewegung
 und Abhöre zusammen. Die Rack-Softkeys (Schieben, Leeren) gehören nur zu den Reitern **Rack** und
 **Master**.
 
