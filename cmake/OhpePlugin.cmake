@@ -206,6 +206,8 @@ endif()
 # ---------------------------------------------------------------- p26: the living display
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/LivingUiTests.cpp)
+endif()
+
 # ---------------------------------------------------------------- p24: the harmony brain (LFO mode, view Harmony), grid keyboard
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/HarmonyUiTests.cpp)
