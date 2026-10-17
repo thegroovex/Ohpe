@@ -259,7 +259,7 @@ void Core::queueGridEvent (int part, const MidiEvent& e) noexcept
 
 void Core::queueControllerEvent (int part, const MidiEvent& e) noexcept
 {
-    if (part == drumPart || (part >= 0 && part < numParts)) controllerEvents.push ({ part, e });
+    if (part == drumPart || (part >= 0 && part < numParts)) controllerEvents->push ({ part, e });
 }
 
 void Core::refreshShapers (int p) noexcept
@@ -689,7 +689,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         x.sampleOffset = 0;
         routeToPart (x, ge.part);
     }
-    while (controllerEvents.pop (ge)) // p46: the grid controller's pads (one part or the drum kit)
+    while (controllerEvents->pop (ge)) // p46: the grid controller's pads (one part or the drum kit)
     {
         auto x = ge.event;
         x.sampleOffset = 0;

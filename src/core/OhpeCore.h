@@ -389,7 +389,8 @@ private:
     SpscQueue<UiNote, 256> uiNotes;
     struct GridEvent { int part; MidiEvent event; };
     SpscQueue<GridEvent, 512> gridEvents; ///< p24
-    SpscQueue<GridEvent, 1024> controllerEvents; ///< p46: the grid controller's pads
+    /** p46: the grid controller's pads - on the heap: tests keep cores on the stack (Windows: 1 MB main stack). */
+    std::unique_ptr<SpscQueue<GridEvent, 512>> controllerEvents = std::make_unique<SpscQueue<GridEvent, 512>>();
     int blockRoot = 0, blockScale = 1;    ///< p24: the global key of this block
 
     // ---- 0.2: tape, FX slots, audio input ----
