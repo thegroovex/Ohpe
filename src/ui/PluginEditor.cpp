@@ -17,6 +17,7 @@
 #include "tape/TapeFile.h"
 #include "engines/GrainEngine.h"
 #include "engines/SamplerEngine.h"
+#include "breed/RandomSound.h"
 
 #include <cmath>
 #include <cstring>
@@ -797,30 +798,18 @@ void OhpeEditor::bindPartControls()
 
 void OhpeEditor::randomiseSound (juce::int64 seed)
 {
-    // the engine's own sound parameters on its Synth pages; level, tuning, voices and sample choice stay
-    juce::Random rnd (seed != 0 ? seed : juce::Time::currentTimeMillis());
-    const auto prefix = "p" + std::to_string (ctx.part + 1) + "." + engineTypeInfo (shownEngine).id + ".";
-    auto& reg = proc.core().params();
-    for (const auto& id : modeParams (Mode::Synth, proc.core(), ctx))
-    {
-        if (id.rfind (prefix, 0) != 0) continue;
-        const auto tail = id.substr (prefix.size());
-        bool keep = false;
-        for (const char* k : { "vol", "level", "gain", "tune", "fine", "oct", "sample", "voices", "root" })
-            keep |= tail.find (k) != std::string::npos;
-        const int idx = reg.indexOf (id);
-        auto* p = proc.parameter (id);
-        if (keep || idx < 0 || p == nullptr) continue;
-        const auto& d = reg.descriptor (idx);
-        float norm;
-        if (d.isDiscrete())
-            norm = rnd.nextFloat();
-        else
-            norm = 0.1f + 0.8f * rnd.nextFloat(); // musical middle: no extreme corners
-        p->beginChangeGesture();
-        p->setValueNotifyingHost (norm);
-        p->endChangeGesture();
-    }
+    // p37: the engine's own sound parameters inside musical ranges, glide / pitch envelope reset, then checked and
+    // level-normalised offline (breed::Audition on a private core, never the audio thread) - see core RandomSound.h.
+    // Level (volume), tuning, voices, the sample choice, envelopes, effects and matrix stay; the part gain is set.
+    const auto useSeed = (uint64_t) (seed != 0 ? seed : juce::Time::currentTimeMillis());
+    if (randomAudition == nullptr) randomAudition = std::make_unique<breed::Audition>();
+    const auto& schema = randomAudition->schema();
+    const auto base = breed::fromRegistry (schema, proc.core().params(), ctx.part);
+    const auto result = randomsound::make (*randomAudition, base, (int) shownEngine, useSeed);
+    const juce::String prefix = "p" + juce::String (ctx.part + 1) + ".";
+    for (int k = 0; k < schema.size() && k < (int) result.genome.size(); ++k)
+        if (result.genome[(size_t) k] != base[(size_t) k])
+            setParamPlain (prefix + juce::String (schema.gene (k).id), result.genome[(size_t) k]);
     rebindEncoders();
     display.flash (tr ("Random sound"));
     lastFlashText = tr ("Random sound");

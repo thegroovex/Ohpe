@@ -16,7 +16,8 @@ add_library(ohpe_core STATIC
     engines/WavetableEngine.cpp
     engines/PluckEngine.cpp
     engines/ClusterEngine.cpp
-    breed/SoundGenome.cpp)
+    breed/SoundGenome.cpp
+    breed/RandomSound.cpp)
 
 # phase 2, engines B: Grain, Vocal, Sampler, drum kit, sample model
 target_sources(ohpe_core PRIVATE
