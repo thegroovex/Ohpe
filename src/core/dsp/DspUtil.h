@@ -27,11 +27,15 @@ inline float flush (float x) noexcept { return std::abs (x) < 1.0e-15f ? 0.0f : 
 inline float sinTurns (float x) noexcept
 {
     if (! (std::abs (x) < 4194304.0f)) return std::sin (twoPi * x); // huge or not finite: the library (never in practice)
-    const float k = (float) (int32_t) (x + (x >= 0.0f ? 0.5f : -0.5f));
-    float t = x - k; // -0.5 .. 0.5
-    t = t > 0.25f ? 0.5f - t : (t < -0.25f ? -0.5f - t : t); // sin (pi - a) = sin a
-    const float u = t * t;
-    return t * (6.283185160e+00f + u * (-4.134165503e+01f + u * (8.160100406e+01f + u * (-7.654978199e+01f + u * 3.953670361e+01f))));
+    constexpr float round = 12582912.0f; // 1.5 * 2^23: adding and subtracting it rounds to the nearest whole turn
+    const float t = x - ((x + round) - round); // -0.5 .. 0.5
+    const float a = std::abs (t);
+    const float q = std::copysign (std::min (a, 0.5f - a), t); // sin (pi - a) = sin a: a quarter wave, -0.25 .. 0.25
+    const float u = q * q, u2 = u * u;
+    // degree-9 minimax polynomial, evaluated in parallel halves (shorter dependency chain than Horner)
+    const float lo = 6.283185160e+00f + u * -4.134165503e+01f;
+    const float hi = 8.160100406e+01f + u * -7.654978199e+01f;
+    return q * (lo + u2 * (hi + u2 * 3.953670361e+01f));
 }
 
 inline float clamp01 (float x) noexcept { return std::min (1.0f, std::max (0.0f, x)); }

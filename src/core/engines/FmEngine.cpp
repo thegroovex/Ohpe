@@ -82,11 +82,10 @@ void Voice::renderImpl (float* l, float* r, int numSamples, const VoiceCommon& c
 {
     const Shared& p = *shared;
     const Algorithm& a = p.algo;
-    // p35: which operators feed which (the zero entries of the algorithm skipped) and which operators matter at all
-    // (an operator at level 0 adds exactly nothing: no sine for it, its phase still runs)
+    // p35: the links of the algorithm (its zero entries skipped) and the operators that matter (level above 0)
     int numSrc[numOps] {};
-    int src[numOps][numOps];
-    float srcAmt[numOps][numOps];
+    int src[numOps][numOps] {};
+    float srcAmt[numOps][numOps] {};
     bool used[numOps];
     for (int o = 0; o < numOps; ++o)
     {
@@ -158,7 +157,9 @@ void Voice::renderImpl (float* l, float* r, int numSamples, const VoiceCommon& c
         }
         else
         {
-            // p35: the same, with the phase modulation in turns and the polynomial sine (no library call)
+            // p35: the same, with the phase modulation in turns and the polynomial sine (no library call). Only the links
+            // the algorithm has are summed (no false dependency on operators that feed nothing), operators at level 0
+            // skip their sine (they add exactly nothing; their phase still runs)
             constexpr float inv2Pi = 1.0f / dsp::twoPi;
             const float depthTurns = depth * inv2Pi, fbTurns = fbAmt * 0.5f * inv2Pi;
             for (int i = 0; i < n; ++i)

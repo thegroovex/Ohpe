@@ -111,13 +111,7 @@ public:
     bool isLocked (int index) const noexcept { return index >= 0 && index < (int) locks.size() && ! std::isnan (locks[(size_t) index]); }
     int size() const noexcept { return (int) values.size(); }
 
-private:
-    void refresh (const ParamRegistry& reg, int i) noexcept
-    {
-        const float l = locks[(size_t) i];
-        values[(size_t) i] = ! std::isnan (l) ? l : ! std::isnan (motion[(size_t) i]) ? motion[(size_t) i] : reg.get (i);
-    }
-    void touch (int i) noexcept { touched[(size_t) i >> 6] |= uint64_t (1) << (i & 63); }
+    /** p35: index of the lowest set bit (v != 0). */
     static int lowestBit (uint64_t v) noexcept
     {
        #if defined(_MSC_VER) && ! defined(__clang__)
@@ -128,6 +122,14 @@ private:
         return __builtin_ctzll (v);
        #endif
     }
+
+private:
+    void refresh (const ParamRegistry& reg, int i) noexcept
+    {
+        const float l = locks[(size_t) i];
+        values[(size_t) i] = ! std::isnan (l) ? l : ! std::isnan (motion[(size_t) i]) ? motion[(size_t) i] : reg.get (i);
+    }
+    void touch (int i) noexcept { touched[(size_t) i >> 6] |= uint64_t (1) << (i & 63); }
 
     std::vector<float> values, locks, motion;
     std::vector<uint64_t> touched; ///< p35: values this snapshot changed since the last pullChanged()

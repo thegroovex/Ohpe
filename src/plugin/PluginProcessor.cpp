@@ -6,6 +6,8 @@
 #include "TapeIO.h"
 #include "ui/PluginEditor.h"
 
+#include <chrono>
+
 namespace ohpe
 {
 juce::AudioProcessor::BusesProperties OhpeProcessor::makeBuses()
@@ -54,6 +56,19 @@ OhpeProcessor::OhpeProcessor()
     }
     lastPushed.reset (new std::atomic<float>[(size_t) reg.size()]);
     for (int i = 0; i < reg.size(); ++i) lastPushed[(size_t) i].store (NAN);
+    // p35: changed host values are marked by a listener per parameter (the first block copies every value)
+    hostChangedWords = (reg.size() + 63) / 64;
+    hostChanged.reset (new std::atomic<uint64_t>[(size_t) juce::jmax (1, hostChangedWords)]);
+    for (int w = 0; w < hostChangedWords; ++w) hostChanged[(size_t) w].store (~uint64_t (0));
+    hostListeners.reserve ((size_t) reg.size());
+    for (int i = 0; i < reg.size(); ++i)
+    {
+        auto l = std::make_unique<HostParamListener>();
+        l->owner = this;
+        l->index = i;
+        apvts.addParameterListener (juce::String (reg.descriptor (i).id), l.get());
+        hostListeners.push_back (std::move (l));
+    }
     midiScratch.reserve (2048);
     syncSourceParam = reg.indexOf (Core::Ids::syncSource);
     tempoParam = reg.indexOf (Core::Ids::tempo);
@@ -77,7 +92,11 @@ OhpeProcessor::OhpeProcessor()
     startTimerHz (20);
 }
 
-OhpeProcessor::~OhpeProcessor() { stopTimer(); }
+OhpeProcessor::~OhpeProcessor()
+{
+    stopTimer();
+    for (const auto& l : hostListeners) apvts.removeParameterListener (juce::String (ohpeCore.params().descriptor (l->index).id), l.get());
+}
 
 juce::RangedAudioParameter* OhpeProcessor::parameter (int i) const
 {
@@ -107,6 +126,16 @@ bool OhpeProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
     return true;
 }
 
+void OhpeProcessor::pushHostParameter (size_t i) noexcept
+{
+    const float v = rawValues[i]->load (std::memory_order_relaxed);
+    if (! (v == lastPushed[i].load (std::memory_order_relaxed)))
+    {
+        lastPushed[i].store (v, std::memory_order_relaxed);
+        ohpeCore.params().set ((int) i, v);
+    }
+}
+
 void OhpeProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midi)
 {
     juce::ScopedNoDenormals noDenormals;
@@ -114,17 +143,23 @@ void OhpeProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBu
     if (scratch.getNumSamples() < n) // host broke its promise: stay safe (rare)
         scratch.setSize (2, n, false, false, true);
 
-    // 1. host parameters -> registry (only changed values: MIDI-mapped values set inside the core are kept)
+    const auto startTime = std::chrono::steady_clock::now(); // p35: the CPU meter
+
+    // 1. host parameters -> registry (only changed values: MIDI-mapped values set inside the core are kept).
+    //    p35: only the parameters the listener marked, plus one word of 64 per block re-checked as a sweep
     auto& reg = ohpeCore.params();
-    for (size_t i = 0; i < rawValues.size(); ++i)
+    for (int w = 0; w < hostChangedWords; ++w)
     {
-        const float v = rawValues[i]->load (std::memory_order_relaxed);
-        if (! (v == lastPushed[i].load (std::memory_order_relaxed)))
+        uint64_t bits = hostChanged[(size_t) w].exchange (0, std::memory_order_acquire);
+        if (w == sweepWord) bits = ~uint64_t (0);
+        while (bits != 0)
         {
-            lastPushed[i].store (v, std::memory_order_relaxed);
-            reg.set ((int) i, v);
+            const auto i = (size_t) (w * 64 + ParamSnapshot::lowestBit (bits));
+            bits &= bits - 1;
+            if (i < rawValues.size()) pushHostParameter (i);
         }
     }
+    if (++sweepWord >= hostChangedWords) sweepWord = 0;
 
     // 2. MIDI (on-screen keyboard state merges into the buffer)
     keyboardState.processNextMidiBuffer (midi, 0, n, true);
@@ -220,6 +255,10 @@ void OhpeProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBu
             else if (e.status >= 0xf0) midi.addEvent (juce::MidiMessage (e.status), e.sampleOffset);
             else midi.addEvent (juce::MidiMessage (e.status, e.data1, e.data2), e.sampleOffset);
         }
+
+    // p35: the CPU meter - this block's processing time against the time the block stands for
+    if (const double rate = getSampleRate(); rate > 0.0 && n > 0)
+        cpuMeter.add (std::chrono::duration<double> (std::chrono::steady_clock::now() - startTime).count(), (double) n / rate);
 }
 
 // ---------------------------------------------------------------- MIDI learn
