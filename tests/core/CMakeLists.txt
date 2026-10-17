@@ -73,6 +73,8 @@ target_sources(ohpe_core_tests PRIVATE MorphTests.cpp)
 target_sources(ohpe_core_tests PRIVATE UserTableTests.cpp)
 # p18: preset breeding
 target_sources(ohpe_core_tests PRIVATE BreedTests.cpp)
+# p37: the RANDOM key (constrained rolls, loudness normalisation)
+target_sources(ohpe_core_tests PRIVATE RandomSoundTests.cpp)
 # p23: bounce to engine
 target_sources(ohpe_core_tests PRIVATE BounceTests.cpp)
 # p22: the motion recorder

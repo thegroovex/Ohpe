@@ -79,8 +79,22 @@ waits for a MIDI message.
 
 ## RANDOM and SAVE
 
-**RANDOM** gives the edit part's engine new sound values (its Synth pages; level, tuning, voices and the
-sample stay). **SAVE** opens the library's save panel for the edit part.
+**RANDOM** gives the edit part's engine new sound values (its Synth pages; level, tuning, voices, the
+sample, envelopes, effects and modulation stay). **SAVE** opens the library's save panel for the edit part.
+
+Every rolled sound is meant to be playable straight away:
+
+* **Musical ranges**: each engine parameter is rolled inside a range where the engine still sounds like an
+  instrument – the filter never closes, resonance, FM index / feedback, drive and grain spray stay moderate,
+  FM ratios and grain pitches land on musical intervals.
+* **Little noise**: noise, crackle and breath are off in most rolls and low when they come; a roll that
+  still sounds like noise is rolled again.
+* **No slide**: portamento and pitch envelope are reset – glide is off (a short legato glide in a few rolls
+  only, never on the first note), a short pitch blip on the attack comes in about one roll in 25; glide
+  pressure is neutral.
+* **Level-matched**: Ohpe plays the new sound offline (C4 + G4), rolls again if it is silent or broken, and
+  sets the part **Gain** so it plays as loud as the factory presets (their median, K-weighted loudness) with
+  its true peak at or below -1 dBTP. The part volume is not touched.
 
 **Hold RANDOM** (or right-click it) to open **[breeding](BREEDING.md)**: cross two sounds, hear six children,
 keep the best and breed further. While the breeding view is open, RANDOM rolls a new parent B and SAVE stores

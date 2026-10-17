@@ -84,7 +84,23 @@ auf eine MIDI-Nachricht wartet.
 ## ZUFALL und SPEICHERN
 
 **ZUFALL** gibt der Engine des bearbeiteten Parts neue Klangwerte (ihre Synth-Seiten; Pegel, Stimmung,
-Stimmen und Sample bleiben). **SPEICHERN** öffnet das Speicherfeld der Bibliothek für den bearbeiteten Part.
+Stimmen, Sample, Hüllkurven, Effekte und Modulation bleiben). **SPEICHERN** öffnet das Speicherfeld der
+Bibliothek für den bearbeiteten Part.
+
+Jeder gewürfelte Klang soll sofort spielbar sein:
+
+* **Musikalische Bereiche**: Jeder Engine-Parameter wird in einem Bereich gewürfelt, in dem die Engine noch
+  wie ein Instrument klingt – das Filter schließt nie ganz, Resonanz, FM-Index / -Feedback, Drive und
+  Grain-Streuung bleiben moderat, FM-Verhältnisse und Korn-Tonhöhen landen auf musikalischen Intervallen.
+* **Wenig Rauschen**: Rauschen, Knistern und Atem sind meist aus und, wenn sie kommen, leise; ein Wurf, der
+  trotzdem nach Rauschen klingt, wird neu gewürfelt.
+* **Kein Gleiten**: Portamento und Tonhöhen-Hüllkurve werden zurückgesetzt – Glide ist aus (nur in wenigen
+  Würfen ein kurzes Legato-Glide, nie auf der ersten Note), ein kurzer Tonhöhen-Blip im Anschlag kommt etwa
+  in jedem 25. Wurf; Glide-Druck ist neutral.
+* **Pegelangepasst**: Ohpe spielt den neuen Klang offline an (C4 + G4), würfelt neu, wenn er stumm oder
+  fehlerhaft ist, und stellt den Part-**Gain** so ein, dass er so laut spielt wie die Werks-Presets (deren
+  Median, K-gewichtete Lautheit), mit einem True Peak von höchstens -1 dBTP. Die Part-Lautstärke bleibt
+  unverändert.
 
 **ZUFALL halten** (oder rechts anklicken) öffnet die **[Zucht](ZUCHT.md)**: zwei Klänge kreuzen, sechs Kinder hören,
 die besten behalten und weiterzüchten. Solange die Zucht-Ansicht offen ist, würfelt ZUFALL einen neuen
