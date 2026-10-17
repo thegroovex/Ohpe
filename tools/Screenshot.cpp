@@ -519,6 +519,21 @@ int main (int argc, char* argv[])
             e.selectMode (ui::Mode::Synth);
             playAnimated (p, e, 12);
             save (e, dir.getChildFile ("ohpe-space-badge" + suffix + ".png"));
+
+            // p30: the newer motion paths - Weave (part 1, edited: its path drawn ahead of the dot as a dotted curve),
+            // Swarm and Over the Head
+            {
+                const char* newPaths[] = { "Weave", "Swarm", "Over the Head" };
+                for (int part = 1; part <= 3; ++part)
+                    setChoice (p, "p" + juce::String (part) + ".space.path", newPaths[part - 1]);
+                setPlain (p, "p1.space.pathsize", 1.0f);
+                setPlain (p, "p1.space.elevation", 10.0f);
+                e.selectMode (ui::Mode::Effects);
+                e.selectView (3);
+                playAnimated (p, e, 45);
+                save (e, dir.getChildFile ("ohpe-space-paths" + suffix + ".png"));
+                setPlain (p, "p1.space.elevation", 0.0f);
+            }
             release (p, { 48, 55 });
             for (int part = 1; part <= 3; ++part) setPlain (p, "p" + juce::String (part) + ".space.on", 0.0f);
             {
