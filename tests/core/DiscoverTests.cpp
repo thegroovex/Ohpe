@@ -256,6 +256,8 @@ TEST_CASE ("discover: siblings are deterministic, differ, respect locks; strengt
     for (const auto& s : discover::siblings (parent, 6, 1.0f, 7u, mask))
         for (size_t i = 0; i < 7; ++i) CHECK (s.genes[i].value == parent.genes[i].value);
 
+    // p18 merged: the UI breeds through the shared core
+    CHECK (&discover::breeder() != &discover::basicBreeder());
     // gentle stays closer than wild (averaged over many seeds)
     float gentle = 0.0f, wild = 0.0f;
     for (uint32_t seed = 1; seed <= 40; ++seed)
