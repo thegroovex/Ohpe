@@ -14,10 +14,11 @@ binaural colouration and stays fully mono-compatible.
 
 1. Press **Effects**, then the **3D Space** tab of the display (or click the **3D** badge in the display
    header).
-2. Turn **Space** on (encoder 1, first page). The part now sits in front of you, 1.5 m away.
+2. Set the **3D Space** switch (encoder 1, first page) to *Headphones* or *Speakers* – turn encoder 1 or click
+   a segment of the switch on the display. The part now sits in front of you, 1.5 m away.
 3. Choose a **Motion Path** (encoder 2) and its **Motion Length** (encoder 3) – e.g. *Circle* over
    *2 Bars*. Press Play: the dot of the part flies around the head in the display.
-4. Put on headphones. **3D Monitoring** (last page) must be on *Headphones* for binaural sound.
+4. Put on headphones for *Headphones* (binaural); choose *Speakers* when you listen on speakers.
 
 Or load one of the presets with the **3D** tag in the library – they carry a headphones pictogram.
 
@@ -25,7 +26,7 @@ Or load one of the presets with the **3D** tag in the library – they carry a h
 
 | Where | Lit (ultraviolet, pulsing) | Outlined yellow, speakers | Dim |
 |---|---|---|---|
-| Display header, after the part badge: headphones pictogram + **3D** | the edit part plays binaural 3D (Space on or a *Space 3D* rack slot, monitoring on Headphones) | 3D is on, monitoring is on Speakers | the part does not use 3D |
+| Display header, after the part badge: headphones pictogram + **3D** | the edit part plays binaural 3D (Space on or a *Space 3D* rack slot, monitoring on Headphones) | 3D is on, monitoring is on Speakers | the part does not use 3D (the dim pictogram shows the monitoring a switch-on would use: headphones or speakers) |
 | Part selector 1–4 (top) | the same per part, a small headphones pictogram in the corner | a small speakers pictogram | nothing |
 | Library list | presets tagged **3D** show the headphones pictogram after their name; the category chip **3D** lists them | | |
 
@@ -56,7 +57,7 @@ exact bypass (every older sound plays bit-identically); switching crossfades ove
 
 | Page | Parameter | Range | What it does |
 |---|---|---|---|
-| 3D Motion | Space | off / on | the stage |
+| 3D Motion | 3D Space (`pN.space.mode`, p41) | Off, Headphones, Speakers | the 3D switch: *Off* = the stage off; *Headphones* = on, binaural; *Speakers* = on, speaker rendering. Drawn as a segmented switch; encoder 1 steps through the three states |
 | | Motion Path | Off, Circle, Figure-8, Fly-By, Random Orbit, Pendulum, Spiral Up, Ping-Pong F/B, Swarm, Whisper, Distance Walk, Over the Head, Weave | see below |
 | | Motion Length | 1/16 … 32 Bars, 1/4. | one cycle of the path, in time with the song |
 | | Motion Rate | ×−4 … ×4 (default ×1) | multiplies the speed; negative = backwards, 0 = stopped. At exactly ×1 the motion locks to the song position (it repeats identically on every playback) |
@@ -77,6 +78,27 @@ exact bypass (every older sound plays bit-identically); switching crossfades ove
 | | Mono Check (`space.monocheck`, global) | off / on | folds the main output to mono – listen for what speakers in mono would play |
 
 *3D Monitoring* and *Mono Check* belong to the listener: project presets neither save nor change them.
+
+### The 3D switch (p41)
+
+The switch on encoder 1 is one control for two older parameters, which stay what presets and sessions store:
+the part's stage on / off (`pN.space.on`) and the global **3D Monitoring** (`space.out`). *Off* switches the
+part's stage off; *Headphones* and *Speakers* switch it on and set the monitoring. Monitoring is how **you**
+listen, so it is the same for every part: choosing *Speakers* on part 2 also moves the switch of every other
+part that has 3D on to *Speakers* (the header badge and the head in the 3D view change with it – headphones
+on the head, or two speakers in front of it). The three stay in step both ways: automating or MIDI-mapping the
+switch (`pN.space.mode`) works, and so do the older `pN.space.on` / `space.out` – the switches follow them.
+Presets and sessions made before the switch existed show the right state when they load.
+
+![The 3D switch on Speakers: the badge and the caption show the speaker pictogram](../images/ohpe-space-switch-speakers.png)
+
+![3D off: the hint has the first line of the strip to itself](../images/ohpe-space-switch-off.png)
+
+* **Headphones** – binaural: interaural time difference, spherical-head shadow, pinna notches, shoulder
+  reflection, near-field level (see *How it works*).
+* **Speakers** – the speaker path of the same stage: constant-power amplitude panning by direction, **no**
+  interaural delay and **no** head / pinna colouration (speakers and the room do that for real), depth by
+  level, air and a darker back, the moving room reflections; mono-compatible (see below).
 
 ### Motion paths
 

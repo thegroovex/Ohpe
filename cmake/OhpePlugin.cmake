@@ -212,6 +212,7 @@ endif()
 # ---------------------------------------------------------------- 0.7: stereo FX / display visuals
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/StereoDisplayTests.cpp)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/SpaceSwitchUiTests.cpp) # p41: the 3D switch
 endif()
 
 # ---------------------------------------------------------------- p11: tape transport UI, overlays

@@ -984,6 +984,19 @@ void Display::mouseDown (const juce::MouseEvent& e)
             if (id.isNotEmpty()) showControlMenu (proc, id, this);
             return;
         }
+        if (const int seg = segmentAt (row, p); seg >= 0) // p41: a click on a segment selects it
+        {
+            if (auto* prm = proc.parameter (id))
+            {
+                const int n = juce::jmax (2, prm->getNumSteps());
+                prm->beginChangeGesture();
+                prm->setValueNotifyingHost ((float) seg / (float) (n - 1));
+                prm->endChangeGesture();
+            }
+            proc.syncSpaceModes(); // the 3D stage and the monitoring follow at once (not on the next timer tick)
+            repaint();
+            return;
+        }
         dragRow = row;
         const bool fine = isFineDrag (e.mods);
         float start = rowValue (row);
@@ -1203,7 +1216,7 @@ void Display::paint (juce::Graphics& g)
     }
     // 1.0: the 3D badge - lights up while the edit part plays binaural 3D
     badgeRect = juce::Rectangle<float> (h.getHeight() * 2.3f, h.getHeight() * 0.66f).withPosition (badgeX, h.getCentreY() - h.getHeight() * 0.33f);
-    space3d::drawBadge (g, spaceBadgeArea(), space3d::partState (core, ctx.part), time);
+    space3d::drawBadge (g, spaceBadgeArea(), space3d::partState (core, ctx.part), time, space3d::speakerMonitoring (core)); // p41
     g.setFont (monoFont (h.getHeight() * 0.5f));
     g.setColour (colour::displayDim);
     // p39: the tempo and TAP are child components (editable); the header keeps their room
@@ -1500,6 +1513,19 @@ void Display::paintRows (juce::Graphics& g)
             if (value.isEmpty()) value = paramText (proc, id, norm);
         }
         auto textArea = row.withTrimmedLeft (row.getHeight() * 0.7f);
+        if (idx >= 0 && v == nullptr && space3d::isSegmentedSwitch (id.toStdString())) // p41: a segmented switch, not a slider
+        {
+            g.setColour (colour::displayText);
+            g.setFont (labelFont (row.getHeight() * 0.42f));
+            g.drawText (name, textArea.withHeight (row.getHeight() * 0.6f), juce::Justification::centredLeft, true);
+            paintSegments (g, i, reg.descriptor (idx), (int) std::lround (reg.descriptor (idx).fromNormalised (norm)), c);
+            if (proc.learningParamId() == id && std::fmod (time, 0.6f) < 0.3f)
+            {
+                g.setColour (c);
+                g.drawRoundedRectangle (row.expanded (2.0f), 3.0f, 1.5f);
+            }
+            continue;
+        }
         g.setFont (monoFont (row.getHeight() * 0.4f));
         const float valueW = juce::jmin (textArea.getWidth() * 0.45f, juce::GlyphArrangement::getStringWidth (monoFont (row.getHeight() * 0.4f), value) + 6.0f);
         g.setColour (colour::displayText);
@@ -1543,6 +1569,102 @@ void Display::paintRows (juce::Graphics& g)
             g.drawRoundedRectangle (row.expanded (2.0f), 3.0f, 1.5f);
         }
     }
+}
+
+// ---------------------------------------------------------------- p41: segmented switch rows
+juce::Rectangle<float> Display::segmentArea (int row, int segment, int numSegments) const
+{
+    const auto full = rowArea (row);
+    const float rowH = full.getHeight();
+    const auto textArea = full.reduced (0, rowH * 0.12f).withTrimmedLeft (rowH * 0.76f * 0.7f);
+    auto strip = textArea.withTop (full.getY() + rowH * 0.5f).withBottom (full.getY() + rowH * 0.98f);
+    if (numSegments <= 0) return strip;
+    const float gap = rowH * 0.08f;
+    const float w = (strip.getWidth() - gap * (float) (numSegments - 1)) / (float) numSegments;
+    return strip.withX (strip.getX() + (float) segment * (w + gap)).withWidth (w);
+}
+
+void Display::paintSegments (juce::Graphics& g, int row, const ParamDescriptor& d, int selected, juce::Colour c)
+{
+    const int n = (int) d.choices.size();
+    for (int k = 0; k < n; ++k)
+    {
+        const auto r = segmentArea (row, k, n);
+        const bool on = k == selected;
+        const float radius = r.getHeight() * 0.3f;
+        if (on)
+        {
+            g.setColour (c);
+            g.fillRoundedRectangle (r, radius);
+        }
+        else
+        {
+            g.setColour (colour::displayGrid.brighter (0.35f));
+            g.drawRoundedRectangle (r.reduced (0.5f), radius, 1.0f);
+        }
+        const auto ink = on ? colour::displayText : colour::displayDim;
+        const juce::String label = i18n::upper (i18n::pick (d.choices[(size_t) k], k < (int) d.choicesDe.size() ? d.choicesDe[(size_t) k] : d.choices[(size_t) k]));
+        auto inner = r.reduced (r.getHeight() * 0.25f, 0);
+        // the monitoring's pictogram in front of the label (own drawings, see SpaceView): headphones / speakers
+        const auto font = labelFont (r.getHeight() * 0.6f);
+        const float textW = juce::GlyphArrangement::getStringWidth (font, label);
+        const float icon = r.getHeight() * 0.78f;
+        if (k > 0 && textW + icon * 1.2f <= inner.getWidth())
+        {
+            auto both = inner.withSizeKeepingCentre (textW + icon * 1.2f, inner.getHeight());
+            const auto ic = both.removeFromLeft (icon).withSizeKeepingCentre (icon, icon);
+            if (k == 1) space3d::drawHeadphones (g, ic, ink, 0.0f);
+            else space3d::drawSpeakers (g, ic, ink);
+            inner = both.withTrimmedLeft (icon * 0.2f);
+        }
+        g.setColour (ink);
+        g.setFont (font);
+        g.drawFittedText (label, inner.toNearestInt(), juce::Justification::centred, 1, 0.7f);
+    }
+}
+
+int Display::segmentAt (int row, juce::Point<float> p) const
+{
+    if (row < 0 || row >= 4 || virtuals[(size_t) row] != nullptr || row >= (int) ids.size()) return -1;
+    const auto id = ids[(size_t) row].toStdString();
+    if (! space3d::isSegmentedSwitch (id)) return -1;
+    const auto& reg = proc.core().params();
+    const int idx = reg.indexOf (id);
+    if (idx < 0) return -1;
+    const int n = (int) reg.descriptor (idx).choices.size();
+    for (int k = 0; k < n; ++k)
+        if (segmentArea (row, k, n).expanded (2.0f).contains (p)) return k;
+    return -1;
+}
+
+std::vector<Display::StripLine> Display::spaceStripLines() const
+{
+    auto& core = proc.core();
+    const auto s = stripArea();
+    const auto area = hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s;
+    const auto& reg = core.params();
+    const int part = juce::jlimit (0, Core::numParts - 1, ctx.part);
+    const auto p = "p" + std::to_string (part + 1) + ".space.";
+    auto text = [&] (const std::string& id) {
+        const int i = reg.indexOf (id);
+        return i >= 0 ? formatValue (reg.descriptor (i), reg.get (i)) : juce::String();
+    };
+    const bool on = reg.get (p + "on") >= 0.5f;
+    const auto line1 = area.withHeight (area.getHeight() * 0.4f).reduced (area.getHeight() * 0.05f, 0).translated (0, area.getHeight() * 0.08f);
+    const auto line2 = line1.translated (0, area.getHeight() * 0.42f);
+    const auto font = labelFont (line1.getHeight() * 0.55f);
+    std::vector<StripLine> lines;
+    // line 1: the part's motion - or, while its 3D is off, what to do (the hint takes the line: they never share it)
+    if (on)
+        lines.push_back ({ i18n::upper (tr ("Motion")) + "   " + text (p + "path") + "  /  " + text (p + "pathlen") + "  /  x" + text (p + "pathrate"),
+                           line1, font, colour::displayText, 0.75f });
+    else
+        lines.push_back ({ tr ("Choose Headphones or Speakers (encoder 1) to place and move this part"), line1, font, colour::sunYellow, 0.75f });
+    // line 2: the monitoring of the whole instrument (+ the mono check)
+    lines.push_back ({ i18n::upper (tr ("3D Monitoring")) + "   " + text (Core::Ids::spaceOut)
+                           + (reg.get (Core::Ids::spaceMonoCheck) >= 0.5f ? "   /   " + i18n::upper (tr ("Mono Check")) : juce::String()),
+                       line2, font, colour::displayDim, 0.75f });
+    return lines;
 }
 
 void Display::paintHint (juce::Graphics& g, juce::Rectangle<float> s, const juce::String& text)
@@ -1930,30 +2052,13 @@ void Display::paintStrip (juce::Graphics& g, juce::Rectangle<float> s)
         if (hasSoftKeys()) paintSoftKeys (g);
         return;
     }
-    if (showsSpaceView()) // 1.0: motion summary, monitoring, mono check
+    if (showsSpaceView()) // 1.0: motion summary, monitoring, mono check (p41: one text per line, never overlapping)
     {
-        const auto area = hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s;
-        const auto& reg = core.params();
-        const auto p = "p" + std::to_string (ctx.part + 1) + ".space.";
-        auto text = [&] (const std::string& id) {
-            const int i = reg.indexOf (id);
-            return i >= 0 ? formatValue (reg.descriptor (i), reg.get (i)) : juce::String();
-        };
-        const bool on = reg.get (p + "on") >= 0.5f;
-        auto line1 = area.withHeight (area.getHeight() * 0.4f).reduced (area.getHeight() * 0.05f, 0).translated (0, area.getHeight() * 0.08f);
-        auto line2 = line1.translated (0, area.getHeight() * 0.42f);
-        g.setFont (labelFont (line1.getHeight() * 0.55f));
-        g.setColour (on ? colour::displayText : colour::displayDim);
-        g.drawText (i18n::upper (tr ("Motion")) + "   " + text (p + "path") + "  /  " + text (p + "pathlen") + "  /  x" + text (p + "pathrate"),
-                    line1, juce::Justification::centredLeft, true);
-        g.setColour (colour::displayDim);
-        g.drawText (i18n::upper (tr ("3D Monitoring")) + "   " + text (Core::Ids::spaceOut)
-                        + (reg.get (Core::Ids::spaceMonoCheck) >= 0.5f ? "   /   " + i18n::upper (tr ("Mono Check")) : juce::String()),
-                    line2, juce::Justification::centredLeft, true);
-        if (! on)
+        for (const auto& t : spaceStripLines())
         {
-            g.setColour (colour::sunYellow);
-            g.drawText (tr ("Switch Space on (encoder 1) to place and move this part"), line1, juce::Justification::centredRight, true);
+            g.setColour (t.colour);
+            g.setFont (t.font);
+            g.drawFittedText (t.text, t.area.toNearestInt(), juce::Justification::centredLeft, 1, t.minScale);
         }
         if (hasSoftKeys()) paintSoftKeys (g);
         return;

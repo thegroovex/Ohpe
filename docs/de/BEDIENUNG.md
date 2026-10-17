@@ -506,17 +506,20 @@ wird vorbereitet …* (einen Moment; der Slot reicht den Klang so lange trocken 
 ![Die 3D-Raum-Ansicht](../images/ohpe-space-view-de.png)
 
 Der vierte Reiter des **Effekte**-Modus, **3D-Raum**, bearbeitet die [3D-Stufe](RAUM.md) des Edit-Parts:
-Ein/Aus, Bewegungspfad, -länge und -tempo auf der ersten Seite, danach Position (Azimut, Elevation,
+den **3D-Schalter** (*Aus / Kopfhörer / Lautsprecher*, ein Segmentschalter auf Encoder 1 – Encoder drehen oder
+ein Segment anklicken; p41), Bewegungspfad, -länge und -tempo auf der ersten Seite, danach Position (Azimut, Elevation,
 Entfernung, Quellenbreite), Form der Bewegung, Raum, Luft und Entfernung und auf der letzten Seite das
 globale **3D-Abhöre** (Kopfhörer / Lautsprecher) und die **Mono-Prüfung**. Statt der Effektkette
 zeigt das Display die kopfbezogene 3D-Ansicht aller vier Parts, mit dem Bewegungspfad des Edit-Parts als
 gepunktete Kurve vor seinem Punkt und seinem Namen unten links; der Streifen darunter fasst Bewegung
-und Abhöre zusammen. Die Rack-Softkeys (Schieben, Leeren) gehören nur zu den Reitern **Rack** und
+und Abhöre zusammen (solange 3D des Parts aus ist, steht in der ersten Zeile statt der Bewegung *Kopfhörer oder
+Lautsprecher wählen (Encoder 1), um den Part im Raum zu bewegen*). Die Rack-Softkeys (Schieben, Leeren) gehören nur zu den Reitern **Rack** und
 **Master**.
 
 Das **3D-Abzeichen** im Display-Kopf (Kopfhörer-Piktogramm + „3D“) leuchtet ultraviolett und pulsiert
 sanft, solange der Edit-Part binaurales 3D spielt; steht die Abhöre auf Lautsprecher, ist es gelb umrandet
-und zeigt zwei Lautsprecher, sonst ist es schwach. Ein Klick springt in diese Ansicht; der Tooltip
+und zeigt zwei Lautsprecher, sonst ist es schwach (mit Kopfhörern oder Lautsprechern – der Abhöre, die ein
+Einschalten nutzen würde). Ein Klick springt in diese Ansicht; der Tooltip
 sagt *Binaurales 3D – am besten mit Kopfhörern*. Die Part-Auswahl zeigt dasselbe Piktogramm je Part,
 die Bibliothek hinter dem Namen jedes Presets mit dem Schlagwort **3D**.
 
