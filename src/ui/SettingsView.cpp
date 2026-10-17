@@ -830,30 +830,30 @@ void SettingsView::mouseDown (const juce::MouseEvent& e)
         }
 }
 
+void SettingsView::paintOffscreen()
+{
+    juce::Image img (juce::Image::ARGB, juce::jmax (1, getWidth()), juce::jmax (1, getHeight()), true);
+    juce::Graphics g (img);
+    paint (g);
+}
+
 bool SettingsView::clickChip (const juce::String& text)
 {
-    if (hits.empty())
-    {
-        // not painted yet (tests): paint once into an image to build the hit list
-        juce::Image img (juce::Image::ARGB, juce::jmax (1, getWidth()), juce::jmax (1, getHeight()), true);
-        juce::Graphics g (img);
-        paint (g);
-    }
+    paintOffscreen(); // the hit list of the page shown now
     for (auto it = hits.rbegin(); it != hits.rend(); ++it)
         if (it->text == text)
         {
             auto action = it->action;
             if (action) action();
-            juce::Image img (juce::Image::ARGB, juce::jmax (1, getWidth()), juce::jmax (1, getHeight()), true);
-            juce::Graphics g (img);
-            paint (g); // the new state's chips
+            paintOffscreen();
             return true;
         }
     return false;
 }
 
-juce::StringArray SettingsView::chipTexts() const
+juce::StringArray SettingsView::chipTexts()
 {
+    paintOffscreen();
     juce::StringArray t;
     for (const auto& h : hits) t.add (h.text);
     return t;

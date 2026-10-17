@@ -66,7 +66,7 @@ public:
     void changeSettings (const std::function<void (settings::UserSettings&)>& fn);
     /** Clicks the chip whose text is `text` (upper case as drawn) on the shown page; false if there is none (tests). */
     bool clickChip (const juce::String& text);
-    juce::StringArray chipTexts() const;
+    juce::StringArray chipTexts();
     /** MIDI learn list: the mapping row texts as shown (tests). */
     juce::StringArray learnRows() const;
 
@@ -104,6 +104,7 @@ private:
     void paintUpdates (juce::Graphics& g, juce::Rectangle<float> a);
     void paintHelp (juce::Graphics& g, juce::Rectangle<float> a);
     void paintAbout (juce::Graphics& g, juce::Rectangle<float> a);
+    void paintOffscreen(); ///< builds the hit list of the shown page (tests)
     void paintText (juce::Graphics& g, juce::Rectangle<float> a, const juce::String& text, float& scrollPos, float& maxScrollPos);
 
     float plain (const juce::String& id) const;
