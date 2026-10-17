@@ -155,7 +155,8 @@ struct PackPlan
 
     `items`: the zip directory. `packJson`: the text of the zip's pack.json (empty = none). `expected`: what the
     caller knows already (manifest entry: id, version, kind; local install: from the file name, may be empty) - a
-    pack.json must agree with a given id. `usedBytes`: what the other installed packs use (quota check; the pack's
+    pack.json must agree with a given id (and version); the kind is compared only when an id is given too (a default
+    PackInfo's kind "presets" is no expectation). `usedBytes`: what the other installed packs use (quota check; the pack's
     own installed version is not counted, it becomes the backup). `requireChecksums` (.ohpepack): pack.json and its
     "files" list are required. Whenever pack.json lists files, the list must match the zip exactly: every unpacked
     file listed with its SHA-256 (checked while unpacking), every listed file present.

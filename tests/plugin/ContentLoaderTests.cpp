@@ -96,6 +96,28 @@ struct Dir
     ~Dir() { root.deleteRecursively(); }
 };
 
+/** An .ohpepack from binary files (wav): pack.json with `meta` + the SHA-256 of every file. */
+juce::File makeBinaryPack (const juce::File& f, juce::String meta, const std::vector<std::pair<juce::String, juce::File>>& files)
+{
+    juce::String list;
+    juce::ZipFile::Builder b;
+    for (const auto& [path, src] : files)
+    {
+        juce::MemoryBlock mb;
+        REQUIRE (src.loadFileAsData (mb));
+        if (list.isNotEmpty()) list << ",";
+        list << "\"" << path << "\":\"" << juce::String (update::Sha256::of (std::string ((const char*) mb.getData(), mb.getSize()))) << "\"";
+    }
+    meta = meta.upToLastOccurrenceOf ("}", false, false) + ",\"files\":{" + list + "}}";
+    b.addEntry (new juce::MemoryInputStream (meta.toRawUTF8(), meta.getNumBytesAsUTF8(), true), 6, "pack.json", juce::Time::getCurrentTime());
+    for (const auto& [path, src] : files)
+        b.addFile (src, 6, path);
+    f.deleteFile();
+    juce::FileOutputStream out (f);
+    b.writeToStream (out, nullptr);
+    return f;
+}
+
 const char* packJsonV11 = R"({"format":1,"id":"atmo","version":"1.1.0","kind":"presets","minApp":"0.0.1",
     "name":{"en":"Atmo","de":"Atmo"},"description":{"en":"Dark and wide","de":"Dunkel und weit"},
     "license":{"type":"paid","productId":"ohpe-atmo"},"signature":{"alg":"ed25519","keyId":"groovex-1","value":"c2ln"}})";
@@ -309,4 +331,39 @@ TEST_CASE ("content loader: this build accepts packs made for 0.5.0 (the default
     const auto app = Updater::currentVersion();
     CHECK (app.valid());
     CHECK_FALSE (app < update::Version::of ("0.5.0"));
+}
+
+TEST_CASE ("content loader: Install pack ... (file dialog / drop) takes wavetable packs, presets packs still")
+{
+    // the UI path: Updater::installPackFile -> doInstallPackFile, no description to match (default PackInfo)
+    Dir d;
+    const auto data = d.root.getChildFile ("data"), content = data.getChildFile ("Content");
+    Updater u;
+    u.setDataFolderForTests (data);
+
+    const auto wav = d.root.getChildFile ("src/glass-choir.wav");
+    writeWaveSet (wav, 4);
+    const auto tables = makeBinaryPack (d.root.getChildFile ("glass-1.0.0.ohpepack"),
+                                        R"({"format":1,"id":"glass","version":"1.0.0","kind":"wavetables","minApp":"0.0.1",
+                                            "name":{"en":"Glass","de":"Glas"},"license":{"type":"free"}})",
+                                        { { "wavetables/glass-choir.wav", wav } });
+    u.installPackFile (tables);
+    REQUIRE (u.waitIdle (20000));
+    CHECK_MESSAGE (u.snapshot().message == "Content pack installed", u.snapshot().message << " / " << u.snapshot().detail);
+    CHECK (content.getChildFile ("glass/wavetables/glass-choir.wav").existsAsFile());
+
+    const auto presets = makePack (d.root.getChildFile ("keys-1.0.0.ohpepack"),
+                                   R"({"format":1,"id":"keys","version":"1.0.0","kind":"presets","minApp":"0.0.1","name":{"en":"Keys","de":"Tasten"}})",
+                                   { { "presets/keys-crypt-organ.ohpepreset", presetText ("Crypt Organ") } });
+    u.installPackFile (presets);
+    REQUIRE (u.waitIdle (20000));
+    CHECK (u.snapshot().message == "Content pack installed");
+    CHECK (content.getChildFile ("keys/presets/keys-crypt-organ.ohpepreset").existsAsFile());
+
+    const auto installed = u.installedPacks();
+    REQUIRE (installed.size() == 2);
+    CHECK (installed[0].info.id == "glass");
+    CHECK (installed[0].info.kind == "wavetables");
+    CHECK (installed[1].info.id == "keys");
+    CHECK (installed[1].info.kind == "presets");
 }
