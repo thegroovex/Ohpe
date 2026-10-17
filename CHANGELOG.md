@@ -5,6 +5,17 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
+## Unreleased
+
+- EN: The 3D switch – per part Off / Headphones / Speakers (`p1.space.mode` … `p4.space.mode`, automatable and
+  MIDI-mappable) as a segmented switch on the Space page; a front for `pN.space.on` and `space.out`, older presets and
+  sessions load unchanged; speakers icon on the 3D badge when monitoring on speakers – see
+  [Space](docs/en/SPACE.md#the-3d-switch-p41).
+- DE: Der 3D-Schalter – pro Part Aus / Kopfhörer / Lautsprecher (`p1.space.mode` … `p4.space.mode`, automatisierbar
+  und per MIDI steuerbar) als Segmentschalter auf der Raum-Seite; Front für `pN.space.on` und `space.out`, ältere
+  Presets und Sessions laden unverändert; Lautsprecher-Symbol am 3D-Badge bei Abhören über Lautsprecher – siehe
+  [Raum](docs/de/RAUM.md#der-3d-schalter-p41).
+
 ## 0.5.0 Preview – 2026-10-17
 
 [Notes / Hinweise](docs/release-notes/0.5.0.md)
