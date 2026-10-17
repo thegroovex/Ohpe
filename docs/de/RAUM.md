@@ -14,10 +14,11 @@ binaurale Färbung gerendert und bleibt voll monokompatibel.
 
 1. **Effekte** drücken, dann den Reiter **3D-Raum** im Display (oder auf das **3D**-Abzeichen im
    Display-Kopf klicken).
-2. **Raum** einschalten (Encoder 1, erste Seite). Der Part steht jetzt 1,5 m vor dir.
+2. Den **3D-Raum**-Schalter (Encoder 1, erste Seite) auf *Kopfhörer* oder *Lautsprecher* stellen – Encoder 1
+   drehen oder ein Segment des Schalters im Display anklicken. Der Part steht jetzt 1,5 m vor dir.
 3. Einen **Bewegungspfad** (Encoder 2) und seine **Bewegungslänge** (Encoder 3) wählen – z. B. *Kreis* über
    *2 Takte*. Play drücken: der Punkt des Parts fliegt im Display um den Kopf.
-4. Kopfhörer aufsetzen. Die **3D-Abhöre** (letzte Seite) muss für binauralen Klang auf *Kopfhörer* stehen.
+4. Für *Kopfhörer* (binaural) Kopfhörer aufsetzen; *Lautsprecher* wählen, wenn du über Lautsprecher hörst.
 
 Oder eines der Presets mit dem Tag **3D** aus der Bibliothek laden – sie tragen ein Kopfhörer-Piktogramm.
 
@@ -25,7 +26,7 @@ Oder eines der Presets mit dem Tag **3D** aus der Bibliothek laden – sie trage
 
 | Wo | Leuchtet (ultraviolett, pulsierend) | Gelb umrandet, Lautsprecher | Gedimmt |
 |---|---|---|---|
-| Display-Kopf, nach dem Part-Abzeichen: Kopfhörer-Piktogramm + **3D** | der bearbeitete Part spielt binaurales 3D (Raum an oder ein *3D-Raum*-Rack-Slot, Abhöre auf Kopfhörer) | 3D ist an, die Abhöre steht auf Lautsprecher | der Part nutzt kein 3D |
+| Display-Kopf, nach dem Part-Abzeichen: Kopfhörer-Piktogramm + **3D** | der bearbeitete Part spielt binaurales 3D (Raum an oder ein *3D-Raum*-Rack-Slot, Abhöre auf Kopfhörer) | 3D ist an, die Abhöre steht auf Lautsprecher | der Part nutzt kein 3D (das schwache Piktogramm zeigt die Abhöre, die ein Einschalten nutzen würde: Kopfhörer oder Lautsprecher) |
 | Part-Wahl 1–4 (oben) | dasselbe pro Part, ein kleines Kopfhörer-Piktogramm in der Ecke | ein kleines Lautsprecher-Piktogramm | nichts |
 | Bibliotheksliste | Presets mit dem Tag **3D** zeigen das Kopfhörer-Piktogramm nach dem Namen; der Kategorie-Chip **3D** listet sie | | |
 
@@ -55,7 +56,7 @@ Bypass (jeder ältere Klang spielt bitgleich); Umschalten blendet über 20 ms ü
 
 | Seite | Parameter | Bereich | Wirkung |
 |---|---|---|---|
-| 3D-Bewegung | Raum | aus / an | die Stufe |
+| 3D-Bewegung | 3D-Raum (`pN.space.mode`, p41) | Aus, Kopfhörer, Lautsprecher | der 3D-Schalter: *Aus* = Stufe aus; *Kopfhörer* = an, binaural; *Lautsprecher* = an, Lautsprecher-Rendering. Als Segmentschalter gezeichnet; Encoder 1 schaltet die drei Stellungen durch |
 | | Bewegungspfad | Aus, Kreis, Acht, Vorbeiflug, Zufallsorbit, Pendel, Spirale aufwärts, Ping-Pong v/h, Schwarm, Flüstern, Entfernungsgang, Über den Kopf, Wellenorbit | siehe unten |
 | | Bewegungslänge | 1/16 … 32 Takte, 1/4. | ein Durchlauf des Pfads, im Takt des Songs |
 | | Bewegungstempo | ×−4 … ×4 (Standard ×1) | multipliziert das Tempo; negativ = rückwärts, 0 = steht. Bei genau ×1 rastet die Bewegung auf die Song-Position ein (sie wiederholt sich bei jedem Abspielen gleich) |
@@ -76,6 +77,25 @@ Bypass (jeder ältere Klang spielt bitgleich); Umschalten blendet über 20 ms ü
 | | Mono-Prüfung (`space.monocheck`, global) | aus / an | faltet den Hauptausgang zu mono – hör, was Lautsprecher in mono spielen würden |
 
 *3D-Abhöre* und *Mono-Prüfung* gehören dem Hörer: Projekt-Presets speichern und ändern sie nicht.
+
+### Der 3D-Schalter (p41)
+
+Der Schalter auf Encoder 1 ist ein Bedienelement für zwei ältere Parameter, die weiterhin das sind, was Presets
+und Sessions speichern: die Stufe des Parts an / aus (`pN.space.on`) und die globale **3D-Abhöre**
+(`space.out`). *Aus* schaltet die Stufe des Parts aus; *Kopfhörer* und *Lautsprecher* schalten sie ein und
+stellen die Abhöre. Die Abhöre ist, wie **du** hörst – sie gilt deshalb für alle Parts: *Lautsprecher* auf
+Part 2 stellt auch den Schalter jedes anderen Parts mit 3D auf *Lautsprecher* (das Abzeichen im Kopf und der
+Kopf in der 3D-Ansicht wechseln mit – Kopfhörer auf dem Kopf oder zwei Lautsprecher davor). Die drei bleiben in
+beide Richtungen gleich: den Schalter (`pN.space.mode`) automatisieren oder per MIDI steuern geht, die älteren
+`pN.space.on` / `space.out` ebenso – die Schalter folgen ihnen. Presets und Sessions von vor dem Schalter zeigen
+beim Laden die richtige Stellung.
+
+* **Kopfhörer** – binaural: Laufzeitunterschied zwischen den Ohren, Kopfschatten (Kugelkopf), Ohrmuschel-Kerben,
+  Schulterreflexion, Nahfeld-Pegel (siehe *So funktioniert es*).
+* **Lautsprecher** – der Lautsprecher-Weg derselben Stufe: leistungsgleiches Amplituden-Panning nach Richtung,
+  **keine** Laufzeit zwischen den Ohren und **keine** Kopf- / Ohrmuschel-Färbung (das machen Lautsprecher und
+  Raum wirklich), Tiefe über Pegel, Luft und dunklere Rückseite, die mitwandernden Raumreflexionen;
+  monokompatibel (siehe unten).
 
 ### Bewegungspfade
 
