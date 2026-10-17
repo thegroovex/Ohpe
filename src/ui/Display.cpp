@@ -7,6 +7,7 @@
 #include "ResoView.h"
 #include "MorphView.h"
 #include "MotionView.h"
+#include "PadsView.h"
 #include "HarmonyView.h"
 
 #include "Palette.h"
@@ -527,7 +528,7 @@ void Display::tick (float seconds)
 bool Display::livingOnScreen() const
 {
     return shownVisual() == Visual::Living && mode != Mode::Tape && ! showsModView() && ! showsRackView() && ! showsSpaceView()
-        && ! showsBodyView() && ! showsMorphView() && ! showsMotionView();
+        && ! showsBodyView() && ! showsMorphView() && ! showsMotionView() && ! showsPadsView() && ! showsHarmonyView(); // p25, p24
 }
 
 void Display::updateTapeOverview()
@@ -624,6 +625,7 @@ bool Display::showsSpaceView() const noexcept { return mode == Mode::Effects && 
 bool Display::showsBodyView() const noexcept { return mode == Mode::Effects && ctx.fxView == modfx::FxViewBody; }
 bool Display::showsMorphView() const noexcept { return mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMorph; }
 bool Display::showsMotionView() const noexcept { return mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMotion; }
+bool Display::showsPadsView() const noexcept { return mode == Mode::Effects && ctx.fxView == modfx::FxViewPads; }
 bool Display::showsHarmonyView() const noexcept { return mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewHarmony; }
 
 juce::Rectangle<float> Display::morphPadArea() const { return morphview::padArea (visualArea()); }
@@ -875,6 +877,22 @@ void Display::mouseDown (const juce::MouseEvent& e)
                 return;
             }
         }
+        if (showsPadsView()) // p25: press and hold a pad (shift-click latches, right-click: MIDI learn)
+            if (const int k = padsview::padAt (visualArea(), p); k >= 0)
+            {
+                const juce::String id (PerformancePads::padId (k));
+                if (e.mods.isPopupMenu()) { showControlMenu (proc, id, this); return; }
+                if (auto* prm = proc.parameter (id))
+                {
+                    const bool on = prm->getValue() > 0.5f;
+                    prm->beginChangeGesture();
+                    prm->setValueNotifyingHost (e.mods.isShiftDown() && on ? 0.0f : 1.0f);
+                    if (e.mods.isShiftDown()) prm->endChangeGesture();
+                    else heldPad = k;
+                }
+                repaint();
+                return;
+            }
         if (showsRackView())
             if (const int s = modfx::rackChainHit (visualArea(), shownRack().numSlots(), p); s >= 0)
             {
@@ -885,7 +903,7 @@ void Display::mouseDown (const juce::MouseEvent& e)
     }
 
     // 0.7: the visual area - click cycles character / scope / terrain, right-click opens the view menu
-    if (! showsModView() && ! showsRackView() && ! showsSpaceView() && ! showsBodyView() && ! showsMorphView() && ! showsMotionView() && ! showsHarmonyView() && mode != Mode::Tape && characterArea().contains (p)
+    if (! showsModView() && ! showsRackView() && ! showsSpaceView() && ! showsBodyView() && ! showsMorphView() && ! showsMotionView() && ! showsHarmonyView() && ! showsPadsView() && mode != Mode::Tape && characterArea().contains (p)
         && ! (mode == Mode::Sequencer && seqTab (0).getBottom() > p.y))
     {
         if (e.mods.isPopupMenu()) { showVisualMenu(); return; }
@@ -943,6 +961,16 @@ void Display::mouseUp (const juce::MouseEvent& e)
         if (to >= 0 && to != dragSlot && onFxSlotMoved) onFxSlotMoved (dragSlot, to);
     }
     dragSlot = -1;
+    if (heldPad >= 0) // p25: a held pad lets go
+    {
+        if (auto* prm = proc.parameter (PerformancePads::padId (heldPad)))
+        {
+            prm->setValueNotifyingHost (0.0f);
+            prm->endChangeGesture();
+        }
+        heldPad = -1;
+        repaint();
+    }
     if (morphDrag) // p16
     {
         morphDrag = false;
@@ -1084,6 +1112,13 @@ void Display::paint (juce::Graphics& g)
         const int mi = core.params().indexOf (pre + "model");
         g.drawText (i18n::upper (tr ("Resonator")) + (mi >= 0 ? "  " + i18n::upper (formatValue (core.params().descriptor (mi), core.params().get (mi))) : juce::String()),
                     va.withHeight (va.getHeight() * 0.08f), juce::Justification::topLeft, true);
+        paintRows (g);
+        paintStrip (g, stripArea());
+        return;
+    }
+    if (showsPadsView()) // p25: the performance pads
+    {
+        padsview::paint (g, visualArea(), core, time);
         paintRows (g);
         paintStrip (g, stripArea());
         return;
@@ -1535,6 +1570,16 @@ void Display::paintStrip (juce::Graphics& g, juce::Rectangle<float> s)
     if (showsModView()) // 0.7: trace of the selected routing
     {
         modfx::paintModTrace (g, hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s, core, ctx.part, ctx.modRouting, modHistory);
+        if (hasSoftKeys()) paintSoftKeys (g);
+        return;
+    }
+    if (showsPadsView()) // p25: what the pads do right now
+    {
+        const auto area = hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s;
+        auto line = area.withHeight (area.getHeight() * 0.4f).reduced (area.getHeight() * 0.05f, 0).translated (0, area.getHeight() * 0.08f);
+        g.setFont (labelFont (line.getHeight() * 0.55f));
+        g.setColour (colour::displayText);
+        g.drawText (i18n::upper (tr ("Pads")) + "   " + padsview::statusLine (core), line, juce::Justification::centredLeft, true);
         if (hasSoftKeys()) paintSoftKeys (g);
         return;
     }

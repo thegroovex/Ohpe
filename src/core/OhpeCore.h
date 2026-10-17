@@ -17,6 +17,7 @@
 #include "model/StereoFifo.h"
 #include "morph/MorphSpace.h"
 #include "motion/MotionRecorder.h"
+#include "perform/PerformancePads.h"
 #include "harmony/HarmonyBrain.h"
 #include "seq/Arpeggiator.h"
 #include "seq/EuclidSequencer.h"
@@ -80,6 +81,8 @@ public:
     /** p22, tests: the values the last block played with (after locks, motion lanes; the matrix may have moved some). */
     float blockValue (int registryIndex) const noexcept { return snapshot[registryIndex]; }
     const MotionRecorder& motion() const noexcept { return motionRec; }
+    /** p25: the performance pads on the main mix (states and meters for the display are atomics, any thread). */
+    const PerformancePads& pads() const noexcept { return perfPads; }
     /** p24: the harmony brain (scale and chord memory of all parts; published state is atomics, any thread). */
     HarmonyBrain& harmony() noexcept { return harmonyBrain; }
     const HarmonyBrain& harmony() const noexcept { return harmonyBrain; }
@@ -225,6 +228,7 @@ public:
         static constexpr const char* perfMod = "perf.mod";   ///< 0..1
         // p16: the morph space - per part "pN.morph.on / x / y / glide / xsrc / ysrc" (MorphSpace::registerParams)
         // p22: the motion recorder - per part "pN.motion.on / rec / len / amt / clear" (MotionRecorder::registerParams)
+        // p25: the performance pads - "pads.stutter / stop / sweep / freeze" and their settings (PerformancePads::registerParams)
         // p24: the harmony brain - "harmony.memory / hold / take / clear / kb.layout", per part "harmony.pN.follow"
         static constexpr const char* harmonyTake = "harmony.take";   ///< trigger (message thread: key.root / key.scale)
         static constexpr const char* harmonyClear = "harmony.clear"; ///< trigger (the brain forgets)
@@ -271,6 +275,7 @@ private:
     std::array<std::unique_ptr<Part>, numParts> parts;
     MorphSpace morphSpace; ///< p16 (after the parts: its lanes follow them)
     MotionRecorder motionRec; ///< p22
+    PerformancePads perfPads; ///< p25 (the mixer runs it in the master chain)
     HarmonyBrain harmonyBrain; ///< p24
     Mixer mix;
     drum::DrumKit drums;

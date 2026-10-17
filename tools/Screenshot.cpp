@@ -621,6 +621,31 @@ int main (int argc, char* argv[])
             e.selectView (0);
         }
 
+        // p25: the performance pads - a chord with the sequencer running, the filter sweep and the reverb freeze held,
+        //      the stutter waiting for its grid line
+        {
+            e.selectPart (0);
+            e.selectEngine (EngineType::Analog);
+            e.selectMode (ui::Mode::Effects);
+            e.selectView (5); // Sends | Rack | Master | 3D Space | Body | Pads
+            setPlain (p, "seq.run", 1.0f);
+            setChoice (p, "pads.quant", "1/4");
+            playAnimated (p, e, 2, { 48, 55, 60 });
+            playAnimated (p, e, 10);
+            setPlain (p, "pads.freeze", 1.0f);
+            setPlain (p, "pads.sweep", 1.0f);
+            playAnimated (p, e, 56); // about 1.8 s: the 1-bar sweep is nearly closed, the freeze holds
+            setPlain (p, "pads.stutter", 1.0f);
+            playAnimated (p, e, 1);
+            save (e, dir.getChildFile ("ohpe-pads-view" + suffix + ".png"));
+            release (p, { 48, 55, 60 });
+            for (const char* id : { "pads.stutter", "pads.sweep", "pads.freeze" }) setPlain (p, id, 0.0f);
+            setChoice (p, "pads.quant", "1/16");
+            setPlain (p, "seq.run", 0.0f);
+            run (p, 400); // the freeze tail rings out
+            e.selectView (0);
+        }
+
         // p24: the harmony brain - a progression on part 1 (Am F C G, then Am7 held), part 2 following the chord, the Harmony
         //      view and the isomorphic grid keyboard in place of the piano keys
         {

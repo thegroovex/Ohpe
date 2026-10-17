@@ -180,6 +180,7 @@ private:
     void saveUiState();
     void loadUiState();
     void setParamPlain (const juce::String& id, float plain);
+    void refreshPadKeys(); ///< p25: the Pads view's soft keys follow the pad parameters
     void onSoftKey (int id);
     void showBounceMenu();                      ///< p23: the BOUNCE soft key of the Grain / Sampler page (source, loop)
     void showTableImportMenu();                 ///< p20: the IMPORT soft key (file, tape track, input, library, options)
@@ -256,6 +257,7 @@ private:
     int morphPage = 0; ///< p16
     int motionPage = 0; ///< p22
     int lastMotionSignature = -1; ///< p22: soft key / status refresh of the Motion view
+    int lastPadsSignature = -1;   ///< p25: soft key refresh of the Pads view
     int harmonyPage = 0, lastHarmonySignature = -1; ///< p24: the Harmony view
     std::array<ui::VirtualPtr, 4> virtuals {};
 

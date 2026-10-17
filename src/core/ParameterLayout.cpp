@@ -293,6 +293,8 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     bounce::registerParams (reg);
     // ---- p22: the motion recorder - per part: play, record, length, depth, clear --------------------------------
     MotionRecorder::registerParams (reg, Core::numParts);
+    // ---- p25: the performance pads - stutter, tape stop, filter sweep, reverb freeze and their settings -----------
+    PerformancePads::registerParams (reg);
     // ---- p24: the harmony brain - memory, hold, take key, clear, grid layout; per part: follow --------------------
     HarmonyBrain::registerParams (reg, Core::numParts);
 }

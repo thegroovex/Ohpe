@@ -89,6 +89,6 @@ Three matrix sources (the same value in every part):
 
 | # | Source | Range | |
 |---|---|---|---|
-| 27 | **Chord Root** | 0 … 1 | the chord's root, C = 0 … B = 1 |
-| 28 | **Chord Change** | 0 … 1 | 1 at every new chord, fades in about 0.3 s – a filter accent on each change |
-| 29 | **Tension** | 0 … 1 | share of held notes outside the key (smoothed) |
+| 29 | **Chord Root** | 0 … 1 | the chord's root, C = 0 … B = 1 |
+| 30 | **Chord Change** | 0 … 1 | 1 at every new chord, fades in about 0.3 s – a filter accent on each change |
+| 31 | **Tension** | 0 … 1 | share of held notes outside the key (smoothed) |

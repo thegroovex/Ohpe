@@ -59,11 +59,11 @@ std::string name (const harmony::Chord& c)
 }
 } // namespace
 
-TEST_CASE ("p24 harmony: parameters appended after the motion block; matrix sources Chord Root / Chord Change / Tension")
+TEST_CASE ("p24 harmony: parameters appended after the performance pads; matrix sources Chord Root / Chord Change / Tension")
 {
     auto owner = std::make_unique<Core>();
     const auto& reg = owner->params();
-    int expect = reg.indexOf ("p4.motion.clear") + 1;
+    int expect = reg.indexOf ("pads.freeze.mix") + 1; // after the performance pads (p25)
     for (const char* id : { "harmony.memory", "harmony.hold", "harmony.take", "harmony.clear", "harmony.kb.layout", "harmony.p1.follow",
                             "harmony.p2.follow", "harmony.p3.follow", "harmony.p4.follow" })
         CHECK_MESSAGE (reg.indexOf (id) == expect++, id);
@@ -71,9 +71,9 @@ TEST_CASE ("p24 harmony: parameters appended after the motion block; matrix sour
     CHECK (reg.get ("harmony.p1.follow") == 0.0f);
     CHECK (reg.descriptor (reg.indexOf ("harmony.p1.follow")).choices.size() == (size_t) harmony::numFollow);
     CHECK (reg.descriptor (reg.indexOf ("harmony.kb.layout")).choices.size() == (size_t) harmony::numLayouts);
-    CHECK (mod::SrcChordRoot == mod::SrcMotion4 + 1);
-    CHECK (mod::SrcChordRoot == 27);
-    CHECK (mod::SrcTension == 29);
+    CHECK (mod::SrcChordRoot == mod::SrcPadHeld + 1);
+    CHECK (mod::SrcChordRoot == 29);
+    CHECK (mod::SrcTension == 31);
     CHECK (mod::sourceIndexOfKey ("chordroot") == mod::SrcChordRoot);
     CHECK (mod::sourceIndexOfKey ("chordchange") == mod::SrcChordChange);
     CHECK (mod::sourceIndexOfKey ("tension") == mod::SrcTension);

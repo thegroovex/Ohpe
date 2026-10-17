@@ -5,6 +5,7 @@
 #include "ModFxViews.h"
 #include "MorphView.h"
 #include "MotionView.h"
+#include "PadsView.h"
 #include "HarmonyView.h"
 #include "ResoView.h"
 #include "SpaceView.h"
@@ -149,6 +150,7 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
         {
             if (ctx.fxView == modfx::FxViewSpace) return space3d::spaceParams (partIndex); // 1.0: the 3D stage
             if (ctx.fxView == modfx::FxViewBody) return resoview::resoParams (partIndex);  // p19: the resonator body
+            if (ctx.fxView == modfx::FxViewPads) return padsview::padsParams();            // p25: the performance pads
             if (modfx::isRackView (ctx.fxView)) // 0.7: the part's FX rack / the master rack
                 return modfx::rackParams (core, modfx::rackPrefixes (ctx.fxView, partIndex), ctx.fxSlot);
             Ids ids { "fxa.delay.time", "fxa.delay.sync", "fxa.delay.feedback", "fxa.delay.tone",
@@ -259,6 +261,8 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
         t = space3d::spaceTitles();
     else if (m == Mode::Effects && ctx.fxView == modfx::FxViewBody)
         t = resoview::resoTitles(); // p19
+    else if (m == Mode::Effects && ctx.fxView == modfx::FxViewPads)
+        t = padsview::padsTitles(); // p25
     else if (m == Mode::Effects && modfx::isRackView (ctx.fxView))
         t = modfx::rackTitles (core, modfx::rackPrefixes (ctx.fxView, ctx.part), ctx.fxSlot);
     else if (m == Mode::Effects)
@@ -432,6 +436,11 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
                 auto rp = resoview::resoParams (ctx.part); // p19: the part's resonator body
                 rp.erase (std::remove (rp.begin(), rp.end(), std::string()), rp.end());
                 groups.push_back ({ "Resonator", 0, rp });
+            }
+            {
+                auto pp = padsview::padsParams(); // p25: the performance pads
+                pp.erase (std::remove (pp.begin(), pp.end(), std::string()), pp.end());
+                groups.push_back ({ "Pads", 0, pp });
             }
             return groups;
         }
