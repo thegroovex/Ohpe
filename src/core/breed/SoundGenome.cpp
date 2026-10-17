@@ -165,6 +165,7 @@ Schema Schema::forPart (const ParamRegistry& reg, int partIndex)
         {
             g.group = Fixed;
             g.mutable_ = false;
+            g.drawsRandom = g.id != "glide.press"; // p32: appended later - keeps the broods of a seed unchanged
         }
         else if (g.id == "vol" || g.id == "gain" || g.id == "layer.level")
         {
@@ -398,6 +399,7 @@ Genome crossover (const Schema& s, const Genome& a, const Genome& b, const Optio
     for (int i = 0; i < n; ++i)
     {
         const auto& gene = s.gene (i);
+        if (! gene.drawsRandom) { c[(size_t) i] = a[(size_t) i]; continue; } // p32: no random number drawn
         if (i == s.engineGene()) { c[(size_t) i] = (float) childEngine; continue; }
         if (s.isSlotType (i)) continue; // chosen above
         float ti = t[(size_t) gene.group];
@@ -465,6 +467,7 @@ void mutate (const Schema& s, Genome& g, const Genome& a, const Genome& b, float
     for (int i = 0; i < s.size(); ++i)
     {
         const auto& gene = s.gene (i);
+        if (! gene.drawsRandom) continue; // p32: fixed, and no random numbers drawn
         const float u = rng.uniform(), z = rng.gauss(), w = rng.uniform();
         float& v = g[(size_t) i];
         if (s.isSlotType (i))
