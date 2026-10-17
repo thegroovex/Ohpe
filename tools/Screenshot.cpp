@@ -592,6 +592,7 @@ int main (int argc, char* argv[])
                 setPlain (p, pre + "distance", 1.2f + 1.1f * (float) part);
                 setPlain (p, pre + "room", 0.3f);
             }
+            p.syncSpaceModes(); // p41: the 3D switches follow (the plug-in's timer does this)
             e.selectPart (0);
             e.selectEngine (EngineType::Wavetable);
             e.selectMode (ui::Mode::Effects);
@@ -622,6 +623,7 @@ int main (int argc, char* argv[])
             }
             release (p, { 48, 55 });
             for (int part = 1; part <= 3; ++part) setPlain (p, "p" + juce::String (part) + ".space.on", 0.0f);
+            p.syncSpaceModes(); // p41
             {
                 juce::AudioBuffer<float> buffer (p.getTotalNumOutputChannels(), 512);
                 juce::MidiBuffer midi;
@@ -947,6 +949,7 @@ int main (int argc, char* argv[])
                     setPlain (p, "p1.space.distance", 2.0f);
                     e.selectMode (ui::Mode::Effects);
                     e.selectView (3);
+                    p.syncSpaceModes();
                     const char* names[] = { "off", "headphones", "speakers" };
                     for (int m = 0; m < 3; ++m)
                     {
