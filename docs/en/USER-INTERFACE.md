@@ -24,6 +24,9 @@ and EN / DE. Every function can be reached with the mouse and – through MIDI l
 
 Both wheels are host parameters (*Pitch Wheel* `perf.bend`, *Mod Wheel* `perf.mod`): right-click for MIDI
 learn, Shift / Cmd / Ctrl for fine control. They are performance controls, not part of presets.
+The on-screen wheels also **follow your controller**: pitch bend and the mod wheel (CC 1) arriving from the host or a
+MIDI device on the edit part's channel (an omni part: any channel but the drum channel; an MPE part: channel 1) move
+them, as do host automation and MIDI learn of `perf.bend` / `perf.mod` – whichever moved last is shown.
 
 ## Life
 

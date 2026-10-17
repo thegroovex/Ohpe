@@ -430,31 +430,31 @@ Werkzeuge, für Mitwirkende:
 
 ### Arp (21)
 
-Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie geladen werden (gehalten: eine Taste einmal drücken, er spielt weiter; eine neue Taste oder ein neuer Akkord wechselt). Ein Preset ohne Arp in diesem Part schaltet ihn wieder aus. Siehe [PRESETS.md](PRESETS.md#arp-block).
+Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie geladen werden; er spielt, solange Tasten gehalten werden, und stoppt beim Loslassen (*Halten* auf der Sequenzer-Seite lässt ihn weiterlaufen). Ein Preset ohne Arp in diesem Part schaltet ihn wieder aus. Siehe [PRESETS.md](PRESETS.md#arp-block).
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
-| Analog Arp | Analog | Zupfer | Resonante Rechteck-Blips mit Ping-Pong-Delay. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
-| Bell Cascade Arp | FM | Tasten | FM-Glocken, die in Triolen über drei Oktaven herabfallen, mit Echos und hellem Hall. *Arp: Abwärts · 1/16T · 3 Okt. · Halten* |
-| Bubble Arp | Analog | – | Schmaler Puls durch ein resonantes Filter: blubbernd und rund. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
-| Chord Stab Arp | Cluster | Tasten | Rhythmische Akkord-Stabs (Akkord-Modus, Achtel) aus einem breiten Sägezahn-Stapel – sofort House-Groove. *Arp: Akkord · 1/8 · 1 Okt. · Halten* |
-| Digital Pluck Arp | FM | – | Klickender digitaler Pluck für schnelle Sechzehntel. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
-| Dream Tine Arp | Sampler | Tasten | Tine-Piano-Arpeggio in Achteln mit Chorus, Delay und Hall: verträumt und voll. *Arp: Auf/Ab · 1/8 · 2 Okt. · Halten* |
-| FM Arp Bell | FM | Tasten | Kurze gläserne FM-Glocken für Sequenzen. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
-| Figure Eight Arp | Wavetable | 3D | Digitales Arpeggio, das eine liegende Acht um dich zeichnet – links vorn, quer, rechts hinten – über zwei Takte. Gehalten. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
-| Formant Arp | Wavetable | Vokal | Vokal-Blips für sprechende Sequenzen. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
-| Glock Arp | Sampler | Tasten | Aufgenommenes Glockenspiel für funkelnde Arpeggien (CC0). *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
-| Mallet Echo Arp | Sampler | Zupfer | Glockenspiel-Arpeggio mit langen punktierten Echos – funkelnd und breit. *Arp: Aufwärts · 1/8 · 3 Okt. · Halten* |
-| Neuro Arp | Wavetable | Bass | Knurrende FM-Sechzehntel in einer Oktave: eine rollende Neuro-Sequenz aus einer gehaltenen Note. *Arp: Wie gespielt · 1/16 · 1 Okt. · Halten* |
-| Orbit Arp | Zupfen | 3D | Sechzehntel-Zupf-Arpeggio, das einmal pro Takt um deinen Kopf fliegt – nah, hell und schnell. Gehalten: Akkord drücken. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
-| Pizzicato Arp | Zupfen | Zupfer | Kurze gezupfte Saiten für Ostinati. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
-| Random Spark Arp | FM | FX | Zufällige FM-Blips in Zweiunddreißigsteln über vier Oktaven durch ein Ping-Pong-Delay: Funken. *Arp: Zufall · 1/32 · 4 Okt. · Halten* |
-| Ripple Arp | Analog | – | Analoges Sägezahn-Arp in Sechzehnteltriolen mit schwebendem Phaser und Stereo-Echo. *Arp: Aufwärts · 1/16T · 2 Okt. · Halten* |
-| Sparkle Bell | FM | Zupfer | Kurze, helle FM-Glocke für funkelnde Arpeggios über Akkorden. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
-| Spiral Arp | FM | 3D | Glocken-Arpeggio, das sich über vier Takte von Ohrhöhe bis über deinen Kopf hochschraubt und für die nächste Runde wieder fällt. *Arp: Aufwärts · 1/16 · 3 Okt. · Halten* |
-| Table Arp | Wavetable | – | Wavetable-Sequenzklang: die Position springt mit jeder Note. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
-| Trance Gate Arp | Cluster | Leads | Supersaw-Stapel auf einem Sechzehntel-Arp über zwei Oktaven, Ping-Pong-Delay und Hall. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
-| Wide Pluck Arp | Wavetable | Zupfer | Sechsstimmiger Stereo-Pluck, auf/ab über drei Oktaven, punktiertes Ping-Pong-Delay. *Arp: Auf/Ab · 1/16 · 3 Okt. · Halten* |
+| Analog Arp | Analog | Zupfer | Resonante Rechteck-Blips mit Ping-Pong-Delay. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
+| Bell Cascade Arp | FM | Tasten | FM-Glocken, die in Triolen über drei Oktaven herabfallen, mit Echos und hellem Hall. *Arp: Abwärts · 1/16T · 3 Okt.* |
+| Bubble Arp | Analog | – | Schmaler Puls durch ein resonantes Filter: blubbernd und rund. *Arp: Aufwärts · 1/16 · 2 Okt.* |
+| Chord Stab Arp | Cluster | Tasten | Rhythmische Akkord-Stabs (Akkord-Modus, Achtel) aus einem breiten Sägezahn-Stapel – sofort House-Groove. *Arp: Akkord · 1/8 · 1 Okt.* |
+| Digital Pluck Arp | FM | – | Klickender digitaler Pluck für schnelle Sechzehntel. *Arp: Aufwärts · 1/16 · 2 Okt.* |
+| Dream Tine Arp | Sampler | Tasten | Tine-Piano-Arpeggio in Achteln mit Chorus, Delay und Hall: verträumt und voll. *Arp: Auf/Ab · 1/8 · 2 Okt.* |
+| FM Arp Bell | FM | Tasten | Kurze gläserne FM-Glocken für Sequenzen. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
+| Figure Eight Arp | Wavetable | 3D | Digitales Arpeggio, das eine liegende Acht um dich zeichnet – links vorn, quer, rechts hinten – über zwei Takte. Gehalten. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
+| Formant Arp | Wavetable | Vokal | Vokal-Blips für sprechende Sequenzen. *Arp: Aufwärts · 1/16 · 2 Okt.* |
+| Glock Arp | Sampler | Tasten | Aufgenommenes Glockenspiel für funkelnde Arpeggien (CC0). *Arp: Aufwärts · 1/16 · 2 Okt.* |
+| Mallet Echo Arp | Sampler | Zupfer | Glockenspiel-Arpeggio mit langen punktierten Echos – funkelnd und breit. *Arp: Aufwärts · 1/8 · 3 Okt.* |
+| Neuro Arp | Wavetable | Bass | Knurrende FM-Sechzehntel in einer Oktave: eine rollende Neuro-Sequenz aus einer gehaltenen Note. *Arp: Wie gespielt · 1/16 · 1 Okt.* |
+| Orbit Arp | Zupfen | 3D | Sechzehntel-Zupf-Arpeggio, das einmal pro Takt um deinen Kopf fliegt – nah, hell und schnell. Gehalten: Akkord drücken. *Arp: Aufwärts · 1/16 · 2 Okt.* |
+| Pizzicato Arp | Zupfen | Zupfer | Kurze gezupfte Saiten für Ostinati. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
+| Random Spark Arp | FM | FX | Zufällige FM-Blips in Zweiunddreißigsteln über vier Oktaven durch ein Ping-Pong-Delay: Funken. *Arp: Zufall · 1/32 · 4 Okt.* |
+| Ripple Arp | Analog | – | Analoges Sägezahn-Arp in Sechzehnteltriolen mit schwebendem Phaser und Stereo-Echo. *Arp: Aufwärts · 1/16T · 2 Okt.* |
+| Sparkle Bell | FM | Zupfer | Kurze, helle FM-Glocke für funkelnde Arpeggios über Akkorden. *Arp: Aufwärts · 1/16 · 2 Okt.* |
+| Spiral Arp | FM | 3D | Glocken-Arpeggio, das sich über vier Takte von Ohrhöhe bis über deinen Kopf hochschraubt und für die nächste Runde wieder fällt. *Arp: Aufwärts · 1/16 · 3 Okt.* |
+| Table Arp | Wavetable | – | Wavetable-Sequenzklang: die Position springt mit jeder Note. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
+| Trance Gate Arp | Cluster | Leads | Supersaw-Stapel auf einem Sechzehntel-Arp über zwei Oktaven, Ping-Pong-Delay und Hall. *Arp: Aufwärts · 1/16 · 2 Okt.* |
+| Wide Pluck Arp | Wavetable | Zupfer | Sechsstimmiger Stereo-Pluck, auf/ab über drei Oktaven, punktiertes Ping-Pong-Delay. *Arp: Auf/Ab · 1/16 · 3 Okt.* |
 
 ### Texturen (26)
 
@@ -565,16 +565,16 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 |---|---|---|---|
 | Binaural Lead | Wavetable | Leads, MPE | Ausdrucksstarkes Lead vor dir: Slide hebt es über deinen Kopf, Druck holt es bis ans Ohr, eine langsame Drift hält es lebendig. Für MPE-Controller und Kopfhörer. |
 | Doppler Fly-By | Wavetable | FX | Ein Sirenenton rast von links nach rechts und zurück an dir vorbei – die Tonhöhe biegt sich beim Vorbeiflug durch den Doppler-Effekt. |
-| Figure Eight Arp | Wavetable | Arp | Digitales Arpeggio, das eine liegende Acht um dich zeichnet – links vorn, quer, rechts hinten – über zwei Takte. Gehalten. *Arp: Auf/Ab · 1/16 · 2 Okt. · Halten* |
+| Figure Eight Arp | Wavetable | Arp | Digitales Arpeggio, das eine liegende Acht um dich zeichnet – links vorn, quer, rechts hinten – über zwei Takte. Gehalten. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
 | Halo Drift | Cluster | Flächen, MPE | Verstimmter Cluster-Chor, der auf einem langsamen Zufallsorbit um und über dir wandert – nie zweimal am selben Ort. |
 | Neuro Swirl | Wavetable | Bass, MPE | Sprechender Formant-Growl, der einmal pro Takt eine Acht zieht – der Vokal bewegt sich, der Raum bewegt sich, der Sub nicht. |
 | Night Swarm | FM | Texturen, MPE | Gläserne FM-Glocken auf einem schnellen Zufallsorbit in wechselnden Entfernungen: ein Lichterschwarm um deinen Kopf. |
-| Orbit Arp | Zupfen | Arp | Sechzehntel-Zupf-Arpeggio, das einmal pro Takt um deinen Kopf fliegt – nah, hell und schnell. Gehalten: Akkord drücken. *Arp: Aufwärts · 1/16 · 2 Okt. · Halten* |
+| Orbit Arp | Zupfen | Arp | Sechzehntel-Zupf-Arpeggio, das einmal pro Takt um deinen Kopf fliegt – nah, hell und schnell. Gehalten: Akkord drücken. *Arp: Aufwärts · 1/16 · 2 Okt.* |
 | Orbit Atmos | Wavetable | Flächen, MPE | Breite Wavetable-Atmosphäre, die alle acht Takte auf einer leicht geneigten Bahn um deinen Kopf kreist, in einem weichen Raum. Am besten mit Kopfhörern: Slide hebt sie an, Druck holt sie näher. |
 | Orbit Reese | Wavetable | Bass, MPE | Neurofunk-Reese, dessen knurrende Mitten alle zwei Takte um deinen Kopf kreisen, während der Sub unter 160 Hz genau in der Mitte und mono bleibt – clubtaugliche Bewegung. |
 | Overhead Choir | Vocal | Flächen, Vokal, MPE | Hauchiger „Uh“-Chor, der von vorn über deinen Kopf nach hinten und zurück schwingt – ein Pendel durch den Raum. |
 | Pendulum Wobble | Wavetable | Bass, MPE | Halftime-Dubstep-Wobble, der mit dem Takt über deinen Kopf und zurück schwingt: Wobble und Raum atmen zusammen. |
-| Spiral Arp | FM | Arp | Glocken-Arpeggio, das sich über vier Takte von Ohrhöhe bis über deinen Kopf hochschraubt und für die nächste Runde wieder fällt. *Arp: Aufwärts · 1/16 · 3 Okt. · Halten* |
+| Spiral Arp | FM | Arp | Glocken-Arpeggio, das sich über vier Takte von Ohrhöhe bis über deinen Kopf hochschraubt und für die nächste Runde wieder fällt. *Arp: Aufwärts · 1/16 · 3 Okt.* |
 | Spiral Riser | Analog | FX | Taste halten: Rauschen und Sägezähne steigen vier Sekunden lang und schrauben sich dabei von unterhalb der Ohren hoch über deinen Kopf. |
 
 ### Projekte / Demo-Patterns (14)
