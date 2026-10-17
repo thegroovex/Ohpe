@@ -86,6 +86,8 @@ target_sources(ohpe_core_tests PRIVATE PadsTests.cpp)
 target_sources(ohpe_core_tests PRIVATE LivingShapeTests.cpp)
 # p24: the harmony brain
 target_sources(ohpe_core_tests PRIVATE HarmonyTests.cpp)
+# p45: chord naming, key spelling, Scale Lock
+target_sources(ohpe_core_tests PRIVATE KeyChordTests.cpp)
 # p27: the in-app updater (version order, manifest, settings, SHA-256, resumable download, content packs)
 target_sources(ohpe_core_tests PRIVATE UpdateTests.cpp)
 # content packs: shared loader base (pack.json, kind folders, limits, quota, content references)

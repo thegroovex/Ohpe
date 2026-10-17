@@ -123,8 +123,8 @@ Spelling spell (int pc, int root, int scale) noexcept
         static constexpr int degreeOf[12] = { 0, 1, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6 };
         const int tl = (pl + deg) % 7;
         const int rel = pcOf (pc - root);
-        // a major-type key raises its tonic (C#, a secondary dominant's third); a minor-type key lowers the 2nd (Neapolitan)
-        s.letter = (rel == 1 && deg != 5 && deg != 2 && deg != 6) ? tl : (tl + degreeOf[rel]) % 7;
+        // a major-type mode (ionian, lydian, mixolydian) raises its tonic (C#: a secondary dominant's third); a minor-type mode lowers its 2nd
+        s.letter = (rel == 1 && (deg == 0 || deg == 3 || deg == 4)) ? tl : (tl + degreeOf[rel]) % 7;
     }
     s.accidental = accidentalOf (pc, s.letter);
     if (std::abs (s.accidental) > 1 && k < 0) return simple (pc, flatKey (root, scale));

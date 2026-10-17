@@ -55,6 +55,7 @@ Display::Display (OhpeProcessor& p) : proc (p)
     setOpaque (false);
     addAndMakeVisible (tempoHeader); // p39
     addAndMakeVisible (tapHeader);
+    addAndMakeVisible (keyHeader); // p45
 }
 
 Display::~Display() { proc.core().scope().setSource (ScopeTap::None); }
@@ -405,6 +406,11 @@ void Display::placeTempo()
     tempoHeader.setBounds (bpmArea.withLeft (bpmArea.getRight() - w).toNearestInt());
     tapHeader.setBounds (juce::Rectangle<float> (h.getHeight() * 1.5f, h.getHeight()).withPosition (bpmArea.getRight() - w - h.getHeight() * 1.6f, h.getY()).toNearestInt());
     tapHeader.setVisible (! proc.tempoFollowsHost());
+    // p45: the key left of TAP (left of the tempo when TAP is hidden)
+    const float left = (float) (tapHeader.isVisible() ? tapHeader.getX() : tempoHeader.getX());
+    const float kw = KeyReadout::preferredWidth (h.getHeight(), proc.keyScale().fromHost);
+    keyHeader.setBounds (juce::Rectangle<float> (kw, h.getHeight()).withPosition (left - kw - h.getHeight() * 0.1f, h.getY()).toNearestInt());
+    keyHost = proc.keyScale().fromHost;
 }
 
 void Display::paintOverChildren (juce::Graphics& g)
@@ -541,6 +547,9 @@ void Display::tick (float seconds)
     if (tapHeader.isVisible() == proc.tempoFollowsHost()) placeTempo();
     tempoHeader.refresh();
     tapHeader.refresh();
+    if (proc.keyScale().fromHost != keyHost) placeTempo(); // p45
+    keyHeader.refresh();
+    updateChord();
     if (const int ci = proc.core().countInBeatsLeft(); ci != shownCountIn)
     {
         shownCountIn = ci;
@@ -1105,7 +1114,7 @@ void Display::paint (juce::Graphics& g)
     // 1.0: a long title (engine names, German) shortens with an ellipsis before it pushes the part badge and the 3D badge
     // into the tempo on the right: badges = 0.4 + 1.9 (part) + 2.3 (3D) header heights, tempo + page arrows = 7.8
     const float badgesW = h.getHeight() * ((partMode || mode == Mode::Effects ? 2.3f : 0.4f) + 2.3f + 0.2f);
-    const float titleMax = juce::jmax (h.getHeight() * 4.0f, juce::jmin (h.getWidth() * 0.62f, h.getWidth() - h.getHeight() * 7.8f - badgesW));
+    const float titleMax = juce::jmax (h.getHeight() * 4.0f, juce::jmin (h.getWidth() * 0.62f, h.getWidth() - juce::jmax (h.getHeight() * 7.8f, h.getRight() - (float) keyHeader.getX() + h.getHeight() * 0.3f) - badgesW));
     const float titleW = juce::jmin (titleMax, juce::GlyphArrangement::getStringWidth (brandFont (h.getHeight() * 0.62f), title) + 4.0f);
     g.drawText (title, h.withWidth (titleW), juce::Justification::centredLeft, true);
     float badgeX = h.getX() + titleW + h.getHeight() * 0.4f; // 1.0: where the 3D badge goes
@@ -1130,7 +1139,7 @@ void Display::paint (juce::Graphics& g)
     const auto bpmArea = h.withTrimmedRight (h.getHeight() * 4.0f);
     if (mode != Mode::Tape) // p11: the tape's state on every other page
     {
-        const float bpmW = bpmArea.getRight() - (float) (tapHeader.isVisible() ? tapHeader.getX() : tempoHeader.getX()) - h.getHeight() * 0.3f;
+        const float bpmW = bpmArea.getRight() - (float) keyHeader.getX() - h.getHeight() * 0.3f; // p45: the key, TAP, the tempo
         auto room = bpmArea.withTrimmedRight (bpmW + h.getHeight() * 0.5f);
         room = room.withLeft (h.getX() + titleW + h.getHeight() * ((partMode || mode == Mode::Effects) ? 2.4f : 0.5f));
         if (room.getWidth() > 0.0f) paintTapeHeaderStatus (g, room, h.getHeight());
@@ -1854,25 +1863,40 @@ void Display::paintStrip (juce::Graphics& g, juce::Rectangle<float> s)
         }
         return;
     }
-    // default: 16 voice dots + last note (+ soft keys / status, e.g. the loaded sample)
-    auto top = hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s;
+    // default: 16 voice dots, the VOICES legend over the last note (p45: never overlapping), the chord that sounds
+    // under the dots (+ soft keys / status, e.g. the loaded sample)
     const int voices = core.activeVoices();
-    const float d = top.getHeight() * (hasSoftKeys() ? 0.3f : 0.22f);
+    const auto l = voiceStripLayout();
     for (int i = 0; i < 16; ++i)
     {
-        auto dot = juce::Rectangle<float> (d, d).withCentre ({ top.getX() + d + (float) i * d * 1.7f, top.getCentreY() });
+        auto dot = juce::Rectangle<float> (l.dot, l.dot).withPosition (l.dots.getX() + (float) i * l.step, l.dots.getY());
         g.setColour (i < voices ? colour::rose : colour::displayGrid.brighter (0.2f));
         g.fillEllipse (dot);
     }
     g.setColour (colour::displayDim);
-    g.setFont (labelFont (top.getHeight() * (hasSoftKeys() ? 0.28f : 0.2f)));
-    g.drawText (i18n::upper (tr ("Voices")), top.withTrimmedLeft (d * 29.0f), juce::Justification::centredLeft);
+    g.setFont (labelFont (l.legendFont));
+    g.drawText (i18n::upper (tr ("Voices")), l.legend, juce::Justification::centredRight, false);
     const int note = core.lastNote();
     if (note >= 0)
     {
+        const auto k = proc.keyScale();
         g.setColour (colour::displayText);
-        g.setFont (brandFont (top.getHeight() * 0.5f));
-        g.drawText (juce::MidiMessage::getMidiNoteName (note, true, true, 4), top, juce::Justification::centredRight);
+        g.setFont (brandFont (l.noteFont));
+        g.drawText (juce::String (keys::noteName (note, k.root, k.scale, i18n::current() == i18n::Language::German)), l.note,
+                    juce::Justification::centredRight, false);
+    }
+    if (chordText.isNotEmpty()) // the chord: bright while it sounds, dim after (the last one stays)
+    {
+        g.setFont (brandFont (l.chordFont));
+        g.setColour (chordSounding ? colour::ultraviolet.brighter (0.45f) : colour::displayDim);
+        const float cw = juce::jmin (l.chord.getWidth(), juce::GlyphArrangement::getStringWidth (g.getCurrentFont(), chordText) + 2.0f);
+        g.drawText (chordText, l.chord.withWidth (cw), juce::Justification::centredLeft, true);
+        if (chordDetail.isNotEmpty() && l.chord.getWidth() - cw > l.chordFont * 3.0f)
+        {
+            g.setFont (labelFont (l.chordFont * 0.62f));
+            g.setColour (colour::displayDim);
+            g.drawText (chordDetail, l.chord.withTrimmedLeft (cw + l.chordFont * 0.5f), juce::Justification::centredLeft, true);
+        }
     }
     if (hasSoftKeys())
     {
@@ -1881,5 +1905,30 @@ void Display::paintStrip (juce::Graphics& g, juce::Rectangle<float> s)
     }
     else if (flashTime > 0.0f)
         paintHint (g, s.withTop (s.getBottom() - s.getHeight() * 0.2f), {});
+}
+
+// ---------------------------------------------------------------- p45: voice strip, chord
+VoiceStripLayout Display::voiceStripLayout() const
+{
+    const auto s = stripArea();
+    const auto top = hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s;
+    return layoutVoiceStrip (top, hasSoftKeys(), i18n::upper (tr ("Voices")));
+}
+
+void Display::updateChord()
+{
+    // the notes that sound in all four parts (with the notes the harmony makes); the last chord stays, dimmed
+    const auto notes = proc.core().soundingNotes();
+    const auto c = chords::detect (notes);
+    const bool de = i18n::current() == i18n::Language::German;
+    if (c.valid())
+    {
+        const auto k = proc.keyScale();
+        chordText = juce::String (chords::symbol (c, k.root, k.scale, de));
+        chordDetail = i18n::upper (juce::String::fromUTF8 (chords::inversionName (c, de).c_str()));
+        chordSounding = true;
+    }
+    else
+        chordSounding = false;
 }
 } // namespace ohpe::ui

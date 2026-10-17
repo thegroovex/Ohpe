@@ -464,6 +464,20 @@ void OhpeProcessor::takeHarmonyKey()
     setPlainFromUi (Core::Ids::keyScale, (float) h.keyScale());
 }
 
+// ---------------------------------------------------------------- p45: key, Scale Lock
+void OhpeProcessor::setKeyFromUi (int root, int scale)
+{
+    if (ohpeCore.keyScale().fromHost) return; // the host gives the key: read-only
+    setPlainFromUi (Core::Ids::keyRoot, (float) (((root % 12) + 12) % 12));
+    setPlainFromUi (Core::Ids::keyScale, (float) juce::jlimit (0, scales::numScales - 1, scale));
+}
+
+void OhpeProcessor::setScaleLockFromUi (bool on, int mode)
+{
+    setPlainFromUi (Core::Ids::keyLock, on ? 1.0f : 0.0f);
+    setPlainFromUi (Core::Ids::keyLockMode, (float) juce::jlimit (0, keys::numLockModes - 1, mode));
+}
+
 // ---------------------------------------------------------------- p11: tape transport
 void OhpeProcessor::setPlainFromUi (const char* id, float plain)
 {

@@ -28,6 +28,7 @@ set(OHPE_PLUGIN_SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/Widgets.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Display.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/TempoControl.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/KeyControl.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/OhpeLookAndFeel.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/PluginEditor.cpp
     ${CMAKE_SOURCE_DIR}/src/standalone/AudioSettingsPage.cpp)

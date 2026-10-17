@@ -5,6 +5,7 @@
 #include "LivingView.h"
 #include "Pages.h"
 #include "SpaceView.h"
+#include "KeyControl.h"
 #include "TempoControl.h"
 #include "Visuals.h"
 #include "Widgets.h"
@@ -118,6 +119,10 @@ public:
     /** p39: the tempo on the header (editable) and the TAP key next to it; refreshed by the editor's timer. */
     TempoReadout& headerTempo() noexcept { return tempoHeader; }
     TapKey& headerTap() noexcept { return tapHeader; }
+    KeyReadout& headerKey() noexcept { return keyHeader; } ///< p45: key, scale, Scale Lock on the header
+    /** p45: the voice strip of the default pages (tests / screenshots); the chord shown under the dots. */
+    VoiceStripLayout voiceStripLayout() const;
+    juce::String shownChord() const { return chordText; }
     void mouseMove (const juce::MouseEvent& e) override;
     void mouseExit (const juce::MouseEvent& e) override;
     void mouseDown (const juce::MouseEvent& e) override;
@@ -229,6 +234,10 @@ private:
     // p39: tempo on the header, TAP
     TempoReadout tempoHeader { proc, TempoReadout::Style::Header };
     TapKey tapHeader { proc };
+    KeyReadout keyHeader { proc }; // p45
+    juce::String chordText, chordDetail; ///< p45: the chord that sounds (or sounded last) and its position
+    bool chordSounding = false, keyHost = false;
+    void updateChord();
     void placeTempo();
     int shownCountIn = 0;
 };
