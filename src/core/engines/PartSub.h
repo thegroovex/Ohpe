@@ -18,7 +18,8 @@ namespace ohpe
       pitch bend, matrix pitch, pitch envelope, life drift) and the sub phase is that phase divided by 2 or 4 (the
       master's wraps are counted), reset at every note start. So the sub never beats against the voice.
     - Band-limited: Sine; Round = a triangle bent through a quarter sine (smooth at the peaks, harmonics fall at
-      18 dB / octave); Square with polyBLEP edges.
+      18 dB / octave); Square = a soft square, tanh of a sine whose steepness follows the pitch (alias products stay
+      below -70 dB up to a 4 kHz sub).
     - Mono-safe: one signal, the same on both channels (never panned, no stereo width).
     - Level-safe: the level ramps sample by sample (no zipper steps), the shapes are normalised to about the same
       loudness, and the sub rides on the voice's amp envelope and velocity.
@@ -64,6 +65,11 @@ public:
         if (count >= div) count %= div;
         shape = std::clamp (shapeIndex, 0, (int) numShapes - 1);
         inc = std::clamp (dsp::midiToHz (pitch) / sampleRate, 0.0f, 0.49f);
+        if (shape == Square)
+        {
+            sqK = std::clamp (0.08f * (float) div / std::max (1.0e-6f, inc), 0.3f, 6.0f); // 0.08 / (sub phase increment)
+            sqNorm = 1.0f / std::tanh (sqK);
+        }
         if (level <= 0.0f && target <= 0.0f)
         {
             running = false;
@@ -86,26 +92,22 @@ public:
         }
         const float fdiv = (float) div;
         const float ph = ((float) count + master) / fdiv; // 0..1
-        const float dt = inc / fdiv;
         float y;
         switch (shape)
         {
             case Round:
             {
-                const float tri = 1.0f - 4.0f * std::abs (ph - 0.5f); // -1 at 0, +1 at 0.5 ... start at the trough
-                y = std::sin (0.5f * dsp::twoPi * 0.5f * tri);       // quarter-sine bend: smooth peaks
+                float q = ph + 0.25f; // a quarter ahead: starts at 0 and rises, like the sine
+                if (q >= 1.0f) q -= 1.0f;
+                const float tri = 1.0f - 4.0f * std::abs (q - 0.5f);
+                y = std::sin (0.25f * dsp::twoPi * tri); // quarter-sine bend: smooth peaks
                 break;
             }
             case Square:
-            {
-                float sq = ph < 0.5f ? 1.0f : -1.0f;
-                sq += dsp::polyBlep (ph, dt);
-                float t2 = ph - 0.5f;
-                if (t2 < 0.0f) t2 += 1.0f;
-                sq -= dsp::polyBlep (t2, dt);
-                y = 0.72f * sq; // about the loudness of the sine
+                // soft square: tanh (k * sine), k shrinks as the pitch rises so every harmonic that matters stays
+                // below Nyquist (k = 6 up to ~600 Hz at 48 kHz: hollow and square; towards a sine above)
+                y = 0.75f * std::tanh (sqK * std::sin (dsp::twoPi * ph)) * sqNorm;
                 break;
-            }
             default: y = std::sin (dsp::twoPi * ph); break;
         }
         return y * level;
@@ -120,6 +122,7 @@ private:
     float master = 0.0f, inc = 0.0f;
     int count = 0, div = 2, shape = Sine;
     float level = 0.0f, target = 0.0f, step = 0.0f;
+    float sqK = 6.0f, sqNorm = 1.0f;
     bool running = false;
 };
 } // namespace ohpe

@@ -84,3 +84,5 @@ target_sources(ohpe_core_tests PRIVATE PadsTests.cpp)
 target_sources(ohpe_core_tests PRIVATE LivingShapeTests.cpp)
 # p24: the harmony brain
 target_sources(ohpe_core_tests PRIVATE HarmonyTests.cpp)
+# p31: the SUB layer per part
+target_sources(ohpe_core_tests PRIVATE SubTests.cpp)
