@@ -601,6 +601,39 @@ int main (int argc, char* argv[])
             e.selectView (0);
         }
 
+        // p24: the harmony brain - a progression on part 1 (Am F C G, then Am7 held), part 2 following the chord, the Harmony
+        //      view and the isomorphic grid keyboard in place of the piano keys
+        {
+            e.selectPart (0);
+            e.selectEngine (EngineType::Analog);
+            e.selectMode (ui::Mode::Lfo);
+            e.selectView (4); // LFO | Mod | Morph | Motion | Harmony
+            setPlain (p, "p2.harmony.follow", 2.0f);
+            const std::vector<std::vector<int>> prog = { { 57, 60, 64 }, { 53, 57, 60 }, { 48, 52, 55, 60 }, { 55, 59, 62 }, { 50, 53, 57 },
+                                                         { 52, 56, 59 }, { 53, 57, 60 }, { 55, 59, 62, 65 } };
+            for (const auto& c : prog)
+            {
+                juce::AudioBuffer<float> buffer (p.getTotalNumOutputChannels(), 512);
+                juce::MidiBuffer on;
+                for (int n : c) on.addEvent (juce::MidiMessage::noteOn (1, n, (juce::uint8) 100), 0);
+                p.processBlock (buffer, on);
+                for (int k = 0; k < 40; ++k) { juce::MidiBuffer none; p.processBlock (buffer, none); }
+                juce::MidiBuffer off;
+                for (int n : c) off.addEvent (juce::MidiMessage::noteOff (1, n), 0);
+                p.processBlock (buffer, off);
+            }
+            e.showGridKeyboard (true);
+            playAnimated (p, e, 12, { 57, 60, 64, 67 });
+            playAnimated (p, e, 20);
+            save (e, dir.getChildFile ("ohpe-harmony" + suffix + ".png"));
+            release (p, { 57, 60, 64, 67 });
+            e.showGridKeyboard (false);
+            setPlain (p, "p2.harmony.follow", 0.0f);
+            p.core().harmony().requestClear();
+            run (p, 8);
+            e.selectView (0);
+        }
+
         // p20: a user wavetable from a sound whose harmonics evolve (analysed like an imported file), the frame stack
         {
             const double sr = 48000.0, hz = 110.0;

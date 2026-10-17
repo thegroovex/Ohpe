@@ -7,6 +7,7 @@
 #include "ResoView.h"
 #include "MorphView.h"
 #include "MotionView.h"
+#include "HarmonyView.h"
 
 #include "Palette.h"
 #include "plugin/Localisation.h"
@@ -593,6 +594,7 @@ bool Display::showsSpaceView() const noexcept { return mode == Mode::Effects && 
 bool Display::showsBodyView() const noexcept { return mode == Mode::Effects && ctx.fxView == modfx::FxViewBody; }
 bool Display::showsMorphView() const noexcept { return mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMorph; }
 bool Display::showsMotionView() const noexcept { return mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMotion; }
+bool Display::showsHarmonyView() const noexcept { return mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewHarmony; }
 
 juce::Rectangle<float> Display::morphPadArea() const { return morphview::padArea (visualArea()); }
 juce::Rectangle<float> Display::morphCornerArea (int corner) const { return morphview::cornerChip (morphPadArea(), corner); }
@@ -853,7 +855,7 @@ void Display::mouseDown (const juce::MouseEvent& e)
     }
 
     // 0.7: the visual area - click cycles character / scope / terrain, right-click opens the view menu
-    if (! showsModView() && ! showsRackView() && ! showsSpaceView() && ! showsBodyView() && ! showsMorphView() && ! showsMotionView() && mode != Mode::Tape && characterArea().contains (p)
+    if (! showsModView() && ! showsRackView() && ! showsSpaceView() && ! showsBodyView() && ! showsMorphView() && ! showsMotionView() && ! showsHarmonyView() && mode != Mode::Tape && characterArea().contains (p)
         && ! (mode == Mode::Sequencer && seqTab (0).getBottom() > p.y))
     {
         if (e.mods.isPopupMenu()) { showVisualMenu(); return; }
@@ -1052,6 +1054,13 @@ void Display::paint (juce::Graphics& g)
         const int mi = core.params().indexOf (pre + "model");
         g.drawText (i18n::upper (tr ("Resonator")) + (mi >= 0 ? "  " + i18n::upper (formatValue (core.params().descriptor (mi), core.params().get (mi))) : juce::String()),
                     va.withHeight (va.getHeight() * 0.08f), juce::Justification::topLeft, true);
+        paintRows (g);
+        paintStrip (g, stripArea());
+        return;
+    }
+    if (showsHarmonyView()) // p24: the harmony brain
+    {
+        harmonyview::paint (g, visualArea(), core, juce::jlimit (0, Core::numParts - 1, ctx.part), time);
         paintRows (g);
         paintStrip (g, stripArea());
         return;
@@ -1488,6 +1497,17 @@ void Display::paintStrip (juce::Graphics& g, juce::Rectangle<float> s)
     if (showsModView()) // 0.7: trace of the selected routing
     {
         modfx::paintModTrace (g, hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s, core, ctx.part, ctx.modRouting, modHistory);
+        if (hasSoftKeys()) paintSoftKeys (g);
+        return;
+    }
+    if (showsHarmonyView()) // p24: what the brain does right now
+    {
+        const auto area = hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s;
+        auto line = area.withHeight (area.getHeight() * 0.4f).reduced (area.getHeight() * 0.05f, 0).translated (0, area.getHeight() * 0.08f);
+        g.setFont (labelFont (line.getHeight() * 0.55f));
+        g.setColour (colour::displayText);
+        g.drawText (i18n::upper (tr ("Harmony")) + "   " + harmonyview::statusLine (core, juce::jlimit (0, Core::numParts - 1, ctx.part)), line,
+                    juce::Justification::centredLeft, true);
         if (hasSoftKeys()) paintSoftKeys (g);
         return;
     }

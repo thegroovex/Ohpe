@@ -144,6 +144,7 @@ private:
     bool showsBodyView() const noexcept;  ///< p19: Effects mode, view Body (the resonator)
     bool showsMorphView() const noexcept; ///< p16: LFO mode, view Morph
     bool showsMotionView() const noexcept; ///< p22: LFO mode, view Motion
+    bool showsHarmonyView() const noexcept; ///< p24: LFO mode, view Harmony
     void setMorphPosition (juce::Point<float> p); ///< p16: pad drag
     juce::Rectangle<float> visualArea() const; ///< 0.7: left of the rows (routing list / FX chain)
     FxRack& shownRack() const;

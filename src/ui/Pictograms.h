@@ -24,7 +24,9 @@ enum class Picto
     // p11: tape transport
     Stop, Record, ToStart, Loop,
     // p14: header round keys
-    Random, Save
+    Random, Save,
+    // p24: the isomorphic grid keyboard
+    Grid
 };
 
 struct PictoState
