@@ -75,3 +75,5 @@ target_sources(ohpe_core_tests PRIVATE UserTableTests.cpp)
 target_sources(ohpe_core_tests PRIVATE BreedTests.cpp)
 # p23: bounce to engine
 target_sources(ohpe_core_tests PRIVATE BounceTests.cpp)
+# p22: the motion recorder
+target_sources(ohpe_core_tests PRIVATE MotionTests.cpp)

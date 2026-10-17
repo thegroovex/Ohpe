@@ -6,6 +6,7 @@
 
 #include "ModFxViews.h"
 #include "MorphView.h"
+#include "MotionView.h"
 
 #include "Palette.h"
 #include "plugin/Localisation.h"
@@ -36,7 +37,8 @@ enum SoftKeyId
     skSlotLeft = 60, skSlotRight, skSlotClear,       // 0.7: FX rack
     skCornerA = 70, skCornerB, skCornerC, skCornerD, // p16: morph corners
     skTableImport = 80, skTableUser, skTableClear,    // p20: user wavetable / formants
-    skBounce = 90                                     // p23: bounce to engine (tape page: at once; Grain / Sampler: menu)
+    skBounce = 90,                                    // p23: bounce to engine (tape page: at once; Grain / Sampler: menu)
+    skMotionRec = 100, skMotionPlay, skMotionClear    // p22: motion recorder
 };
 
 bool isAudioFile (const juce::String& path)
@@ -619,6 +621,7 @@ int& OhpeEditor::currentPage()
     if (mode == Mode::Sequencer) return seqPageOf[(size_t) ctx.seqView];
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMod) return modPage;       // 0.7
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMorph) return morphPage;   // p16
+    if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMotion) return motionPage; // p22
     if (mode == Mode::Effects && ctx.fxView != modfx::FxViewSends) return rackPage;  // 0.7 (1.0: also the Space view)
     return pageOf[(size_t) mode];
 }
@@ -1288,6 +1291,14 @@ void OhpeEditor::refreshSoftKeys()
                                                  + morphview::cornerTitle (core, ctx.part, c),
                               true, false });
     }
+    else if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMotion) // p22: record, play, clear the part's lanes
+    {
+        const auto pre = "p" + juce::String (ctx.part + 1) + ".motion.";
+        auto isOn = [&] (const char* k) { const auto* prm = proc.parameter (pre + k); return prm != nullptr && prm->getValue() > 0.5f; };
+        keys = { { skMotionRec, tr ("Rec"), true, isOn ("rec") },
+                 { skMotionPlay, tr ("Play"), true, isOn ("on") },
+                 { skMotionClear, tr ("Clear"), core.motion().anyLane (ctx.part) } };
+    }
     else if (mode == Mode::Effects && modfx::isRackView (ctx.fxView)) // 0.7
     {
         const auto prefixes = modfx::rackPrefixes (ctx.fxView, ctx.part);
@@ -1349,6 +1360,15 @@ void OhpeEditor::onSoftKey (int id)
         case skCornerB:
         case skCornerC:
         case skCornerD: showCornerMenu (id - skCornerA); return; // p16
+        case skMotionRec: // p22
+        case skMotionPlay:
+        {
+            const auto prmId = "p" + juce::String (ctx.part + 1) + (id == skMotionRec ? ".motion.rec" : ".motion.on");
+            const auto* prm = proc.parameter (prmId); // the host value (the registry follows at the next block)
+            setParamPlain (prmId, prm != nullptr && prm->getValue() > 0.5f ? 0.0f : 1.0f);
+            break;
+        }
+        case skMotionClear: core.motion().clearPart (ctx.part); break; // p22
         case skTableImport: showTableImportMenu(); return; // p20
         case skBounce: // p23: the tape page bounces at once (the bounce settings), the Grain / Sampler page offers the sources
             if (mode == Mode::Tape)
@@ -1792,6 +1812,14 @@ void OhpeEditor::timerCallback()
         const auto r = "p" + std::to_string (ctx.part + 1) + ".mod.s" + std::to_string (ctx.modRouting + 1) + ".";
         const int sig = (int) std::lround (core.params().get (r + "src")) * 1000 + (int) std::lround (core.params().get (r + "dst"));
         if (sig != lastModSignature) { lastModSignature = sig; refreshSoftKeys(); }
+    }
+    if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMotion) // p22: key states and the status line follow the recorder
+    {
+        const auto pre = "p" + std::to_string (ctx.part + 1) + ".motion.";
+        int sig = (core.params().get (pre + "rec") >= 0.5f ? 1 : 0) + (core.params().get (pre + "on") >= 0.5f ? 2 : 0) + (core.transportPlaying() ? 4 : 0)
+                + 8 * (int) std::lround (core.params().get (pre + "len"));
+        for (int l = 0; l < MotionRecorder::numLanes; ++l) sig = sig * 3 + (core.motion().laneTarget (ctx.part, l) >= 0 ? 1 : 0);
+        if (sig != lastMotionSignature) { lastMotionSignature = sig; refreshSoftKeys(); }
     }
     if (core.effectsWaiting()) core.prepareEffects(); // 0.7: a rack slot got a new type (UI, host, preset)
     // 0.7: modulation rings on the encoders

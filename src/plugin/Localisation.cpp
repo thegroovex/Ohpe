@@ -514,6 +514,15 @@ const std::map<juce::String, juce::String>& table()
         { "this session only", "nur für diese Sitzung" },
         { "bars", "Takte" },
         { "Input Length", "Eingangslänge" },
+        // p22: the motion recorder
+        { "Empty", "Leer" },
+        { "steps", "Schritte" },
+        { "lanes", "Spuren" },
+        { "Armed - press Play, then turn a knob", "Bereit – Start drücken, dann an einem Regler drehen" },
+        { "Recording - turn a knob of this part", "Aufnahme – an einem Regler dieses Parts drehen" },
+        { "Recording - all lanes taken, overdub them", "Aufnahme – alle Spuren belegt, sie werden überschrieben" },
+        { "Press Rec, play, and turn knobs - each takes a lane", "Rec drücken, abspielen und an Reglern drehen – jeder bekommt eine Spur" },
+        { "Off - Play loops the lanes", "Aus – Start spielt die Spuren als Schleife" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;

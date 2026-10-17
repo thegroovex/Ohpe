@@ -327,7 +327,7 @@ note (page 3). **Load** puts an audio file on the selected pad (or drag a file o
 ![Mod view](../images/ohpe-mod-view.png)
 
 In **LFO** mode the tabs on the display switch between **LFO** (LFO 1, as before), **Mod**, the
-[modulation matrix](MODULATION.md) of the edit part, and **Morph** (the [morph pad](#morph-view-p16)). The Mod view lists all **16 routings** in two
+[modulation matrix](MODULATION.md) of the edit part, **Morph** (the [morph pad](#morph-view-p16)) and **Motion** (the [motion recorder](#motion-view-p22)). The Mod view lists all **16 routings** in two
 columns: source → target, a bar for the amount (to the right = positive, to the left = negative) and
 the routing's live value. Targets on an engine or an effect show the real parameter name ("Cutoff",
 "FX2 Hyper Detune"), so you see what moves without counting slots. Below the list a **trace** draws
@@ -423,6 +423,24 @@ The strip below says what the pad does right now (one sound, or how many sounds 
 | Encoders, page *Control* | X / Y Control (Off, Pressure, Slide, Mod Wheel), MPE, expression smoothing |
 
 Assigning a corner switches the morph on. An empty corner stands for the part's own sound.
+
+## Motion view (p22)
+
+![The Motion view](../images/ohpe-motion-view.png)
+
+The fourth tab of **LFO** mode, **Motion**, shows the edit part's [motion recorder](MOTION.md): four lane rows with
+the recorded knob movements in the encoder colours over a sixteenth grid of the loop, and the playhead – green while
+playing, red while recording. A lane being touched has a breathing red rim; the strip below says what the recorder
+does right now.
+
+| Action | Result |
+|---|---|
+| **Rec** (soft key) | record: with the transport running, the knobs of the part you touch take lanes (up to four) |
+| **Play** (soft key) | loop the lanes with the transport |
+| **Clear** (soft key) | clear the part's lanes |
+| Encoders, page *Motion* | Play, Rec, Length (1 – 64 sixteenths, polymetric), Depth |
+
+The lanes are also the matrix sources **Motion 1 … 4**.
 
 ## Keys and shortcuts
 

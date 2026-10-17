@@ -23,6 +23,7 @@ public:
     {
         values.assign ((size_t) reg.size(), 0.0f);
         locks.assign ((size_t) reg.size(), NAN);
+        motion.assign ((size_t) reg.size(), NAN);
     }
 
     void pull (const ParamRegistry& reg) noexcept
@@ -31,7 +32,7 @@ public:
         for (int i = 0; i < n; ++i)
         {
             const float l = locks[(size_t) i];
-            values[(size_t) i] = std::isnan (l) ? reg.get (i) : l;
+            values[(size_t) i] = ! std::isnan (l) ? l : ! std::isnan (motion[(size_t) i]) ? motion[(size_t) i] : reg.get (i);
         }
     }
 
@@ -53,17 +54,36 @@ public:
     {
         if (index >= 0 && index < (int) values.size()) values[(size_t) index] = plain;
     }
-    /** p16: the value a parameter has before modulation and morphing: its sequencer lock, else the registry value. */
+    /** p16: the value a parameter has before modulation and morphing: its sequencer lock, else (p22) its motion lane,
+        else the registry value. */
     float base (const ParamRegistry& reg, int index) const noexcept
     {
         if (index < 0 || index >= (int) values.size()) return 0.0f;
         const float l = locks[(size_t) index];
-        return std::isnan (l) ? reg.get (index) : l;
+        if (! std::isnan (l)) return l;
+        const float m = motion[(size_t) index];
+        return std::isnan (m) ? reg.get (index) : m;
     }
+    /** p22: the motion recorder lays a recorded value over a parameter (below locks, above the registry value) until
+        clearMotion(); kept by every pull(). Takes effect at once unless the parameter is locked. Audio thread. */
+    void setMotion (int index, float plain) noexcept
+    {
+        if (index < 0 || index >= (int) motion.size()) return;
+        motion[(size_t) index] = plain;
+        if (std::isnan (locks[(size_t) index])) values[(size_t) index] = plain;
+    }
+    /** p22: removes the overlay; `own` is the parameter's registry value (taken at once unless locked). */
+    void clearMotion (int index, float own) noexcept
+    {
+        if (index < 0 || index >= (int) motion.size()) return;
+        motion[(size_t) index] = NAN;
+        if (std::isnan (locks[(size_t) index])) values[(size_t) index] = own;
+    }
+    bool hasMotion (int index) const noexcept { return index >= 0 && index < (int) motion.size() && ! std::isnan (motion[(size_t) index]); }
     bool isLocked (int index) const noexcept { return index >= 0 && index < (int) locks.size() && ! std::isnan (locks[(size_t) index]); }
     int size() const noexcept { return (int) values.size(); }
 
 private:
-    std::vector<float> values, locks;
+    std::vector<float> values, locks, motion;
 };
 } // namespace ohpe

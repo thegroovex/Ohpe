@@ -47,6 +47,7 @@ add up.
 | 16 – 19 | Macro 1 – 4 | 0 … 1 | – | the parameters `pN.macro1` … `pN.macro4`: knobs to automate or map |
 | 20 | Seq Lane | 0 … 1 | – | the parameter `pN.seqlane`, made for step locks: each step sets the lane |
 | 21, 22 | Morph X, Morph Y | 0 … 1 | – | p16: the glided position of the part's [morph pad](MORPH.md) |
+| 23 – 26 | Motion 1 … Motion 4 | 0 … 1 | – | p22: lane 1 … 4 of the part's [motion recorder](MOTION.md) at the play position (0 where nothing is recorded or the transport stops) |
 
 **Per voice** sources have their own value in every voice: with a chord, every note gets its own
 envelope, velocity and random value.

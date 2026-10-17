@@ -291,5 +291,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     // ---- p23: bounce to engine - source, target engine, endless loop, input length, the trigger (own function:
     //      a big stack frame here overflowed the Windows test threads' stack with a Core on it) ----------------
     bounce::registerParams (reg);
+    // ---- p22: the motion recorder - per part: play, record, length, depth, clear --------------------------------
+    MotionRecorder::registerParams (reg, Core::numParts);
 }
 } // namespace ohpe

@@ -16,6 +16,7 @@
 #include "model/SpscQueue.h"
 #include "model/StereoFifo.h"
 #include "morph/MorphSpace.h"
+#include "motion/MotionRecorder.h"
 #include "seq/Arpeggiator.h"
 #include "seq/EuclidSequencer.h"
 #include "seq/OrbitSequencer.h"
@@ -73,6 +74,11 @@ public:
     /** p16: the morph space (XY pad per part, four corner sounds; corners and plans on the message thread). */
     MorphSpace& morph() noexcept { return morphSpace; }
     const MorphSpace& morph() const noexcept { return morphSpace; }
+    /** p22: the motion recorder (knob movements per part as looping lanes; lanes are atomics, any thread). */
+    MotionRecorder& motion() noexcept { return motionRec; }
+    /** p22, tests: the values the last block played with (after locks, motion lanes; the matrix may have moved some). */
+    float blockValue (int registryIndex) const noexcept { return snapshot[registryIndex]; }
+    const MotionRecorder& motion() const noexcept { return motionRec; }
     /** p16, message thread (timer): rebuilds morph plans when a part's own sound changed under an empty corner. */
     bool updateMorph() { return morphSpace.update(); }
     /** 0.7: scope tap for the display (a part after its FX rack, or the main output). */
@@ -210,6 +216,7 @@ public:
         static constexpr const char* perfBend = "perf.bend"; ///< -1..+1, springs back to 0 on the screen
         static constexpr const char* perfMod = "perf.mod";   ///< 0..1
         // p16: the morph space - per part "pN.morph.on / x / y / glide / xsrc / ysrc" (MorphSpace::registerParams)
+        // p22: the motion recorder - per part "pN.motion.on / rec / len / amt / clear" (MotionRecorder::registerParams)
     };
 
 private:
@@ -250,6 +257,7 @@ private:
     ParamSnapshot snapshot;
     std::array<std::unique_ptr<Part>, numParts> parts;
     MorphSpace morphSpace; ///< p16 (after the parts: its lanes follow them)
+    MotionRecorder motionRec; ///< p22
     Mixer mix;
     drum::DrumKit drums;
     StepSequencer stepSeq;

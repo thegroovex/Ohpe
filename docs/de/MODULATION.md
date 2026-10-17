@@ -48,6 +48,7 @@ Verbindungen auf dasselbe Ziel addieren sich.
 | 16 – 19 | Makro 1 – 4 | 0 … 1 | – | die Parameter `pN.macro1` … `pN.macro4`: Regler zum Automatisieren oder Zuweisen |
 | 20 | Seq-Spur | 0 … 1 | – | der Parameter `pN.seqlane`, gedacht für Step-Locks: jeder Schritt setzt die Spur |
 | 21, 22 | Morph X, Morph Y | 0 … 1 | – | p16: die geglättete Position des [Morph-Pads](MORPH-RAUM.md) des Parts |
+| 23 – 26 | Bewegung 1 … Bewegung 4 | 0 … 1 | – | p22: Spur 1 … 4 des [Bewegungs-Recorders](BEWEGUNG.md) des Parts an der Abspielposition (0, wo nichts aufgenommen ist oder der Transport steht) |
 
 Quellen **pro Stimme** haben in jeder Stimme ihren eigenen Wert: in einem Akkord bekommt jeder Ton
 seine eigene Hüllkurve, seinen Anschlag und Zufallswert.

@@ -34,6 +34,10 @@ const std::vector<SourceInfo>& sourceTable()
         { "seqlane", "Seq Lane", "Seq-Spur", false, S::Part },
         { "morphx", "Morph X", "Morph X", false, S::Part }, // p16: the morph pad
         { "morphy", "Morph Y", "Morph Y", false, S::Part },
+        { "motion1", "Motion 1", "Bewegung 1", false, S::Part }, // p22: the motion recorder's lanes
+        { "motion2", "Motion 2", "Bewegung 2", false, S::Part },
+        { "motion3", "Motion 3", "Bewegung 3", false, S::Part },
+        { "motion4", "Motion 4", "Bewegung 4", false, S::Part },
     };
     return t;
 }
