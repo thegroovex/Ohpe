@@ -56,7 +56,7 @@ TEST_CASE ("first start: a new instance loads the first factory preset on every 
     // first of the built-in bank in the library's default order (by name)
     for (const auto& other : pm.entries())
         if (other.uid.rfind ("factory:", 0) == 0)
-            CHECK_MESSAGE (name (other).toLowerCase().compare (name (e).toLowerCase()) >= 0, name (other) + " sorts before " + name (e));
+            CHECK_MESSAGE (name (other).toLowerCase().compare (name (e).toLowerCase()) >= 0, (name (other) + " sorts before " + name (e)).toStdString());
 
     // the display names it - never "Init"
     CHECK (pm.current() == first);
@@ -80,7 +80,7 @@ TEST_CASE ("first start: a new instance loads the first factory preset on every 
         else
             for (int part = 0; part < Core::numParts; ++part) REQUIRE (manual.presets().load (first, part));
         juce::String diff;
-        CHECK_MESSAGE (sameRegistry (fresh, manual, diff), "differs from loading it by hand: " + diff);
+        CHECK_MESSAGE (sameRegistry (fresh, manual, diff), ("differs from loading it by hand: " + diff).toStdString());
     }
     // a part preset: all four parts carry the same sound, each on its own MIDI channel
     if (e.meta.kind == preset::Kind::Part)
@@ -174,7 +174,7 @@ TEST_CASE ("first start: a restored session / host state wins over the start sou
         StartSound off (false);
         OhpeProcessor plain;
         juce::String diff;
-        CHECK_MESSAGE (sameRegistry (c, plain, diff), "restored defaults differ: " + diff);
+        CHECK_MESSAGE (sameRegistry (c, plain, diff), ("restored defaults differ: " + diff).toStdString());
     }
     // the round trip keeps the name, and a second save writes the same uid
     juce::MemoryBlock again;
