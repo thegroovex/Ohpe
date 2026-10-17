@@ -25,6 +25,10 @@ target_sources(ohpe_core_tests PRIVATE
     VocalEngineTests.cpp
     SamplerEngineTests.cpp
     DrumKitTests.cpp)
+# Tests keep whole cores on the stack: give the Windows main thread 8 MB (default 1 MB) so a growing core never overflows it
+if(MSVC)
+    target_link_options(ohpe_core_tests PRIVATE /STACK:8388608)
+endif()
 add_test(NAME core_tests COMMAND ohpe_core_tests)
 
 # parameter table dump (golden file / documentation)
