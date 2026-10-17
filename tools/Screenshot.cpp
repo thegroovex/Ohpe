@@ -384,6 +384,30 @@ int main (int argc, char* argv[])
             unroute (1);
             unroute (2);
             release (p, { 48, 55, 64 }, 2);
+
+            // p31: the SUB layer of the analog part - round wave one octave down, macro 1 -> sub level (violet)
+            setPlain (p, "p2.sub.level", 0.65f);
+            setPlain (p, "p2.sub.shape", 1.0f);
+            setPlain (p, "p2.macro1", 0.5f);
+            route (1, mod::SrcMacro1, "p2.sub.level", 0.2f);
+            {
+                const int sc = pv.cardIndex ("Sub");
+                if (sc >= 0)
+                {
+                    auto& vp = pv.scroller();
+                    vp.setViewPosition (0, juce::jmax (0, pv.cardBounds (sc).getY() - 40));
+                    playAnimated (p, e, 12, { 45 }, 2);
+                    save (e, dir.getChildFile ("ohpe-pro-sub" + suffix + ".png"));
+                    const auto cb = pv.cardBounds (sc) - vp.getViewPosition() + vp.getPosition() + pv.getPosition();
+                    save (e, dir.getChildFile ("ohpe-pro-sub-card" + suffix + ".png"), 2.0f, cb.expanded (6));
+                    vp.setViewPosition (0, 0);
+                    release (p, { 45 }, 2);
+                }
+            }
+            unroute (1);
+            setPlain (p, "p2.sub.level", 0.0f);
+            setPlain (p, "p2.sub.shape", 0.0f);
+            setPlain (p, "p2.macro1", 0.0f);
             setPlain (p, "p2.lfo.depth", 0.0f);
             e.showProView (false);
             e.selectPart (0);
