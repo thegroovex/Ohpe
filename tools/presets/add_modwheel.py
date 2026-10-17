@@ -48,12 +48,13 @@ VIB_FREE = 0.03
 # Level calibration (internal renders, wheel 0 vs 127): amount factors for presets whose peak or loudness rose too
 # much with the full amount. Target: at most +1.5 dB active RMS, and the peak below -0.5 dBFS or at most +0.5 dB.
 SCALE = {
-    "arp-formant-arp": 0.6, "bass-deep-pluck-sub": 0.6, "bass-neuro-swirl": 0.3, "bass-punch-sub": 0.3,
+    "arp-formant-arp": 0.6, "bass-deep-pluck-sub": 0.6, "bass-neuro-swirl": 0.3, "bass-punch-sub": 0.5,
     "bass-rolling-bass": 0.3, "bass-screech-bass": 0.6, "bass-upright-pluck": 0.7, "boom-boom-kick-bass": 0.3,
     "drums-wood-block": 0.6, "keys-dusty-ep": 0.5, "keys-dusty-keys": 0.5, "keys-music-box": 0.3,
     "leads-breath-lead": 0.5, "pads-glass-grains": 0.6, "pads-halo-drift": 0.5, "pads-overhead-choir": 0.4,
-    "pads-spectral-morph": 0.5, "pads-super-stack": 0.3, "pads-warm-horizon": 0.3, "textures-breath-bore": 0.3,
-    "textures-fourths-drift": 0.8,
+    "pads-spectral-morph": 0.3, "pads-super-stack": 0.3, "pads-warm-horizon": 0.3, "textures-breath-bore": 0.3,
+    "textures-fourths-drift": 0.8, "bass-orbit-reese": 0.5, "pads-tine-bloom": 0.6, "plucks-poly-pluck": 0.6,
+    "vocal-aah-choir": 0.35,
 }
 
 
@@ -222,7 +223,8 @@ def rule(stem, doc, part):
             return timbre(part, 0.2, "vowel movement")
         return timbre(part, 0.3)
     if cat == "bass":
-        if "sub" in name or "Boom" in tags or "sine" in name:
+        # (Punch Sub: Character Hard also shortens its attack, which pushed its click into clipping - tone instead)
+        if ("sub" in name or "Boom" in tags or "sine" in name) and stem != "bass-punch-sub":
             return hard(part, 0.2)
         return timbre(part, 0.25)
     if cat == "boom":
