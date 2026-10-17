@@ -60,6 +60,18 @@ public:
     /** Index of the entry loaded last (-1 none) and its name ("Init" if none). */
     int current() const noexcept { return currentIndex; }
     juce::String currentName() const;
+    /** p40: uid of the entry loaded last (empty if none) - stored in the session so the name comes back. */
+    std::string currentUid() const;
+    /** p40: after a session / host state was restored: the entry with this uid counts as loaded
+        (nothing is loaded; an unknown or empty uid = none, the display shows "Init"). */
+    void restoreCurrent (const std::string& uid);
+
+    /** p40: the start sound of a new instance - the first preset of the built-in factory bank in the
+        library's default order (by name, all kinds). Index into entries(), -1 if the bank is empty. */
+    int startSoundIndex() const;
+    /** p40: loads the start sound as the factory set intends it: a project preset replaces everything,
+        a part preset goes into every part (each keeps its MIDI channel). It becomes the current entry. */
+    bool loadStartSound();
 
     /** Saves the edit part (or the whole project) as a user preset. Returns the file (or none on failure).
         A user preset of the same name and kind is replaced when `overwrite` is set; otherwise the new
