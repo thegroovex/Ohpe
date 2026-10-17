@@ -13,6 +13,8 @@
 
 namespace ohpe::ui
 {
+class GridController;
+
 /**
     p32: the settings view - an overlay on the plate like the library and the update view, opened with the gear key in
     the header (where the language pills were), the standalone's window menu, or a click on the wordmark (About page).
@@ -54,6 +56,11 @@ public:
     std::function<bool()> getAnimatedVisuals;
     std::function<void (bool)> setAnimatedVisuals;
     void setStandalone (bool s) { standalone = s; }
+    /** p46: the Grid-Controller (Profil 1) the MIDI page sets up and previews (standalone; nullptr = none). */
+    void setGridController (GridController* c) { gridCtl = c; }
+    /** p46: the virtual controller view (display lines, pads, message log) instead of the parts table. */
+    void showControllerPreview (bool on) { controllerPreview = on; repaint(); }
+    bool controllerPreviewShown() const noexcept { return controllerPreview; }
 
     // help pages (EN / DE)
     static int numHelpTopics();
@@ -104,6 +111,8 @@ private:
     void paintGeneral (juce::Graphics& g, juce::Rectangle<float> a);
     void paintDisplay (juce::Graphics& g, juce::Rectangle<float> a);
     void paintMidi (juce::Graphics& g, juce::Rectangle<float> a);
+    void paintController (juce::Graphics& g, juce::Rectangle<float> a);        ///< p46: the controller section
+    void paintControllerPreview (juce::Graphics& g, juce::Rectangle<float> a); ///< p46: the virtual controller
     void paintLearn (juce::Graphics& g, juce::Rectangle<float> a);
     void paintUpdates (juce::Graphics& g, juce::Rectangle<float> a);
     void paintHelp (juce::Graphics& g, juce::Rectangle<float> a);
@@ -126,6 +135,8 @@ private:
     int current = General, topic = 0;
     float helpScroll = 0.0f, helpMax = 0.0f, learnScroll = 0.0f, learnMax = 0.0f;
     bool standalone = false;
+    GridController* gridCtl = nullptr; ///< p46
+    bool controllerPreview = false;
     std::unique_ptr<juce::FileChooser> chooser;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SettingsView)

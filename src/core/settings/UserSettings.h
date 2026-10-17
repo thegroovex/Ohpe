@@ -30,6 +30,13 @@ struct UserSettings
     float brightness = 1.0f;       ///< display brightness 0.4 .. 1.0 (dims the dark display, lowers glare at night)
     Animations animations = Animations::Full;
     float windowScale = 1.0f;      ///< default window size: one of windowScales
+    /** p46: the external controller of the standalone app (Settings > MIDI > Controller). JSON "controller":
+        { "profile": "off" | "grid1", "in": port name, "out": port name, "master": "volume" | "tempo",
+          "strip": "bend" | "mod" }. */
+    int controllerProfile = 0;     ///< ControllerProfile
+    std::string controllerIn, controllerOut;
+    int controllerMaster = 0;      ///< 0 = the master encoder sets the volume, 1 = the tempo
+    int controllerStrip = 0;       ///< 0 = the touch strip bends, 1 = it is the mod wheel
     std::string extras = "{}";     ///< unknown keys (a JSON object)
 
     std::string toJson() const;
@@ -38,6 +45,9 @@ struct UserSettings
     bool operator== (const UserSettings& o) const;
     bool operator!= (const UserSettings& o) const { return ! (*this == o); }
 };
+
+/** p46: controller profiles (append-only). */
+enum ControllerProfile { ControllerOff = 0, ControllerGrid1, numControllerProfiles };
 
 constexpr float minBrightness = 0.4f;
 constexpr float windowScales[] = { 0.75f, 1.0f, 1.25f, 1.5f };

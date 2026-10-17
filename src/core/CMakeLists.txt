@@ -112,3 +112,6 @@ target_sources(ohpe_core PRIVATE
 
 # p23: bounce to engine (tape / live input -> Grain or Sampler)
 target_sources(ohpe_core PRIVATE bounce/Bounce.cpp)
+
+# p46: Grid-Controller (Profil 1) - wire protocol, display text, pad layout
+target_sources(ohpe_core PRIVATE control/GridProtocol.cpp)

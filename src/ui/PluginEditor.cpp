@@ -446,6 +446,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     refreshKeys();
     refreshLeds();
     updateOverlayVisibility();
+    if (proc.wrapperType == juce::AudioProcessor::wrapperType_Standalone) makeGridController(); // p46 (standalone only)
     applyUserSettings(); // p32: language, skin, tooltips, help overlay
     transportMessagesSeen = proc.transportMessageCount();
     startTimerHz (30);
@@ -454,6 +455,8 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
 OhpeEditor::~OhpeEditor()
 {
     stopTimer();
+    if (gridCtl != nullptr) settingsView.setGridController (nullptr);
+    gridCtl = nullptr; // p46: lights off, ports closed
     userSettings->removeChangeListener (this);
     proc.presets().removeChangeListener (this);
     proc.removeChangeListener (this);
@@ -955,9 +958,39 @@ void OhpeEditor::showSettings (bool show, int page)
 }
 
 // ---------------------------------------------------------------- p32: user settings
+// ---------------------------------------------------------------- p46: Grid-Controller (Profil 1)
+void OhpeEditor::makeGridController()
+{
+    if (gridCtl != nullptr) return;
+    ui::GridController::Hooks h;
+    h.mode = [this] { return mode; };
+    h.context = [this] { return ctx; };
+    h.page = [this] { return currentPage(); };
+    h.stepPage = [this] (int d) { if (display.onPageChange) display.onPageChange (d); };
+    h.selectMode = [this] (Mode m) { if (! overlayOpen() || settingsView.isVisible()) selectMode (m); };
+    h.selectPart = [this] (int p) { selectPart (p); };
+    h.transport = [this] (OhpeProcessor::TransportKey k) { transport (k); };
+    h.octave = [this] { return keyboard.getBaseOctave(); };
+    h.setOctave = [this] (int o) {
+        keyboard.setBaseOctave (o);
+        grid.setBaseOctave (keyboard.getBaseOctave());
+        saveUiState();
+        repaint();
+    };
+    gridCtl = std::make_unique<ui::GridController> (proc, std::move (h));
+    settingsView.setGridController (gridCtl.get());
+}
+
+ui::GridController& OhpeEditor::gridControllerForTests()
+{
+    makeGridController();
+    return *gridCtl;
+}
+
 void OhpeEditor::applyUserSettings()
 {
     const auto& us = userSettings->get();
+    if (gridCtl != nullptr) gridCtl->configure (us); // p46
     // language (only a fixed choice overrides the process-wide language; System follows the system / OHPE_LANGUAGE)
     {
         // only a change of the setting acts, so a language chosen for the session (setLanguage) stays until then
