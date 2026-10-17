@@ -22,6 +22,8 @@
 #include "plugin/Updater.h"
 #include "plugin/UserSettingsStore.h"
 #include "ui/Palette.h"
+#include "preset/Preset.h"
+#include "update/Sha256.h"
 
 #include <cmath>
 #include <algorithm>
@@ -100,6 +102,51 @@ void playAnimated (OhpeProcessor& p, OhpeEditor& e, int frames, std::initializer
         p.processBlock (buffer, none);
         e.advanceAnimation (1.0f / 30.0f);
     }
+}
+
+void setEnvVar (const char* name, const juce::String& value)
+{
+#if JUCE_WINDOWS
+    _putenv_s (name, value.toRawUTF8());
+#else
+    if (value.isEmpty()) unsetenv (name);
+    else setenv (name, value.toRawUTF8(), 1);
+#endif
+}
+
+/** Content packs: an .ohpepack (pack.json with checksums) of part presets for the screenshots. */
+juce::File makeShotPack (const juce::File& f, const char* id, const char* en, const char* de, const char* descEn, const char* descDe, bool paid,
+                         const std::vector<std::pair<std::string, std::string>>& presets)
+{
+    std::vector<std::pair<juce::String, juce::String>> files;
+    for (const auto& [name, tag] : presets)
+    {
+        ohpe::Core core;
+        ohpe::preset::Meta m;
+        m.name = name;
+        m.author = "groovex";
+        m.tags = { tag };
+        juce::String file = juce::String (name).toLowerCase().replaceCharacter (' ', '-');
+        files.push_back ({ "presets/" + file + ".ohpepreset", juce::String::fromUTF8 (ohpe::preset::toJson (ohpe::preset::capturePart (core.params(), 0, m)).c_str()) });
+    }
+    juce::String sums;
+    for (const auto& [path, text] : files)
+        sums << (sums.isEmpty() ? "" : ",") << "\"" << path << "\":\"" << juce::String (ohpe::update::Sha256::of (text.toStdString())) << "\"";
+    juce::String meta;
+    meta << "{\"format\":1,\"id\":\"" << id << "\",\"version\":\"1.0.0\",\"kind\":\"presets\",\"minApp\":\"0.0.1\","
+         << "\"name\":{\"en\":\"" << en << "\",\"de\":\"" << juce::String::fromUTF8 (de) << "\"},"
+         << "\"description\":{\"en\":\"" << descEn << "\",\"de\":\"" << juce::String::fromUTF8 (descDe) << "\"},"
+         << (paid ? juce::String ("\"license\":{\"type\":\"paid\",\"productId\":\"ohpe-") + id + "\"},\"signature\":{\"alg\":\"ed25519\",\"keyId\":\"groovex-1\",\"value\":\"c2ln\"}," : juce::String())
+         << "\"files\":{" << sums << "}}";
+    juce::ZipFile::Builder b;
+    b.addEntry (new juce::MemoryInputStream (meta.toRawUTF8(), meta.getNumBytesAsUTF8(), true), 6, "pack.json", juce::Time());
+    for (const auto& [path, text] : files)
+        b.addEntry (new juce::MemoryInputStream (text.toRawUTF8(), text.getNumBytesAsUTF8(), true), 6, path, juce::Time());
+    f.getParentDirectory().createDirectory();
+    f.deleteFile();
+    juce::FileOutputStream out (f);
+    b.writeToStream (out, nullptr);
+    return f;
 }
 
 void save (juce::Component& c, const juce::File& f, float scale = 1.0f, juce::Rectangle<int> area = {})
@@ -840,6 +887,45 @@ int main (int argc, char* argv[])
             set ([] (settings::UserSettings& v) { v = settings::UserSettings {}; });
             ui::applySkin (ui::Skin::Light);
             e.setLanguage (lang);
+        }
+
+        // content packs: two installed .ohpepack files (temporary data folder): the pack manager page, the library
+        // filtered by a pack
+        {
+            const auto tmp = juce::File::getSpecialLocation (juce::File::tempDirectory).getChildFile ("ohpe-shot-packs");
+            tmp.deleteRecursively();
+            const auto prevData = juce::SystemStats::getEnvironmentVariable ("OHPE_DATA_DIR", {});
+            setEnvVar ("OHPE_DATA_DIR", tmp.getChildFile ("data").getFullPathName());
+            auto& up = e.updaterInstance();
+            up.setDataFolderForTests (tmp.getChildFile ("data"));
+            up.installPackFile (makeShotPack (tmp.getChildFile ("atmo-1.0.0.ohpepack"), "atmo", "Atmo", "Atmo", "Cinematic, dark and wide",
+                                              "Filmisch, dunkel und weit", true,
+                                              { { "Night Tide", "pads" }, { "Crypt Organ", "keys" }, { "Distant Horn", "leads" }, { "Abyss Reese", "bass" } }));
+            up.waitIdle (20000);
+            up.installPackFile (makeShotPack (tmp.getChildFile ("keys-plus-1.0.0.ohpepack"), "keys-plus", "Keys Plus", "Tasten Plus",
+                                              "Bright keys and plucks", "Helle Tasten und Zupfer", false, { { "Glass Keys", "keys" }, { "Felt Pluck", "pluck" } }));
+            up.waitIdle (20000);
+            e.showSettings (true, e.packPage());
+            e.advanceAnimation (0.2f);
+            animate (p, e, 2);
+            save (e, dir.getChildFile ("ohpe-packs" + suffix + ".png"));
+            e.showSettings (true, ui::SettingsView::Updates);
+            e.advanceAnimation (0.2f);
+            save (e, dir.getChildFile ("ohpe-settings-updates" + suffix + ".png"));
+            e.showSettings (false);
+            e.showLibrary (true);
+            auto& plib = e.libraryComponent();
+            plib.setPackFilter ("atmo");
+            if (plib.numRows() > 0) plib.selectRow (0);
+            e.advanceAnimation (0.2f);
+            save (e, dir.getChildFile ("ohpe-library-packs" + suffix + ".png"));
+            plib.setPackFilter ({});
+            e.showLibrary (false);
+            for (const char* id : { "atmo", "keys-plus" }) up.removePack (id);
+            up.setDataFolderForTests ({});
+            setEnvVar ("OHPE_DATA_DIR", prevData);
+            p.presets().rescan();
+            tmp.deleteRecursively();
         }
 
         // p20: a user wavetable from a sound whose harmonics evolve (analysed like an imported file), the frame stack

@@ -7,6 +7,14 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Content packs – install `.ohpepack` files (file dialog or drop on the window) with a SHA-256 check of every
+  file, pack manager (version, size, license / signature shown, remove), library filter by pack, `"<pack>/<item>"`
+  references with a clear "content pack missing" message, `tools/pack/make_ohpepack.py` – see
+  [Content packs](docs/en/CONTENT-PACKS.md).
+- DE: Inhaltspakete – `.ohpepack`-Dateien installieren (Dateidialog oder auf das Fenster ziehen) mit SHA-256-Prüfung
+  jeder Datei, Paketverwaltung (Version, Größe, Lizenz / Signatur angezeigt, Entfernen), Bibliotheksfilter nach Paket,
+  Referenzen `"<Paket>/<Element>"` mit klarer Meldung „Inhaltspaket fehlt“, `tools/pack/make_ohpepack.py` – siehe
+  [Inhaltspakete](docs/de/INHALTSPAKETE.md).
 - EN: 3D Space – six new motion paths (Ping-Pong F/B, Swarm, Whisper, Distance Walk, Over the Head, Weave) and a path
   preview in the 3D view.
 - DE: 3D-Raum – sechs neue Bewegungspfade (Ping-Pong v/h, Schwarm, Flüstern, Entfernungsgang, Über den Kopf,

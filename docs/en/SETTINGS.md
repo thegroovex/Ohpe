@@ -66,7 +66,18 @@ encoder, key or wheel. The map is saved with the project.
 ## Updates
 
 The settings of the [updater](UPDATES.md): daily automatic check (off until switched on), channel Stable / Preview, last
-check, **CHECK NOW** and the update view.
+check, **CHECK NOW** and the update view. Below them: **Content packs** – how many are installed, **INSTALL PACK …**
+(file dialog for `.ohpepack` files) and **MANAGE PACKS**.
+
+![Settings – Updates](../images/ohpe-settings-updates.png)
+
+## Content packs
+
+The pack manager (a tab after About): **INSTALL PACK …**, the room the packs use, and every installed pack with
+version, size, content, license and signature (shown, not checked) and **REMOVE** (click twice). Dropping an
+`.ohpepack` file on the window installs it too. See [Content packs](CONTENT-PACKS.md).
+
+![Settings – Content packs](../images/ohpe-packs.png)
 
 ## Help
 

@@ -524,6 +524,12 @@ clear, clear all, map files), **Updates**, **Help** and **About**. **F1** switch
 
 Details: [Settings](SETTINGS.md).
 
+## Content packs
+
+`.ohpepack` files add preset packs: **INSTALL PACK …** (Settings › Updates, Settings › Content packs, the library's
+**PACKS** menu) or drop the file on the window. The library's **PACKS** chip filters by an installed pack; pack
+presets carry a **P**. Details: [Content packs](CONTENT-PACKS.md).
+
 ## CPU meter (p35)
 
 ![The CPU meter on the mode column's legend line](../images/ohpe-cpu-meter.png)

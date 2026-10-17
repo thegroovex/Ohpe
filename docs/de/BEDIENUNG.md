@@ -549,6 +549,13 @@ Clock und Sync), **MIDI-Learn** (alle Zuweisungen: bearbeiten, löschen, alle l�
 
 Einzelheiten: [Einstellungen](EINSTELLUNGEN.md).
 
+## Inhaltspakete
+
+`.ohpepack`-Dateien bringen Preset-Pakete: **PAKET INSTALLIEREN …** (Einstellungen › Aktualisierung, Einstellungen ›
+Inhaltspakete, das Menü **PAKETE** der Bibliothek) oder die Datei auf das Fenster ziehen. Der Chip **PAKETE** der
+Bibliothek filtert nach einem installierten Paket; Paket-Presets tragen ein **P**. Einzelheiten:
+[Inhaltspakete](INHALTSPAKETE.md).
+
 ## CPU-Anzeige (p35)
 
 ![Die CPU-Anzeige auf der Beschriftungszeile der Modus-Spalte](../images/ohpe-cpu-meter-de.png)
