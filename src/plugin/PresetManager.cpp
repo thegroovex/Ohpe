@@ -207,7 +207,7 @@ void PresetManager::restoreCurrent (const std::string& uid)
 
 int PresetManager::startSoundIndex() const
 {
-    const preset::Filter libraryDefault; // all banks and kinds, sorted by name - the order the library opens with
+    const preset::Filter libraryDefault {}; // all banks and kinds, sorted by name - the order the library opens with
     for (const int i : preset::filterAndSort (list, libraryDefault))
         if (list[(size_t) i].uid.rfind ("factory:", 0) == 0) return i; // built-in bank only (no pack, no user preset)
     return -1;
