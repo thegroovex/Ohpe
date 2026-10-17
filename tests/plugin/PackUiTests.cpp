@@ -151,14 +151,14 @@ TEST_CASE ("pack ui: install from Settings / drop, pack manager list, library fi
         e.setLanguage (i18n::Language::English);
         e.showSettings (true, e.packPage());
         lib.setPackFilter ("keys-plus");
-        CHECK (pm.clickChip ("REMOVE"));
+        CHECK (pm.clickChip ("REMOVE")); // first row's chip: the atmo pack
         CHECK (pm.rowTexts().size() == 2); // armed only
         CHECK (pm.clickChip ("REMOVE?"));
         pm.chipTexts();
         CHECK (pm.rowTexts().size() == 1);
         e.advanceAnimation (0.1f);
-        CHECK_FALSE (root.getChildFile ("data/Content/keys-plus").exists());
-        CHECK (root.getChildFile ("data/Content/atmo").isDirectory());
+        CHECK_FALSE (root.getChildFile ("data/Content/atmo").exists());
+        CHECK (root.getChildFile ("data/Content/keys-plus").isDirectory());
         e.showSettings (false);
     }
     i18n::setCurrent (i18n::Language::English);
