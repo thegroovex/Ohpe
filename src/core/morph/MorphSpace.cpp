@@ -512,6 +512,15 @@ void MorphSpace::rebuild (int part)
     published[(size_t) part] = std::move (plan);
 }
 
+std::vector<Part*> MorphSpace::laneParts (int part) const
+{
+    std::vector<Part*> out;
+    if (part < 0 || part >= numParts) return out;
+    for (const auto& l : laneStore[(size_t) part])
+        if (l != nullptr && l->part != nullptr) out.push_back (l->part.get());
+    return out;
+}
+
 bool MorphSpace::update()
 {
     // free retired plans the audio thread no longer uses (it re-reads the published pointer every block)

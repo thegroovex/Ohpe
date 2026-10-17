@@ -952,13 +952,8 @@ protected:
                 g.drawLine ({ pos[(size_t) src], pos[(size_t) dst] }, w);
                 drawModBar (g, pos[(size_t) src], pos[(size_t) dst], ids[2]);
             }
-        // feedback loop on operator 6
-        if (const float fb = normAt (3); fb > 0.01f)
-        {
-            const auto c = pos[5];
-            g.setColour (edit().withAlpha (0.4f + 0.5f * fb));
-            g.drawEllipse (juce::Rectangle<float> (rad * 1.4f, rad * 1.4f).withCentre (c.translated (rad * 0.9f, -rad * 0.9f)), u * (0.15f + fb));
-        }
+        // p28: no extra ring for the feedback (it floated as a stray faint circle over the first operator row);
+        // the Feedback bar below the graph shows it
         // operators: carriers filled, modulators as rings; ratio inside, level as an arc
         for (int op = 0; op < fm::numOps; ++op)
         {

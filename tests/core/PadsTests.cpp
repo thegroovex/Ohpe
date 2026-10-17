@@ -303,3 +303,21 @@ TEST_CASE ("p25 pads: all four at once, hammered, in the core - finite and bound
     CHECK (other->params().get ("pads.sweep.mode") == 1.0f);
     CHECK (other->params().get ("pads.freeze.mix") == doctest::Approx (1.0f));
 }
+
+TEST_CASE ("p28 pads: a pad held or latched when the host saves does not come back on with the state")
+{
+    auto owner = std::make_unique<Core>();
+    Core& core = *owner;
+    core.prepare (sampleRate, 256);
+    for (int p = 0; p < PerformancePads::numPads; ++p) REQUIRE (core.params().set (PerformancePads::padId (p), 1.0f));
+    core.params().set ("pads.quant", 3.0f);
+    const auto state = core.saveState();
+
+    auto other = std::make_unique<Core>();
+    other->prepare (sampleRate, 256);
+    for (int p = 0; p < PerformancePads::numPads; ++p) other->params().set (PerformancePads::padId (p), 1.0f); // even if on before
+    REQUIRE (other->loadState (state));
+    for (int p = 0; p < PerformancePads::numPads; ++p)
+        CHECK (other->params().get (PerformancePads::padId (p)) == 0.0f);
+    CHECK (other->params().get ("pads.quant") == 3.0f); // the pad settings still come back
+}
