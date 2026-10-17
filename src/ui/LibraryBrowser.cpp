@@ -384,6 +384,12 @@ void LibraryBrowser::paint (juce::Graphics& g)
     const char* sorts[] = { "Name", "Rating", "Engine", "Newest" };
     for (int s = 0; s < 4; ++s)
         seg (tr (sorts[s]), u * 8.0f, (int) f.sort == s, [this, s] { presets.filter.sort = (preset::Sort) s; rebuild(); });
+    // content packs: filter by pack, install, manage (menu)
+    {
+        const float pw = juce::jmin (u * 12.0f, b.getWidth() - u * 2.0f - x);
+        if (pw > u * 6.0f)
+            chip (g, { b.getWidth() - u * 2.0f - pw, y2, pw, h2 }, packChipText(), ! f.pack.empty(), colour::ultraviolet, [this] { showPackMenu(); });
+    }
 
     // left: categories + engines
     auto left = leftArea();
@@ -417,8 +423,10 @@ void LibraryBrowser::paint (juce::Graphics& g)
     // list header
     g.setColour (colour::displayDim);
     g.setFont (labelFont (u * 1.3f));
-    g.drawText (juce::String ((int) rows.size()) + " " + tr ("presets"), juce::Rectangle<float> (u * 26.0f, u * 8.9f, u * 30.0f, u * 1.5f),
-                juce::Justification::centredLeft, true);
+    juce::String countText = juce::String ((int) rows.size()) + " " + tr ("presets");
+    for (const auto& p : presets.contentPacks())
+        if (p.id == f.pack) countText << "  /  " << packName (p) << " " << str (p.version);
+    g.drawText (countText, juce::Rectangle<float> (u * 26.0f, u * 8.9f, u * 30.0f, u * 1.5f), juce::Justification::centredLeft, true);
 
     if (status.isNotEmpty())
     {
@@ -469,7 +477,10 @@ void LibraryBrowser::paint (juce::Graphics& g)
         g.drawFittedText (str (e.meta.name), r.withHeight (u * 3.0f).toNearestInt(), juce::Justification::centredLeft, 1, 0.8f);
         g.setFont (labelFont (u * 1.45f));
         g.setColour (colour::displayDim);
-        juce::String info = (e.factory ? tr ("Factory") : tr ("User")) + "  /  " + (e.meta.kind == preset::Kind::Project ? tr ("Project") : tr ("Part"));
+        juce::String bank = e.factory ? tr ("Factory") : tr ("User");
+        for (const auto& p : presets.contentPacks())
+            if (p.id == e.pack) bank = tr ("Pack") + " " + packName (p);
+        juce::String info = bank + "  /  " + (e.meta.kind == preset::Kind::Project ? tr ("Project") : tr ("Part"));
         if (! e.meta.engine.empty()) info << "  /  " << engineLabel (e.meta.engine);
         g.drawText (info, juce::Rectangle<float> (r.getX(), r.getY() + u * 3.2f, r.getWidth(), u * 2.0f), juce::Justification::centredLeft, true);
         if (! e.meta.author.empty())
@@ -567,7 +578,59 @@ void LibraryBrowser::paintListBoxItem (int row, juce::Graphics& g, int w, int h,
     g.setColour (e.rating > 0 ? (selected ? colour::display : colour::sunYellow) : dim);
     g.drawText (stars, b.withTrimmedLeft (u * 41.5f).withWidth (u * 7.5f), juce::Justification::centredLeft, true);
     g.setColour (dim);
-    g.drawText (e.factory ? "F" : "U", b.withTrimmedRight (u * 0.8f), juce::Justification::centredRight, true);
+    g.drawText (! e.pack.empty() ? "P" : e.factory ? "F" : "U", b.withTrimmedRight (u * 0.8f), juce::Justification::centredRight, true);
+}
+
+juce::String LibraryBrowser::packName (const update::ContentIndex::Pack& p)
+{
+    return str (i18n::current() == i18n::Language::German && ! p.nameDe.empty() ? p.nameDe : p.nameEn);
+}
+
+juce::String LibraryBrowser::packChipText() const
+{
+    for (const auto& p : presets.contentPacks())
+        if (p.id == presets.filter.pack) return i18n::upper (packName (p)) + juce::String::fromUTF8 (" \xe2\x96\xbe");
+    return i18n::upper (tr ("Packs")) + juce::String::fromUTF8 (" \xe2\x96\xbe");
+}
+
+juce::StringArray LibraryBrowser::packMenuItems() const
+{
+    juce::StringArray items;
+    items.add (tr ("All presets"));
+    for (const auto& p : presets.contentPacks()) items.add (packName (p) + "  " + str (p.version));
+    items.add (tr ("Install pack") + juce::String::fromUTF8 (" \xe2\x80\xa6"));
+    items.add (tr ("Manage packs") + juce::String::fromUTF8 (" \xe2\x80\xa6"));
+    return items;
+}
+
+void LibraryBrowser::setPackFilter (const juce::String& packId)
+{
+    presets.filter.pack = packId.toStdString();
+    rebuild();
+}
+
+void LibraryBrowser::showPackMenu()
+{
+    juce::PopupMenu m;
+    const auto& packs = presets.contentPacks();
+    m.addItem (1, tr ("All presets"), true, presets.filter.pack.empty());
+    if (! packs.empty()) m.addSeparator();
+    for (size_t i = 0; i < packs.size(); ++i)
+        m.addItem (10 + (int) i, packName (packs[i]) + "  " + str (packs[i].version), true, packs[i].id == presets.filter.pack);
+    if (packs.empty()) m.addItem (2, tr ("No content packs installed"), false, false);
+    m.addSeparator();
+    m.addItem (3, tr ("Install pack") + juce::String::fromUTF8 (" \xe2\x80\xa6"), onInstallPack != nullptr);
+    m.addItem (4, tr ("Manage packs") + juce::String::fromUTF8 (" \xe2\x80\xa6"), onManagePacks != nullptr);
+    std::vector<std::string> ids;
+    for (const auto& p : packs) ids.push_back (p.id);
+    juce::Component::SafePointer<LibraryBrowser> safe (this);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (this), [safe, ids] (int r) {
+        if (safe == nullptr || r == 0) return;
+        if (r == 1) safe->setPackFilter ({});
+        else if (r == 3 && safe->onInstallPack) safe->onInstallPack();
+        else if (r == 4 && safe->onManagePacks) safe->onManagePacks();
+        else if (r >= 10 && r - 10 < (int) ids.size()) safe->setPackFilter (juce::String::fromUTF8 (ids[(size_t) (r - 10)].c_str()));
+    });
 }
 
 void LibraryBrowser::listBoxItemClicked (int row, const juce::MouseEvent& e)

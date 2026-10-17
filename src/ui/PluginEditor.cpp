@@ -187,7 +187,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
       pitchWheel (p, Core::Ids::perfBend, "Pitch", true), modWheel (p, Core::Ids::perfMod, "Mod", false),
       glideSwitch (p), glideKnob (p, "Glide"), lifeBar (p),
       keyboard (p.keyboardState), grid (p), proView (p), library (p), breedView (p), updateView (*updater),
-      settingsView (p, *updater, *userSettings)
+      settingsView (p, *updater, *userSettings), packView (*updater)
 {
     setLookAndFeel (&lnf);
     setWantsKeyboardFocus (false);
@@ -359,6 +359,8 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     proView.onSettingsChanged = [this] { saveUiState(); }; // p21: Simple / All
     addChildComponent (proView);
     library.onClosed = [this] { libraryKey.setActive (false); updateOverlayVisibility(); rebindEncoders(); };
+    library.onInstallPack = [this] { packDropPending = true; packView.chooseAndInstall(); };
+    library.onManagePacks = [this] { showSettings (true, packPage()); };
     addChildComponent (library);
     library.onBreed = [this] (int entry) { // p18: the library's Breed button
         library.close (false);
@@ -394,6 +396,10 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
         settingsView.onClosed = [this] { settingsKey.setActive (false); updateOverlayVisibility(); rebindEncoders(); };
         settingsView.onSettingsChanged = [this] { applyUserSettings(); };
         settingsView.onOpenUpdates = [this] { showUpdates (true); };
+        // content packs: the pack manager is a settings page; Updates and the library lead to it
+        settingsView.addExtraPage ("Content packs", "Inhaltspakete", &packView);
+        settingsView.onInstallPack = [this] { packDropPending = true; packView.chooseAndInstall(); };
+        settingsView.onManagePacks = [this] { showSettings (true, packPage()); };
         settingsView.getAnimatedVisuals = [this] { return display.animatedVisuals(); };
         settingsView.setAnimatedVisuals = [this] (bool on) {
             display.setAnimatedVisuals (on);
@@ -1915,8 +1921,18 @@ void OhpeEditor::showTableImportMenu()
 bool OhpeEditor::isInterestedInFileDrag (const juce::StringArray& files)
 {
     for (const auto& f : files)
-        if (isAudioFile (f) || isPresetFile (f) || juce::File (f).hasFileExtension (usertable::fileExtension)) return true;
+        if (isAudioFile (f) || isPresetFile (f) || juce::File (f).hasFileExtension (usertable::fileExtension)
+            || juce::File (f).hasFileExtension (update::packFileExtension))
+            return true;
     return false;
+}
+
+void OhpeEditor::installPack (const juce::File& pack)
+{
+    if (updater->busy()) { display.flash (tr ("Busy - try again in a moment")); return; }
+    packDropPending = true;
+    display.flash (tr ("Installing") + ": " + pack.getFileName());
+    packView.install (pack);
 }
 
 void OhpeEditor::filesDropped (const juce::StringArray& files, int x, int y)
@@ -1924,6 +1940,11 @@ void OhpeEditor::filesDropped (const juce::StringArray& files, int x, int y)
     for (const auto& path : files)
     {
         const juce::File f (path);
+        if (f.hasFileExtension (update::packFileExtension)) // content packs: dropped on the window = Install pack
+        {
+            installPack (f);
+            break;
+        }
         if (isPresetFile (path))
         {
             preset::Preset p;
@@ -2069,6 +2090,12 @@ void OhpeEditor::timerCallback()
     {
         contentGenerationSeen = gen;
         proc.presets().rescan();
+    }
+    if (packDropPending && ! updater->busy() && updater->snapshot().busyPack.isEmpty())
+    {
+        packDropPending = false;
+        const auto us = updater->snapshot();
+        if (us.message.isNotEmpty()) display.flash (tr (us.message) + (us.detail.isNotEmpty() ? ": " + us.detail : juce::String()));
     }
 
     // remote controls / host: edit part, library key

@@ -738,6 +738,17 @@ void SettingsView::paintUpdates (juce::Graphics& g, juce::Rectangle<float> a)
           i18n::upper (s.hasRelease ? tr ("Update to") + " " + juce::String::fromUTF8 (s.release.version.toString().c_str()) : tr ("Open updates")),
           s.hasRelease, colour::sunYellow, [this] { if (onOpenUpdates) onOpenUpdates(); });
     y += row + u * 1.0f;
+    // content packs (.ohpepack): install, and the pack manager page
+    legend (g, tr ("Content packs"), { a.getX(), y, a.getWidth(), u * 1.6f });
+    y += u * 2.0f;
+    {
+        const auto packs = updater.installedPacks();
+        label (g, juce::String ((int) packs.size()) + " " + tr ("installed"), { a.getX(), y, a.getWidth() * 0.4f, h });
+        chip (g, { a.getRight() - cw * 2.0f - u * 0.6f, y, cw, h }, i18n::upper (tr ("Install pack") + juce::String::fromUTF8 (" \xe2\x80\xa6")), true,
+              colour::sunYellow, [this] { if (onInstallPack) onInstallPack(); }, ! busy && ! updater.busy());
+        chip (g, { a.getRight() - cw, y, cw, h }, i18n::upper (tr ("Manage packs")), false, colour::displayText, [this] { if (onManagePacks) onManagePacks(); });
+    }
+    y += row + u * 0.6f;
     g.setColour (colour::displayDim);
     g.setFont (labelFont (u * 1.3f));
     g.drawFittedText (tr ("No telemetry: Ohpe only reads the public release list. Your presets and settings are never touched."),
