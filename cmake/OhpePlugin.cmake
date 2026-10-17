@@ -252,6 +252,11 @@ if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/UpdaterTests.cpp)
 endif()
 
+# ---------------------------------------------------------------- content packs: shared loader (local install, kind folders, references)
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/ContentLoaderTests.cpp)
+endif()
+
 # ---------------------------------------------------------------- p31: the SUB layer per part (Synth page, pro view group)
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/SubUiTests.cpp)

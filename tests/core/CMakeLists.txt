@@ -86,6 +86,8 @@ target_sources(ohpe_core_tests PRIVATE LivingShapeTests.cpp)
 target_sources(ohpe_core_tests PRIVATE HarmonyTests.cpp)
 # p27: the in-app updater (version order, manifest, settings, SHA-256, resumable download, content packs)
 target_sources(ohpe_core_tests PRIVATE UpdateTests.cpp)
+# content packs: shared loader base (pack.json, kind folders, limits, quota, content references)
+target_sources(ohpe_core_tests PRIVATE ContentPackTests.cpp)
 # p32: pressure glide (aftertouch scales the glide time)
 target_sources(ohpe_core_tests PRIVATE GlidePressTests.cpp)
 # p31: the SUB layer per part
