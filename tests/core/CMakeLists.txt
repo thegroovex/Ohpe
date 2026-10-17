@@ -80,3 +80,5 @@ target_sources(ohpe_core_tests PRIVATE MotionTests.cpp)
 
 # p25: the performance pads (stutter, tape stop, filter sweep, reverb freeze)
 target_sources(ohpe_core_tests PRIVATE PadsTests.cpp)
+# p26: the living display's object
+target_sources(ohpe_core_tests PRIVATE LivingShapeTests.cpp)

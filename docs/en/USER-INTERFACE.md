@@ -101,14 +101,14 @@ The encoders behave the same: drag (fine with Shift / Cmd / Ctrl held at the sta
 double-click resets, right-click opens MIDI learn. The small caption above the rows names the page
 (*Macros*, *Amp Envelope*, *Track* …); the arrows in the header turn the pages.
 
-## Display views: character, stereo scope, spectrum terrain
+## Display views: character, stereo scope, spectrum terrain, living object
 
 The display is built in layers like a real instrument screen: the dot grid lies behind the deep
 glass, the values float in front of it, the character casts a faint shadow and the glass itself
 carries a soft inner shadow and sheen. When you move the mouse over the display the back layers
 shift a little against the front (parallax).
 
-The left half of the display shows one of four **views** – click it to cycle, right-click for the
+The left half of the display shows one of five **views** – click it to cycle, right-click for the
 view menu:
 
 | View | What it shows |
@@ -117,6 +117,7 @@ view menu:
 | **Stereo scope** | the master output: goniometer (mid up, side across, L upper left, R upper right), correlation meter (−1 … +1; red = out of phase) and the **M** / **S** level bars. |
 | **Spectrum terrain** | the master spectrum as a perspective landscape: new rows rise at the front and recede to the horizon. It comes to rest when the sound stops. |
 | **3D space** (1.0) | the head-centred view of the [3D stage](SPACE.md): every part that uses the space as a dot with its trail around the listener's head, the edit part labelled. |
+| **Living object** (p26) | the sound as a 3D object: it breathes with the amp envelope, bulges with the LFOs, ripples with the mod envelope and the matrix, stretches with the stereo width and splits in two when the channels drift out of phase. The edit part (the master on the Mixer page); it comes to rest when the sound stops – see [Living display](LIVING-DISPLAY.md). |
 
 The **stereo scope appears by itself** whenever the encoders show a **Mid/Side** effect in an FX rack
 slot: in a part's rack it shows that part after its rack (marked *P1*–*P4*), in the master rack
@@ -129,6 +130,8 @@ chain shows the stereo scope when a Mid/Side slot is selected there.
 ![Master scope with Mid/Side in the master rack](../images/ohpe-master-scope.png)
 
 ![Spectrum terrain](../images/ohpe-terrain.png)
+
+![Living object](../images/ohpe-living.png)
 
 **Animated 3D visuals** (view menu) switches the terrain and the parallax off – the display then
 stays still, the scope keeps working. The setting belongs to the computer (it applies to every

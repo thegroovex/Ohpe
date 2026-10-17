@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
+#include "LivingView.h"
 #include "Pages.h"
 #include "SpaceView.h"
 #include "Visuals.h"
@@ -30,7 +31,7 @@ public:
 
     /** 0.7: what the left half of the display shows. The stereo scope also appears by itself
         on the Mid/Side FX slot pages and the master stereo pages. */
-    enum class Visual { Character = 0, Scope, Terrain, Space, numVisuals }; ///< 1.0: Space = the 3D view
+    enum class Visual { Character = 0, Scope, Terrain, Space, Living, numVisuals }; ///< 1.0: Space = the 3D view; p26: Living = the sound as a 3D object
     void setVisual (Visual v);
     Visual visual() const noexcept { return userVisual; }
     Visual shownVisual() const;
@@ -43,6 +44,11 @@ public:
     /** Paints the stereo scope of the current scope source into `area` (for other views, e.g. an
         FX rack slot visual of a Mid/Side slot). */
     void paintStereoScope (juce::Graphics& g, juce::Rectangle<float> area) const;
+    /** p26: the living object (state, tests) and the region the last tick asked to repaint for it (empty = it rested:
+        nothing of the object was repainted). */
+    const ohpe::living::Shape& livingShape() const noexcept { return livingObj; }
+    juce::Rectangle<float> livingRepaintArea() const noexcept { return livingDirty; }
+    bool livingOnScreen() const;
     /** Called when the user changes the view or the animation setting on the display. */
     std::function<void()> onVisualSettingsChanged;
 
@@ -189,6 +195,8 @@ private:
     // 0.7: visuals and depth
     DisplayVisuals visuals;
     space3d::Scene spaceScene; ///< 1.0
+    ohpe::living::Shape livingObj;               ///< p26
+    juce::Rectangle<float> livingDirty, livingLast; ///< p26: last repaint region, last object bounds
     juce::Rectangle<float> badgeRect; ///< 1.0: the 3D badge (header, set while painting)
     Visual userVisual = Visual::Character;
     bool animated = true;

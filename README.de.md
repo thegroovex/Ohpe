@@ -52,7 +52,7 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 | **MIDI** | Kanal je Part, MPE, jeder Regler ist per MIDI-Learn zuweisbar (Rechtsklick → MIDI-Learn), Zuweisungen lassen sich exportieren / importieren; alle Parameter sind automatisierbar |
 | **Standalone-App** | Audiosystem, Gerät, Samplerate und Puffergröße wählen, Latenzanzeige, Multi-Out-Routing auf Gerätekanäle, MIDI-Eingänge |
 | **Preset-Bibliothek** | eine Taste BIBLIOTHEK: Kategorien (Bass, Tasten, Flächen, Leads, Zupfer, Drums, FX, Arp, Texturen, Vokal), Engine-Filter, Suche, Favoriten, Sterne-Bewertung, Sortierung, Werks- und eigene Bank, Vorhören durch Auswählen, Part- und Projekt-Presets, voriges / nächstes per MIDI |
-| **Display** | ein tiefes Display in Ebenen mit Parallaxe; Stereobild (Goniometer, Korrelation, M-/S-Pegel) eine bewegte 3D-Spektrum-Landschaft und die kopfbezogene 3D-Raum-Ansicht |
+| **Display** | ein tiefes Display in Ebenen mit Parallaxe; Stereobild (Goniometer, Korrelation, M-/S-Pegel) eine bewegte 3D-Spektrum-Landschaft, die kopfbezogene 3D-Raum-Ansicht und das lebende Display – der Klang als 3D-Objekt, das mit der Hüllkurve atmet, sich mit den LFOs beult und mit der Stereobreite streckt – siehe [Lebendes Display](docs/de/LEBENDES-DISPLAY.md) |
 | **Direkte Bedienung** | Wertebalken im Display ziehen, Shift / Cmd / Strg für Feinregelung, Doppelklick setzt zurück; Profiansicht mit allen Parametern eines Modus auf einmal – als bedienbare Bilder (Hüllkurven, Filter, LFO, FM-Graph, Wavetable, Grains, 3D) mit violetten Modulationsbereichen, dazu Entdecken: HELL / HART / LEBENDIG / WEIT, Variieren, Kreuzen, Würfel, Verlauf |
 | **Sprachen** | Deutsch und Englisch, jederzeit umschaltbar |
 
@@ -146,6 +146,7 @@ Alle Tests laufen mit `scripts/test-all.sh` – siehe [Mitwirken](docs/de/MITWIR
 * [Resonanzkörper](docs/de/RESONANZKOERPER.md) – Saiten, Platten und Rohre, die der Klang anregt, Resonanzsaiten
 * [Bewegungs-Recorder](docs/de/BEWEGUNG.md) – Reglerbewegungen je Part als polymetrische Schleifen-Spuren
 * [Performance-Pads](docs/de/PERFORMANCE-PADS.md) – quantisiertes Stottern, Bandstopp, Filter-Sweep und Hall-Freeze
+* [Lebendes Display](docs/de/LEBENDES-DISPLAY.md) – der Klang als 3D-Objekt, das auf Hüllkurven, Modulation und Stereobreite reagiert
 * [Preset-Zucht](docs/de/ZUCHT.md) – zwei Klänge kreuzen, die besten Kinder behalten, Generationen züchten
 * [Bounce ins Instrument](docs/de/BOUNCE-INS-INSTRUMENT.md) – Tape oder Live-Eingang in Grain / Sampler, Endlosschleifen
 * [Modulationsmatrix](docs/de/MODULATION.md) – Verbindungen, Quellen, Ziele, LFO 2 / 3, Hüllkurve 3, Makros

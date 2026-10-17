@@ -534,6 +534,11 @@ const std::map<juce::String, juce::String>& table()
         { "Quantise", "Quantisierung" },
         { "Waiting for the grid", "Wartet auf das Raster" },
         { "Hold a pad - Shift-click latches", "Pad halten – Umschalt-Klick rastet ein" },
+        // p26: the living display
+        { "Living object", "Lebendes Objekt" },
+        { "Living", "Lebendig" },
+        { "Width", "Breite" },
+        { "Play to wake it", "Spielen, um es zu wecken" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;

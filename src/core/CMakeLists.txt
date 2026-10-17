@@ -69,6 +69,8 @@ target_sources(ohpe_core PRIVATE motion/MotionRecorder.cpp)
 
 # p25: the performance pads (stutter, tape stop, filter sweep, reverb freeze on the main mix)
 target_sources(ohpe_core PRIVATE perform/PerformancePads.cpp)
+# p26: the living display's object (the sound as a deformable 3D shape; the drawing is src/ui/LivingView)
+target_sources(ohpe_core PRIVATE visual/LivingShape.cpp)
 
 # 0.4 (package F): factory sample bank (instruments, drum kits)
 target_sources(ohpe_core PRIVATE sample/FactoryBank.cpp)

@@ -89,6 +89,8 @@ list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/MorphView.cpp)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/MotionView.cpp)
 # p25: the performance pads (Effects mode, view Pads)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/PadsView.cpp)
+# p26: the living display (the sound as a 3D object in the display's visual area)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/LivingView.cpp)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/UserTableView.cpp) # p20
 # p18: preset breeding (the breeding view; the engine-agnostic core is src/core/breed)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/BreedView.cpp)
@@ -203,6 +205,11 @@ endif()
 # ---------------------------------------------------------------- p25: the performance pads (Effects mode, view Pads)
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/PadsUiTests.cpp)
+endif()
+
+# ---------------------------------------------------------------- p26: the living display
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/LivingUiTests.cpp)
 endif()
 
 # ---------------------------------------------------------------- p20: audio to wavetable (import, library, state)
