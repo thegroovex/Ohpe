@@ -826,6 +826,16 @@ const std::map<juce::String, juce::String>& table()
         { "Grid controller profile 1", "Grid-Controller (Profil 1)" },
         { "Controllers are set up in the standalone app. In a plug-in the host program sends their MIDI to Ohpe.",
           "Controller werden in der Standalone-App eingerichtet. Im Plug-in schickt das Host-Programm ihr MIDI an Ohpe." },
+        // p45: key, Scale Lock, the chord that sounds
+        { "Scale Lock", "In Tonart" },
+        { "Snap to the nearest note of the key", "Auf den nächsten Ton der Tonart" },
+        { "White keys play the key (black keys are silent)", "Weiße Tasten spielen die Tonart (schwarze Tasten stumm)" },
+        { "Scale Lock: every note plays in the key (nearest note, or the white keys play the key); right-click: MIDI learn",
+          "In Tonart: jeder Ton spielt in der Tonart (nächster Ton, oder die weißen Tasten spielen die Tonart); Rechtsklick: MIDI-Learn" },
+        { "Key from the host (read-only); click: Scale Lock", "Tonart vom Host (nur lesen); Klick: In Tonart" },
+        { "Key: drag up / down (Shift: scale), mouse wheel; click: key, scale, Scale Lock, MIDI learn",
+          "Tonart: nach oben / unten ziehen (Shift: Skala), Mausrad; Klick: Tonart, Skala, In Tonart, MIDI-Learn" },
+        { "Playing", "Klingt" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;

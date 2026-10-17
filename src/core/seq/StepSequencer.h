@@ -7,6 +7,7 @@
 #include "ISequencer.h"
 
 #include <array>
+#include <cstdint>
 #include <atomic>
 
 #include <nlohmann/json_fwd.hpp>
@@ -98,6 +99,13 @@ public:
     void setRegistry (const ParamRegistry* r) noexcept { reg = r; }
     /** 0.5: the core tells the sequencer when it plays the drum kit (notes to the kit are never tied). */
     void setDrumsMode (bool drums) noexcept { drumsMode = drums; }
+    /** p45: Scale Lock - the transpose moves in degrees of the key (mask relative to root), the step notes snap to it. */
+    void setKeyLock (bool on, int root, uint16_t mask) noexcept
+    {
+        keyLock = on;
+        keyLockRoot = root;
+        keyLockMask = mask;
+    }
 
     static double stepsPerQuarter (int rateChoice) noexcept;
 
@@ -129,6 +137,10 @@ private:
     int length = 16, rate = R1_16, transpose = 0, channel = 1;
     float swing = 0.0f;
     bool drumsMode = false;
+    bool keyLock = false;    ///< p45
+    int keyLockRoot = 0;
+    uint16_t keyLockMask = 0xfff;
+    int shiftNote (int note, int by) const noexcept; ///< p45: + transpose (semitones, or degrees with Scale Lock)
     bool extendOff (int channel, int note, int64_t time) noexcept;
     double sr = 48000.0;
     double lastStepPos = -1.0;

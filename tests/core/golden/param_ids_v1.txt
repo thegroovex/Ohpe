@@ -6831,3 +6831,6 @@ p1.space.mode
 p2.space.mode
 p3.space.mode
 p4.space.mode
+# p45: Scale Lock
+key.lock
+key.lock.mode

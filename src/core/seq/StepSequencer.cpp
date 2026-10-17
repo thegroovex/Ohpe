@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "StepSequencer.h"
 
+#include "../harmony/KeyScale.h"
+
 #include <nlohmann/json.hpp>
 
 #include <cmath>
@@ -274,7 +276,7 @@ void StepSequencer::triggerStep (int pattern, int stepIndex, int offset, double 
                 out.addLock ({ offset, l.paramIndex, reg->descriptor (l.paramIndex).fromNormalised (l.normValue), false });
 
     if (! s.on) return;
-    const int note = std::clamp (s.note + transpose, 0, 127);
+    const int note = shiftNote (s.note, transpose);
     const int hits = std::clamp (s.ratchet, 1, 8);
     const double hitLen = samplesPerStep / hits;
     // 0.6: a single hit at gate 100 % ends one sample after the next step starts - a different note there
@@ -288,7 +290,7 @@ void StepSequencer::triggerStep (int pattern, int stepIndex, int offset, double 
     {
         const int len = lengthOf (pattern);
         const Step prev = getStep (pattern, (stepIndex + len - 1) % len);
-        if (prev.on && prev.gate >= 1.0f && prev.ratchet <= 1 && std::clamp (prev.note + transpose, 0, 127) == note
+        if (prev.on && prev.gate >= 1.0f && prev.ratchet <= 1 && shiftNote (prev.note, transpose) == note
             && extendOff (ch, note, blockStart + offset + (int64_t) std::llround (gateLen)))
             return;
     }
@@ -487,5 +489,11 @@ bool StepSequencer::fromJson (const std::string& text)
         setChain (c);
     }
     return true;
+}
+
+int StepSequencer::shiftNote (int note, int by) const noexcept
+{
+    if (keyLock && ! drumsMode) return keys::transposeInKey (note, by, keyLockRoot, keyLockMask); // p45: in scale degrees
+    return std::clamp (note + by, 0, 127);
 }
 } // namespace ohpe

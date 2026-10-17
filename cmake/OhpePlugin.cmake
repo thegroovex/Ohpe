@@ -29,6 +29,7 @@ set(OHPE_PLUGIN_SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/Widgets.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Display.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/TempoControl.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/KeyControl.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/OhpeLookAndFeel.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/PluginEditor.cpp
     ${CMAKE_SOURCE_DIR}/src/standalone/AudioSettingsPage.cpp)
@@ -172,6 +173,9 @@ if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/PluginTests.cpp ${OHPE_PLUGIN_SOURCES})
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/FirstPresetTests.cpp) # p40
     target_include_directories(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/src)
+    if(MSVC) # tests keep cores / processors on the stack: 8 MB main thread on Windows (default 1 MB)
+        target_link_options(ohpe_plugin_tests PRIVATE /STACK:8388608)
+    endif()
     target_compile_definitions(ohpe_plugin_tests PRIVATE ${OHPE_DEFINES} OHPE_NO_PLUGIN_ENTRY=1 JUCE_MODAL_LOOPS_PERMITTED=1)
     target_link_libraries(ohpe_plugin_tests PRIVATE ohpe_core doctest::doctest ${OHPE_JUCE_MODULES} juce::juce_recommended_config_flags)
     add_test(NAME plugin_tests COMMAND ohpe_plugin_tests)
@@ -305,4 +309,9 @@ endif()
 # ---------------------------------------------------------------- p39: tempo editable, metronome, count-in
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/TempoUiTests.cpp)
+endif()
+
+# ---------------------------------------------------------------- p45: chords, key on the header, Scale Lock
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/KeyChordUiTests.cpp)
 endif()

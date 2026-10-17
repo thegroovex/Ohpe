@@ -94,6 +94,29 @@ inline int degreeAboveMask (int note, int degrees, int root, uint16_t m) noexcep
 /** The note `degrees` scale steps above an in-scale note. */
 inline int degreeAbove (int note, int degrees, int root, int scale) noexcept { return degreeAboveMask (note, degrees, root, mask (scale)); }
 
+/**
+    p45: Scale Lock White Keys - the note a key plays: the white keys play the degrees of the set (mask relative to
+    root) upwards, C4 (60) = the root nearest middle C; black keys give -1 (silent), so does a note beyond 0 .. 127.
+*/
+inline int whiteKeyNote (int note, int root, uint16_t m) noexcept
+{
+    if (note < 0 || note > 127) return -1;
+    static constexpr int whiteIndex[12] = { 0, -1, 1, -1, 2, 3, -1, 4, -1, 5, -1, 6 };
+    const int wi = whiteIndex[note % 12];
+    if (wi < 0) return -1;
+    m &= 0xfff;
+    if (m == 0) m = 0xfff;
+    std::array<int, 12> steps {};
+    int n = 0;
+    for (int i = 0; i < 12; ++i)
+        if (((m >> i) & 1u) != 0) steps[(size_t) n++] = i;
+    root = ((root % 12) + 12) % 12;
+    const int rel = (note / 12) * 7 + wi - 35; // white keys counted from C4
+    const int oct = rel >= 0 ? rel / n : -((-rel + n - 1) / n), d = rel - oct * n;
+    const int out = 60 + (root > 6 ? root - 12 : root) + oct * 12 + steps[(size_t) d];
+    return out >= 0 && out <= 127 ? out : -1;
+}
+
 enum Chord { Off = 0, Triad, Seventh, Sus2, Sus4, Power, Octave, Sixth, Add9, numChords };
 
 inline std::vector<std::string> chordNamesEn() { return { "Off", "Triad", "Seventh", "Sus2", "Sus4", "Power", "Octave", "Sixth", "Add9" }; }
@@ -158,7 +181,16 @@ public:
         chordMaskBits = chordMask;
     }
 
-    bool active() const noexcept { return quantise || chord != scales::Off; }
+    /** p45: Scale Lock White Keys - the white keys play the degrees of the key (from its root at C), black keys are
+        silent; applied before quantising (process (e, emit, false) skips it, e.g. for the in-key grid). */
+    void setWhiteKeys (bool on, int keyRoot, uint16_t keyMask) noexcept
+    {
+        whiteKeys = on;
+        whiteRoot = keyRoot;
+        whiteMask = keyMask;
+    }
+
+    bool active() const noexcept { return quantise || chord != scales::Off || whiteKeys; }
 
     void reset() noexcept
     {
@@ -168,7 +200,7 @@ public:
 
     /** Calls emit (MidiEvent) for every resulting event (note on / off); other messages pass. */
     template <typename F>
-    void process (const MidiEvent& e, F&& emit) noexcept
+    void process (const MidiEvent& e, F&& emit, bool mapWhiteKeys = true) noexcept
     {
         if (! e.isNoteOn() && ! e.isNoteOff()) { emit (e); return; }
         auto& m = map[(size_t) e.data1];
@@ -185,7 +217,13 @@ public:
         }
         if (m.count > 0) // retrigger of a key still down: release what it played
             process (MidiEvent::noteOff (ch, e.data1, e.sampleOffset), emit);
-        const int base = quantise ? scales::quantiseMask (e.data1, root, setMaskBits) : (int) e.data1;
+        int in = e.data1;
+        if (whiteKeys && mapWhiteKeys)
+        {
+            in = whiteKeyMap (in);
+            if (in < 0) return; // a black key: silent (its note-off finds nothing to release)
+        }
+        const int base = quantise ? scales::quantiseMask (in, root, setMaskBits) : in;
         std::array<int, 5> notes {};
         const int n = chord != scales::Off ? scales::buildMask (base, chord, chordRootPc, chordMaskBits, notes) : (notes[0] = base, 1);
         m.count = 0;
@@ -205,8 +243,10 @@ private:
     struct Mapping { std::array<int, 5> notes {}; int count = 0; };
     std::array<Mapping, 128> map {};
     std::array<int, 128> refs {};
-    bool quantise = false;
-    int chord = scales::Off, root = 0, chordRootPc = 0;
+    int whiteKeyMap (int note) const noexcept { return scales::whiteKeyNote (note, whiteRoot, whiteMask); }
+    bool quantise = false, whiteKeys = false;
+    int chord = scales::Off, root = 0, chordRootPc = 0, whiteRoot = 0;
+    uint16_t whiteMask = 0xfff;
     uint16_t setMaskBits = scales::mask (scales::Major), chordMaskBits = scales::mask (scales::Major);
 };
 } // namespace ohpe

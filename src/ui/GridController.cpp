@@ -11,12 +11,7 @@
 
 #include <cmath>
 
-#if __has_include("harmony/KeyScale.h")
- #include "harmony/KeyScale.h"
- #define OHPE_GRIDCTL_KEYSCALE 1
-#else
- #define OHPE_GRIDCTL_KEYSCALE 0
-#endif
+#include "harmony/KeyScale.h"
 
 namespace ohpe::ui
 {
@@ -436,8 +431,7 @@ void GridController::button (int cc, bool)
         case g::cc::scales:
             if (shiftHeld)
             {
-                if (proc.core().params().indexOf ("key.lock") >= 0)
-                    setParam ("key.lock", proc.core().params().get ("key.lock") >= 0.5f ? 0.0f : 1.0f);
+                setParam (Core::Ids::keyLock, proc.core().keyScale().lock ? 0.0f : 1.0f);
             }
             else
                 setParam ("harmony.kb.layout", (float) (((int) std::lround (proc.core().params().get ("harmony.kb.layout")) + 1) % harmony::numLayouts));
@@ -502,12 +496,7 @@ g::PadKey GridController::padKey() const
     g::PadKey k;
     k.root = core.harmony().keyRoot(); // the on-screen grid's key (the remembered key; the set key until anything is heard)
     k.scale = core.harmony().keyScale();
-   #if OHPE_GRIDCTL_KEYSCALE
-    k.lock = core.keyScale().lock;
-   #else
-    const int li = core.params().indexOf ("key.lock");
-    k.lock = li >= 0 && core.params().get (li) >= 0.5f;
-   #endif
+    k.lock = core.keyScale().lock; // p45: Scale Lock
     return k;
 }
 

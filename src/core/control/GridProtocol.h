@@ -91,9 +91,8 @@ std::vector<uint8_t> aftertouchModeSysex (bool poly);
 
 // ---------------------------------------------------------------- pad layout (the on-screen grid keyboard's principle)
 /**
-    The key the pads show: root pitch class, scale (scales::Scale) and Scale Lock. Minimal interface until the key
-    API is on main everywhere: the controller fills it from the core's key (Core::keyScale() where it exists, else the
-    harmony brain's remembered key and "key.lock").
+    The key the pads show: root pitch class, scale (scales::Scale) and Scale Lock. The controller fills it like the
+    on-screen grid: root / scale = the harmony brain's remembered key, lock = Core::keyScale().lock (p45).
 */
 struct PadKey
 {

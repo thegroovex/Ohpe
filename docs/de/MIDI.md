@@ -91,6 +91,15 @@ Bässen das Filter oder gibt Drive dazu, Timbre fährt bei Flächen durch die Wa
 die Grain-Wolke). Sie schalten MPE nicht ein – das geschieht pro Part (`pN.mpe`), wenn ein
 MPE-Controller spielt; mit einer Aftertouch-Tastatur wirkt die Druck-Zuordnung sofort.
 
+## Tonart und In Tonart
+
+Die Tonart (`key.root`, `key.scale`) und In Tonart (`key.lock`, `key.lock.mode`) sind Host-Parameter: MIDI-Learn über
+die Tonart-Anzeige in der Kopfzeile des Displays (Klick › MIDI-Learn, oder Rechtsklick auf das Schloss), z. B. ein
+Fußschalter für In Tonart oder ein Encoder (relativ) für den Grundton. Mit In Tonart rasten eingehende Töne jedes
+Kanals, der einen Part erreicht, auf die Tonart (bzw. bei *Weiße Tasten* spielen die weißen Tasten die Tonart; schwarze
+Tasten sind stumm). MPE-Parts behalten ihre Tonhöhe. Hosts geben einem Plug-in keine Tonart mit: sie wird in Ohpe
+eingestellt (oder automatisiert). Siehe [Tonart, Akkord und In Tonart](BEDIENUNG.md#tonart-akkord-und-in-tonart-p45).
+
 ## Tempo und Transport
 
 | Situation | Transport-Quelle |

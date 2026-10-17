@@ -15,6 +15,18 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   und per MIDI steuerbar) als Segmentschalter auf der Raum-Seite; Front für `pN.space.on` und `space.out`, ältere
   Presets und Sessions laden unverändert; Lautsprecher-Symbol am 3D-Badge bei Abhören über Lautsprecher – siehe
   [Raum](docs/de/RAUM.md#der-3d-schalter-p41).
+- EN: 52 new factory presets that show off the newer features (48 part presets, 4 projects): Life, the morph pad, user
+  wavetables analysed from the factory recordings, the resonator body (stage and rack effect), the character macros,
+  3D motion paths, the SUB layer, the Expression page, pressure glide and tempo-synced movement; the projects use the
+  harmony brain's Follow, recorded motion lanes, the performance pads and four 3D parts at once. Level-matched to the
+  factory median, every one with a musical mod wheel; appended to the bank (the first preset stays the start sound) –
+  see [Factory sounds](docs/en/FACTORY-SOUNDS.md#showcase-presets-p44).
+- DE: 52 neue Werks-Presets, die die neueren Funktionen zeigen (48 Part-Presets, 4 Projekte): Leben, das Morph-Pad,
+  eigene Wavetables aus den Werksaufnahmen, der Resonanzkörper (Stufe und Rack-Effekt), die Charakter-Makros,
+  3D-Bewegungspfade, die SUB-Ebene, die Ausdrucks-Seite, Glide-Druck und tempo-synchrone Bewegung; die Projekte nutzen
+  das Folgen des Harmonie-Gehirns, aufgenommene Bewegungsspuren, die Performance-Pads und vier 3D-Parts gleichzeitig.
+  Auf den Werks-Median eingepegelt, jedes mit musikalischem Modrad; an die Bank angehängt (das erste Preset bleibt der
+  Startklang) – siehe [Werksklänge](docs/de/FACTORY-SOUNDS.md#showcase-presets-p44).
 
 ## 0.5.0 Preview – 2026-10-17
 

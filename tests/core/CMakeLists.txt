@@ -25,6 +25,10 @@ target_sources(ohpe_core_tests PRIVATE
     VocalEngineTests.cpp
     SamplerEngineTests.cpp
     DrumKitTests.cpp)
+# Tests keep whole cores on the stack: give the Windows main thread 8 MB (default 1 MB) so a growing core never overflows it
+if(MSVC)
+    target_link_options(ohpe_core_tests PRIVATE /STACK:8388608)
+endif()
 add_test(NAME core_tests COMMAND ohpe_core_tests)
 
 # parameter table dump (golden file / documentation)
@@ -86,6 +90,8 @@ target_sources(ohpe_core_tests PRIVATE PadsTests.cpp)
 target_sources(ohpe_core_tests PRIVATE LivingShapeTests.cpp)
 # p24: the harmony brain
 target_sources(ohpe_core_tests PRIVATE HarmonyTests.cpp)
+# p45: chord naming, key spelling, Scale Lock
+target_sources(ohpe_core_tests PRIVATE KeyChordTests.cpp)
 # p27: the in-app updater (version order, manifest, settings, SHA-256, resumable download, content packs)
 target_sources(ohpe_core_tests PRIVATE UpdateTests.cpp)
 # content packs: shared loader base (pack.json, kind folders, limits, quota, content references)
@@ -105,3 +111,4 @@ target_sources(ohpe_core_tests PRIVATE PerfTests.cpp) # p35: the performance pas
 target_sources(ohpe_core_tests PRIVATE MetronomeTests.cpp)
 # p46: Grid-Controller (Profil 1) - display SysEx, text folding, pad layout and colours, settings
 target_sources(ohpe_core_tests PRIVATE GridProtocolTests.cpp)
+target_sources(ohpe_core_tests PRIVATE ShowcasePresetTests.cpp) # p44: the showcase factory presets

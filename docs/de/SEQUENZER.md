@@ -80,7 +80,9 @@ werden gehalten und nacheinander gespielt.
 Vier Spuren mit bis zu 16 Schritten, jede mit eigener **Länge**, eigenem **Raster** und
 **Transponieren**, alle spielen in einen Part. Jede Spur hat eigene Schritte (Note, Anschlag).
 Die Spuren verschieben sich gegeneinander und treffen sich erst nach dem kleinsten gemeinsamen
-Vielfachen ihrer Längen wieder – lange, sich entwickelnde Muster aus wenigen Schritten.
+Vielfachen ihrer Längen wieder – lange, sich entwickelnde Muster aus wenigen Schritten. Mit **In Tonart**
+(Tonart-Anzeige in der Kopfzeile des Displays) zählt das Transponieren einer Spur – wie das des Step-Sequenzers –
+in Stufen der Tonart statt in Halbtönen.
 
 * **Spur-Ziel** (`seq.orbit.lN.part`, 0.5): 0 = der Ziel-Part von Orbit (bzw. das Drum-Kit); 1–4 = diese
   Spur spielt diesen Part, nie das Kit. Mit eingeschalteten Drums spielen so z. B. die Spuren 1–3 das Kit
