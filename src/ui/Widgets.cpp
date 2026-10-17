@@ -379,9 +379,9 @@ juce::Path capPath (juce::Rectangle<float> r, float radius, bool joinLeft, bool 
 void drawBarWindow (juce::Graphics& g, juce::Rectangle<float> r, juce::Colour colour, float level, float s)
 {
     const float rr = r.getHeight() * 0.5f;
-    g.setColour (juce::Colours::white.withAlpha (0.6f)); // the lower lip of the slot
+    g.setColour (colour::sheen.withAlpha (0.6f)); // the lower lip of the slot
     g.fillRoundedRectangle (r.translated (0, 0.7f), rr);
-    g.setColour (juce::Colour (0xffb9b4ab));
+    g.setColour (colour::capEdge.darker (0.05f));
     g.fillRoundedRectangle (r, rr);
     if (level <= 0.0f) return;
     for (int i = 3; i >= 1; --i) // the glow on the cap
@@ -421,7 +421,7 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
         g.fillEllipse (cap);
         g.setColour (colour::capEdge);
         g.drawEllipse (cap.reduced (0.5f), 1.0f);
-        if (over && ! down) { g.setColour (juce::Colours::white.withAlpha (0.25f)); g.fillEllipse (cap); }
+        if (over && ! down) { g.setColour (colour::sheen.withAlpha (0.25f)); g.fillEllipse (cap); }
         drawPictogram (g, cap.reduced (cap.getWidth() * 0.06f), picto, ps, available ? ink : ink.withAlpha (0.3f));
     }
     else if (style == Style::Pill)
@@ -433,7 +433,7 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
         if (down) cap = cap.translated (0, 1.0f);
         g.setGradientFill (juce::ColourGradient (colour::pillTop, cap.getX(), cap.getY(), colour::pill, cap.getX(), cap.getBottom(), false));
         g.fillRoundedRectangle (cap, r);
-        g.setColour (juce::Colours::white.withAlpha (over && ! down ? 0.10f : 0.05f));
+        g.setColour (colour::sheen.withAlpha (over && ! down ? 0.10f : 0.05f));
         g.drawRoundedRectangle (cap.reduced (0.5f), r, 1.0f);
         const auto icon = cap.withSizeKeepingCentre (cap.getHeight(), cap.getHeight()).reduced (cap.getHeight() * 0.1f);
         drawPictogram (g, icon, picto, ps, available ? (active ? accent : colour::keyLight.withAlpha (0.9f)) : colour::keyLight.withAlpha (0.25f));
@@ -464,10 +464,10 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
         g.strokePath (capPath (cap.reduced (0.5f), r, joinLeft, joinRight), juce::PathStrokeType (1.0f));
         if (! pressed) // a fine lit upper edge: the soft depth of a matte key
         {
-            g.setColour (juce::Colours::white.withAlpha (0.75f));
+            g.setColour (colour::sheen.withAlpha (0.75f));
             g.fillRect (cap.withTrimmedLeft (joinLeft ? 1.0f : r).withTrimmedRight (joinRight ? 1.0f : r).withHeight (1.0f).translated (0, 1.0f));
         }
-        if (over && ! down) { g.setColour (juce::Colours::white.withAlpha (0.22f)); g.fillPath (outline); }
+        if (over && ! down) { g.setColour (colour::sheen.withAlpha (0.22f)); g.fillPath (outline); }
         if (hasPictoInk && available) ink = pictoInk;
         else if (! available) ink = ink.withAlpha (0.28f);
         // rev 3: the light bar sits at the cap's lower edge, under the pictogram (as the lit bar of before)
@@ -529,11 +529,17 @@ Keyboard::Keyboard (juce::MidiKeyboardState& s) : juce::MidiKeyboardComponent (s
     setBlackNoteLengthProportion (0.62f);
     setMidiChannel (1);
     setVelocity (0.8f, true);
+    refreshColours();
+    setBaseOctave (3);
+}
+
+void Keyboard::refreshColours()
+{
     setColour (juce::MidiKeyboardComponent::whiteNoteColourId, colour::capEdge.darker (0.08f)); // p14: the gaps between the keys
     setColour (juce::MidiKeyboardComponent::blackNoteColourId, colour::keyDark);
     setColour (juce::MidiKeyboardComponent::keySeparatorLineColourId, juce::Colours::transparentBlack);
     setColour (juce::MidiKeyboardComponent::shadowColourId, juce::Colours::transparentBlack);
-    setBaseOctave (3);
+    repaint();
 }
 
 void Keyboard::setBaseOctave (int octave)
@@ -589,7 +595,7 @@ void Keyboard::drawBlackNote (int, juce::Graphics& g, juce::Rectangle<float> are
     g.setGradientFill (juce::ColourGradient (base.brighter (0.12f), 0, key.getY(), base, 0, key.getBottom(), false));
     g.fillRoundedRectangle (key, r);
     // the lit front face of a matte black key
-    g.setColour (juce::Colours::white.withAlpha (0.07f));
+    g.setColour (colour::sheen.withAlpha (0.07f));
     g.fillRoundedRectangle (key.withTop (key.getBottom() - key.getHeight() * 0.1f).reduced (key.getWidth() * 0.1f, 0), r * 0.6f);
     if (isDown)
     {
@@ -640,7 +646,7 @@ void Wheel::paint (juce::Graphics& g)
     // the recess in the housing
     g.setGradientFill (juce::ColourGradient (colour::bezelLow, 0, slot.getY(), colour::bezel, 0, slot.getBottom(), false));
     g.fillRoundedRectangle (slot, r);
-    g.setColour (juce::Colours::white.withAlpha (0.6f));
+    g.setColour (colour::sheen.withAlpha (0.6f));
     g.drawRoundedRectangle (slot.expanded (0.5f), r + 0.5f, 1.0f);
     // the wheel: a matte graphite cylinder, lit in the middle, ribs that roll with the value
     auto wheel = slot.reduced (slot.getWidth() * 0.16f, slot.getWidth() * 0.12f);
@@ -769,7 +775,7 @@ void SlideSwitch::paint (juce::Graphics& g)
     const float r = s.getWidth() * 0.5f;
     g.setGradientFill (juce::ColourGradient (colour::bezelLow, 0, s.getY(), colour::bezel, 0, s.getBottom(), false));
     g.fillRoundedRectangle (s, r);
-    g.setColour (juce::Colours::white.withAlpha (0.6f));
+    g.setColour (colour::sheen.withAlpha (0.6f));
     g.drawRoundedRectangle (s.expanded (0.5f), r + 0.5f, 1.0f);
     const int pos = position();
     const float h = s.getHeight() / 3.0f;
@@ -962,7 +968,7 @@ void LifeBar::paint (juce::Graphics& g)
     // the slot: dark glass sunk into the panel (a light lower lip), the light bar inside it
     const auto slot = slotArea();
     const float r = slot.getHeight() * 0.5f;
-    g.setColour (juce::Colours::white.withAlpha (0.7f));
+    g.setColour (colour::sheen.withAlpha (0.7f));
     g.fillRoundedRectangle (slot.translated (0, 1.0f), r);
     g.setColour (colour::display);
     g.fillRoundedRectangle (slot, r);
@@ -1059,7 +1065,7 @@ void Readout::paint (juce::Graphics& g)
     const auto bounds = getLocalBounds().toFloat();
     const float u = uiScale, r = radius::inset * u;
     // a glass sunk into the panel: a light lower lip, the dark glass, a fine shadow under the upper edge
-    g.setColour (juce::Colours::white.withAlpha (0.7f));
+    g.setColour (colour::sheen.withAlpha (0.7f));
     g.fillRoundedRectangle (bounds.translated (0, 1.0f), r);
     auto glass = bounds.withTrimmedBottom (1.0f);
     g.setColour (colour::display);

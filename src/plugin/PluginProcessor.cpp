@@ -506,6 +506,23 @@ bool OhpeProcessor::exportMidiMap (const juce::File& file) const
     return file.replaceWithText (juce::String::fromUTF8 (ohpeCore.midiMap().toJson().c_str()));
 }
 
+bool OhpeProcessor::setMidiMapping (int index, const MidiMapping& m)
+{
+    if (index < 0 || ohpeCore.params().indexOf (m.paramId) < 0) return false;
+    if (! ohpeCore.midiMap().replace ((size_t) index, m)) return false;
+    ohpeCore.midiMapChanged();
+    sendChangeMessage();
+    return true;
+}
+
+bool OhpeProcessor::removeMidiMapping (int index)
+{
+    if (index < 0 || ! ohpeCore.midiMap().remove ((size_t) index)) return false;
+    ohpeCore.midiMapChanged();
+    sendChangeMessage();
+    return true;
+}
+
 bool OhpeProcessor::importMidiMap (const juce::File& file)
 {
     if (! ohpeCore.midiMap().fromJson (file.loadFileAsString().toStdString()))

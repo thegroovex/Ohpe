@@ -36,6 +36,32 @@ void MidiMap::add (const MidiMapping& m)
     list.push_back (m);
 }
 
+bool MidiMap::replace (size_t index, const MidiMapping& m)
+{
+    if (index >= list.size() || m.paramId.empty()) return false;
+    auto c = m;
+    c.channel = std::clamp (c.channel, 0, 16);
+    c.number = std::clamp (c.number, 0, 127);
+    c.minNorm = std::clamp (c.minNorm, 0.0f, 1.0f);
+    c.maxNorm = std::clamp (c.maxNorm, 0.0f, 1.0f);
+    list[index] = c;
+    // the edited mapping may now duplicate another one (same source, same parameter): keep the edited one
+    for (size_t i = 0; i < list.size(); ++i)
+        if (i != index && list[i].paramId == c.paramId && list[i].sameSource (c))
+        {
+            list.erase (list.begin() + (std::ptrdiff_t) i);
+            break;
+        }
+    return true;
+}
+
+bool MidiMap::remove (size_t index)
+{
+    if (index >= list.size()) return false;
+    list.erase (list.begin() + (std::ptrdiff_t) index);
+    return true;
+}
+
 int MidiMap::clearParam (const std::string& id)
 {
     const auto before = list.size();

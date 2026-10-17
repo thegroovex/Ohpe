@@ -78,6 +78,10 @@ public:
     juce::String describeMidiMapping (const juce::String& paramId) const; ///< "CC 74 · Ch 1" or empty
     bool exportMidiMap (const juce::File& file) const;
     bool importMidiMap (const juce::File& file);
+    /** p32 (settings, MIDI learn list): every mapping in order; edit / remove one by its index. */
+    std::vector<MidiMapping> midiMappings() const { return ohpeCore.midiMap().mappings(); }
+    bool setMidiMapping (int index, const MidiMapping& m);
+    bool removeMidiMapping (int index);
 
     /** 0.3: the preset library (factory + user bank). Message thread. */
     PresetManager& presets() noexcept { return *presetManager; }
@@ -149,6 +153,11 @@ public:
         virtual bool fill (Transport& tr, int numSamples, double sampleRate, double tempoParam) noexcept = 0;
     };
     std::atomic<ExternalTransport*> externalTransport { nullptr };
+
+    /** p32: the standalone app's audio / MIDI devices (nullptr in a plug-in host) and its audio settings window - the
+        settings view lists and switches the MIDI inputs with them. Message thread; set by the standalone window. */
+    juce::AudioDeviceManager* standaloneDevices = nullptr;
+    std::function<void()> openStandaloneAudioSettings;
 
     static BusesProperties makeBuses();
 

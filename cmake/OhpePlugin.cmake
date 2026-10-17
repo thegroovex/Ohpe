@@ -97,6 +97,8 @@ list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/GridKeyboard.cpp)
 # p27: the in-app updater (release check, verified download, content packs) and its view
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/Updater.cpp ${CMAKE_SOURCE_DIR}/src/ui/UpdateView.cpp)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/UserTableView.cpp) # p20
+# p32: the settings menu (user settings store, settings view, help overlay)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/UserSettingsStore.cpp ${CMAKE_SOURCE_DIR}/src/ui/SettingsView.cpp)
 # p18: preset breeding (the breeding view; the engine-agnostic core is src/core/breed)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/BreedView.cpp)
 # p21: pro view 2.0 - graphic tiles, the Discover strip
@@ -245,4 +247,9 @@ endif()
 # ---------------------------------------------------------------- p27: the in-app updater
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/UpdaterTests.cpp)
+endif()
+
+# ---------------------------------------------------------------- p32: the settings menu
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/SettingsUiTests.cpp)
 endif()

@@ -6,19 +6,21 @@
 
 namespace ohpe::ui
 {
-OhpeLookAndFeel::OhpeLookAndFeel()
+OhpeLookAndFeel::OhpeLookAndFeel() { refreshColours(); }
+
+void OhpeLookAndFeel::refreshColours()
 {
     setColour (juce::PopupMenu::backgroundColourId, colour::keyDark);
-    setColour (juce::PopupMenu::textColourId, colour::keyLight);
+    setColour (juce::PopupMenu::textColourId, colour::displayText);
     setColour (juce::PopupMenu::headerTextColourId, colour::sunYellow);
     setColour (juce::PopupMenu::highlightedBackgroundColourId, colour::ultraviolet);
-    setColour (juce::PopupMenu::highlightedTextColourId, juce::Colours::white);
+    setColour (juce::PopupMenu::highlightedTextColourId, colour::displayText);
     setColour (juce::TextButton::buttonColourId, colour::keyDark);
     setColour (juce::TextButton::buttonOnColourId, colour::signalRed);
-    setColour (juce::TextButton::textColourOffId, colour::keyLight);
-    setColour (juce::TextButton::textColourOnId, juce::Colours::white);
+    setColour (juce::TextButton::textColourOffId, colour::displayText);
+    setColour (juce::TextButton::textColourOnId, colour::displayText);
     setColour (juce::ComboBox::backgroundColourId, colour::keyDark);
-    setColour (juce::ComboBox::textColourId, colour::keyLight);
+    setColour (juce::ComboBox::textColourId, colour::displayText);
     setColour (juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
     setColour (juce::ComboBox::arrowColourId, colour::sunYellow);
     setColour (juce::Label::textColourId, colour::ink);
@@ -77,7 +79,7 @@ void OhpeLookAndFeel::drawRotarySlider (juce::Graphics& g, int x, int y, int w, 
     g.fillEllipse (capBox);
     g.setColour (colour::capEdge);
     g.drawEllipse (capBox.reduced (0.5f), juce::jmax (1.0f, size * 0.008f));
-    g.setColour (juce::Colours::white.withAlpha (0.55f));
+    g.setColour (colour::sheen.withAlpha (0.55f));
     juce::Path lit;
     lit.addCentredArc (c.x, c.y, capR - 1.5f, capR - 1.5f, 0.0f, -1.1f, 1.1f, true);
     g.strokePath (lit, juce::PathStrokeType (1.0f));
@@ -99,11 +101,11 @@ void OhpeLookAndFeel::drawButtonBackground (juce::Graphics& g, juce::Button& b, 
     if (on) g.setGradientFill (juce::ColourGradient (colour::pillTop, 0, r.getY(), colour::pill, 0, r.getBottom(), false));
     else g.setGradientFill (juce::ColourGradient (colour::capTop, 0, r.getY(), colour::capBottom, 0, r.getBottom(), false));
     g.fillRoundedRectangle (r, rad);
-    g.setColour (on ? juce::Colours::white.withAlpha (0.06f) : colour::capEdge);
+    g.setColour (on ? colour::sheen.withAlpha (0.06f) : colour::capEdge);
     g.drawRoundedRectangle (r.reduced (0.5f), rad, 1.0f);
     if (over && ! down)
     {
-        g.setColour (juce::Colours::white.withAlpha (on ? 0.06f : 0.25f));
+        g.setColour (colour::sheen.withAlpha (on ? 0.06f : 0.25f));
         g.fillRoundedRectangle (r, rad);
     }
 }

@@ -44,6 +44,9 @@ public:
     /** Removes every mapping of this parameter. Returns the number removed. */
     int clearParam (const std::string& paramId);
     void clear() { list.clear(); }
+    /** p32 (settings, MIDI learn list): replaces / removes the mapping at `index` (the order of mappings()). */
+    bool replace (size_t index, const MidiMapping& m);
+    bool remove (size_t index);
     std::vector<MidiMapping> forParam (const std::string& paramId) const;
     bool isMapped (const std::string& paramId) const;
 

@@ -26,7 +26,9 @@ enum class Picto
     // p14: header round keys
     Random, Save,
     // p24: the isomorphic grid keyboard
-    Grid
+    Grid,
+    // p32: the settings key (header)
+    Settings
 };
 
 struct PictoState

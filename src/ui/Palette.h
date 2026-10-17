@@ -14,42 +14,45 @@ namespace ohpe::ui
 namespace colour
 {
 // housing (p14: matte warm white - no metal, no texture)
-inline const juce::Colour backdrop { 0xffd3d0ca };      ///< behind the housing (window margin)
-inline const juce::Colour body { 0xffefede8 };          ///< housing, matte warm white
-inline const juce::Colour bodyLight { 0xfff8f7f3 };     ///< housing highlight (upper edge)
-inline const juce::Colour bodyShade { 0xffd6d3cc };     ///< grooves, rings, shadows
-inline const juce::Colour panel { 0xffe3e0d9 };         ///< recessed column panels
-inline const juce::Colour panelEdge { 0xffcdc9c1 };     ///< the panels' upper inner edge
-inline const juce::Colour engraving { 0xff54524e };     ///< printed legends on the housing
-inline const juce::Colour ink { 0xff1c1c1b };           ///< strongest text
+inline juce::Colour backdrop { 0xffd3d0ca };      ///< behind the housing (window margin)
+inline juce::Colour body { 0xffefede8 };          ///< housing, matte warm white
+inline juce::Colour bodyLight { 0xfff8f7f3 };     ///< housing highlight (upper edge)
+inline juce::Colour bodyShade { 0xffd6d3cc };     ///< grooves, rings, shadows
+inline juce::Colour panel { 0xffe3e0d9 };         ///< recessed column panels
+inline juce::Colour panelEdge { 0xffcdc9c1 };     ///< the panels' upper inner edge
+inline juce::Colour engraving { 0xff54524e };     ///< printed legends on the housing
+inline juce::Colour ink { 0xff1c1c1b };           ///< strongest text
 // p14: matte light keys on the housing
-inline const juce::Colour capTop { 0xfff3f1ec };
-inline const juce::Colour capBottom { 0xffe2dfd8 };
-inline const juce::Colour capEdge { 0xffc3bfb7 };
-inline const juce::Colour capInk { 0xff383735 };        ///< pictograms on the light keys
-inline const juce::Colour pill { 0xff2c2c2f };          ///< dark pill keys (LIBRARY, PRO)
-inline const juce::Colour pillTop { 0xff3d3d41 };
-inline const juce::Colour bezel { 0xff38383b };          ///< the display's dark frame (also the overlays' rim)
-inline const juce::Colour bezelLow { 0xff1f1f21 };
+inline juce::Colour capTop { 0xfff3f1ec };
+inline juce::Colour capBottom { 0xffe2dfd8 };
+inline juce::Colour capEdge { 0xffc3bfb7 };
+inline juce::Colour capInk { 0xff383735 };        ///< pictograms on the light keys
+inline juce::Colour pill { 0xff2c2c2f };          ///< dark pill keys (LIBRARY, PRO)
+inline juce::Colour pillTop { 0xff3d3d41 };
+inline juce::Colour bezel { 0xff38383b };          ///< the display's dark frame (also the overlays' rim)
+inline juce::Colour bezelLow { 0xff1f1f21 };
 // keys
-inline const juce::Colour keyDark { 0xff2a2c31 };       ///< graphite key cap
-inline const juce::Colour keyDarkTop { 0xff34373d };
-inline const juce::Colour keyLight { 0xfff6f5f1 };      ///< natural keyboard key
-inline const juce::Colour keyLightPressed { 0xffdcd9d2 };
+inline juce::Colour keyDark { 0xff2a2c31 };       ///< graphite key cap
+inline juce::Colour keyDarkTop { 0xff34373d };
+inline juce::Colour keyLight { 0xfff6f5f1 };      ///< natural keyboard key
+inline juce::Colour keyLightPressed { 0xffdcd9d2 };
 // display
-inline const juce::Colour display { 0xff0c0d10 };       ///< "Night" display glass
-inline const juce::Colour displayGrid { 0xff1c1e23 };
-inline const juce::Colour displayText { 0xffe9e6df };   ///< warm paper white on the display only
-inline const juce::Colour displayDim { 0xff6b6f78 };
+inline juce::Colour display { 0xff0c0d10 };       ///< "Night" display glass
+inline juce::Colour displayGrid { 0xff1c1e23 };
+inline juce::Colour displayText { 0xffe9e6df };   ///< warm paper white on the display only
+inline juce::Colour displayDim { 0xff6b6f78 };
 // accents: one per encoder, also used for the matching value on the display
-inline const juce::Colour signalRed { 0xffe5243b };     ///< encoder 1
-inline const juce::Colour sunYellow { 0xfff6c20f };     ///< encoder 2
-inline const juce::Colour ultraviolet { 0xff6c4cf5 };   ///< encoder 3
-inline const juce::Colour rose { 0xffff6fa5 };          ///< encoder 4
+inline juce::Colour signalRed { 0xffe5243b };     ///< encoder 1
+inline juce::Colour sunYellow { 0xfff6c20f };     ///< encoder 2
+inline juce::Colour ultraviolet { 0xff6c4cf5 };   ///< encoder 3
+inline juce::Colour rose { 0xffff6fa5 };          ///< encoder 4
 /** p14: the one colour for "playing" (PLAY bar and triangle, the tape playing): a calm jade green, deep
     enough to read on the light keys at 1x, a touch brighter (playGreenLit) on the black display. */
-inline const juce::Colour playGreen { 0xff19a66c };
-inline const juce::Colour playGreenLit { 0xff3fd08e };
+inline juce::Colour playGreen { 0xff19a66c };
+inline juce::Colour playGreenLit { 0xff3fd08e };
+/** p32: highlights on the housing (lit edges, lips of the recesses): white in the light skin, a soft warm grey in the
+    dark skin (no glare). */
+inline juce::Colour sheen { 0xffffffff };
 
 inline juce::Colour encoder (int i)
 {
@@ -62,6 +65,15 @@ inline juce::Colour encoder (int i)
     }
 }
 } // namespace colour
+
+/**
+    p32: skins. The colours above are the light skin's; applySkin() rewrites them (message thread, then repaint the
+    editor and drop cached images). Dark ("night"): warm dark greys, no pure white anywhere, dimmed accents and light
+    bars; every text colour keeps a WCAG contrast of at least 4.5 to its background (tests/plugin/SettingsUiTests.cpp).
+*/
+enum class Skin { Light = 0, Dark };
+void applySkin (Skin s);
+Skin currentSkin() noexcept;
 
 /** p14: one radius system (design units at 1x): the housing, a matching smaller radius on every recessed
     panel and frame (columns, transport, octave, keyboard bed, display frame, header slots, overlays),

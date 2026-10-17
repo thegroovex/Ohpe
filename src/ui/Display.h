@@ -37,6 +37,8 @@ public:
     Visual shownVisual() const;
     /** 0.7 setting: animated 3D visuals (spectrum terrain, parallax). Off = static display. */
     void setAnimatedVisuals (bool on);
+    /** p32: the skin changed - the cached bezel / glass layers are drawn again. */
+    void skinChanged() { baseLayer = {}; gridLayer = {}; glassLayer = {}; repaint(); }
     bool animatedVisuals() const noexcept { return animated; }
     /** The scope tap source the display needs right now (ScopeTap::Source). */
     int scopeSource() const;

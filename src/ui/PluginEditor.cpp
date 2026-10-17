@@ -186,7 +186,8 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     : AudioProcessorEditor (p), proc (p), display (p),
       pitchWheel (p, Core::Ids::perfBend, "Pitch", true), modWheel (p, Core::Ids::perfMod, "Mod", false),
       glideSwitch (p), glideKnob (p, "Glide"), lifeBar (p),
-      keyboard (p.keyboardState), grid (p), proView (p), library (p), breedView (p), updateView (*updater)
+      keyboard (p.keyboardState), grid (p), proView (p), library (p), breedView (p), updateView (*updater),
+      settingsView (p, *updater, *userSettings)
 {
     setLookAndFeel (&lnf);
     setWantsKeyboardFocus (false);
@@ -296,15 +297,11 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     addAndMakeVisible (partSelector);
     addAndMakeVisible (presetStrip);
 
-    for (auto* b : { &langEn, &langDe })
-    {
-        b->setClickingTogglesState (false);
-        b->setWantsKeyboardFocus (false); // p11: Space stays the transport shortcut
-        b->setMouseClickGrabsKeyboardFocus (false);
-        addAndMakeVisible (*b);
-    }
-    langEn.onClick = [this] { setLanguage (i18n::Language::English); };
-    langDe.onClick = [this] { setLanguage (i18n::Language::German); };
+    // p32: the gear key (where the language pills were) opens the settings; the language lives there now
+    settingsKey.setStyle (PictoKey::Style::Round);
+    settingsKey.setLegendOnTop (true);
+    settingsKey.onClick = [this] { showSettings (! settingsView.isVisible()); };
+    addAndMakeVisible (settingsKey);
 
     display.onPageChange = [this] (int d) {
         const bool stepEdit = lockStepIndex >= 0 && mode == Mode::Sequencer && ctx.seqView == SeqView::Step;
@@ -377,12 +374,34 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
         updateView.onClosed = [this] { updateOverlayVisibility(); rebindEncoders(); };
         addChildComponent (updateView);
         versionBadge.setName ("versionBadge");
-        versionBadge.onClick = [this] { showUpdates (! updateView.isVisible()); };
+        // p32: the version legend / wordmark: the update view when an update is offered, otherwise the About page
+        versionBadge.onClick = [this] {
+            if (versionBadge.showsUpdate()) showUpdates (! updateView.isVisible());
+            else if (settingsView.isVisible() && settingsView.page() == ui::SettingsView::About) showSettings (false);
+            else showSettings (true, ui::SettingsView::About);
+        };
         addAndMakeVisible (versionBadge);
         contentGenerationSeen = updater->contentGeneration();
         refreshVersionBadge();
     }
     tooltipWindow = std::make_unique<juce::TooltipWindow> (this, 700); // p11: tooltips on keys and the display
+    // p32: the settings view and the help overlay
+    {
+        const bool standalone = proc.wrapperType == juce::AudioProcessor::wrapperType_Standalone;
+        settingsView.setStandalone (standalone);
+        settingsView.onClosed = [this] { settingsKey.setActive (false); updateOverlayVisibility(); rebindEncoders(); };
+        settingsView.onSettingsChanged = [this] { applyUserSettings(); };
+        settingsView.onOpenUpdates = [this] { showUpdates (true); };
+        settingsView.getAnimatedVisuals = [this] { return display.animatedVisuals(); };
+        settingsView.setAnimatedVisuals = [this] (bool on) {
+            display.setAnimatedVisuals (on);
+            storeAnimatedVisualsSetting (on);
+            saveUiState();
+        };
+        addChildComponent (settingsView);
+        addChildComponent (helpOverlay);
+        userSettings->addChangeListener (this);
+    }
 
     loadUiState();
     proc.addChangeListener (this);
@@ -393,7 +412,11 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     setResizable (true, true);
     setResizeLimits (designWidth * 2 / 3, designHeight * 2 / 3, designWidth * 2, designHeight * 2);
     if (auto* c = getConstrainer()) c->setFixedAspectRatio ((double) designWidth / designHeight);
-    setSize (designWidth, designHeight);
+    {   // p32: the default window size of the user settings
+        const float ws = userSettings->get().windowScale;
+        shownWindowScale = ws;
+        setSize (juce::roundToInt ((float) designWidth * ws), juce::roundToInt ((float) designHeight * ws));
+    }
 
     ctx.part = juce::jlimit (0, Core::numParts - 1, (int) std::lround (proc.core().params().get (Core::Ids::editPart)) - 1);
     shownEngine = ui::selectedEngine (proc.core(), ctx.part);
@@ -402,6 +425,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     refreshKeys();
     refreshLeds();
     updateOverlayVisibility();
+    applyUserSettings(); // p32: language, skin, tooltips, help overlay
     transportMessagesSeen = proc.transportMessageCount();
     startTimerHz (30);
 }
@@ -409,6 +433,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
 OhpeEditor::~OhpeEditor()
 {
     stopTimer();
+    userSettings->removeChangeListener (this);
     proc.presets().removeChangeListener (this);
     proc.removeChangeListener (this);
     setLookAndFeel (nullptr);
@@ -433,8 +458,8 @@ juce::Rectangle<float> OhpeEditor::designArea (const char* name)
         // edge, as the wordmark starts 32 units from its left edge
         { "libraryKey", 760, 20, 80, 56 },      { "proKey", 848, 20, 80, 56 },
         { "randomKey", 936, 20, 64, 56 },       { "saveKey", 1008, 20, 64, 56 },
-        { "langLegend", 1080, 20, 80, 12 },
-        { "langEn", 1080, 44, 36, 24 },         { "langDe", 1124, 44, 36, 24 },
+        // p32: the gear key ends 32 units from the housing's right edge (the language pills moved into the settings)
+        { "settingsKey", 1096, 20, 64, 56 },
         // p27: the version legend on the header's legend line above the wordmark (the click area covers the wordmark)
         { "versionBadge", 40, 20, 248, 56 },
         { "engineLegend", 40, 88, 200, 12 },    { "modeLegend", 968, 88, 192, 12 },
@@ -514,8 +539,7 @@ void OhpeEditor::resized()
     place (proKey, "proKey");
     place (randomKey, "randomKey");
     place (saveKey, "saveKey");
-    place (langEn, "langEn");
-    place (langDe, "langDe");
+    place (settingsKey, "settingsKey");
     // keyboard row: wheels left, glide right
     place (pitchWheel, "pitchWheel");
     place (modWheel, "modWheel");
@@ -527,10 +551,12 @@ void OhpeEditor::resized()
     place (library, "overlay");
     place (breedView, "overlay"); // p18
     place (updateView, "overlay"); // p27
+    place (settingsView, "overlay"); // p32
+    helpOverlay.setBounds (getLocalBounds());
     place (versionBadge, "versionBadge");
     for (auto& k : engineKeys) k->setUiScale (s);
     for (auto& k : modeKeys) k->setUiScale (s);
-    for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey, &gridKey, &libraryKey, &proKey, &randomKey, &saveKey })
+    for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey, &gridKey, &libraryKey, &proKey, &randomKey, &saveKey, &settingsKey })
         k->setUiScale (s);
     glideSwitch.setUiScale (s);
     glideKnob.setUiScale (s);
@@ -544,7 +570,7 @@ namespace
 /** A panel sunk into the housing: darker fill, shadow under the upper edge, light at the lower lip. */
 void recess (juce::Graphics& g, juce::Rectangle<float> r, float radius, juce::Colour fill, float s)
 {
-    g.setColour (juce::Colours::white.withAlpha (0.8f));
+    g.setColour (colour::sheen.withAlpha (0.8f));
     g.fillRoundedRectangle (r.translated (0, 1.0f * s), radius);
     g.setColour (fill);
     g.fillRoundedRectangle (r, radius);
@@ -581,7 +607,7 @@ void OhpeEditor::renderBackground (float phys)
     }
     g.setGradientFill (juce::ColourGradient (colour::bodyLight, 0, housing.getY(), colour::body.darker (0.015f), 0, housing.getBottom(), false));
     g.fillRoundedRectangle (housing, hr);
-    g.setColour (juce::Colours::white.withAlpha (0.9f));
+    g.setColour (colour::sheen.withAlpha (0.9f));
     g.drawRoundedRectangle (housing.reduced (1.0f * s), hr - s, 1.0f * s);
     g.setColour (colour::bodyShade.darker (0.08f));
     g.drawRoundedRectangle (housing, hr, 1.0f * s);
@@ -597,7 +623,7 @@ void OhpeEditor::renderBackground (float phys)
     // the display sits in a dark frame sunk into the housing
     const auto disp = d (designArea ("display"));
     const auto frame = disp.expanded (7.0f * s);
-    g.setColour (juce::Colours::white.withAlpha (0.85f));
+    g.setColour (colour::sheen.withAlpha (0.85f));
     g.fillRoundedRectangle (frame.translated (0, 1.2f * s), radius::panel * s);
     g.setGradientFill (juce::ColourGradient (colour::bezelLow, 0, frame.getY(), colour::bezel, 0, frame.getBottom(), false));
     g.fillRoundedRectangle (frame, radius::panel * s);
@@ -631,11 +657,6 @@ void OhpeEditor::paint (juce::Graphics& g)
     };
     legend (tr ("Part"), "partLegend");
     legend (tr ("Preset"), "presetLegend");
-    {   // p14: the language pills' legend, centred over them like the key legends of the row
-        const auto r = designArea ("langLegend");
-        g.setColour (colour::engraving);
-        drawBaselineLegend (g, i18n::upper (tr ("Language")), juce::Rectangle<float> (r.getX() * s, r.getY() * s, r.getWidth() * s, r.getHeight() * s), 11.0f * s);
-    }
     // p11: the legends of the plate belong to its controls - hidden with them while the library or the
     // pro view lies on the plate
     if (! overlayOpen())
@@ -847,6 +868,7 @@ void OhpeEditor::setLanguage (i18n::Language lang)
     saveUiState();
     refreshKeys();
     rebindEncoders();
+    refreshHelpOverlay(); // p32
     repaint();
 }
 
@@ -857,6 +879,7 @@ void OhpeEditor::showLibrary (bool show)
     {
         if (breedView.isVisible()) showBreeding (false); // p18
         if (updateView.isVisible()) showUpdates (false); // p27
+        if (settingsView.isVisible()) showSettings (false); // p32
         proView.setVisible (false);
         proKey.setActive (false);
         library.open();
@@ -882,11 +905,143 @@ void OhpeEditor::showUpdates (bool show)
         if (library.isVisible()) showLibrary (false);
         if (breedView.isVisible()) showBreeding (false);
         if (proView.isVisible()) showProView (false);
+        if (settingsView.isVisible()) showSettings (false); // p32
         updateView.open();
     }
     else
         updateView.close();
     updateOverlayVisibility();
+}
+
+void OhpeEditor::showSettings (bool show, int page)
+{
+    if (show == settingsView.isVisible())
+    {
+        if (show && page >= 0) settingsView.showPage (page);
+        return;
+    }
+    if (show)
+    {
+        if (library.isVisible()) showLibrary (false);
+        if (breedView.isVisible()) showBreeding (false);
+        if (proView.isVisible()) showProView (false);
+        if (updateView.isVisible()) showUpdates (false);
+        settingsView.open (page);
+    }
+    else
+        settingsView.close();
+    settingsKey.setActive (show);
+    updateOverlayVisibility();
+}
+
+// ---------------------------------------------------------------- p32: user settings
+void OhpeEditor::applyUserSettings()
+{
+    const auto& us = userSettings->get();
+    // language (only a fixed choice overrides the process-wide language; System follows the system / OHPE_LANGUAGE)
+    {
+        const auto before = i18n::current();
+        if (us.language == settings::Language::English) i18n::setCurrent (i18n::Language::English);
+        else if (us.language == settings::Language::German) i18n::setCurrent (i18n::Language::German);
+        else if (shownSkin >= 0) i18n::followSystem(); // a change to System in the settings (not at start-up)
+        if (i18n::current() != before)
+        {
+            library.languageChanged();
+            refreshKeys();
+            rebindEncoders();
+        }
+    }
+    // skin
+    const int skin = (int) settings::effectiveSkin (us.skin, us.skin == settings::Skin::Auto && UserSettingsStore::systemDark());
+    if (skin != shownSkin)
+    {
+        shownSkin = skin;
+        applySkinNow();
+    }
+    // tooltips
+    if (us.tooltips != tooltipsOn || (us.tooltips && tooltipWindow == nullptr))
+    {
+        tooltipsOn = us.tooltips;
+        if (tooltipsOn)
+        {
+            if (tooltipWindow == nullptr) tooltipWindow = std::make_unique<juce::TooltipWindow> (this, 700);
+            tooltips.setMillisecondsBeforeTipAppears (600);
+        }
+        else
+        {
+            tooltipWindow.reset();
+            tooltips.setMillisecondsBeforeTipAppears (1 << 30);
+            tooltips.hideTip();
+        }
+    }
+    animRate = settings::animationRate (us.animations);
+    // window size: only when the setting changed (the user may have resized the window since)
+    if (us.windowScale != shownWindowScale)
+    {
+        shownWindowScale = us.windowScale;
+        setSize (juce::roundToInt ((float) designWidth * us.windowScale), juce::roundToInt ((float) designHeight * us.windowScale));
+    }
+    refreshHelpOverlay();
+    repaint();
+}
+
+void OhpeEditor::applySkinNow()
+{
+    ui::applySkin (shownSkin == (int) settings::Skin::Dark ? ui::Skin::Dark : ui::Skin::Light);
+    lnf.refreshColours();
+    applyAccents();
+    keyboard.refreshColours();
+    glideKnob.refreshColours();
+    display.skinChanged();
+    background = {};
+    sendLookAndFeelChange();
+    repaint();
+}
+
+void OhpeEditor::applyAccents()
+{
+    for (auto& k : engineKeys) k->setAccent (colour::sunYellow);
+    for (auto& k : modeKeys) k->setAccent (colour::signalRed);
+    playKey.setAccent (colour::signalRed);
+    recKey.setAccent (colour::signalRed);
+    recKey.setPictoColour (colour::signalRed);
+    loopKey.setAccent (colour::sunYellow);
+    libraryKey.setAccent (colour::sunYellow);
+    proKey.setAccent (colour::ultraviolet);
+    settingsKey.setAccent (colour::sunYellow);
+    for (auto& e : encoders) e->refreshColours();
+}
+
+void OhpeEditor::refreshHelpOverlay()
+{
+    std::vector<ui::HelpOverlay::Item> items;
+    auto add = [&items] (juce::Rectangle<float> r, const char* title, const char* text) { items.push_back ({ r, tr (title), tr (text) }); };
+    add (designArea ("partSelector").expanded (4.0f).withTrimmedRight (0), "Parts", "Four parts, each with its own sound");
+    add (designArea ("presetStrip").expanded (4.0f), "Preset", "Arrows step, a click opens the library");
+    add (designArea ("engineColumn"), "Engines", "The sound engine of the edit part");
+    add (designArea ("display"), "Display", "Pages and values - drag the bars");
+    add (designArea ("modeColumn"), "Modes", "What the display and encoders edit");
+    add ({ 272, 456, 656, 156 }, "Encoders", "Four colours = the four values on the display");
+    add (designArea ("transportPanel"), "Transport", "Play, record, loop the tape");
+    add (designArea ("octavePanel"), "Keyboard", "Octave, grid keyboard, MIDI");
+    add ({ 32, 628, 112, 144 }, "Wheels", "Pitch bend and modulation");
+    add ({ 1032, 628, 144, 144 }, "Glide", "Portamento mode and time");
+    add (designArea ("settingsKey").expanded (2.0f), "Settings", "Language, help, skin, MIDI");
+    helpOverlay.setItems (std::move (items));
+    const bool show = userSettings->get().helpOverlay && ! overlayOpen();
+    if (helpOverlay.isVisible() != show) helpOverlay.setVisible (show);
+    if (show) helpOverlay.toFront (false);
+}
+
+void OhpeEditor::paintOverChildren (juce::Graphics& g)
+{
+    // p32: display brightness - the dark display dimmed (lower glare), the plate untouched
+    const float b = userSettings->get().brightness;
+    if (b < 0.999f && display.isVisible())
+    {
+        g.setColour (juce::Colours::black.withAlpha (juce::jlimit (0.0f, 0.75f, (1.0f - b) * 1.1f)));
+        g.fillRoundedRectangle (display.getBounds().toFloat(), radius::inset * (float) getWidth() / (float) designWidth);
+    }
 }
 
 void OhpeEditor::showBreeding (bool show, int libraryEntry)
@@ -897,6 +1052,7 @@ void OhpeEditor::showBreeding (bool show, int libraryEntry)
         if (library.isVisible()) showLibrary (false);
         if (proView.isVisible()) showProView (false);
         if (updateView.isVisible()) showUpdates (false); // p27
+        if (settingsView.isVisible()) showSettings (false); // p32
         breedView.open (libraryEntry);
     }
     else
@@ -910,6 +1066,7 @@ void OhpeEditor::showProView (bool show)
     if (show && breedView.isVisible()) showBreeding (false);
     if (show && library.isVisible()) showLibrary (false);
     if (show && updateView.isVisible()) showUpdates (false); // p27
+    if (show && settingsView.isVisible()) showSettings (false); // p32
     proView.setVisible (show);
     proKey.setActive (show);
     if (show)
@@ -943,6 +1100,7 @@ void OhpeEditor::updateOverlayVisibility()
     const bool plate = ! overlayOpen();
     for (auto* c : plateComponents())
         if (c->isVisible() != plate) c->setVisible (plate);
+    refreshHelpOverlay(); // p32
     repaint();
 }
 
@@ -1824,6 +1982,7 @@ void OhpeEditor::refreshKeys()
     proKey.setTooltip (tr ("All parameters of the mode"));
     randomKey.setTooltip (tr ("Random: new values for the sound of the edit part's engine. Hold (or right-click) for breeding"));
     saveKey.setTooltip (tr ("Save the edit part as a user preset"));
+    settingsKey.setTooltip (tr ("Settings: language, help, skin, display, MIDI, updates, about")); // p32
     pitchWheel.setTooltip (tr ("Pitch bend - springs back to the centre; right-click: MIDI learn"));
     modWheel.setTooltip (tr ("Mod wheel (modulation matrix source); right-click: MIDI learn"));
     glideSwitch.setTooltip (tr ("Glide mode of the edit part: Auto, Legato or Always"));
@@ -1844,19 +2003,27 @@ void OhpeEditor::refreshKeys()
     }
     libraryKey.setActive (library.isVisible());
     proKey.setActive (proView.isVisible());
-    langEn.setToggleState (i18n::current() == i18n::Language::English, juce::dontSendNotification);
-    langDe.setToggleState (i18n::current() == i18n::Language::German, juce::dontSendNotification);
+    settingsKey.setActive (settingsView.isVisible());
     for (auto& e : encoders) e->repaint();
 }
 
 bool OhpeEditor::keyPressed (const juce::KeyPress& key)
 {
     if (handleShortcut (key)) return true; // p11: standalone transport shortcuts
+    if (key.getKeyCode() == juce::KeyPress::F1Key) // p32: the help overlay on / off
+    {
+        auto s = userSettings->get();
+        s.helpOverlay = ! s.helpOverlay;
+        userSettings->set (s);
+        applyUserSettings();
+        return true;
+    }
     if (key == juce::KeyPress::escapeKey)
     {
         if (library.isVisible()) { library.close (false); return true; }
         if (breedView.isVisible()) { breedView.close (false); return true; } // p18
         if (updateView.isVisible()) { showUpdates (false); return true; } // p27
+        if (settingsView.isVisible()) { showSettings (false); return true; } // p32
         if (proView.isVisible()) { showProView (false); return true; }
         if (lockStepIndex >= 0) { selectLockStep (-1); return true; }
     }
@@ -1870,8 +2037,13 @@ void OhpeEditor::timerCallback()
     {
         std::array<int, 4> st {}; // 1.0: 3D state of every part for the part selector
         for (int p = 0; p < Core::numParts; ++p) st[(size_t) p] = (int) ui::space3d::partState (core, p);
-        spatialTime += 1.0f / 30.0f;
+        spatialTime += animRate / 30.0f; // p32: Settings > Animations
         partSelector.setSpatial (st, spatialTime);
+    }
+    if (userSettings->get().skin == settings::Skin::Auto && ++skinPoll >= 60) // p32: follow the system's appearance
+    {
+        skinPoll = 0;
+        applyUserSettings();
     }
 
     // p27: the daily update check (opt-in; never while the transport or the tape runs), the version legend, content packs
@@ -1953,7 +2125,8 @@ void OhpeEditor::timerCallback()
         e->setModulation (r.any, r.lo, r.hi, r.live);
     }
     // p11: transport keys (REC / PLAY breathe), messages of MIDI-triggered transport actions
-    blinkClock += 1.0f / 30.0f;
+    if (animRate > 0.0f) blinkClock += animRate / 30.0f; // p32: Reduced breathes slower
+    else blinkClock = 0.9f;                              // Off: the lights stand still, fully lit
     refreshTransportKeys();
     refreshLeds();
     if (const int n = proc.transportMessageCount(); n != transportMessagesSeen)
@@ -2036,6 +2209,11 @@ void OhpeEditor::changeListenerCallback (juce::ChangeBroadcaster* source)
     {
         presetStrip.setName (proc.presets().currentName());
         rebindEncoders();
+        return;
+    }
+    if (source == &userSettings.getObject()) // p32: another editor (or this one) changed the user settings
+    {
+        applyUserSettings();
         return;
     }
     loadUiState();
@@ -2132,7 +2310,7 @@ void OhpeEditor::loadUiState()
 {
     const auto& s = proc.uiState;
     if (! s.isObject()) return;
-    if (s.hasProperty ("lang")) i18n::setCurrent (s["lang"].toString() == "de" ? i18n::Language::German : i18n::Language::English);
+    // p32: the language is a user setting now (Settings > General); the session's "lang" is still written for older versions
     if (s.hasProperty ("mode"))
     {
         const auto m = (Mode) juce::jlimit (0, numModes - 1, (int) s["mode"]);
