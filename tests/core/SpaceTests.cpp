@@ -14,6 +14,7 @@
 #include <nlohmann/json.hpp>
 
 #include <chrono>
+#include <memory>
 #include <cmath>
 
 using namespace ohpe;
@@ -775,8 +776,8 @@ TEST_CASE ("p41 space: the link - a moved switch sets space.on / space.out, chan
 
 TEST_CASE ("p41 space: presets and sessions set the switches from space.on / space.out (also when older ones lack them)")
 {
-    Core core;
-    auto& reg = core.params();
+    auto core = std::make_unique<Core>();
+    auto& reg = core->params();
     // an older part preset: space on, no "space.mode" in it
     preset::Preset old;
     old.meta.kind = preset::Kind::Part;
@@ -793,21 +794,24 @@ TEST_CASE ("p41 space: presets and sessions set the switches from space.on / spa
     CHECK (reg.get ("p3.space.mode") == 1.0f);
 
     // a session older than the switch: space.on of part 4 on, monitoring speakers, no mode values
-    Core b;
-    b.params().set ("p4.space.on", 1.0f);
-    b.params().set ("space.out", 1.0f);
-    auto j = nlohmann::json::parse (b.saveState());
+    // (the cores live on the heap: Windows test threads have small stacks)
+    auto b = std::make_unique<Core>();
+    b->params().set ("p4.space.on", 1.0f);
+    b->params().set ("space.out", 1.0f);
+    auto j = nlohmann::json::parse (b->saveState());
+    b.reset();
     for (int p = 0; p < Core::numParts; ++p) j["params"].erase (spacemode::modeId (p));
     const auto json = j.dump();
-    Core c;
-    REQUIRE (c.loadState (json));
-    CHECK (c.params().get ("p4.space.on") == 1.0f);
-    CHECK (c.params().get ("p4.space.mode") == 2.0f);
-    CHECK (c.params().get ("p1.space.mode") == 0.0f);
+    auto c = std::make_unique<Core>();
+    REQUIRE (c->loadState (json));
+    CHECK (c->params().get ("p4.space.on") == 1.0f);
+    CHECK (c->params().get ("p4.space.mode") == 2.0f);
+    CHECK (c->params().get ("p1.space.mode") == 0.0f);
     // round trip with the switch: unchanged
-    Core d;
-    REQUIRE (d.loadState (c.saveState()));
-    for (int p = 0; p < Core::numParts; ++p) CHECK (d.params().get (spacemode::modeId (p)) == c.params().get (spacemode::modeId (p)));
+    const auto saved = c->saveState();
+    auto d = std::make_unique<Core>();
+    REQUIRE (d->loadState (saved));
+    for (int p = 0; p < Core::numParts; ++p) CHECK (d->params().get (spacemode::modeId (p)) == c->params().get (spacemode::modeId (p)));
 }
 
 TEST_CASE ("p41 space: Speakers renders the speaker path (no interaural delay), Headphones the binaural one, Off is a bypass")

@@ -29,7 +29,7 @@ juce::String badgeTooltip (State s);
 /** The headphones pictogram (own drawing in the line style of the characters): band, two cups, sound arcs when lit.
     `glow` 0..1 adds a soft halo (active, pulsing). */
 void drawHeadphones (juce::Graphics& g, juce::Rectangle<float> area, juce::Colour ink, float glow);
-/** The speakers pictogram for the speaker-monitoring state (two cabinets with cones). */
+/** The speakers pictogram for the speaker-monitoring state (p41: a loudspeaker - box, cone, two sound arcs). */
 void drawSpeakers (juce::Graphics& g, juce::Rectangle<float> area, juce::Colour ink);
 /** The badge in the display header: pictogram + "3D"; lit (ultraviolet, pulsing) for binaural, outlined for speakers,
     dim when off (p41: with the speakers pictogram when `speakersWhenOff`, i.e. the monitoring is set to speakers).

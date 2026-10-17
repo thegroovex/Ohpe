@@ -316,16 +316,26 @@ void drawHeadphones (juce::Graphics& g, juce::Rectangle<float> area, juce::Colou
 
 void drawSpeakers (juce::Graphics& g, juce::Rectangle<float> area, juce::Colour ink)
 {
+    // p41: a loudspeaker in the line style of the headphones - the driver's box, its flared cone, two sound arcs
     const float s = juce::jmin (area.getWidth(), area.getHeight());
     auto b = area.withSizeKeepingCentre (s, s);
-    const float w = juce::jmax (1.0f, s * 0.08f);
+    const float w = juce::jmax (1.0f, s * 0.09f);
+    const float x0 = b.getX(), y0 = b.getY();
     g.setColour (ink);
-    for (float side : { -1.0f, 1.0f })
+    g.fillRoundedRectangle (juce::Rectangle<float> (x0 + s * 0.08f, y0 + s * 0.37f, s * 0.2f, s * 0.26f), s * 0.04f);
+    juce::Path cone;
+    cone.startNewSubPath (x0 + s * 0.28f, y0 + s * 0.37f);
+    cone.lineTo (x0 + s * 0.52f, y0 + s * 0.16f);
+    cone.lineTo (x0 + s * 0.52f, y0 + s * 0.84f);
+    cone.lineTo (x0 + s * 0.28f, y0 + s * 0.63f);
+    cone.closeSubPath();
+    g.fillPath (cone);
+    for (int k = 0; k < 2; ++k)
     {
-        auto box = juce::Rectangle<float> (s * 0.34f, s * 0.6f).withCentre ({ b.getCentreX() + side * s * 0.24f, b.getCentreY() + s * 0.04f });
-        g.drawRoundedRectangle (box, s * 0.05f, w);
-        g.fillEllipse (juce::Rectangle<float> (s * 0.18f, s * 0.18f).withCentre (box.getCentre().translated (0, s * 0.08f)));
-        g.fillEllipse (juce::Rectangle<float> (s * 0.08f, s * 0.08f).withCentre (box.getCentre().translated (0, -s * 0.15f)));
+        juce::Path arc;
+        const float r = s * (0.14f + 0.16f * (float) k);
+        arc.addCentredArc (x0 + s * 0.56f, y0 + s * 0.5f, r, r, 0.0f, pi * 0.5f - 0.8f, pi * 0.5f + 0.8f, true);
+        g.strokePath (arc, juce::PathStrokeType (w, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
     }
 }
 

@@ -488,6 +488,7 @@ juce::String compactName (const std::string& id, const std::string& nameEn, cons
     const bool matrix = part && (rest.rfind ("mod.s", 0) == 0 || rest.rfind ("lfo2.", 0) == 0 || rest.rfind ("lfo3.", 0) == 0
                                  || rest.rfind ("env3.", 0) == 0 || rest.rfind ("macro", 0) == 0 || rest == "seqlane");
     const bool rack = (part && rest.rfind ("fx", 0) == 0) || id.rfind ("mfx", 0) == 0;
+    if (part && rest == "space.mode") return tr ("3D Space"); // p41: the 3D switch reads "3D Space" / "3D-Raum"
     if (part && rest.rfind ("space.", 0) == 0) // 1.0: "Part 2 3D Azimuth" -> "Azimuth", "Part 2 3D Space" -> "3D Space"
     {
         const int marker = name.indexOf (" 3D ");

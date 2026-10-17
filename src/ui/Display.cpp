@@ -1497,7 +1497,7 @@ juce::Rectangle<float> Display::segmentArea (int row, int segment, int numSegmen
     const auto full = rowArea (row);
     const float rowH = full.getHeight();
     const auto textArea = full.reduced (0, rowH * 0.12f).withTrimmedLeft (rowH * 0.76f * 0.7f);
-    auto strip = textArea.withTop (full.getY() + rowH * 0.57f).withBottom (full.getY() + rowH * 0.95f);
+    auto strip = textArea.withTop (full.getY() + rowH * 0.5f).withBottom (full.getY() + rowH * 0.98f);
     if (numSegments <= 0) return strip;
     const float gap = rowH * 0.08f;
     const float w = (strip.getWidth() - gap * (float) (numSegments - 1)) / (float) numSegments;
@@ -1526,9 +1526,9 @@ void Display::paintSegments (juce::Graphics& g, int row, const ParamDescriptor& 
         const juce::String label = i18n::upper (i18n::pick (d.choices[(size_t) k], k < (int) d.choicesDe.size() ? d.choicesDe[(size_t) k] : d.choices[(size_t) k]));
         auto inner = r.reduced (r.getHeight() * 0.25f, 0);
         // the monitoring's pictogram in front of the label (own drawings, see SpaceView): headphones / speakers
-        const auto font = labelFont (r.getHeight() * 0.5f);
+        const auto font = labelFont (r.getHeight() * 0.6f);
         const float textW = juce::GlyphArrangement::getStringWidth (font, label);
-        const float icon = r.getHeight() * 0.72f;
+        const float icon = r.getHeight() * 0.78f;
         if (k > 0 && textW + icon * 1.2f <= inner.getWidth())
         {
             auto both = inner.withSizeKeepingCentre (textW + icon * 1.2f, inner.getHeight());
