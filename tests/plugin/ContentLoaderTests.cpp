@@ -303,3 +303,10 @@ TEST_CASE ("content loader: user wavetables resolve <pack>/<table>; a missing pa
     CHECK (r.packMissing == 0);
     CHECK (ut.missingPacks().isEmpty());
 }
+
+TEST_CASE ("content loader: this build accepts packs made for 0.5.0 (the default minApp of make_ohpepack)")
+{
+    const auto app = Updater::currentVersion();
+    CHECK (app.valid());
+    CHECK_FALSE (app < update::Version::of ("0.5.0"));
+}

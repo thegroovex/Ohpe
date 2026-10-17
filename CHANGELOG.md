@@ -5,7 +5,19 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
-## Unreleased
+## 0.5.0 Preview – 2026-10-17
+
+[Notes / Hinweise](docs/release-notes/0.5.0.md)
+
+- EN: pressure glide, SUB layer per part, Expression page (velocity / aftertouch freely assignable, aftertouch → glide
+  time on gliding factory parts), mod wheel on all 320 factory presets, six new binaural motion paths, performance pass
+  with CPU meter, Settings (night mode, About, Help, MIDI setup and MIDI learn), `.ohpepack` content pack import with
+  drag & drop, pack manager and SHA-256 check, wavetable banks from content packs.
+- DE: Glide-Druck, SUB-Ebene pro Part, Expression-Seite (Anschlag / Aftertouch frei zuweisbar, Aftertouch → Glide-Zeit
+  bei gleitenden Werks-Parts), Mod-Rad auf allen 320 Werks-Presets, sechs neue binaurale Bewegungspfade,
+  Leistungsdurchgang mit CPU-Anzeige, Einstellungen (Nachtmodus, Über, Hilfe, MIDI-Einrichtung und MIDI-Learn),
+  Import von `.ohpepack`-Inhaltspaketen per Drag & Drop, Paketverwaltung und SHA-256-Prüfung, Wavetable-Bänke aus
+  Inhaltspaketen.
 
 - EN: Wavetable banks – content packs of kind `wavetables` add read-only tables to the Wavetable engine's menu
   (Content packs › pack); presets and projects store only `"<pack>/<table>"`; `make_ohpepack.py` /
