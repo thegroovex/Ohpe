@@ -68,8 +68,8 @@ inline juce::Path markSine()
 inline void drawMark (juce::Graphics& g, juce::Rectangle<float> area, juce::Colour ink, juce::Colour dot)
 {
     const float size = juce::jmin (area.getWidth(), area.getHeight());
-    // line weight: the master's 26 / 300 of the radius at large sizes, heavier when small (stays >= ~1.6 px)
-    const float stroke = juce::jmax (size * 0.075f, juce::jmin (1.6f, size * 0.12f));
+    // line weight: about the master's 26 / 300 of the radius, a touch heavier to stand next to the bold wordmark, heavier when small (stays >= ~1.6 px)
+    const float stroke = juce::jmax (size * 0.09f, juce::jmin (1.6f, size * 0.12f));
     const float r = (size - stroke) * 0.5f;
     const auto c = area.getCentre();
     const float gap = 0.30f; // half-angle of the gap at the top (radians, ~17 degrees: room for the dot at small sizes)
@@ -84,7 +84,7 @@ inline void drawMark (juce::Graphics& g, juce::Rectangle<float> area, juce::Colo
     g.strokePath (ring, st);
     g.strokePath (sine, juce::PathStrokeType (stroke * 0.93f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
 
-    const float d = juce::jmax (stroke * 1.55f, size * 0.11f);
+    const float d = juce::jmax (stroke * 1.6f, size * 0.135f);
     g.setColour (dot);
     g.fillEllipse (c.x - d * 0.5f, c.y - r - d * 0.5f, d, d);
 }

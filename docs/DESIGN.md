@@ -140,7 +140,7 @@ the caps' middle; mark, wordmark and "designed by groovex" share one baseline. T
 **Header edges (p47):** the header's left block - version legend, logo mark, engine caption ("ENGINE / P1") -
 starts on one edge, x 40 (8 units inside the engine column), measured on the ink, not on the glyph box: the
 legends' side bearing is taken out, the round mark overshoots by a hair as an O does against a stem. Mirrored on
-the right, the SETTINGS key (80 units wide) is flush right: its ring and legend end on x 1160 with the CPU meter
+the right, the SETTINGS key is flush right (the three round keys' rings 80 units apart): its ring and legend end on x 1160 with the CPU meter
 below (8 units inside the mode column). Every legend of the row stays on one baseline (y 20 – 32), every control
 centred on y 56.
 

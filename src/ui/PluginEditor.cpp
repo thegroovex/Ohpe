@@ -484,11 +484,12 @@ juce::Rectangle<float> OhpeEditor::designArea (const char* name)
         // strips' centre line); 8 units between the keys, the last one ends 32 units from the housing's right
         // edge, as the wordmark starts 32 units from its left edge
         { "libraryKey", 760, 20, 80, 56 },      { "proKey", 848, 20, 80, 56 },
-        { "randomKey", 936, 20, 64, 56 },       { "saveKey", 1008, 20, 64, 56 },
+        // p47: the three round keys' rings 80 units apart, the last one flush right (ring centres 981, 1061, 1141)
+        { "randomKey", 949, 20, 64, 56 },       { "saveKey", 1029, 20, 64, 56 },
         // p32: the gear key ends 32 units from the housing's right edge (the language pills moved into the settings)
         // p47: flush right - its ring and legend end on x 1160 (as the mode column's content, the CPU meter), mirroring
-        // the left edge x 40 of the version legend, the logo mark and the engine caption; 8 units after SAVE
-        { "settingsKey", 1080, 20, 80, 56 },
+        // the left edge x 40 of the version legend, the logo mark and the engine caption
+        { "settingsKey", 1094, 20, 66, 56 },
         // p27: the version legend on the header's legend line above the wordmark (the click area covers the wordmark)
         { "versionBadge", 40, 20, 248, 56 },
         // p35: the CPU meter, right-aligned on the mode column's legend line
@@ -685,7 +686,7 @@ void OhpeEditor::paint (juce::Graphics& g)
         const float markSize = 22.0f * s;
         // the ring's ink starts on x 40 (round: a hair over the edge, as an O overshoots a stem)
         brand::drawMark (g, juce::Rectangle<float> (39.6f * s, capMid - markSize * 0.5f, markSize, markSize), colour::ink, colour::signalRed);
-        const float right = brand::drawWordmark (g, wordFont, 72.0f * s, baseline, colour::ink, colour::signalRed);
+        const float right = brand::drawWordmark (g, wordFont, 70.0f * s, baseline, colour::ink, colour::signalRed);
         const auto tagFont = labelFont (12.0f * s);
         const float tagX = right + 12.0f * s;
         g.setColour (colour::engraving);

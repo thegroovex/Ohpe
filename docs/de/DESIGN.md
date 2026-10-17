@@ -135,8 +135,8 @@ Schriftzug.
 **Kanten der Kopfzeile (p47):** Der linke Block – Versionsbeschriftung, Bildzeichen, Engine-Beschriftung
 („ENGINE / P1“) – beginnt auf einer Kante, x 40 (8 Einheiten innerhalb der Engine-Spalte), gemessen an der
 sichtbaren Form, nicht am Glyphenkasten: die Vorbreite der Buchstaben wird abgezogen, das runde Zeichen ragt um
-ein Haar darüber wie ein O gegenüber einem Stamm. Gespiegelt rechts steht die Taste EINSTELLUNGEN (80 Einheiten
-breit) bündig: Ring und Beschriftung enden auf x 1160, darunter die CPU-Anzeige (8 Einheiten innerhalb der
+ein Haar darüber wie ein O gegenüber einem Stamm. Gespiegelt rechts steht die Taste EINSTELLUNGEN bündig (die Ringe der
+drei runden Tasten 80 Einheiten auseinander): Ring und Beschriftung enden auf x 1160, darunter die CPU-Anzeige (8 Einheiten innerhalb der
 Modus-Spalte). Alle Beschriftungen der Reihe bleiben auf einer Grundlinie (y 20 – 32), alle Bedienelemente auf
 der Mittellinie y 56.
 
