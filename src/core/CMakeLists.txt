@@ -35,6 +35,7 @@ target_sources(ohpe_core PRIVATE
 target_sources(ohpe_core PRIVATE
     tape/TapeMachine.cpp
     tape/TapeFile.cpp
+    tape/TapeLoop.cpp
     fx/InsertEffects.cpp
     fx/InsertEffects2.cpp
     fx/Space3D.cpp

@@ -423,7 +423,7 @@ Encoder pages:
 |---|---|
 | Track | Arm, Source (input, part 1–4, drum), Level, Direct out of the selected track |
 | Transport | Overdub, Speed (varispeed 0.5–2×), Reverse, Play starts tape |
-| Loop | Loop on/off, Loop in, Loop out |
+| Loop | Loop on/off, Loop in, Loop out, Snap (grid for setting the loop: Bar, Beat, Off – p42) |
 | Tape character | Saturation, Wow, Flutter, Hiss |
 | Bounce | Bounce source, Bounce target (Grain / Sampler), Endless loop, Input length (p23) |
 
@@ -445,8 +445,28 @@ Soft keys on the display – two rows: the edits of the selected track above, th
 
 ![Clear all asks first](../images/ohpe-tape-clear.png)
 
-The line left of the soft keys shows the loop range that Lift and Cut use. All four keys are refused
-while recording. Every tape edit is MIDI-mappable: *Tape Edit Track* (`tape.edit.track`), *Tape Lift / Cut /
+**Loop keys (p42).** The **loop readout** left of the soft keys shows the loop range that Lift and Cut use – in tape
+time and in bars, a lit dot while the tape loops, the pass while recording inside the loop. Click it to swap the keys
+for the loop keys (click again or **Back** to return); the encoders jump to the *Loop* page for fine adjustment:
+
+![The loop keys behind the loop readout](../images/ohpe-tape-loop.png)
+
+| Key | Action |
+|---|---|
+| **Set In** / **Set Out** | loop in / out at the playhead – stopped or while the tape plays – on the nearest line of the grid; **Shift** = exactly at the playhead. Set Out switches the loop on at once |
+| **Loop** | loop on / off |
+| **Snap Bar / Beat / Off** | the grid for setting the loop (`tape.loopsnap`; 4/4 from the start of the tape at the project tempo) |
+| **To In** | playhead to loop in |
+| **Back** | back to the edit keys |
+| **Undo Loop** / **Redo Loop** | undo / redo of the loop range (every key press, drag or encoder turn is one step; the tape's audio undo is separate) |
+| **Half** / **Double** | the loop half / twice as long from loop in |
+| **Fit** | the loop from the start around the recorded material (to the next grid line) and on |
+
+On the lanes the loop is a yellow band with a handle at each edge: drag an edge to move it (on the grid; Shift: free).
+Loop in always stays before loop out. Recording inside the loop layers every pass (Overdub on) or replaces it
+(Overdub off); the whole take is one undo step. Details: [Setting the loop](TAPE-MIXER-FX.md#setting-the-loop-p42).
+
+The four tape keys of the lower row are refused while recording. Every tape edit is MIDI-mappable: *Tape Edit Track* (`tape.edit.track`), *Tape Lift / Cut /
 Drop / Splice / Undo / Redo / Return to Zero / Clear Track / Clear All* (`tape.edit.*`); *Tape Clear All* from a
 controller opens the same confirmation on the screen. Saving and loading use the file dialog and have no
 MIDI trigger. Short guide: [first recording in 30 seconds](TAPE-MIXER-FX.md#first-recording-in-30-seconds).
@@ -672,6 +692,7 @@ few seconds sleep and cost almost nothing until they play again. Details: [Perfo
 | R (standalone) | REC: record on the tape / punch out |
 | Enter or Home (standalone) | tape to the start |
 | L (standalone) | tape loop on / off |
+| I / O (standalone) | tape loop in / out at the playhead (on the grid; with Shift: free) |
 | T (standalone) | tap tempo |
 | K (standalone) | metronome (click) on / off |
 | Enter (library) | keep the selected preset and close |

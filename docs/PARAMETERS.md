@@ -964,10 +964,27 @@ monitoring switch). Defaults leave Ohpe as before: no click, no count-in. No new
 | `metro.plugin` | Click in Plug-in | Klick im Plug-in | Off, On (standalone: always clicks when on) | Off |
 | `metro.tap` | Tap Tempo | Tempo tippen | trigger (a rising edge is one tap) | Off |
 
+## p42 – Tape loop by hand / Schleife von Hand
+
+Guides: [English](en/TAPE-MIXER-FX.md#setting-the-loop-p42) · [Deutsch](de/BAND-MISCHER-FX.md#schleife-setzen-p42).
+Seven parameters appended after `metro.tap` (p39). The six triggers (group `remote`) are not part of presets; the grid
+`tape.loopsnap` (group `tape`) is saved with projects like the loop range. The existing `tape.loop`, `tape.loopin`,
+`tape.loopout` and `tape.tx.loop` keep their meaning. No new modulation sources or targets.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `tape.edit.loopin` | Tape Set Loop In | Tape Loop-Start setzen | trigger: loop in at the playhead (on the grid) | off |
+| `tape.edit.loopout` | Tape Set Loop Out | Tape Loop-Ende setzen | trigger: loop out at the playhead (on the grid), loop on | off |
+| `tape.edit.loopundo` | Tape Loop Undo | Tape Loop rückgängig | trigger: previous loop range | off |
+| `tape.edit.loopredo` | Tape Loop Redo | Tape Loop wiederherstellen | trigger: next loop range | off |
+| `tape.edit.loophalf` | Tape Loop Half | Tape Loop halbieren | trigger: half as long from loop in | off |
+| `tape.edit.loopdouble` | Tape Loop Double | Tape Loop verdoppeln | trigger: twice as long from loop in | off |
+| `tape.loopsnap` | Tape Loop Snap | Tape Loop-Raster | Off, Beat, Bar / Aus, Schlag, Takt | Bar |
+
 ## p45 – Scale Lock
 
 Guides: [English](en/USER-INTERFACE.md#key-chord-and-scale-lock-p45) · [Deutsch](de/BEDIENUNG.md#tonart-akkord-und-in-tonart-p45).
-Two parameters appended after `metro.tap` (p39), group `global` like `key.root` / `key.scale`. Host parameters –
+Two parameters appended after `tape.loopsnap` (p42), group `global` like `key.root` / `key.scale`. Host parameters –
 saved with the session, automatable, MIDI-mappable. The defaults leave Ohpe as before (lock off). The key itself stays
 `key.root` / `key.scale` (above); no new modulation sources or targets.
 

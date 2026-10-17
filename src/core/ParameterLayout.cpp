@@ -11,6 +11,7 @@
 
 #include "OhpeCore.h"
 #include "bounce/Bounce.h"
+#include "tape/TapeLoop.h"
 
 namespace ohpe
 {
@@ -26,6 +27,24 @@ void addLateSeq (ParamRegistry& reg, const std::vector<ParamDescriptor>& list, s
         d.group = group;
         reg.add (std::move (d));
     }
+}
+
+// p45: Scale Lock (key.lock, key.lock.mode) - appended at the very end
+#if defined(_MSC_VER)
+__declspec (noinline)
+#else
+__attribute__ ((noinline))
+#endif
+void registerScaleLockParams (ParamRegistry& reg)
+{
+    using namespace pd;
+    auto lock = toggle (Core::Ids::keyLock, "Scale Lock", "In Tonart", false);
+    lock.group = "global";
+    reg.add (lock);
+    auto mode = choice (Core::Ids::keyLockMode, "Scale Lock Mode", "In-Tonart-Modus", keys::lockModeNamesEn(), keys::lockModeNamesDe(),
+                        keys::LockNearest);
+    mode.group = "global";
+    reg.add (mode);
 }
 } // namespace
 
@@ -311,15 +330,11 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     }
     // ---- p39: metronome and count-in - on, level, accent, count-in, click in a plug-in, tap tempo ------------------
     Metronome::registerParams (reg);
+    // ---- p42: the tape loop by hand - set in / out at the playhead, half / double, undo / redo (triggers), snap grid
+    //      (own function in its own file: a big stack frame here overflows the Windows test threads' stack) -----------
+    tapeloop::registerParams (reg);
     // ---- p45: Scale Lock - every incoming note snaps to the key (nearest note, or the white keys play its degrees) --
-    {
-        auto lock = toggle (Core::Ids::keyLock, "Scale Lock", "In Tonart", false);
-        lock.group = "global";
-        reg.add (lock);
-        auto mode = choice (Core::Ids::keyLockMode, "Scale Lock Mode", "In-Tonart-Modus", keys::lockModeNamesEn(), keys::lockModeNamesDe(),
-                            keys::LockNearest);
-        mode.group = "global";
-        reg.add (mode);
-    }
+    //      (own function: a big stack frame in this one overflows the Windows test stack)
+    registerScaleLockParams (reg);
 }
 } // namespace ohpe

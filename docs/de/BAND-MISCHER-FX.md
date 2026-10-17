@@ -45,6 +45,7 @@ hinzu, statt sie zu ersetzen. **REC** bei laufendem Band = einsteigen, **REC** n
 | **STOPP** | alles hält an (die Aufnahme endet); im Stillstand: zum Anfang | `tape.tx.stop` |
 | **\|◀** | zum Anfang | `tape.edit.rtz` |
 | **SCHLEIFE** | Schleife an / aus (ohne Bereich: die aufgenommene Länge oder vier Takte) | `tape.tx.loop` |
+| Schleifen-Anzeige → **Start setzen** / **Ende setzen** | Loop-Start / -Ende am Abspielkopf (im Raster; Shift: frei) – siehe [Schleife setzen](#schleife-setzen-p42) | `tape.edit.loopin` / `tape.edit.loopout` |
 | Bereit-Punkt / *Aufnahmebereit* | schaltet eine Spur bereit / ab; der Trigger wirkt auf die Bearbeitungsspur | `tape.tx.arm` |
 | *Start startet Tape* | Einstellung, ab Werk an: START lässt Sequencer und Band zusammen laufen | `tape.tx.link` |
 
@@ -64,7 +65,7 @@ aufgenommen wurde (Blöcke zu 4096 Frames) – ein langes, leeres Band kostet fa
 | Mithören | Eine scharf geschaltete Spur mit Quelle *Eingang* spielt den Eingang über die Spur (hörbar und routbar); Parts hört man auf ihren eigenen Mixer-Kanälen. |
 | Varispeed | `tape.speed` 0,5 … 2,0 (1,0 in der Reglermitte), gleitet beim Laufen weich, 4-Punkt-Interpolation. Die Tonhöhe folgt der Geschwindigkeit. |
 | Rückwärts | `tape.reverse` – der Kopf läuft rückwärts; am Bandanfang (oder -ende) bleibt er stehen und ist still. |
-| Schleife | `tape.loop`, `tape.loopin`, `tape.loopout` (Sekunden, ganze Frames). |
+| Schleife | `tape.loop`, `tape.loopin`, `tape.loopout` (Sekunden, ganze Frames), `tape.loopsnap` (Raster zum Setzen). Siehe [Schleife setzen](#schleife-setzen-p42). |
 | Positionieren | `TapeMachine::locate (Sekunden)` (gilt ab dem nächsten Audioblock). |
 | Bandcharakter | `tape.sat` (weiche Sättigung, sanfter Höhenverlust), `tape.wow`, `tape.flutter` (Geschwindigkeitsmodulation für alle Spuren gemeinsam, wie bei einem Laufwerk), `tape.hiss` (Bandrauschen). Alles auf 0 = exakte, unveränderte Wiedergabe. |
 | Spurpegel | `tape.trN.level` (dB). |
@@ -76,6 +77,54 @@ einem Audioblock); STOPP oder REC während des Vorzählers bricht ihn ab. Das Me
 oder Sequencer laufen; läuft nur das Band, klickt es im Takt.Schlag-Raster des Bands. Der Klick geht nur auf den
 Hauptausgang und wird nie aufgenommen (das Band nimmt die Parts, das Drum-Kit und den Eingang auf). Siehe
 [Tempo, Metronom und Vorzähler](BEDIENUNG.md#tempo-metronom-und-vorzähler-p39).
+
+### Schleife setzen (p42)
+
+![Tape-Seite mit den Loop-Tasten](../images/ohpe-tape-loop-de.png)
+
+Die Schleife lässt sich nach Gehör setzen, während das Band läuft: **Start setzen** drücken, wo die Phrase beginnt,
+**Ende setzen**, wo sie endet – das Band schleift sofort.
+
+* **Die Schleifen-Anzeige** links der Tasten der Tape-Seite zeigt *SCHLEIFE* (der Punkt leuchtet, solange das Band
+  schleift), den Bereich in Bandzeit und in Takten (*TAKT 3.1–5.1  2 Takte*) und bei der Aufnahme in der Schleife den
+  Durchgang (*DURCHGANG 3*, rot). Ein Klick darauf schaltet auf die **Loop-Tasten**, noch ein Klick (oder **Zurück**)
+  auf die Schnitt-Tasten. Die Encoder springen zur Seite *Schleife*: an, Start, Ende, Raster – zum Feinjustieren
+  (Shift / Cmd / Strg: ein Zehntel der Geschwindigkeit).
+* **Loop-Tasten** (zwei Reihen): **Start setzen** · **Ende setzen** · **Schleife** (an / aus) · **Raster** (Takt →
+  Schlag → aus) · **Zum Start** (Abspielkopf auf den Loop-Start) · **Zurück**; **Loop zurück** · **Loop wieder** ·
+  **Halb** · **Doppelt** · **Anpassen** (Schleife vom Anfang um das aufgenommene Material, bis zur nächsten Rasterlinie).
+* **Am Abspielkopf, im Stillstand oder beim Abspielen.** Start / Ende setzen nehmen die Position des Abspielkopfs und
+  rasten auf die *nächste* Linie des Rasters ein (`tape.loopsnap`: ab Werk Takt, Schlag, Aus) – eine etwas zu spät
+  gedrückte Taste landet trotzdem auf der Eins. **Shift** (Tasten, Kurzbefehle, Ziehen) setzt frei, genau am
+  Abspielkopf. Das Raster ist das des Bandes: 4/4 ab Bandanfang im Projekttempo (dieselben Takt.Schlag wie Anzeige
+  und Klick).
+* **Ende setzen schaltet die Schleife ein.** Steht der Abspielkopf schon hinter dem neuen Ende (es wurde auf den
+  nächsten Takt zurückgerastet), springt er sofort in die Schleife, im selben Abstand zum Start – ohne Lücke, ohne
+  Weiterlaufen.
+* **Start < Ende, immer.** Die kürzeste Schleife ist ein Rasterschritt (0,1 s ohne Raster). Wird eine Kante auf die
+  falsche Seite der anderen gesetzt, wandert die Schleife mit ihrer Länge mit (Start hinter dem Ende: die ganze
+  Schleife zieht dorthin); beim Ziehen hält eine Kante an der anderen an; dreht ein Encoder, MIDI-Controller oder die
+  Host-Automation eine Kante über die andere, schiebt sie die andere mit (die bewegte Kante gewinnt). Das Ende geht
+  nie über das Bandende hinaus.
+* **Ziehen auf den Spuren.** Die Schleife ist das gelbe Band über den Spuren (heller, solange sie schleift); ihre
+  Kanten sind Linien mit einem Griff oben. Eine Kante ziehen (der Zeiger wird zu ↔) – im Raster, Shift: frei. Die
+  Zeitachse steht beim Ziehen still; Rechtsklick auf eine Kante: MIDI-Learn von Start / Ende.
+* **Rückgängig.** Jede Änderung des Bereichs ist ein Schritt der **Loop-Historie** (64 Schritte): jeder Tastendruck,
+  jedes Ziehen, jede Encoder-Drehung, sobald sie ruht (0,6 s). *Loop zurück* / *Loop wieder* gehen sie durch –
+  getrennt vom Rückgängig der Bandaufnahmen, eine Schleifenänderung zurückzunehmen berührt also nie eine Aufnahme.
+  Laden einer Banddatei beginnt eine neue Loop-Historie.
+* **Aufnahme in der Schleife.** Mit eingeschalteter Schleife nimmt REC Durchgang für Durchgang auf, während das Band
+  kreist: mit **Overdub an** legt sich jeder Durchgang über die vorigen (Schichten), mit **Overdub aus** ersetzt jeder
+  Durchgang den vorigen (der letzte bleibt). Die Anzeige zählt die Durchgänge. Die ganze Aufnahme – von REC bis
+  Aussteigen oder STOPP – ist **ein Rückgängig-Schritt** des Bandes (*Rückgängig* bei den Schnitt-Tasten nimmt alle
+  Durchgänge auf einmal zurück; wer nur einige behalten will, steigt nach dem gewünschten Durchgang aus und nimmt den
+  nächsten getrennt auf). Außerhalb der Schleife wird nichts geschrieben.
+* **MIDI.** Jede Loop-Funktion ist ein Host-Parameter und per MIDI zuweisbar: `tape.edit.loopin` (Start setzen),
+  `tape.edit.loopout` (Ende setzen), `tape.edit.loophalf`, `tape.edit.loopdouble`, `tape.edit.loopundo`,
+  `tape.edit.loopredo` (Trigger: ein Druck, CC ≥ 64; im Raster), `tape.loopsnap` (Raster), dazu die bisherigen
+  `tape.tx.loop` (Schleife an / aus), `tape.loop`, `tape.loopin`, `tape.loopout`. Das Display zeigt, was ein Trigger
+  getan hat.
+* **Kurzbefehle (Standalone):** **I** Start setzen, **O** Ende setzen (Shift: frei), **L** Schleife an / aus.
 
 ### Schnitt
 
@@ -311,7 +360,10 @@ oder leeres Band) lädt mit leerem Band. Ohpe 0.1 kann Zustände mit Bandaudio n
 ## Tests
 
 `tests/core/TapeTests.cpp` (p38 auch: Spur / alles löschen als Rückgängig-Schritte, Banddatei hin und zurück,
-Laden als ein Rückgängig-Schritt, andere Abtastrate behält die Tonhöhe), `tests/plugin/TapeEraseUiTests.cpp` (p38:
+Laden als ein Rückgängig-Schritt, andere Abtastrate behält die Tonhöhe; p42: Raster, Start / Ende setzen, Ziehen,
+Halb / Doppelt, Zufallsfolgen bleiben gültig, Loop-Historie, Aufnahme in der Schleife), `tests/plugin/TapeLoopUiTests.cpp`
+(p42: Start / Ende am Abspielkopf, beim Abspielen, MIDI, Encoder über Kreuz, Loop-Tasten, Ziehen, Rückgängig),
+`tests/plugin/TapeEraseUiTests.cpp` (p38:
 zwölf Tasten in zwei Reihen, Rückfrage, MIDI-Trigger, Speichern / Laden), `tests/core/FxTests.cpp`, `tests/core/AllocationTests.cpp`
 (keine Speicherreservierung in `Core::process()`), `tests/plugin/TapeExportTests.cpp`, seit 0.7
 `tests/core/StereoTests.cpp` (Mitte/Seite: Breite 100 % = bitgenauer Bypass, Breite 0 = mono, Bass

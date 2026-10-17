@@ -263,6 +263,15 @@ public:
         // p38: clear the edit track (one undo step) / the whole tape (asks on screen first; undoable)
         static constexpr const char* tapeClearTrack = "tape.edit.clear";
         static constexpr const char* tapeClearAll = "tape.edit.clearall";
+        // p42: the tape loop by hand - set loop in / out at the playhead (snapped to "tape.loopsnap"), half / double
+        // the loop, undo / redo of the loop range (triggers), and the snap grid (Off, Beat, Bar)
+        static constexpr const char* tapeLoopSetIn = "tape.edit.loopin";
+        static constexpr const char* tapeLoopSetOut = "tape.edit.loopout";
+        static constexpr const char* tapeLoopUndo = "tape.edit.loopundo";
+        static constexpr const char* tapeLoopRedo = "tape.edit.loopredo";
+        static constexpr const char* tapeLoopHalf = "tape.edit.loophalf";
+        static constexpr const char* tapeLoopDouble = "tape.edit.loopdouble";
+        static constexpr const char* tapeLoopSnap = "tape.loopsnap";
         // 0.4 (package F): a sequencer can play the drum kit instead of its target part
         static constexpr const char* stepDrums = "seq.step.drums";
         static constexpr const char* euclidDrums = "seq.euclid.drums";

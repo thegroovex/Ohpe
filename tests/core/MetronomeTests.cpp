@@ -71,9 +71,10 @@ TEST_CASE ("metronome: parameters are registered at the end, excluded from prese
 {
     Core core;
     const auto& reg = core.params();
-    // appended after the p38 tape triggers (later blocks follow, e.g. p45 Scale Lock)
-    CHECK (reg.indexOf ("metro.on") == reg.indexOf ("tape.edit.clearall") + 1);
-    CHECK (reg.indexOf ("metro.tap") == reg.indexOf ("metro.on") + 5);
+    // p42: later blocks are appended after the metronome's six
+    const int on = reg.indexOf ("metro.on");
+    REQUIRE (on > reg.indexOf ("tape.edit.clearall"));
+    CHECK (reg.descriptor (on + 5).id == "metro.tap");
     CHECK (reg.get ("metro.on") == 0.0f);
     CHECK (reg.get ("metro.countin") == 0.0f);
     CHECK (reg.get ("metro.plugin") == 0.0f);

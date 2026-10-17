@@ -170,7 +170,7 @@ namespace
 juce::String clockText (double seconds)
 {
     seconds = juce::jmax (0.0, seconds);
-    const int tenths = (int) (seconds * 10.0);
+    const int tenths = (int) (seconds * 10.0 + 1.0e-3); // p42: 0.99999 s (a host-rounded loop point) reads 0:01.0
     return juce::String (tenths / 600) + ":" + juce::String ((tenths / 10) % 60).paddedLeft ('0', 2) + "." + juce::String (tenths % 10);
 }
 
@@ -205,6 +205,9 @@ juce::String Display::getTooltip()
                     case TxRecord: return tr ("Record on the armed track - arms the selected track when none is armed") + key ("R");
                     default: return tr ("Loop between loop in and out") + key ("L");
                 }
+        if (loopReadoutArea().contains (p)) // p42
+            return tapeLoopKeysShown ? tr ("Back to the edit keys") : tr ("Loop keys: set loop in / out at the playhead, grid, undo");
+        if (tapeLoopEdgeAt (p) != 0) return tr ("Drag the loop edge - on the grid, Shift: free"); // p42
         for (int t = 0; t < TapeMachine::numTracks; ++t)
         {
             if (trackArmArea (t).contains (p)) return tr ("Arm the track for recording");
@@ -381,6 +384,8 @@ void Display::showVisualMenu()
 void Display::mouseMove (const juce::MouseEvent& e)
 {
     lastMouse = e.position; // p11: tooltips
+    if (mode == Mode::Tape) // p42: the loop edges can be dragged
+        setMouseCursor (tapeLoopEdgeAt (e.position) != 0 ? juce::MouseCursor::LeftRightResizeCursor : juce::MouseCursor::NormalCursor);
     if (! animated || getWidth() <= 0) return;
     parallaxTarget = { juce::jlimit (-1.0f, 1.0f, (e.position.x / (float) getWidth()) * 2.0f - 1.0f),
                        juce::jlimit (-1.0f, 1.0f, (e.position.y / (float) getHeight()) * 2.0f - 1.0f) };
@@ -854,6 +859,53 @@ juce::Rectangle<float> Display::trackLane (int t) const
     return { s.getX(), s.getY() + h * (float) t, s.getWidth(), h };
 }
 
+// p42: the time axis of the tape lanes, the loop edges on it, the loop readout
+juce::Rectangle<float> Display::tapeLanesArea() const
+{
+    auto all = trackLane (0).getUnion (trackLane (TapeMachine::numTracks - 1));
+    return all.withTrimmedLeft (trackLane (0).getHeight() * 2.6f);
+}
+
+int64_t Display::tapeShownEndFrames() const
+{
+    if (loopDrag != 0 && loopDragShownEnd > 0) return loopDragShownEnd;
+    const auto& tape = proc.core().tape();
+    const double sr = juce::jmax (1.0, tape.sampleRate());
+    const int64_t pos = tape.positionFrames();
+    const auto loopOut = (int64_t) ((double) proc.core().params().get ("tape.loopout") * sr);
+    int64_t e = juce::jmax ((int64_t) (sr * 8.0), juce::jmax (overviewFrames, pos + (int64_t) sr));
+    if (proc.core().params().get ("tape.loop") >= 0.5f) e = juce::jmax (e, loopOut + (int64_t) sr); // the whole loop in view
+    return e;
+}
+
+float Display::tapeLoopEdgeX (bool inEdge) const
+{
+    const auto all = tapeLanesArea();
+    const double sr = juce::jmax (1.0, proc.core().tape().sampleRate());
+    const double t = proc.core().params().get (inEdge ? "tape.loopin" : "tape.loopout") * sr / (double) juce::jmax ((int64_t) 1, tapeShownEndFrames());
+    return all.getX() + all.getWidth() * (float) juce::jlimit (0.0, 1.0, t);
+}
+
+int Display::tapeLoopEdgeAt (juce::Point<float> p) const noexcept
+{
+    if (mode != Mode::Tape) return 0;
+    const auto all = tapeLanesArea();
+    if (! all.expanded (0.0f, 2.0f).contains (p)) return 0;
+    const float grab = juce::jmax (4.0f, (float) getWidth() * 0.006f);
+    const float xi = tapeLoopEdgeX (true), xo = tapeLoopEdgeX (false);
+    const float di = std::abs (p.x - xi), dout = std::abs (p.x - xo);
+    if (dout <= grab && dout <= di) return 2; // the nearer one; out first when both sit together (the loop can grow)
+    if (di <= grab) return 1;
+    return 0;
+}
+
+juce::Rectangle<float> Display::loopReadoutArea() const
+{
+    if (mode != Mode::Tape || softKeys.empty()) return {};
+    const auto row = softKeyRow();
+    return row.withWidth (juce::jmax (10.0f, softKeyArea (0).getX() - row.getX() - row.getWidth() * 0.01f)).reduced (0.0f, row.getHeight() * 0.04f);
+}
+
 juce::Rectangle<float> Display::padCell (int p) const
 {
     auto s = stripArea();
@@ -944,6 +996,19 @@ void Display::mouseDown (const juce::MouseEvent& e)
                 else if (onTrackArmClicked) onTrackArmClicked (t);
                 return;
             }
+        if (loopReadoutArea().contains (p)) // p42: the loop readout opens the loop keys (right-click: MIDI learn of loop in)
+        {
+            if (e.mods.isPopupMenu()) showControlMenu (proc, Core::Ids::tapeLoopSetIn, this);
+            else if (onLoopReadoutClicked) onLoopReadoutClicked();
+            return;
+        }
+        if (const int edge = tapeLoopEdgeAt (p); edge != 0) // p42: drag loop in / out
+        {
+            if (e.mods.isPopupMenu()) { showControlMenu (proc, edge == 1 ? "tape.loopin" : "tape.loopout", this); return; }
+            loopDragShownEnd = tapeShownEndFrames();
+            loopDrag = edge;
+            return;
+        }
     }
 
     // parameter rows: drag, click to jump, right-click menu
@@ -1065,6 +1130,15 @@ void Display::mouseDown (const juce::MouseEvent& e)
 void Display::mouseDrag (const juce::MouseEvent& e)
 {
     if (morphDrag) { setMorphPosition (e.position); return; } // p16
+    if (loopDrag != 0) // p42: the edge follows the mouse (on the grid; Shift: free)
+    {
+        const auto all = tapeLanesArea();
+        const double sr = juce::jmax (1.0, proc.core().tape().sampleRate());
+        const double frac = juce::jlimit (0.0, 1.0, (double) ((e.position.x - all.getX()) / juce::jmax (1.0f, all.getWidth())));
+        proc.dragTapeLoopEdge (loopDrag == 1, frac * (double) tapeShownEndFrames() / sr, e.mods.isShiftDown());
+        repaint();
+        return;
+    }
     if (dragRow < 0) return;
     const float len = juce::jmax (40.0f, barArea (dragRow).getWidth());
     setRowValue (dragRow, drag.update (e.position, len, isFineDrag (e.mods)));
@@ -1078,6 +1152,12 @@ void Display::mouseUp (const juce::MouseEvent& e)
         if (to >= 0 && to != dragSlot && onFxSlotMoved) onFxSlotMoved (dragSlot, to);
     }
     dragSlot = -1;
+    if (loopDrag != 0) // p42: one drag = one step of the loop history
+    {
+        loopDrag = 0;
+        proc.endTapeLoopDrag();
+        repaint();
+    }
     if (heldPad >= 0) // p25: a held pad lets go
     {
         if (auto* prm = proc.parameter (PerformancePads::padId (heldPad)))
@@ -1645,7 +1725,7 @@ void Display::paintTapeStrip (juce::Graphics& g, juce::Rectangle<float> s)
     const auto& reg = core.params();
     const double sr = juce::jmax (1.0, tape.sampleRate());
     const int64_t pos = tape.positionFrames();
-    const int64_t shownEnd = juce::jmax ((int64_t) (sr * 8.0), juce::jmax (overviewFrames, pos + (int64_t) sr));
+    const int64_t shownEnd = tapeShownEndFrames(); // p42: the whole loop stays in view
     const float loopIn = (float) (reg.get ("tape.loopin") * sr / (double) shownEnd);
     const float loopOut = (float) (reg.get ("tape.loopout") * sr / (double) shownEnd);
     const bool loopOn = reg.get ("tape.loop") >= 0.5f;
@@ -1684,22 +1764,95 @@ void Display::paintTapeStrip (juce::Graphics& g, juce::Rectangle<float> s)
             g.drawRect (lane, 1.0f);
         }
     }
-    auto all = trackLane (0).getUnion (trackLane (TapeMachine::numTracks - 1));
-    all = all.withTrimmedLeft (trackLane (0).getHeight() * 2.6f);
+    const auto all = tapeLanesArea();
     if (loopOut > loopIn)
     {
+        // p42: the loop - a yellow band (brighter while it loops), its two edges as lines with a handle on top
+        const float xi = tapeLoopEdgeX (true), xo = tapeLoopEdgeX (false);
         g.setColour (colour::sunYellow.withAlpha (loopOn ? 0.22f : 0.1f));
-        g.fillRect (all.withX (all.getX() + all.getWidth() * juce::jlimit (0.0f, 1.0f, loopIn))
-                        .withWidth (all.getWidth() * (juce::jlimit (0.0f, 1.0f, loopOut) - juce::jlimit (0.0f, 1.0f, loopIn))));
+        g.fillRect (juce::Rectangle<float> (xi, all.getY(), juce::jmax (1.0f, xo - xi), all.getHeight()));
+        const float hw = juce::jmax (3.0f, all.getHeight() * 0.045f);
+        for (int k = 0; k < 2; ++k)
+        {
+            const float x = k == 0 ? xi : xo;
+            const bool hot = loopDrag == k + 1 || (isMouseOver() && tapeLoopEdgeAt (lastMouse) == k + 1);
+            g.setColour (colour::sunYellow.withAlpha (hot ? 1.0f : (loopOn ? 0.85f : 0.45f)));
+            g.fillRect (x - (hot ? 1.0f : 0.5f), all.getY(), hot ? 2.0f : 1.0f, all.getHeight());
+            juce::Path tri; // the handle points into the loop
+            const float dir = k == 0 ? 1.0f : -1.0f;
+            tri.addTriangle (x, all.getY(), x + dir * hw * 1.6f, all.getY(), x, all.getY() + hw * 1.8f);
+            g.fillPath (tri);
+        }
     }
     const float px = all.getX() + all.getWidth() * (float) ((double) pos / (double) shownEnd);
     g.setColour (reg.get ("tape.rec") >= 0.5f ? colour::signalRed : colour::displayText);
     g.fillRect (px - 1.0f, all.getY(), 2.0f, all.getHeight());
     paintSoftKeys (g);
+    paintLoopReadout (g); // p42: the loop readout (opens the loop keys), or a message
+}
+
+void Display::paintLoopReadout (juce::Graphics& g)
+{
     // p11: the clock moved to the transport panel; here the loop range (lift / cut work on it)
-    juce::String info = i18n::upper (tr ("Loop")) + " " + clockText (reg.get ("tape.loopin")) + utf8 ("\xe2\x80\x93") + clockText (reg.get ("tape.loopout"));
-    if (status.isNotEmpty()) info = status;
-    paintHint (g, softKeyRow().withWidth (juce::jmax (10.0f, softKeyArea (0).getX() - softKeyRow().getX() - 4.0f)), info);
+    // p42: a key-like readout: LOOP (dot lit while it loops) and the arrow to the loop keys, the range in time and
+    //      bar.beat, while recording in the loop the pass; messages take its place for a moment
+    const auto r = loopReadoutArea();
+    if (r.isEmpty()) return;
+    const auto& reg = proc.core().params();
+    const bool loopOn = reg.get ("tape.loop") >= 0.5f;
+    const bool flashing = flashTime > 0.0f && flashText.isNotEmpty();
+    if (flashing || status.isNotEmpty())
+    {
+        g.setColour (flashing ? colour::sunYellow : colour::displayDim);
+        g.setFont (labelFont (juce::jmin (r.getHeight() * 0.3f, (float) getHeight() * 0.04f)));
+        g.drawFittedText (flashing ? flashText : status, r.reduced (r.getHeight() * 0.06f, 0).toNearestInt(), juce::Justification::centredLeft, 2, 0.8f);
+        return;
+    }
+    const bool hover = isMouseOver() && r.contains (lastMouse);
+    g.setColour (tapeLoopKeysShown ? colour::sunYellow : colour::displayGrid.brighter (hover ? 0.6f : 0.35f));
+    g.drawRoundedRectangle (r.reduced (0.5f), juce::jmin (6.0f, r.getHeight() * 0.12f), tapeLoopKeysShown ? 1.5f : 1.0f);
+    auto in = r.reduced (r.getHeight() * 0.1f, r.getHeight() * 0.06f);
+    const float lh = in.getHeight() / 3.0f;
+    auto l1 = in.removeFromTop (lh), l2 = in.removeFromTop (lh), l3 = in;
+    // line 1: dot, LOOP, arrow
+    const float d = lh * 0.42f;
+    g.setColour (loopOn ? colour::sunYellow : colour::displayGrid.brighter (0.4f));
+    g.fillEllipse (juce::Rectangle<float> (d, d).withCentre ({ l1.getX() + d * 0.5f, l1.getCentreY() }));
+    g.setColour (colour::displayText);
+    g.setFont (labelFont (lh * 0.72f));
+    const juce::String arrow = tapeLoopKeysShown ? utf8 ("\xe2\x80\xb9 ") + tr ("Edit") : tr ("Keys") + utf8 (" \xe2\x80\xba");
+    g.drawText (i18n::upper (tr ("Loop")), l1.withTrimmedLeft (d * 1.6f), juce::Justification::centredLeft, true);
+    g.setColour (tapeLoopKeysShown ? colour::sunYellow : colour::displayDim);
+    g.setFont (labelFont (lh * 0.6f));
+    g.drawText (i18n::upper (arrow), l1, juce::Justification::centredRight, true);
+    // line 2: the range in tape time; line 3: in bars (or the pass while recording in the loop)
+    const double in0 = reg.get ("tape.loopin"), out0 = reg.get ("tape.loopout");
+    const bool valid = out0 > in0;
+    g.setColour (valid ? colour::displayText : colour::displayDim);
+    g.setFont (monoFont (lh * 0.66f));
+    g.drawFittedText (valid ? clockText (in0) + utf8 ("\xe2\x80\x93") + clockText (out0) : tr ("No loop set"), l2.toNearestInt(),
+                      juce::Justification::centredLeft, 1, 0.75f);
+    juce::String third;
+    juce::Colour thirdColour = colour::displayDim;
+    if (const int pass = proc.core().tape().loopPass(); pass > 0)
+    {
+        third = i18n::upper (tr ("Pass")) + " " + juce::String (pass);
+        thirdColour = colour::signalRed;
+    }
+    else if (valid)
+    {
+        const double bpm = juce::jmax (20.0, (double) reg.get (Core::Ids::tempo));
+        auto bb = [bpm] (double sec) {
+            const double beats = sec * bpm / 60.0 + 1.0e-6;
+            return juce::String ((int) (beats / 4.0) + 1) + "." + juce::String ((int) std::fmod (beats, 4.0) + 1);
+        };
+        const double bars = (out0 - in0) * bpm / 240.0;
+        third = i18n::upper (tr ("Bar")) + " " + bb (in0) + utf8 ("\xe2\x80\x93") + bb (out0) + "  " + juce::String (bars, std::abs (bars - std::round (bars)) < 0.01 ? 0 : 2)
+                + " " + tr (std::abs (bars - 1.0) < 0.01 ? "bar" : "bars");
+    }
+    g.setColour (thirdColour);
+    g.setFont (monoFont (lh * 0.56f));
+    g.drawFittedText (third, l3.toNearestInt(), juce::Justification::centredLeft, 1, 0.75f);
 }
 
 void Display::paintDrumStrip (juce::Graphics& g, juce::Rectangle<float> s)
