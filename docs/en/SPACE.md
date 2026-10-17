@@ -102,6 +102,8 @@ automation saved with the older paths keep their path.
 (for Swarm and Random Orbit: the next cycle from now) – so you see the shape of a path, its size and its
 orientation before a note plays. The path's name sits bottom left.
 
+![Weave, Swarm and Over the Head in the 3D view – part 1's path drawn ahead of its dot](../images/ohpe-space-paths.png)
+
 Azimuth and Elevation rotate every path: a Pendulum at azimuth 90° swings left over right.
 
 ## Modulation and MPE

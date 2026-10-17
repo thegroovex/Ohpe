@@ -101,6 +101,8 @@ Automationen mit den älteren Pfaden ihren Pfad behalten.
 ein ganzer Durchlauf (bei Schwarm und Zufallsorbit: der nächste Durchlauf ab jetzt) – so siehst du Form,
 Größe und Ausrichtung eines Pfads, noch bevor ein Ton spielt. Der Name des Pfads steht unten links.
 
+![Wellenorbit, Schwarm und Über den Kopf in der 3D-Ansicht – der Pfad von Part 1 vor seinem Punkt gezeichnet](../images/ohpe-space-paths-de.png)
+
 Azimut und Elevation drehen jeden Pfad: ein Pendel bei Azimut 90° schwingt von links über rechts.
 
 ## Modulation und MPE
