@@ -90,6 +90,15 @@ drive on basses, timbre scans the wavetable on pads, pressure thickens the grain
 switch MPE on – do that for the part (`pN.mpe`) when you play from an MPE controller; with an
 aftertouch keyboard the pressure mapping works right away.
 
+## Key and Scale Lock
+
+The key (`key.root`, `key.scale`) and Scale Lock (`key.lock`, `key.lock.mode`) are host parameters: MIDI learn them
+from the key readout on the display header (click › MIDI Learn, or right-click on the padlock), e.g. a footswitch for
+Scale Lock or an encoder (relative) for the root. With Scale Lock on, incoming notes from any channel that reaches a
+part snap to the key (or, in *White Keys*, the white keys play the key; black keys are silent). MPE parts keep their
+pitch. Hosts pass no key to a plug-in: the key is set in Ohpe (or automated). See
+[Key, chord and Scale Lock](USER-INTERFACE.md#key-chord-and-scale-lock-p45).
+
 ## Tempo and transport
 
 | Situation | Transport source |

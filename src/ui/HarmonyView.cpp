@@ -82,7 +82,17 @@ void paint (juce::Graphics& g, juce::Rectangle<float> v, Core& core, int part, f
     };
     legend (keyBox, tr ("Key"), keyName (kr, ks), h.heard() ? colour::displayText : colour::displayText.withAlpha (0.6f));
     const float pulse = core.part (part).modMatrix().uiSourceValue (mod::SrcChordChange);
-    legend (chordBox, tr ("Chord"), chordName (chord), colour::ultraviolet.brighter (0.25f + 0.5f * pulse));
+    // p45: while notes sound, the chord they make (every quality, inversions as slash chords, spelled in the key);
+    // otherwise the remembered chord
+    const auto live = chords::detect (core.soundingNotes());
+    if (live.valid())
+    {
+        const auto k = core.keyScale();
+        legend (chordBox, tr ("Chord") + "  " + juce::String::fromUTF8 (chords::inversionName (live, german()).c_str()),
+                juce::String (chords::symbol (live, k.root, k.scale, german())), colour::ultraviolet.brighter (0.45f));
+    }
+    else
+        legend (chordBox, tr ("Chord"), chordName (chord), colour::ultraviolet.brighter (0.25f + 0.5f * pulse));
 
     // twelve pitch classes from the key's root: the memory as bars
     const float w = bars.getWidth() / 12.0f;
@@ -148,6 +158,11 @@ juce::String statusLine (Core& core, int part)
     if (! h.heard()) s = tr ("Listening - play chords on a part that does not follow");
     else if (hold) s = tr ("Held - the memory does not change");
     else s = juce::String (h.historyCount()) + " " + tr ("chords in memory");
+    if (const auto live = chords::detect (core.soundingNotes()); live.valid()) // p45: what sounds now
+    {
+        const auto k = core.keyScale();
+        s << "  ·  " << tr ("Playing") << " " << juce::String (chords::symbol (live, k.root, k.scale, german()));
+    }
     const auto names = harmony::followNamesEn();
     if (follow > 0)
         s << "  ·  P" << (part + 1) << " " << tr ("follows") << " " << tr (names[(size_t) juce::jlimit (0, (int) names.size() - 1, follow)].c_str());

@@ -76,7 +76,7 @@ target_sources(ohpe_core PRIVATE perform/PerformancePads.cpp)
 # p26: the living display's object (the sound as a deformable 3D shape; the drawing is src/ui/LivingView)
 target_sources(ohpe_core PRIVATE visual/LivingShape.cpp)
 # p24: the harmony brain (scale and chord memory of all parts)
-target_sources(ohpe_core PRIVATE harmony/HarmonyBrain.cpp)
+target_sources(ohpe_core PRIVATE harmony/HarmonyBrain.cpp harmony/KeyScale.cpp)
 # p27: the in-app updater (versions, manifest, settings, SHA-256, resumable download, content packs)
 target_sources(ohpe_core PRIVATE
     update/Version.cpp

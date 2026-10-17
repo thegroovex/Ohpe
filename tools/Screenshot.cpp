@@ -14,6 +14,7 @@
 // p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
 // octave block while recording (ohpe-transport, 2x crop; REC and PLAY at the top of their breathing).
 // p39: tempo, metronome, count-in on the tape page during a count-in (ohpe-metronome*, ohpe-tempo-panel* 2x crop).
+// p45: the chord under the voice dots, the key and Scale Lock on the header (ohpe-chords*, ohpe-chords-display* 2x crop).
 // 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack; the Mid/Side scope,
 // the master scope view and the spectrum terrain. 1.0: the 3D Space view and the 3D badge. The
 // preset library reads the user folder from OHPE_PRESET_DIR when set (otherwise the default).
@@ -980,6 +981,23 @@ int main (int argc, char* argv[])
                     setPlain (p, "metro.countin", 0.0f);
                     run (p, 2);
                     e.selectMode (ui::Mode::Synth);
+                }
+                {   // p45: the chord under the voice dots and the note readout (no overlap), the key with Scale Lock on
+                    // the header - the vocal page in F sharp minor, F#m7 held with F#5 on top; a 2x crop of the display
+                    e.selectPart (0);
+                    e.selectMode (ui::Mode::Synth);
+                    e.selectEngine (EngineType::Vocal);
+                    p.setKeyFromUi (6, scales::Minor);
+                    p.setScaleLockFromUi (true, keys::LockNearest);
+                    playAnimated (p, e, 8, { 54, 57, 61, 64, 78 });
+                    save (e, dir.getChildFile (juce::String (dark ? "ohpe-chords-dark" : "ohpe-chords") + suffix + ".png"));
+                    const auto disp = OhpeEditor::designArea ("display").expanded (4.0f).toNearestInt();
+                    save (e, dir.getChildFile (juce::String (dark ? "ohpe-chords-display-dark" : "ohpe-chords-display") + suffix + ".png"), 2.0f, disp);
+                    release (p, { 54, 57, 61, 64, 78 });
+                    p.setScaleLockFromUi (false, keys::LockNearest);
+                    p.setKeyFromUi (0, scales::Major);
+                    e.selectEngine (EngineType::Analog);
+                    run (p, 2);
                 }
                 {   // p41: the 3D switch on the 3D Space view - Off (the hint on its own line), Headphones, Speakers
                     e.selectPart (0);
