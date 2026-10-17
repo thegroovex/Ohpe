@@ -50,6 +50,9 @@
     "fx2.reverb.damping": 0.4,
     "fx2.reverb.predelay": 0.03,
     "fx2.reverb.mix": 0.3,
-    "gain": 7.7
+    "gain": 7.7,
+    "expr.at.dst1": 12,
+    "expr.at.amt1": 0.15,
+    "expr.at.curve1": 3
   }
 }

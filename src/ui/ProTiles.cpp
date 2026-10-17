@@ -79,6 +79,8 @@ juce::String explanation (const std::string& paramId)
         { "tune", "Coarse tuning of the part in semitones.", "Grobstimmung des Parts in Halbtönen." },
         { "fine", "Fine tuning of the part in cents.", "Feinstimmung des Parts in Cent." },
         { "vol", "Output level of the part.", "Ausgangspegel des Parts." },
+        { "glide.press", "Aftertouch changes the glide time: right = pressing harder glides slower, left = faster.",
+          "Aftertouch ändert die Glide-Zeit: rechts = fester drücken gleitet langsamer, links = schneller." },
         { "life", "Held notes keep evolving: drift, breathing, motion.", "Gehaltene Töne leben weiter: Drift, Atmen, Bewegung." },
         // p33: the Expression page
         { "expr.vel.dst1", "What playing harder moves (velocity target 1).", "Was härteres Anschlagen bewegt (Anschlagsziel 1)." },

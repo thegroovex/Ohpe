@@ -539,7 +539,10 @@
     "p3.space.air": 0.6,
     "p3.space.rolloff": 0.7,
     "p3.space.lowkeep": 120.0,
-    "p3.space.glide": 0.06
+    "p3.space.glide": 0.06,
+    "p2.expr.at.dst1": 12,
+    "p2.expr.at.amt1": 0.3,
+    "p2.expr.at.curve1": 3
   },
   "sections": {
     "sequencer": {

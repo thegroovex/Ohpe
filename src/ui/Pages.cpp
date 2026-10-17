@@ -388,7 +388,7 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
             take ("Pitch & Level");
             take ("Mod Envelope");
             take ("Voice");
-            groups.push_back ({ "Glide", 0, { p + "glide.mode", p + "glide.rate" } });
+            groups.push_back ({ "Glide", 0, { p + "glide.mode", p + "glide.rate", p + "glide.press" } });
             groups.push_back ({ "Pitch Envelope", 0, { p + "pitchenv.amt", p + "pitchenv.time", p + "pitchenv.curve" } });
             for (const char* t : { "Velocity", "Aftertouch", "Expression Curves" }) // p33: one Expression group instead of the three pages
                 pages.erase (std::remove_if (pages.begin(), pages.end(), [t] (const ParamGroup& g) { return g.title == t; }), pages.end());

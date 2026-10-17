@@ -18,6 +18,10 @@ Only the aftertouch part of the Expression page is touched (velocity slots, the 
 stay as they are). Without pressure every preset sounds exactly as before. Idempotent: a part whose aftertouch slot 1
 already has an amount is left alone.
 
+One pressure -> glide mechanism per part: a part that already uses the pressure glide of p32 ("glide.press" != 0, which
+scales the glide time by aftertouch directly) is skipped, so the pressure never stretches the glide twice
+(tests/core/FactorySoundTests.cpp checks this for every gliding factory part).
+
   python3 tools/presets/add_expression.py [--dry]
 """
 import json, os, sys
@@ -42,6 +46,8 @@ def apply(params, pre):
     glide = float(params.get(pre + "glide", 0.0))
     if glide <= 0.0:
         return None
+    if float(params.get(pre + "glide.press", 0.0)) != 0.0:
+        return "(pressure glide p32, skipped)"
     if float(params.get(pre + "expr.at.amt1", 0.0)) != 0.0:
         return "(already)"
     params[pre + "expr.at.dst1"] = TARGET_GLIDE

@@ -70,6 +70,20 @@ langsamen, gesanglichen Bogen; leichte Berührung hält die Linie straff. (Ein l
 natürlicher an als umgekehrt: Der Druck liegt meist schon an, wenn die nächste Note beginnt, also dehnt sich das
 Gleiten genau dann, wenn man in die Phrase hineindrückt.)
 
+## Ausdruck und Glide-Druck
+
+Aftertouch kann das Gleiten auf zwei Wegen formen; werden beide genutzt, wirken sie zusammen:
+
+- **Glide-Druck** (`pN.glide.press`, Profi-Ansicht, Gruppe **Glide**, siehe [MIDI](MIDI.md#mpe-midi-polyphonic-expression))
+  *skaliert* die Glide-Zeit: bei vollem Druck bis zu 4× länger (positiv) oder bis zu gar keinem Gleiten (negativ). Er
+  braucht keinen Slot und hält das Verhältnis zum Glide-Parameter bzw. zur CC-5-Zeit.
+- **Ausdruck → Glide-Zeit** (ein Aftertouch-Slot hier) *addiert* Zeit über die Modulationsmatrix, mit eigener Menge
+  und Kurve, und lässt sich neben einer zweiten Aftertouch-Funktion nutzen.
+
+Sind beide eingestellt, wird zuerst der Ausdrucks-Anteil addiert und das Ergebnis dann vom Glide-Druck skaliert – das
+Gleiten wird also doppelt gedehnt. Jeder gleitende Werksklang nutzt genau einen der beiden Wege (derzeit den
+Ausdrucks-Slot; ein Test prüft das); für eigene Klänge besser einen wählen oder beide bewusst kombinieren.
+
 ## Wie es funktioniert
 
 Jeder der vier Slots ist eine weitere Verbindung der [Modulationsmatrix](MODULATION.md) des Parts – gleiche Quellen,

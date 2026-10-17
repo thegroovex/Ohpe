@@ -239,6 +239,16 @@ void Part::registerLate21CharacterParams (ParamRegistry& reg) const
     }
 }
 
+void Part::registerLate32GlidePressParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const std::string P = "Part " + n + " ";
+    auto d = continuous (id ("glide.press"), P + "Glide Pressure", P + "Glide-Druck", -1.0f, 1.0f, 0.0f, ParamUnit::Percent);
+    d.group = "part" + n;
+    reg.add (std::move (d));
+}
+
 void Part::registerLate33ExpressionParams (ParamRegistry& reg) const { mod::PartMatrix::registerExpressionParams (reg, idPrefix, number); }
 
 void Part::applyReso (float* l, float* r, int n) noexcept
@@ -358,6 +368,7 @@ void Part::bind (const ParamRegistry& reg)
     exprSlideIndex = reg.indexOf (id ("mpe.slide"));
     monoBassIndex = reg.indexOf (id ("monobass"));
     lifeIndex = reg.indexOf (id ("life")); // p15
+    glidePressIndex = reg.indexOf (id ("glide.press")); // p32
     userWtIndex = reg.indexOf (id ("usertable.wt"));       // p20
     userVocalIndex = reg.indexOf (id ("usertable.vocal")); // p20
     for (int m = 0; m < character::numMacros; ++m) charIndex[(size_t) m] = reg.indexOf (id (std::string ("char.") + character::key (m))); // p21
@@ -523,6 +534,11 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
         if (base != lastGlideParam) { lastGlideParam = base; ccGlideSeconds = -1.0f; }
         glideMod = std::isfinite (g - base) ? g - base : 0.0f;
     }
+    if (glidePressIndex >= 0) // p32
+    {
+        const float a = s[glidePressIndex];
+        glidePressAmt = std::isfinite (a) ? std::clamp (a, -1.0f, 1.0f) : 0.0f;
+    }
     updateGlide();
     auto late = [&] (Late06 k, float def) { return late06Index[(size_t) k] >= 0 ? s[late06Index[(size_t) k]] : def; };
     common.glideMode = std::clamp ((int) std::lround (late (lGlideMode, 0.0f)), 0, 2);
@@ -668,6 +684,12 @@ void Part::noteOn (int note, float velocity) noexcept
     ++keys.noteCounter;
     updateHeldKeys();
     matrix.noteOn (note, velocity); // first: the voice reads the new note's seed
+    if (glidePressAmt != 0.0f) // p32: the new note's own pressure starts at 0 (the channel pressure stays)
+    {
+        const float before = common.glideSeconds;
+        updateGlide();
+        if (common.glideSeconds != before) pushCommon();
+    }
     rack.noteOn();                  // 0.7: retriggered rack effects
     if (auto* e = engines[(size_t) current].get()) e->noteOn (note, velocity);
     if (auto* le = layerEngine()) le->noteOn (note, velocity); // 0.8 layer
@@ -711,6 +733,12 @@ void Part::noteExpression (int note, const NoteExpression& x) noexcept
         keys.bendSemitones = tune + bend * bendRange + keyNoteBend;
     }
     exprBlend = std::clamp (x.blend, -1.0f, 1.0f); // 0.8: part-wide (the mix of two engines is not per note)
+    if (glidePressAmt != 0.0f) // p32: the pressure moves the glide time of new and ongoing glides at once
+    {
+        const float before = common.glideSeconds;
+        updateGlide();
+        if (common.glideSeconds != before) pushCommon();
+    }
     for (auto& e : engines)
         if (e != nullptr) e->noteExpression (note, x);
 }
@@ -961,7 +989,15 @@ float Part::modulationOf (int registryIndex) const noexcept
 
 void Part::updateGlide() noexcept
 {
-    const float t = std::clamp ((ccGlideSeconds >= 0.0f ? ccGlideSeconds : std::max (0.0f, lastGlideParam)) + glideMod, 0.0f, 2.0f);
+    // p33: the matrix offset (Glide Time target) is added to the parameter / CC 5 time first; p32: the pressure then scales it
+    float t = std::clamp ((ccGlideSeconds >= 0.0f ? ccGlideSeconds : std::max (0.0f, lastGlideParam)) + glideMod, 0.0f, 2.0f);
+    if (glidePressAmt != 0.0f && t > 0.0f) // p32: aftertouch scales the glide time (0 = exactly the old time)
+    {
+        float p = std::max (matrix.sourceValue (mod::SrcChannelPressure), matrix.sourceValue (mod::SrcNotePressure));
+        p = std::isfinite (p) ? std::clamp (p, 0.0f, 1.0f) : 0.0f;
+        const float k = glidePressAmt > 0.0f ? 1.0f + 3.0f * glidePressAmt * p : std::max (0.0f, 1.0f + glidePressAmt * p);
+        t *= k;
+    }
     common.glideSeconds = portaSwitch ? t : 0.0f;
 }
 

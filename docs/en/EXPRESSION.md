@@ -69,6 +69,20 @@ a light touch keeps the line tight. (A longer glide under pressure felt more nat
 pressure is usually already there when the next note starts, so the glide stretches exactly when you are pushing
 into the phrase.)
 
+## Expression and Glide Pressure
+
+There are two ways to let aftertouch shape the glide, and they add up if both are used:
+
+- **Glide Pressure** (`pN.glide.press`, pro view **Glide** group, see [MIDI](MIDI.md#mpe-midi-polyphonic-expression))
+  *scales* the glide time: up to 4× longer at full pressure (positive) or down to no glide (negative). It needs no
+  slot and keeps the ratio to the Glide parameter or CC 5 time.
+- **Expression → Glide Time** (an aftertouch slot here) *adds* time through the modulation matrix, with its own amount
+  and curve, and can sit alongside a second aftertouch function.
+
+When both are set, the Expression offset is added first and Glide Pressure then scales the result, so the glide is
+stretched twice. Each gliding factory sound uses exactly one of them (currently the Expression slot; a test checks
+this); for your own sounds pick one, or use both on purpose.
+
 ## How it works
 
 Each of the four slots is one more routing of the part's [modulation matrix](MODULATION.md) – same sources, curves,

@@ -70,6 +70,16 @@ Bend beginnt, startet auf dieser Tonhöhe (sie gleitet nicht hinein). Druck und 
 **Portamento und Poly-Glide** arbeiten wie ohne MPE: eine neue Note gleitet von der vorigen
 (Glide-Einstellungen des Parts), ihr eigener Pitchbend kommt obendrauf.
 
+**Glide-Druck (p32).** `pN.glide.press` (*Part N Glide-Druck*, −1 … +1, Standard 0) lässt den Druck die
+Glide-Zeit verändern. Als Druck zählt der größere Wert aus Kanal-Aftertouch und dem eigenen Druck der
+neuesten Note (polyphoner Aftertouch oder MPE). Ein positiver Wert macht das Gleiten langsamer, je fester
+man drückt (Zeit × (1 + 3 × Wert × Druck), bei +1 und vollem Druck bis zu viermal so lang); ein negativer
+Wert macht es schneller (Zeit × (1 + Wert × Druck); bei −1 und vollem Druck springt die Tonhöhe).
+Er wirkt auf die *Glide*-Zeit und die Portamento-Zeit von CC 5 gleichermaßen, auf neue und auf laufende
+Gleitvorgänge; CC 65 aus schaltet Glide weiterhin ab. Bei 0 oder ohne Druck gleitet alles genau wie
+bisher. Der Regler steht in der Pro-Ansicht in der Gruppe **Glide** und gehört zu Part-Presets
+(Schlüssel `glide.press`). Zum Verhältnis zu einem Ausdrucks-Aftertouch-Slot auf *Glide-Zeit* (skalieren vs. addieren; beides zusammen dehnt doppelt) siehe [Ausdruck](AUSDRUCK.md#ausdruck-und-glide-druck).
+
 **Ohne MPE** gelten dieselben Ziele, Mengen und Glättung für Kanal-Aftertouch, polyphonen
 Aftertouch und CC 74 auf dem Kanal des Parts – eine Aftertouch-Tastatur steuert sie also auch.
 

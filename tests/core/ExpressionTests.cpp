@@ -10,13 +10,16 @@
 #include "TestHelpers.h"
 #include "mod/Expression.h"
 #include "mod/ModMatrix.h"
+#include "preset/Preset.h"
 
 #include <doctest/doctest.h>
 
 #include <algorithm>
 #include <cmath>
+#include <filesystem>
 #include <fstream>
 #include <functional>
+#include <sstream>
 
 using namespace ohpe;
 using namespace ohpe::test;
@@ -79,7 +82,7 @@ MidiEvent channelPressure (int value) { return MidiEvent { 0, (uint8_t) 0xd0, (u
 MidiEvent polyPressure (int note, int value) { return MidiEvent { 0, (uint8_t) 0xa0, (uint8_t) note, (uint8_t) value }; }
 } // namespace
 
-TEST_CASE ("p33: the Expression page IDs follow the harmony block, 12 per part in their documented order")
+TEST_CASE ("p33: the Expression page IDs follow the pressure-glide block (p32), 12 per part in their documented order")
 {
     Core core;
     std::vector<std::string> ids;
@@ -87,6 +90,7 @@ TEST_CASE ("p33: the Expression page IDs follow the harmony block, 12 per part i
     const auto it = std::find (ids.begin(), ids.end(), "p1.expr.vel.dst1");
     REQUIRE (it != ids.end());
     const auto first = (size_t) (it - ids.begin());
+    CHECK ((int) first == core.params().indexOf ("p4.glide.press") + 1);
     size_t k = first;
     for (int p = 1; p <= Core::numParts; ++p)
         for (const char* in : { "vel", "at" })
@@ -351,4 +355,38 @@ TEST_CASE ("p33: the Expression page is part of the state and of part presets")
     CHECK (b.params().get ("p2.expr.at.dst1") == (float) ex::Glide);
     CHECK (b.params().get ("p2.expr.at.amt1") == doctest::Approx (0.25f));
     CHECK (b.params().get ("p2.expr.at.curve1") == (float) mod::CurveLog);
+}
+
+TEST_CASE ("p33: every gliding factory part has exactly one pressure -> glide mechanism (Expression or p32 pressure glide)")
+{
+    // the pressure glide of p32 ("glide.press") and an Expression aftertouch slot on Glide Time both stretch the glide
+    // with aftertouch; a factory part uses one of them, never both (the glide would be stretched twice) and never none
+    namespace fs = std::filesystem;
+    int parts = 0;
+    for (const auto& e : fs::directory_iterator (fs::path (OHPE_SOURCE_DIR) / "resources" / "presets" / "factory"))
+    {
+        if (e.path().extension() != ".ohpepreset") continue;
+        std::ifstream f (e.path());
+        REQUIRE (f.good());
+        std::stringstream ss;
+        ss << f.rdbuf();
+        preset::Preset p;
+        REQUIRE_MESSAGE (preset::fromJson (ss.str(), p), e.path().filename().string());
+        auto get = [&] (const std::string& id) { const auto it = p.params.find (id); return it != p.params.end() ? it->second : 0.0f; };
+        std::vector<std::string> prefixes;
+        if (p.meta.kind == preset::Kind::Part) prefixes.push_back ("");
+        else
+            for (int n = 1; n <= Core::numParts; ++n)
+                if (p.params.count ("p" + std::to_string (n) + ".engine") != 0) prefixes.push_back ("p" + std::to_string (n) + ".");
+        for (const auto& pre : prefixes)
+        {
+            if (get (pre + "glide") <= 0.0f) continue;
+            int mechanisms = get (pre + "glide.press") != 0.0f ? 1 : 0;
+            for (const char* s : { "1", "2" })
+                if (std::lround (get (pre + "expr.at.dst" + s)) == ex::Glide && get (pre + "expr.at.amt" + s) != 0.0f) ++mechanisms;
+            CHECK_MESSAGE (mechanisms == 1, e.path().filename().string() + " " + pre);
+            ++parts;
+        }
+    }
+    CHECK (parts > 0);
 }

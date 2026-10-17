@@ -258,7 +258,10 @@
     "mix.master.comp.attack": 0.012,
     "mix.master.comp.release": 0.16,
     "mix.master.comp.makeup": 6.9,
-    "mix.master.limit": 1
+    "mix.master.limit": 1,
+    "p2.expr.at.dst1": 12,
+    "p2.expr.at.amt1": 0.3,
+    "p2.expr.at.curve1": 3
   },
   "sections": {
     "sequencer": {

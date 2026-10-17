@@ -97,6 +97,15 @@ public:
         see mod/Character.h): each moves several parameters of the part at once (inside the part, after the matrix).
     */
     void registerLate21CharacterParams (ParamRegistry& reg) const;
+    /**
+        p32: "pN.glide.press" (-1..+1, 0 = neutral): aftertouch scales the glide time. The pressure is the larger of the
+        channel pressure and the newest note's pressure (poly / MPE). Amount > 0: pressing harder makes the glide longer
+        (time x (1 + 3 x amount x pressure), up to 4x); amount < 0: faster (time x (1 + amount x pressure), full pressure
+        at -1 = instant). Works on the "glide" parameter and the CC 5 portamento time alike.
+    */
+    void registerLate32GlidePressParams (ParamRegistry& reg) const;
+    /** p32 (tests): the glide time the voices use now (seconds, after CC 65 / CC 5 and the pressure scaling). */
+    float effectiveGlideSeconds() const noexcept { return common.glideSeconds; }
     /** p33: the Expression page "pN.expr.vel.*" / "pN.expr.at.*" (velocity / aftertouch -> two functions each; matrix routings). */
     void registerLate33ExpressionParams (ParamRegistry& reg) const;
     /** p33: the matrix target an Expression page function (mod::expr::Target) drives on engine `type` (-1 = none there). */
@@ -221,6 +230,8 @@ private:
     bool portaSwitch = true;
     float ccGlideSeconds = -1.0f, lastGlideParam = -1.0f;
     void updateGlide() noexcept;
+    int glidePressIndex = -1;  ///< p32: "pN.glide.press"
+    float glidePressAmt = 0.0f; ///< p32: -1..+1 (0 = the glide time ignores the pressure)
     VoiceCommon common;
     // ---- 0.8 layer
     enum Late08 { lyEngine = 0, lyLevel, lyTune, lyFine, lyXMode, lyXMod, lyWidth, lyOwnEnv, lyA, lyD, lyS, lyR, numLate08 };

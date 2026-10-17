@@ -75,6 +75,9 @@
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
     "glide": 0.04,
-    "gain": 6.8
+    "gain": 6.8,
+    "expr.at.dst1": 12,
+    "expr.at.amt1": 0.3,
+    "expr.at.curve1": 3
   }
 }
