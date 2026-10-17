@@ -91,6 +91,7 @@ Verzögerung 0 … 4 s, Attack 1 ms … 10 s (linear), Halten 0 … 4 s, Decay 1
 | 72 | Leben | – | p15: der Leben-Anteil des Parts `pN.life` ([BEDIENUNG.md](BEDIENUNG.md#leben)), 0 … 100 %; z. B. Mod-Rad → Leben, um gehaltene Töne zu beleben, Notendruck → Leben für MPE |
 | 73, 74 | Morph X, Morph Y | – | p16: die Position des [Morph-Pads](MORPH-RAUM.md) des Parts (`pN.morph.x` / `.y`), ganze Breite; z. B. LFO 2 → Morph X, Notendruck → Morph Y |
 | 75 – 80 | Körper-Stimmung, Körper-Größe, Körper-Material, Körper-Ausklang, Körper-Position, Körper-Mischung | – | p19: der [Resonanzkörper](RESONANZKOERPER.md) des Parts (`pN.reso.tune` … `.mix`), ganzer Bereich (Stimmung ±24 Halbtöne); z. B. LFO 2 → Körper-Position für einen wandernden Anregungspunkt, Hüllkurve 3 → Körper-Mischung |
+| 85 | Sub-Pegel | – | p31: Pegel der [SUB-Ebene](SUB-EBENE.md) des Parts `pN.sub.level`, 0 … 100 %; z. B. Anschlag → Sub-Pegel für mehr Tiefe bei harten Noten, Mod-Hüllkurve → Sub-Pegel für einen Sub, der nur am Anfang drückt (81 – 84: die Charakter-Makros) |
 
 Ziele ab 5 bewegen einen **Parameter** um `Menge × Quelle` seines vollen Bereichs (normiert, ein
 Cutoff bewegt sich also in Oktaven): ein Wert für den Part, berechnet aus Part-Quellen – den frei

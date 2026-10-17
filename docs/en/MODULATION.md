@@ -90,6 +90,7 @@ Release 1 ms … 10 s (exponential).
 | 72 | Life | – | p15: the part's life amount `pN.life` ([USER-INTERFACE.md](USER-INTERFACE.md#life)), 0 … 100 %; e.g. Mod Wheel → Life to bring held notes alive, Note Pressure → Life for MPE |
 | 73, 74 | Morph X, Morph Y | – | p16: the position of the part's [morph pad](MORPH.md) (`pN.morph.x` / `.y`), full width; e.g. LFO 2 → Morph X, Note Pressure → Morph Y |
 | 75 – 80 | Body Tune, Body Size, Body Material, Body Decay, Body Position, Body Mix | – | p19: the part's [resonator body](RESONATOR.md) (`pN.reso.tune` … `.mix`), full range (tune ±24 semitones); e.g. LFO 2 → Body Position for a moving pluck point, Env 3 → Body Mix |
+| 85 | Sub Level | – | p31: the part's [SUB layer](SUB.md) level `pN.sub.level`, 0 … 100 %; e.g. Velocity → Sub Level for more low end on hard notes, Mod Env → Sub Level for a sub that only thumps at the start (81 – 84: the character macros) |
 
 Targets 5 and up move a **parameter** by `amount × source` of its full range (normalised, so a
 cutoff moves in octaves): one value for the part, computed from part-wide sources – the

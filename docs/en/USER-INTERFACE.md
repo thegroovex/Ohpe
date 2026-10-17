@@ -151,7 +151,8 @@ follow it. The display shows the edit part as a yellow badge (P1–P4). MIDI: *E
 
 **Synth mode** (0.6): after the engine's own pages come two pages every engine shares – **Glide**
 (time, mode, timing, poly glide) and **Pitch Envelope** (amount, time, curve, voices). See
-[SEQUENCERS.md](SEQUENCERS.md#portamento-and-pitch-envelope-06).
+[SEQUENCERS.md](SEQUENCERS.md#portamento-and-pitch-envelope-06). Then the page **Sub** (p31: level, octave, shape,
+direct) – the part's [SUB layer](SUB.md), a sub oscillator one or two octaves under every voice for extra low end.
 
 ## Samples for the Sampler and Grain engines
 
@@ -182,7 +183,7 @@ built-in material (`pN.usertable.wt` / `pN.usertable.vocal`), **CLEAR** removes 
 
 **PRO** opens the pro view: **every parameter of the current mode at once**, in groups – in Synth
 mode the engine, its filter, the envelopes, LFO, pitch & level, voice, glide (p32: with *Glide Pressure*,
-[MIDI.md](MIDI.md)), pitch envelope, layer and
+[MIDI.md](MIDI.md)), pitch envelope, sub, layer and
 MIDI of the part; in Tape mode the transport, loop, tape character and all eight tracks; in Drum mode the
 kit and all 24 pads. The tabs on top switch the mode. The layout uses one to four columns, as many as the
 window is wide, and scrolls when a mode has more than fits.
@@ -200,6 +201,7 @@ picture is the control:
 | Grain / Sampler | the waveform; grains as a cloud around the position (green while playing) | grain: X = position, Y = size, wheel = spray; sampler: drag start / loop markers |
 | Analog / Pluck / Cluster / Vocal | oscillator mix preview / string / detuned stack / formant curve | X and Y move the engine's first two macros |
 | Pitch & Level | tuning ring and level meter | up / down on the ring = tune, wheel = fine, on the fader = level |
+| Sub (p31) | the voice (grey) over its sub wave (yellow), level fader | up / down = level, swipe = shape, click the octave / route caption, wheel = level – see [SUB layer](SUB.md) |
 | FX slots, sends | the chain as cards with a mini picture of each effect | X = mix, Y = the effect's first parameter, wheel = type |
 | 3D Space | the head from above, the sound as a dot | drag the dot = direction and distance, wheel = elevation |
 
