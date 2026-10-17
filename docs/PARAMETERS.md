@@ -963,3 +963,20 @@ monitoring switch). Defaults leave Ohpe as before: no click, no count-in. No new
 | `metro.countin` | Count-In | Vorzähler | Off, 1 Bar, 2 Bars / Aus, 1 Takt, 2 Takte | Off |
 | `metro.plugin` | Click in Plug-in | Klick im Plug-in | Off, On (standalone: always clicks when on) | Off |
 | `metro.tap` | Tap Tempo | Tempo tippen | trigger (a rising edge is one tap) | Off |
+
+## p42 – Tape loop by hand / Schleife von Hand
+
+Guides: [English](en/TAPE-MIXER-FX.md#setting-the-loop-p42) · [Deutsch](de/BAND-MISCHER-FX.md#schleife-setzen-p42).
+Seven parameters appended after `metro.tap` (p39). The six triggers (group `remote`) are not part of presets; the grid
+`tape.loopsnap` (group `tape`) is saved with projects like the loop range. The existing `tape.loop`, `tape.loopin`,
+`tape.loopout` and `tape.tx.loop` keep their meaning. No new modulation sources or targets.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `tape.edit.loopin` | Tape Set Loop In | Tape Loop-Start setzen | trigger: loop in at the playhead (on the grid) | off |
+| `tape.edit.loopout` | Tape Set Loop Out | Tape Loop-Ende setzen | trigger: loop out at the playhead (on the grid), loop on | off |
+| `tape.edit.loopundo` | Tape Loop Undo | Tape Loop rückgängig | trigger: previous loop range | off |
+| `tape.edit.loopredo` | Tape Loop Redo | Tape Loop wiederherstellen | trigger: next loop range | off |
+| `tape.edit.loophalf` | Tape Loop Half | Tape Loop halbieren | trigger: half as long from loop in | off |
+| `tape.edit.loopdouble` | Tape Loop Double | Tape Loop verdoppeln | trigger: twice as long from loop in | off |
+| `tape.loopsnap` | Tape Loop Snap | Tape Loop-Raster | Off, Beat, Bar / Aus, Schlag, Takt | Bar |

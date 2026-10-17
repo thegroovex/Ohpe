@@ -227,6 +227,11 @@ public:
     ui::ConfirmDialog& confirmDialogComponent() { return confirmDialog; } ///< p38
     /** p38: loads a tape file the way the LOAD TAPE key does after the file dialog (asks first over material). */
     void openTapeFile (const juce::File& f) { loadTapeFile (f); }
+    /** p42: the loop keys of the tape page instead of the edit keys (the loop readout toggles them). */
+    void showTapeLoopKeys (bool show);
+    bool tapeLoopKeysShown() const noexcept { return tapeLoopKeys; }
+    /** p42 tests: the loop keys act as with Shift held (off the grid). */
+    void setLoopKeysFreeForTests (bool f) noexcept { loopFreeForTests = f; }
     /** p16: assigns morph corner `corner` (0..3) of the edit part: `presetIndex` = an entry of the library (its sound),
         -1 = the current sound, -2 = clear the corner, -3 = clear every corner. Switches the morph on when a corner
         gets a sound. */
@@ -340,6 +345,9 @@ private:
     std::unique_ptr<breed::Audition> randomAudition; ///< p37: offline check / level of RANDOM sounds (created on first use)
     std::array<int, 3> breedRequestsSeen {};
     int tapeClearAllSeen = 0; ///< p38: MIDI / host presses of "tape.edit.clearall"
+    bool tapeLoopKeys = false, loopFreeForTests = false; ///< p42
+    int tapeLoopSignature = -1;
+    int loopKeySignature() const;
 
     ui::Mode mode = ui::Mode::Synth;
     ui::PageContext ctx;

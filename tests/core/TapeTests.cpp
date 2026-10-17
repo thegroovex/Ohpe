@@ -3,11 +3,14 @@
 #include "OhpeCore.h"
 #include "TestHelpers.h"
 #include "tape/TapeFile.h"
+#include "tape/TapeLoop.h"
 #include "tape/TapeMachine.h"
 
 #include <doctest/doctest.h>
 
 #include <nlohmann/json.hpp>
+
+#include <limits>
 
 using namespace ohpe;
 using namespace ohpe::test;
@@ -629,4 +632,215 @@ TEST_CASE ("tape: a tape file from another sample rate keeps its pitch")
     const double f = measureFrequency (out.l, rate, 4000, 40000);
     CHECK (std::abs (centsBetween (f, 1000.0)) < 2.0);
     CHECK (b.tape.contentEndFrames (4) == doctest::Approx (44100.0).epsilon (0.002));
+}
+
+// ---------------------------------------------------------------- p42: the tape loop by hand
+namespace tl = ohpe::tapeloop;
+
+TEST_CASE ("tape loop: grid and snapping (nearest beat / bar at the tempo, off = free)")
+{
+    CHECK (tl::gridSeconds (tl::Snap::Beat, 120.0) == doctest::Approx (0.5));
+    CHECK (tl::gridSeconds (tl::Snap::Bar, 120.0) == doctest::Approx (2.0));
+    CHECK (tl::gridSeconds (tl::Snap::Off, 120.0) == 0.0);
+    CHECK (tl::snapTime (2.9, tl::Snap::Bar, 120.0) == doctest::Approx (2.0));
+    CHECK (tl::snapTime (3.1, tl::Snap::Bar, 120.0) == doctest::Approx (4.0));
+    CHECK (tl::snapTime (1.26, tl::Snap::Beat, 120.0) == doctest::Approx (1.5));
+    CHECK (tl::snapTime (1.234, tl::Snap::Off, 120.0) == doctest::Approx (1.234));
+    CHECK (tl::snapTime (std::numeric_limits<double>::quiet_NaN(), tl::Snap::Bar, 120.0) == 0.0);
+    CHECK (tl::snapTime (-3.0, tl::Snap::Beat, 120.0) == 0.0);
+    CHECK (tl::minLength (tl::Snap::Off, 120.0, 600.0) == doctest::Approx (tl::minFreeSeconds));
+    CHECK (tl::minLength (tl::Snap::Bar, 120.0, 600.0) == doctest::Approx (2.0));
+}
+
+TEST_CASE ("tape loop: set in / out at a position - snapped, in < out, the loop moves along when an edge passes the other")
+{
+    const double len = 600.0, bpm = 120.0;
+    tl::Range r; // nothing set yet
+    r = tl::setIn (r, 2.1, len, tl::Snap::Bar, bpm);
+    CHECK (r.in == doctest::Approx (2.0));
+    CHECK (r.out == doctest::Approx (4.0)); // a fresh loop: one bar
+    r = tl::setOut (r, 9.9, len, tl::Snap::Bar, bpm);
+    CHECK (r.in == doctest::Approx (2.0));
+    CHECK (r.out == doctest::Approx (10.0));
+    // loop in past loop out: the loop keeps its 8 s and moves along
+    r = tl::setIn (r, 10.9, len, tl::Snap::Bar, bpm);
+    CHECK (r.in == doctest::Approx (10.0));
+    CHECK (r.out == doctest::Approx (18.0));
+    // loop out on loop in: loop in gives way by the loop's length
+    r = tl::setOut (r, 10.2, len, tl::Snap::Bar, bpm);
+    CHECK (r.out == doctest::Approx (10.0));
+    CHECK (r.in == doctest::Approx (2.0));
+    // free (Shift): exactly where the playhead is
+    r = tl::setIn (r, 3.4567, len, tl::Snap::Off, bpm);
+    CHECK (r.in == doctest::Approx (3.4567));
+    r = tl::setOut (r, 3.5, len, tl::Snap::Off, bpm); // shorter than nothing would be: at least the minimum
+    CHECK (r.out - r.in >= tl::minFreeSeconds - 1.0e-9);
+    // the end of the tape
+    r = tl::setOut ({ 590.0, 595.0 }, 700.0, len, tl::Snap::Off, bpm);
+    CHECK (r.out == doctest::Approx (600.0));
+    r = tl::setIn ({ 590.0, 600.0 }, 700.0, len, tl::Snap::Off, bpm);
+    CHECK (r.out <= 600.0);
+    CHECK (r.in < r.out);
+}
+
+TEST_CASE ("tape loop: dragging an edge stops at the other one; half / double; shift")
+{
+    const double len = 60.0, bpm = 120.0;
+    tl::Range r { 4.0, 12.0 };
+    auto d = tl::dragEdge (r, true, 30.0, len, tl::Snap::Bar, bpm);
+    CHECK (d.in == doctest::Approx (10.0)); // one bar before loop out
+    CHECK (d.out == doctest::Approx (12.0));
+    d = tl::dragEdge (r, false, 1.0, len, tl::Snap::Off, bpm);
+    CHECK (d.out == doctest::Approx (4.0 + tl::minFreeSeconds));
+    d = tl::dragEdge (r, false, 100.0, len, tl::Snap::Beat, bpm);
+    CHECK (d.out == doctest::Approx (60.0));
+    auto h = tl::halve (r, len, tl::Snap::Bar, bpm);
+    CHECK (h.in == doctest::Approx (4.0));
+    CHECK (h.out == doctest::Approx (8.0));
+    h = tl::halve ({ 4.0, 6.0 }, len, tl::Snap::Bar, bpm); // never below one bar on the bar grid
+    CHECK (h.length() == doctest::Approx (2.0));
+    auto x = tl::doubled (r, len, tl::Snap::Bar, bpm);
+    CHECK (x.out == doctest::Approx (20.0));
+    x = tl::doubled ({ 40.0, 56.0 }, len, tl::Snap::Off, bpm);
+    CHECK (x.out == doctest::Approx (60.0));
+    auto s = tl::shift (r, 3.1, len, tl::Snap::Bar, bpm);
+    CHECK (s.in == doctest::Approx (8.0));
+    CHECK (s.length() == doctest::Approx (8.0));
+    s = tl::shift (r, 100.0, len, tl::Snap::Off, bpm);
+    CHECK (s.out == doctest::Approx (60.0));
+    CHECK (s.length() == doctest::Approx (8.0));
+}
+
+TEST_CASE ("tape loop: any sequence of edits keeps a legal range (fuzz)")
+{
+    dsp::Random rng (4242u);
+    const double len = 30.0;
+    tl::Range r;
+    for (int k = 0; k < 4000; ++k)
+    {
+        const auto snap = (tl::Snap) (k % 3);
+        const double bpm = 40.0 + 200.0 * (0.5 + 0.5 * rng.nextBipolar());
+        const double at = (0.5 + 0.5 * rng.nextBipolar()) * 40.0 - 5.0;
+        switch (k % 7)
+        {
+            case 0: r = tl::setIn (r, at, len, snap, bpm); break;
+            case 1: r = tl::setOut (r, at, len, snap, bpm); break;
+            case 2: r = tl::dragEdge (r, true, at, len, snap, bpm); break;
+            case 3: r = tl::dragEdge (r, false, at, len, snap, bpm); break;
+            case 4: r = tl::halve (r, len, snap, bpm); break;
+            case 5: r = tl::doubled (r, len, snap, bpm); break;
+            default: r = tl::shift (r, at - 15.0, len, snap, bpm); break;
+        }
+        REQUIRE (std::isfinite (r.in));
+        REQUIRE (std::isfinite (r.out));
+        REQUIRE (r.in >= 0.0);
+        REQUIRE (r.out <= len + 1.0e-9);
+        REQUIRE (r.out - r.in >= tl::minFreeSeconds - 1.0e-9);
+    }
+}
+
+TEST_CASE ("tape loop: history - key changes are one step each, an encoder turn is one step once it rests, crossing is corrected")
+{
+    tl::Tracker t;
+    t.reset ({ 0.0, 8.0 });
+    t.commit ({ 0.0, 8.0 }, { 2.0, 8.0 });
+    t.commit ({ 2.0, 8.0 }, { 2.0, 6.0 });
+    CHECK (t.history().undoSize() == 2);
+    tl::Range fixed;
+    // an encoder turn: many small changes, one step after it rests
+    double now = 10.0;
+    for (int k = 1; k <= 10; ++k)
+    {
+        CHECK_FALSE (t.observe ({ 2.0, 6.0 + 0.1 * k }, now, 600.0, tl::minFreeSeconds, fixed));
+        now += 0.05;
+    }
+    CHECK (t.history().undoSize() == 2);
+    t.observe ({ 2.0, 7.0 }, now + 1.0, 600.0, tl::minFreeSeconds, fixed);
+    CHECK (t.history().undoSize() == 3);
+    // undo walks back: 7 -> 6 -> (2, 8) -> (0, 8); redo forward again
+    tl::Range r;
+    REQUIRE (t.undo ({ 2.0, 7.0 }, r));
+    CHECK (r.out == doctest::Approx (6.0));
+    REQUIRE (t.undo (r, r));
+    CHECK (r == tl::Range { 2.0, 8.0 });
+    REQUIRE (t.undo (r, r));
+    CHECK (r == tl::Range { 0.0, 8.0 });
+    CHECK_FALSE (t.undo (r, r));
+    REQUIRE (t.redo (r, r));
+    CHECK (r == tl::Range { 2.0, 8.0 });
+    // a new change drops the redo side
+    t.commit (r, { 1.0, 8.0 });
+    CHECK_FALSE (t.history().canRedo());
+    // loop in turned past loop out (encoder / MIDI): in wins, out gives way
+    REQUIRE (t.observe ({ 9.0, 8.0 }, now + 2.0, 600.0, tl::minFreeSeconds, fixed));
+    CHECK (fixed.in == doctest::Approx (9.0));
+    CHECK (fixed.out == doctest::Approx (9.0 + tl::minFreeSeconds));
+    // loop out turned below loop in: out wins
+    REQUIRE (t.observe ({ 9.0, 3.0 }, now + 3.0, 600.0, tl::minFreeSeconds, fixed));
+    CHECK (fixed.out == doctest::Approx (3.0));
+    CHECK (fixed.in == doctest::Approx (3.0 - tl::minFreeSeconds));
+}
+
+TEST_CASE ("tape loop: recording inside the loop - passes counted, overdub layers every pass, the take is one undo step")
+{
+    TapeRig rig;
+    rig.set ("loopin", 0.0f);
+    rig.set ("loopout", 0.01f); // 480 frames
+    rig.set ("loop", 1.0f);
+    const auto in = noise (1200, 77); // two and a half passes
+    const int steps = rig.tape.undoSteps();
+    rig.set ("overdub", 1.0f);
+    rig.set ("tr1.arm", 1.0f);
+    rig.set ("tr1.src", (float) tapesource::input);
+    rig.tape.locateFrames (0);
+    rig.set ("play", 1.0f);
+    rig.set ("rec", 1.0f);
+    CHECK (rig.tape.loopPass() == 0);
+    Stereo first (512), rest (688);
+    std::copy (in.l.begin(), in.l.begin() + 512, first.l.begin());
+    std::copy (in.r.begin(), in.r.begin() + 512, first.r.begin());
+    std::copy (in.l.begin() + 512, in.l.end(), rest.l.begin());
+    std::copy (in.r.begin() + 512, in.r.end(), rest.r.begin());
+    rig.run (512, &first, 0);
+    CHECK (rig.tape.loopPass() == 2);
+    rig.run (688, &rest, 0);
+    CHECK (rig.tape.loopPass() == 3);
+    rig.set ("rec", 0.0f);
+    rig.set ("play", 0.0f);
+    rig.set ("tr1.arm", 0.0f);
+    rig.run (TapeRig::block);
+    rig.tape.housekeeping();
+    CHECK (rig.tape.loopPass() == 0);
+    CHECK (rig.tape.undoSteps() == steps + 1); // the whole take
+    CHECK (rig.tape.contentEndFrames (0) <= 480); // nothing beyond loop out
+    const auto c = rig.committed (0, 0, 480);
+    for (int i = 0; i < 480; ++i)
+    {
+        float sum = 0.0f;
+        for (int k = i; k < 1200; k += 480) sum += in.l[(size_t) k];
+        REQUIRE (c[(size_t) i] == doctest::Approx (sum).epsilon (1.0e-5));
+    }
+    CHECK (allFinite (c));
+    REQUIRE (rig.tape.undo());
+    CHECK (rig.tape.contentEndFrames (0) == 0);
+}
+
+TEST_CASE ("tape loop: a playhead inside the new loop keeps wrapping; outside the loop the tape plays on")
+{
+    TapeRig rig;
+    rig.record (noise (9600, 5), 0, 0);
+    rig.set ("loopin", 0.05f);  // 2400
+    rig.set ("loopout", 0.1f);  // 4800
+    rig.set ("loop", 1.0f);
+    rig.tape.locateFrames (3000);
+    rig.set ("play", 1.0f);
+    for (int k = 0; k < 40; ++k)
+    {
+        rig.run (TapeRig::block);
+        const auto p = rig.tape.positionFrames();
+        REQUIRE (p >= 2400);
+        REQUIRE (p < 4800);
+    }
+    rig.set ("play", 0.0f);
+    rig.run (TapeRig::block);
 }
