@@ -65,27 +65,325 @@ Leiste sagt, was das Hirn tut und ob der Edit-Part folgt. Softkeys: **Tonart üb
 
 ## Die Raster-Tastatur
 
-Die Taste **RASTER** (zwischen OKTAVE + und MIDI, gelber Balken, solange sie an ist) tauscht die
-Klaviertasten gegen ein Raster aus 4 × 24 Feldern. Auf einem isomorphen Raster hat jeder Akkord und jede Skala
-**in jeder Tonart dieselbe Form** – eine Form einmal lernen, überall hin verschieben.
+![Die vier Anordnungen der Raster-Tastatur, die unteren 12 Spalten](../images/ohpe-grid-layouts-de.svg)
 
-| Anordnung | Nach rechts | Nach oben |
-|---|---|---|
-| **Quarten** | +1 Halbton | +5 (eine Quarte) |
-| **Terzen** | +1 | +4 (eine große Terz) |
-| **Ganztöne** | +2 | +5 |
-| **In Tonart** | +1 Stufe der gemerkten Tonart | +3 Stufen (eine Quarte) – nur Tonart-Töne |
+Die Taste **RASTER** (zwischen OKTAVE + und MIDI, gelber Balken, solange sie an ist) tauscht die Klaviertasten gegen
+ein Raster aus **4 Reihen × 24 Feldern**. Es ist eine **isomorphe** Tastatur. Dieser Abschnitt erklärt sie von Grund
+auf – an Musiktheorie brauchst du nur das Zählen von Halbtönen.
 
-Tonart-Töne sind helle Felder, andere graphit; **Akkordtöne** tragen einen **violetten** Balken, der Grundton der
-Tonart steht mit Oktave da, ein gedrücktes Feld sinkt mit rotem Balken ein. **OKTAVE −/+** verschiebt das Raster
-wie die Klaviatur; die Anzeige zeigt seinen Umfang. Wo du ein Feld triffst, bestimmt die Anschlagstärke (weiter oben
-= lauter).
+### Die Idee: eine Form, jede Tonart
 
-Es spielt den **Edit-Part**. Ist für ihn **MPE** an, bekommt jede Berührung ihren eigenen Mitgliedskanal (2 – 16):
-**seitlich schieben** biegt die Note (ein Feld = der Schritt der Anordnung, skaliert mit dem MPE-Bend-Bereich des
-Parts), **hoch / runter** sendet Slide (CC 74), Touch- oder Stift-**Druck** sendet Druck. Mehrere Finger auf einem
-Touchscreen spielen mehrere Noten, jede mit eigenem Ausdruck. Ohne MPE spielen die Noten auf dem Kanal des Parts
-(durch Skala, Akkord und Folgen).
+Auf dem Klavier sehen C-Dur und D-Dur verschieden aus: andere weiße und schwarze Tasten, eine andere Handhaltung.
+Auf einem isomorphen Raster liegt jedes Feld immer gleich weit von seinen Nachbarn: ein Schritt nach **rechts** ist
+immer dasselbe Intervall, ein Schritt nach **oben** ebenso. Darum ist ein **Intervall, ein Akkord oder eine Skala eine
+Form**, und die Form bleibt gleich, wenn du sie verschiebst. Lerne die Form eines Dur-Akkords einmal, und du spielst
+jeden Dur-Akkord, indem du dieselbe Form woanders hinlegst. Verschieben heißt **transponieren**.
+
+Zwei Begriffe für unten: Ein **Halbton** ist der kleinste Schritt (C → Cis, die nächste Klaviertaste); ein
+**Intervall** ist der Abstand zweier Töne in Halbtönen (große Terz = 4, Quinte = 7, Oktave = 12).
+
+### Einschalten
+
+* **RASTER** zeigt das Raster an Stelle der Klaviertasten; noch einmal drücken zeigt wieder das Klavier. Ohpe merkt
+  sich, was zu sehen war.
+* Es spielt den **Edit-Part** (den mit den Part-Tasten gewählten) und wechselt mit, wenn du einen anderen Part wählst.
+* **OKTAVE − / +** verschieben es wie die Klaviatur: Das Feld unten links ist das C der untersten Klavier-Oktave (ab
+  Werk C3; C0 … C7). Die Anzeige zeigt `RASTER` und den tiefsten und höchsten Ton des Rasters.
+* Die Anordnung ist der Parameter **Raster-Anordnung** (`harmony.kb.layout`): LFO-Modus, Ansicht **Harmonie**,
+  Regler-Seite *Harmonie*. Wie jeder Parameter ist er automatisierbar und per MIDI steuerbar. Er gilt global (für
+  alle Parts gleich).
+* Raster ausblenden, Part oder Oktave wechseln lässt alle gehaltenen Felder los (keine hängenden Noten).
+
+### Die Felder lesen
+
+| Feld | Bedeutet |
+|---|---|
+| hell | ein Ton der **Tonart**, die sich das Harmonie-Hirn merkt (solange es nichts gehört hat: die globale Tonart / Skala) |
+| graphit | ein Ton außerhalb der Tonart |
+| fetter Name mit Oktave (z. B. **C3**) | der **Grundton** der Tonart |
+| violetter Balken | ein Ton des **Akkords**, den sich das Hirn merkt |
+| eingesunken, roter Balken | ein Feld, das du hältst |
+
+Die Notennamen folgen der Sprache: Cis / H auf Deutsch, C# / B auf Englisch. **Wo** du ein Feld triffst, bestimmt die
+Anschlagstärke: der untere Rand spielt leise (Velocity 56), der obere Rand voll (127).
+
+### Die vier Anordnungen
+
+Die Schritte, genau wie der Code sie rechnet (Reihe 1 = unterste Reihe, Spalte 1 = links):
+
+| Anordnung | Ein Feld nach rechts | Eine Reihe nach oben | Umfang in der Werks-Oktave |
+|---|---|---|---|
+| **Quarten** (ab Werk) | +1 Halbton | +5 Halbtöne (eine Quarte) | C3 – D6 |
+| **Terzen** | +1 Halbton | +4 Halbtöne (eine große Terz) | C3 – H5 |
+| **Ganztöne** | +2 Halbtöne (ein Ganzton) | +5 Halbtöne (eine Quarte) | C3 – Cis8 |
+| **In Tonart** | +1 Stufe der Skala der Tonart | +3 Stufen der Skala | C3 – G7 (C-Dur) |
+
+**Quarten** – wie die tiefen Saiten von Bass oder Gitarre: Jede Reihe beginnt eine Quarte über der darunter.
+
+```
+4 | Dis4    E4     F4    Fis4    G4    Gis4    A4    Ais4
+3 | Ais3    H3     C4    Cis4    D4    Dis4    E4     F4
+2 |  F3    Fis3    G3    Gis3    A3    Ais3    H3     C4
+1 |  C3    Cis3    D3    Dis3    E3     F3    Fis3    G3
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+**Terzen** – Reihen eine große Terz auseinander: kompakte Akkorde, kleine Griffe.
+
+```
+4 |  C4    Cis4    D4    Dis4    E4     F4    Fis4    G4
+3 | Gis3    A3    Ais3    H3     C4    Cis4    D4    Dis4
+2 |  E3     F3    Fis3    G3    Gis3    A3    Ais3    H3
+1 |  C3    Cis3    D3    Dis3    E3     F3    Fis3    G3
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+**Ganztöne** – zwei Halbtöne pro Feld; jede Reihe für sich ist eine Ganztonleiter, die nächste Reihe (eine Quarte
+höher) hält die anderen sechs Töne. Großer Umfang auf wenig Platz.
+
+```
+4 | Dis4    F4     G4     A4     H4    Cis5   Dis5    F5
+3 | Ais3    C4     D4     E4    Fis4   Gis4   Ais4    C5
+2 |  F3     G3     A3     H3    Cis4   Dis4    F4     G4
+1 |  C3     D3     E3    Fis3   Gis3   Ais3    C4     D4
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+**In Tonart** – nur die Töne der gemerkten Tonart, ein „falscher" Ton ist also nicht möglich. Ein Feld nach rechts ist
+der nächste Ton der Skala, eine Reihe nach oben sind drei Skalenstufen. Was daraus im Code folgt:
+
+* Das Feld unten links ist der **erste Tonart-Ton auf oder über dem C** der Oktave (in D-Dur: Cis3); der Grundton
+  liegt also nicht immer in der Ecke – such das fette Feld.
+* In einer siebentönigen Tonart sind drei Stufen überall eine **Quarte**, nur von der vierten Stufe aus ein Tritonus
+  (in C-Dur F → H). In einer fünftönigen Tonart (Pentatonik) sind drei Stufen mehr als eine Quarte.
+* Ist die Skala der Tonart *Chromatisch*, fällt In Tonart auf Halbtöne zurück: +1 nach rechts, +3 nach oben (eine
+  kleine Terz).
+* Wechselt das Hirn die Tonart, beschriftet sich das Raster sofort neu; In-Tonart-Felder spielen dann die Töne der
+  neuen Tonart.
+
+```
+4 |  E4     F4     G4     A4     H4     C5     D5     E5
+3 |  H3     C4     D4     E4     F4     G4     A4     H4
+2 |  F3     G3     A3     H3     C4     D4     E4     F4
+1 |  C3     D3     E3     F3     G3     A3     H3     C4
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+### Beispiele zum Nachspielen
+
+Die Bilder zeigen die unteren linken 4 × 8 Felder in der Werks-Oktave (Tonart C-Dur); Felder in `[ ]` werden
+gedrückt. Jede Form funktioniert überall auf dem Raster – läuft sie über einen Rand, nimm dieselbe Form an anderer
+Stelle oder verschiebe die Oktave.
+
+**Dur-Dreiklang (C – E – G).** Quarten: Grundton, vier Felder rechts (die Terz), dazwischen eine Reihe höher (die
+Quinte).
+
+```
+4 | Dis4    E4     F4    Fis4    G4    Gis4    A4    Ais4
+3 | Ais3    H3     C4    Cis4    D4    Dis4    E4     F4
+2 |  F3    Fis3   [G3]   Gis3    A3    Ais3    H3     C4
+1 | [C3]   Cis3    D3    Dis3   [E3]    F3    Fis3    G3
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+Derselbe Akkord hat eine zweite Form: Terz eine Reihe höher und ein Feld links, Quinte eine Reihe höher und zwei
+rechts (hier F – A – C):
+
+```
+4 | Dis4    E4     F4    Fis4    G4    Gis4    A4    Ais4
+3 | Ais3    H3     C4    Cis4    D4    Dis4    E4     F4
+2 |  F3    Fis3    G3    Gis3   [A3]   Ais3    H3    [C4]
+1 |  C3    Cis3    D3    Dis3    E3    [F3]   Fis3    G3
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+**Moll-Dreiklang (C – Es – G).** Nur die Terz wandert: ein Feld links der großen Terz (drei Felder rechts vom
+Grundton).
+
+```
+4 | Dis4    E4     F4    Fis4    G4    Gis4    A4    Ais4
+3 | Ais3    H3     C4    Cis4    D4    Dis4    E4     F4
+2 |  F3    Fis3   [G3]   Gis3    A3    Ais3    H3     C4
+1 | [C3]   Cis3    D3   [Dis3]   E3     F3    Fis3    G3
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+**Powerchord / Quinte (C – G – C).** Grundton, eine Reihe höher und zwei rechts (die Quinte), das Feld darüber (die
+Oktave).
+
+```
+4 | Dis4    E4     F4    Fis4    G4    Gis4    A4    Ais4
+3 | Ais3    H3    [C4]   Cis4    D4    Dis4    E4     F4
+2 |  F3    Fis3   [G3]   Gis3    A3    Ais3    H3     C4
+1 | [C3]   Cis3    D3    Dis3    E3     F3    Fis3    G3
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+**Oktave (C3 → C4).** In Quarten immer **zwei Reihen hoch, zwei Felder rechts**:
+
+```
+4 | Dis4    E4     F4    Fis4    G4    Gis4    A4    Ais4
+3 | Ais3    H3    [C4]   Cis4    D4    Dis4    E4     F4
+2 |  F3    Fis3    G3    Gis3    A3    Ais3    H3     C4
+1 | [C3]   Cis3    D3    Dis3    E3     F3    Fis3    G3
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+**Dur-Tonleiter (C D E F G A H C).** Drei Töne pro Reihe, ein Muster, das sich wiederholt:
+
+```
+4 | Dis4    E4     F4    Fis4    G4    Gis4    A4    Ais4
+3 | Ais3   [H3]   [C4]   Cis4    D4    Dis4    E4     F4
+2 | [F3]   Fis3   [G3]   Gis3   [A3]   Ais3    H3     C4
+1 | [C3]   Cis3   [D3]   Dis3   [E3]    F3    Fis3    G3
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+**Transponieren.** Verschieb die ganze Form: zwei Felder rechts = zwei Halbtöne höher. Aus C-Dur wird D-Dur (D – Fis –
+A) mit denselben Fingern:
+
+```
+4 | Dis4    E4     F4    Fis4    G4    Gis4    A4    Ais4
+3 | Ais3    H3     C4    Cis4    D4    Dis4    E4     F4
+2 |  F3    Fis3    G3    Gis3   [A3]   Ais3    H3     C4
+1 |  C3    Cis3   [D3]   Dis3    E3     F3   [Fis3]   G3
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+Eine Reihe höher transponiert um das Intervall der Reihe (in Quarten eine Quarte: C-Dur → F-Dur).
+
+**Dieselben Akkorde in den anderen Anordnungen** (Abstand als *Felder rechts, Reihen hoch* vom Grundton; negativ =
+links):
+
+| Form | Quarten | Terzen | Ganztöne | In Tonart |
+|---|---|---|---|---|
+| Dur-Dreiklang | Terz (4, 0) oder (−1, 1), Quinte (2, 1) | Terz (0, 1), Quinte (3, 1) | Terz (2, 0), Quinte (1, 1) | Terz (2, 0), Quinte (1, 1) – Dur oder Moll, wie die Tonart es will |
+| Moll-Dreiklang | Terz (3, 0) oder (−2, 1), Quinte (2, 1) | Terz (3, 0) oder (−1, 1), Quinte (3, 1) | Terz (−1, 1), Quinte (1, 1) | dieselbe Form wie oben |
+| Quinte | (2, 1) | (3, 1) | (1, 1) | (1, 1) – vermindert von der 7. Stufe |
+| Oktave | (2, 2) | (0, 3) oder (4, 2) | (1, 2) | (1, 2) |
+
+Terzen, Dur-Dreiklang (C – E – G) und Moll-Dreiklang (C – Es – G):
+
+```
+4 |  C4    Cis4    D4    Dis4    E4     F4    Fis4    G4
+3 | Gis3    A3    Ais3    H3     C4    Cis4    D4    Dis4
+2 | [E3]    F3    Fis3   [G3]   Gis3    A3    Ais3    H3
+1 | [C3]   Cis3    D3    Dis3    E3     F3    Fis3    G3
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+```
+4 |  C4    Cis4    D4    Dis4    E4     F4    Fis4    G4
+3 | Gis3    A3    Ais3    H3     C4    Cis4    D4    Dis4
+2 |  E3     F3    Fis3   [G3]   Gis3    A3    Ais3    H3
+1 | [C3]   Cis3    D3   [Dis3]   E3     F3    Fis3    G3
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+Ganztöne, Dur-Dreiklang (C – E – G) und Moll-Dreiklang (D – F – A):
+
+```
+4 | Dis4    F4     G4     A4     H4    Cis5   Dis5    F5
+3 | Ais3    C4     D4     E4    Fis4   Gis4   Ais4    C5
+2 |  F3    [G3]    A3     H3    Cis4   Dis4    F4     G4
+1 | [C3]    D3    [E3]   Fis3   Gis3   Ais3    C4     D4
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+```
+4 | Dis4    F4     G4     A4     H4    Cis5   Dis5    F5
+3 | Ais3    C4     D4     E4    Fis4   Gis4   Ais4    C5
+2 | [F3]    G3    [A3]    H3    Cis4   Dis4    F4     G4
+1 |  C3    [D3]    E3    Fis3   Gis3   Ais3    C4     D4
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+In Tonart ist die Tonleiter einfach eine Reihe von links nach rechts, und **eine** Dreiklang-Form spielt jeden Akkord
+der Tonart: ab C ist es C-Dur, ein Feld nach rechts D-Moll (D – F – A) – Dur oder Moll entscheidet die Tonart.
+
+```
+4 |  E4     F4     G4     A4     H4     C5     D5     E5
+3 |  H3     C4     D4     E4     F4     G4     A4     H4
+2 |  F3    [G3]    A3     H3     C4     D4     E4     F4
+1 | [C3]    D3    [E3]    F3     G3     A3     H3     C4
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+```
+4 |  E4     F4     G4     A4     H4     C5     D5     E5
+3 |  H3     C4     D4     E4     F4     G4     A4     H4
+2 |  F3     G3    [A3]    H3     C4     D4     E4     F4
+1 |  C3    [D3]    E3    [F3]    G3     A3     H3     C4
+  +--------------------------------------------------------
+      1      2      3      4      5      6      7      8   
+```
+
+### Spielen mit MPE
+
+Was das Raster sendet, hängt davon ab, ob für den Edit-Part **MPE** an ist (`pN.mpe`, siehe [MIDI](MIDI.md#mpe-midi-polyphonic-expression)).
+
+**MPE an** – jede Berührung (Maus oder Finger, bis zu 10 gleichzeitig) ist eine eigene Note mit eigenem Ausdruck:
+
+* Jede Berührung bekommt einen freien **Mitgliedskanal** (2 – 16, reihum). Sie beginnt mit Bend in der Mitte und
+  Slide auf 64.
+* **Seitlich schieben = Pitchbend** nur dieser Note. Der Bend folgt den Feldern: eine Feldbreite biegt um den Schritt
+  der Anordnung nach rechts – 1 Halbton in Quarten und Terzen, 2 in Ganztönen, etwa 1,7 (12 / 7) in In Tonart. Er
+  geht als 14-Bit-Pitchbend hinaus, skaliert mit dem **MPE-Bend-Bereich** des Parts (`pN.mpe.bend`, ab Werk 48
+  Halbtöne), und endet am Ende dieses Bereichs. Die Note bleibt die angeschlagene; Loslassen beendet sie.
+* **Hoch / runter = Slide** (CC 74, Mitte 64): anderthalb Feldhöhen nach oben erreichen 127, nach unten 0. Der Part
+  schickt es an sein Klangfarben-Ziel (`pN.mpe.timbre`).
+* **Druck** (von einem druckempfindlichen Touchscreen oder Stift; eine Maus hat keinen) geht als Kanaldruck auf dem
+  Kanal der Note hinaus und wirkt auf das Druck-Ziel des Parts (`pN.mpe.press`).
+* MPE-Noten behalten ihre Tonhöhe: Skala, Akkord und Folgen rasten sie nicht.
+
+**MPE aus** – die Noten spielen auf dem MIDI-Kanal des Parts und laufen durch den Part wie die Klaviertasten (Skala,
+Ein-Finger-Akkord, Folgen, der Arpeggiator, wenn er diesen Part spielt). Schieben bewirkt nichts; es gibt keinen
+Ausdruck je Note.
+
+In beiden Fällen hört das Harmonie-Hirn die Noten des Rasters (sie formen die gemerkte Tonart und den Akkord). Wie die
+Klaviertasten geht das Raster nicht an den MIDI-Ausgang.
+
+### Hilfe in der App
+
+**Einstellungen > Hilfe > Raster-Tastatur** fasst diese Seite zusammen (Anordnungen, Formen, Felder, MPE). Mit dem
+**Hilfe-Overlay** (Einstellungen > Allgemein oder **F1**) und sichtbarem Raster nennt eine Zeile über der Tastatur die
+Schritte jeder Anordnung.
+
+![Einstellungen – Hilfe – Raster-Tastatur](../images/ohpe-settings-help-grid-de.png)
+
+![Das Hilfe-Overlay mit der Raster-Tastatur](../images/ohpe-grid-help-de.png)
+
+### Später: dieselben Anordnungen auf einem Grid-Controller
+
+Ein geplantes Controller-Profil (**Profil 1**) lässt ein externes Pad-Raster genauso spielen wie das Raster auf dem
+Bildschirm:
+
+* **dieselben Anordnungen** – Quarten, Terzen, Ganztöne und In Tonart, mit denselben Schritten nach rechts und oben;
+  jede Form auf dieser Seite funktioniert dort genauso;
+* **Tonart- / Skalen-Sperre** – In Tonart spielt nur Tonart-Töne; die anderen Anordnungen können die Tonart auf den
+  Pads zeigen;
+* **dieselbe Belegung** – ein Pad spielt den Ton des Felds in derselben Spalte und Reihe, ab demselben tiefsten C;
+* **dieselben Farben** – Grundton, Tonart-Töne, andere Töne, Akkordtöne und gedrückte Pads leuchten wie die Felder
+  hier;
+* **Oktave / Shift** – Tasten am Controller verschieben es wie OKTAVE − / +.
+
+Bis dahin ist das Raster auf dem Bildschirm die Referenz: Was du hier lernst, gilt dort unverändert.
 
 ## Modulation
 

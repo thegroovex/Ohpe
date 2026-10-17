@@ -82,7 +82,9 @@ version, size, content, license and signature (shown, not checked) and **REMOVE*
 ## Help
 
 Help pages in English and German: getting started, light bars, display and encoders, sequencer and tape, MIDI / MPE /
-sync, presets, settings and the night skin, updates.
+sync, the grid keyboard (layouts, shapes, MPE – the full guide is in [Harmony](HARMONY.md#the-grid-keyboard)),
+presets, settings and the night skin, updates. With the grid keyboard shown, the help overlay adds a line with its
+steps over the keyboard.
 
 ![Settings – Help](../images/ohpe-settings-help.png)
 

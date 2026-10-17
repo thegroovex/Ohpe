@@ -801,7 +801,10 @@ const std::map<juce::String, juce::String>& table()
         { "Four colours = the four values on the display", "Vier Farben = die vier Werte im Display" },
         { "Play, record, loop the tape", "Tape abspielen, aufnehmen, loopen" },
         { "Keyboard", "Tastatur" },
-        { "Octave, grid keyboard, MIDI", "Oktave, Grid-Tastatur, MIDI" },
+        { "Octave, grid keyboard, MIDI", "Oktave, Raster-Tastatur, MIDI" },
+        { "Grid keyboard", "Raster-Tastatur" }, // p48
+        { "Same shape in every key; Fourths right +1 / up +5, Thirds +1 / +4, Whole Tones +2 / +5, In Key scale steps +1 / +3; MPE: slide = bend",
+          "Gleiche Form in jeder Tonart; Quarten rechts +1 / hoch +5, Terzen +1 / +4, Ganztöne +2 / +5, In Tonart Stufen +1 / +3; MPE: schieben = Bend" },
         { "Wheels", "Räder" },
         { "Pitch bend and modulation", "Pitchbend und Modulation" },
         { "Portamento mode and time", "Portamento-Modus und -Zeit" },
