@@ -90,7 +90,7 @@ Sync, Presets, Einstellungen und Nachtmodus, Updates.
 
 ## Über
 
-Version und Format (Standalone-App / Plug-in), der Update-Stand mit **JETZT PRÜFEN** (oder **UPDATES ÖFFNEN**, wenn eine
+Oben das App-Symbol und der Schriftzug, darunter Version und Format (Standalone-App / Plug-in), der Update-Stand mit **JETZT PRÜFEN** (oder **UPDATES ÖFFNEN**, wenn eine
 neuere Version angeboten wird), die Projektzeile, Lizenz (AGPL-3.0-or-later) und Quellcode.
 
 ![Über](../images/ohpe-about-de.png)

@@ -377,6 +377,15 @@ jobs:
             lipo "$f" -verify_arch arm64 x86_64
           done
 
+      - name: Check the app icon in the bundles
+        run: |
+          for b in build/Ohpe_artefacts/Release/Standalone/Ohpe.app build/Ohpe_artefacts/Release/VST3/Ohpe.vst3 \
+                   build/Ohpe_artefacts/Release/AU/Ohpe.component; do
+            cmp "$b/Contents/Resources/AppIcon.icns" resources/icon/Ohpe.icns
+            test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' "$b/Contents/Info.plist")" = AppIcon.icns
+            echo "ok   $b: AppIcon.icns = resources/icon/Ohpe.icns"
+          done
+
       - name: Package
         run: |
           mkdir -p dist
@@ -573,6 +582,13 @@ jobs:
           ccache -z
           cmake --build build --config Release
           ccache -s
+
+      - name: Check the app icon in the exe and the VST3
+        shell: bash
+        run: |
+          python tools/app-icon/check_pe_icon.py resources/icon/Ohpe.ico \
+            build/Ohpe_artefacts/Release/Standalone/Ohpe.exe \
+            build/Ohpe_artefacts/Release/VST3/Ohpe.vst3/Contents/x86_64-win/Ohpe.vst3
 
       - name: Package
         shell: pwsh

@@ -412,6 +412,8 @@ TEST_CASE ("sample loader: WAV / AIFF / FLAC decode, engines and pads, sample pa
 int main (int argc, char** argv)
 {
     juce::ScopedJuceInitialiser_GUI gui;
+    // p40: the tests start from the plain parameter defaults; FirstPresetTests switches the start sound on
+    OhpeProcessor::startWithFactorySound.store (false);
     doctest::Context ctx (argc, argv);
     return ctx.run();
 }
