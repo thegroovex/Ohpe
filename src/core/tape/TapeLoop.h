@@ -5,8 +5,18 @@
 #include <cstddef>
 #include <vector>
 
+namespace ohpe
+{
+class ParamRegistry;
+}
+
 namespace ohpe::tapeloop
 {
+/** The p42 host parameters (appended at the end of the layout): the triggers "tape.edit.loopin", "tape.edit.loopout",
+    "tape.edit.loopundo", "tape.edit.loopredo", "tape.edit.loophalf", "tape.edit.loopdouble" (group "remote") and the
+    grid "tape.loopsnap" (Off, Beat, Bar; group "tape"). Same strings as Core::Ids::tapeLoop*. */
+void registerParams (ParamRegistry& reg);
+
 /**
     p42: setting the tape loop by hand - loop in / loop out at the playhead (while the tape plays too), the snap
     grid, dragging an edge, halving / doubling, and an undo history of the loop range.

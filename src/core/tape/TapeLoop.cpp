@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "TapeLoop.h"
 
+#include "../model/ParamDescriptor.h"
+#include "../model/ParamRegistry.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -144,6 +147,20 @@ Range doubled (Range r, double tapeLength, Snap s, double bpm) noexcept
     double out = r.in + r.length() * 2.0;
     if (len > 0.0) out = std::min (out, len);
     return sanitise ({ r.in, out }, len, m, false);
+}
+
+// ---------------------------------------------------------------- parameters
+void registerParams (ParamRegistry& reg)
+{
+    using namespace pd;
+    auto add = [&] (ParamDescriptor d, const char* group) { d.group = group; reg.add (std::move (d)); };
+    add (toggle ("tape.edit.loopin", "Tape Set Loop In", "Tape Loop-Start setzen", false), "remote");
+    add (toggle ("tape.edit.loopout", "Tape Set Loop Out", "Tape Loop-Ende setzen", false), "remote");
+    add (toggle ("tape.edit.loopundo", "Tape Loop Undo", "Tape Loop rückgängig", false), "remote");
+    add (toggle ("tape.edit.loopredo", "Tape Loop Redo", "Tape Loop wiederherstellen", false), "remote");
+    add (toggle ("tape.edit.loophalf", "Tape Loop Half", "Tape Loop halbieren", false), "remote");
+    add (toggle ("tape.edit.loopdouble", "Tape Loop Double", "Tape Loop verdoppeln", false), "remote");
+    add (choice ("tape.loopsnap", "Tape Loop Snap", "Tape Loop-Raster", { "Off", "Beat", "Bar" }, { "Aus", "Schlag", "Takt" }, 2), "tape");
 }
 
 // ---------------------------------------------------------------- history
