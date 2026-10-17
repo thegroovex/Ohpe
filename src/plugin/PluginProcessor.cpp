@@ -109,6 +109,7 @@ juce::RangedAudioParameter* OhpeProcessor::parameter (int i) const
 void OhpeProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     ohpeCore.prepare (sampleRate, juce::jmax (16, samplesPerBlock));
+    ohpeCore.setStandaloneHost (wrapperType == wrapperType_Standalone); // p39: the click in a plug-in is opt-in
     setLatencySamples (ohpeCore.latencySamples()); // 0.8: limiter look-ahead, constant (on and off)
     scratch.setSize (2, juce::jmax (16, samplesPerBlock));
     inputScratch.setSize (2, juce::jmax (16, samplesPerBlock)); // 0.2: copy of the input bus
@@ -193,6 +194,7 @@ void OhpeProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBu
             }
             tr.playing = pos->getIsPlaying();
         }
+    hostTempo.store (tr.hostDriven && wrapperType != wrapperType_Standalone, std::memory_order_relaxed); // p39
     if (! tr.hostDriven)
         if (auto* ext = externalTransport.load (std::memory_order_acquire))
             if (syncSourceParam >= 0 && (int) std::lround (reg.get (syncSourceParam)) == Core::SyncLink)
@@ -303,6 +305,14 @@ void OhpeProcessor::timerCallback()
 void OhpeProcessor::pollRemoteControls()
 {
     const auto& reg = ohpeCore.params();
+    // p39: "metro.tap" - a rising edge (MIDI button, host, UI) is one tap
+    if (metroTapParam < 0) metroTapParam = reg.indexOf (Metronome::Ids::tap);
+    if (metroTapParam >= 0)
+    {
+        const float v = juce::jmax (rawValues[(size_t) metroTapParam]->load (std::memory_order_relaxed), reg.get (metroTapParam));
+        if (v >= 0.5f && metroTapLast < 0.5f) tapTempo();
+        metroTapLast = v;
+    }
     for (int t = 0; t < numTriggers; ++t)
     {
         const int idx = triggerParam[(size_t) t];
@@ -366,6 +376,35 @@ bool OhpeProcessor::runTapeEdit (const char* triggerId)
     else if (id == Core::Ids::tapeClearAll) ok = tape.clearAll();           // p38: after the confirmation
     sendChangeMessage();
     return ok;
+}
+
+// ---------------------------------------------------------------- p39: tempo, tap tempo
+bool OhpeProcessor::tempoFollowsHost() const noexcept
+{
+    if (hostTempoActive()) return true;
+    return syncSourceParam >= 0 && (int) std::lround (ohpeCore.params().get (syncSourceParam)) == Core::SyncMidiClock;
+}
+
+float OhpeProcessor::currentTempo() const noexcept
+{
+    return tempoFollowsHost() ? (float) ohpeCore.transportBpm() : ohpeCore.params().get (Core::Ids::tempo);
+}
+
+void OhpeProcessor::setTempoFromUi (float bpm)
+{
+    if (tempoFollowsHost() || ! std::isfinite (bpm)) return;
+    setPlainFromUi (Core::Ids::tempo, juce::jlimit (20.0f, 300.0f, std::round (bpm * 10.0f) / 10.0f));
+}
+
+void OhpeProcessor::tapTempo()
+{
+    double bpm = 0.0;
+    {
+        const juce::SpinLock::ScopedLockType sl (tapLock);
+        bpm = tapper.tap (juce::Time::getMillisecondCounterHiRes() * 0.001);
+    }
+    taps.fetch_add (1, std::memory_order_relaxed);
+    if (bpm > 0.0) setTempoFromUi ((float) bpm);
 }
 
 // ---------------------------------------------------------------- p38: tape files
@@ -502,6 +541,12 @@ juce::String OhpeProcessor::runTransport (TransportKey action)
             else { tape.locate (0.0); msg = tr ("Back to the start"); }
             break;
         case TransportKey::Record:
+            if (ohpeCore.countInActive()) // p39: REC again during the count-in cancels it
+            {
+                stop();
+                msg = tr ("Count-in cancelled");
+                break;
+            }
             if (tapeRecording())
             {
                 setPlainFromUi ("tape.rec", 0.0f); // punch out, the tape keeps playing
@@ -510,7 +555,15 @@ juce::String OhpeProcessor::runTransport (TransportKey action)
             }
             if (armedTrackMask() == 0) setPlainFromUi (armId.c_str(), 1.0f);
             setPlainFromUi ("tape.rec", 1.0f);
-            if (! tapeRolling()) start();
+            if (! tapeRolling())
+            {
+                start();
+                if (const int bars = (int) std::lround (reg.get (Metronome::Ids::countIn)); bars > 0) // p39
+                {
+                    msg = tr ("Count-in") + " " + juce::String (bars) + " - " + tr ("Recording track") + " " + trackList (armedTrackMask());
+                    break;
+                }
+            }
             msg = tr ("Recording track") + " " + trackList (armedTrackMask());
             break;
         case TransportKey::ToStart:

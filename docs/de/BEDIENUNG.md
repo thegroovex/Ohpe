@@ -74,7 +74,8 @@ Der Tooltip einer Taste sagt, was ihr Balken bedeutet (Engine-Tasten nennen auch
 
 ![Transport, Klaviaturzeile und Oktavfeld während der Aufnahme](../images/ohpe-transport-de.png)
 
-Die **Anzeigen** neben den Tasten: Die Tape-Anzeige über den Transport-Tasten zeigt den Zustand (**REC**
+Die **Anzeigen** neben den Tasten (p39: Die Tape-Anzeige teilt ihre Zeile mit dem einstellbaren Tempo, dem Metronom und dem
+Vorzähler, siehe [Tempo, Metronom und Vorzähler](#tempo-metronom-und-vorzähler-p39)): Die Tape-Anzeige über den Transport-Tasten zeigt den Zustand (**REC**
 rot, **START** grün – beide atmend, solange sie laufen – *TAPE*), die Bandzeit (m:ss.z) und Takt.Schlag; die Tastatur-Anzeige im Oktavfeld
 zeigt den Umfang der Klaviatur (C3–C6) und ihre Oktavlage, und **MIDI-LEARN** in Rot, solange ein Regler
 auf eine MIDI-Nachricht wartet.
@@ -321,6 +322,49 @@ Kopfzeile des Displays. In der Standalone-App: **Leertaste** = START, **R** = RE
 zum Anfang, **L** = Schleife (im Plug-in behält der Host seine Tasten). Rechtsklick auf eine
 Transport-Taste (oder eine Taste der Tape-Seite) öffnet MIDI-Learn – jede Transportfunktion hat einen
 Trigger, siehe [MIDI](MIDI.md).
+
+## Tempo, Metronom und Vorzähler (p39)
+
+![Tape-Seite während eines Vorzählers von einem Takt: Countdown, Tempo mit TAP in der Kopfzeile, Tempo, Klick und Vorzähler im Transportfeld](../images/ohpe-metronome-de.png)
+
+**Tempo einstellen.** Das Tempo ist überall dort ein Regler, wo es angezeigt wird – rechts in der Kopfzeile des
+Displays (**120.0 BPM**, auf jeder Seite) und im Transportfeld (**BPM 120.0**, neben der Tape-Anzeige):
+
+| Geste | Aktion |
+|---|---|
+| nach oben / unten ziehen | ± 1 BPM je 4 Pixel; mit **Shift** (oder Cmd / Strg) ± 0,1 BPM |
+| Mausrad | ± 1 BPM (fein: ± 0,1) |
+| Doppelklick | Wert eintippen (20–300, Komma geht auch), **Return** übernimmt, **Esc** bricht ab |
+| **TAP** (Kopfzeile, links vom Tempo) | im Takt klicken: ab dem zweiten Tippen ist das Tempo der Mittelwert der letzten vier Abstände; eine Pause über 2 s beginnt neu. Standalone-Taste **T**. |
+| Rechtsklick | MIDI-Learn / Zuweisung löschen / zurücksetzen von `tempo` (TAP: `metro.tap`) |
+
+Kommt das Tempo von außen – vom Transport des Plug-in-Hosts oder von einer eingehenden **MIDI-Clock** (`sync.src`) –,
+steht **HOST** bzw. **CLOCK** davor, und es lässt sich dort nicht ändern (TAP ist ausgeblendet); geändert wird es im
+Host bzw. an der Clock-Quelle. Mit Netzwerk-Sync (Link, Standalone) bleibt Ohpes Tempo einstellbar und setzt das
+Sitzungstempo. Die Sequencer-Seite behält ihren Tempo-Regler wie bisher.
+
+![Das Transportfeld: Tape-Anzeige, Tempo, Metronom, Vorzähler (2x)](../images/ohpe-tempo-panel-de.png)
+
+**Metronom.** Die Metronom-Taste (Pyramidenzeichen, rechts vom Tempo im Transportfeld) schaltet den **Klick** ein und
+aus (`metro.on`, Standalone-Taste **K**). Er klickt auf jedem Schlag, solange **Sequencer oder Tape laufen** – nie im
+Stillstand – und blinkt bei jedem Klick grün; die Eins des Takts ist betont (höher und lauter). Der Klick ist Ohpes
+eigener, synthetisierter Klang (keine Samples), spielt nur auf dem **Hauptausgang** und wird **nie aufs Band
+aufgenommen**. Rechtsklick auf die Taste: Klick-Lautstärke (25–100 %), Betonung auf der Eins, *Klick auch im Plug-in*,
+MIDI-Learn. Im **Plug-in** bleibt der Klick stumm, außer *Klick auch im Plug-in* (`metro.plugin`) ist an – Hosts haben
+ein eigenes Metronom; die Standalone-App klickt immer, wenn das Metronom an ist.
+
+**Vorzähler.** Die Vorzähler-Taste (**VORZ.**, `metro.countin`) schaltet **– → 1 → 2** (aus, ein Takt, zwei Takte).
+Beginnt eine Aufnahme aus dem Stillstand – **REC**, oder START mit bereiter Spur und eingeschalteter Aufnahme –, wartet
+das Band: Das Display zeigt den Countdown (große Schlagzahl 4 – 3 – 2 – 1, den Takt *1 / 2*, rot), die Vorzähler-Taste
+die verbleibenden Schläge, und der Klick spielt auch bei ausgeschaltetem Metronom (auch im Plug-in). Das Band nimmt
+**genau ab dem ersten Sample des nächsten Takts** auf; ein mitgestarteter Sequencer (*Start startet Tape*) beginnt auf
+demselben Sample. Läuft der Sequencer schon, zählt der Vorzähler in seinem Raster, und die Aufnahme beginnt auf einem
+seiner Taktstriche (zwischen einem und der gewählten Zahl an Takten später). **REC** oder **STOPP** während des
+Vorzählers bricht ihn ab – es wird nichts aufgenommen. Einsteigen (Punch-in) bei laufendem Band hat keinen Vorzähler.
+Ohpe zählt im 4/4-Takt.
+
+Die Einstellungen sind Host-Parameter (mit Session / Projekt gespeichert, automatisierbar, MIDI-zuweisbar) und gehören
+dem Spieler: Presets tragen sie nicht. Parameter: [PARAMETERS.md](../PARAMETERS.md#p39--metronome-count-in-tap-tempo).
 
 ## Tape-Seite
 
@@ -604,6 +648,8 @@ nichts, bis sie wieder spielen. Einzelheiten: [Leistung](LEISTUNG.md).
 | R (Standalone) | REC: aufs Band aufnehmen / aussteigen |
 | Enter oder Pos1 (Standalone) | Band zum Anfang |
 | L (Standalone) | Band-Schleife an / aus |
+| T (Standalone) | Tempo tippen |
+| K (Standalone) | Metronom (Klick) an / aus |
 | Enter (Bibliothek) | gewähltes Preset behalten und schließen |
 | ↑ / ↓ (Bibliothek) | voriges / nächstes Preset der Liste |
 

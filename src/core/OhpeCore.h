@@ -22,6 +22,7 @@
 #include "harmony/HarmonyBrain.h"
 #include "seq/Arpeggiator.h"
 #include "seq/EuclidSequencer.h"
+#include "seq/Metronome.h"
 #include "seq/OrbitSequencer.h"
 #include "seq/ScaleChord.h"
 #include "seq/StepSequencer.h"
@@ -71,6 +72,24 @@ public:
     int latencySamples() const noexcept { return mix.latencySamples(); }
     drum::DrumKit& drumKit() noexcept { return drums; }   ///< mixer source "drum", MIDI channel 10
     TapeMachine& tape() noexcept { return tapeMachine; }             ///< 0.2: eight-track tape
+    /** p39: the metronome (own synthesised click, "metro.*"); the core schedules its clicks. */
+    Metronome& metronome() noexcept { return metro; }
+    const Metronome& metronome() const noexcept { return metro; }
+    /** p39 (set-up thread): the standalone app clicks whenever the metronome is on, a plug-in only with
+        "metro.plugin" on. Default: standalone. */
+    void setStandaloneHost (bool standalone) noexcept { standaloneHost.store (standalone, std::memory_order_relaxed); }
+    bool isStandaloneHost() const noexcept { return standaloneHost.load (std::memory_order_relaxed); }
+    /** p39, any thread: a count-in for a tape recording is running (the tape and a starting sequencer wait for its end). */
+    bool countInActive() const noexcept { return countInBeatsForUi.load (std::memory_order_relaxed) > 0; }
+    /** p39, any thread: beats left in the running count-in (8 .. 1 for two bars, 0 = none). */
+    int countInBeatsLeft() const noexcept { return countInBeatsForUi.load (std::memory_order_relaxed); }
+    /** p39, any thread: counts every click (the UI flashes the metronome key) and whether the last was a downbeat. */
+    uint32_t clickCount() const noexcept { return clicksForUi.load (std::memory_order_relaxed); }
+    bool lastClickWasDownbeat() const noexcept { return lastClickDown.load (std::memory_order_relaxed); }
+    /** p39, any thread: the sample (since prepare) at which the last count-in let the tape run; -1 = none yet. */
+    int64_t lastCountInRelease() const noexcept { return countInReleasedAt.load (std::memory_order_relaxed); }
+    /** p39, any thread: samples processed since prepare (tests, timing). */
+    int64_t samplesProcessed() const noexcept { return sampleCounterForUi.load (std::memory_order_relaxed); }
     InsertSlot& insertFx (int part) noexcept { return parts[(size_t) part]->fxRack().slot (0); } ///< 0.2: FX slot of a part (0.7: rack slot 1)
     FxRack& fxRack (int part) noexcept { return parts[(size_t) part]->fxRack(); } ///< 0.7: FX rack of a part
     FxRack& masterFxRack() noexcept { return masterRack; }                      ///< 0.7: master FX rack ("mfx1." ...)
@@ -292,6 +311,9 @@ private:
     void dispatch (const RoutedEvent& e) noexcept;
     void pullPhase2Params() noexcept;
     void renderTapeChunk (SourceBuffers& src, int pos, int len) noexcept; ///< part FX slots, tape -> sources
+    void updateCountIn (const Transport& host, int numSamples) noexcept;  ///< p39: start / cancel / release point
+    void scheduleClicks (const Transport& tr, int numSamples) noexcept;   ///< p39: count-in and metronome clicks
+    void clickAt (int offset, bool downbeat) noexcept;                     ///< p39
 
     ParamRegistry registry;
     ParamSnapshot snapshot;
@@ -367,6 +389,23 @@ private:
     std::atomic<int> lastNoteOn { -1 }, voicesActive { 0 };
     std::atomic<double> ppqForUi { 0.0 }, bpmForUi { 120.0 };
     std::atomic<bool> playingForUi { false };
+
+    // ---- p39: metronome and count-in ----
+    Metronome metro;
+    int tapePlayIndex = -1, tapeRecIndex = -1;
+    std::array<int, TapeMachine::numTracks> tapeArmIndex {};
+    bool tapePlayPrev = false;
+    struct CountIn
+    {
+        bool active = false, holdSeq = false;
+        int64_t startSample = 0, endSample = 0; ///< sample times (since prepare)
+        double beat0 = 0.0, endBeat = 0.0, samplesPerBeat = 24000.0; ///< beats on the grid it counts on (bar = 4)
+    } countIn;
+    int releaseOffset = -1; ///< this block: where the count-in ends (-1 = not in this block)
+    std::atomic<bool> standaloneHost { true }, lastClickDown { false };
+    std::atomic<int> countInBeatsForUi { 0 };
+    std::atomic<uint32_t> clicksForUi { 0 };
+    std::atomic<int64_t> countInReleasedAt { -1 }, sampleCounterForUi { 0 };
 };
 
 /** Builds the complete, ordered parameter list (append-only, see docs/ARCHITECTURE.md). */

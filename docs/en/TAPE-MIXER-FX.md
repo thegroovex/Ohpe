@@ -70,6 +70,12 @@ recorded (blocks of 4096 frames), so a long, empty tape costs almost nothing.
 | Track level | `tape.trN.level` (dB). |
 | Direct out | `tape.trN.out`: *Mixer only* or Out 1–8. The track then also plays on that output (after level and character); if that output is not enabled, it plays on Main. Mixer channels can select tape tracks as source as well (channels 6–8 start on tracks 1–3). |
 
+**Count-in and click (p39).** With a count-in (`metro.countin`: 1 or 2 bars) a recording started from stop waits for
+it and starts exactly on the first sample of the next bar (sample-accurate, also in the middle of an audio block); STOP
+or REC during the count-in cancels it. The metronome (`metro.on`) clicks while the tape or the sequencer runs; the tape
+alone clicks on the tape's bar.beat grid. The click goes to the main output only and is never recorded (the tape
+records the parts, the drum kit and the input). See [Tempo, metronome and count-in](USER-INTERFACE.md#tempo-metronome-and-count-in-p39).
+
 ### Editing
 
 All edits work on one track, take times in seconds (or frames), and are one undo step each:

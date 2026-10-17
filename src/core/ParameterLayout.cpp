@@ -309,5 +309,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
         add (toggle (Core::Ids::tapeClearTrack, "Tape Clear Track", "Tape Spur löschen", false));
         add (toggle (Core::Ids::tapeClearAll, "Tape Clear All", "Tape alles löschen", false));
     }
+    // ---- p39: metronome and count-in - on, level, accent, count-in, click in a plug-in, tap tempo ------------------
+    Metronome::registerParams (reg);
 }
 } // namespace ohpe

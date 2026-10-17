@@ -143,6 +143,19 @@ public:
     int transportMessageCount() const noexcept { return transportMessages.load(); }
     juce::String lastTransportMessage() const { const juce::ScopedLock sl (transportLock); return transportMessage; }
 
+    /**
+        p39: tempo and metronome. The tempo follows the host (plug-in with a host position) or an incoming MIDI clock
+        ("sync.src" = MIDI clock): then it is read-only on the screen. setTempoFromUi() clamps to 20 .. 300 BPM and
+        notifies the host; tapTempo() measures the taps (screen TAP key, "metro.tap" via MIDI) and sets the tempo
+        from the second tap on. Any thread (the MIDI trigger arrives on the audio thread like the other triggers).
+    */
+    bool tempoFollowsHost() const noexcept;
+    bool hostTempoActive() const noexcept { return hostTempo.load (std::memory_order_relaxed); }
+    float currentTempo() const noexcept; ///< the tempo in use (host / clock tempo when it follows them)
+    void setTempoFromUi (float bpm);
+    void tapTempo();
+    int tapCount() const noexcept { return taps.load (std::memory_order_relaxed); }
+
     /** UI state stored with the session (language, mode, page). */
     juce::var uiState;
 
@@ -220,6 +233,13 @@ private:
     std::atomic<int> tapeClearAllRequests { 0 }; ///< p38
     std::array<std::atomic<int>, 3> breedRequests {}; ///< p18
     std::unique_ptr<PresetManager> presetManager;
+    // p39: tap tempo (own edge detector for "metro.tap": the trigger list stays as it is)
+    TapTempo tapper;
+    juce::SpinLock tapLock;
+    std::atomic<int> taps { 0 };
+    std::atomic<bool> hostTempo { false };
+    int metroTapParam = -1;
+    float metroTapLast = 0.0f;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OhpeProcessor)
 };

@@ -19,6 +19,12 @@ All sequencers run from the same transport (internal clock, host, MIDI clock or 
 absolute positions of the transport, so they stay in phase with each other and with the host,
 also across loops and jumps.
 
+**Tempo (p39):** drag, type or tap it on the display header or in the transport panel (read-only while the host or a
+MIDI clock sets it); the metronome clicks on every beat while the sequencer runs, and a sequencer started together
+with a counted-in tape recording starts exactly on the recording's first sample – see
+[Tempo, metronome and count-in](USER-INTERFACE.md#tempo-metronome-and-count-in-p39). Ohpe has no step / live recording
+into the sequencer, so the count-in applies to tape recordings.
+
 ## Step sequencer – patterns and song mode
 
 The 64-step sequencer from 0.1 now holds **16 patterns**.

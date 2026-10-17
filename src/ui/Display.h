@@ -5,6 +5,7 @@
 #include "LivingView.h"
 #include "Pages.h"
 #include "SpaceView.h"
+#include "TempoControl.h"
 #include "Visuals.h"
 #include "Widgets.h"
 #include "plugin/PluginProcessor.h"
@@ -112,7 +113,11 @@ public:
     juce::String getTooltip() override; ///< p11: depends on what the mouse is over (1.0: the 3D badge too)
 
     void paint (juce::Graphics& g) override;
+    void paintOverChildren (juce::Graphics& g) override; ///< p39: the count-in countdown
     void resized() override;
+    /** p39: the tempo on the header (editable) and the TAP key next to it; refreshed by the editor's timer. */
+    TempoReadout& headerTempo() noexcept { return tempoHeader; }
+    TapKey& headerTap() noexcept { return tapHeader; }
     void mouseMove (const juce::MouseEvent& e) override;
     void mouseExit (const juce::MouseEvent& e) override;
     void mouseDown (const juce::MouseEvent& e) override;
@@ -220,5 +225,11 @@ private:
     // p11: tooltips (last mouse position), shortcut hints
     juce::Point<float> lastMouse;
     bool shortcuts = false;
+
+    // p39: tempo on the header, TAP
+    TempoReadout tempoHeader { proc, TempoReadout::Style::Header };
+    TapKey tapHeader { proc };
+    void placeTempo();
+    int shownCountIn = 0;
 };
 } // namespace ohpe::ui

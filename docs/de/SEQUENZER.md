@@ -19,6 +19,12 @@ Alle Sequencer laufen am selben Transport (interne Clock, Host, MIDI-Clock oder 
 Schritte liegen auf absoluten Positionen des Transports: Sie bleiben untereinander und mit dem
 Host in Phase, auch bei Loops und Sprüngen.
 
+**Tempo (p39):** in der Kopfzeile des Displays oder im Transportfeld ziehen, eintippen oder tippen (TAP; nicht
+einstellbar, solange Host oder MIDI-Clock es vorgeben); das Metronom klickt auf jedem Schlag, solange der Sequencer
+läuft, und ein mit einer vorgezählten Bandaufnahme gestarteter Sequencer beginnt genau auf ihrem ersten Sample – siehe
+[Tempo, Metronom und Vorzähler](BEDIENUNG.md#tempo-metronom-und-vorzähler-p39). Ohpe hat keine Step- / Live-Aufnahme in
+den Sequencer; der Vorzähler gilt für Bandaufnahmen.
+
 ## Step-Sequencer – Pattern und Song-Modus
 
 Der 64-Schritt-Sequencer aus 0.1 hat jetzt **16 Pattern**.

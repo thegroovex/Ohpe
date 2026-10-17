@@ -101,3 +101,5 @@ target_sources(ohpe_core_tests PRIVATE UserSettingsTests.cpp)
 add_executable(ohpe_bench ${CMAKE_SOURCE_DIR}/tools/bench/OhpeBench.cpp)
 target_link_libraries(ohpe_bench PRIVATE ohpe_core)
 target_sources(ohpe_core_tests PRIVATE PerfTests.cpp) # p35: the performance pass
+# p39: metronome, count-in, tap tempo
+target_sources(ohpe_core_tests PRIVATE MetronomeTests.cpp)

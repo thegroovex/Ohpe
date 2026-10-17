@@ -50,7 +50,12 @@ bool euclidHit (int i, int steps, int pulses, int rot)
 }
 } // namespace
 
-Display::Display (OhpeProcessor& p) : proc (p) { setOpaque (false); }
+Display::Display (OhpeProcessor& p) : proc (p)
+{
+    setOpaque (false);
+    addAndMakeVisible (tempoHeader); // p39
+    addAndMakeVisible (tapHeader);
+}
 
 Display::~Display() { proc.core().scope().setSource (ScopeTap::None); }
 
@@ -215,7 +220,8 @@ void Display::paintTapeTransport (juce::Graphics& g, juce::Rectangle<float> a)
     const auto& reg = core.params();
     const double sr = juce::jmax (1.0, tape.sampleRate());
     const double secs = (double) tape.positionFrames() / sr;
-    const bool rolling = proc.tapeRolling(), ready = proc.tapeRecordReady(), recording = proc.tapeRecording();
+    const bool counting = core.countInActive(); // p39: the tape waits for the count-in
+    const bool rolling = proc.tapeRolling() && ! counting, ready = proc.tapeRecordReady(), recording = proc.tapeRecording() && ! counting;
     const float pulse = breath (time); // p14: recording breathes (no hard blink)
     const int mask = proc.armedTrackMask();
 
@@ -382,7 +388,58 @@ void Display::mouseMove (const juce::MouseEvent& e)
 void Display::mouseExit (const juce::MouseEvent&) { parallaxTarget = {}; }
 
 // ---------------------------------------------------------------- 0.7: depth layers
-void Display::resized() { renderLayers(); }
+void Display::resized()
+{
+    renderLayers();
+    placeTempo();
+}
+
+void Display::placeTempo()
+{
+    // p39: the tempo where it always was (right of the header, before the page arrows), the TAP key left of it
+    const auto h = headerArea();
+    const auto bpmArea = h.withTrimmedRight (h.getHeight() * 4.0f);
+    // as wide as its longest text (the play sign, three digits, the HOST / CLOCK tag when it follows), TAP right before it
+    const juce::String widest = juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xb6 ")) + "300.0 BPM" + (proc.tempoFollowsHost() ? "  CLOCK" : "");
+    const float w = juce::GlyphArrangement::getStringWidth (monoFont (h.getHeight() * 0.5f), widest) + h.getHeight() * 0.6f;
+    tempoHeader.setBounds (bpmArea.withLeft (bpmArea.getRight() - w).toNearestInt());
+    tapHeader.setBounds (juce::Rectangle<float> (h.getHeight() * 1.5f, h.getHeight()).withPosition (bpmArea.getRight() - w - h.getHeight() * 1.6f, h.getY()).toNearestInt());
+    tapHeader.setVisible (! proc.tempoFollowsHost());
+}
+
+void Display::paintOverChildren (juce::Graphics& g)
+{
+    // p39: the count-in - a big countdown over the middle of the display (beats left in the bar, the bar of how many)
+    const int left = proc.core().countInBeatsLeft();
+    if (left <= 0) return;
+    const int bars = juce::jmax (1, (int) std::lround (proc.core().params().get (Metronome::Ids::countIn)));
+    const int bar = juce::jlimit (1, bars, bars - (left - 1) / Metronome::beatsPerBar);
+    const int beat = ((left - 1) % Metronome::beatsPerBar) + 1;
+    const auto mid = midArea();
+    const float u = (float) getWidth() / 100.0f;
+    auto box = mid.withSizeKeepingCentre (juce::jmin (mid.getWidth() * 0.42f, u * 30.0f), juce::jmin (mid.getHeight() * 0.86f, u * 22.0f));
+    g.setColour (colour::display.withAlpha (0.92f));
+    g.fillRoundedRectangle (box, u * 1.2f);
+    g.setColour (colour::signalRed);
+    g.drawRoundedRectangle (box.reduced (0.5f), u * 1.2f, juce::jmax (1.0f, u * 0.25f));
+    auto in = box.reduced (u * 1.2f);
+    g.setFont (labelFont (u * 2.0f));
+    g.drawText (i18n::upper (tr ("Count-in")), in.removeFromTop (u * 3.0f), juce::Justification::centred, false);
+    auto foot = in.removeFromBottom (u * 3.0f);
+    g.setColour (colour::displayDim);
+    g.drawText (i18n::upper (tr ("Bar")) + " " + juce::String (bar) + " / " + juce::String (bars), foot, juce::Justification::centred, false);
+    g.setColour (colour::displayText);
+    g.setFont (monoFont (in.getHeight() * 0.95f));
+    g.drawText (juce::String (beat), in, juce::Justification::centred, false);
+    // four dots: the beats of this bar still to come
+    const float d = u * 1.1f;
+    for (int i = 0; i < Metronome::beatsPerBar; ++i)
+    {
+        auto dot = juce::Rectangle<float> (d, d).withCentre ({ box.getCentreX() + ((float) i - 1.5f) * d * 2.2f, foot.getY() - d * 0.3f });
+        g.setColour (i < Metronome::beatsPerBar - beat + 1 ? colour::signalRed : colour::displayGrid.brighter (0.4f));
+        g.fillEllipse (dot);
+    }
+}
 
 void Display::renderLayers()
 {
@@ -480,6 +537,15 @@ void Display::flash (const juce::String& message)
 void Display::tick (float seconds)
 {
     time += seconds;
+    // p39: tempo readout, TAP, the count-in countdown
+    if (tapHeader.isVisible() == proc.tempoFollowsHost()) placeTempo();
+    tempoHeader.refresh();
+    tapHeader.refresh();
+    if (const int ci = proc.core().countInBeatsLeft(); ci != shownCountIn)
+    {
+        shownCountIn = ci;
+        repaint (midArea().toNearestInt().expanded (2));
+    }
     // 0.7: scope tap source for the current view, visuals, parallax
     if (const int src = scopeSource(); src != lastSource)
     {
@@ -1060,14 +1126,11 @@ void Display::paint (juce::Graphics& g)
     space3d::drawBadge (g, spaceBadgeArea(), space3d::partState (core, ctx.part), time);
     g.setFont (monoFont (h.getHeight() * 0.5f));
     g.setColour (colour::displayDim);
-    const auto bpm = core.params().get (Core::Ids::tempo);
-    const bool running = core.params().get (Core::Ids::seqRun) >= 0.5f;
-    const juce::String bpmText = (running ? juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xb6 ")) : juce::String()) + juce::String (bpm, 1) + " BPM";
+    // p39: the tempo and TAP are child components (editable); the header keeps their room
     const auto bpmArea = h.withTrimmedRight (h.getHeight() * 4.0f);
-    g.drawText (bpmText, bpmArea, juce::Justification::centredRight);
     if (mode != Mode::Tape) // p11: the tape's state on every other page
     {
-        const float bpmW = juce::GlyphArrangement::getStringWidth (monoFont (h.getHeight() * 0.5f), bpmText);
+        const float bpmW = bpmArea.getRight() - (float) (tapHeader.isVisible() ? tapHeader.getX() : tempoHeader.getX()) - h.getHeight() * 0.3f;
         auto room = bpmArea.withTrimmedRight (bpmW + h.getHeight() * 0.5f);
         room = room.withLeft (h.getX() + titleW + h.getHeight() * ((partMode || mode == Mode::Effects) ? 2.4f : 0.5f));
         if (room.getWidth() > 0.0f) paintTapeHeaderStatus (g, room, h.getHeight());

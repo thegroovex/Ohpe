@@ -72,6 +72,7 @@ bool isExcludedFromProject (const std::string& id) noexcept
         || startsWith (id, "space.")  // 1.0: monitoring (headphones / speakers, mono check) belongs to the listener
         || startsWith (id, "perf.")    // p14: wheel positions are performance, not sound
         || startsWith (id, "bounce.")  // p23: bounce to engine is a tool (its result is the part's sample)
+        || startsWith (id, "metro.")   // p39: metronome / count-in belong to the player
         || (id.size() > 13 && id.compare (id.size() - 13, 13, ".motion.clear") == 0) // p22: a trigger
         || id == "pads.stutter" || id == "pads.stop" || id == "pads.sweep" || id == "pads.freeze" // p25: held pads are performance
         || id == "harmony.take" || id == "harmony.clear"; // p24: triggers

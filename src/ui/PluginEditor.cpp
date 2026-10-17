@@ -249,6 +249,8 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     // yellow while the keyboard is shifted that way
     for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey }) k->setHasLed (true);
     for (auto* r : { &tapeReadout, &keysReadout }) addAndMakeVisible (*r);
+    addAndMakeVisible (tempoPanel); // p39
+    addAndMakeVisible (clickStrip);
     glideSwitch.setCaption ("Portamento");
     octDownKey.onClick = [this] { keyboard.setBaseOctave (keyboard.getBaseOctave() - 1); saveUiState(); repaint(); };
     octUpKey.onClick = [this] { keyboard.setBaseOctave (keyboard.getBaseOctave() + 1); saveUiState(); repaint(); };
@@ -533,7 +535,10 @@ void OhpeEditor::resized()
         // PLAY REC LOOP; the octave block: the keyboard readout over OCTAVE - / OCTAVE + (two slots each,
         // joined) and MIDI
         const float slot = 184.0f / 5.0f;
-        box (tapeReadout, 44, 476, 184, 32);
+        // p39: the readout row - tape position, the tempo, metronome and count-in (one 32-unit row, 4 units apart)
+        box (tapeReadout, 44, 476, 76, 32);
+        box (tempoPanel, 124, 476, 48, 32);
+        box (clickStrip, 176, 476, 52, 32);
         ui::PictoKey* row[] = { &toStartKey, &stopKey, &playKey, &recKey, &loopKey };
         for (int i = 0; i < 5; ++i)
         {
@@ -580,6 +585,8 @@ void OhpeEditor::resized()
     glideSwitch.setUiScale (s);
     glideKnob.setUiScale (s);
     tapeReadout.setUiScale (s);
+    tempoPanel.setUiScale (s); // p39
+    clickStrip.setUiScale (s);
     keysReadout.setUiScale (s);
     background = {}; // rendered again at the next paint (at the physical pixel scale)
 }
@@ -1098,7 +1105,7 @@ std::vector<juce::Component*> OhpeEditor::plateComponents()
 {
     // everything that sits on the plate under the overlay area (p14: 24..1176 x 104..616)
     std::vector<juce::Component*> c { &display, &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &midiKey, &octDownKey, &octUpKey,
-                                      &tapeReadout, &keysReadout, &gridKey };
+                                      &tapeReadout, &keysReadout, &gridKey, &tempoPanel, &clickStrip };
     for (auto& k : engineKeys) c.push_back (k.get());
     c.push_back (&lifeBar); // p15
     for (auto& k : modeKeys) c.push_back (k.get());
@@ -1147,6 +1154,8 @@ bool OhpeEditor::handleShortcut (const juce::KeyPress& key)
         return true;
     }
     if (c == 'l') { transport (T::Loop); return true; }
+    if (c == 't') { proc.tapTempo(); return true; }  // p39: tap tempo
+    if (c == 'k') { ui::setParamFromScreen (proc, Metronome::Ids::on, proc.core().params().get (Metronome::Ids::on) >= 0.5f ? 0.0f : 1.0f); return true; } // p39: click
     return false;
 }
 
@@ -1188,7 +1197,8 @@ void OhpeEditor::refreshTransportKeys()
         const juce::String barBeat = juce::String ((int) (beats / 4.0) + 1) + "." + juce::String ((int) std::fmod (beats, 4.0) + 1);
         juce::String badge = i18n::upper (tr ("Tape"));
         auto badgeColour = colour::displayDim;
-        if (recording) { badge = "REC"; badgeColour = colour::signalRed.withAlpha (0.4f + 0.6f * pulse); }
+        if (proc.core().countInActive()) { badge = i18n::upper (tr ("Count-in")); badgeColour = colour::signalRed; } // p39
+        else if (recording) { badge = "REC"; badgeColour = colour::signalRed.withAlpha (0.4f + 0.6f * pulse); }
         else if (ready) { badge = "REC"; badgeColour = colour::signalRed; }
         else if (proc.tapeRolling()) { badge = i18n::upper (tr ("Play")); badgeColour = colour::playGreenLit.withAlpha (0.4f + 0.6f * pulse); }
         tapeReadout.setContent (badge, badgeColour, time, barBeat);
@@ -2292,6 +2302,8 @@ void OhpeEditor::timerCallback()
     else blinkClock = 0.9f;                              // Off: the lights stand still, fully lit
     refreshTransportKeys();
     refreshLeds();
+    tempoPanel.refresh(); // p39
+    clickStrip.refresh();
     if (const int n = proc.transportMessageCount(); n != transportMessagesSeen)
     {
         transportMessagesSeen = n;

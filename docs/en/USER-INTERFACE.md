@@ -3,7 +3,7 @@
 *English · Deutsch: [../de/BEDIENUNG.md](../de/BEDIENUNG.md)*
 
 Ohpe's surface (p14): engine keys with the **LIFE** bar (left), the display (centre), mode keys (right), four encoders below the
-display, the **TRANSPORT** keys with the tape readout (bottom left), the **OCTAVE** keys, **MIDI** and the keyboard readout (bottom right) and the
+display, the **TRANSPORT** keys with the tape readout, the tempo, the metronome and the count-in (bottom left), the **OCTAVE** keys, **MIDI** and the keyboard readout (bottom right) and the
 keyboard row – **PITCH** and **MOD** wheels, a three-octave keyboard, **glide** mode and time. The header
 holds the **part selector**, the **preset strip**, the **LIBRARY** and **PRO** keys, **RANDOM** and **SAVE**,
 and the **settings** key (gear: language EN / DE, help, light / dark skin, MIDI, updates, about). Every function can be reached with the mouse and – through MIDI learn – from a controller.
@@ -70,7 +70,8 @@ Hover a key: its tooltip says what the bar means (engine keys also list the part
 
 ![Transport, keyboard row and octave block while recording](../images/ohpe-transport.png)
 
-The **readouts** next to the keys: the tape readout above the transport keys shows the state (**REC**
+The **readouts** next to the keys (p39: the tape readout shares its row with the editable tempo, the metronome and the
+count-in, see [Tempo, metronome and count-in](#tempo-metronome-and-count-in-p39)): the tape readout above the transport keys shows the state (**REC**
 red, **PLAY** green – both breathing while running – *TAPE*), the tape time (m:ss.t) and bar.beat; the keyboard readout in the octave
 block shows the keyboard's range (C3–C6) and its octave shift, and **MIDI LEARN** in red while a control
 waits for a MIDI message.
@@ -306,6 +307,49 @@ While the tape runs, every page shows **● REC 0:12.3** (red, breathing) or **�
 header. In the standalone app: **Space** = PLAY, **R** = REC, **Enter / Home** = to the start, **L** =
 loop (in a plug-in the host keeps its own keys). Right-click any transport key (or a button on the
 tape page) for MIDI learn – every transport function has a trigger, see [MIDI](MIDI.md).
+
+## Tempo, metronome and count-in (p39)
+
+![Tape page during a one-bar count-in: countdown, header tempo with TAP, the transport panel's tempo, click and count-in](../images/ohpe-metronome.png)
+
+**Setting the tempo.** The tempo is a control wherever it is shown – on the right of the display header
+(**120.0 BPM**, every page) and in the transport panel (**BPM 120.0**, next to the tape readout):
+
+| Gesture | Action |
+|---|---|
+| drag up / down | ± 1 BPM per 4 pixels; with **Shift** (or Cmd / Ctrl) ± 0.1 BPM |
+| mouse wheel | ± 1 BPM (fine: ± 0.1) |
+| double-click | type a value (20–300, a comma works too), **Return** sets it, **Esc** cancels |
+| **TAP** (header, left of the tempo) | click in time: from the second tap on the tempo is the average of the last four intervals; a pause of more than 2 s starts over. Standalone key **T**. |
+| right-click | MIDI learn / clear / reset of `tempo` (TAP: `metro.tap`) |
+
+While the tempo comes from outside – the plug-in host's transport, or an incoming **MIDI clock** (`sync.src`) –
+it is shown with **HOST** or **CLOCK** and cannot be edited there (TAP is hidden); change it in the host or on
+the clock source. With network sync (Link, standalone) Ohpe's tempo stays editable and sets the session tempo.
+The sequencer page keeps its Tempo encoder as before.
+
+![The transport panel: tape readout, tempo, metronome, count-in (2x)](../images/ohpe-tempo-panel.png)
+
+**Metronome.** The metronome key (pyramid sign, right of the tempo in the transport panel) switches the
+**click** on and off (`metro.on`, standalone key **K**). It clicks on every beat while the **sequencer or the
+tape runs** – never while everything is stopped – and flashes green on each click; beat 1 of the bar is
+accented (higher and louder). The click is Ohpe's own synthesised sound (no samples), plays on the **main
+output** only and is **never recorded** onto the tape. Right-click the key: click level (25–100 %), accent on
+beat 1, *Click in the plug-in too*, MIDI learn. In a **plug-in** the click stays silent unless *Click in the
+plug-in too* (`metro.plugin`) is on – hosts have their own metronome; the standalone app clicks whenever the
+metronome is on.
+
+**Count-in.** The count-in key (**COUNT**, `metro.countin`) cycles **– → 1 → 2** (off, one bar, two bars).
+When a recording starts from stop – **REC**, or PLAY with a track armed and recording on – the tape waits:
+the display shows the countdown (big beat number 4 – 3 – 2 – 1, the bar *1 / 2*, red), the count-in key shows
+the beats left, and the click plays even with the metronome off (also in a plug-in). The tape starts recording
+**exactly on the first sample of the next bar**; a sequencer started with it (*Play starts tape*) starts on that
+same sample. If the sequencer is already running, the count-in counts on its grid and the recording starts on one
+of its bar lines (between one and the chosen number of bars later). **REC** or **STOP** during the count-in cancels
+it – nothing is recorded. Punching in while the tape already rolls has no count-in. Ohpe counts in 4/4.
+
+The settings are host parameters (saved with the session / project, automatable, MIDI-mappable) and belong to the
+player: presets do not carry them. Parameters: [PARAMETERS.md](../PARAMETERS.md#p39--metronome-count-in-tap-tempo).
 
 ## Tape page
 
@@ -574,6 +618,8 @@ few seconds sleep and cost almost nothing until they play again. Details: [Perfo
 | R (standalone) | REC: record on the tape / punch out |
 | Enter or Home (standalone) | tape to the start |
 | L (standalone) | tape loop on / off |
+| T (standalone) | tap tempo |
+| K (standalone) | metronome (click) on / off |
 | Enter (library) | keep the selected preset and close |
 | ↑ / ↓ (library) | previous / next preset in the list |
 

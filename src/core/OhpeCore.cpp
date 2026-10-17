@@ -72,6 +72,10 @@ Core::Core()
     spaceOutIndex = registry.indexOf (Ids::spaceOut);
     monoCheckIndex = registry.indexOf (Ids::spaceMonoCheck);
     keyScaleIndex = registry.indexOf (Ids::keyScale);
+    metro.bind (registry); // p39
+    tapePlayIndex = registry.indexOf ("tape.play");
+    tapeRecIndex = registry.indexOf ("tape.rec");
+    for (int t = 0; t < TapeMachine::numTracks; ++t) tapeArmIndex[(size_t) t] = registry.indexOf ("tape.tr" + std::to_string (t + 1) + ".arm");
 
     snapshot.prepare (registry);
     for (auto& p : parts) p->setSnapshot (&snapshot); // 0.7: the matrix writes modulated values into it
@@ -132,6 +136,7 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     clockIn.prepare (sr);
     clockGen.prepare (sr);
     tapeMachine.prepare (sr, chunk);
+    metro.prepare (sr); // p39
     masterRack.prepare (sr, chunk);
     for (auto& t : tapeOut) t.assign ((size_t) chunk, 0.0f);
     std::fill (stepParamLast.begin(), stepParamLast.end(), NAN);
@@ -232,6 +237,11 @@ void Core::reset() noexcept
     internalPpq = 0.0;
     internalWasRunning = false;
     sampleTime = 0;
+    metro.reset(); // p39
+    countIn = {};
+    tapePlayPrev = false;
+    releaseOffset = -1;
+    countInBeatsForUi.store (0, std::memory_order_relaxed);
     numRouted = 0;
     midiOut.clear();
 }
@@ -443,15 +453,117 @@ Transport Core::makeTransport (const Transport& host, const MidiEvent* midi, int
     }
     else
     {
-        if (run && ! internalWasRunning) internalPpq = 0.0;
-        internalWasRunning = run;
         tr.bpm = snapshot[tempoIndex];
-        tr.playing = run;
+        // p39: a sequencer starting with a count-in waits for its end and starts on that very sample (the block's
+        // position is negative, so quarter note 0 falls on the release sample)
+        bool go = run;
+        int startAt = 0;
+        if (countIn.active && countIn.holdSeq)
+        {
+            if (releaseOffset < 0) go = false;
+            else startAt = releaseOffset;
+        }
+        if (go && ! internalWasRunning) internalPpq = -(double) startAt * tr.bpm / 60.0 / sr;
+        internalWasRunning = go;
+        tr.playing = go;
         tr.ppqAtBlockStart = internalPpq;
         tr.hostDriven = false;
-        if (run) internalPpq += numSamples * tr.bpm / 60.0 / sr;
+        if (go) internalPpq += numSamples * tr.bpm / 60.0 / sr;
     }
     return tr;
+}
+
+// ---------------------------------------------------------------- p39: count-in, metronome
+void Core::updateCountIn (const Transport& host, int numSamples) noexcept
+{
+    releaseOffset = -1;
+    const bool play = snapshot.getBool (tapePlayIndex), rec = snapshot.getBool (tapeRecIndex);
+    bool armed = false;
+    for (int idx : tapeArmIndex) armed = armed || snapshot.getBool (idx);
+    const bool rising = play && ! tapePlayPrev;
+    tapePlayPrev = play;
+
+    if (countIn.active && ! play) countIn.active = false; // stopped during the count-in: nothing is recorded
+    if (! countIn.active && rising && rec && armed && metro.countInBars() > 0)
+    {
+        const bool viaHost = host.hostDriven;
+        const double bpm = std::clamp (viaHost && host.bpm > 0.0 ? host.bpm : (double) snapshot[tempoIndex], 20.0, 300.0);
+        const bool run = snapshot.getBool (seqRunIndex);
+        countIn.active = true;
+        countIn.samplesPerBeat = 60.0 / bpm * sr;
+        countIn.startSample = sampleTime;
+        const double bars = (double) metro.countInBars();
+        const bool gridRunning = viaHost ? (host.playing && run) : (snapshot.getInt (syncSourceIndex) != SyncMidiClock && internalWasRunning && run);
+        if (gridRunning) // the sequencer already plays: count on its grid, the recording starts on one of its bar lines
+        {
+            countIn.beat0 = viaHost ? host.ppqAtBlockStart : internalPpq;
+            countIn.endBeat = (std::floor (countIn.beat0 / Metronome::beatsPerBar + 1.0e-9) + bars) * Metronome::beatsPerBar;
+            countIn.holdSeq = false;
+        }
+        else // free: the count-in starts now, on beat 1
+        {
+            countIn.beat0 = 0.0;
+            countIn.endBeat = bars * Metronome::beatsPerBar;
+            countIn.holdSeq = ! viaHost && snapshot.getInt (syncSourceIndex) != SyncMidiClock; // a starting sequencer waits too
+        }
+        countIn.endSample = countIn.startSample + (int64_t) std::ceil ((countIn.endBeat - countIn.beat0) * countIn.samplesPerBeat - 1.0e-6);
+    }
+    if (countIn.active)
+    {
+        const int64_t left = countIn.endSample - sampleTime;
+        if (left < numSamples) releaseOffset = (int) std::max<int64_t> (0, left);
+        const double beatNow = countIn.beat0 + (double) (sampleTime - countIn.startSample) / countIn.samplesPerBeat;
+        countInBeatsForUi.store (std::max (1, (int) std::ceil (countIn.endBeat - beatNow - 1.0e-9)), std::memory_order_relaxed);
+    }
+    else
+        countInBeatsForUi.store (0, std::memory_order_relaxed);
+}
+
+void Core::clickAt (int offset, bool downbeat) noexcept
+{
+    metro.trigger (offset, downbeat);
+    lastClickDown.store (downbeat, std::memory_order_relaxed);
+    clicksForUi.fetch_add (1, std::memory_order_relaxed);
+}
+
+void Core::scheduleClicks (const Transport& tr, int numSamples) noexcept
+{
+    auto isDownbeat = [] (double beat) {
+        const long long b = (long long) std::llround (beat);
+        return ((b % Metronome::beatsPerBar) + Metronome::beatsPerBar) % Metronome::beatsPerBar == 0;
+    };
+    int from = 0;
+    if (countIn.active) // the count-in always clicks (also with the metronome off, also in a plug-in)
+    {
+        const int to = releaseOffset >= 0 ? releaseOffset : numSamples;
+        for (double b = std::ceil (countIn.beat0 - 1.0e-9); b < countIn.endBeat - 1.0e-9; b += 1.0)
+        {
+            const int64_t at = countIn.startSample + (int64_t) std::ceil ((b - countIn.beat0) * countIn.samplesPerBeat - 1.0e-6);
+            const int64_t off = at - sampleTime;
+            if (off >= 0 && off < to) clickAt ((int) off, isDownbeat (b));
+        }
+        if (releaseOffset < 0) return;
+        from = releaseOffset;
+    }
+    if (! metro.enabled() || ! (isStandaloneHost() || metro.clickInPlugin())) return;
+    const double bpm = tr.bpm > 0.0 ? tr.bpm : (double) snapshot[tempoIndex];
+    const double bpb = bpm / 60.0 / sr; // beats per sample
+    double b0 = 0.0; // beat at sample 0 of the block
+    if (tr.playing) b0 = tr.ppqAtBlockStart;
+    else if (releaseOffset >= 0 || snapshot.getBool (tapePlayIndex)) // the tape alone: its position is the grid
+    {
+        const double tapeBeat = (double) tapeMachine.positionFrames() / sr * bpm / 60.0;
+        b0 = tapeBeat - (double) std::max (0, releaseOffset) * bpb; // a tape released at k is at its position there
+    }
+    else
+        return;
+    for (double b = std::ceil (b0 + (double) from * bpb - 1.0e-9);; b += 1.0)
+    {
+        int off = (int) std::ceil ((b - b0) / bpb - 1.0e-6);
+        if (off < from) off = from;
+        if (off >= numSamples) break;
+        clickAt (off, isDownbeat (b));
+    }
 }
 
 // ---------------------------------------------------------------- process
@@ -459,6 +571,8 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
 {
     // 1. parameters for this block, the transport (p22: the motion lanes need its position before the parts read them)
     snapshot.pullChanged (registry); // p35: only what changed (same values as a full pull)
+    metro.pull (snapshot);               // p39
+    updateCountIn (host, numSamples);    // p39: before the transport (it may hold a starting sequencer)
     const Transport tr = makeTransport (host, midi, numMidi, numSamples);
     motionRec.process (tr, numSamples); // p22: recorded knob movements over the snapshot
     morphSpace.afterPull(); // p16: the morph values over the parts' own
@@ -476,6 +590,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     mix.setTempo (bpmForUi.load (std::memory_order_relaxed));
     mix.pullParams (snapshot);
     pullPhase2Params();
+    if (countIn.active && releaseOffset != 0) tapeMachine.setParam (TapeMachine::Play, 0.0f); // p39: the tape waits
     for (size_t i = 0; i < stepParamIndex.size(); ++i)
         if (const float v = snapshot[stepParamIndex[i]]; stepParamIndex[i] >= 0 && ! (v == stepParamLast[i]))
         {
@@ -521,6 +636,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     ppqForUi.store (tr.ppqAtBlockStart, std::memory_order_relaxed);
     bpmForUi.store (tr.bpm, std::memory_order_relaxed);
     playingForUi.store (tr.playing, std::memory_order_relaxed);
+    scheduleClicks (tr, numSamples); // p39
 
     // 3. live MIDI: on-screen keyboard (offset 0), host / device MIDI minus mapped controls and
     //    clock messages -> parts by channel (through scale / chord and the arpeggiator)
@@ -611,6 +727,12 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     int pos = 0;
     while (pos < numSamples)
     {
+        if (pos == releaseOffset && countIn.active) // p39: the count-in ends - the tape runs from this sample
+        {
+            tapeMachine.setParam (TapeMachine::Play, 1.0f);
+            countIn.active = false;
+            countInReleasedAt.store (sampleTime + pos, std::memory_order_relaxed);
+        }
         applyLocks (lockStorage, nextLock, pos);
         while (nextEvent < numRouted && routed[(size_t) nextEvent].event.sampleOffset <= pos)
             dispatch (routed[(size_t) nextEvent++]);
@@ -618,6 +740,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         int end = std::min (numSamples, pos + (int) partL[0].size());
         if (nextEvent < numRouted) end = std::min (end, std::max (pos + 1, routed[(size_t) nextEvent].event.sampleOffset));
         if (nextLock < lockStorage.size()) end = std::min (end, std::max (pos + 1, lockStorage[nextLock].sampleOffset));
+        if (countIn.active && releaseOffset > pos) end = std::min (end, releaseOffset); // p39
         const int len = end - pos;
 
         SourceBuffers src;
@@ -651,6 +774,8 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         pos = end;
     }
     while (nextEvent < numRouted) dispatch (routed[(size_t) nextEvent++]);
+    // p39: the click on the main output (never on the tape: the tape records the parts, the drums and the input)
+    if (metro.sounding()) metro.render (outputs.left[0], outputs.right[0], numSamples);
     applyLocks (lockStorage, nextLock, std::numeric_limits<int>::max()); // swung steps may lock after the block end
 
     // 6. MIDI clock out (follows the transport in use)
@@ -664,6 +789,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     voices += drums.activeVoiceCount();
     voicesActive.store (voices, std::memory_order_relaxed);
     sampleTime += numSamples;
+    sampleCounterForUi.store (sampleTime, std::memory_order_relaxed);
 }
 
 // ---------------------------------------------------------------- state

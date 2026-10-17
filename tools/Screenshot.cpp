@@ -11,6 +11,7 @@
 // p38: the tape page's clear-all confirmation (ohpe-tape-clear, ohpe-tape-clear-dark) and the tape page at night (ohpe-tape-dark).
 // p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
 // octave block while recording (ohpe-transport, 2x crop; REC and PLAY at the top of their breathing).
+// p39: tempo, metronome, count-in on the tape page during a count-in (ohpe-metronome*, ohpe-tempo-panel* 2x crop).
 // 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack; the Mid/Side scope,
 // the master scope view and the spectrum terrain. 1.0: the 3D Space view and the 3D badge. The
 // preset library reads the user folder from OHPE_PRESET_DIR when set (otherwise the default).
@@ -912,6 +913,31 @@ int main (int argc, char* argv[])
                 e.showSettings (true, ui::SettingsView::About);
                 shot (dark ? "ohpe-about-dark" : "ohpe-about");
                 e.showSettings (false);
+                {   // p39: tempo, metronome and count-in - the tape page one beat into a one-bar count-in (the countdown,
+                    // the header tempo with TAP, the transport panel's tempo / click / count-in), a 2x crop of the panel
+                    e.selectMode (ui::Mode::Tape);
+                    setPlain (p, "metro.on", 1.0f);
+                    setPlain (p, "metro.countin", 1.0f);
+                    run (p, 2);
+                    p.core().tape().housekeeping();
+                    e.transport (OhpeProcessor::TransportKey::Record);
+                    for (int k = 0; k < 10; ++k) { run (p, 6); e.advanceAnimation (1.0f / 30.0f); } // 1.3 beats at 120 BPM
+                    run (p, 1);
+                    e.advanceAnimation (1.0f / 30.0f); // the click key lights on the beat's flash
+                    save (e, dir.getChildFile (juce::String (dark ? "ohpe-metronome-dark" : "ohpe-metronome") + suffix + ".png"));
+                    const auto panel = OhpeEditor::designArea ("transportPanel").expanded (8.0f).toNearestInt();
+                    save (e, dir.getChildFile (juce::String (dark ? "ohpe-tempo-panel-dark" : "ohpe-tempo-panel") + suffix + ".png"), 2.0f, panel);
+                    e.transport (OhpeProcessor::TransportKey::Stop);
+                    run (p, 2);
+                    p.core().tape().housekeeping();
+                    e.transport (OhpeProcessor::TransportKey::Stop); // to the start
+                    setPlain (p, "tape.tr1.arm", 0.0f);
+                    setPlain (p, "tape.tr2.arm", 0.0f);
+                    setPlain (p, "metro.on", 0.0f);
+                    setPlain (p, "metro.countin", 0.0f);
+                    run (p, 2);
+                    e.selectMode (ui::Mode::Synth);
+                }
             }
             set ([] (settings::UserSettings& v) { v = settings::UserSettings {}; });
             ui::applySkin (ui::Skin::Light);
