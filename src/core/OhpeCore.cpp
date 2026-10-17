@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "OhpeCore.h"
 
+#include "bounce/Bounce.h"
+#include "engines/GrainEngine.h"
 #include "model/StateSerializer.h"
 
+#include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <limits>
 
@@ -134,6 +138,59 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     for (auto* b : { &euclidBinding, &arpBinding, &orbitBinding }) std::fill (b->last.begin(), b->last.end(), NAN);
     reset();
     prepareEffects();
+}
+
+bool Core::updateTapeGrain()
+{
+    tapeGrain.collect();
+    std::vector<GrainEngine*> engines;
+    bool wanted = false;
+    for (int p = 0; p < numParts; ++p)
+    {
+        if (auto* g = dynamic_cast<GrainEngine*> (parts[(size_t) p]->engine (EngineType::Grain)))
+        {
+            engines.push_back (g);
+            const int idx = registry.indexOf (parts[(size_t) p]->id ("grain.source"));
+            wanted = wanted || (idx >= 0 && (int) std::lround (registry.get (idx)) == grain::SourceTape);
+        }
+        for (auto* lane : morphSpace.laneParts (p))
+            if (auto* g = dynamic_cast<GrainEngine*> (lane->engine (EngineType::Grain)))
+            {
+                engines.push_back (g);
+                wanted = wanted || g->getShared().source == grain::SourceTape;
+            }
+    }
+
+    bool published = false;
+    if (! wanted)
+    {
+        if (tapeGrain.owner() != nullptr)
+        {
+            for (auto* g : engines) g->setTapeRegion (nullptr);
+            tapeGrain.set (nullptr); // kept alive for the grace time (a block may still read it)
+            tapeGrainRevision = 0;
+            tapeGrainTrack = -2;
+        }
+        return false;
+    }
+
+    const int idx = registry.indexOf (Ids::tapeEditTrack);
+    const int edit = std::clamp (idx >= 0 ? (int) std::lround (registry.get (idx)) - 1 : 0, 0, TapeMachine::numTracks - 1);
+    const int track = tapeMachine.contentEndFrames (edit) > 0 ? edit : -1;
+    const auto rev = tapeMachine.contentRevision();
+    if (rev != tapeGrainRevision || track != tapeGrainTrack)
+    {
+        bounce::Options o;
+        o.endless = false;
+        auto audio = bounce::readTape (tapeMachine, track);
+        auto region = audio.frames() > 0 ? bounce::prepare (std::move (audio), o, {}, "Tape") : nullptr;
+        tapeGrain.set (std::move (region)); // the old region stays alive for the grace time
+        tapeGrainRevision = rev;
+        tapeGrainTrack = track;
+        published = true;
+    }
+    for (auto* g : engines) g->setTapeRegion (tapeGrain.get()); // also engines of lanes created since
+    return published;
 }
 
 bool Core::prepareEffects()

@@ -88,6 +88,15 @@ public:
     const HarmonyBrain& harmony() const noexcept { return harmonyBrain; }
     /** p16, message thread (timer): rebuilds morph plans when a part's own sound changed under an empty corner. */
     bool updateMorph() { return morphSpace.update(); }
+    /**
+        p28, message thread (timer): Grain "Source = Tape". Hands the Grain engines of all parts (and their morph
+        lanes) the tape's edit track ("tape.edit.track") as their source, or the mix of all tracks while the edit
+        track is empty; normalised like a bounce, at most bounce::maxSeconds. Rebuilt when the tape content or the
+        edit track changes, only while a Grain engine uses Source = Tape. True when it published a new region.
+    */
+    bool updateTapeGrain();
+    /** p28: the region "Source = Tape" granulates (nullptr = none / the tape is empty). */
+    const SampleData* tapeGrainRegion() const noexcept { return tapeGrain.get(); }
     /** 0.7: scope tap for the display (a part after its FX rack, or the main output). */
     ScopeTap& scope() noexcept { return scopeTap; }
 
@@ -274,6 +283,9 @@ private:
     ParamSnapshot snapshot;
     std::array<std::unique_ptr<Part>, numParts> parts;
     MorphSpace morphSpace; ///< p16 (after the parts: its lanes follow them)
+    RtShared<SampleData> tapeGrain;  ///< p28: Grain "Source = Tape"
+    uint64_t tapeGrainRevision = 0;  ///< p28: tape content the region was built from (0 = none)
+    int tapeGrainTrack = -2;         ///< p28: track it was built from (-1 = mix)
     MotionRecorder motionRec; ///< p22
     PerformancePads perfPads; ///< p25 (the mixer runs it in the master chain)
     HarmonyBrain harmonyBrain; ///< p24
