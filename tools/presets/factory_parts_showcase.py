@@ -279,7 +279,7 @@ S("Sympathetic Harp Keys", ["Keys", "Plucks"], "pluck", ["reso", "expr"],
        mix=0.35),
   expr(vel=[("cutoff", 0.35, "exp")], at=[("lfodepth", 0.3)]), lfo(0.13, 0.15, "sine", "pan"),
   fx(5, "reverb", size=0.55, damping=0.45, predelay=0.02, mix=0.15),
-  wheel=("resomix", 0.4), voices=12, velsens=0.65)
+  wheel=("resomix", 0.15), voices=12, velsens=0.65)
 
 S("Alive Tine Keys", ["Keys", "Piano"], "sampler", ["char", "life", "expr"],
   "The recorded tine electric piano with its character macros turned towards Alive and a little darker: slow drift, a "
@@ -322,15 +322,15 @@ S("Living Strings", ["Pads"], "analog", ["life", "char"],
 
 S("Halo Spiral Pad", ["Pads", "3D"], "wavetable", ["space", "tempo"],
   "A glassy wavetable pad that spirals upwards around your head over sixteen bars and starts again below (motion path "
-  "Spiral Up, measured in bars: it follows the tempo). Best with headphones; the mod wheel brings it closer.",
+  "Spiral Up, measured in bars: it follows the tempo). Best with headphones; the mod wheel speeds up the spiral.",
   "Eine gläserne Wavetable-Fläche, die in sechzehn Takten spiralförmig um den Kopf nach oben steigt und unten neu beginnt "
-  "(Bewegungspfad Spirale aufwärts, in Takten: folgt dem Tempo). Am besten mit Kopfhörern; das Modrad holt sie näher.",
+  "(Bewegungspfad Spirale aufwärts, in Takten: folgt dem Tempo). Am besten mit Kopfhörern; das Modrad beschleunigt die Spirale.",
   wt(table="glass", pos=0.4, warp=0.1, tone=0.55, unison=0.35, univoices=4, uniwidth=0.8, keytrack=0.35, lfopos=0.2),
   amp(1.0, 2.0, 0.9, 3.0), mod(1.2, 2.0, 0.6, 2.5, 0.12), lfo(0.1, 0.25, "tri", "timbre"),
   space("spiral", "16bars", size=0.55, distance=3.0, spread=70.0, room=0.35, roomsize=0.6, doppler=0.15),
   fx(5, "reverb", size=0.8, damping=0.45, predelay=0.04, mix=0.25),
   expr(at=[("cutoff", 0.3, "s")]),
-  wheel=("distance", -0.25), voices=8, velsens=0.25)
+  wheel=("pathrate", 0.35), voices=8, velsens=0.25)
 
 S("Tempo Tide Pad", ["Pads"], "wavetable", ["tempo", "expr"],
   "A warm wavetable pad whose tone rises and falls over two bars and drifts through the stereo field over one bar - both "
@@ -348,9 +348,9 @@ S("Tempo Tide Pad", ["Pads"], "wavetable", ["tempo", "expr"],
 
 S("Sympathy Choir", ["Pads", "Vocal"], "vocal", ["reso", "life"],
   "A soft 'ah' choir that sets a ring of sympathetic strings humming in the chord you hold, with Life drifting each voice. "
-  "The strings keep ringing when the choir stops; the mod wheel moves the vowel towards 'oh'.",
+  "The strings keep ringing when the choir stops; the mod wheel adds a choir vibrato.",
   "Ein weicher 'Ah'-Chor bringt einen Kranz von Resonanzsaiten im gehaltenen Akkord zum Summen, Leben lässt jede Stimme "
-  "driften. Die Saiten klingen nach, wenn der Chor endet; das Modrad bewegt den Vokal Richtung 'Oh'.",
+  "driften. Die Saiten klingen nach, wenn der Chor endet; das Modrad gibt ein Chor-Vibrato.",
   vo(vowel=0.0, formant=0.0, breath=0.35, tension=0.35, vibdepth=0.12, vibrate=5.0, jitter=0.2),
   amp(0.8, 1.5, 0.9, 2.0), mod(0.5, 2.0, 0.5, 1.5, 0.0),
   reso("string", "chord", size=1.0, material=0.55, decay=5.0, position=0.35, inharm=0.1, sympathetic=0.85, width=0.9,
@@ -358,7 +358,7 @@ S("Sympathy Choir", ["Pads", "Vocal"], "vocal", ["reso", "life"],
   life(0.55),
   fx(5, "reverb", size=0.75, damping=0.45, predelay=0.03, mix=0.22),
   expr(at=[("position", 0.25, "s")]),
-  wheel=("engine1", 0.35), voices=10, velsens=0.25)
+  routes=[route("vibrato", "pitch", 0.02, via="modwheel")], voices=10, velsens=0.25)
 
 S("Weave Cluster 3D", ["Pads", "3D"], "cluster", ["space", "tempo"],
   "A wide cluster pad weaving left-right and front-back around the listener over eight bars (motion path Weave, in bars: "
@@ -382,7 +382,7 @@ S("Bright Wide Pad", ["Pads"], "wavetable", ["char", "expr"],
   char(bright=-0.25, wide=-0.2),
   fx(5, "reverb", size=0.7, damping=0.45, predelay=0.03, mix=0.22),
   expr(vel=[("attack", -0.2)]), routes=[route("pressure", "charbright", 0.7, curve="s")],
-  wheel=("charwide", 0.9), voices=10, velsens=0.3)
+  wheel=("charwide", 0.7), voices=10, velsens=0.3)
 
 S("Sub Floor Pad", ["Pads"], "analog", ["sub", "expr"],
   "A dark, warm pad with a round SUB layer one octave down that gives chords a floor without a bass part. Velocity brings "
@@ -398,15 +398,15 @@ S("Sub Floor Pad", ["Pads"], "analog", ["sub", "expr"],
 
 S("Overhead Swell", ["Pads", "3D"], "vocal", ["space", "expr"],
   "Breathy voices that rise from in front of you, pass over your head and land behind you (motion path Over the Head, four "
-  "bars, in tempo). Pressure swells them; the mod wheel moves the vowel. Best with headphones.",
+  "bars, in tempo). Pressure swells them; the mod wheel adds a choir vibrato. Best with headphones.",
   "Hauchige Stimmen steigen vor dir auf, ziehen über den Kopf und landen hinter dir (Bewegungspfad Über den Kopf, vier "
-  "Takte, im Tempo). Druck lässt sie anschwellen; das Modrad bewegt den Vokal. Am besten mit Kopfhörern.",
+  "Takte, im Tempo). Druck lässt sie anschwellen; das Modrad gibt ein Chor-Vibrato. Am besten mit Kopfhörern.",
   vo(vowel=1.0, formant=0.5, breath=0.5, tension=0.35, vibdepth=0.1, vibrate=4.8, jitter=0.2),
   amp(1.0, 1.5, 0.9, 2.5), mod(0.5, 2.0, 0.5, 1.5, 0.0), lfo(0.09, 0.2, "tri", "timbre"),
   space("overhead", "4bars", size=0.6, distance=2.0, spread=60.0, room=0.35, roomsize=0.6, doppler=0.2),
   fx(5, "reverb", size=0.75, damping=0.45, predelay=0.03, mix=0.22),
   expr(at=[("level", 0.25, "s")]),
-  wheel=("engine1", 0.35), voices=8, velsens=0.25)
+  routes=[route("vibrato", "pitch", 0.02, via="modwheel")], voices=8, velsens=0.25)
 
 # ======================================================================================================== Leads
 S("Pressure Glide Lead", ["Leads"], "analog", ["glidepress", "expr"],
@@ -414,7 +414,7 @@ S("Pressure Glide Lead", ["Leads"], "analog", ["glidepress", "expr"],
   "vibrato as you lean in. The mod wheel opens the filter.",
   "Ein singender Mono-Sägezahn-Lead für Legato: Druck dehnt das Gleiten (Glide-Druck), die Expression-Seite gibt beim "
   "Hineindrücken Vibrato dazu. Das Modrad öffnet das Filter.",
-  an(shape=0.05, detune=0.1, cutoff=2400, reso=0.2, oscmix=0.45, sub=0.1, drive=0.25, keytrack=0.6),
+  an(shape=0.05, detune=0.1, cutoff=1700, reso=0.2, oscmix=0.45, sub=0.1, drive=0.25, keytrack=0.4),
   amp(0.005, 0.4, 0.85, 0.25), mod(0.002, 0.4, 0.4, 0.3, 0.2), MONO,
   {"glide": 0.09, "glide.mode": 1, "glide.rate": 0, "glide.press": 0.8},
   expr(vel=[("cutoff", 0.25)], at=[("vibrato", 0.25, "s")]), lfo(5.2, 0.0, "sine", "pitch"),
@@ -439,7 +439,7 @@ S("Pendulum Lead", ["Leads", "3D"], "analog", ["space", "tempo"],
   "Pendulum, in tempo). Pressure adds vibrato; the mod wheel slows the swing. Best with headphones.",
   "Ein heller Puls-Lead, der wie ein Pendel alle zwei Takte von einer Seite des Kopfes zur anderen schwingt "
   "(Bewegungspfad Pendel, im Tempo). Druck gibt Vibrato; das Modrad verlangsamt das Schwingen. Am besten mit Kopfhörern.",
-  an(shape=0.6, detune=0.08, cutoff=3000, reso=0.15, oscmix=0.4, sub=0.1, drive=0.2, keytrack=0.6),
+  an(shape=0.6, detune=0.08, cutoff=2000, reso=0.15, oscmix=0.4, sub=0.1, drive=0.2, keytrack=0.4),
   amp(0.005, 0.4, 0.85, 0.3), mod(0.002, 0.3, 0.4, 0.3, 0.15), {"voices": 4},
   space("pendulum", "2bars", size=0.6, distance=2.5, spread=25.0, room=0.25, roomsize=0.45, doppler=0.2, rolloff=0.5),
   expr(vel=[("cutoff", 0.25)], at=[("vibrato", 0.2, "s")]), lfo(0.1, 0.1, "tri", "timbre"),
@@ -448,14 +448,14 @@ S("Pendulum Lead", ["Leads", "3D"], "analog", ["space", "tempo"],
 
 S("Living Flute Lead", ["Leads"], "vocal", ["life", "expr"],
   "A breathy flute-like voice whose pitch and breath drift a little with Life, like a real player. Pressure brings in "
-  "vibrato and more breath; the mod wheel brightens the formant.",
+  "vibrato and more breath, the mod wheel a wider vibrato.",
   "Eine hauchige, flötenartige Stimme, deren Tonhöhe und Atem mit Leben leicht driften, wie bei einem echten Spieler. "
-  "Druck bringt Vibrato und mehr Atem; das Modrad hellt den Formanten auf.",
+  "Druck bringt Vibrato und mehr Atem, das Modrad ein weiteres Vibrato.",
   vo(vowel=3.2, formant=2.5, breath=0.6, tension=0.3, vibdepth=0.0, vibrate=5.2, jitter=0.15),
   amp(0.06, 0.4, 0.85, 0.3), mod(0.05, 0.4, 0.4, 0.3, 0.0), {"voices": 2},
   life(0.5), expr(vel=[("attack", -0.3)], at=[("vibrato", 0.25, "s"), ("spray", 0.3)]),
   lfo(0.1, 0.1, "tri", "timbre"), fx(5, "reverb", size=0.55, damping=0.5, predelay=0.02, mix=0.18),
-  wheel=("engine2", 0.35), velsens=0.4)
+  routes=[route("vibrato", "pitch", 0.03, via="modwheel")], velsens=0.4)
 
 S("Bowed Body Lead", ["Leads"], "analog", ["reso", "expr"],
   "A soft saw bowing a long open tube tuned to each note: a woody, cello-like lead. Pressure presses the bow (the tube's "
@@ -468,7 +468,7 @@ S("Bowed Body Lead", ["Leads"], "analog", ["reso", "expr"],
        mix=0.7, drive=0.15, press=0.7, slide=0.6),
   expr(vel=[("attack", -0.35)], at=[("vibrato", 0.22, "s")]), lfo(0.1, 0.1, "tri", "timbre"),
   fx(5, "reverb", size=0.55, damping=0.5, predelay=0.02, mix=0.16),
-  routes=[route("pressure", "resomaterial", -0.3)], wheel=("resoposition", 0.45), velsens=0.4)
+  routes=[route("pressure", "resomaterial", -0.3)], wheel=("resoposition", 0.3), velsens=0.4)
 
 S("Hard Edge FM Lead", ["Leads"], "fm", ["char", "expr"],
   "A cutting FM lead voiced with the Hard macro (shorter attack, more feedback, more edge). Velocity adds bite, pressure "
@@ -504,7 +504,7 @@ S("Ping-Pong Space Pluck", ["Plucks", "3D"], "pluck", ["space", "tempo"],
   "room. Velocity plucks harder; the mod wheel speeds up the bounce. Best with headphones.",
   "Ein heller Zupfer, der jeden halben Takt von vorn nach hinten springt (Bewegungspfad Ping-Pong vorn/hinten, im Tempo), "
   "in einem kleinen Raum. Anschlag zupft härter; das Modrad beschleunigt das Springen. Am besten mit Kopfhörern.",
-  pl(material=0.2, damping=0.35, bright=0.6, body=0.3, excite=0.5, pickpos=0.15, bodysize=0.4),
+  pl(material=0.2, damping=0.4, bright=0.42, body=0.35, excite=0.45, pickpos=0.18, bodysize=0.4),
   amp(0.002, 1.5, 0.0, 0.5), mod(0.001, 0.3, 0.0, 0.2, 0.1), lfo(0.09, 0.15, "tri", "timbre"),
   space("pingpong", "1/2", size=0.6, distance=2.0, spread=20.0, room=0.3, roomsize=0.4, doppler=0.2),
   expr(vel=[("cutoff", 0.35, "exp")]),
@@ -556,27 +556,27 @@ S("Orbit Space Arp", ["Arp", "3D"], "fm", ["space", "tempo"],
   "room. Pressure pulls them closer; the mod wheel moves the orbit further out. Best with headphones.",
   "Glocken-Arpeggios, die den Hörer einmal pro Takt umkreisen (Bewegungspfad Kreis, ein Takt, im Tempo), auf Armlänge, in "
   "einem weichen Raum. Druck zieht sie näher; das Modrad rückt die Umlaufbahn weiter weg. Am besten mit Kopfhörern.",
-  fm(algo=0, modratio=3.5, index=0.22, feedback=0.0, op1ratio=1, op2ratio=3.5, op1level=1.0, op2level=0.45,
+  fm(algo=0, modratio=3.0, index=0.16, feedback=0.0, op1ratio=1, op2ratio=3, op1level=1.0, op2level=0.45,
      op3level=0.0, op4level=0.0, op5level=0.0, op6level=0.0),
   amp(0.002, 0.8, 0.0, 0.5), mod(0.001, 0.4, 0.0, 0.3, 0.5), lfo(0.09, 0.15, "tri", "timbre"),
   space("circle", "1bar", size=0.4, distance=1.5, spread=20.0, room=0.3, roomsize=0.45, doppler=0.15),
   fx(5, "reverb", size=0.5, damping=0.45, predelay=0.02, mix=0.14),
   expr(vel=[("fm", 0.25)]), arp_block=("up", 2, 0.5, "1/16"),
-  routes=[route("pressure", "distance", -0.2)], wheel=("distance", 0.3), voices=8, velsens=0.5)
+  routes=[route("pressure", "distance", -0.2)], wheel=("distance", 0.1), voices=8, velsens=0.5)
 
 S("Resonant Comb Arp", ["Arp"], "analog", ["reso", "tempo"],
   "A plucky saw arpeggio through the Resonator as a rack effect: a string body tuned to the chord you hold rings under "
-  "every step. The mod wheel brings the body forward, the echo is a synced dotted eighth.",
+  "every step. The mod wheel lets the body ring longer, the echo is a synced dotted eighth.",
   "Ein zupfiges Sägezahn-Arpeggio durch den Resonanzkörper als Rack-Effekt: ein Saitenkörper im gehaltenen Akkord klingt "
-  "unter jedem Schritt. Das Modrad holt den Körper nach vorn, das Echo ist eine synchrone punktierte Achtel.",
-  an(shape=0.05, detune=0.06, cutoff=1400, reso=0.25, oscmix=0.3, sub=0.0, drive=0.2, keytrack=0.5),
+  "unter jedem Schritt. Das Modrad lässt den Körper länger klingen, das Echo ist eine synchrone punktierte Achtel.",
+  an(shape=0.05, detune=0.06, cutoff=1100, reso=0.25, oscmix=0.3, sub=0.0, drive=0.2, keytrack=0.3),
   amp(0.003, 0.25, 0.0, 0.15), mod(0.001, 0.15, 0.0, 0.1, 0.45), lfo(0.09, 0.15, "tri", "timbre"),
-  reso_fx(0, "string", "chord", size=0.7, material=0.6, decay=2.5, position=0.25, inharm=0.1, sympathetic=0.6,
+  reso_fx(0, "string", "chord", size=0.7, material=0.45, decay=2.5, position=0.25, inharm=0.1, sympathetic=0.6,
           width=0.8, mix=0.35),
   fx(4, "echo", sync="1/8.", feedback=0.3, mix=0.18),
   fx(5, "reverb", size=0.5, damping=0.5, predelay=0.02, mix=0.12),
   expr(vel=[("cutoff", 0.3)]), arp_block=("up", 2, 0.45, "1/16"),
-  wheel=("fx1mix", 0.4), voices=8, velsens=0.5)
+  wheel=("fx1p3", 0.3), voices=8, velsens=0.5, guard=-9.0)
 
 S("Living Bell Arp", ["Arp"], "fm", ["life", "char"],
   "Soft FM bells arpeggiated in sixteenths, with Life and Alive keeping every repeat a little different - drift, tone "
@@ -616,7 +616,7 @@ S("Bowed Metal Body", ["Textures"], "grain", ["reso", "expr"],
   reso("closed", "chord", size=0.7, material=0.5, decay=3.0, position=0.3, inharm=0.1, sympathetic=0.4, width=0.8,
        mix=0.4),
   expr(at=[("position", 0.3, "s")]), fx(5, "reverb", size=0.8, damping=0.45, predelay=0.04, mix=0.25),
-  wheel=("resomaterial", 0.4), voices=6, velsens=0.25)
+  wheel=("resomaterial", 0.6), voices=6, velsens=0.25)
 
 S("Slow Weather", ["Textures"], "cluster", ["life", "char", "tempo"],
   "A cluster drone that keeps changing like weather: full Life, Alive turned up, and a tone swell locked to four-bar "
@@ -658,16 +658,16 @@ S("Rising Halo Sweep", ["FX", "3D"], "wavetable", ["space", "tempo"],
 
 S("Resonant Impact", ["FX"], "analog", ["reso", "expr"],
   "A noise burst slamming into a large metal plate tuned to the note: a cinematic hit with a long, metallic ring. "
-  "Velocity hits harder; the mod wheel shortens the ring into a tight stab.",
+  "Velocity hits harder; the mod wheel shrinks the plate to a smaller, brighter ring.",
   "Ein Rauschstoß, der in eine große, auf die Note gestimmte Metallplatte kracht: ein filmischer Schlag mit langem, "
-  "metallischem Nachklang. Anschlag schlägt härter; das Modrad verkürzt den Nachklang zum knappen Stab.",
+  "metallischem Nachklang. Anschlag schlägt härter; das Modrad verkleinert die Platte zu einem kleineren, helleren Klang.",
   an(shape=0.0, detune=0.0, cutoff=2500, reso=0.1, oscmix=0.0, sub=0.0, noise=0.8, drive=0.2, keytrack=0.6,
      osclevel=0.3),
   amp(0.001, 0.25, 0.0, 0.2), mod(0.001, 0.2, 0.0, 0.1, 0.4), lfo(0.09, 0.1, "tri", "timbre"), pitchenv(12, 0.05, 0.7),
   reso("plate", "note", size=0.9, material=0.8, decay=4.0, position=0.4, inharm=0.55, sympathetic=0.1, width=0.9,
        mix=0.7, drive=0.2),
   expr(vel=[("level", 0.25, "exp"), ("cutoff", 0.3)]), fx(5, "reverb", size=0.7, damping=0.5, predelay=0.02, mix=0.2),
-  wheel=("resodecay", -0.5), voices=4, velsens=0.7)
+  wheel=("resosize", -0.4), voices=4, velsens=0.7, guard=-8.0)
 
 S("Distance Walk Drone", ["FX", "3D"], "cluster", ["space", "life"],
   "A low drone that walks towards you and away again over eight bars (motion path Distance Walk, in tempo): it swells, "
@@ -683,16 +683,16 @@ S("Distance Walk Drone", ["FX", "3D"], "cluster", ["space", "life"],
 # ======================================================================================================== Vocal
 S("Living Choir", ["Vocal", "Pads"], "vocal", ["life", "char"],
   "A wide 'ah' choir where every singer drifts on their own (Life full up, Alive and Wide on): it sounds like a group, "
-  "not a copy. The mod wheel moves the vowel towards 'oh'.",
+  "not a copy. The mod wheel adds a wider choir vibrato.",
   "Ein breiter 'Ah'-Chor, in dem jede Stimme eigen driftet (Leben voll, Lebendig und Weit an): klingt wie eine Gruppe, "
-  "nicht wie eine Kopie. Das Modrad bewegt den Vokal Richtung 'Oh'.",
+  "nicht wie eine Kopie. Das Modrad gibt ein weiteres Chor-Vibrato.",
   vo(vowel=0.0, formant=0.0, breath=0.4, tension=0.35, vibdepth=0.14, vibrate=5.0, jitter=0.25),
   amp(0.7, 1.5, 0.9, 1.8), mod(0.5, 2.0, 0.5, 1.5, 0.0), lfo(0.09, 0.2, "tri", "timbre"),
   life(0.9), char(alive=0.35, wide=0.4),
   fx(1, "chorus", rate=0.3, depth=0.5, mix=0.3, voices=3, drift=0.35, spread=0.85, lowcut=200.0),
   fx(5, "reverb", size=0.75, damping=0.45, predelay=0.03, mix=0.22),
   expr(at=[("vibrato", 0.15, "s")]),
-  wheel=("engine1", 0.35), voices=12, velsens=0.3)
+  routes=[route("vibrato", "pitch", 0.02, via="modwheel")], voices=12, velsens=0.3)
 
 S("Pressure Vowel", ["Vocal", "Leads"], "vocal", ["expr", "glidepress"],
   "A solo voice that opens its mouth as you press: aftertouch moves the vowel from 'oo' to 'ah' and velocity sets the "

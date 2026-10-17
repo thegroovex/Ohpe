@@ -68,7 +68,7 @@
     "mod.s2.src": 9,
     "mod.s2.via": 0,
     "mod.s2.dst": 79,
-    "mod.s2.amt": 0.45,
+    "mod.s2.amt": 0.3,
     "mod.s2.curve": 0,
     "velsens": 0.4,
     "glide": 0.0,

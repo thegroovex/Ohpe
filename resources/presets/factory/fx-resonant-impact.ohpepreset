@@ -8,7 +8,7 @@
     "FX"
   ],
   "engine": "analog",
-  "comment": "A noise burst slamming into a large metal plate tuned to the note: a cinematic hit with a long, metallic ring. Velocity hits harder; the mod wheel shortens the ring into a tight stab.",
+  "comment": "A noise burst slamming into a large metal plate tuned to the note: a cinematic hit with a long, metallic ring. Velocity hits harder; the mod wheel shrinks the plate to a smaller, brighter ring.",
   "params": {
     "engine": 2,
     "analog.shape": 0.0,
@@ -65,8 +65,8 @@
     "fx.reverb.mix": 0.2,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
-    "mod.s1.dst": 78,
-    "mod.s1.amt": -0.5,
+    "mod.s1.dst": 76,
+    "mod.s1.amt": -0.4,
     "mod.s1.curve": 0,
     "voices": 4,
     "velsens": 0.7,

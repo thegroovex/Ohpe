@@ -61,7 +61,7 @@
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 80,
-    "mod.s1.amt": 0.4,
+    "mod.s1.amt": 0.25,
     "mod.s1.curve": 0,
     "voices": 12,
     "velsens": 0.65,

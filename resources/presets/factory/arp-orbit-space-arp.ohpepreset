@@ -13,11 +13,11 @@
   "params": {
     "engine": 0,
     "fm.algo": 0,
-    "fm.modratio": 3.5,
-    "fm.index": 0.22,
+    "fm.modratio": 3.0,
+    "fm.index": 0.16,
     "fm.feedback": 0.0,
     "fm.op1ratio": 1,
-    "fm.op2ratio": 3.5,
+    "fm.op2ratio": 3,
     "fm.op1level": 1.0,
     "fm.op2level": 0.45,
     "fm.op3level": 0.0,
@@ -70,12 +70,12 @@
     "mod.s2.src": 9,
     "mod.s2.via": 0,
     "mod.s2.dst": 69,
-    "mod.s2.amt": 0.3,
+    "mod.s2.amt": 0.1,
     "mod.s2.curve": 0,
     "voices": 8,
     "velsens": 0.5,
     "glide": 0.0,
-    "gain": 4.3
+    "gain": 3.3
   },
   "arp": {
     "on": 1,
