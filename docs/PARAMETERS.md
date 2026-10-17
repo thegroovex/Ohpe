@@ -625,7 +625,7 @@ Appended after `tape.tx.link`. Guide: [English](en/SPACE.md) · [Deutsch](de/RAU
 | `distance` | Distance | Entfernung | 0.2 … 40 m (skew 0.3) | 1.5 |
 | `pathrate` | Motion Rate | Bewegungstempo | -4 … 4 | 1 |
 | `pathphase` | Motion Phase | Bewegungsphase | 0 … 360 ° | 0 |
-| `path` | Motion Path | Bewegungspfad | Off, Circle, Figure-8, Fly-By, Random Orbit, Pendulum, Spiral Up | 0 |
+| `path` | Motion Path | Bewegungspfad | Off, Circle, Figure-8, Fly-By, Random Orbit, Pendulum, Spiral Up, Ping-Pong F/B, Swarm, Whisper, Distance Walk, Over the Head, Weave (choices 7–12 appended in p30; older indices unchanged) | 0 |
 | `pathlen` | Motion Length | Bewegungslänge | 1/16, 1/8, 1/4, 1/2, 1 Bar, 2 Bars, 4 Bars, 8 Bars, 16 Bars, 32 Bars, 1/4. | 5 (2 Bars) |
 | `pathsize` | Motion Size | Bewegungsgröße | 0 … 1 | 0.5 |
 | `spread` | Source Spread | Quellenbreite | 0 … 180 ° | 40 |
