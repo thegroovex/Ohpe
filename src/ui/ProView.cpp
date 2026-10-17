@@ -430,6 +430,7 @@ void ProView::layoutContent()
             if (t == "Engine") f = 16.0f;
             else if (t == "LFO" || t == "LFO 2" || t == "LFO 3") f = 9.0f;
             else if (t == "Pitch & Level") f = 10.0f;
+            else if (t == "Sub") f = 8.0f; // p31
             else if (t == "3D Space") f = 13.0f;
             else if (mode == Mode::Effects) f = 7.0f;
             tileH = (int) (u * f);

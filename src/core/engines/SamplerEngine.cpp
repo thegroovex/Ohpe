@@ -211,9 +211,11 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
             modEnv.next();
             const float k = (float) (i + 1) * inv;
-            const float env = ampEnv.next() * (g0 + (gain - g0) * k) * declick;
+            const float ae = ampEnv.next();
+            const float env = ae * (g0 + (gain - g0) * k) * declick;
             l[done + i] += a * env * (l0 + (panL - l0) * k);
             r[done + i] += b * env * (r0 + (panR - r0) * k);
+            if (subOn) subAddDirect (ae * declick, l[done + i], r[done + i]); // p31: SUB layer (at the played key)
             if (ended)
             {
                 kill();

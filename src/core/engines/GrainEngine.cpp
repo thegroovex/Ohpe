@@ -186,9 +186,11 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
             }
             modEnv.next();
             const float k = (float) (i + 1) * inv;
-            const float env = ampEnv.next() * (g0 + (gain - g0) * k);
+            const float ae = ampEnv.next();
+            const float env = ae * (g0 + (gain - g0) * k);
             l[done + i] += a * env * (l0 + (panL - l0) * k) * 1.41421356f;
             r[done + i] += b * env * (r0 + (panR - r0) * k) * 1.41421356f;
+            if (subOn) subAddDirect (ae, l[done + i], r[done + i]); // p31: SUB layer (after the grains)
         }
 
         if (source != nullptr && frames > 0)

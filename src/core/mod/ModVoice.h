@@ -44,6 +44,7 @@ enum Dest
     DstMorphX, DstMorphY, // p16: the morph pad's position ("pN.morph.x" / "pN.morph.y")
     DstResoTune, DstResoSize, DstResoMaterial, DstResoDecay, DstResoPosition, DstResoMix, // p19: the resonator body ("pN.reso.*")
     DstCharBright, DstCharHard, DstCharAlive, DstCharWide, // p21: the character macros ("pN.char.*")
+    DstSubLevel, // p31: the SUB layer's level ("pN.sub.level")
     numDests
 };
 static constexpr int numEngineDests = 24;

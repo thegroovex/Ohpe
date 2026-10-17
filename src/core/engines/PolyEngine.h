@@ -6,6 +6,7 @@
 #include "../dsp/Lfo.h"
 #include "../mod/ModVoice.h"
 #include "ISynthEngine.h"
+#include "PartSub.h"
 #include "VoiceAllocator.h"
 
 #include <algorithm>
@@ -105,6 +106,7 @@ public:
         ampEnv.resetGain();
         if (c.modProgram != nullptr) vmod.start (midiNote, vel, *c.modProgram); // 0.7: modulation matrix (LFO 2 / 3, env 3, random)
         lifeStart (midiNote, c); // p15: the voice's own life motion (seeded per part, voice slot, note and start)
+        if (c.subLevel > 0.0f || sub.isRunning()) sub.start (c.subLevel); // p31: the sub starts with the note (phase 0)
     }
 
     /** p15: the voice's slot in its engine (part of its life seed); resets the start counter. */
@@ -124,6 +126,7 @@ public:
         ampEnv.reset();
         modEnv.reset();
         vmod.kill();
+        sub.kill(); // p31
         currentNote = -1.0f;
         pitchEnvPhase = 1.0f;
     }
@@ -189,8 +192,30 @@ protected:
             if (exprVibPhase > dsp::twoPi) exprVibPhase -= dsp::twoPi;
             pitch += std::min (1.0f, expr.vibrato) * 0.5f * std::sin (exprVibPhase);
         }
+        subTick (c, pitch, n); // p31: the SUB layer follows exactly this pitch (nothing runs while its level is 0)
         return pitch;
     }
+
+    // ---- p31: the part's SUB layer (PartSub). Engines call, per sample while subOn:
+    //      pre-filter (Analog / Wavetable, ! subDirectNow): x += subNext() * <engine's input scale>
+    //      direct: subAddDirect (ampEnvValue, l[i], r[i]) - the same on both channels (mono), on the amp envelope.
+    void subTick (const VoiceCommon& c, float pitch, int n) noexcept
+    {
+        subOn = sub.tick (c.subLevel, c.subOct, c.subShape, pitch, sr, n);
+        if (! subOn) return;
+        subDirectNow = c.subDirect;
+        subVoiceGain = PartSub::outGain * velocityGain (c) * lfoAmp (c);
+    }
+    float subNext() noexcept { return sub.next(); }
+    /** Adds one direct sample of the sub (call once per sample, after ampEnv.next()). */
+    void subAddDirect (float ampEnvValue, float& l, float& r) noexcept
+    {
+        const float s = sub.next() * ampEnvValue * subVoiceGain;
+        l += s;
+        r += s;
+    }
+    /** p31: the voice's sub (tests). */
+    const PartSub& subLayer() const noexcept { return sub; }
 
     /** expr = the note's expression + the matrix's per-voice pan / timbre. */
     void applyVoiceMod() noexcept
@@ -342,6 +367,10 @@ protected:
     bool modActive = false;
     ModulatedAdsr ampEnv;
     dsp::Adsr modEnv;
+    PartSub sub;                ///< p31: the SUB layer of the voice
+    bool subOn = false;         ///< p31: the sub sounds in this control block
+    bool subDirectNow = false;  ///< p31: after the filter (engines with a voice filter)
+    float subVoiceGain = 0.0f;  ///< p31: output gain * velocity * tremolo of this block
     // p15: life state (see lifeStart / lifeTick)
     uint32_t lifeSlot = 0, lifeStarts = 0;
     dsp::Random lifeRng { 0x1f123bb5u };

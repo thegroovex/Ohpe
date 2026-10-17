@@ -297,5 +297,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     PerformancePads::registerParams (reg);
     // ---- p24: the harmony brain - memory, hold, take key, clear, grid layout; per part: follow --------------------
     HarmonyBrain::registerParams (reg, Core::numParts);
+    // ---- p31: the SUB layer per part (level 0 = off, octave, shape, direct = after the voice filter) ---------------
+    for (auto& p : parts) p->registerLate31SubParams (reg);
 }
 } // namespace ohpe
