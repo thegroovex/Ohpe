@@ -51,7 +51,7 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 | **Standalone-App** | Audiosystem, Gerät, Samplerate und Puffergröße wählen, Latenzanzeige, Multi-Out-Routing auf Gerätekanäle, MIDI-Eingänge |
 | **Preset-Bibliothek** | eine Taste BIBLIOTHEK: Kategorien (Bass, Tasten, Flächen, Leads, Zupfer, Drums, FX, Arp, Texturen, Vokal), Engine-Filter, Suche, Favoriten, Sterne-Bewertung, Sortierung, Werks- und eigene Bank, Vorhören durch Auswählen, Part- und Projekt-Presets, voriges / nächstes per MIDI |
 | **Display** | ein tiefes Display in Ebenen mit Parallaxe; Stereobild (Goniometer, Korrelation, M-/S-Pegel) eine bewegte 3D-Spektrum-Landschaft und die kopfbezogene 3D-Raum-Ansicht |
-| **Direkte Bedienung** | Wertebalken im Display ziehen, Shift / Cmd / Strg für Feinregelung, Doppelklick setzt zurück; Profiansicht mit allen Parametern eines Modus auf einmal |
+| **Direkte Bedienung** | Wertebalken im Display ziehen, Shift / Cmd / Strg für Feinregelung, Doppelklick setzt zurück; Profiansicht mit allen Parametern eines Modus auf einmal – als bedienbare Bilder (Hüllkurven, Filter, LFO, FM-Graph, Wavetable, Grains, 3D) mit violetten Modulationsbereichen, dazu Entdecken: HELL / HART / LEBENDIG / WEIT, Variieren, Kreuzen, Würfel, Verlauf |
 | **Sprachen** | Deutsch und Englisch, jederzeit umschaltbar |
 
 ## Bilder

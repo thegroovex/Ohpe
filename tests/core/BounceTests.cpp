@@ -121,11 +121,11 @@ struct Rig
 };
 } // namespace
 
-TEST_CASE ("p23 bounce: parameters appended after the breeding triggers, defaults, not part of project presets")
+TEST_CASE ("p23 bounce: parameters appended after the character macros, defaults, not part of project presets")
 {
     auto core = std::make_unique<Core>();
     const auto& reg = core->params();
-    CHECK (reg.indexOf (Core::Ids::bounceSrc) == reg.indexOf (Core::Ids::libBreedNext) + 1);
+    CHECK (reg.indexOf (Core::Ids::bounceSrc) == reg.indexOf ("p4.char.wide") + 1); // after the p21 character macros
     CHECK (reg.indexOf (Core::Ids::bounceTo) == reg.indexOf (Core::Ids::bounceSrc) + 1);
     CHECK (reg.indexOf (Core::Ids::bounceLoop) == reg.indexOf (Core::Ids::bounceSrc) + 2);
     CHECK (reg.indexOf (Core::Ids::bounceLen) == reg.indexOf (Core::Ids::bounceSrc) + 3);

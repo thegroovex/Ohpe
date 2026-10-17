@@ -179,13 +179,68 @@ die fünf Formantspuren. **EIGENE** schaltet zwischen eigenem und eingebautem Ma
 
 ![Profiansicht](../images/ohpe-pro-view-de.png)
 
-**PRO** öffnet die Profiansicht: **alle Parameter des aktuellen Modus auf einmal**, in Gruppen –
-im Synth-Modus die Makros und alle weiteren Parameter der Engine sowie Hüllkurven, LFO, Tonhöhe
-und MIDI des Parts; im Tape-Modus Transport, Schleife, Bandcharakter und alle acht Spuren; im
-Drum-Modus das Kit und alle 24 Pads. Die Reiter oben wechseln den Modus. Jeder Parameter ist ein
-Balken: ziehen (fein mit Shift / Cmd / Strg), klicken zum Springen, Doppelklick setzt zurück,
-Rechtsklick für MIDI Learn. Die Ansicht nutzt so viele Spalten, wie das Fenster breit ist – ein
-größeres Fenster zeigt mehr auf einmal – und scrollt, wenn ein Modus mehr Parameter hat als passen.
+**PRO** öffnet die Profiansicht: **alle Parameter des aktuellen Modus auf einmal**, in Gruppen – im
+Synth-Modus Engine, Filter, Hüllkurven, LFO, Tonhöhe & Pegel, Stimme, Glide, Tonhöhen-Hüllkurve, Layer und
+MIDI des Parts; im Tape-Modus Transport, Schleife, Bandcharakter und alle acht Spuren; im Drum-Modus das Kit
+und alle 24 Pads. Die Reiter oben wechseln den Modus. Die Ansicht nutzt eine bis vier Spalten, so viele, wie
+das Fenster breit ist, und scrollt, wenn ein Modus mehr hat als passt.
+
+**Sehen – greifen – hören (Profiansicht 2.0).** Jede Gruppenkarte mit einem Bild zeigt es zuerst, und das
+Bild ist das Bedienelement:
+
+| Karte | Bild | Greifen |
+|---|---|---|
+| Amp- / Mod-Hüllkurve, Hüllkurve 3 | ADSR-Kurve, ein grüner Punkt folgt der neuesten Note | die vier Griffe ziehen (Gipfel = Attack, Knick = Decay + Sustain, Sustain-Ende, Release-Ende) |
+| Filter | Frequenzgang | X = Grenzfrequenz, Y = Resonanz, Mausrad = Drive |
+| LFO, LFO 2 / 3 | die Welle auf einem Tempo-Raster, ein wandernder Punkt | hoch / runter = Tiefe, links / rechts = Tempo, schnelles Wischen oder Mausrad = Form |
+| FM-Engine | Operator-Graph: Kreise = Operatoren (gefüllt = hörbar), Linien = Modulation, Stärke = Index | Kreis hoch / runter = sein Verhältnis, Mausrad auf einem Kreis = sein Pegel, freie Fläche = Index, das Schild = nächster Algorithmus |
+| Wavetable-Engine | die Frames als Stapel, die leuchtende Ebene = Position | hoch / runter = Position, links / rechts = Warp, Mausrad = Tabelle |
+| Grain / Sampler | die Wellenform; Grains als Wolke um die Position (grün, solange es spielt) | Grain: X = Position, Y = Größe, Mausrad = Streuung; Sampler: Start- / Loop-Marken ziehen |
+| Analog / Pluck / Cluster / Vokal | Oszillator-Mischung / Saite / verstimmter Stapel / Formantkurve | X und Y bewegen die ersten beiden Makros der Engine |
+| Tonhöhe & Pegel | Stimm-Ring und Pegelanzeige | hoch / runter am Ring = Stimmung, Mausrad = fein, am Fader = Pegel |
+| FX-Slots, Sends | die Kette als Karten mit einem Minibild jedes Effekts | X = Mischung, Y = erster Parameter des Effekts, Mausrad = Typ |
+| 3D-Raum | der Kopf von oben, der Klang als Punkt | Punkt ziehen = Richtung und Entfernung, Mausrad = Höhe |
+
+Shift (Cmd / Strg) für feine Schritte, Doppelklick setzt zurück, Rechtsklick öffnet MIDI Learn – im Bild wie
+an den Balken. Die Balken bleiben unter jedem Bild als genaue Zeile; der Winkel im Kartenkopf klappt sie weg.
+Über einem Balken oder Bild zeigt der Hinweis den Wert und einen Satz dazu, was er tut.
+
+**Farben:** Gelb = was du bearbeitest, **Violett = Modulation** (jeder modulierte Parameter zeigt den Bereich,
+den seine Routings bewegen, als violetten Bogen, Streifen oder Schatten, auf den Balken als violettes Band um den Wert – das Filter zeigt den ganzen
+überstrichenen Frequenzgang), Grün = spielt, Rot = nimmt auf.
+
+**Modulation per Ziehen:** die Quellen-Chips in der ENTDECKEN-Zeile (LFO 1–3, Mod-Hüllkurve, Hüllkurve 3,
+Mod-Rad) lassen sich auf jedes Bild ziehen: das Routing kommt in den nächsten freien Slot der
+Modulationsmatrix des Parts (Menge 35 %), Ziel ist der Parameter unter dem Ablagepunkt.
+
+**EINFACH | ALLES** (oben rechts): Einfach zeigt nur die Bilder und Entdecken, Alles zusätzlich alle Balken.
+Modi ohne Bilder (Mixer, Sequencer, Tape, Drum) zeigen ihre Balken immer.
+
+### Entdecken
+
+![Entdecken mit sechs Varianten](../images/ohpe-pro-discover-de.png)
+
+Der Streifen oben in der Profiansicht (Part-Modi) ist zum Finden von Klängen statt zum Einstellen:
+
+- **HELL · HART · LEBENDIG · WEIT** – die Charakter-Makros des Parts (`pN.char.*`, −100 … +100 %, 0 =
+  neutral). Jedes bewegt mehrere echte Parameter musikalisch: HELL öffnet Filter / Ton / FM-Index, HART gibt
+  schnelleren Anstieg, Drive und Feedback, LEBENDIG treibt das [Leben](#leben) des Parts plus Drift und
+  Jitter, WEIT verbreitert Unisono, Spreizung und Layer. Sie sind Host-Parameter (Automation, MIDI Learn)
+  und Matrix-Ziele.
+- **VARIIEREN** – sechs Verwandte des aktuellen Klangs erscheinen als nummerierte Kacheln. Die Welle jeder
+  Kachel zeigt, wie sich dieser Verwandte vom Ausgangsklang entfernt hat (andere Änderungen = andere Welle,
+  geformt von seiner Amp-Hüllkurve); die Punkte oben rechts zeigen, wie weit (1 = am nächsten der sechs,
+  3 = am weitesten). Ändern sich die Parameter des Klangs (andere Engine), werden die Kacheln geleert. Kachel anklicken = **anhören** (der Klang wird gesetzt, eine kurze Note spielt),
+  **halten oder doppelklicken** = **behalten**. Eine Kachel auf eine andere ziehen = beide **kreuzen** – das
+  Kind ersetzt die Zielkachel. Erneutes VARIIEREN ohne Behalten kehrt zum Ausgangsklang zurück.
+- **Würfel** – würfelt alle nicht gesperrten Gruppen auf einmal; der Regler darunter stellt die Stärke von
+  **sanft** bis **wild** (auch, wie weit VARIIEREN geht). Jede Karte des Klangs hat einen eigenen **Würfel**
+  (nur diese Gruppe) und ein **Schloss** (VARIIEREN und Würfel lassen sie in Ruhe); das Schloss im Streifen
+  entsperrt alle.
+- **Verlauf** – die letzten 20 Zustände als Punkte; einen anklicken, um dorthin zurückzukehren.
+
+VARIIEREN, Würfel und Kreuzen nutzen denselben Zucht-Kern wie die [Zucht-Ansicht](ZUCHT.md) (Mutation je
+Gen-Gruppe mit Sicherheitsgrenzen für Resonanz, Feedback und Drive; Kreuzung je Gruppe).
 
 ## Sequencer-Ansichten und Parameter-Locks
 

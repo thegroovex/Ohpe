@@ -348,6 +348,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
 
     proView.onClose = [this] { showProView (false); };
     proView.onModeSelected = [this] (Mode m) { selectMode (m); };
+    proView.onSettingsChanged = [this] { saveUiState(); }; // p21: Simple / All
     addChildComponent (proView);
     library.onClosed = [this] { libraryKey.setActive (false); updateOverlayVisibility(); rebindEncoders(); };
     addChildComponent (library);
@@ -1027,7 +1028,7 @@ void OhpeEditor::refreshProView()
     }
     if (mode == Mode::Mixer) sub << "  /  " << tr ("Channel") << " " << (ctx.mixerChannel + 1);
     if (mode == Mode::Sequencer) sub << "  /  " << tr (seqViewName (ctx.seqView));
-    proView.setContent (mode, proGroups (mode, proc.core(), ctx), i18n::upper (sub));
+    proView.setContent (mode, proGroups (mode, proc.core(), ctx), i18n::upper (sub), ctx.part);
 }
 
 void OhpeEditor::setParamPlain (const juce::String& id, float plain)
@@ -1221,6 +1222,7 @@ void OhpeEditor::advanceAnimation (float seconds)
         spatialTime += seconds;
         partSelector.setSpatial (st, spatialTime);
     }
+    if (proView.isVisible()) proView.tick (seconds); // p21: the pro view's pictures (headless renders too)
     // headless renders call this instead of the timer: keep the preset name current after a load
     presetStrip.setName (proc.presets().currentName());
 }
@@ -1950,6 +1952,7 @@ void OhpeEditor::saveUiState()
     obj->setProperty ("modRouting", ctx.modRouting);
     obj->setProperty ("fxSlot", ctx.fxSlot);
     obj->setProperty ("pro", proView.isVisible());
+    obj->setProperty ("proSimple", proView.isSimple()); // p21
     obj->setProperty ("visual", (int) display.visual());
     juce::Array<juce::var> pages;
     for (int pg : pageOf) pages.add (pg);
@@ -1978,6 +1981,7 @@ void OhpeEditor::loadUiState()
     if (auto* arr = s["pages"].getArray())
         for (int i = 0; i < juce::jmin (numModes, arr->size()); ++i) pageOf[(size_t) i] = (int) (*arr)[i];
     ctx.tapeTrack = juce::jlimit (0, TapeMachine::numTracks - 1, (int) std::lround (proc.core().params().get (Core::Ids::tapeEditTrack)) - 1);
+    if (s.hasProperty ("proSimple")) proView.setSimple ((bool) s["proSimple"], false); // p21
     if (s.hasProperty ("pro") && (bool) s["pro"] != proView.isVisible())
     {
         proView.setVisible ((bool) s["pro"]);

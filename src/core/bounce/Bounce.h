@@ -73,7 +73,7 @@ struct Audio
     int64_t frames() const noexcept { return (int64_t) l.size(); }
 };
 
-/** Registers "bounce.src", "bounce.to", "bounce.loop", "bounce.len", "bounce.go" (appended after "lib.breed.next"). */
+/** Registers "bounce.src", "bounce.to", "bounce.loop", "bounce.len", "bounce.go" (appended after "p4.char.wide", the p21 character macros). */
 void registerParams (ParamRegistry& reg);
 
 /** English source name ("Tape 3", "Tape Mix", "Input"); for the edit track the resolved track. */

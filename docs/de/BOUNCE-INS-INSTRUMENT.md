@@ -67,7 +67,7 @@ spielt der Bounce trotzdem – nur für diese Sitzung, das sagt die Meldung.
 
 ## Parameter
 
-Angehängt nach den Zucht-Triggern (`lib.breed.next`), 5 IDs, nicht Teil von Presets. Siehe
+Angehängt nach den Charakter-Makros (`p4.char.wide`), 5 IDs, nicht Teil von Presets. Siehe
 [PARAMETERS.md](../PARAMETERS.md#bounce-to-engine-p23).
 
 | ID | Name | Werte |

@@ -65,7 +65,7 @@ like any loaded sample. An endless loop carries a sample loop chunk: Ohpe recogn
 
 ## Parameters
 
-Appended after the breeding triggers (`lib.breed.next`), 5 IDs, not part of presets. See
+Appended after the character macros (`p4.char.wide`), 5 IDs, not part of presets. See
 [PARAMETERS.md](../PARAMETERS.md#bounce-to-engine-p23).
 
 | ID | Name | Values |

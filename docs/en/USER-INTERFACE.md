@@ -175,12 +175,66 @@ built-in material (`pN.usertable.wt` / `pN.usertable.vocal`), **CLEAR** removes 
 ![Pro view](../images/ohpe-pro-view.png)
 
 **PRO** opens the pro view: **every parameter of the current mode at once**, in groups – in Synth
-mode the engine's macros and all its other parameters plus envelopes, LFO, pitch and MIDI of the
-part; in Tape mode the transport, loop, tape character and all eight tracks; in Drum mode the kit and
-all 24 pads. The tabs on top switch the mode. Each parameter is a bar: drag it (fine with Shift /
-Cmd / Ctrl), click to jump, double-click to reset, right-click for MIDI learn. The layout uses as
-many columns as the window is wide – make the window bigger to see more at once – and scrolls when
-a mode has more parameters than fit.
+mode the engine, its filter, the envelopes, LFO, pitch & level, voice, glide, pitch envelope, layer and
+MIDI of the part; in Tape mode the transport, loop, tape character and all eight tracks; in Drum mode the
+kit and all 24 pads. The tabs on top switch the mode. The layout uses one to four columns, as many as the
+window is wide, and scrolls when a mode has more than fits.
+
+**See – grab – hear (pro view 2.0).** Every group card that has a picture shows it first, and the
+picture is the control:
+
+| Card | Picture | Grab |
+|---|---|---|
+| Amp / Mod envelope, Env 3 | ADSR curve, a green dot follows the newest note | drag the four handles (peak = attack, knee = decay + sustain, sustain end, release end) |
+| Filter | frequency response | X = cutoff, Y = resonance, wheel = drive |
+| LFO, LFO 2 / 3 | the wave on a tempo grid, a moving dot | up / down = depth, left / right = rate, a quick swipe or the wheel = shape |
+| FM engine | operator graph: circles = operators (filled = heard), lines = modulation, thickness = index | drag a circle up / down = its ratio, wheel on a circle = its level, empty space = index, the badge = next algorithm |
+| Wavetable engine | the frames as a stack, the glowing plane = position | up / down = position, left / right = warp, wheel = table |
+| Grain / Sampler | the waveform; grains as a cloud around the position (green while playing) | grain: X = position, Y = size, wheel = spray; sampler: drag start / loop markers |
+| Analog / Pluck / Cluster / Vocal | oscillator mix preview / string / detuned stack / formant curve | X and Y move the engine's first two macros |
+| Pitch & Level | tuning ring and level meter | up / down on the ring = tune, wheel = fine, on the fader = level |
+| FX slots, sends | the chain as cards with a mini picture of each effect | X = mix, Y = the effect's first parameter, wheel = type |
+| 3D Space | the head from above, the sound as a dot | drag the dot = direction and distance, wheel = elevation |
+
+Shift (Cmd / Ctrl) gives fine control, double-click resets, right-click opens MIDI learn – in the picture
+as on the bars. The bars stay below each picture as the precise row; the chevron in the card header folds
+them away. Hover over a bar or a picture for the value and one sentence on what it does.
+
+**Colours:** yellow = what you edit, **violet = modulation** (every routed parameter shows the range its
+routings move it as a violet arc, band or shadow, on the bars as a violet band around the value – the filter shows the whole swept response), green =
+playing, red = recording.
+
+**Modulation by drag:** the source chips on the DISCOVER line (LFO 1–3, Mod Env, Env 3, Mod Wheel) can be
+dragged onto any picture: the routing goes into the next free slot of the part's modulation matrix
+(amount 35 %), targeting the parameter under the drop point.
+
+**SIMPLE | ALL** (top right): Simple shows the pictures and Discover only, All adds every bar. Modes without
+pictures (Mixer, Sequencer, Tape, Drum) always show their bars.
+
+### Discover
+
+![Discover with six variations](../images/ohpe-pro-discover.png)
+
+The strip at the top of the pro view (part modes) is for finding sounds rather than setting them:
+
+- **BRIGHT · HARD · ALIVE · WIDE** – the character macros of the part (`pN.char.*`, −100 … +100 %, 0 =
+  neutral). Each moves several real parameters musically: BRIGHT opens filter / tone / FM index, HARD gives a
+  faster attack, drive and feedback, ALIVE drives the part's [Life](#life) amount plus drift and jitter, WIDE
+  widens unison, spread and the layer. They are host parameters (automation, MIDI learn) and matrix targets.
+- **VARY** – six relatives of the current sound appear as numbered tiles. Each tile's wave is drawn from
+  how that relative moved away from the starting sound (different changes = a different wave, shaped by its
+  amp envelope); the dots top right show how far it went (1 = closest of the six, 3 = farthest). The tiles
+  are cleared when the sound's parameters change (another engine). Click a tile to
+  **audition** it (the sound is applied and a short note plays), **hold or double-click** to **keep** it.
+  Drag one tile onto another to **cross** the two – the child replaces the target tile. Pressing VARY again
+  without keeping returns to the sound you started from.
+- **Dice** – rolls every unlocked group at once; the slider below sets the strength from **gentle** to **wild**
+  (it also sets how far VARY goes). Each card of the sound has its own **dice** (roll only this group) and
+  **lock** (VARY and the dice leave it alone); the lock in the strip unlocks all.
+- **History** – the last 20 states as dots; click one to go back to it.
+
+VARY, the dice and crossing use the same breeding core as the [breeding view](BREEDING.md) (mutation per gene
+group with safety caps on resonance, feedback and drive; crossover per group).
 
 ## Sequencer views and parameter locks
 

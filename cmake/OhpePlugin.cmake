@@ -88,6 +88,8 @@ list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/MorphView.cpp)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/UserTableView.cpp) # p20
 # p18: preset breeding (the breeding view; the engine-agnostic core is src/core/breed)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/BreedView.cpp)
+# p21: pro view 2.0 - graphic tiles, the Discover strip
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ProTiles.cpp ${CMAKE_SOURCE_DIR}/src/ui/DiscoverStrip.cpp)
 
 set(OHPE_FORMATS VST3 Standalone)
 if(APPLE)
@@ -197,6 +199,11 @@ endif()
 # ---------------------------------------------------------------- p18: preset breeding
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/BreedUiTests.cpp)
+endif()
+
+# ---------------------------------------------------------------- p21: pro view 2.0 (pictures, Discover, Simple / All)
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/ProViewTwoTests.cpp)
 endif()
 
 # ---------------------------------------------------------------- p23: bounce to engine
