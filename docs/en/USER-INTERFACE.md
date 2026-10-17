@@ -442,6 +442,26 @@ does right now.
 
 The lanes are also the matrix sources **Motion 1 … 4**.
 
+## Pads view (p25)
+
+![The Pads view](../images/ohpe-pads-view.png)
+
+The sixth tab of **Effects** mode, **Pads**, holds the four [performance pads](PADS.md) – throws on the main mix for
+live sets: **Stutter**, **Tape Stop**, **Sweep** and **Freeze**. Each pad shows a small picture of what it does and
+its main setting; a pad waiting for its grid line blinks violet, an engaged pad lights green, a ringing freeze tail
+stays dim green. The strip below says which pads play.
+
+| Action | Result |
+|---|---|
+| press and hold a pad | the pad plays while held (engages on the next line of *Quantise*) |
+| Shift-click a pad / soft key | latches the pad on or off |
+| right-click a pad | MIDI learn (map a pad to a note-like CC button) |
+| Encoders, page *Pads* | the four pads (turn = on / off) |
+| Encoders, page *Pad Timing* | Quantise (Off, 1/16 … 1 bar), Stutter Length, Tape Stop Time, Sweep Time |
+| Encoders, page *Sweep & Freeze* | Sweep Filter (low-pass / high-pass), Sweep Resonance, Freeze Level |
+
+The pads are also the matrix sources **Pad Sweep** and **Pads Held**.
+
 ## Keys and shortcuts
 
 | Key | Action |

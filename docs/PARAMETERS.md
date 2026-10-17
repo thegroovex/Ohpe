@@ -826,3 +826,26 @@ part presets neither carry nor reset the motion block (a new sound keeps the par
 
 The modulation matrix gains the sources **Motion 1 … Motion 4** (23 – 26): the value of lane 1 … 4 at the play
 position (0 … 1; 0 where nothing is recorded or the transport stops). The source choice list grows at its end.
+
+## Performance pads (p25)
+
+Appended after the motion block (`p4.motion.clear`), 11 global IDs. Guides: [English](en/PADS.md) ·
+[Deutsch](de/PERFORMANCE-PADS.md). The pads work on the main mix in the master chain (after the master FX rack,
+before compressor, saturation and limiter). The four pad switches are not part of project presets.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pads.stutter` | Pad Stutter | Pad Stottern | Off / On (held) | Off |
+| `pads.stop` | Pad Tape Stop | Pad Bandstopp | Off / On (held) | Off |
+| `pads.sweep` | Pad Filter Sweep | Pad Filter-Sweep | Off / On (held) | Off |
+| `pads.freeze` | Pad Reverb Freeze | Pad Hall-Freeze | Off / On (held) | Off |
+| `pads.quant` | Pad Quantise | Pad-Quantisierung | Off, 1/16, 1/8, 1/4, 1/2, 1 Bar | 1/16 |
+| `pads.stutter.div` | Stutter Length | Stotter-Länge | 1/4, 1/8, 1/16, 1/32, 1/8T, 1/16T | 1/16 |
+| `pads.stop.len` | Tape Stop Time | Bandstopp-Dauer | 1/8, 1/4, 1/2, 1 Bar, 2 Bars | 1/2 |
+| `pads.sweep.mode` | Sweep Filter | Sweep-Filter | Low-pass, High-pass | Low-pass |
+| `pads.sweep.len` | Sweep Time | Sweep-Dauer | 1/8, 1/4, 1/2, 1 Bar, 2 Bars, 4 Bars | 1 Bar |
+| `pads.sweep.res` | Sweep Resonance | Sweep-Resonanz | 0 … 100 % | 45 % |
+| `pads.freeze.mix` | Freeze Level | Freeze-Pegel | 0 … 100 % | 60 % |
+
+The modulation matrix gains the sources **Pad Sweep** (27, the sweep position 0 … 1) and **Pads Held** (28, 1 while
+a pad is engaged). The source choice list grows at its end; no new targets.
