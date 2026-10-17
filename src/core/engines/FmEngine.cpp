@@ -121,9 +121,11 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
             float sum = 0.0f;
             for (int o = 0; o < numOps; ++o) sum += a.out[o] * opOut[o];
             modEnv.next();
-            const float out = sum * ampEnv.next() * gain;
+            const float ae = ampEnv.next();
+            const float out = sum * ae * gain;
             l[done + i] += out * panL;
             r[done + i] += out * panR;
+            if (subOn) subAddDirect (ae, l[done + i], r[done + i]); // p31: SUB layer (no voice filter: always direct)
         }
         done += n;
     }

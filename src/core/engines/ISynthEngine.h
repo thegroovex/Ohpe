@@ -60,6 +60,13 @@ struct VoiceCommon
         scatter, a little pan and level. Followed by every voice over ~60 ms, so turning it never steps. */
     float life = 0.0f;
     uint32_t lifeSeed = 0;      ///< p15: per part (and layer) seed of the voices' life motion (deterministic)
+    /** p31 SUB layer (PartSub): level 0 = off (the voices render exactly as without it) .. 1; octave 0 = -1 oct,
+        1 = -2 oct; shape PartSub::Shape; direct = after the engine's filter (engines that filter in the voice: Analog,
+        Wavetable; the others always add the sub after their own tone shaping). */
+    float subLevel = 0.0f;
+    int subOct = 0;
+    int subShape = 0;
+    bool subDirect = false;
 };
 
 /**
