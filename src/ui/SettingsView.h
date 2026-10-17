@@ -49,6 +49,8 @@ public:
     std::function<void()> onClosed;
     std::function<void()> onSettingsChanged; ///< a user setting changed (the store is already saved)
     std::function<void()> onOpenUpdates;     ///< the update view (Updates / About page)
+    std::function<void()> onInstallPack;     ///< content packs: "Install pack ..." (Updates page)
+    std::function<void()> onManagePacks;     ///< content packs: the pack manager page
     std::function<bool()> getAnimatedVisuals;
     std::function<void (bool)> setAnimatedVisuals;
     void setStandalone (bool s) { standalone = s; }

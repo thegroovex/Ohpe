@@ -97,6 +97,15 @@ public:
     std::string partJson (int part);
     usertable::RestoreResult applyPartJson (int part, const std::string& json);
 
+    /** Content packs (the wavetables/ folder of each Content/<pack>/, .wav files, read-only): where they are (default: the updater's folder). */
+    void setContentFolder (const juce::File& folder) { contentDir = folder; }
+    const juce::File& contentFolder() const noexcept { return contentDir; }
+    /** Loads the pack table a reference "<pack>/<table>" points at (a single-cycle set, frames of 2048 samples,
+        read like an imported set). nullptr + `state` PackMissing / ItemMissing when it is not there. */
+    usertable::UserTablePtr loadPackTable (const update::ContentRef& ref, update::RefState& state) const;
+    /** Packs the last restore / part preset referred to that are not installed ("content pack missing"), each once. */
+    const juce::StringArray& missingPacks() const noexcept { return missing; }
+
 private:
     void run() override;
     struct Job
@@ -115,9 +124,12 @@ private:
     void post (const juce::String& msg, const juce::String& det);
     juce::File saveToLibrary (const usertable::UserTable& t) const;
     usertable::Resolver resolver() const;
+    usertable::ContentResolver contentResolver() const;
+    void report (const usertable::RestoreResult& r);
 
     Core& core;
-    juce::File library;
+    juce::File library, contentDir;
+    juce::StringArray missing;
     juce::AudioFormatManager formats; ///< used by the worker only
     usertable::InputCapture inputCapture;
     juce::CriticalSection lock;

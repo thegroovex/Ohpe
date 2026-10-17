@@ -65,6 +65,7 @@ bool matches (const Entry& e, const Filter& f)
 {
     if (f.bank == Bank::Factory && ! e.factory) return false;
     if (f.bank == Bank::User && e.factory) return false;
+    if (! f.pack.empty() && e.pack != f.pack) return false;
     if (f.kind >= 0 && (int) e.meta.kind != f.kind) return false;
     if (f.favouritesOnly && ! e.favourite) return false;
     if (e.rating < f.minRating) return false;
@@ -77,6 +78,15 @@ bool matches (const Entry& e, const Filter& f)
         if (! any) return false;
     }
     return f.text.empty() || matchesText (e, f.text);
+}
+
+std::vector<std::string> usedPacks (const std::vector<Entry>& entries)
+{
+    std::vector<std::string> out;
+    for (const auto& e : entries)
+        if (! e.pack.empty() && std::find (out.begin(), out.end(), e.pack) == out.end()) out.push_back (e.pack);
+    std::sort (out.begin(), out.end());
+    return out;
 }
 
 std::vector<int> filterAndSort (const std::vector<Entry>& entries, const Filter& f)

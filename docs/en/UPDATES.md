@@ -50,6 +50,9 @@ checked to stay in the pack's folder; a pack that tries to write elsewhere is re
 
 **Your presets, user wavetables, bounces and settings are never touched** – they live in other folders.
 
+Packs you have as a file (`.ohpepack`) are installed with **INSTALL PACK …** or by dropping them on the window, and
+managed (version, size, remove) on **Settings › Content packs** – see [Content packs](CONTENT-PACKS.md).
+
 ## Files
 
 | What | Where (inside the user data folder `groovex/Ohpe`) |

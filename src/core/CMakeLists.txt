@@ -80,7 +80,8 @@ target_sources(ohpe_core PRIVATE
     update/UpdateManifest.cpp
     update/UpdateSettings.cpp
     update/Download.cpp
-    update/ContentPacks.cpp)
+    update/ContentPacks.cpp
+    update/PackFormat.cpp)
 # p32: the user's settings (language, help, skin, display, animations - per user, not per project)
 target_sources(ohpe_core PRIVATE settings/UserSettings.cpp)
 

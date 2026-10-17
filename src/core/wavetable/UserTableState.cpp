@@ -9,6 +9,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <algorithm>
+
 namespace ohpe::usertable
 {
 namespace
@@ -35,15 +37,36 @@ std::string fileNameOf (const std::string& path)
 
 json refOf (const UserTable& t)
 {
+    if (! t.contentRef.empty()) // pack content: the reference only
+        return json { { "name", t.name() }, { "content", t.contentRef }, { "frames", t.numFrames() }, { "formants", (int) t.formants().size() } };
     json r = { { "name", t.name() }, { "path", t.path }, { "file", fileNameOf (t.path) }, { "frames", t.numFrames() },
                { "formants", (int) t.formants().size() } };
     if (t.numFrames() <= embedMaxFrames) r["data"] = base64Encode (encode (t));
     return r;
 }
 
-UserTablePtr resolveRef (const json& r, const Resolver& resolve, RestoreResult& result)
+UserTablePtr resolveRef (const json& r, const Resolver& resolve, const ContentResolver& content, RestoreResult& result)
 {
     if (! r.is_object()) return nullptr;
+    if (r.contains ("content")) // a content pack table: no file name lookup, no embedded copy
+    {
+        const auto ref = update::ContentRef::parse (r["content"].is_string() ? r["content"].get<std::string>() : std::string());
+        auto state = ref.valid() ? update::RefState::PackMissing : update::RefState::Invalid;
+        if (ref.valid() && content)
+            if (auto t = content (ref, state))
+            {
+                ++result.loaded;
+                return t;
+            }
+        ++result.missing;
+        if (state == update::RefState::PackMissing)
+        {
+            ++result.packMissing;
+            if (std::find (result.missingPacks.begin(), result.missingPacks.end(), ref.pack) == result.missingPacks.end())
+                result.missingPacks.push_back (ref.pack);
+        }
+        return nullptr;
+    }
     const std::string path = r.value ("path", std::string());
     std::string file = r.value ("file", std::string());
     if (file.empty() && ! path.empty()) file = fileNameOf (path);
@@ -65,6 +88,16 @@ UserTablePtr resolveRef (const json& r, const Resolver& resolve, RestoreResult& 
     return nullptr;
 }
 } // namespace
+
+void RestoreResult::add (const RestoreResult& r)
+{
+    loaded += r.loaded;
+    embedded += r.embedded;
+    missing += r.missing;
+    packMissing += r.packMissing;
+    for (const auto& id : r.missingPacks)
+        if (std::find (missingPacks.begin(), missingPacks.end(), id) == missingPacks.end()) missingPacks.push_back (id);
+}
 
 UserTablePtr tableOf (Core& core, int part, Target target)
 {
@@ -98,7 +131,7 @@ std::string partToJson (Core& core, int part)
     return j.dump();
 }
 
-RestoreResult partFromJson (Core& core, int part, const std::string& text, const Resolver& resolve)
+RestoreResult partFromJson (Core& core, int part, const std::string& text, const Resolver& resolve, const ContentResolver& content)
 {
     RestoreResult result;
     setTable (core, part, Target::Wavetable, nullptr);
@@ -109,14 +142,14 @@ RestoreResult partFromJson (Core& core, int part, const std::string& text, const
     UserTablePtr wt;
     if (j.contains ("wavetable"))
     {
-        wt = resolveRef (j["wavetable"], resolve, result);
+        wt = resolveRef (j["wavetable"], resolve, content, result);
         setTable (core, part, Target::Wavetable, wt);
     }
     if (j.contains ("vocal"))
     {
         const auto& v = j["vocal"];
         if (v.is_object() && v.value ("sameAs", std::string()) == "wavetable") setTable (core, part, Target::Vocal, wt);
-        else setTable (core, part, Target::Vocal, resolveRef (v, resolve, result));
+        else setTable (core, part, Target::Vocal, resolveRef (v, resolve, content, result));
     }
     return result;
 }
@@ -134,7 +167,7 @@ std::string saveAssignments (Core& core)
     return j.dump();
 }
 
-RestoreResult restoreAssignments (Core& core, const std::string& text, const Resolver& resolve)
+RestoreResult restoreAssignments (Core& core, const std::string& text, const Resolver& resolve, const ContentResolver& content)
 {
     RestoreResult total;
     const json j = text.empty() ? json() : json::parse (text, nullptr, false);
@@ -142,10 +175,7 @@ RestoreResult restoreAssignments (Core& core, const std::string& text, const Res
     for (int p = 0; p < Core::numParts; ++p)
     {
         const auto key = "p" + std::to_string (p + 1);
-        const auto r = partFromJson (core, p, valid && j["parts"].contains (key) ? j["parts"][key].dump() : std::string(), resolve);
-        total.loaded += r.loaded;
-        total.embedded += r.embedded;
-        total.missing += r.missing;
+        total.add (partFromJson (core, p, valid && j["parts"].contains (key) ? j["parts"][key].dump() : std::string(), resolve, content));
     }
     return total;
 }

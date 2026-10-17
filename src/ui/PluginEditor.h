@@ -9,6 +9,7 @@
 #include "OhpeLookAndFeel.h"
 #include "ProView.h"
 #include "SettingsView.h"
+#include "PackManagerView.h"
 #include "UpdateView.h"
 #include "Widgets.h"
 #include "plugin/Localisation.h"
@@ -175,6 +176,11 @@ public:
     void showSettings (bool show, int page = -1);
     bool settingsVisible() const { return settingsView.isVisible(); }
     ui::SettingsView& settingsComponent() { return settingsView; }
+    ui::PackManagerView& packComponent() { return packView; }
+    /** Content packs: the settings page of the pack manager (an extra page after About). */
+    int packPage() const { return ui::SettingsView::numPages; }
+    /** Installs a pack file (picked or dropped); the result is flashed on the display. */
+    void installPack (const juce::File& pack);
     ui::PictoKey& settingsKeyComponent() { return settingsKey; }
     ui::HelpOverlay& helpOverlayComponent() { return helpOverlay; }
     UserSettingsStore& userSettingsStore() { return *userSettings; }
@@ -303,6 +309,8 @@ private:
     ui::UpdateView updateView;
     juce::SharedResourcePointer<UserSettingsStore> userSettings; ///< p32: per user, shared by every open editor
     ui::SettingsView settingsView;
+    ui::PackManagerView packView; ///< content packs: the pack manager (a settings page)
+    bool packDropPending = false; ///< an .ohpepack was dropped / chosen: flash the result when the install ends
     ui::HelpOverlay helpOverlay;
     bool tooltipsOn = true;
     float animRate = 1.0f;

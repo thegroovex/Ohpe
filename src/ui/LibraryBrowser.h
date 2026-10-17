@@ -12,7 +12,8 @@ namespace ohpe::ui
     The preset library (0.3), opened with the LIBRARY key (MIDI: "lib.open").
 
     Left: category tags (any of the selected ones) and the engine filter. Top: text search,
-    bank (all / factory / user), kind (part / project), favourites only, sort order. Centre:
+    bank (all / factory / user), kind (part / project), favourites only, sort order, PACKS (filter by an installed
+    content pack, install pack, manage packs). Centre:
     the presets; selecting one loads it at once (preview, into the edit part). Right: details,
     favourite, star rating, save (name, author, tags; part or whole project), delete (user
     presets). "Keep" closes with the preset loaded, "Cancel" (Esc) restores the sound from
@@ -35,6 +36,15 @@ public:
     /** p18: "Breed" in the details - breed the current sound with library entry `index` (the editor closes the
         library, restoring the sound from before it was opened, and opens the breeding view). */
     std::function<void (int index)> onBreed;
+    /** Content packs: "Install pack ..." and "Manage packs ..." from the PACKS menu (the editor opens the file dialog /
+        the pack manager page of the settings). */
+    std::function<void()> onInstallPack, onManagePacks;
+
+    /** The PACKS chip: text as drawn (the filtered pack's name, or PACKS) and its menu items (tests). */
+    juce::String packChipText() const;
+    juce::StringArray packMenuItems() const;
+    /** Picks a pack filter (empty = all packs) as the PACKS menu does. */
+    void setPackFilter (const juce::String& packId);
 
     void paint (juce::Graphics& g) override;
     void resized() override;
@@ -75,6 +85,8 @@ private:
     void changeListenerCallback (juce::ChangeBroadcaster*) override;
 
     void rebuild();
+    void showPackMenu();
+    static juce::String packName (const update::ContentIndex::Pack& p);
     float unit() const;
     struct Hit
     {

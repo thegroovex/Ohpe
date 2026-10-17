@@ -68,7 +68,18 @@ Projekt gespeichert.
 ## Updates
 
 Die Einstellungen des [Updaters](AKTUALISIERUNG.md): tägliche automatische Prüfung (aus, bis eingeschaltet), Kanal
-Stabil / Vorschau, letzte Prüfung, **JETZT PRÜFEN** und die Update-Ansicht.
+Stabil / Vorschau, letzte Prüfung, **JETZT PRÜFEN** und die Update-Ansicht. Darunter: **Inhaltspakete** – wie viele
+installiert sind, **PAKET INSTALLIEREN …** (Dateidialog für `.ohpepack`-Dateien) und **PAKETE VERWALTEN**.
+
+![Einstellungen – Aktualisierung](../images/ohpe-settings-updates-de.png)
+
+## Inhaltspakete
+
+Die Paketverwaltung (ein Reiter nach Über): **PAKET INSTALLIEREN …**, der belegte Platz und jedes installierte Paket mit
+Version, Größe, Inhalt, Lizenz und Signatur (angezeigt, nicht geprüft) sowie **ENTFERNEN** (zweimal klicken). Eine
+`.ohpepack`-Datei auf das Fenster ziehen installiert sie ebenfalls. Siehe [Inhaltspakete](INHALTSPAKETE.md).
+
+![Einstellungen – Inhaltspakete](../images/ohpe-packs-de.png)
 
 ## Hilfe
 

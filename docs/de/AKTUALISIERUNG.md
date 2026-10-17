@@ -50,6 +50,10 @@ bleiben; ein Paket, das woanders hinschreiben will, wird als Ganzes abgelehnt.
 
 **Deine Presets, eigenen Wavetables, Bounces und Einstellungen bleiben unberührt** – sie liegen in anderen Ordnern.
 
+Pakete, die du als Datei hast (`.ohpepack`), installierst du mit **PAKET INSTALLIEREN …** oder indem du sie auf das
+Fenster ziehst, und verwaltest sie (Version, Größe, Entfernen) unter **Einstellungen › Inhaltspakete** – siehe
+[Inhaltspakete](INHALTSPAKETE.md).
+
 ## Dateien
 
 | Was | Wo (im Benutzerdaten-Ordner `groovex/Ohpe`) |

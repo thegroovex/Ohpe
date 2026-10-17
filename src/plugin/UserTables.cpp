@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "UserTables.h"
 
+#include "ContentLibrary.h"
+#include "Updater.h"
 #include "wavetable/TableFile.h"
 
 namespace ohpe
@@ -15,6 +17,7 @@ constexpr juce::int64 maxFileBytes = 256 * 1024 * 1024;
 UserTableManager::UserTableManager (Core& c) : juce::Thread ("Ohpe wavetable analysis"), core (c)
 {
     library = defaultLibraryFolder();
+    contentDir = Updater::contentFolder();
     formats.registerBasicFormats();
     startThread (juce::Thread::Priority::low);
 }
@@ -352,12 +355,65 @@ usertable::Resolver UserTableManager::resolver() const
     };
 }
 
+usertable::UserTablePtr UserTableManager::loadPackTable (const update::ContentRef& ref, update::RefState& state) const
+{
+    state = update::RefState::Invalid;
+    if (! ref.valid()) return nullptr;
+    if (! contentDir.getChildFile (juce::String::fromUTF8 (ref.pack.c_str())).isDirectory())
+    {
+        state = update::RefState::PackMissing;
+        return nullptr;
+    }
+    state = update::RefState::ItemMissing;
+    const auto file = content::fileFor (contentDir, ref, update::PackKind::Wavetables);
+    if (file == juce::File() || ! file.existsAsFile() || file.getSize() > (juce::int64) update::limitsFor (update::PackKind::Wavetables).maxFileBytes)
+        return nullptr;
+    juce::MemoryBlock mb;
+    if (! file.loadFileAsData (mb)) return nullptr;
+    juce::WavAudioFormat wav;
+    std::unique_ptr<juce::AudioFormatReader> reader (wav.createReaderFor (new juce::MemoryInputStream (mb, false), true));
+    if (reader == nullptr || reader->lengthInSamples <= 0 || reader->lengthInSamples > (juce::int64) usertable::maxFrames * 8 * usertable::frameSize)
+        return nullptr;
+    const auto frames = (int) reader->lengthInSamples;
+    const int chans = (int) juce::jlimit (1u, 2u, reader->numChannels);
+    juce::AudioBuffer<float> buffer (chans, frames);
+    if (! reader->read (&buffer, 0, frames, 0, true, chans > 1)) return nullptr;
+    std::vector<float> mono ((size_t) frames, 0.0f);
+    for (int c = 0; c < chans; ++c)
+        for (int i = 0; i < frames; ++i) mono[(size_t) i] += buffer.getSample (c, i) / (float) chans;
+    const int hint = usertable::wavFrameSizeHint (static_cast<const uint8_t*> (mb.getData()), mb.getSize());
+    if (! usertable::looksLikeWavetableSet (frames, hint)) return nullptr;
+    const auto set = usertable::framesFromSet (mono.data(), (int64_t) mono.size(), hint);
+    auto t = usertable::UserTable::create (file.getFileNameWithoutExtension().toStdString(), set);
+    if (t == nullptr) return nullptr;
+    auto table = std::const_pointer_cast<usertable::UserTable> (t);
+    table->path = file.getFullPathName().toStdString();
+    table->contentRef = ref.toString();
+    state = update::RefState::Found;
+    return t;
+}
+
+usertable::ContentResolver UserTableManager::contentResolver() const
+{
+    return [this] (const update::ContentRef& ref, update::RefState& state) { return loadPackTable (ref, state); };
+}
+
+void UserTableManager::report (const usertable::RestoreResult& r)
+{
+    missing.clear();
+    for (const auto& id : r.missingPacks) missing.add (juce::String::fromUTF8 (id.c_str()));
+    if (! missing.isEmpty())
+        post ("Content pack missing - install it in Settings > Updates", missing.joinIntoString (", "));
+    else if (r.missing > 0)
+        post ("A user wavetable was not found - the built-in table plays", {});
+}
+
 void UserTableManager::storeInState() { core.setStateSection ("usertables", usertable::saveAssignments (core)); }
 
 usertable::RestoreResult UserTableManager::restoreFromState()
 {
-    const auto r = usertable::restoreAssignments (core, core.stateSection ("usertables"), resolver());
-    if (r.missing > 0) post ("A user wavetable was not found - the built-in table plays", {});
+    const auto r = usertable::restoreAssignments (core, core.stateSection ("usertables"), resolver(), contentResolver());
+    report (r);
     return r;
 }
 
@@ -365,8 +421,8 @@ std::string UserTableManager::partJson (int part) { return usertable::partToJson
 
 usertable::RestoreResult UserTableManager::applyPartJson (int part, const std::string& json)
 {
-    const auto r = usertable::partFromJson (core, part, json, resolver());
-    if (r.missing > 0) post ("A user wavetable was not found - the built-in table plays", {});
+    const auto r = usertable::partFromJson (core, part, json, resolver(), contentResolver());
+    report (r);
     return r;
 }
 } // namespace ohpe
