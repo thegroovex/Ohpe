@@ -80,7 +80,8 @@ target_sources(ohpe_core PRIVATE
     update/UpdateManifest.cpp
     update/UpdateSettings.cpp
     update/Download.cpp
-    update/ContentPacks.cpp)
+    update/ContentPacks.cpp
+    update/PackFormat.cpp)
 
 # 0.4 (package F): factory sample bank (instruments, drum kits)
 target_sources(ohpe_core PRIVATE sample/FactoryBank.cpp)

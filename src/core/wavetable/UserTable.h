@@ -65,6 +65,9 @@ public:
 
     /** File the table was loaded from / saved to (empty = not saved yet). Set by the owner before publishing. */
     std::string path;
+    /** Content pack reference "<pack>/<table>" when the table comes from an installed pack (read-only; presets store
+        this reference instead of a path or an embedded copy). Empty for user tables. */
+    std::string contentRef;
 
 private:
     UserTable() = default;
