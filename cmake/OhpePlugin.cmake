@@ -87,6 +87,8 @@ list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ResoView.cpp) # p19
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/MorphView.cpp)
 # p22: the motion recorder's lanes (LFO mode, view Motion)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/MotionView.cpp)
+# p26: the living display (the sound as a 3D object in the display's visual area)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/LivingView.cpp)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/UserTableView.cpp) # p20
 # p18: preset breeding (the breeding view; the engine-agnostic core is src/core/breed)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/BreedView.cpp)
@@ -196,6 +198,11 @@ endif()
 # ---------------------------------------------------------------- p22: the motion recorder (LFO mode, view Motion)
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/MotionUiTests.cpp)
+endif()
+
+# ---------------------------------------------------------------- p26: the living display
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/LivingUiTests.cpp)
 endif()
 
 # ---------------------------------------------------------------- p20: audio to wavetable (import, library, state)

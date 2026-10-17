@@ -439,6 +439,26 @@ int main (int argc, char* argv[])
             playAnimated (p, e, 6, { 55, 67, 74 });
             save (e, dir.getChildFile ("ohpe-terrain" + suffix + ".png"));
             release (p, { 55, 67, 74 });
+
+            // p26: the living display - part 1 as a 3D object: a wide chord (the master's Mid/Side widens it), LFO 2
+            //      routed to the timbre (it bulges), the mod envelope ripples its surface
+            setPlain (p, "p1.lfo2.rate", 0.6f);
+            setPlain (p, "p1.lfo2.depth", 1.0f);
+            setPlain (p, "p1.mod.s1.src", (float) mod::SrcLfo2);
+            setPlain (p, "p1.mod.s1.dst", (float) mod::DstTimbre);
+            setPlain (p, "p1.mod.s1.amt", 0.7f);
+            setPlain (p, "p1.lfo.depth", 0.4f);
+            e.selectMode (ui::Mode::Synth);
+            d.setVisual (ui::Display::Visual::Living);
+            playAnimated (p, e, 2, { 48, 55, 64 });
+            playAnimated (p, e, 26, { 71 });
+            save (e, dir.getChildFile ("ohpe-living" + suffix + ".png"));
+            release (p, { 48, 55, 64, 71 });
+            setPlain (p, "p1.mod.s1.amt", 0.0f);
+            setPlain (p, "p1.mod.s1.dst", 0.0f);
+            setPlain (p, "p1.mod.s1.src", 0.0f);
+            setPlain (p, "p1.lfo.depth", 0.0f);
+            run (p, 8);
             d.setVisual (ui::Display::Visual::Character);
             setPlain (p, "mfx1.type", 0.0f);
             setPlain (p, "mix.ch1.sendb", 0.0f);

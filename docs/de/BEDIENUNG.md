@@ -103,14 +103,14 @@ Die Encoder verhalten sich genauso: ziehen (fein mit Shift / Cmd / Strg zu Begin
 Doppelklick setzt zurück, Rechtsklick öffnet MIDI Learn. Die kleine Überschrift über den Zeilen
 nennt die Seite (*Makros*, *Amp-Hüllkurve*, *Spur* …); die Pfeile in der Display-Kopfzeile blättern.
 
-## Display-Ansichten: Figur, Stereobild, Spektrum-Landschaft
+## Display-Ansichten: Figur, Stereobild, Spektrum-Landschaft, lebendes Objekt
 
 Das Display ist in Ebenen gebaut wie ein echter Instrumentenbildschirm: Das Punktraster liegt hinter
 dem tiefen Glas, die Werte schweben davor, die Figur wirft einen leichten Schatten und das Glas
 selbst trägt einen weichen inneren Schatten und einen Glanz. Bewegst du die Maus über das Display,
 verschieben sich die hinteren Ebenen ein wenig gegen die vorderen (Parallaxe).
 
-Die linke Hälfte des Displays zeigt eine von vier **Ansichten** – Klick wechselt, Rechtsklick öffnet
+Die linke Hälfte des Displays zeigt eine von fünf **Ansichten** – Klick wechselt, Rechtsklick öffnet
 das Ansichtsmenü:
 
 | Ansicht | Was sie zeigt |
@@ -119,6 +119,7 @@ das Ansichtsmenü:
 | **Stereobild** | der Master-Ausgang: Goniometer (Mitte nach oben, Seite quer, L oben links, R oben rechts), Korrelationsanzeige (−1 … +1; rot = gegenphasig) und die Pegelbalken **M** / **S**. |
 | **Spektrum-Landschaft** | das Master-Spektrum als perspektivische Landschaft: Neue Reihen steigen vorn auf und wandern zum Horizont. Wenn der Klang endet, kommt sie zur Ruhe. |
 | **3D-Raum** (1.0) | die kopfbezogene Ansicht der [3D-Stufe](RAUM.md): jeder Part, der den Raum nutzt, als Punkt mit Spur um den Kopf des Hörers, der Bearbeitungs-Part beschriftet. |
+| **Lebendes Objekt** (p26) | der Klang als 3D-Objekt: Es atmet mit der Lautstärke-Hüllkurve, beult sich mit den LFOs, wellt sich mit Modulationshüllkurve und Matrix, streckt sich mit der Stereobreite und teilt sich, wenn die Kanäle gegenphasig werden. Der Bearbeitungs-Part (auf der Mixer-Seite der Master); wenn der Klang endet, kommt es zur Ruhe – siehe [Lebendes Display](LEBENDES-DISPLAY.md). |
 
 Das **Stereobild erscheint von selbst**, sobald die Encoder einen Effekt **Mitte/Seite** in einem
 Slot des FX-Racks zeigen: im Rack eines Parts das Stereobild dieses Parts nach seinem Rack
@@ -132,6 +133,8 @@ Mitte/Seite gewählt ist.
 ![Master-Stereobild mit Mitte/Seite im Master-Rack](../images/ohpe-master-scope-de.png)
 
 ![Spektrum-Landschaft](../images/ohpe-terrain-de.png)
+
+![Lebendes Objekt](../images/ohpe-living-de.png)
 
 **Animierte 3D-Ansichten** (Ansichtsmenü) schaltet Landschaft und Parallaxe ab – das Display steht
 dann still, das Stereobild arbeitet weiter. Die Einstellung gehört zum Rechner (gilt für alle
