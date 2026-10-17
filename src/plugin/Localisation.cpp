@@ -296,6 +296,10 @@ const std::map<juce::String, juce::String>& table()
         { "Sub", "Sub" },
         { "Direct", "Direkt" },
         { "Into filter", "Ins Filter" },
+        // p33: the Expression pages
+        { "Aftertouch", "Aftertouch" },
+        { "Expression", "Ausdruck" },
+        { "Expression Curves", "Ausdruckskurven" },
         { "Mod Envelope", "Mod-Hüllkurve" },
         { "More tags, comma separated", "Weitere Tags, durch Komma getrennt" },
         { "Name", "Name" },

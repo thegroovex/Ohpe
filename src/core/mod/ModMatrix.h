@@ -6,6 +6,7 @@
 #include "../dsp/Lfo.h"
 #include "../model/ParamRegistry.h"
 #include "../model/ParamSnapshot.h"
+#include "Expression.h"
 #include "ModVoice.h"
 
 #include <array>
@@ -104,6 +105,17 @@ class PartMatrix
 {
 public:
     static void registerParams (ParamRegistry& reg, const std::string& partPrefix, int partNumber);
+    /**
+        p33: the Expression page "pN.expr.vel.dst1/amt1/curve1/dst2/amt2/curve2" and "pN.expr.at.*" (aftertouch: channel
+        pressure and poly / MPE pressure, i.e. the Note Pressure source). Amount 0 (the default) = no routing.
+        Registered after everything else (append-only IDs); bind() picks them up when they exist.
+    */
+    static void registerExpressionParams (ParamRegistry& reg, const std::string& partPrefix, int partNumber);
+    /**
+        p33: which matrix target each expression function (expr::Target) means for the part's active engine (-1 = none
+        on this engine); set by the part before pull(). Vibrato maps to Pitch (via the vibrato source).
+    */
+    void setExpressionTargets (const int* map) noexcept { exprMap = map; }
     void bind (const ParamRegistry& reg, const std::string& partPrefix);
     void prepare (double sampleRate) noexcept;
     void reset() noexcept;
@@ -131,7 +143,8 @@ public:
     void advance (int n) noexcept;
 
     const VoiceProgram& voiceProgram() const noexcept { return program; }
-    const std::array<Route, numSlots>& routes() const noexcept { return slots; }
+    /** Routings 0..15 = "pN.mod.s1..16", 16..19 = the Expression page (p33: velocity 1 / 2, aftertouch 1 / 2). */
+    const std::array<Route, numAllSlots>& routes() const noexcept { return slots; }
     /** Routings to parameters (not to Pitch / Level / Pan / Timbre) exist. */
     bool hasParamRoutes() const noexcept { return numParamRoutes > 0; }
     /** Value of routing `slot` (amount x source, mono sources) - for routings to parameters the smoothed value. */
@@ -153,16 +166,18 @@ public:
 
 private:
     struct SlotIdx { int src = -1, via = -1, dst = -1, amt = -1, curve = -1; };
-    std::array<SlotIdx, numSlots> idx {};
+    std::array<SlotIdx, numAllSlots> idx {}; ///< p33: the expression slots use src = -1 (fixed source), dst = function
+    const int* exprMap = nullptr;
     std::array<std::array<int, 7>, 2> lfoIdx {};
     std::array<int, 6> env3Idx {};
     std::array<int, 4> macroIdx {};
     int laneIdx = -1;
 
-    std::array<Route, numSlots> slots {};
-    std::array<bool, numSlots> isParam {};
-    std::array<float, numSlots> value {}, target {};
-    std::array<bool, numSlots> fresh {};
+    std::array<Route, numAllSlots> slots {};
+    std::array<bool, numAllSlots> isParam {};
+    std::array<float, numAllSlots> value {}, target {};
+    std::array<bool, numAllSlots> fresh {};
+    float vibPhase = 0.0f; ///< p33: part-wide SrcVibrato
     int numParamRoutes = 0;
     VoiceProgram program;
     std::array<float, numSources> mono {};
@@ -181,7 +196,7 @@ private:
     bool transportOn = false;
     uint32_t noteCounter = 1;
 
-    std::array<std::atomic<float>, numSlots> uiValue {};
+    std::array<std::atomic<float>, numAllSlots> uiValue {};
     std::array<std::atomic<float>, numSources> uiSource {};
     std::array<std::atomic<int>, 2> uiStage {}; ///< p21
 };

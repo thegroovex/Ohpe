@@ -57,6 +57,9 @@
     "mod.s1.via": 9,
     "mod.s1.dst": 1,
     "mod.s1.amt": 0.03,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "expr.at.curve1": 3,
+    "expr.at.amt1": 0.25,
+    "expr.at.dst1": 12
   }
 }

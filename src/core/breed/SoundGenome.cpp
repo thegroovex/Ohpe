@@ -226,6 +226,11 @@ Schema Schema::forPart (const ParamRegistry& reg, int partIndex)
                 if (leaf != "amt") g.mutable_ = false; // the wiring stays; amounts mutate
             }
         }
+        else if (head == "expr") // p33: the Expression page is how the sound responds to playing: kept like the MPE setup
+        {
+            g.group = Fixed;
+            g.mutable_ = false;
+        }
         else
         {
             g.group = Mod; // LFOs, macros, MPE amounts, life, anything new

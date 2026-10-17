@@ -91,6 +91,9 @@
     "mod.s3.via": 9,
     "mod.s3.dst": 1,
     "mod.s3.amt": 0.03,
-    "mod.s3.curve": 0
+    "mod.s3.curve": 0,
+    "expr.at.curve1": 3,
+    "expr.at.amt1": 0.3,
+    "expr.at.dst1": 12
   }
 }

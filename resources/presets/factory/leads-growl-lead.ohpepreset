@@ -162,6 +162,9 @@
     "mod.s9.via": 9,
     "mod.s9.dst": 1,
     "mod.s9.amt": 0.03,
-    "mod.s9.curve": 0
+    "mod.s9.curve": 0,
+    "expr.at.curve1": 3,
+    "expr.at.amt1": 0.3,
+    "expr.at.dst1": 12
   }
 }

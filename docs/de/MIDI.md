@@ -78,7 +78,7 @@ Wert macht es schneller (Zeit × (1 + Wert × Druck); bei −1 und vollem Druck 
 Er wirkt auf die *Glide*-Zeit und die Portamento-Zeit von CC 5 gleichermaßen, auf neue und auf laufende
 Gleitvorgänge; CC 65 aus schaltet Glide weiterhin ab. Bei 0 oder ohne Druck gleitet alles genau wie
 bisher. Der Regler steht in der Pro-Ansicht in der Gruppe **Glide** und gehört zu Part-Presets
-(Schlüssel `glide.press`).
+(Schlüssel `glide.press`). Zum Verhältnis zu einem Ausdrucks-Aftertouch-Slot auf *Glide-Zeit* (skalieren vs. addieren; beides zusammen dehnt doppelt) siehe [Ausdruck](AUSDRUCK.md#ausdruck-und-glide-druck).
 
 **Ohne MPE** gelten dieselben Ziele, Mengen und Glättung für Kanal-Aftertouch, polyphonen
 Aftertouch und CC 74 auf dem Kanal des Parts – eine Aftertouch-Tastatur steuert sie also auch.

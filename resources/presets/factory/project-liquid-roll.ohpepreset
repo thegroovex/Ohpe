@@ -329,7 +329,10 @@
     "p4.mod.s1.via": 0,
     "p4.mod.s1.dst": 4,
     "p4.mod.s1.amt": 0.25,
-    "p4.mod.s1.curve": 0
+    "p4.mod.s1.curve": 0,
+    "p2.expr.at.dst1": 12,
+    "p2.expr.at.amt1": 0.25,
+    "p2.expr.at.curve1": 3
   },
   "sections": {
     "sequencer": {

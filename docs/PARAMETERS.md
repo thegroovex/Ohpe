@@ -908,3 +908,22 @@ drum kit), phase-locked to the voice's pitch (glide, bend, pitch envelope, matri
 on the voice's amp envelope. Level 0 leaves the sound bit-identical. Direct off = into the voice filter (Analog,
 Wavetable); the other engines always add it after their own tone shaping. The modulation matrix gains the target
 **Sub Level** (85, key `sublevel`, after Wide 84); the target choice list grows at its end. No new sources.
+
+## p33 – Expressive playing
+
+Guides: [English](en/EXPRESSION.md) · [Deutsch](de/AUSDRUCK.md). Twelve parameters per part, appended after
+`p4.sub.direct` (p31 SUB layer) (`p1.expr.vel.dst1` … `p4.expr.at.curve2`, per part in this order: velocity slot 1 target / amount /
+curve, velocity slot 2, aftertouch slot 1, aftertouch slot 2). Each slot is a routing of the part's modulation matrix;
+amount 0 (the default) leaves the sound untouched. Part presets carry them; preset breeding and Discover leave them as they are (how a sound responds to playing).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.expr.vel.dst1` / `.dst2` | Part N Velocity 1 / 2 Target | Part N Anschlag 1 / 2 Ziel | Off, Cutoff, Resonance, Level, Timbre, Amp Attack, Amp Decay, Amp Release, Mod Env Amount, LFO Rate, LFO Depth, Vibrato, Glide Time, FM Amount, Position, Grain Spray, Morph X, Morph Y, Drive, FX Mix, Sub Level, Pan, Pitch, Life (append-only) | Cutoff / Amp Attack |
+| `pN.expr.vel.amt1` / `.amt2` | Part N Velocity 1 / 2 Amount | Part N Anschlag 1 / 2 Menge | −100 … +100 % | 0 % |
+| `pN.expr.vel.curve1` / `.curve2` | Part N Velocity 1 / 2 Curve | Part N Anschlag 1 / 2 Kurve | Linear, Exponential, Logarithmic, S-Curve, Steps | Linear |
+| `pN.expr.at.dst1` / `.dst2` | Part N Aftertouch 1 / 2 Target | Part N Aftertouch 1 / 2 Ziel | as above | Vibrato / Cutoff |
+| `pN.expr.at.amt1` / `.amt2` | Part N Aftertouch 1 / 2 Amount | Part N Aftertouch 1 / 2 Menge | −100 … +100 % | 0 % |
+| `pN.expr.at.curve1` / `.curve2` | Part N Aftertouch 1 / 2 Curve | Part N Aftertouch 1 / 2 Kurve | as above | Linear |
+
+The modulation matrix gains the source **Vibrato (5.5 Hz)** (32) and the targets **Glide Time**, **Amp Attack**,
+**Amp Decay**, **Amp Release** (86 – 89); both choice lists grow at their end.

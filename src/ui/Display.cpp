@@ -14,6 +14,7 @@
 #include "plugin/Localisation.h"
 #include "plugin/ParameterBridge.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace ohpe::ui
@@ -1163,6 +1164,14 @@ void Display::paint (juce::Graphics& g)
     const Picto picto = mode == Mode::Synth ? (Picto) (int) type : info.picto;
     const bool dim = (mode == Mode::Synth && ! eng.implemented) || ! info.available;
     const auto shown = shownVisual();
+    if (showsExpression()) // p33: velocity / aftertouch responses instead of the character
+    {
+        paintExpression (g, pictoArea.reduced (u * 0.8f, u * 0.6f));
+        paintRows (g);
+        paintStrip (g, stripArea());
+        g.drawImageAt (glassLayer, 0, 0);
+        return;
+    }
     if (shown == Visual::Scope)
     {
         paintStereoScope (g, pictoArea);
@@ -1217,6 +1226,70 @@ void Display::paint (juce::Graphics& g)
     paintRows (g);
     paintStrip (g, stripArea());
     g.drawImageAt (glassLayer, 0, 0);
+}
+
+bool Display::showsExpression() const
+{
+    if (mode != Mode::Envelope) return false;
+    for (const auto& id : ids)
+        if (id.contains (".expr.")) return true;
+    return false;
+}
+
+void Display::paintExpression (juce::Graphics& g, juce::Rectangle<float> area) const
+{
+    auto& core = proc.core();
+    const auto& reg = core.params();
+    const int pt = juce::jlimit (0, Core::numParts - 1, ctx.part);
+    const std::string pre = "p" + std::to_string (pt + 1) + ".expr.";
+    const float u = (float) getWidth() / 100.0f;
+    // the slots this page shows (velocity 1 / 2, aftertouch 1 / 2), in encoder order
+    std::vector<std::pair<int, int>> shownSlots;
+    for (const auto& id : ids)
+    {
+        if (! id.contains (".expr.")) continue;
+        const std::pair<int, int> sk { id.contains (".expr.vel.") ? 0 : 1, id.endsWithChar ('2') ? 1 : 0 };
+        if (std::find (shownSlots.begin(), shownSlots.end(), sk) == shownSlots.end()) shownSlots.push_back (sk);
+    }
+    const auto plot = area.withTrimmedTop (u * 2.4f).withTrimmedBottom (u * 2.4f);
+    g.setColour (colour::displayGrid.brighter (0.2f));
+    g.drawRoundedRectangle (plot, u * 0.6f, 1.0f);
+    g.drawHorizontalLine ((int) plot.getCentreY(), plot.getX(), plot.getRight());
+    g.setFont (labelFont (u * 1.6f));
+    const auto& m = core.part (pt).modMatrix();
+    int line = 0;
+    for (const auto& [in, k] : shownSlots)
+    {
+        const std::string sp = pre + (in == 0 ? "vel." : "at.");
+        const std::string ks = std::to_string (k + 1);
+        const int di = reg.indexOf (sp + "dst" + ks), ai = reg.indexOf (sp + "amt" + ks), ci = reg.indexOf (sp + "curve" + ks);
+        if (di < 0 || ai < 0 || ci < 0) continue;
+        const float amt = reg.get (ai);
+        const int curve = (int) std::lround (reg.get (ci));
+        const bool on = std::lround (reg.get (di)) != 0 && amt != 0.0f;
+        const auto c = (on ? colour::encoder (in * 2 + k) : colour::displayDim);
+        juce::Path p;
+        for (int i = 0; i <= 48; ++i)
+        {
+            const float x = (float) i / 48.0f;
+            const float y = mod::applyCurve (curve, x) * amt;
+            const juce::Point<float> q (plot.getX() + plot.getWidth() * x, plot.getCentreY() - y * plot.getHeight() * 0.46f);
+            if (i == 0) p.startNewSubPath (q);
+            else p.lineTo (q);
+        }
+        g.setColour (c);
+        g.strokePath (p, juce::PathStrokeType (on ? u * 0.32f : u * 0.18f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        // the live input: a dot on the curve
+        const float x = juce::jlimit (0.0f, 1.0f, m.uiSourceValue (in == 0 ? mod::SrcVelocity : mod::SrcNotePressure));
+        if (on)
+            g.fillEllipse (juce::Rectangle<float> (u * 1.0f, u * 1.0f)
+                               .withCentre ({ plot.getX() + plot.getWidth() * x, plot.getCentreY() - mod::applyCurve (curve, x) * amt * plot.getHeight() * 0.46f }));
+        const auto label = i18n::upper (tr (in == 0 ? "Velocity" : "Aftertouch")) + " " + juce::String (k + 1) + "  "
+                         + i18n::upper (formatValue (reg.descriptor (di), reg.get (di)));
+        const auto row = area.withHeight (u * 2.2f).translated (0.0f, line < 2 ? 0.0f : area.getHeight() - u * 2.2f);
+        g.drawText (label, row, (line % 2) == 0 ? juce::Justification::centredLeft : juce::Justification::centredRight, true);
+        ++line;
+    }
 }
 
 void Display::paintRows (juce::Graphics& g)

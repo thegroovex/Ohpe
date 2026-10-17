@@ -90,3 +90,4 @@ target_sources(ohpe_core_tests PRIVATE UpdateTests.cpp)
 target_sources(ohpe_core_tests PRIVATE GlidePressTests.cpp)
 # p31: the SUB layer per part
 target_sources(ohpe_core_tests PRIVATE SubTests.cpp)
+target_sources(ohpe_core_tests PRIVATE ExpressionTests.cpp) # p33: expressive playing
