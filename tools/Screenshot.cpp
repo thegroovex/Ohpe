@@ -8,6 +8,7 @@
 // p20: the user wavetable frame stack (ohpe-user-wavetable). p27: the update view (ohpe-update).
 // p32: the settings menu (ohpe-settings*, ohpe-about*, ohpe-help-overlay*), the night skin (ohpe-dark, *-dark).
 // p23: bounce to engine - a loop bounced into Grain (ohpe-bounce). p33: the Expression page (ohpe-expression).
+// p38: the tape page's clear-all confirmation (ohpe-tape-clear, ohpe-tape-clear-dark) and the tape page at night (ohpe-tape-dark).
 // p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
 // octave block while recording (ohpe-transport, 2x crop; REC and PLAY at the top of their breathing).
 // p39: tempo, metronome, count-in on the tape page during a count-in (ohpe-metronome*, ohpe-tempo-panel* 2x crop).
@@ -298,6 +299,34 @@ int main (int argc, char* argv[])
             e.selectTapeTrack (1);
             e.advanceAnimation (0.7f);
             save (e, dir.getChildFile ("ohpe-tape" + suffix + ".png"));
+            // p38: CLEAR ALL asks first - the confirmation over the plate; the tape page and the confirmation in the
+            // night skin too (the user settings of the render live in a temporary folder)
+            {
+                auto& store = e.userSettingsStore();
+                const auto tmp = juce::File::getSpecialLocation (juce::File::tempDirectory).getChildFile ("ohpe-shot-settings-tape");
+                tmp.deleteRecursively();
+                store.setFolderForTests (tmp);
+                auto setSkin = [&] (bool dark) {
+                    auto v = store.get();
+                    v.skin = dark ? settings::Skin::Dark : settings::Skin::Light;
+                    store.set (v);
+                    e.applyUserSettings();
+                    e.advanceAnimation (0.2f);
+                };
+                auto confirmShot = [&] (const char* name) {
+                    e.softKey (131); // CLEAR ALL
+                    e.advanceAnimation (0.2f);
+                    save (e, dir.getChildFile (juce::String (name) + suffix + ".png"));
+                    e.confirmDialogComponent().cancel();
+                };
+                confirmShot ("ohpe-tape-clear");
+                setSkin (true);
+                save (e, dir.getChildFile ("ohpe-tape-dark" + suffix + ".png"));
+                confirmShot ("ohpe-tape-clear-dark");
+                setSkin (false);
+                tmp.deleteRecursively();
+                e.setLanguage (lang);
+            }
             p.parameter ("tape.tr2.arm")->setValueNotifyingHost (0.0f);
             run (p, 2);
         }

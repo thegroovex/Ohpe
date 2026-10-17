@@ -107,7 +107,9 @@ run while the host plays *and* `seq.run` is on.
 (`tape.tx.loop`), *Tape Play/Stop* (`tape.tx.tplay`), *Arm Edit Track* (`tape.tx.arm`) or *Tape
 Return to Zero* (`tape.edit.rtz`): right-click the key on Ohpe, or MIDI → *Remote controls*. They fire
 on a press (CC ≥ 64), like the keys on the body; see
-[tape transport](TAPE-MIXER-FX.md#transport).
+[tape transport](TAPE-MIXER-FX.md#transport). p38: *Tape Clear Track* (`tape.edit.clear`) empties the edit
+track at once (undoable); *Tape Clear All* (`tape.edit.clearall`) opens the confirmation on the screen and
+clears only when it is confirmed.
 
 **On-screen wheels (p14).** The PITCH and MOD wheels left of the keyboard send pitch bend and the mod
 wheel (CC 1) on the edit part's channel, like the on-screen keyboard. Hardware pitch bend and CC 1 reach

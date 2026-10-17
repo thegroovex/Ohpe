@@ -88,7 +88,7 @@ Undo-Schritt:
 | **Cut** (Start, Ende) | kopiert den Bereich in die Zwischenablage und schließt die Lücke (späteres Material rückt nach vorn) |
 | **Drop** (bei) | legt die Zwischenablage bei `bei` über das Vorhandene |
 | **Splice** (bei) | fügt die Zwischenablage bei `bei` ein, späteres Material rückt nach hinten (das Bandende schneidet ab) |
-| Spur löschen / alles löschen | Stille (rückgängig machbar) |
+| Spur löschen / alles löschen | Stille (rückgängig machbar; auf der Tape-Seite *Spur löschen* sofort, *Alles löschen* nach einer Rückfrage) |
 
 **Undo / Redo sind unbegrenzt.** Ein Aufnahmedurchgang (vom Drücken bis zum Loslassen der
 Aufnahme) ist ein Schritt. Ein neuer Schnitt nach Undo verwirft die Redo-Schritte. Während der
@@ -285,6 +285,18 @@ schneller als Echtzeit, während das Live-Audio weiterläuft:
 * 24-Bit-Stereo-WAV mit der aktuellen Abtastrate. Fehler kommen lokalisiert zurück
   (`BounceResult`).
 
+## Banddateien (.ohpetape)
+
+**Band speichern** / **Band laden** auf der Tape-Seite halten den ganzen Recorder in einer Datei, unabhängig
+vom Projekt: alle acht Spuren, die Bandlänge, den Schleifenbereich (Start, Ende, an) und die Bearbeitungsspur
+(`src/core/tape/TapeFile.h`). Aufbau: die Kennung `OHPETPF1`, die Länge eines kleinen UTF-8-JSON-Kopfs
+(`{"format":"ohpe-tape","version":1,"sampleRate":…,"lengthSeconds":…,"loopIn":…,"loopOut":…,"loop":…,"editTrack":…}`),
+danach das Bandaudio genau wie in einer Session (unten: float32-Blöcke mit Audio, verlustfrei). Das Laden setzt
+die Bandlänge und übernimmt den Inhalt als **einen Rückgängig-Schritt** – Rückgängig holt das vorige Band zurück;
+enthält das Band Material, fragt Ohpe vorher, und während der Aufnahme wird es abgelehnt. Ein Band mit anderer
+Abtastrate wird beim Laden umgerechnet (linear), Tonhöhe und Timing bleiben; die Schleifenpunkte stehen in
+Sekunden in der Datei. **Export** (24-Bit-WAV-Stems, oben) bleibt der Weg, das Audio in andere Software zu bringen.
+
 ## Bandaudio in Sessions
 
 Der Plug-in-Zustand bleibt das JSON-Dokument aus 0.1; enthält das Band Audio, folgt nach einem
@@ -298,7 +310,9 @@ oder leeres Band) lädt mit leerem Band. Ohpe 0.1 kann Zustände mit Bandaudio n
 
 ## Tests
 
-`tests/core/TapeTests.cpp`, `tests/core/FxTests.cpp`, `tests/core/AllocationTests.cpp`
+`tests/core/TapeTests.cpp` (p38 auch: Spur / alles löschen als Rückgängig-Schritte, Banddatei hin und zurück,
+Laden als ein Rückgängig-Schritt, andere Abtastrate behält die Tonhöhe), `tests/plugin/TapeEraseUiTests.cpp` (p38:
+zwölf Tasten in zwei Reihen, Rückfrage, MIDI-Trigger, Speichern / Laden), `tests/core/FxTests.cpp`, `tests/core/AllocationTests.cpp`
 (keine Speicherreservierung in `Core::process()`), `tests/plugin/TapeExportTests.cpp`, seit 0.7
 `tests/core/StereoTests.cpp` (Mitte/Seite: Breite 100 % = bitgenauer Bypass, Breite 0 = mono, Bass
 mono unterhalb der Frequenz, Mikroversatz monokompatibel, kein NaN; FIFO; Parameter in jedem

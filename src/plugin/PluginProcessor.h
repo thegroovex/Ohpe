@@ -107,6 +107,13 @@ public:
     /** Runs a tape edit on the edit track ("tape.edit.track"); lift / cut use loop in .. out,
         drop / splice the play position. Returns false if the tape refused it. */
     bool runTapeEdit (const char* triggerId);
+    /** p38: presses of "tape.edit.clearall" (MIDI / host) - the editor polls them and asks before it clears. */
+    int tapeClearAllRequestCount() const noexcept { return tapeClearAllRequests.load(); }
+    /** p38: the whole tape as an ".ohpetape" file (all tracks, length, loop range, edit track; see tape/TapeFile.h).
+        Message thread; refused while recording. `message` is a short translated line for the display. Loading is
+        one tape undo step. */
+    bool saveTapeFile (const juce::File& file, juce::String& message);
+    bool loadTapeFile (const juce::File& file, juce::String& message);
     /** Handles pending remote-control presses (called by the processor's timer; public for tests). */
     void pollRemoteControls();
     /** p24: writes the harmony brain's remembered key into "key.root" / "key.scale" (host notified). Message thread. */
@@ -214,7 +221,7 @@ private:
     int syncSourceParam = -1, tempoParam = -1;
 
     // 0.3: remote controls
-    static constexpr int numTriggers = 22; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*, p23: + bounce.go, p24: + harmony.take / clear
+    static constexpr int numTriggers = 24; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*, p23: + bounce.go, p24: + harmony.take / clear, p38: + tape.edit.clear / clearall
     void setPlainFromUi (const char* id, float plain);
     juce::CriticalSection transportLock;
     juce::String transportMessage;
@@ -223,6 +230,7 @@ private:
     std::array<float, numTriggers> triggerLast {};
     std::array<std::atomic<int>, numTriggers> triggerPresses {};
     std::atomic<int> libraryToggles { 0 };
+    std::atomic<int> tapeClearAllRequests { 0 }; ///< p38
     std::array<std::atomic<int>, 3> breedRequests {}; ///< p18
     std::unique_ptr<PresetManager> presetManager;
     // p39: tap tempo (own edge detector for "metro.tap": the trigger list stays as it is)

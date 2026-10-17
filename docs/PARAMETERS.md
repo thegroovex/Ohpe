@@ -936,10 +936,22 @@ size) and not automatable. Their MIDI page shows existing parameters – `pN.mid
 `sync.src`, `sync.clockout`, `sync.smooth` – unchanged and still automatable / MIDI-mappable / Die MIDI-Seite zeigt
 bestehende Parameter, unverändert und weiterhin automatisierbar und MIDI-zuweisbar.
 
+## p38: tape – clear track, clear all
+
+Appended at the end (after the p33 expression block). Triggers, not part of presets.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `tape.edit.clear` | Tape Clear Track | Tape Spur löschen | trigger | off |
+| `tape.edit.clearall` | Tape Clear All | Tape alles löschen | trigger | off |
+
+*Tape Clear Track* empties the edit track (`tape.edit.track`) at once (one undo step). *Tape Clear All* opens the
+confirmation on the screen (*Clear the whole tape?*); the tape is cleared only when it is confirmed (undoable).
+
 ## p39 – Metronome, count-in, tap tempo
 
 Guides: [English](en/USER-INTERFACE.md#tempo-metronome-and-count-in-p39) · [Deutsch](de/BEDIENUNG.md#tempo-metronom-und-vorzähler-p39).
-Six parameters appended after `p4.expr.at.curve2` (p33), group `metronome` (`metro.tap`: `remote`). Host parameters –
+Six parameters appended after `tape.edit.clearall` (p38), group `metronome` (`metro.tap`: `remote`). Host parameters –
 saved with the session, automatable, MIDI-mappable – but not part of presets (they belong to the player, like the
 monitoring switch). Defaults leave Ohpe as before: no click, no count-in. No new modulation sources or targets.
 

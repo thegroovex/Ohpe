@@ -373,7 +373,7 @@ Encoder pages:
 | Tape character | Saturation, Wow, Flutter, Hiss |
 | Bounce | Bounce source, Bounce target (Grain / Sampler), Endless loop, Input length (p23) |
 
-Soft keys on the display:
+Soft keys on the display – two rows: the edits of the selected track above, the whole tape below:
 
 | Key | Action |
 |---|---|
@@ -382,12 +382,20 @@ Soft keys on the display:
 | **Drop** | places the clipboard at the play position (overwrites) |
 | **Splice** | inserts the clipboard at the play position (the rest moves back) |
 | **Undo / Redo** | unlimited undo of recordings and edits |
+| **Clear Track** | empties the selected track at once – one undo step, so **Undo** brings it back |
+| **Clear All** | empties all eight tracks after a confirmation (*Clear the whole tape?* – **Cancel** is the default, Return and Esc cancel; **Delete** in red clears). Undoable too |
+| **Save Tape** | saves the whole recorder – all eight tracks, the tape length, the loop range and the edit track – as one **`.ohpetape`** file you can load again later, in any project |
+| **Load Tape** | loads an `.ohpetape` file (or drop one on the window). When the tape holds material, Ohpe asks first (*Replace the recorded tape?*); the load is one undo step, so **Undo** brings the old tape back. A tape from another sample rate is converted and keeps its pitch |
 | **Export** | renders master + the eight tracks as **24-bit WAV** files into a folder you choose (offline, faster than real time; the live audio is not interrupted) |
 | **Bounce** | moves the edit track (or the source on the Bounce page; the loop range while the loop is on) into the Grain or Sampler engine of the edit part, as an endless loop by default – [Bounce to engine](BOUNCE.md) |
 
-The line left of the soft keys shows the loop range that Lift and Cut use. Every tape edit is
-MIDI-mappable: *Tape Edit Track* (`tape.edit.track`), *Tape Lift / Cut / Drop / Splice / Undo / Redo /
-Return to Zero* (`tape.edit.*`). Short guide: [first recording in 30 seconds](TAPE-MIXER-FX.md#first-recording-in-30-seconds).
+![Clear all asks first](../images/ohpe-tape-clear.png)
+
+The line left of the soft keys shows the loop range that Lift and Cut use. All four keys are refused
+while recording. Every tape edit is MIDI-mappable: *Tape Edit Track* (`tape.edit.track`), *Tape Lift / Cut /
+Drop / Splice / Undo / Redo / Return to Zero / Clear Track / Clear All* (`tape.edit.*`); *Tape Clear All* from a
+controller opens the same confirmation on the screen. Saving and loading use the file dialog and have no
+MIDI trigger. Short guide: [first recording in 30 seconds](TAPE-MIXER-FX.md#first-recording-in-30-seconds).
 
 ## Drum kit page
 

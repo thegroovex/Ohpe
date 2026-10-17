@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "OhpeCore.h"
 #include "TestHelpers.h"
+#include "tape/TapeFile.h"
 #include "tape/TapeMachine.h"
 
 #include <doctest/doctest.h>
@@ -22,14 +23,14 @@ struct TapeRig
     static constexpr int block = 256;
     std::array<std::vector<float>, 2 * TapeMachine::numTracks> out;
 
-    explicit TapeRig (double lengthSeconds = 30.0)
+    explicit TapeRig (double lengthSeconds = 30.0, double rate = sampleRate)
     {
         TapeMachine::registerParams (reg);
         reg.freeze();
         tape.bind (reg);
         snap.prepare (reg);
         tape.setLengthSeconds (lengthSeconds);
-        tape.prepare (sampleRate, block);
+        tape.prepare (rate, block);
         for (auto& o : out) o.assign (block, 0.0f);
     }
 
@@ -493,4 +494,139 @@ TEST_CASE ("core: state keeps the tape settings section")
     REQUIRE (b.loadState (json));
     CHECK (b.tape().lengthSeconds() == doctest::Approx (300.0));
     CHECK (b.params().get ("tape.speed") == doctest::Approx (1.25f));
+}
+
+// ---------------------------------------------------------------- p38: clear track / clear all, tape files
+TEST_CASE ("tape: clear track and clear all are one undo step each, refused while recording")
+{
+    TapeRig rig;
+    const auto a = noise (6000, 31), b = noise (6000, 32);
+    rig.record (a, 0, 0);
+    rig.record (b, 3, 0);
+    const int steps = rig.tape.undoSteps();
+    REQUIRE (rig.tape.clearTrack (3));
+    CHECK (rig.tape.undoSteps() == steps + 1);
+    CHECK (rig.tape.contentEndFrames (3) == 0);
+    CHECK (rig.tape.contentEndFrames (0) > 0); // the other tracks stay
+    REQUIRE (rig.tape.undo());
+    CHECK (rig.playFrom (0, 200, 3).l[100] == b.l[100]);
+
+    REQUIRE (rig.tape.clearAll());
+    CHECK (rig.tape.undoSteps() == steps + 1);
+    CHECK (rig.tape.contentEndFrames() == 0);
+    CHECK (peak (rig.playFrom (0, 6000, 0).l) == 0.0f);
+    REQUIRE (rig.tape.undo()); // clear all is undoable too
+    CHECK (rig.playFrom (0, 200, 0).l[100] == a.l[100]);
+    CHECK (rig.playFrom (0, 200, 3).l[100] == b.l[100]);
+    REQUIRE (rig.tape.redo());
+    CHECK (rig.tape.contentEndFrames() == 0);
+    REQUIRE (rig.tape.undo());
+
+    // while recording: refused, nothing changes
+    rig.set ("tr2.arm", 1.0f);
+    rig.set ("play", 1.0f);
+    rig.set ("rec", 1.0f);
+    const auto in = noise (2048, 33);
+    rig.run (1024, &in, 1);
+    REQUIRE (rig.tape.transport().recording);
+    CHECK_FALSE (rig.tape.clearTrack (0));
+    CHECK_FALSE (rig.tape.clearAll());
+    rig.set ("rec", 0.0f);
+    rig.set ("play", 0.0f);
+    rig.set ("tr2.arm", 0.0f);
+    rig.run (TapeRig::block);
+    rig.tape.housekeeping();
+    CHECK (rig.playFrom (0, 200, 0).l[100] == a.l[100]);
+}
+
+TEST_CASE ("tape: a tape file round-trips all tracks, length and loop range; load is one undo step")
+{
+    TapeRig a (30.0);
+    const auto x = noise (9000, 41), y = noise (5000, 42), z = noise (3000, 43);
+    a.record (x, 0, 100);
+    a.record (y, 7, 50000);
+    tapefile::Settings s;
+    s.loopIn = 1.25;
+    s.loopOut = 2.5;
+    s.loop = true;
+    s.editTrack = 8;
+    const auto file = tapefile::save (a.tape, s);
+    CHECK (file.size() < 5 * 2 * 4096 * 4 + 1000); // only blocks holding audio
+
+    tapefile::Settings head;
+    REQUIRE (tapefile::readSettings (file.data(), file.size(), head));
+    CHECK (head.sampleRate == sampleRate);
+    CHECK (head.lengthSeconds == doctest::Approx (30.0));
+    CHECK (head.loopIn == doctest::Approx (1.25));
+    CHECK (head.loopOut == doctest::Approx (2.5));
+    CHECK (head.loop);
+    CHECK (head.editTrack == 8);
+
+    TapeRig b (60.0);
+    b.record (z, 2, 0); // existing material: replaced by the load, back with undo
+    const int steps = b.tape.undoSteps();
+    tapefile::Settings got;
+    REQUIRE (tapefile::load (b.tape, file.data(), file.size(), got));
+    CHECK (got.loopOut == doctest::Approx (2.5));
+    CHECK (b.tape.lengthSeconds() == doctest::Approx (30.0));
+    CHECK (b.tape.undoSteps() == steps + 1);
+    CHECK (b.tape.contentEndFrames (2) == 0);
+    const auto o0 = b.playFrom (100, 9000, 0);
+    for (size_t i = 0; i < x.size(); ++i) REQUIRE (o0.l[i] == x.l[i]);
+    const auto o7 = b.playFrom (50000, 5000, 7);
+    for (size_t i = 0; i < y.size(); ++i) REQUIRE (o7.r[i] == y.r[i]);
+    CHECK (allFinite (o0.l));
+    REQUIRE (b.tape.undo());
+    CHECK (b.playFrom (0, 200, 2).l[100] == z.l[100]);
+    CHECK (b.tape.contentEndFrames (0) == 0);
+
+    // junk, a truncated file and an audio blob without the file header are rejected and change nothing
+    CHECK_FALSE (tapefile::load (b.tape, "junk", 4, got));
+    auto cut = file;
+    cut.resize (cut.size() - 9);
+    CHECK_FALSE (tapefile::load (b.tape, cut.data(), cut.size(), got));
+    std::vector<uint8_t> blob;
+    a.tape.saveAudio (blob);
+    CHECK_FALSE (tapefile::readSettings (blob.data(), blob.size(), got));
+    CHECK_FALSE (tapefile::load (b.tape, blob.data(), blob.size(), got));
+    CHECK (b.playFrom (0, 200, 2).l[100] == z.l[100]);
+
+    // an empty tape saves and loads (clears every track as one undo step)
+    TapeRig e;
+    const auto none = tapefile::save (e.tape, {});
+    REQUIRE (tapefile::load (b.tape, none.data(), none.size(), got));
+    CHECK (b.tape.contentEndFrames() == 0);
+}
+
+TEST_CASE ("tape: a tape file is refused while recording")
+{
+    TapeRig a;
+    a.record (noise (4000, 51), 0, 0);
+    const auto file = tapefile::save (a.tape, {});
+    TapeRig b;
+    b.set ("tr1.arm", 1.0f);
+    b.set ("play", 1.0f);
+    b.set ("rec", 1.0f);
+    const auto in = noise (1024, 52);
+    b.run (1024, &in, 0);
+    REQUIRE (b.tape.transport().recording);
+    tapefile::Settings got;
+    CHECK_FALSE (tapefile::load (b.tape, file.data(), file.size(), got));
+}
+
+TEST_CASE ("tape: a tape file from another sample rate keeps its pitch")
+{
+    TapeRig a;
+    a.record (sine (48000, 1000.0), 4, 0);
+    const auto file = tapefile::save (a.tape, {});
+    constexpr double rate = 44100.0;
+    TapeRig b (30.0, rate);
+    tapefile::Settings got;
+    REQUIRE (tapefile::load (b.tape, file.data(), file.size(), got));
+    const auto out = b.playFrom (0, 40000, 4);
+    CHECK (allFinite (out.l));
+    CHECK (peak (out.l) <= 0.51f);
+    const double f = measureFrequency (out.l, rate, 4000, 40000);
+    CHECK (std::abs (centsBetween (f, 1000.0)) < 2.0);
+    CHECK (b.tape.contentEndFrames (4) == doctest::Approx (44100.0).epsilon (0.002));
 }

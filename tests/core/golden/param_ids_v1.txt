@@ -6811,6 +6811,8 @@ p4.expr.at.curve1
 p4.expr.at.dst2
 p4.expr.at.amt2
 p4.expr.at.curve2
+tape.edit.clear
+tape.edit.clearall
 metro.on
 metro.level
 metro.accent
