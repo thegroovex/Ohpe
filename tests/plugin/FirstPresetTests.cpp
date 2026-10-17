@@ -10,6 +10,7 @@
 #include "plugin/PluginProcessor.h"
 
 #include <cmath>
+#include <memory>
 
 using namespace ohpe;
 
@@ -46,7 +47,8 @@ juce::String name (const preset::Entry& e) { return juce::String::fromUTF8 (e.me
 TEST_CASE ("first start: a new instance loads the first factory preset on every part, tape and sequencers empty (p40)")
 {
     StartSound on (true);
-    OhpeProcessor fresh;
+    auto freshPtr = std::make_unique<OhpeProcessor>(); // on the heap: a processor is large (Windows stack)
+    auto& fresh = *freshPtr;
     auto& pm = fresh.presets();
     const int first = pm.startSoundIndex();
     REQUIRE (first >= 0);
@@ -67,7 +69,8 @@ TEST_CASE ("first start: a new instance loads the first factory preset on every 
     // exactly what loading it from the library into each part (or as a project) gives - nothing else changed
     {
         StartSound off (false);
-        OhpeProcessor plain;
+        auto plainPtr = std::make_unique<OhpeProcessor>(); // on the heap: a processor is large (Windows stack)
+        auto& plain = *plainPtr;
         CHECK (plain.presets().current() == -1);
         CHECK (plain.presets().currentName() == "Init");
         juce::String diff;
@@ -75,7 +78,8 @@ TEST_CASE ("first start: a new instance loads the first factory preset on every 
     }
     {
         StartSound off (false);
-        OhpeProcessor manual;
+        auto manualPtr = std::make_unique<OhpeProcessor>(); // on the heap: a processor is large (Windows stack)
+        auto& manual = *manualPtr;
         if (e.meta.kind == preset::Kind::Project) REQUIRE (manual.presets().load (first, 0));
         else
             for (int part = 0; part < Core::numParts; ++part) REQUIRE (manual.presets().load (first, part));
@@ -97,7 +101,8 @@ TEST_CASE ("first start: a new instance loads the first factory preset on every 
     CHECK (fresh.core().tape().contentEndFrames() <= 0);
     {
         StartSound off (false);
-        OhpeProcessor plain;
+        auto plainPtr = std::make_unique<OhpeProcessor>(); // on the heap: a processor is large (Windows stack)
+        auto& plain = *plainPtr;
         CHECK (fresh.core().stepSequencer().toJson() == plain.core().stepSequencer().toJson());
         CHECK (fresh.core().orbitSequencer().toJson() == plain.core().orbitSequencer().toJson());
     }
@@ -133,7 +138,8 @@ TEST_CASE ("first start: a restored session / host state wins over the start sou
     std::string savedUid;
     std::vector<float> savedValues;
     {
-        OhpeProcessor a;
+        auto aPtr = std::make_unique<OhpeProcessor>(); // on the heap: a processor is large (Windows stack)
+        auto& a = *aPtr;
         auto& pm = a.presets();
         // another factory preset into part 2 and an edited value: a "song"
         int other = -1;
@@ -148,7 +154,8 @@ TEST_CASE ("first start: a restored session / host state wins over the start sou
         a.getStateInformation (session);
         for (int i = 0; i < a.core().params().size(); ++i) savedValues.push_back (a.core().params().get (i));
     }
-    OhpeProcessor b; // a new instance starts with the start sound, then the host restores its state
+    auto bPtr = std::make_unique<OhpeProcessor>(); // on the heap: a processor is large (Windows stack)
+    auto& b = *bPtr; // a new instance starts with the start sound, then the host restores its state
     b.setStateInformation (session.getData(), (int) session.getSize());
     CHECK (b.presets().currentUid() == savedUid);
     REQUIRE ((int) savedValues.size() == b.core().params().size());
@@ -162,24 +169,28 @@ TEST_CASE ("first start: a restored session / host state wins over the start sou
     juce::MemoryBlock plainSession;
     {
         StartSound off (false);
-        OhpeProcessor plain;
+        auto plainPtr = std::make_unique<OhpeProcessor>(); // on the heap: a processor is large (Windows stack)
+        auto& plain = *plainPtr;
         plain.getStateInformation (plainSession);
     }
-    OhpeProcessor c;
+    auto cPtr = std::make_unique<OhpeProcessor>(); // on the heap: a processor is large (Windows stack)
+    auto& c = *cPtr;
     CHECK (c.presets().currentName() != "Init");
     c.setStateInformation (plainSession.getData(), (int) plainSession.getSize());
     CHECK (c.presets().current() == -1);
     CHECK (c.presets().currentName() == "Init");
     {
         StartSound off (false);
-        OhpeProcessor plain;
+        auto plainPtr = std::make_unique<OhpeProcessor>(); // on the heap: a processor is large (Windows stack)
+        auto& plain = *plainPtr;
         juce::String diff;
         CHECK_MESSAGE (sameRegistry (c, plain, diff), ("restored defaults differ: " + diff).toStdString());
     }
     // the round trip keeps the name, and a second save writes the same uid
     juce::MemoryBlock again;
     b.getStateInformation (again);
-    OhpeProcessor d;
+    auto dPtr = std::make_unique<OhpeProcessor>(); // on the heap: a processor is large (Windows stack)
+    auto& d = *dPtr;
     d.setStateInformation (again.getData(), (int) again.getSize());
     CHECK (d.presets().currentUid() == savedUid);
 }
