@@ -381,7 +381,7 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
             take ("Pitch & Level");
             take ("Mod Envelope");
             take ("Voice");
-            groups.push_back ({ "Glide", 0, { p + "glide.mode", p + "glide.rate" } });
+            groups.push_back ({ "Glide", 0, { p + "glide.mode", p + "glide.rate", p + "glide.press" } });
             groups.push_back ({ "Pitch Envelope", 0, { p + "pitchenv.amt", p + "pitchenv.time", p + "pitchenv.curve" } });
             if (core.params().indexOf (p + "layer.engine") >= 0) groups.push_back ({ "Layer", 0, layerParams (partIndex) });
             for (auto& rest : pages) groups.push_back (std::move (rest)); // MIDI & Key, Scale & MPE, MPE

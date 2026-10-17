@@ -79,6 +79,9 @@ struct Gene
     float minValue = 0.0f, maxValue = 1.0f, defaultValue = 0.0f, skew = 1.0f;
     bool mutable_ = true;     ///< mutation may change it
     bool risky = false;       ///< resonance / feedback / drive / gain-like: capped near the parents' maximum
+    /** p32: false = a fixed gene that takes parent A's value without drawing random numbers, so a gene appended to
+        the part keeps the broods of every seed exactly as they were (crossover and mutation share one sequence). */
+    bool drawsRandom = true;
     // ownership: the parameter only matters when its owner is active
     enum OwnerKind : int8_t { OwnNone = 0, OwnEngine, OwnFx, OwnRoute } owner = OwnNone;
     int ownerA = -1, ownerB = -1; ///< engine type / (rack slot, effect type) / (routing slot, -)

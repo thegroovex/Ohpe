@@ -70,6 +70,15 @@ over `pN.mpe.smooth` (0 … 0.5 s, 0 = at once, as before 0.8).
 **Portamento and poly glide** work as without MPE: a new note glides from the previous one (part
 glide settings), its own per-note bend is added on top.
 
+**Pressure glide (p32).** `pN.glide.press` (*Part N Glide Pressure*, −1 … +1, default 0) lets the
+pressure change the glide time. The pressure is the larger of the channel pressure and the newest
+note's own pressure (polyphonic aftertouch or MPE). A positive amount makes the glide slower the harder
+you press (time × (1 + 3 × amount × pressure), up to four times as long at +1 and full pressure); a
+negative amount makes it faster (time × (1 + amount × pressure); at −1 and full pressure the pitch jumps).
+It scales the *Glide* time and the CC 5 portamento time alike and acts on new glides and on glides that
+are running; CC 65 off still switches glide off. At 0, or without pressure, the glide is exactly as
+before. It is in the pro view's **Glide** group and part of part presets (key `glide.press`).
+
 **Without MPE** the same targets, amounts and smoothing apply to channel pressure, polyphonic
 aftertouch and CC 74 on the part's channel, so an aftertouch keyboard drives them too.
 
