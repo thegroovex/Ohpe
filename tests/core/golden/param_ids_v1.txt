@@ -6819,6 +6819,13 @@ metro.accent
 metro.countin
 metro.plugin
 metro.tap
+tape.edit.loopin
+tape.edit.loopout
+tape.edit.loopundo
+tape.edit.loopredo
+tape.edit.loophalf
+tape.edit.loopdouble
+tape.loopsnap
 # p41: the 3D switch per part (Off / Headphones / Speakers) - a front for pN.space.on + space.out
 p1.space.mode
 p2.space.mode

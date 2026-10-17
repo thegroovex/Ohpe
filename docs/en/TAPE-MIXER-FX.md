@@ -45,6 +45,7 @@ tape plays = punch in, **REC** again = punch out.
 | **STOP** | everything stops (recording ends); when already stopped: to the start | `tape.tx.stop` |
 | **\|◀** | to the start | `tape.edit.rtz` |
 | **LOOP** | loop on / off (without a range: the recorded length, or four bars) | `tape.tx.loop` |
+| loop readout → **SET IN** / **SET OUT** | loop in / out at the playhead (on the grid; Shift: free) – see [Setting the loop](#setting-the-loop-p42) | `tape.edit.loopin` / `tape.edit.loopout` |
 | arm dot / *Arm* | arms / disarms a track; the trigger works on the edit track | `tape.tx.arm` |
 | *Play starts tape* | setting, on by default: PLAY runs sequencer and tape together | `tape.tx.link` |
 
@@ -64,7 +65,7 @@ recorded (blocks of 4096 frames), so a long, empty tape costs almost nothing.
 | Monitoring | an armed track with source *Input* plays the input through the track (so it can be heard and routed); parts are heard on their own mixer channels. |
 | Varispeed | `tape.speed` 0.5 … 2.0 (1.0 in the middle of the control), glides smoothly while rolling, 4-point interpolation. Pitch follows the speed. |
 | Reverse | `tape.reverse` – the playhead runs backwards; at the start (or end) of the tape it stops and stays silent. |
-| Loop | `tape.loop`, `tape.loopin`, `tape.loopout` (seconds, whole frames). |
+| Loop | `tape.loop`, `tape.loopin`, `tape.loopout` (seconds, whole frames), `tape.loopsnap` (grid for setting it). See [Setting the loop](#setting-the-loop-p42). |
 | Locate | `TapeMachine::locate (seconds)` (applied at the next audio block). |
 | Character | `tape.sat` (soft saturation, gentle top-end loss), `tape.wow`, `tape.flutter` (speed modulation shared by all tracks, as on one transport), `tape.hiss`. All at 0 = exact, untouched playback. |
 | Track level | `tape.trN.level` (dB). |
@@ -75,6 +76,47 @@ it and starts exactly on the first sample of the next bar (sample-accurate, also
 or REC during the count-in cancels it. The metronome (`metro.on`) clicks while the tape or the sequencer runs; the tape
 alone clicks on the tape's bar.beat grid. The click goes to the main output only and is never recorded (the tape
 records the parts, the drum kit and the input). See [Tempo, metronome and count-in](USER-INTERFACE.md#tempo-metronome-and-count-in-p39).
+
+### Setting the loop (p42)
+
+![Tape page with the loop keys](../images/ohpe-tape-loop.png)
+
+The loop can be set by ear while the tape plays: press **SET IN** where the phrase starts and **SET OUT** where it
+ends – the tape loops at once.
+
+* **The loop readout** left of the tape page's keys shows *LOOP* (its dot lit while the tape loops), the range in tape
+  time and in bars (*BAR 3.1–5.1  2 bars*) and, while recording inside the loop, the pass (*PASS 3*, red). Click it
+  to switch the keys to the **loop keys**; click it again (or **BACK**) for the edit keys. The encoders jump to the
+  *Loop* page: loop on, loop in, loop out, grid – for fine adjustment (Shift / Cmd / Ctrl: a tenth of the speed).
+* **Loop keys** (two rows): **SET IN** · **SET OUT** · **LOOP** (on / off) · **SNAP** (Bar → Beat → Off) · **TO IN**
+  (playhead to loop in) · **BACK**; **UNDO LOOP** · **REDO LOOP** · **HALF** · **DOUBLE** · **FIT** (loop from the start
+  around the recorded material, to the next grid line).
+* **At the playhead, while stopped or playing.** SET IN / SET OUT take the playhead position and snap it to the
+  *nearest* line of the grid (`tape.loopsnap`: Bar by default, Beat, Off) – a key pressed a little late still lands on
+  the downbeat. **Shift** (keys, shortcuts, dragging) sets it freely, exactly at the playhead. The grid is the tape's
+  own: 4/4 from the start of the tape at the project tempo (the same bar.beat as the readout and the click).
+* **SET OUT switches the loop on.** If the playhead is already past the new loop out (it was snapped back to the
+  nearest bar), it jumps into the loop at once, at the same distance from loop in – no gap, no run-on.
+* **In < out, always.** The shortest loop is one grid step (0.1 s off the grid). Setting an edge on the wrong side of
+  the other one moves the loop along with its length (SET IN after loop out: the whole loop moves there); dragging an
+  edge stops at the other one; an encoder, MIDI controller or host automation that turns one edge past the other
+  pushes the other edge along (the edge that moved wins). Loop out never goes past the end of the tape.
+* **Dragging on the lanes.** The loop is the yellow band over the track lanes (brighter while it loops); its edges
+  are lines with a handle at the top. Drag an edge (the cursor turns into ↔) – on the grid, Shift: free. The time axis
+  holds still during a drag; right-click on an edge: MIDI learn of loop in / out.
+* **Undo.** Every change of the range is one step of the **loop history** (64 steps): each key press, each drag, each
+  encoder turn once it rests (0.6 s). UNDO LOOP / REDO LOOP walk through it – separate from the tape's audio undo, so
+  undoing a loop change never touches a recording. Loading a tape file starts a new loop history.
+* **Recording inside the loop.** With the loop on, REC records pass after pass while the tape goes round:
+  with **Overdub on** every pass is laid over the ones before (layering), with **Overdub off** every pass replaces the
+  previous one (the last pass stays). The readout counts the passes. The whole take – from REC to punch-out or STOP –
+  is **one undo step** of the tape (UNDO on the edit keys removes all passes at once; to keep only some, punch out
+  after the pass you want and record the next take separately). Nothing is written outside the loop.
+* **MIDI.** Every loop function is a host parameter and MIDI-mappable: `tape.edit.loopin` (set loop in),
+  `tape.edit.loopout` (set loop out), `tape.edit.loophalf`, `tape.edit.loopdouble`, `tape.edit.loopundo`,
+  `tape.edit.loopredo` (triggers: a press, CC ≥ 64; snapped to the grid), `tape.loopsnap` (grid), plus the existing
+  `tape.tx.loop` (loop on / off), `tape.loop`, `tape.loopin`, `tape.loopout`. The display shows what a trigger did.
+* **Shortcuts (standalone):** **I** set loop in, **O** set loop out (Shift: free), **L** loop on / off.
 
 ### Editing
 
@@ -300,7 +342,11 @@ overdub / replace, varispeed pitch ratio, reverse, loop, lift / cut / drop / spl
 reference with undo / redo, edits refused while recording, tape character, persistence, shared
 content, direct outs and multi-out fallback through the core, state section; p38: clear track / clear all
 as undo steps, tape file round trip, load as one undo step, refused while recording, another sample
-rate keeps the pitch), `tests/plugin/TapeEraseUiTests.cpp` (p38: the twelve keys in two rows, the
+rate keeps the pitch; p42: loop grid and snapping, set in / out, drag, half / double, a fuzz of edits that keeps a legal
+range, the loop history, recording inside the loop – pass count, overdub layers each pass, one undo step –, the playhead
+stays inside a new loop), `tests/plugin/TapeLoopUiTests.cpp` (p42: set in / out at the playhead on the grid and free,
+while playing, MIDI triggers, encoders crossing the edges, loop keys, readout, drag, undo / redo),
+`tests/plugin/TapeEraseUiTests.cpp` (p38: the twelve keys in two rows, the
 confirmation – cancel, Esc, Return, confirm, alert ink in both skins –, MIDI triggers, save / load through
 the processor and the editor),
 `tests/core/FxTests.cpp` (effects finite at extremes, tails decay, mix 0 / Off bypass, compressor

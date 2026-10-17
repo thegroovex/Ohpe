@@ -110,7 +110,12 @@ laufen sie, solange der Host spielt *und* `seq.run` an ist.
 MIDI → *Fernsteuerung*. Sie lösen beim Drücken aus (CC ≥ 64), wie die Tasten am Gehäuse; siehe
 [Band-Transport](BAND-MISCHER-FX.md#transport). p38: *Tape Spur löschen* (`tape.edit.clear`) leert die
 Bearbeitungsspur sofort (rückgängig machbar); *Tape alles löschen* (`tape.edit.clearall`) öffnet die Rückfrage
-auf dem Bildschirm und löscht erst nach der Bestätigung.
+auf dem Bildschirm und löscht erst nach der Bestätigung. p42: *Tape Loop-Start setzen* (`tape.edit.loopin`) /
+*Tape Loop-Ende setzen* (`tape.edit.loopout`) setzen die Schleife am Abspielkopf (im Raster von *Tape Loop-Raster*,
+`tape.loopsnap`; das Ende schaltet die Schleife ein), *Tape Loop halbieren* / *verdoppeln* (`tape.edit.loophalf`,
+`tape.edit.loopdouble`), *Tape Loop rückgängig* / *wiederherstellen* (`tape.edit.loopundo`, `tape.edit.loopredo`) –
+zwei Taster auf Start / Ende legen und Schleifen von Hand spielen; siehe
+[Schleife setzen](BAND-MISCHER-FX.md#schleife-setzen-p42).
 
 **Räder auf dem Bildschirm (p14).** PITCH- und MOD-Rad links der Klaviatur senden Pitchbend und das
 Modulationsrad (CC 1) auf dem Kanal des bearbeiteten Parts, wie die Bildschirm-Klaviatur. Pitchbend und

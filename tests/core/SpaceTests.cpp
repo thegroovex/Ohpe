@@ -715,7 +715,7 @@ TEST_CASE ("p41 space: the 3D switch IDs - one per part, appended after the metr
         CHECK (d.choicesDe[1] == "Kopfhörer");
         CHECK (d.choicesDe[2] == "Lautsprecher");
         CHECK (d.defaultValue == 0.0f); // off: as space.on
-        CHECK (idx > reg.indexOf ("metro.tap"));
+        CHECK (idx > reg.indexOf ("tape.loopsnap")); // p41 block follows p42
         if (p > 0) CHECK (idx == reg.indexOf (spacemode::modeId (p - 1)) + 1);
     }
     CHECK (spacemode::derive (false, 0) == spacemode::Off);

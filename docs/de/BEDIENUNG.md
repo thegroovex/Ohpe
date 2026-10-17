@@ -385,7 +385,7 @@ Encoder-Seiten:
 |---|---|
 | Spur | Aufnahmebereit, Quelle (Eingang, Part 1–4, Drum), Pegel, Direktausgang der gewählten Spur |
 | Transport | Overdub, Geschwindigkeit (Varispeed 0,5–2×), Rückwärts, Start startet Tape |
-| Schleife | Schleife an/aus, Start, Ende |
+| Schleife | Schleife an/aus, Start, Ende, Raster (zum Setzen der Schleife: Takt, Schlag, Aus – p42) |
 | Bandcharakter | Sättigung, Wow, Flutter, Rauschen |
 | Bounce | Bounce-Quelle, Bounce-Ziel (Grain / Sampler), Endlosschleife, Eingangslänge (p23) |
 
@@ -407,8 +407,30 @@ Soft-Tasten im Display – zwei Reihen: oben die Schnitte der gewählten Spur, u
 
 ![Alles löschen fragt vorher](../images/ohpe-tape-clear-de.png)
 
-Die Zeile links der Soft-Tasten zeigt den Schleifenbereich, mit dem Heben und Schneiden arbeiten. Die vier
-Band-Tasten sind während der Aufnahme gesperrt. Jede Bandbearbeitung ist per MIDI steuerbar:
+**Loop-Tasten (p42).** Die **Schleifen-Anzeige** links der Soft-Tasten zeigt den Schleifenbereich, mit dem Heben
+und Schneiden arbeiten – in Bandzeit und in Takten, ein leuchtender Punkt, solange das Band schleift, und bei der
+Aufnahme in der Schleife den Durchgang. Ein Klick darauf tauscht die Tasten gegen die Loop-Tasten (noch ein Klick oder
+**Zurück** wechselt zurück); die Encoder springen zur Seite *Schleife* für die Feineinstellung:
+
+![Die Loop-Tasten hinter der Schleifen-Anzeige](../images/ohpe-tape-loop-de.png)
+
+| Taste | Aktion |
+|---|---|
+| **Start setzen** / **Ende setzen** | Loop-Start / Loop-Ende am Abspielkopf – im Stillstand oder während das Band läuft – auf der nächsten Linie des Rasters; mit **Shift** genau am Abspielkopf. *Ende setzen* schaltet die Schleife sofort ein |
+| **Schleife** | Schleife an / aus |
+| **Raster Takt / Schlag / aus** | das Raster zum Setzen der Schleife (`tape.loopsnap`; 4/4 ab Bandanfang im Projekttempo) |
+| **Zum Start** | Abspielkopf auf den Loop-Start |
+| **Zurück** | zurück zu den Schnitt-Tasten |
+| **Loop zurück** / **Loop wieder** | Rückgängig / Wiederherstellen des Schleifenbereichs (jeder Tastendruck, jedes Ziehen, jede Encoder-Drehung ist ein Schritt; das Rückgängig der Bandaufnahmen ist getrennt) |
+| **Halb** / **Doppelt** | die Schleife halb / doppelt so lang ab Loop-Start |
+| **Anpassen** | die Schleife vom Anfang um das aufgenommene Material (bis zur nächsten Rasterlinie) und an |
+
+Auf den Spuren ist die Schleife ein gelbes Band mit einem Griff an jeder Kante: eine Kante ziehen verschiebt sie (im
+Raster; Shift: frei). Der Loop-Start bleibt immer vor dem Loop-Ende. Eine Aufnahme in der Schleife schichtet jeden
+Durchgang (Overdub an) oder ersetzt ihn (Overdub aus); die ganze Aufnahme ist ein Rückgängig-Schritt. Einzelheiten:
+[Schleife setzen](BAND-MISCHER-FX.md#schleife-setzen-p42).
+
+Die vier Band-Tasten der unteren Reihe sind während der Aufnahme gesperrt. Jede Bandbearbeitung ist per MIDI steuerbar:
 *Tape-Bearbeitungsspur* (`tape.edit.track`), *Tape Heben / Schneiden / Einsetzen / Einfügen / Rückgängig /
 Wiederholen / zum Anfang / Spur löschen / alles löschen* (`tape.edit.*`); *Tape alles löschen* vom Controller
 öffnet dieselbe Rückfrage auf dem Bildschirm. Speichern und Laden laufen über den Dateidialog und haben keinen
@@ -651,6 +673,7 @@ nichts, bis sie wieder spielen. Einzelheiten: [Leistung](LEISTUNG.md).
 | R (Standalone) | REC: aufs Band aufnehmen / aussteigen |
 | Enter oder Pos1 (Standalone) | Band zum Anfang |
 | L (Standalone) | Band-Schleife an / aus |
+| I / O (Standalone) | Loop-Start / Loop-Ende am Abspielkopf (im Raster; mit Shift: frei) |
 | T (Standalone) | Tempo tippen |
 | K (Standalone) | Metronom (Klick) an / aus |
 | Enter (Bibliothek) | gewähltes Preset behalten und schließen |
