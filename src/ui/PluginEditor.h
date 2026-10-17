@@ -3,6 +3,7 @@
 #pragma once
 
 #include "BreedView.h"
+#include "ConfirmDialog.h"
 #include "Display.h"
 #include "GridKeyboard.h"
 #include "LibraryBrowser.h"
@@ -221,6 +222,9 @@ public:
     /** The design-unit rectangles of the plate's panels and legends (layout tests). */
     static juce::Rectangle<float> designArea (const char* name);
     void softKey (int id) { onSoftKey (id); }
+    ui::ConfirmDialog& confirmDialogComponent() { return confirmDialog; } ///< p38
+    /** p38: loads a tape file the way the LOAD TAPE key does after the file dialog (asks first over material). */
+    void openTapeFile (const juce::File& f) { loadTapeFile (f); }
     /** p16: assigns morph corner `corner` (0..3) of the edit part: `presetIndex` = an entry of the library (its sound),
         -1 = the current sound, -2 = clear the corner, -3 = clear every corner. Switches the morph on when a corner
         gets a sound. */
@@ -255,6 +259,11 @@ private:
     void showTableImportMenu();                 ///< p20: the IMPORT soft key (file, tape track, input, library, options)
     void importTable (const juce::File& file);  ///< p20: audio / wavetable file into the shown engine's user material
     void exportBounce();
+    // p38: clear the whole tape (asks first), save / load the whole tape as an ".ohpetape" file
+    void askClearTape();
+    void saveTape();
+    void loadTape();
+    void loadTapeFile (const juce::File& f); ///< asks first when the tape holds material
     void chooseSampleFile();
     ui::VirtualPtr makeLockControl (const juce::String& paramId);
     ui::VirtualPtr makeStepField (int field);
@@ -312,6 +321,7 @@ private:
     ui::PackManagerView packView; ///< content packs: the pack manager (a settings page)
     bool packDropPending = false; ///< an .ohpepack was dropped / chosen: flash the result when the install ends
     ui::HelpOverlay helpOverlay;
+    ui::ConfirmDialog confirmDialog; ///< p38
     bool tooltipsOn = true;
     float animRate = 1.0f;
     int skinPoll = 0;
@@ -324,6 +334,7 @@ private:
     int contentGenerationSeen = 0;
     juce::uint32 randomPressedAt = 0; ///< p18: RANDOM held >= 450 ms opens the breeding view
     std::array<int, 3> breedRequestsSeen {};
+    int tapeClearAllSeen = 0; ///< p38: MIDI / host presses of "tape.edit.clearall"
 
     ui::Mode mode = ui::Mode::Synth;
     ui::PageContext ctx;

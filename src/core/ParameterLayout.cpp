@@ -303,5 +303,11 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate31SubParams (reg);
     // ---- p33: expressive playing - per part: velocity / aftertouch -> two functions each (amount, curve) ------------
     for (auto& p : parts) p->registerLate33ExpressionParams (reg);
+    // ---- p38: tape - clear the edit track, clear the whole tape (triggers; clear all asks on screen first) ---------
+    {
+        auto add = [&] (ParamDescriptor d) { d.group = "remote"; reg.add (std::move (d)); };
+        add (toggle (Core::Ids::tapeClearTrack, "Tape Clear Track", "Tape Spur löschen", false));
+        add (toggle (Core::Ids::tapeClearAll, "Tape Clear All", "Tape alles löschen", false));
+    }
 }
 } // namespace ohpe

@@ -830,7 +830,7 @@ void TapeMachine::saveAudio (std::vector<uint8_t>& out) const
     put (out, endMarker);
 }
 
-bool TapeMachine::loadAudio (const void* data, size_t size)
+bool TapeMachine::loadAudio (const void* data, size_t size, bool asUndoStep)
 {
     const auto* p = static_cast<const uint8_t*> (data);
     const auto* end = p + size;
@@ -867,6 +867,13 @@ bool TapeMachine::loadAudio (const void* data, size_t size)
 
     std::unique_lock<std::mutex> g (msgMutex);
     ExclusionGuard ex (exclusion);
+    if (asUndoStep) // p38: loading a tape file is an edit - refused while recording, undo brings the old tape back
+    {
+        if (! beginEdit (g)) return false;
+        pushSnapshotLocked (snap);
+        installLocked (current());
+        return true;
+    }
     dirty.store (true);
     commitLocked(); // adopt uncommitted live blocks so they are freed with the old history
     installLocked (snap);

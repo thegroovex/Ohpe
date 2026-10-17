@@ -4,6 +4,7 @@
 
 #include "ParameterBridge.h"
 #include "TapeIO.h"
+#include "tape/TapeFile.h"
 #include "ui/PluginEditor.h"
 
 #include <chrono>
@@ -37,7 +38,9 @@ const char* const* triggerIds()
                                        // p23: bounce to engine
                                        Core::Ids::bounceGo,
                                        // p24: harmony brain
-                                       Core::Ids::harmonyTake, Core::Ids::harmonyClear };
+                                       Core::Ids::harmonyTake, Core::Ids::harmonyClear,
+                                       // p38: clear the edit track / the whole tape
+                                       Core::Ids::tapeClearTrack, Core::Ids::tapeClearAll };
     return ids;
 }
 } // namespace
@@ -322,6 +325,7 @@ void OhpeProcessor::pollRemoteControls()
             else if (id == Core::Ids::bounceGo) bounceManager.bounce(); // p23: the edit part, the bounce settings
             else if (id == Core::Ids::harmonyTake) takeHarmonyKey();    // p24
             else if (id == Core::Ids::harmonyClear) ohpeCore.harmony().requestClear(); // p24
+            else if (id == Core::Ids::tapeClearAll) tapeClearAllRequests.fetch_add (1); // p38: the editor asks first
             else if (id.startsWith ("tape.tx."))
             {
                 const auto action = id == Core::Ids::tapeTxPlay ? TransportKey::PlayStop
@@ -358,8 +362,59 @@ bool OhpeProcessor::runTapeEdit (const char* triggerId)
     else if (id == Core::Ids::tapeUndo) ok = tape.undo();
     else if (id == Core::Ids::tapeRedo) ok = tape.redo();
     else if (id == Core::Ids::tapeRtz) { tape.locate (0.0); ok = true; }
+    else if (id == Core::Ids::tapeClearTrack) ok = tape.clearTrack (track); // p38
+    else if (id == Core::Ids::tapeClearAll) ok = tape.clearAll();           // p38: after the confirmation
     sendChangeMessage();
     return ok;
+}
+
+// ---------------------------------------------------------------- p38: tape files
+bool OhpeProcessor::saveTapeFile (const juce::File& file, juce::String& message)
+{
+    using i18n::tr;
+    if (tapeRecording()) { message = tr ("Not while recording"); return false; }
+    const auto& reg = ohpeCore.params();
+    tapefile::Settings s;
+    s.loopIn = reg.get ("tape.loopin");
+    s.loopOut = reg.get ("tape.loopout");
+    s.loop = reg.get ("tape.loop") >= 0.5f;
+    s.editTrack = (int) std::lround (reg.get (Core::Ids::tapeEditTrack));
+    const auto data = tapefile::save (ohpeCore.tape(), s);
+    const auto target = file.withFileExtension (tapefile::extension);
+    juce::TemporaryFile tmp (target);
+    {
+        juce::FileOutputStream out (tmp.getFile());
+        if (! out.openedOk() || ! out.write (data.data(), data.size()))
+        {
+            message = tr ("Could not write the tape file");
+            return false;
+        }
+        out.flush();
+        if (out.getStatus().failed()) { message = tr ("Could not write the tape file"); return false; }
+    }
+    if (! tmp.overwriteTargetFileWithTemporary()) { message = tr ("Could not write the tape file"); return false; }
+    message = tr ("Tape saved") + ": " + target.getFileName();
+    return true;
+}
+
+bool OhpeProcessor::loadTapeFile (const juce::File& file, juce::String& message)
+{
+    using i18n::tr;
+    if (tapeRecording()) { message = tr ("Not while recording"); return false; }
+    juce::MemoryBlock mb;
+    tapefile::Settings s;
+    if (! file.loadFileAsData (mb) || ! tapefile::load (ohpeCore.tape(), mb.getData(), mb.getSize(), s))
+    {
+        message = tr ("Could not read the tape file");
+        return false;
+    }
+    setPlainFromUi ("tape.loopin", (float) s.loopIn);
+    setPlainFromUi ("tape.loopout", (float) s.loopOut);
+    setPlainFromUi ("tape.loop", s.loop ? 1.0f : 0.0f);
+    setPlainFromUi (Core::Ids::tapeEditTrack, (float) s.editTrack);
+    message = tr ("Tape loaded") + ": " + file.getFileName();
+    sendChangeMessage();
+    return true;
 }
 
 // ---------------------------------------------------------------- p24: harmony brain

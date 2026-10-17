@@ -576,7 +576,7 @@ juce::Rectangle<float> Display::stripArea() const
 {
     auto b = getLocalBounds().toFloat().reduced (getWidth() * 0.02f);
     float f = 0.27f;
-    if (mode == Mode::Tape) f = 0.36f;
+    if (mode == Mode::Tape) f = softKeyRows() > 1 ? 0.40f : 0.36f; // p38: two key rows take a little more room
     else if (mode == Mode::Drum) f = 0.36f;
     else if (hasSoftKeys() && mode != Mode::Sequencer) f = 0.30f;
     else if (mode == Mode::Sequencer && hasSoftKeys()) f = 0.33f;
@@ -689,20 +689,33 @@ juce::Rectangle<float> Display::barArea (int i) const
 juce::Rectangle<float> Display::softKeyRow() const
 {
     auto s = stripArea();
-    return s.withTop (s.getBottom() - s.getHeight() * (mode == Mode::Tape ? 0.2f : (mode == Mode::Drum ? 0.22f : 0.3f)));
+    // p38: the tape page can have two rows of keys (each as high as the single row: 0.2 of a 0.36 strip)
+    const float tapeRow = softKeyRows() > 1 ? 2.0f * 0.2f * 0.36f / 0.40f : 0.2f;
+    return s.withTop (s.getBottom() - s.getHeight() * (mode == Mode::Tape ? tapeRow : (mode == Mode::Drum ? 0.22f : 0.3f)));
+}
+
+int Display::softKeyRows() const noexcept
+{
+    return mode == Mode::Tape && softKeys.size() > 8 ? 2 : 1; // p38: the tape page's twelve keys sit in two rows of six
 }
 
 juce::Rectangle<float> Display::softKeyArea (int index) const
 {
     if (index < 0 || index >= (int) softKeys.size()) return {};
     auto row = softKeyRow();
-    const int n = juce::jmax (4, (int) softKeys.size());
+    const int rows = softKeyRows();
+    const int perRow = ((int) softKeys.size() + rows - 1) / rows;
+    const int r = index / perRow, col = index % perRow;
+    const int inRow = juce::jmin (perRow, (int) softKeys.size() - r * perRow);
+    const int n = juce::jmax (4, perRow);
     // the tape page keeps the left part of the row free for the time readout
     if (mode == Mode::Tape) row = row.withTrimmedLeft (row.getWidth() * 0.24f);
+    const float h = row.getHeight() / (float) rows;
+    row = row.withY (row.getY() + h * (float) r).withHeight (h);
     const float w = row.getWidth() / (float) n;
     // keys sit at the right end of the row
-    const float x0 = row.getRight() - w * (float) softKeys.size();
-    return juce::Rectangle<float> (x0 + w * (float) index, row.getY(), w, row.getHeight()).reduced (w * 0.04f, row.getHeight() * 0.1f);
+    const float x0 = row.getRight() - w * (float) inRow;
+    return juce::Rectangle<float> (x0 + w * (float) col, row.getY(), w, row.getHeight()).reduced (w * 0.04f, row.getHeight() * 0.1f);
 }
 
 juce::Rectangle<float> Display::stepCell (int i) const
@@ -733,7 +746,7 @@ juce::Rectangle<float> Display::channelCell (int i) const
 juce::Rectangle<float> Display::trackLane (int t) const
 {
     auto s = stripArea();
-    s = s.withTrimmedBottom (s.getHeight() * 0.22f).withTrimmedTop (s.getHeight() * 0.03f);
+    s = s.withBottom (softKeyRow().getY() - s.getHeight() * 0.02f).withTrimmedTop (s.getHeight() * 0.03f); // p38: above the key rows
     const float h = s.getHeight() / (float) TapeMachine::numTracks;
     return { s.getX(), s.getY() + h * (float) t, s.getWidth(), h };
 }
@@ -1408,7 +1421,7 @@ void Display::paintSoftKeys (juce::Graphics& g)
         else g.drawRoundedRectangle (r, r.getHeight() * 0.25f, 1.0f);
         g.setColour (k.active ? colour::displayText : (k.enabled ? colour::displayText : colour::displayDim));
         g.setFont (labelFont (juce::jmin (r.getHeight() * 0.55f, r.getWidth() * 0.16f)));
-        g.drawText (i18n::upper (k.label), r.reduced (2.0f, 0), juce::Justification::centred, true);
+        g.drawFittedText (i18n::upper (k.label), r.reduced (2.0f, 0).toNearestInt(), juce::Justification::centred, 1, 0.75f); // p38: long labels narrow a little
     }
 }
 

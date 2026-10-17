@@ -178,13 +178,13 @@ TEST_CASE ("plug-in p23: Sampler one-shot, empty tracks, the input recording, th
     CHECK_FALSE (p.bounces().recording());
     CHECK (p.bounces().lastMessage() == "Nothing to bounce - the material is silent");
 
-    // the soft keys: BOUNCE on the tape page (eighth key) and on the Grain / Sampler page (third key)
+    // the soft keys: BOUNCE on the tape page (last of twelve, p38) and on the Grain / Sampler page (third key)
     std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
     auto& e = *dynamic_cast<OhpeEditor*> (ed.get());
     auto& d = e.displayComponent();
     e.selectMode (ui::Mode::Tape);
-    CHECK_FALSE (d.softKeyArea (7).isEmpty());
-    CHECK (d.softKeyArea (8).isEmpty());
+    CHECK_FALSE (d.softKeyArea (11).isEmpty());
+    CHECK (d.softKeyArea (12).isEmpty());
     e.selectPart (0);
     e.softKey (90); // the tape page bounces at once: edit track 1 -> Grain of part 1
     CHECK (p.bounces().lastSucceeded());
