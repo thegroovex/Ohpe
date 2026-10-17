@@ -23,6 +23,7 @@ Core::Core()
     tapeMachine.bind (registry);
     masterRack.bindMaster (registry); // 0.7 (the part racks belong to the parts)
     mix.setMasterRack (&masterRack);
+    mix.setPerformancePads (&perfPads); // p25
     stepSeq.setRegistry (&registry);
     tempoIndex = registry.indexOf (Ids::tempo);
     seqRunIndex = registry.indexOf (Ids::seqRun);
@@ -74,6 +75,7 @@ Core::Core()
     morphSpace.bind (registry, snapshot, { parts[0].get(), parts[1].get(), parts[2].get(), parts[3].get() }); // p16
     static_assert (MotionRecorder::numParts == numParts, "motion recorder parts");
     motionRec.bind (registry, snapshot); // p22
+    perfPads.bind (registry);            // p25
     lockStorage.reserve (1024);
     seqOut.locks = &lockStorage;
     seqOut.maxLocks = 1024;
@@ -114,6 +116,7 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     for (auto& p : parts) p->prepare (sr, chunk);
     morphSpace.prepare (sr, chunk); // p16: the morph lanes
     motionRec.prepare (sr);         // p22
+    perfPads.prepare (sr);          // p25
     drums.prepare (sr, chunk);
     mix.prepare (sr, chunk);
     stepSeq.prepare (sr, maxBlock);
@@ -151,6 +154,7 @@ void Core::reset() noexcept
     for (auto& p : parts) p->reset();
     morphSpace.reset();
     motionRec.reset(); // p22
+    perfPads.reset();  // p25
     drums.reset();
     mix.reset();
     tapeMachine.resetDsp();
@@ -339,6 +343,12 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     for (int p = 0; p < numParts; ++p) // p22: the lanes as matrix sources Motion 1 .. 4
         for (int l = 0; l < MotionRecorder::numLanes; ++l)
             parts[(size_t) p]->modMatrix().setSourceValue (mod::SrcMotion1 + l, motionRec.sourceValue (p, l));
+    perfPads.pullParams (snapshot); // p25
+    for (auto& p : parts) // p25: the pads as matrix sources (as of the last block)
+    {
+        p->modMatrix().setSourceValue (mod::SrcPadSweep, perfPads.sweepSource());
+        p->modMatrix().setSourceValue (mod::SrcPadHeld, perfPads.heldSource());
+    }
     drums.pullParams (snapshot);
     mix.setTempo (bpmForUi.load (std::memory_order_relaxed));
     mix.pullParams (snapshot);
@@ -492,6 +502,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
             out.left[(size_t) o] = outputs.left[(size_t) o] != nullptr ? outputs.left[(size_t) o] + pos : nullptr;
             out.right[(size_t) o] = outputs.right[(size_t) o] != nullptr ? outputs.right[(size_t) o] + pos : nullptr;
         }
+        perfPads.setTransport (tr.bpm, chunkPpq, tr.playing); // p25: quantised pads
         mix.process (src, out, len);
         if (monoCheck && out.left[0] != nullptr && out.right[0] != nullptr) // 1.0: mono check of the main output
             for (int i = 0; i < len; ++i)

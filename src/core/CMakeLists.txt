@@ -67,6 +67,9 @@ target_sources(ohpe_core PRIVATE morph/MorphSpace.cpp)
 # p22: the motion recorder (knob movements per part as looping lanes)
 target_sources(ohpe_core PRIVATE motion/MotionRecorder.cpp)
 
+# p25: the performance pads (stutter, tape stop, filter sweep, reverb freeze on the main mix)
+target_sources(ohpe_core PRIVATE perform/PerformancePads.cpp)
+
 # 0.4 (package F): factory sample bank (instruments, drum kits)
 target_sources(ohpe_core PRIVATE sample/FactoryBank.cpp)
 
