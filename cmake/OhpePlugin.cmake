@@ -15,7 +15,8 @@ juce_add_binary_data(ohpe_resources
     NAMESPACE BinaryData
     SOURCES
         ${CMAKE_SOURCE_DIR}/resources/fonts/SpaceGrotesk-500.ttf
-        ${CMAKE_SOURCE_DIR}/resources/fonts/SpaceGrotesk-700.ttf)
+        ${CMAKE_SOURCE_DIR}/resources/fonts/SpaceGrotesk-700.ttf
+        ${CMAKE_SOURCE_DIR}/resources/icon/png/ohpe-icon-128.png) # p43: About header, standalone window icon
 set_target_properties(ohpe_resources PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 set(OHPE_PLUGIN_SOURCES
@@ -128,7 +129,26 @@ juce_add_plugin(Ohpe
     VST3_CATEGORIES Instrument Synth
     AU_MAIN_TYPE kAudioUnitType_MusicDevice
     COPY_PLUGIN_AFTER_BUILD ${OHPE_COPY_PLUGIN}
+    ICON_BIG ${CMAKE_SOURCE_DIR}/resources/icon/png/ohpe-icon-1024.png
+    ICON_SMALL ${CMAKE_SOURCE_DIR}/resources/icon/png/ohpe-icon-32.png
     DESCRIPTION "Ohpe - synthesizer, sampler and tape workstation (designed by groovex)")
+
+# p43: the app icon. JUCE derives its .icns / .ico from the two PNGs above (only a few sizes, rescaled);
+# replace them with the hand-tuned files from resources/icon (every size, small sizes drawn for the
+# pixel grid - see tools/app-icon/make_icons.py). JUCE writes them at configure time, before this line,
+# and every bundle (app, VST3, AU) and the Windows resource script use exactly these paths.
+get_target_property(OHPE_JUCE_GENERATED Ohpe JUCE_GENERATED_SOURCES_DIRECTORY)
+if(APPLE)
+    if(NOT EXISTS "${OHPE_JUCE_GENERATED}/AppIcon.icns")
+        message(FATAL_ERROR "JUCE did not generate AppIcon.icns in ${OHPE_JUCE_GENERATED}")
+    endif()
+    configure_file(${CMAKE_SOURCE_DIR}/resources/icon/Ohpe.icns "${OHPE_JUCE_GENERATED}/AppIcon.icns" COPYONLY)
+elseif(WIN32)
+    if(NOT EXISTS "${OHPE_JUCE_GENERATED}/icon.ico")
+        message(FATAL_ERROR "JUCE did not generate icon.ico in ${OHPE_JUCE_GENERATED}")
+    endif()
+    configure_file(${CMAKE_SOURCE_DIR}/resources/icon/Ohpe.ico "${OHPE_JUCE_GENERATED}/icon.ico" COPYONLY)
+endif()
 
 target_sources(Ohpe PRIVATE ${OHPE_PLUGIN_SOURCES} ${CMAKE_SOURCE_DIR}/src/standalone/StandaloneApp.cpp)
 target_compile_definitions(Ohpe PUBLIC ${OHPE_DEFINES} JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1)
