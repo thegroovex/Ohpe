@@ -38,6 +38,8 @@ const std::vector<SourceInfo>& sourceTable()
         { "motion2", "Motion 2", "Bewegung 2", false, S::Part },
         { "motion3", "Motion 3", "Bewegung 3", false, S::Part },
         { "motion4", "Motion 4", "Bewegung 4", false, S::Part },
+        { "padsweep", "Pad Sweep", "Pad-Sweep", false, S::Part }, // p25: the performance pads
+        { "padheld", "Pads Held", "Pads gehalten", false, S::Part },
     };
     return t;
 }

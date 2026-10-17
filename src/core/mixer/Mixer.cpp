@@ -3,6 +3,7 @@
 #include "Mixer.h"
 
 #include "../fx/FxRack.h"
+#include "../perform/PerformancePads.h"
 
 #include <cstring>
 #include <string>
@@ -423,7 +424,8 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
     reverb.process (sendBL.data(), sendBR.data(), n);
     const bool dynamics = masterCompOn || ! masterSat.isBypassed();
     const bool rack = masterRack != nullptr && masterRack->isActive(); // 0.7: master FX rack
-    if (! dynamics && ! rack)
+    const bool perf = pads != nullptr && pads->isActive();             // p25: performance pads (nothing held: untouched)
+    if (! dynamics && ! rack && ! perf)
     {
         for (int i = 0; i < n; ++i)
         {
@@ -434,13 +436,14 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
     }
     else
     {
-        // master chain: sum -> FX rack (0.7) -> compressor -> tape saturation -> volume -> limiter
+        // master chain: sum -> FX rack (0.7) -> performance pads (p25) -> compressor -> tape saturation -> volume -> limiter
         for (int i = 0; i < n; ++i)
         {
             masterL[(size_t) i] = masterL[(size_t) i] + sendAL[(size_t) i] * returnA + sendBL[(size_t) i] * returnB;
             masterR[(size_t) i] = masterR[(size_t) i] + sendAR[(size_t) i] * returnA + sendBR[(size_t) i] * returnB;
         }
         if (rack) masterRack->process (masterL.data(), masterR.data(), n);
+        if (perf) pads->process (masterL.data(), masterR.data(), n);
         if (masterCompOn) masterComp.process (masterL.data(), masterR.data(), n);
         masterSat.process (masterL.data(), masterR.data(), n);
         for (int i = 0; i < n; ++i)

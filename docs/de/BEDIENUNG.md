@@ -462,6 +462,27 @@ atmenden roten Rand; die Leiste darunter sagt, was der Recorder gerade tut.
 
 Die Spuren sind auch die Matrix-Quellen **Bewegung 1 … 4**.
 
+## Pads-Ansicht (p25)
+
+![Die Pads-Ansicht](../images/ohpe-pads-view-de.png)
+
+Der sechste Reiter des **Effekte**-Modus, **Pads**, enthält die vier [Performance-Pads](PERFORMANCE-PADS.md) – Effekt-Würfe
+auf die Hauptsumme für Live-Sets: **Stottern**, **Bandstopp**, **Sweep** und **Freeze**. Jedes Pad zeigt ein kleines
+Bild dessen, was es tut, und seine wichtigste Einstellung; ein Pad, das auf seine Rasterlinie wartet, blinkt violett,
+ein aktives Pad leuchtet grün, eine ausklingende Freeze-Fahne bleibt gedimmt grün. Die Leiste darunter sagt, welche
+Pads spielen.
+
+| Aktion | Ergebnis |
+|---|---|
+| Pad drücken und halten | das Pad spielt, solange es gehalten wird (setzt auf der nächsten Linie der *Quantisierung* ein) |
+| Umschalt-Klick auf ein Pad / Softkey | rastet das Pad ein oder aus |
+| Rechtsklick auf ein Pad | MIDI-Lernen (ein Pad auf einen Taster-CC legen) |
+| Regler, Seite *Pads* | die vier Pads (drehen = an / aus) |
+| Regler, Seite *Pad-Timing* | Quantisierung (Aus, 1/16 … 1 Takt), Stotter-Länge, Bandstopp-Dauer, Sweep-Dauer |
+| Regler, Seite *Sweep & Freeze* | Sweep-Filter (Tiefpass / Hochpass), Sweep-Resonanz, Freeze-Pegel |
+
+Die Pads sind auch die Matrix-Quellen **Pad-Sweep** und **Pads gehalten**.
+
 ## Tasten
 
 | Taste | Aktion |

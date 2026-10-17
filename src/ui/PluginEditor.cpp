@@ -7,6 +7,7 @@
 #include "ModFxViews.h"
 #include "MorphView.h"
 #include "MotionView.h"
+#include "PadsView.h"
 
 #include "Palette.h"
 #include "plugin/Localisation.h"
@@ -38,7 +39,8 @@ enum SoftKeyId
     skCornerA = 70, skCornerB, skCornerC, skCornerD, // p16: morph corners
     skTableImport = 80, skTableUser, skTableClear,    // p20: user wavetable / formants
     skBounce = 90,                                    // p23: bounce to engine (tape page: at once; Grain / Sampler: menu)
-    skMotionRec = 100, skMotionPlay, skMotionClear    // p22: motion recorder
+    skMotionRec = 100, skMotionPlay, skMotionClear,   // p22: motion recorder
+    skPadFirst = 110                                  // p25: performance pads (latching: 110 .. 113)
 };
 
 bool isAudioFile (const juce::String& path)
@@ -1213,9 +1215,19 @@ void OhpeEditor::rebindEncoders()
     repaint (scaled (30, 60, 220, 40)); // engine legend shows the part
 }
 
+void OhpeEditor::refreshPadKeys()
+{
+    if (mode != Mode::Effects || ctx.fxView != modfx::FxViewPads) return; // p25: key states follow the pads (mouse, MIDI, host)
+    int sig = 0;
+    for (int k = 0; k < PerformancePads::numPads; ++k)
+        sig = sig * 2 + (proc.core().params().get (PerformancePads::padId (k)) >= 0.5f ? 1 : 0);
+    if (sig != lastPadsSignature) { lastPadsSignature = sig; refreshSoftKeys(); }
+}
+
 void OhpeEditor::advanceAnimation (float seconds)
 {
     display.tick (seconds);
+    refreshPadKeys(); // p25: headless renders show the latched keys too
     blinkClock += seconds;
     refreshTransportKeys();
     refreshLeds();
@@ -1299,6 +1311,14 @@ void OhpeEditor::refreshSoftKeys()
                  { skMotionPlay, tr ("Play"), true, isOn ("on") },
                  { skMotionClear, tr ("Clear"), core.motion().anyLane (ctx.part) } };
     }
+    else if (mode == Mode::Effects && ctx.fxView == modfx::FxViewPads) // p25: the pads as latching keys
+    {
+        for (int k = 0; k < PerformancePads::numPads; ++k)
+        {
+            const auto* prm = proc.parameter (PerformancePads::padId (k));
+            keys.push_back ({ skPadFirst + k, tr (padsview::padName (k)), true, prm != nullptr && prm->getValue() > 0.5f });
+        }
+    }
     else if (mode == Mode::Effects && modfx::isRackView (ctx.fxView)) // 0.7
     {
         const auto prefixes = modfx::rackPrefixes (ctx.fxView, ctx.part);
@@ -1369,6 +1389,16 @@ void OhpeEditor::onSoftKey (int id)
             break;
         }
         case skMotionClear: core.motion().clearPart (ctx.part); break; // p22
+        case skPadFirst:
+        case skPadFirst + 1:
+        case skPadFirst + 2:
+        case skPadFirst + 3: // p25: a soft key latches its pad
+        {
+            const juce::String prmId (PerformancePads::padId (id - skPadFirst));
+            const auto* prm = proc.parameter (prmId);
+            setParamPlain (prmId, prm != nullptr && prm->getValue() > 0.5f ? 0.0f : 1.0f);
+            break;
+        }
         case skTableImport: showTableImportMenu(); return; // p20
         case skBounce: // p23: the tape page bounces at once (the bounce settings), the Grain / Sampler page offers the sources
             if (mode == Mode::Tape)
@@ -1821,6 +1851,7 @@ void OhpeEditor::timerCallback()
         for (int l = 0; l < MotionRecorder::numLanes; ++l) sig = sig * 3 + (core.motion().laneTarget (ctx.part, l) >= 0 ? 1 : 0);
         if (sig != lastMotionSignature) { lastMotionSignature = sig; refreshSoftKeys(); }
     }
+    refreshPadKeys(); // p25
     if (core.effectsWaiting()) core.prepareEffects(); // 0.7: a rack slot got a new type (UI, host, preset)
     // 0.7: modulation rings on the encoders
     for (auto& e : encoders)

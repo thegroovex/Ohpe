@@ -6723,3 +6723,14 @@ p4.motion.rec
 p4.motion.len
 p4.motion.amt
 p4.motion.clear
+pads.stutter
+pads.stop
+pads.sweep
+pads.freeze
+pads.quant
+pads.stutter.div
+pads.stop.len
+pads.sweep.mode
+pads.sweep.len
+pads.sweep.res
+pads.freeze.mix
