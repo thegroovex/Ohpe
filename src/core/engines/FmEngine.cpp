@@ -157,34 +157,67 @@ void Voice::renderImpl (float* l, float* r, int numSamples, const VoiceCommon& c
         }
         else
         {
-            // p35: the same, with the phase modulation in turns and the polynomial sine (no library call). Only the links
-            // the algorithm has are summed (no false dependency on operators that feed nothing), operators at level 0
-            // skip their sine (they add exactly nothing; their phase still runs)
+            // p35: the same, with the phase modulation in turns and the polynomial sine (no library call), computed one
+            // operator at a time over the control block (modulators first): the samples of an operator do not depend on
+            // each other (only operator 6 with feedback does), so their sines overlap instead of waiting for the one
+            // before - same arithmetic in the same order per sample. Only the links the algorithm has are summed;
+            // operators at level 0 skip their sine (they add exactly nothing; their phase still runs)
             constexpr float inv2Pi = 1.0f / dsp::twoPi;
             const float depthTurns = depth * inv2Pi, fbTurns = fbAmt * 0.5f * inv2Pi;
-            for (int i = 0; i < n; ++i)
+            float ops[numOps][controlRate];
+            for (int o = numOps - 1; o >= 0; --o)
             {
-                float opOut[numOps];
-                for (int o = numOps - 1; o >= 0; --o)
+                float* y = ops[o];
+                float ph = phase[(size_t) o];
+                const float step = inc[(size_t) o];
+                if (! used[o])
                 {
-                    float y = 0.0f;
-                    if (used[o])
+                    for (int i = 0; i < n; ++i) y[i] = 0.0f;
+                }
+                else if (o == numOps - 1) // the feedback operator (no modulators above it)
+                {
+                    const float lvl = p.level[(size_t) o];
+                    float f1 = fb1, f2 = fb2;
+                    for (int i = 0; i < n; ++i)
+                    {
+                        const float x = ph + fbTurns * (f1 + f2);
+                        y[i] = dsp::sinTurns (x) * lvl;
+                        f2 = f1;
+                        f1 = y[i];
+                        ph += step;
+                        if (ph >= 1.0f) ph -= 1.0f;
+                    }
+                }
+                else
+                {
+                    const float lvl = p.level[(size_t) o];
+                    const int ns = numSrc[o];
+                    for (int i = 0; i < n; ++i)
                     {
                         float pm = 0.0f;
-                        for (int k = 0; k < numSrc[o]; ++k)
-                            pm += srcAmt[o][k] * opOut[src[o][k]];
-                        float x = phase[(size_t) o] + pm * depthTurns;
-                        if (o == numOps - 1) x += fbTurns * (fb1 + fb2);
-                        y = dsp::sinTurns (x) * p.level[(size_t) o];
+                        for (int k = 0; k < ns; ++k) pm += srcAmt[o][k] * ops[src[o][k]][i];
+                        y[i] = dsp::sinTurns (ph + pm * depthTurns) * lvl;
+                        ph += step;
+                        if (ph >= 1.0f) ph -= 1.0f;
                     }
-                    opOut[o] = y;
-                    phase[(size_t) o] += inc[(size_t) o];
-                    if (phase[(size_t) o] >= 1.0f) phase[(size_t) o] -= 1.0f;
                 }
-                fb2 = fb1;
-                fb1 = opOut[numOps - 1];
+                if (! used[o]) // the phase runs on
+                    for (int i = 0; i < n; ++i)
+                    {
+                        ph += step;
+                        if (ph >= 1.0f) ph -= 1.0f;
+                    }
+                phase[(size_t) o] = ph;
+            }
+            if (n > 0)
+            {
+                fb2 = n > 1 ? ops[numOps - 1][n - 2] : fb1;
+                fb1 = ops[numOps - 1][n - 1];
+            }
+            for (int i = 0; i < n; ++i)
+            {
                 float sum = 0.0f;
-                for (int o = 0; o < numOps; ++o) sum += a.out[o] * opOut[o];
+                for (int o = 0; o < numOps; ++o) sum += a.out[o] * ops[o][i];
                 modEnv.next();
                 const float ae = ampEnv.next();
                 const float out = sum * ae * gain;

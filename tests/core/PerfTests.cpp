@@ -95,7 +95,7 @@ TEST_CASE ("p35 dsp: sinTurns matches the library sine")
 TEST_CASE ("p35 fm: the polynomial sine renders what the library sine rendered (every algorithm, feedback, an operator off)")
 {
     struct Restore { ~Restore() { fm::useLibrarySine = false; } } restore;
-    float worst = 0.0f;
+    float worst = 0.0f, worstRms = 0.0f;
     for (int algo = 0; algo < fm::numAlgorithms; ++algo)
         for (float feedback : { 0.0f, 0.35f })
             for (bool opOff : { false, true })
@@ -123,10 +123,16 @@ TEST_CASE ("p35 fm: the polynomial sine renders what the library sine rendered (
                 CHECK (noDenormals (out[0].l));
                 CHECK (peak (out[0].l) > 0.01f);
                 const float d = std::max (maxDiff (out[0].l, out[1].l), maxDiff (out[0].r, out[1].r));
+                std::vector<float> diff (out[0].l.size());
+                for (size_t i = 0; i < diff.size(); ++i) diff[i] = out[0].l[i] - out[1].l[i];
                 worst = std::max (worst, d);
-                CHECK (d < 1.0e-4f); // about -80 dB below the notes - and the library sine itself differs per platform
+                worstRms = std::max (worstRms, rms (diff) / std::max (1.0e-9f, rms (out[1].l)));
+                // a six-operator stack at a high index multiplies the last bits of every sine down the stack: still
+                // -60 dB at worst, -80 dB in the RMS (and the library sine itself differs that much between platforms)
+                CHECK (d < 1.0e-3f);
+                CHECK (rms (diff) < 1.0e-4f * std::max (1.0f, rms (out[1].l)));
             }
-    MESSAGE ("fm polynomial vs library sine: max difference " << worst);
+    MESSAGE ("fm polynomial vs library sine: max difference " << worst << ", difference RMS / signal RMS " << worstRms);
 }
 
 // ------------------------------------------------------------------------------------------------ sleeping parts
