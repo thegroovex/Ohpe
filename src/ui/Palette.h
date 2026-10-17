@@ -36,6 +36,7 @@ inline juce::Colour keyDark { 0xff2a2c31 };       ///< graphite key cap
 inline juce::Colour keyDarkTop { 0xff34373d };
 inline juce::Colour keyLight { 0xfff6f5f1 };      ///< natural keyboard key
 inline juce::Colour keyLightPressed { 0xffdcd9d2 };
+inline juce::Colour keyInk { 0xff54524e };        ///< p32: octave labels on the natural keys (>= 4.5:1 in both skins)
 // display
 inline juce::Colour display { 0xff0c0d10 };       ///< "Night" display glass
 inline juce::Colour displayGrid { 0xff1c1e23 };

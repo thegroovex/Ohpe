@@ -71,6 +71,12 @@ void checkContrast (const char* skin)
     CHECK (contrast (colour::display, colour::sunYellow) >= 4.5); // text on a lit chip
     CHECK (contrast (colour::sunYellow, colour::display) >= 4.5);
     CHECK (contrast (colour::playGreenLit, colour::display) >= 4.5);
+    // octave labels on the natural keys (top and bottom of the key's gradient, pressed or not)
+    for (auto key : { colour::keyLight, colour::keyLightPressed })
+    {
+        CHECK (contrast (colour::keyInk, key) >= 4.5);
+        CHECK (contrast (colour::keyInk, key.darker (0.04f)) >= 4.5);
+    }
 }
 } // namespace
 
@@ -195,6 +201,21 @@ TEST_CASE ("settings: tooltips, help overlay, animations, brightness, window siz
         CHECK_FALSE (self); // clicks go through to the controls
         CHECK_FALSE (children);
     }
+    // every tag shows its name and line in full (no "SETTIN…" on the narrow gear key) and stays inside the window
+    for (auto lang : { i18n::Language::English, i18n::Language::German })
+    {
+        e.setLanguage (lang);
+        const auto bounds = e.helpOverlayComponent().getLocalBounds().toFloat();
+        const float s = bounds.getWidth() / 1200.0f;
+        for (const auto& it : e.helpOverlayComponent().itemList())
+        {
+            INFO (it.title.toStdString());
+            const auto tag = ui::HelpOverlay::tagBounds (it, bounds);
+            CHECK (tag.getWidth() >= ui::HelpOverlay::tagWidthNeeded (it, s) - 0.01f);
+            CHECK (bounds.contains (tag));
+        }
+    }
+    e.setLanguage (i18n::Language::English);
     CHECK (e.createComponentSnapshot (e.getLocalBounds()).isValid());
     e.showSettings (true);
     CHECK_FALSE (e.helpOverlayComponent().isVisible()); // not over an overlay

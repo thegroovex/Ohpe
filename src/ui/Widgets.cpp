@@ -578,7 +578,7 @@ void Keyboard::drawWhiteNote (int note, juce::Graphics& g, juce::Rectangle<float
     }
     if (note % 12 == 0)
     {
-        g.setColour (colour::engraving);
+        g.setColour (colour::keyInk); // p32: readable on the natural keys of both skins
         g.setFont (labelFont (juce::jmin (key.getWidth() * 0.34f, 13.0f * (float) getHeight() / 136.0f)));
         g.drawText ("C" + juce::String (note / 12 - 1), key.withTop (key.getBottom() - key.getWidth() * 0.9f).withTrimmedLeft (key.getWidth() * 0.16f),
                     juce::Justification::centredLeft);

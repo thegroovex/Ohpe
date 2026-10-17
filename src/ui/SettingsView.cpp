@@ -877,6 +877,31 @@ bool SettingsView::keyPressed (const juce::KeyPress& k)
 }
 
 // ---------------------------------------------------------------- help overlay
+float HelpOverlay::tagWidthNeeded (const Item& it, float s)
+{
+    const auto titleFont = brandFont (12.0f * s);
+    const auto textFont = labelFont (11.0f * s);
+    return std::ceil (juce::jmax (juce::GlyphArrangement::getStringWidth (titleFont, i18n::upper (it.title)),
+                                  juce::GlyphArrangement::getStringWidth (textFont, it.text)))
+           + 18.0f * s;
+}
+
+juce::Rectangle<float> HelpOverlay::tagBounds (const Item& it, juce::Rectangle<float> overlay)
+{
+    const float s = overlay.getWidth() / 1200.0f;
+    const juce::Rectangle<float> r { overlay.getX() + it.design.getX() * s, overlay.getY() + it.design.getY() * s, it.design.getWidth() * s,
+                                     it.design.getHeight() * s };
+    const float h = (it.text.isNotEmpty() ? 34.0f : 20.0f) * s;
+    const float w = juce::jmin (tagWidthNeeded (it, s), overlay.getWidth() - 8.0f * s);
+    if (w <= r.getWidth() - 8.0f * s)
+        return { r.getX() + 4.0f * s, r.getY() + 4.0f * s, w, h }; // fits inside, top left (as before)
+    // a narrow area (e.g. the gear key): the tag sits outside, below the area (above it at the bottom edge), right-aligned
+    const float x = juce::jlimit (overlay.getX() + 4.0f * s, overlay.getRight() - 4.0f * s - w, r.getRight() - w);
+    float y = r.getBottom() + 4.0f * s;
+    if (y + h > overlay.getBottom() - 4.0f * s) y = r.getY() - 4.0f * s - h;
+    return { x, juce::jmax (overlay.getY() + 4.0f * s, y), w, h };
+}
+
 void HelpOverlay::paint (juce::Graphics& g)
 {
     const float s = (float) getWidth() / 1200.0f;
@@ -885,24 +910,24 @@ void HelpOverlay::paint (juce::Graphics& g)
         const juce::Rectangle<float> r { it.design.getX() * s, it.design.getY() * s, it.design.getWidth() * s, it.design.getHeight() * s };
         g.setColour (colour::sunYellow.withAlpha (0.55f));
         g.drawRoundedRectangle (r.reduced (1.0f * s), radius::panel * s, 1.5f * s);
-        // a dark tag at the area's top left: name in yellow, one line of explanation
+    }
+    for (const auto& it : items) // tags over all frames (a tag outside its area may cross a neighbour's frame)
+    {
+        // a dark tag: name in yellow, one line of explanation - always in full
         const auto titleFont = brandFont (12.0f * s);
         const auto textFont = labelFont (11.0f * s);
-        const float w = juce::jmin (r.getWidth() - 8.0f * s,
-                                    juce::jmax (juce::GlyphArrangement::getStringWidth (titleFont, it.title), juce::GlyphArrangement::getStringWidth (textFont, it.text))
-                                        + 16.0f * s);
         const bool twoLines = it.text.isNotEmpty();
-        const juce::Rectangle<float> tag { r.getX() + 4.0f * s, r.getY() + 4.0f * s, w, (twoLines ? 34.0f : 20.0f) * s };
-        g.setColour (colour::display.withAlpha (0.88f));
+        const auto tag = tagBounds (it, getLocalBounds().toFloat());
+        g.setColour (colour::display.withAlpha (0.9f));
         g.fillRoundedRectangle (tag, radius::inset * s);
         g.setColour (colour::sunYellow);
         g.setFont (titleFont);
-        g.drawFittedText (i18n::upper (it.title), tag.reduced (8.0f * s, 3.0f * s).withHeight (14.0f * s).toNearestInt(), juce::Justification::centredLeft, 1, 0.8f);
+        g.drawText (i18n::upper (it.title), tag.reduced (8.0f * s, 3.0f * s).withHeight (14.0f * s), juce::Justification::centredLeft, false);
         if (twoLines)
         {
             g.setColour (colour::displayText);
             g.setFont (textFont);
-            g.drawFittedText (it.text, tag.reduced (8.0f * s, 3.0f * s).withTrimmedTop (15.0f * s).toNearestInt(), juce::Justification::centredLeft, 1, 0.7f);
+            g.drawText (it.text, tag.reduced (8.0f * s, 3.0f * s).withTrimmedTop (15.0f * s), juce::Justification::centredLeft, false);
         }
     }
 }

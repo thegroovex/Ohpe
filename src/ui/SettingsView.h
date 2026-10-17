@@ -144,6 +144,12 @@ public:
     const std::vector<Item>& itemList() const noexcept { return items; }
     void paint (juce::Graphics& g) override;
 
+    /** The width a tag needs so its title (upper case) and text show in full, in pixels at scale s. */
+    static float tagWidthNeeded (const Item& it, float s);
+    /** Where an item's tag goes (pixels, in an overlay of the given size): inside the area's top left when it fits there,
+        otherwise outside, below (or above) the area, right-aligned to it and kept inside the overlay - never cut off. */
+    static juce::Rectangle<float> tagBounds (const Item& it, juce::Rectangle<float> overlay);
+
 private:
     std::vector<Item> items;
 };
