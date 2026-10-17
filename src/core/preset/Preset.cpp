@@ -63,9 +63,8 @@ std::vector<float> arpSnapshot (const ParamRegistry& reg)
     return v;
 }
 
-/** p22: the motion block of a part ("motion.*") is not part of a part preset (the lanes belong to the project).
-    p24: nor is the part's harmony follow mode ("harmony.*": its role in the song, not its sound). */
-static bool isMotionId (const std::string& localId) noexcept { return startsWith (localId, "motion.") || startsWith (localId, "harmony."); }
+/** p22: the motion block of a part ("motion.*") is not part of a part preset (the lanes belong to the project). */
+static bool isMotionId (const std::string& localId) noexcept { return startsWith (localId, "motion."); }
 
 bool isExcludedFromProject (const std::string& id) noexcept
 {

@@ -27,7 +27,7 @@ Raster-Tastatur** mit MPE spielt es vom Bildschirm.
 
 ## Folgen
 
-Jeder Part hat **Folgen** (`pN.harmony.follow`):
+Jeder Part hat **Folgen** (`harmony.pN.follow`):
 
 | Folgen | Die Noten des Parts … |
 |---|---|
@@ -44,7 +44,7 @@ Parts mit **MPE** behalten ihre Tonhöhe (Ausdruck je Note); dort hilft das Rast
 
 | Element | ID | Wirkung |
 |---|---|---|
-| **Folgen** (je Part) | `pN.harmony.follow` | Aus / Skala / Akkord / Grundton |
+| **Folgen** (je Part) | `harmony.pN.follow` | Aus / Skala / Akkord / Grundton |
 | **Gedächtnis** | `harmony.memory` | Halbwertszeit des Tonart-Gedächtnisses in Takten (1 – 32) |
 | **Halten** | `harmony.hold` | friert das Gedächtnis ein: Neue Noten ändern weder Akkord noch Tonart |
 | **Tonart übernehmen** | `harmony.take` | Auslöser: schreibt die gemerkte Tonart in die globale Tonart / Skala |

@@ -225,7 +225,7 @@ public:
         static constexpr const char* perfMod = "perf.mod";   ///< 0..1
         // p16: the morph space - per part "pN.morph.on / x / y / glide / xsrc / ysrc" (MorphSpace::registerParams)
         // p22: the motion recorder - per part "pN.motion.on / rec / len / amt / clear" (MotionRecorder::registerParams)
-        // p24: the harmony brain - "harmony.memory / hold / take / clear / kb.layout", per part "pN.harmony.follow"
+        // p24: the harmony brain - "harmony.memory / hold / take / clear / kb.layout", per part "harmony.pN.follow"
         static constexpr const char* harmonyTake = "harmony.take";   ///< trigger (message thread: key.root / key.scale)
         static constexpr const char* harmonyClear = "harmony.clear"; ///< trigger (the brain forgets)
     };

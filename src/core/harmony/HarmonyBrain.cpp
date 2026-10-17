@@ -156,16 +156,17 @@ void HarmonyBrain::registerParams (ParamRegistry& r, int parts)
     for (int p = 1; p <= parts; ++p)
     {
         const auto n = std::to_string (p);
-        auto d = choice ("p" + n + ".harmony.follow", "Part " + n + " Harmony Follow", "Part " + n + " Harmonie folgen",
+        // global IDs (not "pN.*"): the follow mode is the part's role in the song - not its sound (presets, breeding)
+        auto d = choice ("harmony.p" + n + ".follow", "Part " + n + " Harmony Follow", "Part " + n + " Harmonie folgen",
                          harmony::followNamesEn(), harmony::followNamesDe(), harmony::FollowOff);
-        d.group = "part" + n + "/midi";
+        d.group = "global/harmony";
         r.add (std::move (d));
     }
 }
 
 void HarmonyBrain::bind (const ParamRegistry& r)
 {
-    for (int p = 0; p < numParts; ++p) idx[(size_t) p].follow = r.indexOf ("p" + std::to_string (p + 1) + ".harmony.follow");
+    for (int p = 0; p < numParts; ++p) idx[(size_t) p].follow = r.indexOf ("harmony.p" + std::to_string (p + 1) + ".follow");
     idxMemory = r.indexOf ("harmony.memory");
     idxHold = r.indexOf ("harmony.hold");
     idxClear = r.indexOf ("harmony.clear");

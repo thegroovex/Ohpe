@@ -64,12 +64,12 @@ TEST_CASE ("p24 harmony: parameters appended after the motion block; matrix sour
     auto owner = std::make_unique<Core>();
     const auto& reg = owner->params();
     int expect = reg.indexOf ("p4.motion.clear") + 1;
-    for (const char* id : { "harmony.memory", "harmony.hold", "harmony.take", "harmony.clear", "harmony.kb.layout", "p1.harmony.follow",
-                            "p2.harmony.follow", "p3.harmony.follow", "p4.harmony.follow" })
+    for (const char* id : { "harmony.memory", "harmony.hold", "harmony.take", "harmony.clear", "harmony.kb.layout", "harmony.p1.follow",
+                            "harmony.p2.follow", "harmony.p3.follow", "harmony.p4.follow" })
         CHECK_MESSAGE (reg.indexOf (id) == expect++, id);
     CHECK (reg.get ("harmony.memory") == 8.0f);
-    CHECK (reg.get ("p1.harmony.follow") == 0.0f);
-    CHECK (reg.descriptor (reg.indexOf ("p1.harmony.follow")).choices.size() == (size_t) harmony::numFollow);
+    CHECK (reg.get ("harmony.p1.follow") == 0.0f);
+    CHECK (reg.descriptor (reg.indexOf ("harmony.p1.follow")).choices.size() == (size_t) harmony::numFollow);
     CHECK (reg.descriptor (reg.indexOf ("harmony.kb.layout")).choices.size() == (size_t) harmony::numLayouts);
     CHECK (mod::SrcChordRoot == mod::SrcMotion4 + 1);
     CHECK (mod::SrcChordRoot == 27);
@@ -142,10 +142,10 @@ TEST_CASE ("p24 harmony: grid layouts and mask quantising")
     // In Key: scale steps (C major from C3: D, F one row up)
     CHECK (gridNote (LayoutInKey, 1, 0, 48, 0, scales::Major) == 50);
     CHECK (gridNote (LayoutInKey, 0, 1, 48, 0, scales::Major) == 53);
-    CHECK (gridNote (LayoutInKey, 2, 0, 49, 0, scales::Major) == 52); // C# is not in the key: the grid starts on D
+    CHECK (gridNote (LayoutInKey, 2, 0, 49, 0, scales::Major) == 53); // C# is not in the key: the grid starts on D (D E F)
     for (int layout = 0; layout < numLayouts; ++layout)
-        for (int row = 0; row < 8; ++row)
-            for (int col = 0; col < 32; ++col)
+        for (int row = 0; row < 4; ++row) // the on-screen grid: 4 x 24
+            for (int col = 0; col < 24; ++col)
             {
                 const int n = gridNote (layout, col, row, 36, 9, scales::Minor);
                 CHECK ((n >= 0 && n <= 127));
@@ -180,7 +180,7 @@ TEST_CASE ("p24 harmony: part 1 plays a chord, part 2 follows it; follow off is 
     rig.core.harmony().requestClear();
     rig.run (1);
 
-    rig.set ("p2.harmony.follow", (float) harmony::FollowChord);
+    rig.set ("harmony.p2.follow", (float) harmony::FollowChord);
     rig.run (12, rig.chord (1, { 57, 60, 64 })); // A minor on part 1 (a chord commits after 40 ms)
     CHECK (h.heard());
     CHECK (name (h.chord()) == "Am");
@@ -202,11 +202,11 @@ TEST_CASE ("p24 harmony: part 1 plays a chord, part 2 follows it; follow off is 
     rig.run (2, { MidiEvent::noteOff (2, 63, 0) });
 
     // a part following "Root" snaps to the chord's root; one following "Scale" to the remembered key
-    rig.set ("p2.harmony.follow", (float) harmony::FollowRoot);
+    rig.set ("harmony.p2.follow", (float) harmony::FollowRoot);
     rig.run (2, { MidiEvent::noteOn (2, 70, 100, 0) });
     CHECK (rig.core.lastNote() == 65);
     rig.run (2, { MidiEvent::noteOff (2, 70, 0) });
-    rig.set ("p2.harmony.follow", (float) harmony::FollowScale);
+    rig.set ("harmony.p2.follow", (float) harmony::FollowScale);
     rig.run (2, { MidiEvent::noteOn (2, 61, 100, 0) });
     CHECK (scales::inScale (rig.core.lastNote(), h.keyRoot(), h.keyScale()));
     rig.run (2, { MidiEvent::noteOff (2, 61, 0) });
@@ -218,7 +218,7 @@ TEST_CASE ("p24 harmony: part 1 plays a chord, part 2 follows it; follow off is 
     rig.run (4, rig.chord (1, { 53, 57, 60 }, false));
 
     // follow off: back to the note as played
-    rig.set ("p2.harmony.follow", 0.0f);
+    rig.set ("harmony.p2.follow", 0.0f);
     rig.run (2, { MidiEvent::noteOn (2, 66, 100, 0) });
     CHECK (rig.core.lastNote() == 66);
     rig.run (2, { MidiEvent::noteOff (2, 66, 0) });
@@ -323,13 +323,13 @@ TEST_CASE ("p24 harmony: grid events reach one part (MPE with expression, plain 
     CHECK (rig.core.harmony().heard());
 }
 
-TEST_CASE ("p24 harmony: part presets keep the follow mode; sounds do not breed it")
+TEST_CASE ("p24 harmony: part presets keep the follow mode (a global ID, not part of the sound)")
 {
     Rig rig;
-    rig.set ("p1.harmony.follow", (float) harmony::FollowChord);
+    rig.set ("harmony.p1.follow", (float) harmony::FollowChord);
     const auto pre = preset::capturePart (rig.core.params(), 0, {});
-    CHECK (pre.params.find ("harmony.follow") == pre.params.end());
-    rig.set ("p1.harmony.follow", (float) harmony::FollowScale);
+    for (const auto& [id, v] : pre.params) CHECK (id.find ("harmony") == std::string::npos);
+    rig.set ("harmony.p1.follow", (float) harmony::FollowScale);
     preset::applyPart (pre, rig.core.params(), 0);
-    CHECK (rig.core.params().get ("p1.harmony.follow") == (float) harmony::FollowScale);
+    CHECK (rig.core.params().get ("harmony.p1.follow") == (float) harmony::FollowScale);
 }

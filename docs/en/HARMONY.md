@@ -25,7 +25,7 @@ without setting a key by hand. An **isomorphic grid keyboard** with MPE plays it
 
 ## Follow
 
-Each part has **Follow** (`pN.harmony.follow`):
+Each part has **Follow** (`harmony.pN.follow`):
 
 | Follow | The part's notes … |
 |---|---|
@@ -42,7 +42,7 @@ their pitch (per-note expression); use the grid's *In Key* layout there.
 
 | Control | ID | What it does |
 |---|---|---|
-| **Follow** (per part) | `pN.harmony.follow` | Off / Scale / Chord / Root |
+| **Follow** (per part) | `harmony.pN.follow` | Off / Scale / Chord / Root |
 | **Memory** | `harmony.memory` | half-life of the key memory in bars (1 – 32) |
 | **Hold** | `harmony.hold` | freezes the memory: new notes change neither chord nor key |
 | **Take Key** | `harmony.take` | trigger: writes the remembered key into the global Key / Scale |

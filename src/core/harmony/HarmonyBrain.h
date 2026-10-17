@@ -26,7 +26,7 @@ namespace ohpe
       is matched against all major and natural minor keys; a new key must win clearly (hysteresis). Until
       anything was heard the key is the global key ("key.root" / "key.scale").
     * History: the last eight chords (newest first) for the display.
-    * Follow ("pN.harmony.follow"): Off, Scale (the part's notes snap to the remembered key), Chord (to the
+    * Follow ("harmony.pN.follow"): Off, Scale (the part's notes snap to the remembered key), Chord (to the
       tones of the remembered chord), Root (to the chord's root). The part's one-finger chord builds on that set.
       Off leaves the part exactly as before (neutral).
     * "harmony.hold" freezes the memory; "harmony.take" (trigger, message thread) writes the remembered key into
@@ -86,7 +86,7 @@ public:
     HarmonyBrain (const HarmonyBrain&) = delete;
     HarmonyBrain& operator= (const HarmonyBrain&) = delete;
 
-    /** Registers "harmony.memory / hold / take / clear / kb.layout" and "pN.harmony.follow" (append-only block). */
+    /** Registers "harmony.memory / hold / take / clear / kb.layout" and "harmony.pN.follow" (append-only block). */
     static void registerParams (ParamRegistry& reg, int numParts);
 
     void bind (const ParamRegistry& reg);

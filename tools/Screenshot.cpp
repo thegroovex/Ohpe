@@ -608,7 +608,7 @@ int main (int argc, char* argv[])
             e.selectEngine (EngineType::Analog);
             e.selectMode (ui::Mode::Lfo);
             e.selectView (4); // LFO | Mod | Morph | Motion | Harmony
-            setPlain (p, "p2.harmony.follow", 2.0f);
+            setPlain (p, "harmony.p2.follow", 2.0f);
             const std::vector<std::vector<int>> prog = { { 57, 60, 64 }, { 53, 57, 60 }, { 48, 52, 55, 60 }, { 55, 59, 62 }, { 50, 53, 57 },
                                                          { 52, 56, 59 }, { 53, 57, 60 }, { 55, 59, 62, 65 } };
             for (const auto& c : prog)
@@ -628,7 +628,7 @@ int main (int argc, char* argv[])
             save (e, dir.getChildFile ("ohpe-harmony" + suffix + ".png"));
             release (p, { 57, 60, 64, 67 });
             e.showGridKeyboard (false);
-            setPlain (p, "p2.harmony.follow", 0.0f);
+            setPlain (p, "harmony.p2.follow", 0.0f);
             p.core().harmony().requestClear();
             run (p, 8);
             e.selectView (0);

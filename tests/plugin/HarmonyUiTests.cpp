@@ -59,7 +59,7 @@ TEST_CASE ("editor p24: the Harmony view - page, chord heard from part 1, take t
     e.selectPart (1);
     e.selectMode (ui::Mode::Lfo);
     e.selectView (ui::modfx::LfoViewHarmony);
-    CHECK (e.encoder (0).boundId() == "p2.harmony.follow");
+    CHECK (e.encoder (0).boundId() == "harmony.p2.follow");
     CHECK (e.encoder (1).boundId() == "harmony.memory");
     CHECK (e.encoder (2).boundId() == "harmony.hold");
     CHECK (e.encoder (3).boundId() == "harmony.kb.layout");

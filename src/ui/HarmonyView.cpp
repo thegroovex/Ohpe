@@ -14,13 +14,12 @@ using i18n::tr;
 
 namespace
 {
-std::string partId (int part, const char* local) { return "p" + std::to_string (part + 1) + "." + local; }
 bool german() { return i18n::current() == i18n::Language::German; }
 } // namespace
 
 std::vector<std::string> harmonyParams (int part)
 {
-    return { partId (part, "harmony.follow"), "harmony.memory", "harmony.hold", "harmony.kb.layout" };
+    return { "harmony.p" + std::to_string (part + 1) + ".follow", "harmony.memory", "harmony.hold", "harmony.kb.layout" };
 }
 
 std::vector<std::string> harmonyTitles() { return { "Harmony" }; }
