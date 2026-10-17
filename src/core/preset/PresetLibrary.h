@@ -21,6 +21,7 @@ struct Entry
     int64_t modified = 0;     ///< seconds since 1970 (user files), 0 for factory presets
     bool favourite = false;
     int rating = 0;           ///< 0 (none) .. 5 stars
+    std::string pack;         ///< id of the content pack the preset comes from (read-only, factory = true); empty otherwise
 };
 
 enum class Bank { All = 0, Factory, User };
@@ -36,6 +37,7 @@ struct Filter
     bool favouritesOnly = false;
     int minRating = 0;
     Sort sort = Sort::Name;
+    std::string pack;                 ///< content pack id: only that pack's presets (empty = no pack filter)
 };
 
 /** Case-insensitive (ASCII + German umlauts) text search over an entry. */
@@ -60,6 +62,9 @@ struct UserData
     void applyTo (std::vector<Entry>& entries) const;
     void set (const std::string& uid, bool favourite, int rating);
 };
+
+/** The content pack ids the entries come from (for the pack chips), sorted, each once. */
+std::vector<std::string> usedPacks (const std::vector<Entry>& entries);
 
 /** The categories that are in use by the entries (for the tag chips), in category order. */
 std::vector<std::string> usedTags (const std::vector<Entry>& entries);

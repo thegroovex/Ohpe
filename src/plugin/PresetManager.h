@@ -4,6 +4,7 @@
 
 #include "preset/Preset.h"
 #include "preset/PresetLibrary.h"
+#include "update/PackFormat.h"
 
 #include <juce_core/juce_core.h>
 #include <juce_events/juce_events.h>
@@ -40,6 +41,8 @@ public:
     /** Re-reads the factory bank and the user folder (keeps favourites / ratings). */
     void rescan();
     const std::vector<preset::Entry>& entries() const noexcept { return list; }
+    /** The installed content packs found by the last rescan (id, version, names EN / DE), sorted by id. */
+    const std::vector<update::ContentIndex::Pack>& contentPacks() const noexcept { return packs; }
 
     preset::Filter filter;
     /** Entry indices that pass `filter`, sorted. */
@@ -92,6 +95,7 @@ private:
     OhpeProcessor& proc;
     juce::File folder;
     std::vector<preset::Entry> list;
+    std::vector<update::ContentIndex::Pack> packs;
     preset::UserData userData;
     int currentIndex = -1;
     std::optional<preset::Preset> previewBackup;

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "update/ContentPacks.h"
+#include "update/PackFormat.h"
 #include "update/Download.h"
 #include "update/UpdateManifest.h"
 #include "update/UpdateSettings.h"
@@ -94,6 +95,12 @@ public:
     void remindLater();
     void installPack (const juce::String& id);
     bool rollbackPack (const juce::String& id);
+    /** "Install pack ...": a pack zip from a local file - the same checks and unpacking as a downloaded pack
+        (pack.json read, kind folders, size limits, quota, one step of backup). Old packs without pack.json are
+        named by their file name "Ohpe-content-<id>-<version>.zip". */
+    void installPackFile (const juce::File& zip);
+    /** The installed packs (pack.json of each Content/<id>/), sorted by id. */
+    std::vector<update::PackInfo> installedPacks() const;
     bool busy() const { return isThreadRunning(); }
 
     /** Counts content pack installs / rollbacks: an editor that sees it change rescans the library. */
@@ -116,6 +123,7 @@ private:
     void doCheck (bool automatic);
     void doDownload (bool previous);
     void doInstallPack (juce::String id);
+    void doInstallPackFile (juce::File zip);
     void setState (State s, const juce::String& msg, const juce::String& detail = {});
     void saveSettings();
     void loadSettings();

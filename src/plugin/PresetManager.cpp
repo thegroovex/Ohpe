@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "PresetManager.h"
 #include "Updater.h"
+#include "ContentLibrary.h"
 
 #include "OhpePresets.h"
 #include "PluginProcessor.h"
@@ -84,26 +85,32 @@ void PresetManager::rescan()
         e.meta = std::move (p.meta);
         list.push_back (std::move (e));
     }
-    // p27: content packs installed by the updater (Content/<pack>/...): read-only like the factory bank
+    // p27: content packs (Content/<pack>/presets/..., old flat packs: the pack folder): read-only like the factory bank.
+    // uid "content:<pack>/<path inside presets/>" - the same for flat and kind-folder packs (favourites survive)
     {
         const auto content = Updater::contentFolder();
-        if (content.isDirectory())
-            for (const auto& packDir : content.findChildFiles (juce::File::findDirectories, false))
+        packs = content::scan (content).packs;
+        if (! filter.pack.empty() && std::none_of (packs.begin(), packs.end(), [this] (const auto& p) { return p.id == filter.pack; }))
+            filter.pack.clear(); // the pack was removed / rolled back to a version without presets
+        for (const auto& pack : packs)
+        {
+            const auto presetDir = content::kindFolder (content, str (pack.id), update::PackKind::Presets);
+            for (const auto& [kind, item] : pack.items)
             {
-                if (packDir.getFileName().startsWithChar ('.')) continue; // .backup, .staging
-                for (const auto& f : packDir.findChildFiles (juce::File::findFiles, true, "*" + juce::String (preset::fileExtension)))
-                {
-                    preset::Preset p;
-                    if (! preset::fromJson (std8 (f.loadFileAsString()), p)) continue;
-                    preset::Entry e;
-                    e.factory = true;
-                    e.location = std8 (f.getFullPathName());
-                    e.uid = "content:" + std8 (f.getRelativePathFrom (content).replaceCharacter ('\\', '/'));
-                    e.meta = std::move (p.meta);
-                    if (e.meta.name.empty()) e.meta.name = std8 (f.getFileNameWithoutExtension());
-                    list.push_back (std::move (e));
-                }
+                if (kind != update::PackKind::Presets) continue;
+                const auto f = presetDir.getChildFile (str (item) + preset::fileExtension);
+                preset::Preset p;
+                if (! f.existsAsFile() || ! preset::fromJson (std8 (f.loadFileAsString()), p)) continue;
+                preset::Entry e;
+                e.factory = true;
+                e.pack = pack.id;
+                e.location = std8 (f.getFullPathName());
+                e.uid = "content:" + update::contentUidPath (pack.id, item + preset::fileExtension);
+                e.meta = std::move (p.meta);
+                if (e.meta.name.empty()) e.meta.name = std8 (f.getFileNameWithoutExtension());
+                list.push_back (std::move (e));
             }
+        }
     }
     if (folder.isDirectory())
         for (const auto& f : folder.findChildFiles (juce::File::findFiles, true, "*" + juce::String (preset::fileExtension)))

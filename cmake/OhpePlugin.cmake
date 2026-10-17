@@ -95,7 +95,7 @@ list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/LivingView.cpp)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/HarmonyView.cpp)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/GridKeyboard.cpp)
 # p27: the in-app updater (release check, verified download, content packs) and its view
-list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/Updater.cpp ${CMAKE_SOURCE_DIR}/src/ui/UpdateView.cpp)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/Updater.cpp ${CMAKE_SOURCE_DIR}/src/plugin/ContentLibrary.cpp ${CMAKE_SOURCE_DIR}/src/ui/UpdateView.cpp)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/UserTableView.cpp) # p20
 # p18: preset breeding (the breeding view; the engine-agnostic core is src/core/breed)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/BreedView.cpp)

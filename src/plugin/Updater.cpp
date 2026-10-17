@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Updater.h"
+#include "ContentLibrary.h"
 
 #include <cmath>
 
@@ -516,6 +517,11 @@ void Updater::doInstallPack (juce::String id)
         setState (s, msg, detail);
     };
     if (pack.sha256.empty()) { done (State::Failed, "The release has no checksum - not installed", id); return; }
+    if (! update::isAllowedContentUrl (pack.url, testFolder != juce::File()))
+    {
+        done (State::Failed, "The content pack is not from the Ohpe release pages - not installed", str (pack.url));
+        return;
+    }
     const auto prevState = snapshot().state;
     setState (State::Downloading, "Downloading the content pack", str (pack.nameEn));
     const auto content = folder().getChildFile ("Content");
@@ -529,48 +535,88 @@ void Updater::doInstallPack (juce::String id)
               str (pack.nameEn));
         return;
     }
-    // unpack into a staging folder; every entry must stay inside it
-    const auto staging = content.getChildFile (".staging").getChildFile (id);
-    staging.deleteRecursively();
-    staging.createDirectory();
+    // unpack (shared with "Install pack ...": path-safe, kind folders, size limits, quota, one step of backup)
+    update::PackInfo expected;
+    expected.id = pack.id;
+    expected.version = pack.version;
+    expected.kind = pack.kind;
+    expected.nameEn = pack.nameEn;
+    expected.nameDe = pack.nameDe;
+    expected.minApp = pack.minApp;
+    update::ContentRegistry reg;
     {
-        juce::ZipFile zip (zipFile);
-        if (zip.getNumEntries() == 0) { staging.deleteRecursively(); done (State::Failed, "The content pack is damaged", str (pack.nameEn)); return; }
-        for (int i = 0; i < zip.getNumEntries(); ++i)
-            if (! update::isSafeEntryPath (std8 (zip.getEntry (i)->filename)))
-            {
-                staging.deleteRecursively();
-                done (State::Failed, "The content pack is damaged", zip.getEntry (i)->filename);
-                return;
-            }
-        if (zip.uncompressTo (staging, true).failed()) { staging.deleteRecursively(); done (State::Failed, "Could not unpack the content pack", str (pack.nameEn)); return; }
+        std::lock_guard<std::mutex> g (lock);
+        reg = registry;
     }
-    // back up the installed version (one step), then swap the new one in
-    const auto target = content.getChildFile (id);
-    const auto backup = content.getChildFile (".backup").getChildFile (id);
-    if (target.isDirectory())
+    const auto res = content::installZip (zipFile, content, expected, reg, &cancelFlag);
+    if (! res.ok)
     {
-        backup.deleteRecursively();
-        backup.getParentDirectory().createDirectory();
-        if (! target.moveFileTo (backup)) { staging.deleteRecursively(); done (State::Failed, "Could not back up the installed pack", target.getFullPathName()); return; }
-    }
-    if (! staging.moveFileTo (target))
-    {
-        if (backup.isDirectory()) backup.moveFileTo (target); // put the old one back
-        done (State::Failed, "Could not install the content pack", target.getFullPathName());
+        done (State::Failed, res.error, res.detail.isNotEmpty() ? res.detail : str (pack.nameEn));
         return;
     }
     zipFile.deleteFile();
-    std::string regText;
     {
         std::lock_guard<std::mutex> g (lock);
-        registry.installed (pack.id, pack.version);
-        regText = registry.toJson();
+        registry = reg;
     }
-    content.getChildFile ("installed.json").replaceWithText (str (regText));
     refreshPacks();
     ++contentGen;
     done (prevState == State::Available ? State::Available : State::UpToDate, "Content pack installed", str (pack.nameEn) + " " + str (pack.version));
+}
+
+void Updater::installPackFile (const juce::File& zip) { startJob ([this, zip] { doInstallPackFile (zip); }); }
+
+void Updater::doInstallPackFile (juce::File zip)
+{
+    const auto prevState = snapshot().state;
+    auto done = [this] (State s, const juce::String& msg, const juce::String& detail) {
+        { std::lock_guard<std::mutex> g (lock); snap.busyPack.clear(); }
+        setState (s, msg, detail);
+    };
+    if (! zip.existsAsFile() || ! zip.hasFileExtension ("zip")) { done (State::Failed, "Choose a content pack (.zip)", zip.getFileName()); return; }
+    {
+        std::lock_guard<std::mutex> g (lock);
+        snap.busyPack = zip.getFileName();
+        snap.progress = 0.0;
+    }
+    update::ContentRegistry reg;
+    {
+        std::lock_guard<std::mutex> g (lock);
+        reg = registry;
+    }
+    cancelFlag = false;
+    const auto res = content::installZip (zip, folder().getChildFile ("Content"), {}, reg, &cancelFlag);
+    if (! res.ok) { done (State::Failed, res.error, res.detail.isNotEmpty() ? res.detail : zip.getFileName()); return; }
+    if (! res.info.minApp.empty() && currentVersion() < update::Version::of (res.info.minApp))
+    {
+        // installed, but this Ohpe is too old for it: say so (the library still lists what it can read)
+        { std::lock_guard<std::mutex> g (lock); registry = reg; }
+        refreshPacks();
+        ++contentGen;
+        done (State::Failed, "Installed - this pack needs a newer Ohpe", str (res.info.nameEn) + " " + str (res.info.minApp));
+        return;
+    }
+    {
+        std::lock_guard<std::mutex> g (lock);
+        registry = reg;
+    }
+    refreshPacks();
+    ++contentGen;
+    done (prevState == State::Available ? State::Available : (prevState == State::Failed || prevState == State::Idle ? State::UpToDate : prevState),
+          "Content pack installed", str (res.info.nameEn) + " " + str (res.info.version));
+}
+
+std::vector<update::PackInfo> Updater::installedPacks() const
+{
+    update::ContentRegistry reg;
+    {
+        std::lock_guard<std::mutex> g (lock);
+        reg = registry;
+    }
+    std::vector<update::PackInfo> out;
+    const auto index = content::scan (folder().getChildFile ("Content"));
+    for (const auto& p : index.packs) out.push_back (content::installedInfo (folder().getChildFile ("Content"), str (p.id), &reg));
+    return out;
 }
 
 bool Updater::rollbackPack (const juce::String& id)
