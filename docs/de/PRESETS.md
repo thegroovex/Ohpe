@@ -26,6 +26,17 @@ Der **Preset-Streifen** neben der Part-Auswahl zeigt das zuletzt geladene Preset
 laden das vorige / nächste Preset der aktuellen Liste der Bibliothek (mit ihren Filtern und ihrer
 Sortierung), ein Klick auf den Namen öffnet die Bibliothek.
 
+### Erster Start
+
+Ein neues Ohpe – der erste Start der App oder eine neue Plug-in-Instanz in einem Song – startet mit
+dem **ersten Werks-Preset der Bibliothek** (die eingebaute Bank in der Standard-Sortierung der
+Bibliothek, nach Name), nicht mit einem leeren „Init“-Klang: Ein Part-Preset wird in alle vier
+Parts geladen (jeder behält seinen MIDI-Kanal), ein Projekt-Preset würde alles ersetzen. Der
+Preset-Streifen zeigt seinen Namen; Band und Sequenzer sind leer. Eine gespeicherte Sitzung – der
+Song im Host, die letzte Sitzung der Standalone-App oder eine geladene Zustandsdatei – stellt sich
+stattdessen selbst wieder her, mit dem Namen des Presets, das geladen war. In der Standalone-App
+führt *Audio-Einstellungen … › Auf Grundzustand zurücksetzen* zu diesem Start zurück.
+
 ### Speichern
 
 *Preset speichern …* öffnet das Speicherfeld: Name, Autor (wird gemerkt), Tags (Kategorien und

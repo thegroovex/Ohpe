@@ -26,6 +26,16 @@ The **preset strip** next to the part selector shows the preset loaded last; its
 previous / next preset of the library's current list (with its filters and sort order), a click on
 the name opens the library.
 
+### First start
+
+A new Ohpe – the first start of the app, or a new plug-in instance in a song – starts with the
+**first factory preset of the library** (the built-in bank in the library's default order, by
+name), not with a blank "Init" sound: a part preset is loaded into all four parts (each keeps its
+MIDI channel), a project preset would replace everything. The preset strip shows its name; tape
+and sequencers are empty. A saved session – the host's song, the standalone app's last session or
+a loaded state file – restores itself instead, together with the name of the preset that was
+loaded. In the standalone app, *Audio Settings … › Reset to default state* returns to this start.
+
 ### Saving
 
 *Save preset …* opens the save panel: name, author (remembered), tags (categories plus your own
