@@ -98,8 +98,9 @@ Jeder gewürfelte Klang soll sofort spielbar sein:
   Würfen ein kurzes Legato-Glide, nie auf der ersten Note), ein kurzer Tonhöhen-Blip im Anschlag kommt etwa
   in jedem 25. Wurf; Glide-Druck ist neutral.
 * **Pegelangepasst**: Ohpe spielt den neuen Klang offline an (C4 + G4), würfelt neu, wenn er stumm oder
-  fehlerhaft ist, und stellt den Part-**Gain** so ein, dass er so laut spielt wie die Werks-Presets (deren
-  Median, K-gewichtete Lautheit), mit einem True Peak von höchstens -1 dBTP. Die Part-Lautstärke bleibt
+  fehlerhaft ist, und stellt den Part-**Gain** so ein, dass er so laut spielt wie die Werks-Presets (Median ihres
+  lautesten Moments, K-gewichtet – Plucks und Flächen werden danach verglichen, wie laut ein Ton klingt, nicht wie
+  lange er dauert), mit einem True Peak von höchstens -1 dBTP. Die Part-Lautstärke bleibt
   unverändert.
 
 **ZUFALL halten** (oder rechts anklicken) öffnet die **[Zucht](ZUCHT.md)**: zwei Klänge kreuzen, sechs Kinder hören,

@@ -187,19 +187,21 @@ TEST_CASE ("random sound: the loudness target is the factory median")
     auto au = std::make_unique<breed::Audition>();
     const auto bases = factoryBases();
     REQUIRE (bases.size() >= 50);
-    std::vector<float> l, r, lufs;
+    std::vector<float> l, r, lufs, integrated;
     for (const auto& b : bases)
     {
         au->renderAudio (breed::fromParams (au->schema(), b.params), l, r);
         const auto m = randomsound::measure (l, r, au->sampleRate());
         CHECK (m.nonFinite == 0);
-        if (m.lufs > -70.0f) lufs.push_back (m.lufs);
+        if (m.momentaryMax > -70.0f) lufs.push_back (m.momentaryMax);
+        if (m.lufs > -70.0f) integrated.push_back (m.lufs);
     }
     std::sort (lufs.begin(), lufs.end());
     const float med = median (lufs);
     const float p10 = lufs[lufs.size() / 10], p90 = lufs[lufs.size() * 9 / 10];
-    std::printf ("OHPE-STATS factory n=%d median=%.2f LUFS p10=%.2f p90=%.2f min=%.2f max=%.2f target=%.2f\n", (int) lufs.size(), med,
-                 p10, p90, lufs.front(), lufs.back(), randomsound::targetLufs);
+    std::printf ("OHPE-STATS factory n=%d momentary-max median=%.2f LUFS p10=%.2f p90=%.2f min=%.2f max=%.2f target=%.2f; integrated "
+                 "median=%.2f\n",
+                 (int) lufs.size(), med, p10, p90, lufs.front(), lufs.back(), randomsound::targetLufs, median (integrated));
     CHECK (std::abs (med - randomsound::targetLufs) <= 1.5f);
 }
 
@@ -216,7 +218,7 @@ TEST_CASE ("random sound: 500 rolled sounds play at factory loudness, peak-safe,
     for (int i = 0; i < 500; ++i)
     {
         if (! slice.has (i)) continue;
-        const int t = eng[(size_t) i % eng.size()];
+        const int t = eng[(size_t) (i + i / 8) % eng.size()]; // every slice sees every engine
         std::string name;
         const auto base = baseFor (bases, t, i / (int) eng.size(), &name);
         const auto seed = (uint64_t) (424242 + 104729ULL * (uint64_t) i);
@@ -238,19 +240,20 @@ TEST_CASE ("random sound: 500 rolled sounds play at factory loudness, peak-safe,
         ++n;
         CHECK (breed::valid (s, res.genome));
         CHECK (m.nonFinite == 0);
-        CHECK (m.lufs >= randomsound::targetLufs - 9.0f);              // never near-silent
+        CHECK (m.momentaryMax >= randomsound::targetLufs - 9.0f);      // never near-silent
         CHECK (m.truePeakDb <= randomsound::truePeakCeilingDb + 0.5f); // never clips
-        near += std::abs (m.lufs - randomsound::targetLufs) <= 3.0f ? 1 : 0;
+        near += std::abs (m.momentaryMax - randomsound::targetLufs) <= 3.0f ? 1 : 0;
         tonal += m.flatness <= randomsound::maxFlatness ? 1 : 0;
         const bool gl = randomsound::glideAtStart (s, res.genome);
         const float nz = randomsound::noiseParamLevel (s, res.genome, t);
         glide += gl ? 1 : 0;
         noisy += nz > 0.2f ? 1 : 0;
         usable += res.usable ? 1 : 0;
-        std::printf ("OHPE-R %d %s %s | before %.2f %.2f %.3f %d %.2f | after %.2f %.2f %.3f %d %.2f a=%d r=%d g=%.1f %.0fms\n", i,
-                     engineTypeInfo ((EngineType) t).id, name.c_str(), before.lufs, before.truePeakDb, before.flatness,
-                     randomsound::glideAtStart (s, old) ? 1 : 0, randomsound::noiseParamLevel (s, old, t), m.lufs, m.truePeakDb,
-                     m.flatness, gl ? 1 : 0, nz, res.attempts, res.renders, res.gainDb, took);
+        // columns: momentary max, integrated, true peak, flatness, glide at start, noise parameter level
+        std::printf ("OHPE-R %d %s %s | before %.2f %.2f %.2f %.3f %d %.2f | after %.2f %.2f %.2f %.3f %d %.2f a=%d r=%d g=%.1f %.0fms\n",
+                     i, engineTypeInfo ((EngineType) t).id, name.c_str(), before.momentaryMax, before.lufs, before.truePeakDb,
+                     before.flatness, randomsound::glideAtStart (s, old) ? 1 : 0, randomsound::noiseParamLevel (s, old, t),
+                     m.momentaryMax, m.lufs, m.truePeakDb, m.flatness, gl ? 1 : 0, nz, res.attempts, res.renders, res.gainDb, took);
     }
     if (n == 0) return;
     std::sort (ms.begin(), ms.end());

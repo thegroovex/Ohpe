@@ -251,7 +251,7 @@ struct Roller
         {
             if (leaf == "vowel") return uniformIn (rng, 0.0f, 4.0f);
             if (leaf == "formant") return uniformIn (rng, -5.0f, 5.0f);
-            if (leaf == "breath") return rng.uniform() < 0.85f ? uniformIn (rng, 0.03f, 0.18f) : uniformIn (rng, 0.18f, 0.28f);
+            if (leaf == "breath") return rng.uniform() < 0.85f ? uniformIn (rng, 0.03f, 0.15f) : uniformIn (rng, 0.15f, 0.2f);
             if (leaf == "tension") return uniformIn (rng, 0.2f, 0.8f);
             if (leaf == "vibdepth") return uniformIn (rng, 0.0f, 0.35f);
             if (leaf == "vibrate") return uniformIn (rng, 3.5f, 7.0f);
@@ -325,6 +325,7 @@ Loudness measure (const std::vector<float>& l, const std::vector<float>& r, doub
         z.push_back (e / (double) n);
     }
     auto lufsOf = [] (double power) { return -0.691 + 10.0 * std::log10 (std::max (power, 1.0e-30)); };
+    for (double p : z) m.momentaryMax = std::max (m.momentaryMax, (float) lufsOf (p));
     double sum = 0.0;
     int count = 0;
     for (double p : z)
@@ -465,10 +466,10 @@ Result make (breed::Audition& audition, const breed::Genome& base, int engineTyp
         res.attempts = a + 1;
         const auto m = measure (l, r, sr, hold);
         const float gain = gainK >= 0 ? cand[(size_t) gainK] : 0.0f;
-        const float needed = gain + (targetLufs - m.lufs);
+        const float needed = gain + (targetLufs - m.momentaryMax);
         double penalty = 0.0;
         if (m.nonFinite > 0) penalty += 1.0e9;
-        if (m.lufs < silentLufs) penalty += 1.0e6 + (silentLufs - m.lufs);
+        if (m.momentaryMax < silentLufs) penalty += 1.0e6 + (silentLufs - m.momentaryMax);
         penalty += std::max (0.0f, m.flatness - maxFlatness) * 1000.0;
         penalty += std::max (0.0f, needed - maxGainDb) * 10.0;
         if (penalty < bestPenalty)
@@ -479,22 +480,23 @@ Result make (breed::Audition& audition, const breed::Genome& base, int engineTyp
         }
         if (penalty <= 0.0) break;
     }
-    if (best.empty() || bestM.nonFinite > 0 || bestM.lufs < silentLufs - 30.0f)
+    if (best.empty() || bestM.nonFinite > 0 || bestM.momentaryMax < silentLufs - 30.0f)
     {
         res.loudness = bestM;
         return res; // nothing playable: the sound stays as it was
     }
     res.usable = bestPenalty <= 0.0;
 
-    // level: the factory median, true peak below the ceiling (two corrections at most: effects may not be linear)
+    // level: the factory median, true peak below the ceiling (a few corrections: effects may not be linear)
     auto m = bestM;
     if (gainK >= 0)
     {
         const auto& gene = s.gene (gainK);
-        for (int pass = 0; pass < 3; ++pass)
+        for (int pass = 0; pass < 4; ++pass)
         {
             const float cur = best[(size_t) gainK];
-            float delta = targetLufs - m.lufs;
+            float delta = targetLufs - m.momentaryMax;
+            if (pass == 3) delta = std::min (0.0f, delta); // the last pass only ever lowers (true-peak safety)
             delta = std::min (delta, truePeakCeilingDb - 0.2f - m.truePeakDb);
             if (pass > 0 && std::abs (delta) < 0.75f && m.truePeakDb <= truePeakCeilingDb) break;
             const float next = std::clamp (cur + delta, gene.minValue, std::min (gene.maxValue, maxGainDb));

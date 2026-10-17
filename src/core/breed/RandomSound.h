@@ -20,28 +20,31 @@
     make() then plays the candidate offline on a private core (breed::Audition: C4 + G4, the factory presets'
     measuring chord) and checks it: a near-silent, broken (non-finite) or noise-like candidate (spectral flatness
     above maxFlatness) is rolled again (a few attempts, the best one is kept). Finally the part gain is set so the
-    sound plays at the factory presets' median loudness (targetLufs, K-weighted and gated) with its true peak at or
+    sound plays at the factory presets' median loudness (targetLufs: loudest 400 ms, K-weighted) with its true peak at or
     below truePeakCeilingDb. Message / worker thread only - never the audio thread.
 
     Deterministic: a seed gives the same sound on every platform (breed::Rng).
 */
 namespace ohpe::randomsound
 {
-/** Median loudness of the factory part presets in the audition render (K-weighted, gated; measured by the core test
-    "random sound: the loudness target is the factory median"). */
-constexpr float targetLufs = -16.0f;
+/** Median loudness of the factory part presets in the audition render: the loudest 400 ms (momentary, K-weighted)
+    of the chord, so plucks and pads are compared by how loud a note sounds, not by how long it lasts. Measured by the
+    core test "random sound: the loudness target is the factory median". */
+constexpr float targetLufs = -13.5f;
 constexpr float truePeakCeilingDb = -1.0f;
 /** A candidate quieter than this before the gain is set counts as near-silent and is rolled again. */
 constexpr float silentLufs = -48.0f;
 /** Spectral flatness (100 Hz - 10 kHz, averaged spectrum) above which a candidate counts as noise. */
 constexpr float maxFlatness = 0.30f;
-/** The part gain never goes above this (dB) to reach the target: a very quiet sound is rolled again instead. */
-constexpr float maxGainDb = 18.0f;
+/** The part gain never goes above this (dB, the top of its range) to reach the target: a sound that would need more
+    is rolled again. */
+constexpr float maxGainDb = 24.0f;
 constexpr int maxAttempts = 5;
 
 struct Loudness
 {
-    float lufs = -200.0f;       ///< K-weighted gated loudness (LUFS) of the whole render
+    float lufs = -200.0f;       ///< K-weighted gated (integrated) loudness (LUFS) of the whole render
+    float momentaryMax = -200.0f; ///< the loudest 400 ms block (K-weighted, LUFS): what normalisation aims at
     float truePeakDb = -200.0f; ///< 4x oversampled peak (dBTP)
     float flatness = 0.0f;      ///< spectral flatness of the held chord: 0 = tonal .. 1 = white noise
     int nonFinite = 0;
