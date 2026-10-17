@@ -556,6 +556,21 @@ void glyph (juce::Graphics& g, juce::Rectangle<float> r, Picto id, juce::Colour 
             }
             break;
         }
+        // p24: GRID - three staggered rows of cells (the isomorphic keyboard)
+        case Picto::Grid:
+        {
+            const float cw = s * 0.62f, gap = s * 0.14f;
+            for (int r = 0; r < 3; ++r)
+                for (int k = 0; k < 3; ++k)
+                {
+                    const float x = c.x - 1.5f * cw - gap + (float) k * (cw + gap) + (r == 1 ? cw * 0.35f : 0.0f) - cw * 0.17f;
+                    const float y = c.y - 1.5f * cw - gap + (float) r * (cw + gap);
+                    const auto cell = juce::Rectangle<float> (x, y, cw, cw);
+                    if ((r + k) % 2 == 0) g.fillRoundedRectangle (cell, cw * 0.22f);
+                    else g.drawRoundedRectangle (cell.reduced (lw * 0.25f), cw * 0.22f, lw * 0.5f);
+                }
+            break;
+        }
         // p14: SAVE - a preset card with a plus: "keep this sound"
         case Picto::Save:
         {

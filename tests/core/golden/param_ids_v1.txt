@@ -6734,3 +6734,12 @@ pads.sweep.mode
 pads.sweep.len
 pads.sweep.res
 pads.freeze.mix
+harmony.memory
+harmony.hold
+harmony.take
+harmony.clear
+harmony.kb.layout
+harmony.p1.follow
+harmony.p2.follow
+harmony.p3.follow
+harmony.p4.follow

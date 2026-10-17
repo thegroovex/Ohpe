@@ -50,6 +50,7 @@ add up.
 | 23 – 26 | Motion 1 … Motion 4 | 0 … 1 | – | p22: lane 1 … 4 of the part's [motion recorder](MOTION.md) at the play position (0 where nothing is recorded or the transport stops) |
 | 27 | Pad Sweep | 0 … 1 | – | p25: the position of the [filter sweep pad](PADS.md) (0 = open, 1 = fully swept; the same for every part) |
 | 28 | Pads Held | 0 / 1 | – | p25: 1 while any [performance pad](PADS.md) is engaged |
+| 29 – 31 | Chord Root, Chord Change, Tension | 0 … 1 | – | p24: the [harmony brain](HARMONY.md) (the same in every part): the remembered chord's root (C = 0 … B = 1), 1 at every new chord fading in about 0.3 s, the share of held notes outside the key |
 
 **Per voice** sources have their own value in every voice: with a chord, every note gets its own
 envelope, velocity and random value.

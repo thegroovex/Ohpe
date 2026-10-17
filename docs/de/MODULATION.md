@@ -51,6 +51,7 @@ Verbindungen auf dasselbe Ziel addieren sich.
 | 23 – 26 | Bewegung 1 … Bewegung 4 | 0 … 1 | – | p22: Spur 1 … 4 des [Bewegungs-Recorders](BEWEGUNG.md) des Parts an der Abspielposition (0, wo nichts aufgenommen ist oder der Transport steht) |
 | 27 | Pad-Sweep | 0 … 1 | – | p25: die Position des [Filter-Sweep-Pads](PERFORMANCE-PADS.md) (0 = offen, 1 = ganz durchgefahren; für alle Parts gleich) |
 | 28 | Pads gehalten | 0 / 1 | – | p25: 1, solange ein [Performance-Pad](PERFORMANCE-PADS.md) aktiv ist |
+| 29 – 31 | Akkord-Grundton, Akkordwechsel, Spannung | 0 … 1 | – | p24: das [Harmonie-Hirn](HARMONIE.md) (in jedem Part gleich): Grundton des gemerkten Akkords (C = 0 … H = 1), 1 bei jedem neuen Akkord, verblasst in etwa 0,3 s, Anteil der gehaltenen Töne außerhalb der Tonart |
 
 Quellen **pro Stimme** haben in jeder Stimme ihren eigenen Wert: in einem Akkord bekommt jeder Ton
 seine eigene Hüllkurve, seinen Anschlag und Zufallswert.

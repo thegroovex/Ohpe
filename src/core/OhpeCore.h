@@ -18,6 +18,7 @@
 #include "morph/MorphSpace.h"
 #include "motion/MotionRecorder.h"
 #include "perform/PerformancePads.h"
+#include "harmony/HarmonyBrain.h"
 #include "seq/Arpeggiator.h"
 #include "seq/EuclidSequencer.h"
 #include "seq/OrbitSequencer.h"
@@ -82,6 +83,9 @@ public:
     const MotionRecorder& motion() const noexcept { return motionRec; }
     /** p25: the performance pads on the main mix (states and meters for the display are atomics, any thread). */
     const PerformancePads& pads() const noexcept { return perfPads; }
+    /** p24: the harmony brain (scale and chord memory of all parts; published state is atomics, any thread). */
+    HarmonyBrain& harmony() noexcept { return harmonyBrain; }
+    const HarmonyBrain& harmony() const noexcept { return harmonyBrain; }
     /** p16, message thread (timer): rebuilds morph plans when a part's own sound changed under an empty corner. */
     bool updateMorph() { return morphSpace.update(); }
     /** 0.7: scope tap for the display (a part after its FX rack, or the main output). */
@@ -127,6 +131,10 @@ public:
 
     /** Any thread: notes from the on-screen keyboard (applied at the next block). */
     void queueNote (int note, float velocity, bool on) noexcept;
+    /** p24, any thread: a message of the on-screen grid keyboard for one part (0 .. 3), applied at the next block.
+        An MPE part gets it as it is (member channels 2 .. 16, per-note bend / pressure / slide); any other part gets
+        the notes on its own channel (through scale / chord / follow and the arpeggiator), expression is dropped. */
+    void queueGridEvent (int part, const MidiEvent& e) noexcept;
 
     // ---- state (message thread) ----
     std::string saveState (const std::string& uiJson = {}) const;
@@ -221,6 +229,9 @@ public:
         // p16: the morph space - per part "pN.morph.on / x / y / glide / xsrc / ysrc" (MorphSpace::registerParams)
         // p22: the motion recorder - per part "pN.motion.on / rec / len / amt / clear" (MotionRecorder::registerParams)
         // p25: the performance pads - "pads.stutter / stop / sweep / freeze" and their settings (PerformancePads::registerParams)
+        // p24: the harmony brain - "harmony.memory / hold / take / clear / kb.layout", per part "harmony.pN.follow"
+        static constexpr const char* harmonyTake = "harmony.take";   ///< trigger (message thread: key.root / key.scale)
+        static constexpr const char* harmonyClear = "harmony.clear"; ///< trigger (the brain forgets)
     };
 
 private:
@@ -253,6 +264,8 @@ private:
     void routeLive (const MidiEvent& e) noexcept;
     void routeGenerated (const MidiEvent& e, bool shape, bool toDrums = false) noexcept;
     void addRouted (const MidiEvent& e, int part) noexcept;
+    void routeToPart (const MidiEvent& e, int part) noexcept; ///< p24: one part, as live MIDI on its channel
+    void refreshShapers (int part) noexcept;                  ///< p24: scale / chord / follow of a part's shapers
     void dispatch (const RoutedEvent& e) noexcept;
     void pullPhase2Params() noexcept;
     void renderTapeChunk (SourceBuffers& src, int pos, int len) noexcept; ///< part FX slots, tape -> sources
@@ -263,6 +276,7 @@ private:
     MorphSpace morphSpace; ///< p16 (after the parts: its lanes follow them)
     MotionRecorder motionRec; ///< p22
     PerformancePads perfPads; ///< p25 (the mixer runs it in the master chain)
+    HarmonyBrain harmonyBrain; ///< p24
     Mixer mix;
     drum::DrumKit drums;
     StepSequencer stepSeq;
@@ -309,6 +323,9 @@ private:
 
     struct UiNote { int note; float velocity; bool on; };
     SpscQueue<UiNote, 256> uiNotes;
+    struct GridEvent { int part; MidiEvent event; };
+    SpscQueue<GridEvent, 512> gridEvents; ///< p24
+    int blockRoot = 0, blockScale = 1;    ///< p24: the global key of this block
 
     // ---- 0.2: tape, FX slots, audio input ----
     TapeMachine tapeMachine;

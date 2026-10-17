@@ -51,35 +51,48 @@ inline std::vector<std::string> namesDe()
              "Harmonisch Moll", "Melodisch Moll", "Dur-Pentatonik", "Moll-Pentatonik", "Blues", "Ganzton" };
 }
 
-inline bool inScale (int note, int root, int scale) noexcept
+inline bool inMask (int note, int root, uint16_t m) noexcept
 {
     const int pc = ((note - root) % 12 + 12) % 12;
-    return ((mask (scale) >> pc) & 1u) != 0;
+    return ((m >> pc) & 1u) != 0;
+}
+
+inline bool inScale (int note, int root, int scale) noexcept { return inMask (note, root, mask (scale)); }
+
+/** p24: nearest note of a pitch-class set (mask relative to root; ties resolve downwards). 0xfff = no change. */
+inline int quantiseMask (int note, int root, uint16_t m) noexcept
+{
+    if ((m & 0xfff) == 0xfff || (m & 0xfff) == 0) return std::clamp (note, 0, 127);
+    for (int d = 0; d < 12; ++d)
+    {
+        if (note - d >= 0 && inMask (note - d, root, m)) return note - d;
+        if (note + d <= 127 && inMask (note + d, root, m)) return note + d;
+    }
+    return std::clamp (note, 0, 127);
 }
 
 /** Nearest note of the scale (ties resolve downwards). */
 inline int quantise (int note, int root, int scale) noexcept
 {
     if (scale == Chromatic) return std::clamp (note, 0, 127);
-    for (int d = 0; d < 12; ++d)
-    {
-        if (note - d >= 0 && inScale (note - d, root, scale)) return note - d;
-        if (note + d <= 127 && inScale (note + d, root, scale)) return note + d;
-    }
-    return std::clamp (note, 0, 127);
+    return quantiseMask (note, root, mask (scale));
 }
 
-/** The note `degrees` scale steps above an in-scale note. */
-inline int degreeAbove (int note, int degrees, int root, int scale) noexcept
+/** The note `degrees` steps of the set above an in-set note (p24: any pitch-class set). */
+inline int degreeAboveMask (int note, int degrees, int root, uint16_t m) noexcept
 {
+    if ((m & 0xfff) == 0) return note + degrees;
     int n = note;
     for (int k = 0; k < degrees; ++k)
     {
-        ++n;
-        while (! inScale (n, root, scale) && n < note + 48) ++n;
+        const int from = n++;
+        while (! inMask (n, root, m) && n < from + 12) ++n; // the next note of the set lies within an octave
     }
     return n;
 }
+
+/** The note `degrees` scale steps above an in-scale note. */
+inline int degreeAbove (int note, int degrees, int root, int scale) noexcept { return degreeAboveMask (note, degrees, root, mask (scale)); }
 
 enum Chord { Off = 0, Triad, Seventh, Sus2, Sus4, Power, Octave, Sixth, Add9, numChords };
 
@@ -91,13 +104,13 @@ inline std::vector<std::string> chordNamesDe() { return { "Aus", "Dreiklang", "S
     e.g. a triad on the 2nd degree of C major is minor); with the chromatic scale or a note
     outside the scale it uses fixed major-type intervals. Returns the number of notes (<= 5).
 */
-inline int build (int note, int chord, int root, int scale, std::array<int, 5>& out) noexcept
+inline int buildMask (int note, int chord, int root, uint16_t m, std::array<int, 5>& out) noexcept
 {
     int n = 0;
     auto add = [&] (int x) { if (x >= 0 && x <= 127 && n < 5) out[(size_t) n++] = x; };
     add (note);
-    const bool diatonic = scale != Chromatic && inScale (note, root, scale);
-    auto deg = [&] (int d, int fallback) { add (diatonic ? degreeAbove (note, d, root, scale) : note + fallback); };
+    const bool diatonic = (m & 0xfff) != 0xfff && inMask (note, root, m);
+    auto deg = [&] (int d, int fallback) { add (diatonic ? degreeAboveMask (note, d, root, m) : note + fallback); };
     switch (chord)
     {
         case Triad: deg (2, 4); deg (4, 7); break;
@@ -112,6 +125,12 @@ inline int build (int note, int chord, int root, int scale, std::array<int, 5>& 
     }
     return n;
 }
+
+/** Same as buildMask with the scale's pitch classes (p24: the set may be a chord or any other set too). */
+inline int build (int note, int chord, int root, int scale, std::array<int, 5>& out) noexcept
+{
+    return buildMask (note, chord, root, scale == Chromatic ? (uint16_t) 0xfff : mask (scale), out);
+}
 } // namespace scales
 
 /**
@@ -124,10 +143,19 @@ class NoteShaper
 public:
     void set (bool quantiseOn, int chordType, int keyRoot, int keyScale) noexcept
     {
+        const uint16_t m = keyScale == scales::Chromatic ? (uint16_t) 0xfff : scales::mask (keyScale);
+        setMask (quantiseOn, chordType, keyRoot, m, keyRoot, m);
+    }
+    /** p24: quantise to one pitch-class set (mask relative to quantRoot; the harmony brain's follow) and build the
+        one-finger chords in another (the key). */
+    void setMask (bool quantiseOn, int chordType, int quantRoot, uint16_t quantMask, int chordRoot, uint16_t chordMask) noexcept
+    {
         quantise = quantiseOn;
         chord = chordType;
-        root = keyRoot;
-        scale = keyScale;
+        root = quantRoot;
+        setMaskBits = quantMask;
+        chordRootPc = chordRoot;
+        chordMaskBits = chordMask;
     }
 
     bool active() const noexcept { return quantise || chord != scales::Off; }
@@ -157,9 +185,9 @@ public:
         }
         if (m.count > 0) // retrigger of a key still down: release what it played
             process (MidiEvent::noteOff (ch, e.data1, e.sampleOffset), emit);
-        const int base = quantise ? scales::quantise (e.data1, root, scale) : (int) e.data1;
+        const int base = quantise ? scales::quantiseMask (e.data1, root, setMaskBits) : (int) e.data1;
         std::array<int, 5> notes {};
-        const int n = chord != scales::Off ? scales::build (base, chord, root, scale, notes) : (notes[0] = base, 1);
+        const int n = chord != scales::Off ? scales::buildMask (base, chord, chordRootPc, chordMaskBits, notes) : (notes[0] = base, 1);
         m.count = 0;
         for (int k = 0; k < n; ++k)
         {
@@ -178,6 +206,7 @@ private:
     std::array<Mapping, 128> map {};
     std::array<int, 128> refs {};
     bool quantise = false;
-    int chord = scales::Off, root = 0, scale = scales::Major;
+    int chord = scales::Off, root = 0, chordRootPc = 0;
+    uint16_t setMaskBits = scales::mask (scales::Major), chordMaskBits = scales::mask (scales::Major);
 };
 } // namespace ohpe

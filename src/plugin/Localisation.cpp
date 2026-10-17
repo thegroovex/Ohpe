@@ -539,6 +539,22 @@ const std::map<juce::String, juce::String>& table()
         { "Living", "Lebendig" },
         { "Width", "Breite" },
         { "Play to wake it", "Spielen, um es zu wecken" },
+        // p24: the harmony brain, the grid keyboard
+        { "Harmony", "Harmonie" },
+        { "Key", "Tonart" },
+        { "Root", "Grundton" },
+        { "Grid", "Raster" },
+        { "Take Key", "Tonart übernehmen" },
+        { "Forget", "Vergessen" },
+        { "Hold", "Halten" },
+        { "follows", "folgt" },
+        { "chords in memory", "Akkorde im Gedächtnis" },
+        { "Listening - play chords on a part that does not follow", "Hört zu – Akkorde auf einem Part spielen, der nicht folgt" },
+        { "Held - the memory does not change", "Gehalten – das Gedächtnis ändert sich nicht" },
+        { "Grid keyboard: isomorphic, MPE - swaps the piano keys", "Raster-Tastatur: isomorph, MPE – ersetzt die Klaviertasten" },
+        { "Bar: yellow = grid shown", "Balken: gelb = Raster sichtbar" },
+        { "Every chord has the same shape everywhere. With MPE on: slide sideways = bend, up / down = slide",
+          "Jeder Akkord hat überall dieselbe Form. Mit MPE: seitlich schieben = Bend, hoch / runter = Slide" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;

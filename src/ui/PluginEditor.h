@@ -4,6 +4,7 @@
 
 #include "BreedView.h"
 #include "Display.h"
+#include "GridKeyboard.h"
 #include "LibraryBrowser.h"
 #include "OhpeLookAndFeel.h"
 #include "ProView.h"
@@ -133,6 +134,11 @@ public:
     ui::LifeBar& lifeBarComponent() { return lifeBar; } // p15
     ui::Keyboard& keyboardComponent() { return keyboard; }
     ui::PictoKey& midiKeyComponent() { return midiKey; }
+    // p24: the isomorphic grid keyboard (swapped in for the piano keys by the GRID key between OCTAVE + and MIDI)
+    ui::GridKeyboard& gridKeyboard() { return grid; }
+    ui::PictoKey& gridKeyComponent() { return gridKey; }
+    void showGridKeyboard (bool show);
+    bool gridKeyboardShown() const noexcept { return grid.isVisible(); }
     // p14 rev 3: the bottom panels - transport keys with light bars, the readouts, the octave keys
     ui::PictoKey& stopTransportKey() { return stopKey; }
     ui::PictoKey& toStartTransportKey() { return toStartKey; }
@@ -208,6 +214,7 @@ private:
     ui::PictoKey octDownKey { ui::Picto::OctaveDown, "Octave" };
     ui::PictoKey octUpKey { ui::Picto::OctaveUp, "Octave" };
     ui::PictoKey midiKey { ui::Picto::Midi, "MIDI" };
+    ui::PictoKey gridKey { ui::Picto::Grid, "Grid" }; ///< p24
     ui::PictoKey libraryKey { ui::Picto::Library, "Library" };
     ui::PictoKey proKey { ui::Picto::Pro, "Pro" };
     // p14: header round keys, performance wheels (left of the keyboard), glide (right of it)
@@ -225,6 +232,7 @@ private:
     ui::PresetStrip presetStrip;
     juce::TextButton langEn { "EN" }, langDe { "DE" };
     ui::Keyboard keyboard;
+    ui::GridKeyboard grid; ///< p24
     ui::ProView proView;
     ui::LibraryBrowser library;
     ui::BreedView breedView; ///< p18
@@ -250,6 +258,7 @@ private:
     int motionPage = 0; ///< p22
     int lastMotionSignature = -1; ///< p22: soft key / status refresh of the Motion view
     int lastPadsSignature = -1;   ///< p25: soft key refresh of the Pads view
+    int harmonyPage = 0, lastHarmonySignature = -1; ///< p24: the Harmony view
     std::array<ui::VirtualPtr, 4> virtuals {};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OhpeEditor)

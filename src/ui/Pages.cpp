@@ -6,6 +6,7 @@
 #include "MorphView.h"
 #include "MotionView.h"
 #include "PadsView.h"
+#include "HarmonyView.h"
 #include "ResoView.h"
 #include "SpaceView.h"
 #include "fx/FxRack.h"
@@ -132,6 +133,7 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             if (ctx.lfoView == modfx::LfoViewMod) return modfx::modParams (core, partIndex, ctx.modRouting); // 0.7
             if (ctx.lfoView == modfx::LfoViewMorph) return morphview::morphParams (partIndex); // p16
             if (ctx.lfoView == modfx::LfoViewMotion) return motionview::motionParams (partIndex); // p22
+            if (ctx.lfoView == modfx::LfoViewHarmony) return harmonyview::harmonyParams (partIndex); // p24
             return { p + "lfo.rate", p + "lfo.depth", p + "lfo.shape", p + "lfo.dest", p + "tune", p + "fine", p + "bend", p + "vol",
                      p + "midich", p + "quant", p + "chord", "key.root", "key.scale", p + "mpe", p + "mpe.bend", p + "mpe.press",
                      p + "mpe.timbre", p + "mpe.pressamt", p + "mpe.timbreamt", p + "mpe.smooth", p + "mpe.slide", "", "", "" }; // 0.8
@@ -222,6 +224,7 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
             t = ctx.lfoView == modfx::LfoViewMod     ? modfx::modTitles (core, ctx.part, ctx.modRouting)
                 : ctx.lfoView == modfx::LfoViewMorph ? morphview::morphTitles() // p16
                 : ctx.lfoView == modfx::LfoViewMotion ? motionview::motionTitles() // p22
+                : ctx.lfoView == modfx::LfoViewHarmony ? harmonyview::harmonyTitles() // p24
                                                      : std::vector<std::string> { "LFO", "Pitch & Level", "MIDI & Key", "Scale & MPE", "MPE" };
             break;
         case Mode::Mixer: t = { "Channel", "EQ & Output", "Source & Dynamics", "Master", "Master Compressor", "Master Output", "Master Filter" }; break;
@@ -403,6 +406,7 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
             }
             groups.push_back ({ "Morph", 0, { p + "morph.on", p + "morph.x", p + "morph.y", p + "morph.glide", p + "morph.xsrc", p + "morph.ysrc" } }); // p16
             groups.push_back ({ "Motion", 0, { p + "motion.on", p + "motion.rec", p + "motion.len", p + "motion.amt", p + "motion.clear" } }); // p22
+            groups.push_back ({ "Harmony", 0, { "harmony.p" + std::to_string (juce::jlimit (0, Core::numParts - 1, ctx.part) + 1) + ".follow", "harmony.memory", "harmony.hold", "harmony.kb.layout", "harmony.take", "harmony.clear" } }); // p24
             return groups;
         }
         case Mode::Effects:

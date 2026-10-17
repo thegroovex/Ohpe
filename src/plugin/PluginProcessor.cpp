@@ -33,7 +33,9 @@ const char* const* triggerIds()
                                        // p18: preset breeding
                                        Core::Ids::libBreed, Core::Ids::libBreedGo, Core::Ids::libBreedNext,
                                        // p23: bounce to engine
-                                       Core::Ids::bounceGo };
+                                       Core::Ids::bounceGo,
+                                       // p24: harmony brain
+                                       Core::Ids::harmonyTake, Core::Ids::harmonyClear };
     return ids;
 }
 } // namespace
@@ -278,6 +280,8 @@ void OhpeProcessor::pollRemoteControls()
             else if (id == Core::Ids::libBreedGo) breedRequests[1].fetch_add (1);
             else if (id == Core::Ids::libBreedNext) breedRequests[2].fetch_add (1);
             else if (id == Core::Ids::bounceGo) bounceManager.bounce(); // p23: the edit part, the bounce settings
+            else if (id == Core::Ids::harmonyTake) takeHarmonyKey();    // p24
+            else if (id == Core::Ids::harmonyClear) ohpeCore.harmony().requestClear(); // p24
             else if (id.startsWith ("tape.tx."))
             {
                 const auto action = id == Core::Ids::tapeTxPlay ? TransportKey::PlayStop
@@ -316,6 +320,14 @@ bool OhpeProcessor::runTapeEdit (const char* triggerId)
     else if (id == Core::Ids::tapeRtz) { tape.locate (0.0); ok = true; }
     sendChangeMessage();
     return ok;
+}
+
+// ---------------------------------------------------------------- p24: harmony brain
+void OhpeProcessor::takeHarmonyKey()
+{
+    const auto& h = ohpeCore.harmony();
+    setPlainFromUi (Core::Ids::keyRoot, (float) h.keyRoot());
+    setPlainFromUi (Core::Ids::keyScale, (float) h.keyScale());
 }
 
 // ---------------------------------------------------------------- p11: tape transport

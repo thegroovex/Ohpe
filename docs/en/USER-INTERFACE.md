@@ -18,7 +18,7 @@ and EN / DE. Every function can be reached with the mouse and – through MIDI l
 |---|---|
 | **PITCH** wheel | pitch bend for the edit part (its MIDI channel, like the on-screen keyboard); range = the part's *Bend Range*. Drag up / down; it springs back to the centre when you let go. |
 | **MOD** wheel | the mod wheel (CC 1): a source in the [modulation matrix](MODULATION.md). Stays where you leave it; double-click = 0. |
-| Keyboard | three octaves (C3–C6 by default); **OCTAVE −/+** moves it. |
+| Keyboard | three octaves (C3–C6 by default); **OCTAVE −/+** moves it. **GRID** (between OCTAVE + and MIDI) swaps it for the isomorphic [grid keyboard](HARMONY.md#the-grid-keyboard) with MPE (p24). |
 | **PORTAMENTO**: AUTO / LEGATO / ALWAYS | glide mode of the edit part: *Auto* glides while the previous note still sounds, *Legato* only while another key is held, *Always* from every previous note. |
 | **GLIDE** | glide time of the edit part (0 = off). |
 
@@ -61,7 +61,7 @@ gently (a soft pulse of about 1.8 s, never fully off).
 | Engine | four segments, one per part (1 – 4, left to right): a segment lights when that part plays the engine – **yellow** for the edit part, **violet** for another part. |
 | Mode | **yellow** = the page on the display. **Violet**: SEQUENCER = the sequencer runs; EFFECTS = a slot of any FX rack (a part or the master) is on; DRUM = a running sequencer plays the drum kit; LFO = a part's LFO has depth or a modulation routing is set. **Green** on TAPE = the tape plays, **red** on TAPE = recording (both breathing). The status colour wins; the shown page keeps its sunk key. |
 | Transport | PLAY **green** while running (the triangle glows too), REC **red** (steady = ready; the circle glows), LOOP **yellow** while on. While PLAY runs and REC records, bar and sign breathe. |
-| OCTAVE − / + · MIDI | OCTAVE **yellow** while the keyboard is shifted that way; MIDI **red** during MIDI learn. |
+| OCTAVE − / + · MIDI · GRID | OCTAVE **yellow** while the keyboard is shifted that way; MIDI **red** during MIDI learn; GRID **yellow** while the grid keyboard is shown. |
 
 Hover a key: its tooltip says what the bar means (engine keys also list the parts that use them).
 
@@ -330,7 +330,7 @@ note (page 3). **Load** puts an audio file on the selected pad (or drag a file o
 ![Mod view](../images/ohpe-mod-view.png)
 
 In **LFO** mode the tabs on the display switch between **LFO** (LFO 1, as before), **Mod**, the
-[modulation matrix](MODULATION.md) of the edit part, **Morph** (the [morph pad](#morph-view-p16)) and **Motion** (the [motion recorder](#motion-view-p22)). The Mod view lists all **16 routings** in two
+[modulation matrix](MODULATION.md) of the edit part, **Morph** (the [morph pad](#morph-view-p16)), **Motion** (the [motion recorder](#motion-view-p22)) and **Harmony** (the [harmony brain](#harmony-view-p24)). The Mod view lists all **16 routings** in two
 columns: source → target, a bar for the amount (to the right = positive, to the left = negative) and
 the routing's live value. Targets on an engine or an effect show the real parameter name ("Cutoff",
 "FX2 Hyper Detune"), so you see what moves without counting slots. Below the list a **trace** draws
@@ -464,6 +464,25 @@ stays dim green. The strip below says which pads play.
 | Encoders, page *Sweep & Freeze* | Sweep Filter (low-pass / high-pass), Sweep Resonance, Freeze Level |
 
 The pads are also the matrix sources **Pad Sweep** and **Pads Held**.
+
+## Harmony view (p24)
+
+![The Harmony view and the grid keyboard](../images/ohpe-harmony.png)
+
+The fifth tab of **LFO** mode, **Harmony**, shows the [harmony brain](HARMONY.md): the remembered key and chord, twelve
+bars for the pitch-class memory (key notes light, chord tones violet, held notes green, the key's root marked yellow)
+and the last eight chords. The strip says what the brain does and whether the edit part follows.
+
+| Action | Result |
+|---|---|
+| **Take Key** (soft key) | write the remembered key into the global Key / Scale |
+| **Hold** (soft key) | freeze the memory |
+| **Forget** (soft key) | forget key, chord and history |
+| Encoders, page *Harmony* | Follow (edit part: Off / Scale / Chord / Root), Memory (bars), Hold, Grid Layout |
+
+The **GRID** key (between OCTAVE + and MIDI) swaps the piano keys for the isomorphic grid keyboard: 4 × 24 cells in
+fourths, thirds, whole tones or only the key's notes; chord tones carry a violet bar. With MPE on for the edit part
+each touch has its own channel – slide sideways to bend, up / down for slide, pressure from touch or pen.
 
 ## Keys and shortcuts
 

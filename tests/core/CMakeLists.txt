@@ -82,3 +82,5 @@ target_sources(ohpe_core_tests PRIVATE MotionTests.cpp)
 target_sources(ohpe_core_tests PRIVATE PadsTests.cpp)
 # p26: the living display's object
 target_sources(ohpe_core_tests PRIVATE LivingShapeTests.cpp)
+# p24: the harmony brain
+target_sources(ohpe_core_tests PRIVATE HarmonyTests.cpp)

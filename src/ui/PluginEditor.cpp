@@ -8,6 +8,7 @@
 #include "MorphView.h"
 #include "MotionView.h"
 #include "PadsView.h"
+#include "HarmonyView.h"
 
 #include "Palette.h"
 #include "plugin/Localisation.h"
@@ -40,7 +41,8 @@ enum SoftKeyId
     skTableImport = 80, skTableUser, skTableClear,    // p20: user wavetable / formants
     skBounce = 90,                                    // p23: bounce to engine (tape page: at once; Grain / Sampler: menu)
     skMotionRec = 100, skMotionPlay, skMotionClear,   // p22: motion recorder
-    skPadFirst = 110                                  // p25: performance pads (latching: 110 .. 113)
+    skPadFirst = 110,                                 // p25: performance pads (latching: 110 .. 113)
+    skHarmonyTake = 120, skHarmonyHold, skHarmonyClear // p24: harmony brain
 };
 
 bool isAudioFile (const juce::String& path)
@@ -184,7 +186,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     : AudioProcessorEditor (p), proc (p), display (p),
       pitchWheel (p, Core::Ids::perfBend, "Pitch", true), modWheel (p, Core::Ids::perfMod, "Mod", false),
       glideSwitch (p), glideKnob (p, "Glide"), lifeBar (p),
-      keyboard (p.keyboardState), proView (p), library (p), breedView (p)
+      keyboard (p.keyboardState), grid (p), proView (p), library (p), breedView (p)
 {
     setLookAndFeel (&lnf);
     setWantsKeyboardFocus (false);
@@ -245,6 +247,10 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     octDownKey.onClick = [this] { keyboard.setBaseOctave (keyboard.getBaseOctave() - 1); saveUiState(); repaint(); };
     octUpKey.onClick = [this] { keyboard.setBaseOctave (keyboard.getBaseOctave() + 1); saveUiState(); repaint(); };
     midiKey.onClick = [this] { showMidiMenu(); };
+    // p24: GRID swaps the piano keys for the isomorphic grid keyboard (yellow bar while it is shown)
+    gridKey.setHasLed (true);
+    gridKey.onClick = [this] { showGridKeyboard (! grid.isVisible()); saveUiState(); };
+    addAndMakeVisible (gridKey);
     libraryKey.setAccent (colour::sunYellow);
     libraryKey.onClick = [this] { showLibrary (! library.isVisible()); };
     libraryKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::libOpen, &libraryKey); };
@@ -349,6 +355,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     };
     addAndMakeVisible (display);
     addAndMakeVisible (keyboard);
+    addChildComponent (grid); // p24
 
     proView.onClose = [this] { showProView (false); };
     proView.onModeSelected = [this] (Mode m) { selectMode (m); };
@@ -455,7 +462,7 @@ void OhpeEditor::resized()
         encoders[(size_t) i]->setBounds (scaled (280.0f + 168.0f * (float) i, 460, 136, 148));
     // p14 rev 3: the transport block (bottom left) and the octave block (bottom right) mirror each other: the
     // same panel, the same rows and key heights, on the 8-unit grid (12 units inside the panels)
-    for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey })
+    for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &gridKey, &midiKey })
     {
         k->setJoined (false, false);
         k->setShowLegend (true);
@@ -477,8 +484,10 @@ void OhpeEditor::resized()
             row[i]->setJoined (i > 0, i < 4);
         }
         box (keysReadout, 972, 476, 184, 32);
-        box (octDownKey, 972, 516, slot * 2.0f, 80);
-        box (octUpKey, 972 + slot * 2.0f, 516, slot * 2.0f, 80);
+        // p24: OCTAVE - / + one and a half slots each, then GRID and MIDI
+        box (octDownKey, 972, 516, slot * 1.5f, 80);
+        box (octUpKey, 972 + slot * 1.5f, 516, slot * 1.5f, 80);
+        box (gridKey, 972 + slot * 3.0f, 516, slot, 80);
         box (midiKey, 972 + slot * 4.0f, 516, slot, 80);
         octDownKey.setJoined (false, true);
         octUpKey.setJoined (true, false);
@@ -496,6 +505,7 @@ void OhpeEditor::resized()
     place (pitchWheel, "pitchWheel");
     place (modWheel, "modWheel");
     place (keyboard, "keyboard");
+    place (grid, "keyboard"); // p24
     place (glideSwitch, "glideSwitch");
     place (glideKnob, "glideKnob");
     place (proView, "overlay");
@@ -503,7 +513,7 @@ void OhpeEditor::resized()
     place (breedView, "overlay"); // p18
     for (auto& k : engineKeys) k->setUiScale (s);
     for (auto& k : modeKeys) k->setUiScale (s);
-    for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey, &libraryKey, &proKey, &randomKey, &saveKey })
+    for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey, &gridKey, &libraryKey, &proKey, &randomKey, &saveKey })
         k->setUiScale (s);
     glideSwitch.setUiScale (s);
     glideKnob.setUiScale (s);
@@ -624,6 +634,7 @@ int& OhpeEditor::currentPage()
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMod) return modPage;       // 0.7
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMorph) return morphPage;   // p16
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMotion) return motionPage; // p22
+    if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewHarmony) return harmonyPage; // p24
     if (mode == Mode::Effects && ctx.fxView != modfx::FxViewSends) return rackPage;  // 0.7 (1.0: also the Space view)
     return pageOf[(size_t) mode];
 }
@@ -873,7 +884,7 @@ std::vector<juce::Component*> OhpeEditor::plateComponents()
 {
     // everything that sits on the plate under the overlay area (p14: 24..1176 x 104..616)
     std::vector<juce::Component*> c { &display, &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &midiKey, &octDownKey, &octUpKey,
-                                      &tapeReadout, &keysReadout };
+                                      &tapeReadout, &keysReadout, &gridKey };
     for (auto& k : engineKeys) c.push_back (k.get());
     c.push_back (&lifeBar); // p15
     for (auto& k : modeKeys) c.push_back (k.get());
@@ -950,6 +961,7 @@ void OhpeEditor::refreshTransportKeys()
     const int oct = keyboard.getBaseOctave();
     octDownKey.setLed (colour::sunYellow, oct < 3 ? 1.0f : 0.0f);
     octUpKey.setLed (colour::sunYellow, oct > 3 ? 1.0f : 0.0f);
+    gridKey.setLed (colour::sunYellow, grid.isVisible() ? 1.0f : 0.0f); // p24
 
     // the tape readout: state, time (m:ss.t) and bar.beat of the tape position
     {
@@ -968,7 +980,8 @@ void OhpeEditor::refreshTransportKeys()
     }
     // the keyboard readout: range of the on-screen keyboard and its octave shift; MIDI learn in red
     {
-        const int lo = keyboard.getRangeStart(), hi = keyboard.getRangeEnd();
+        const bool gridShown = grid.isVisible(); // p24: the grid's lowest and highest note
+        const int lo = gridShown ? grid.lowestNote() : keyboard.getRangeStart(), hi = gridShown ? grid.highestNote() : keyboard.getRangeEnd();
         const auto name = [] (int n) { return juce::MidiMessage::getMidiNoteName (n, true, true, 4); };
         const juce::String range = name (lo) + juce::String (juce::CharPointer_UTF8 ("\xe2\x80\x93")) + name (hi);
         const juce::String shift = (oct > 3 ? "+" : oct < 3 ? juce::String (juce::CharPointer_UTF8 ("\xe2\x88\x92")) : juce::String (juce::CharPointer_UTF8 ("\xc2\xb1")))
@@ -976,7 +989,7 @@ void OhpeEditor::refreshTransportKeys()
         if (learning)
             keysReadout.setContent (i18n::upper (tr ("MIDI Learn")), blink ? colour::signalRed : colour::signalRed.withAlpha (0.45f), range, shift);
         else
-            keysReadout.setContent (i18n::upper (tr ("Keys")), colour::displayDim, range, shift);
+            keysReadout.setContent (i18n::upper (tr (gridShown ? "Grid" : "Keys")), colour::displayDim, range, shift);
     }
 }
 
@@ -1303,6 +1316,13 @@ void OhpeEditor::refreshSoftKeys()
                                                  + morphview::cornerTitle (core, ctx.part, c),
                               true, false });
     }
+    else if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewHarmony) // p24: take the key, hold, forget
+    {
+        const auto* hold = proc.parameter ("harmony.hold");
+        keys = { { skHarmonyTake, tr ("Take Key"), core.harmony().heard() },
+                 { skHarmonyHold, tr ("Hold"), true, hold != nullptr && hold->getValue() > 0.5f },
+                 { skHarmonyClear, tr ("Forget"), core.harmony().heard() } };
+    }
     else if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMotion) // p22: record, play, clear the part's lanes
     {
         const auto pre = "p" + juce::String (ctx.part + 1) + ".motion.";
@@ -1399,6 +1419,14 @@ void OhpeEditor::onSoftKey (int id)
             setParamPlain (prmId, prm != nullptr && prm->getValue() > 0.5f ? 0.0f : 1.0f);
             break;
         }
+        case skHarmonyTake: proc.takeHarmonyKey(); break; // p24: the remembered key -> key.root / key.scale
+        case skHarmonyHold:
+        {
+            const auto* prm = proc.parameter ("harmony.hold");
+            setParamPlain ("harmony.hold", prm != nullptr && prm->getValue() > 0.5f ? 0.0f : 1.0f);
+            break;
+        }
+        case skHarmonyClear: core.harmony().requestClear(); break; // p24
         case skTableImport: showTableImportMenu(); return; // p20
         case skBounce: // p23: the tape page bounces at once (the bounce settings), the Grain / Sampler page offers the sources
             if (mode == Mode::Tape)
@@ -1744,6 +1772,8 @@ void OhpeEditor::refreshKeys()
     toStartKey.setTooltip (tip ("To the start of the tape", "Enter"));
     loopKey.setTooltip (tip ("Loop between loop in and out", "L") + "\n" + tr ("Bar: yellow = loop on"));
     midiKey.setTooltip (tr ("MIDI maps and remote controls") + "\n" + tr ("Bar: red = MIDI learn"));
+    gridKey.setTooltip (tr ("Grid keyboard: isomorphic, MPE - swaps the piano keys") + "\n" + tr ("Bar: yellow = grid shown")); // p24
+    grid.setTooltip (tr ("Every chord has the same shape everywhere. With MPE on: slide sideways = bend, up / down = slide"));
     tapeReadout.setTooltip (tr ("Tape position (minutes:seconds) and bar.beat; REC = recording, PLAY = tape rolling"));
     keysReadout.setTooltip (tr ("Range of the on-screen keyboard and its octave shift; red during MIDI learn"));
     libraryKey.setTooltip (tr ("Preset library"));
@@ -1843,6 +1873,15 @@ void OhpeEditor::timerCallback()
         const int sig = (int) std::lround (core.params().get (r + "src")) * 1000 + (int) std::lround (core.params().get (r + "dst"));
         if (sig != lastModSignature) { lastModSignature = sig; refreshSoftKeys(); }
     }
+    if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewHarmony) // p24: chips, bars and keys follow the brain
+    {
+        const auto& h = core.harmony();
+        const auto c = h.chord();
+        const int sig = ((((h.keyRoot() * 16 + h.keyScale()) * 200 + (c.root + 1) * 16 + c.type) * 16 + h.historyCount()) * 2 + (h.heard() ? 1 : 0)) * 2
+                        + (core.params().get ("harmony.hold") >= 0.5f ? 1 : 0);
+        if (sig != lastHarmonySignature) { lastHarmonySignature = sig; refreshSoftKeys(); }
+        display.repaint(); // the memory bars move with every block
+    }
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMotion) // p22: key states and the status line follow the recorder
     {
         const auto pre = "p" + std::to_string (ctx.part + 1) + ".motion.";
@@ -1920,6 +1959,13 @@ void OhpeEditor::timerCallback()
     if (proView.isVisible()) proView.refresh();
     if (mode == Mode::Tape) refreshSoftKeys(); // undo / redo / clipboard state
 
+    // p24: the grid keyboard plays the edit part, shifted by the octave keys; it shows the brain's key and chord
+    if (grid.isVisible())
+    {
+        grid.setPart (ctx.part);
+        grid.setBaseOctave (keyboard.getBaseOctave());
+        grid.refresh();
+    }
     // the on-screen keyboard plays the edit part (its MIDI channel; omni = 1)
     const int ch = juce::jlimit (1, 16, (int) std::lround (core.params().get ("p" + std::to_string (ctx.part + 1) + ".midich")));
     if (ch != lastKeyboardChannel)
@@ -1996,6 +2042,15 @@ void OhpeEditor::showMidiMenu()
     });
 }
 
+void OhpeEditor::showGridKeyboard (bool show) // p24
+{
+    grid.setBaseOctave (keyboard.getBaseOctave());
+    grid.setPart (ctx.part);
+    grid.setVisible (show);
+    keyboard.setVisible (! show);
+    gridKey.setActive (show);
+}
+
 void OhpeEditor::saveUiState()
 {
     auto* obj = proc.uiState.getDynamicObject();
@@ -2004,6 +2059,7 @@ void OhpeEditor::saveUiState()
     obj->setProperty ("mode", (int) mode);
     obj->setProperty ("channel", ctx.mixerChannel);
     obj->setProperty ("octave", keyboard.getBaseOctave());
+    obj->setProperty ("grid", grid.isVisible()); // p24
     obj->setProperty ("seqView", (int) ctx.seqView);
     obj->setProperty ("drumPad", ctx.drumPad);
     obj->setProperty ("lfoView", ctx.lfoView);    // 0.7
@@ -2030,6 +2086,7 @@ void OhpeEditor::loadUiState()
     }
     if (s.hasProperty ("channel")) ctx.mixerChannel = juce::jlimit (0, 7, (int) s["channel"]);
     if (s.hasProperty ("octave")) keyboard.setBaseOctave ((int) s["octave"]);
+    if (s.hasProperty ("grid")) showGridKeyboard ((bool) s["grid"]); // p24
     if (s.hasProperty ("seqView")) ctx.seqView = (SeqView) juce::jlimit (0, numSeqViews - 1, (int) s["seqView"]);
     if (s.hasProperty ("drumPad")) ctx.drumPad = juce::jlimit (0, drum::DrumKit::numPads - 1, (int) s["drumPad"]);
     if (s.hasProperty ("visual")) display.setVisual ((Display::Visual) juce::jlimit (0, (int) Display::Visual::numVisuals - 1, (int) s["visual"]));

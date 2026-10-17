@@ -40,6 +40,9 @@ const std::vector<SourceInfo>& sourceTable()
         { "motion4", "Motion 4", "Bewegung 4", false, S::Part },
         { "padsweep", "Pad Sweep", "Pad-Sweep", false, S::Part }, // p25: the performance pads
         { "padheld", "Pads Held", "Pads gehalten", false, S::Part },
+        { "chordroot", "Chord Root", "Akkord-Grundton", false, S::Part }, // p24: the harmony brain
+        { "chordchange", "Chord Change", "Akkordwechsel", false, S::Part },
+        { "tension", "Tension", "Spannung", false, S::Part },
     };
     return t;
 }

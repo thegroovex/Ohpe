@@ -76,6 +76,7 @@ Core::Core()
     static_assert (MotionRecorder::numParts == numParts, "motion recorder parts");
     motionRec.bind (registry, snapshot); // p22
     perfPads.bind (registry);            // p25
+    harmonyBrain.bind (registry);        // p24
     lockStorage.reserve (1024);
     seqOut.locks = &lockStorage;
     seqOut.maxLocks = 1024;
@@ -117,6 +118,7 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     morphSpace.prepare (sr, chunk); // p16: the morph lanes
     motionRec.prepare (sr);         // p22
     perfPads.prepare (sr);          // p25
+    harmonyBrain.prepare (sr);      // p24
     drums.prepare (sr, chunk);
     mix.prepare (sr, chunk);
     stepSeq.prepare (sr, maxBlock);
@@ -155,6 +157,7 @@ void Core::reset() noexcept
     morphSpace.reset();
     motionRec.reset(); // p22
     perfPads.reset();  // p25
+    harmonyBrain.reset(); // p24
     drums.reset();
     mix.reset();
     tapeMachine.resetDsp();
@@ -181,10 +184,39 @@ void Core::queueNote (int note, float velocity, bool on) noexcept
     uiNotes.push ({ note, velocity, on });
 }
 
+void Core::queueGridEvent (int part, const MidiEvent& e) noexcept
+{
+    if (part >= 0 && part < numParts) gridEvents.push ({ part, e });
+}
+
+void Core::refreshShapers (int p) noexcept
+{
+    auto& r = routing[(size_t) p];
+    const bool quant = snapshot.getBool (r.idxQuant);
+    const int chord = snapshot.getInt (r.idxChord);
+    int fr = 0;
+    uint16_t fm = 0;
+    if (harmonyBrain.followSet (p, fr, fm)) // p24: the part follows the harmony brain (chords build in its key)
+    {
+        const int kr = harmonyBrain.keyRoot(), ks = harmonyBrain.keyScale();
+        const uint16_t km = ks == scales::Chromatic ? (uint16_t) 0xfff : scales::mask (ks);
+        liveShaper[(size_t) p].setMask (true, chord, fr, fm, kr, km);
+        seqShaper[(size_t) p].setMask (true, chord, fr, fm, kr, km);
+        return;
+    }
+    liveShaper[(size_t) p].set (quant, chord, blockRoot, blockScale);
+    seqShaper[(size_t) p].set (quant, chord, blockRoot, blockScale);
+}
+
 // ---------------------------------------------------------------- routing
 void Core::addRouted (const MidiEvent& e, int part) noexcept
 {
     if (numRouted < (int) routed.size()) routed[(size_t) numRouted++] = { e, part };
+    if (part >= 0 && part < numParts) // p24: the harmony brain hears what reaches the parts (not the drum kit)
+    {
+        if (e.isNoteOn()) harmonyBrain.noteOn (part, e.data1, e.data2);
+        else if (e.isNoteOff()) harmonyBrain.noteOff (part, e.data1);
+    }
 }
 
 void Core::routeLive (const MidiEvent& e) noexcept
@@ -197,14 +229,21 @@ void Core::routeLive (const MidiEvent& e) noexcept
     {
         const auto& r = routing[(size_t) p];
         if (! (r.mpe || (r.channel == 0 && ! drumCh) || r.channel == e.channel())) continue;
-        const bool toArp = arp.enabled() && arp.targetPart() == p + 1 && ! r.mpe;
-        auto emit = [&] (const MidiEvent& x) {
-            if (toArp && (x.isNoteOn() || x.isNoteOff())) arp.noteInput (x);
-            else addRouted (x, p);
-        };
-        if (r.mpe) emit (e); // MPE notes keep their channel and pitch (per-note expression)
-        else liveShaper[(size_t) p].process (e, emit);
+        routeToPart (e, p);
     }
+}
+
+void Core::routeToPart (const MidiEvent& e, int p) noexcept
+{
+    const auto& r = routing[(size_t) p];
+    const bool toArp = arp.enabled() && arp.targetPart() == p + 1 && ! r.mpe;
+    auto emit = [&] (const MidiEvent& x) {
+        if (toArp && (x.isNoteOn() || x.isNoteOff())) arp.noteInput (x);
+        else addRouted (x, p);
+    };
+    if (r.mpe) { emit (e); return; } // MPE notes keep their channel and pitch (per-note expression)
+    if (harmonyBrain.followMode (p) != ohpe::harmony::FollowOff && e.isNoteOn()) refreshShapers (p); // p24: the chord heard just now
+    liveShaper[(size_t) p].process (e, emit);
 }
 
 void Core::routeGenerated (const MidiEvent& e, bool shape, bool toDrums) noexcept
@@ -229,7 +268,11 @@ void Core::routeGenerated (const MidiEvent& e, bool shape, bool toDrums) noexcep
             midiOut.add (o);
         }
     };
-    if (shape) seqShaper[(size_t) p].process (e, emit);
+    if (shape)
+    {
+        if (harmonyBrain.followMode (p) != ohpe::harmony::FollowOff && e.isNoteOn()) refreshShapers (p); // p24
+        seqShaper[(size_t) p].process (e, emit);
+    }
     else emit (e);
 }
 
@@ -367,6 +410,12 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     arpLastPart = arp.targetPart();
 
     const int root = snapshot.getInt (keyRootIndex), scale = snapshot.getInt (keyScaleIndex);
+    blockRoot = root;
+    blockScale = scale;
+    harmonyBrain.beginBlock (snapshot, tr.bpm, numSamples, root, scale); // p24: memory, follow modes
+    for (int p = 0; p < numParts; ++p) // p24: the brain as matrix sources Chord Root / Chord Change / Tension
+        for (int k = 0; k < HarmonyBrain::numSources; ++k)
+            parts[(size_t) p]->modMatrix().setSourceValue (mod::SrcChordRoot + k, harmonyBrain.sourceValue (k));
     for (int i = 0; i < numParts; ++i)
     {
         auto& r = routing[(size_t) i];
@@ -374,10 +423,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         r.mpe = snapshot.getBool (r.idxMpe);
         mpeIn[(size_t) i].set (r.mpe, snapshot.getInt (r.idxMpeBend), snapshot.getInt (r.idxMpePress), snapshot.getInt (r.idxMpeTimbre),
                                r.idxPressAmt >= 0 ? snapshot[r.idxPressAmt] : 1.0f, r.idxTimbreAmt >= 0 ? snapshot[r.idxTimbreAmt] : 1.0f);
-        const bool quant = snapshot.getBool (r.idxQuant);
-        const int chord = snapshot.getInt (r.idxChord);
-        liveShaper[(size_t) i].set (quant, chord, root, scale);
-        seqShaper[(size_t) i].set (quant, chord, root, scale);
+        refreshShapers (i); // scale / chord, p24: or the harmony brain's set
     }
     clockOutOn = snapshot.getBool (clockOutIndex);
     if (const int mon = spaceOutIndex >= 0 ? snapshot.getInt (spaceOutIndex) : 0; mon != lastMonitor) // 1.0: headphones / speakers
@@ -427,6 +473,17 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     for (int i = 0; i < numMidi; ++i)
         if (midi[i].status < 0xf0 && ! mapper.handleMidi (midi[i]))
             routeLive (midi[i]);
+    GridEvent ge; // p24: the on-screen grid keyboard plays one part
+    while (gridEvents.pop (ge))
+    {
+        const auto& r = routing[(size_t) ge.part];
+        if (r.mpe) { addRouted (ge.event, ge.part); continue; }
+        if (! ge.event.isNoteOn() && ! ge.event.isNoteOff()) continue;
+        auto x = ge.event;
+        x.status = (uint8_t) ((x.status & 0xf0) | (((r.channel > 0 ? r.channel : 1) - 1) & 0x0f));
+        x.sampleOffset = 0;
+        routeToPart (x, ge.part);
+    }
 
     // 4. sequencers: their notes address parts by channel
     seqOut.clear();
@@ -537,6 +594,7 @@ std::string Core::saveState (const std::string& uiJson) const
     for (int p = 0; p < numParts; ++p)
         if (morphSpace.anyCorner (p)) { s["morph"] = morphSpace.toJson(); break; } // p16
     if (motionRec.anyLane()) s["motion"] = motionRec.toJson(); // p22
+    if (harmonyBrain.anyMemory()) s["harmony"] = harmonyBrain.toJson(); // p24
     if (! uiJson.empty()) s["ui"] = uiJson;
     for (const auto& [name, text] : extraSections)
         if (! text.empty() && s.find (name) == s.end()) s[name] = text;
@@ -554,11 +612,13 @@ bool Core::loadState (const std::string& json, std::string* uiJsonOut)
     else stepSeq.clearPattern();
     extraSections.clear();
     for (const auto& [name, text] : r.sections)
-        if (name != "midimap" && name != "sequencer" && name != "ui" && name != "tape" && name != "orbit" && name != "morph" && name != "motion") extraSections[name] = text;
+        if (name != "midimap" && name != "sequencer" && name != "ui" && name != "tape" && name != "orbit" && name != "morph" && name != "motion" && name != "harmony") extraSections[name] = text;
     if (auto it = r.sections.find ("morph"); it != r.sections.end()) morphSpace.fromJson (it->second); // p16
     else morphSpace.clearAll();
     if (auto it = r.sections.find ("motion"); it != r.sections.end()) motionRec.fromJson (it->second); // p22
     else motionRec.clearAll();
+    if (auto it = r.sections.find ("harmony"); it != r.sections.end()) harmonyBrain.fromJson (it->second); // p24
+    else harmonyBrain.requestClear();
     if (auto it = r.sections.find ("tape"); it != r.sections.end()) tapeMachine.loadSettingsJson (it->second);
     if (auto it = r.sections.find ("orbit"); it != r.sections.end()) orbit.fromJson (it->second);
     else orbit.clearPattern();

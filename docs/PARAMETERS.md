@@ -849,3 +849,22 @@ before compressor, saturation and limiter). The four pad switches are not part o
 
 The modulation matrix gains the sources **Pad Sweep** (27, the sweep position 0 … 1) and **Pads Held** (28, 1 while
 a pad is engaged). The source choice list grows at its end; no new targets.
+
+## Harmony brain (p24)
+
+Appended after the performance pads (`pads.freeze.mix`): five global IDs, then the follow mode part by part (9 IDs).
+Guides: [English](en/HARMONY.md) · [Deutsch](de/HARMONIE.md). The memory (key, chord, the last eight chords, the
+pitch-class weights) is stored in projects and the plug-in state (section `"harmony"`); part presets neither carry
+nor reset `harmony.pN.follow` (its role in the song, not its sound).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `harmony.memory` | Harmony Memory | Harmonie-Gedächtnis | 1 … 32 bars (half-life of the key memory) | 8 |
+| `harmony.hold` | Harmony Hold | Harmonie halten | Off / On | Off |
+| `harmony.take` | Harmony Take Key | Harmonie Tonart übernehmen | trigger (not part of projects) | off |
+| `harmony.clear` | Harmony Clear | Harmonie vergessen | trigger (not part of projects) | off |
+| `harmony.kb.layout` | Grid Layout | Raster-Anordnung | Fourths, Thirds, Whole Tones, In Key | Fourths |
+| `harmony.pN.follow` | Part N Harmony Follow | Part N Harmonie folgen | Off, Scale, Chord, Root | Off |
+
+The modulation matrix gains the sources **Chord Root**, **Chord Change** and **Tension** (29 – 31), the same value in
+every part. The source choice list grows at its end. No new targets.

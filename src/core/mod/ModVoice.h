@@ -22,6 +22,7 @@ enum Source
     SrcMorphX, SrcMorphY, // p16: the morph pad's position (Part scope, fed by the morph space)
     SrcMotion1, SrcMotion2, SrcMotion3, SrcMotion4, // p22: the motion recorder's lanes (Part scope, fed by the core)
     SrcPadSweep, SrcPadHeld, // p25: the performance pads (Part scope, fed by the core)
+    SrcChordRoot, SrcChordChange, SrcTension, // p24: the harmony brain (Part scope, the same value for every part)
     numSources
 };
 /** Sources of the 0.7 list; sources appended later (from here on) are Part-scope values fed by other modules. */

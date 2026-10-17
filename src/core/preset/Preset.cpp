@@ -73,7 +73,8 @@ bool isExcludedFromProject (const std::string& id) noexcept
         || startsWith (id, "perf.")    // p14: wheel positions are performance, not sound
         || startsWith (id, "bounce.")  // p23: bounce to engine is a tool (its result is the part's sample)
         || (id.size() > 13 && id.compare (id.size() - 13, 13, ".motion.clear") == 0) // p22: a trigger
-        || id == "pads.stutter" || id == "pads.stop" || id == "pads.sweep" || id == "pads.freeze"; // p25: held pads are performance
+        || id == "pads.stutter" || id == "pads.stop" || id == "pads.sweep" || id == "pads.freeze" // p25: held pads are performance
+        || id == "harmony.take" || id == "harmony.clear"; // p24: triggers
 }
 
 std::string engineIdOfPart (const ParamRegistry& reg, int partIndex)
@@ -127,6 +128,7 @@ Preset captureProject (Core& core, Meta meta, const std::map<std::string, std::s
     for (int i = 0; i < Core::numParts; ++i)
         if (core.morph().anyCorner (i)) { p.sections["morph"] = core.morph().toJson(); break; } // p16
     if (core.motion().anyLane()) p.sections["motion"] = core.motion().toJson(); // p22
+    if (core.harmony().anyMemory()) p.sections["harmony"] = core.harmony().toJson(); // p24
     for (const auto& [name, text] : extraSections)
         if (! text.empty()) p.sections[name] = text;
     return p;
@@ -297,12 +299,14 @@ ApplyResult applyProject (const Preset& p, Core& core)
     if (auto it = p.sections.find ("orbit"); it != p.sections.end()) core.orbitSequencer().fromJson (it->second);
     else core.orbitSequencer().clearPattern();
     for (const auto& [name, text] : p.sections)
-        if (name != "sequencer" && name != "orbit" && name != "midimap" && name != "ui" && name != "tape" && name != "morph" && name != "motion")
+        if (name != "sequencer" && name != "orbit" && name != "midimap" && name != "ui" && name != "tape" && name != "morph" && name != "motion" && name != "harmony")
             core.setStateSection (name, text);
     if (auto it = p.sections.find ("morph"); it != p.sections.end()) core.morph().fromJson (it->second); // p16
     else core.morph().clearAll();
     if (auto it = p.sections.find ("motion"); it != p.sections.end()) core.motion().fromJson (it->second); // p22
     else core.motion().clearAll();
+    if (auto it = p.sections.find ("harmony"); it != p.sections.end()) core.harmony().fromJson (it->second); // p24
+    else core.harmony().requestClear();
     r.ok = true;
     return r;
 }

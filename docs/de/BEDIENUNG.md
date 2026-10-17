@@ -19,7 +19,7 @@ und -Zeit. In der Kopfzeile liegen die **Part-Auswahl**, der **Preset-Streifen**
 |---|---|
 | **PITCH**-Rad | Pitchbend für den bearbeiteten Part (auf seinem MIDI-Kanal, wie die Bildschirm-Klaviatur); Umfang = *Pitchbend-Bereich* des Parts. Nach oben / unten ziehen; beim Loslassen federt es zur Mitte zurück. |
 | **MOD**-Rad | das Modulationsrad (CC 1): eine Quelle der [Modulationsmatrix](MODULATION.md). Bleibt stehen; Doppelklick = 0. |
-| Klaviatur | drei Oktaven (ab Werk C3–C6); **OKTAVE −/+** verschiebt sie. |
+| Klaviatur | drei Oktaven (ab Werk C3–C6); **OKTAVE −/+** verschiebt sie. **RASTER** (zwischen OKTAVE + und MIDI) tauscht sie gegen die isomorphe [Raster-Tastatur](HARMONIE.md#die-raster-tastatur) mit MPE (p24). |
 | **PORTAMENTO**: AUTO / LEGATO / IMMER | Glide-Modus des bearbeiteten Parts: *Auto* gleitet, solange die vorige Note klingt, *Legato* nur bei gehaltener Taste, *Immer* von jeder vorigen Note. |
 | **GLIDE** | Glide-Zeit des bearbeiteten Parts (0 = aus). |
 
@@ -63,7 +63,7 @@ Piktogramm, einen kurzen **Leuchtbalken**. Eine Farbsprache: **Gelb** = was du b
 | Engine | vier Segmente, eines je Part (1 – 4, von links): ein Segment leuchtet, wenn dieser Part die Engine spielt – **gelb** für den bearbeiteten Part, **violett** für einen anderen Part. |
 | Modus | **Gelb** = die Seite auf dem Display. **Violett**: SEQUENCER = der Sequencer läuft; EFFEKTE = ein Platz eines Effekt-Racks (Part oder Master) ist an; DRUM = ein laufender Sequencer spielt das Drum-Kit; LFO = der LFO eines Parts hat Tiefe oder eine Modulation ist geroutet. **Grün** auf TAPE = das Tape spielt, **rot** auf TAPE = Aufnahme (beide atmend). Die Statusfarbe hat Vorrang; die angezeigte Seite bleibt als eingesunkene Taste sichtbar. |
 | Transport | START **grün**, solange es läuft (auch das Dreieck glüht), REC **rot** (stetig = bereit; der Kreis glüht), SCHLEIFE **gelb**, solange sie an ist. Solange START spielt und REC aufnimmt, atmen Balken und Zeichen. |
-| OKTAVE − / + · MIDI | OKTAVE **gelb**, solange die Klaviatur in diese Richtung verschoben ist; MIDI **rot** während MIDI-Learn. |
+| OKTAVE − / + · MIDI · RASTER | OKTAVE **gelb**, solange die Klaviatur in diese Richtung verschoben ist; MIDI **rot** während MIDI-Learn; RASTER **gelb**, solange die Raster-Tastatur zu sehen ist. |
 
 Der Tooltip einer Taste sagt, was ihr Balken bedeutet (Engine-Tasten nennen auch die Parts, die sie benutzen).
 
@@ -342,7 +342,7 @@ und Lautstärke und Grundnote des Kits (Seite 3). **Laden** legt eine Audiodatei
 ![Mod-Ansicht](../images/ohpe-mod-view-de.png)
 
 Im **LFO**-Modus schalten die Reiter auf dem Display zwischen **LFO** (LFO 1, wie bisher),
-**Mod**, der [Modulationsmatrix](MODULATION.md) des Edit-Parts, **Morph** (dem [Morph-Pad](#morph-ansicht-p16)) und **Bewegung** (dem [Bewegungs-Recorder](#bewegungs-ansicht-p22)). Die Mod-Ansicht listet alle
+**Mod**, der [Modulationsmatrix](MODULATION.md) des Edit-Parts, **Morph** (dem [Morph-Pad](#morph-ansicht-p16)), **Bewegung** (dem [Bewegungs-Recorder](#bewegungs-ansicht-p22)) und **Harmonie** (dem [Harmonie-Hirn](#harmonie-ansicht-p24)). Die Mod-Ansicht listet alle
 **16 Verbindungen** in zwei Spalten: Quelle → Ziel, ein Balken für die Menge (nach rechts = positiv,
 nach links = negativ) und der aktuelle Wert der Verbindung. Ziele auf einer Engine oder einem Effekt
 zeigen den echten Parameternamen („Cutoff“, „FX2 Hyper-Verstimmung“) – man sieht, was sich bewegt,
@@ -482,6 +482,27 @@ Pads spielen.
 | Regler, Seite *Sweep & Freeze* | Sweep-Filter (Tiefpass / Hochpass), Sweep-Resonanz, Freeze-Pegel |
 
 Die Pads sind auch die Matrix-Quellen **Pad-Sweep** und **Pads gehalten**.
+
+## Harmonie-Ansicht (p24)
+
+![Die Harmonie-Ansicht und die Raster-Tastatur](../images/ohpe-harmony-de.png)
+
+Der fünfte Reiter des **LFO**-Modus, **Harmonie**, zeigt das [Harmonie-Hirn](HARMONIE.md): die gemerkte Tonart und den
+Akkord, zwölf Balken für das Tonklassen-Gedächtnis (Tonart-Töne hell, Akkordtöne violett, gehaltene Töne grün, der
+Grundton der Tonart gelb markiert) und die letzten acht Akkorde. Die Leiste sagt, was das Hirn tut und ob der
+Edit-Part folgt.
+
+| Aktion | Ergebnis |
+|---|---|
+| **Tonart übernehmen** (Softkey) | die gemerkte Tonart in die globale Tonart / Skala schreiben |
+| **Halten** (Softkey) | das Gedächtnis einfrieren |
+| **Vergessen** (Softkey) | Tonart, Akkord und Verlauf vergessen |
+| Regler, Seite *Harmonie* | Folgen (Edit-Part: Aus / Skala / Akkord / Grundton), Gedächtnis (Takte), Halten, Raster-Anordnung |
+
+Die Taste **RASTER** (zwischen OKTAVE + und MIDI) tauscht die Klaviertasten gegen die isomorphe Raster-Tastatur:
+4 × 24 Felder in Quarten, Terzen, Ganztönen oder nur den Tönen der Tonart; Akkordtöne tragen einen violetten Balken.
+Mit MPE für den Edit-Part hat jede Berührung ihren eigenen Kanal – seitlich schieben biegt, hoch / runter für Slide,
+Druck von Touch oder Stift.
 
 ## Tasten
 
