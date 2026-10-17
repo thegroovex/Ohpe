@@ -220,10 +220,10 @@ def usertable_presets():
     b = sc.S("Recorder Breath Table", ["Pads"], "wavetable", ["usertable", "life", "tempo"],
              "A wavetable analysed from the recorded recorder, eight frames from the breathy onset to the singing body, "
              "slowly scanned in two-bar cycles of the tempo and drifting with Life: a soft, woody pad. The mod wheel "
-             "moves it towards the singing frames.",
+             "opens the tone.",
              "Eine Wavetable, analysiert aus der aufgenommenen Blockflöte, acht Frames vom hauchigen Einsatz bis zum "
              "singenden Ton, langsam in Zwei-Takt-Zyklen des Tempos durchfahren und mit Leben driftend: eine weiche, "
-             "holzige Fläche. Das Modrad schiebt sie zu den singenden Frames.",
+             "holzige Fläche. Das Modrad öffnet den Klang.",
              wt(table="classic", pos=0.5, warp=0.0, tone=0.5, unison=0.35, univoices=6, uniwidth=0.85, keytrack=0.4,
                 lfopos=0.0),
              {"usertable.wt": 1, "lfo.depth": 0.0}, amp(0.8, 1.5, 0.9, 2.0), mod(0.8, 1.5, 0.7, 1.8, 0.1),
@@ -231,7 +231,7 @@ def usertable_presets():
              sc.fx(1, "chorus", rate=0.25, depth=0.6, mix=0.3, voices=4, drift=0.45, spread=0.85, lowcut=180.0),
              sc.fx(5, "reverb", size=0.75, damping=0.45, predelay=0.03, mix=0.24),
              expr(vel=[("attack", -0.2)], at=[("cutoff", 0.3, "s")]),
-             routes=[route("lfo2", "engine1", 0.35)], wheel=("engine1", 0.3), voices=10, velsens=0.25)
+             routes=[route("lfo2", "engine1", 0.35)], wheel=("timbre", 0.5), voices=10, velsens=0.25)
     sc.PRESETS_SHOWCASE.remove(a)
     sc.PRESETS_SHOWCASE.remove(b)
     a["usertables"] = _usertables(0)
@@ -394,7 +394,7 @@ def projects():
         {"tempo": 96, "key.root": 9, "key.scale": 2, "seq.step.channel": 2, "seq.step.rate": STEP_RATE["1/8"],
          "seq.step.length": 16, "harmony.memory": 4, "harmony.p1.follow": FOLLOW["off"], "harmony.p2.follow": FOLLOW["root"],
          "harmony.p3.follow": FOLLOW["chord"], "harmony.p4.follow": FOLLOW["chord"]},
-        part(1, "Velocity Glass EP"), part(2, "Body Slap Bass"), part(3, "Living Bell Arp"), part(4, "Living Strings"),
+        part(1, "Velocity Glass EP"), part(2, "Wood Body Bass"), part(3, "Living Bell Arp"), part(4, "Living Strings"),
         {"seq.orbit.on": 1, "seq.orbit.drums": 0, "seq.orbit.part": 1, "seq.orbit.gate": 1.0, "seq.orbit.human": 0.15},
         lanes([16, 16, 16, 16], ["1/4", "1/4", "1/4", "1/4"], (0, 0, 0, 4)),
         {"seq.euclid.on": 1, "seq.euclid.drums": 0, "seq.euclid.part": 3, "seq.euclid.rate": RATE["1/16"],

@@ -205,7 +205,7 @@ S("Living Reese", ["Bass"], "wavetable", ["life", "char", "sub"],
   expr(vel=[("cutoff", 0.25)], at=[("fm", 0.3)]),
   wheel=("timbre", 0.5), velsens=0.35)
 
-S("Body Slap Bass", ["Bass"], "pluck", ["reso", "expr"],
+S("Wood Body Bass", ["Bass"], "pluck", ["reso", "expr"],
   "A plucked string bass ringing a short wooden body tuned to each note: round, woody thumps. Velocity strikes harder and "
   "brighter; the mod wheel changes the body from wood to metal.",
   "Ein gezupfter Saitenbass, der einen kurzen Holzkörper auf jeder Note mitschwingen lässt: runde, holzige Schläge. "

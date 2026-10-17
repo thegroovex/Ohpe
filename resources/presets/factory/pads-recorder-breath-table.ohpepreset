@@ -8,7 +8,7 @@
     "Pads"
   ],
   "engine": "wavetable",
-  "comment": "A wavetable analysed from the recorded recorder, eight frames from the breathy onset to the singing body, slowly scanned in two-bar cycles of the tempo and drifting with Life: a soft, woody pad. The mod wheel moves it towards the singing frames.",
+  "comment": "A wavetable analysed from the recorded recorder, eight frames from the breathy onset to the singing body, slowly scanned in two-bar cycles of the tempo and drifting with Life: a soft, woody pad. The mod wheel opens the tone.",
   "params": {
     "engine": 1,
     "wavetable.table": 0,
@@ -65,8 +65,8 @@
     "mod.s1.curve": 0,
     "mod.s2.src": 9,
     "mod.s2.via": 0,
-    "mod.s2.dst": 5,
-    "mod.s2.amt": 0.3,
+    "mod.s2.dst": 4,
+    "mod.s2.amt": 0.5,
     "mod.s2.curve": 0,
     "voices": 10,
     "velsens": 0.25,
