@@ -132,6 +132,16 @@ TEST_CASE ("content packs: checksums per file, license and signature (read, not 
         "license":{"productId":"ohpe-atmo","type":"paid"},"kind":"presets","format":1,
         "files":{"readme.txt":")" + std::string (64, 'B') + R"(","presets/a.ohpepreset":")" + sumA + R"("}})"));
     CHECK (canonicalPackJson ("[]").empty());
+    // the same bytes as tools/pack/make_ohpepack.py canonical (json.dumps sort_keys, no spaces, UTF-8 as is)
+    CHECK (canonicalPackJson (R"({"format":1,"id":"atmo","version":"1.0.0","kind":"presets","name":{"en":"Atmo","de":"Atmo"},
+        "description":{"en":"Wide","de":"Weite Fl\u00e4chen / R\u00e4ume"},"minApp":"0.5.0",
+        "files":{"presets/a.ohpepreset":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+        "license":{"type":"paid","productId":"ohpe-atmo"},"signature":{"alg":"ed25519","keyId":"k","value":"x"}})")
+           == "{\"description\":{\"de\":\"Weite Fl\xc3\xa4" "chen / R\xc3\xa4" "ume\",\"en\":\"Wide\"},"
+              "\"files\":{\"presets/a.ohpepreset\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"},"
+              "\"format\":1,\"id\":\"atmo\",\"kind\":\"presets\",\"license\":{\"productId\":\"ohpe-atmo\",\"type\":\"paid\"},"
+              "\"minApp\":\"0.5.0\",\"name\":{\"de\":\"Atmo\",\"en\":\"Atmo\"},\"version\":\"1.0.0\"}");
+
     // today's gate allows every pack
     CHECK (openGate().access (p, canon) == PackAccess::Allowed);
 
