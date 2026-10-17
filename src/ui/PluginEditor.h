@@ -327,6 +327,7 @@ private:
     void refreshCpuMeter();
     int contentGenerationSeen = 0;
     juce::uint32 randomPressedAt = 0; ///< p18: RANDOM held >= 450 ms opens the breeding view
+    std::unique_ptr<breed::Audition> randomAudition; ///< p37: offline check / level of RANDOM sounds (created on first use)
     std::array<int, 3> breedRequestsSeen {};
 
     ui::Mode mode = ui::Mode::Synth;
