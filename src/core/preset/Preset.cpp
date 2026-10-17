@@ -67,6 +67,9 @@ std::vector<float> arpSnapshot (const ParamRegistry& reg)
 /** p22: the motion block of a part ("motion.*") is not part of a part preset (the lanes belong to the project). */
 static bool isMotionId (const std::string& localId) noexcept { return startsWith (localId, "motion."); }
 
+/** p41: the 3D switch ("space.mode") is not stored in presets - it is set from space.on and the monitoring after a load. */
+static bool isSpaceSwitchId (const std::string& localId) noexcept { return localId == "space.mode"; }
+
 bool isExcludedFromProject (const std::string& id) noexcept
 {
     return startsWith (id, "lib.") || startsWith (id, "ui.") || startsWith (id, "tape.edit.") || startsWith (id, "tape.tx.") || startsWith (id, "sync.")
@@ -75,6 +78,7 @@ bool isExcludedFromProject (const std::string& id) noexcept
         || startsWith (id, "bounce.")  // p23: bounce to engine is a tool (its result is the part's sample)
         || startsWith (id, "metro.")   // p39: metronome / count-in belong to the player
         || (id.size() > 13 && id.compare (id.size() - 13, 13, ".motion.clear") == 0) // p22: a trigger
+        || (id.size() > 11 && id.compare (id.size() - 11, 11, ".space.mode") == 0)   // p41: the 3D switch follows space.on + monitoring
         || id == "pads.stutter" || id == "pads.stop" || id == "pads.sweep" || id == "pads.freeze" // p25: held pads are performance
         || id == "harmony.take" || id == "harmony.clear"; // p24: triggers
 }
@@ -99,7 +103,8 @@ Preset capturePart (const ParamRegistry& reg, int partIndex, Meta meta)
     for (int i = 0; i < reg.size(); ++i)
     {
         const auto& id = reg.descriptor (i).id;
-        if (id.compare (0, prefix.size(), prefix) == 0 && ! isMotionId (id.substr (prefix.size()))) // p22: motion belongs to the project
+        if (id.compare (0, prefix.size(), prefix) == 0 && ! isMotionId (id.substr (prefix.size())) // p22: motion belongs to the project
+            && ! isSpaceSwitchId (id.substr (prefix.size())))                                           // p41: derived on load
             p.params[id.substr (prefix.size())] = reg.get (i);
     }
     // the arpeggiator is global, but when it plays this part it belongs to the sound

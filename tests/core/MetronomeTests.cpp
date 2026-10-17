@@ -71,7 +71,8 @@ TEST_CASE ("metronome: parameters are registered at the end, excluded from prese
 {
     Core core;
     const auto& reg = core.params();
-    const int n = reg.size();
+    const int n = reg.indexOf ("metro.tap") + 1; // p41: later blocks (the 3D switch) follow the metronome
+    CHECK (reg.indexOf ("metro.on") == reg.indexOf ("tape.edit.clearall") + 1);
     CHECK (reg.descriptor (n - 6).id == "metro.on");
     CHECK (reg.descriptor (n - 1).id == "metro.tap");
     CHECK (reg.get ("metro.on") == 0.0f);
