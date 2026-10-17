@@ -557,7 +557,27 @@
     "p4.space.air": 0.6,
     "p4.space.rolloff": 0.7,
     "p4.space.lowkeep": 120.0,
-    "p4.space.glide": 0.06
+    "p4.space.glide": 0.06,
+    "p1.mod.s7.src": 9,
+    "p1.mod.s7.via": 0,
+    "p1.mod.s7.dst": 4,
+    "p1.mod.s7.amt": 0.25,
+    "p1.mod.s7.curve": 0,
+    "p2.mod.s6.src": 9,
+    "p2.mod.s6.via": 0,
+    "p2.mod.s6.dst": 4,
+    "p2.mod.s6.amt": 0.25,
+    "p2.mod.s6.curve": 0,
+    "p3.mod.s1.src": 9,
+    "p3.mod.s1.via": 0,
+    "p3.mod.s1.dst": 4,
+    "p3.mod.s1.amt": 0.25,
+    "p3.mod.s1.curve": 0,
+    "p4.mod.s7.src": 9,
+    "p4.mod.s7.via": 0,
+    "p4.mod.s7.dst": 8,
+    "p4.mod.s7.amt": 0.35,
+    "p4.mod.s7.curve": 0
   },
   "sections": {
     "sequencer": {

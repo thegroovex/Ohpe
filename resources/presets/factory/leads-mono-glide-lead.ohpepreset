@@ -77,6 +77,11 @@
     "glide": 0.08,
     "glide.mode": 1,
     "glide.rate": 0,
-    "gain": 3.7
+    "gain": 3.7,
+    "mod.s1.src": 1,
+    "mod.s1.via": 9,
+    "mod.s1.dst": 1,
+    "mod.s1.amt": 0.03,
+    "mod.s1.curve": 0
   }
 }

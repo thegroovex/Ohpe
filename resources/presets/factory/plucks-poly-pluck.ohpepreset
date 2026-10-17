@@ -51,6 +51,11 @@
     "fx3.delay.tone": 0.45,
     "fx3.delay.pingpong": 1,
     "fx3.delay.mix": 0.2,
-    "gain": 20.1
+    "gain": 20.1,
+    "mod.s1.src": 9,
+    "mod.s1.via": 0,
+    "mod.s1.dst": 4,
+    "mod.s1.amt": 0.25,
+    "mod.s1.curve": 0
   }
 }

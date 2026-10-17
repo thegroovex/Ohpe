@@ -70,6 +70,18 @@
     "mpe.bend": 48,
     "voices": 4,
     "glide": 0.02,
-    "gain": 9.8
+    "gain": 9.8,
+    "lfo2.rate": 5.3,
+    "lfo2.sync": 0,
+    "lfo2.shape": 0,
+    "lfo2.phase": 0.0,
+    "lfo2.fade": 0.25,
+    "lfo2.mode": 1,
+    "lfo2.depth": 1.0,
+    "mod.s1.src": 2,
+    "mod.s1.via": 9,
+    "mod.s1.dst": 1,
+    "mod.s1.amt": 0.03,
+    "mod.s1.curve": 0
   }
 }

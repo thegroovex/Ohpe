@@ -63,6 +63,11 @@
     "mpe.smooth": 0.06,
     "mpe.bend": 48,
     "voices": 8,
-    "gain": 5.4
+    "gain": 5.4,
+    "mod.s1.src": 9,
+    "mod.s1.via": 0,
+    "mod.s1.dst": 8,
+    "mod.s1.amt": 0.35,
+    "mod.s1.curve": 0
   }
 }

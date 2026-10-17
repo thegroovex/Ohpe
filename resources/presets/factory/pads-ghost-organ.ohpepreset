@@ -52,6 +52,11 @@
     "fx3.reverb.predelay": 0.05,
     "fx3.reverb.mix": 0.42,
     "voices": 8,
-    "gain": 8.9
+    "gain": 8.9,
+    "mod.s1.src": 9,
+    "mod.s1.via": 0,
+    "mod.s1.dst": 4,
+    "mod.s1.amt": 0.3,
+    "mod.s1.curve": 0
   }
 }

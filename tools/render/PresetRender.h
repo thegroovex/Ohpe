@@ -181,7 +181,7 @@ inline Phrase holdPhrase (const std::string& category, double beats)
 
 inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0, double bpm = 100.0, double beatsLimit = 1.0e9,
                          double tailLimit = 1.0e9, double holdSeconds = 0.0, const std::vector<int>& holdNotes = {},
-                         int holdVelocity = 0)
+                         int holdVelocity = 0, int modWheel = -1)
 {
     preset::PartOptions opt;
     opt.arp = false; // measure the sound itself: the phrase plays the notes, not the arpeggiator
@@ -201,6 +201,7 @@ inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0,
     const double spb = 60.0 / bpm * sr;
     const int ch = partIndex + 1;
     std::vector<std::pair<int64_t, MidiEvent>> ev;
+    if (modWheel >= 0) ev.push_back ({ 0, MidiEvent::controller (ch, 1, std::clamp (modWheel, 0, 127), 0) }); // p29: wheel position
     const double beats = std::min (phrase.beats, beatsLimit);
     for (const auto& n : phrase.notes)
     {
@@ -215,13 +216,16 @@ inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0,
 }
 
 /** Loads a project preset and lets its sequencers run for `seconds` (limiter off: measurement). */
-inline Audio renderProject (Core& core, const preset::Preset& p, double seconds, bool limiter = true)
+inline Audio renderProject (Core& core, const preset::Preset& p, double seconds, bool limiter = true, int modWheel = -1)
 {
     preset::applyProject (p, core);
     if (! limiter) core.params().set ("mix.master.limit", 0.0f);
     core.prepareEffects(); // lazy rack slots, as the plugin's message thread does after a preset load
     core.params().set ("seq.run", 1.0f);
-    return renderCore (core, {}, (int64_t) std::llround (seconds * core.sampleRate()));
+    std::vector<std::pair<int64_t, MidiEvent>> ev; // p29: the wheel on every MIDI channel (every part)
+    if (modWheel >= 0)
+        for (int ch = 1; ch <= 16; ++ch) ev.push_back ({ 0, MidiEvent::controller (ch, 1, std::clamp (modWheel, 0, 127), 0) });
+    return renderCore (core, std::move (ev), (int64_t) std::llround (seconds * core.sampleRate()));
 }
 
 struct Metrics
