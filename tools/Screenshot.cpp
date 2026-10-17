@@ -16,6 +16,7 @@
 #include "plugin/PluginProcessor.h"
 #include "ui/PluginEditor.h"
 
+#include <cmath>
 #include <algorithm>
 
 using namespace ohpe;
@@ -491,6 +492,42 @@ int main (int argc, char* argv[])
             setPlain (p, "p1.morph.on", 0.0f);
             setPlain (p, "p1.morph.x", 0.5f);
             setPlain (p, "p1.morph.y", 0.5f);
+            run (p, 8);
+            e.selectView (0);
+        }
+
+        // p22: the motion recorder - three recorded lanes on part 1 (cutoff sweep, resonance swells, a stepped detune),
+        //      a 12-step loop against the bar, playing with the transport
+        {
+            e.selectPart (0);
+            e.selectEngine (EngineType::Analog);
+            e.selectMode (ui::Mode::Lfo);
+            e.selectView (3); // LFO | Mod | Morph | Motion
+            auto& m = p.core().motion();
+            const int len = 12 * MotionRecorder::pointsPerStep;
+            std::vector<float> a ((size_t) len), b ((size_t) len, -1.0f), c ((size_t) len);
+            for (int i = 0; i < len; ++i)
+            {
+                const float t = (float) i / (float) len;
+                a[(size_t) i] = 0.5f + 0.38f * std::sin (6.2831853f * t) * (0.6f + 0.4f * std::cos (12.566371f * t));
+                if (i >= len / 4 && i < len - 10) b[(size_t) i] = 0.2f + 0.6f * std::pow (std::sin (3.14159265f * (float) (i - len / 4) / (float) (len - 10 - len / 4)), 2.0f);
+                c[(size_t) i] = 0.15f + 0.7f * (float) ((i / 16) % 3) / 2.0f;
+            }
+            const auto& reg = p.core().params();
+            m.setLane (0, 0, reg.indexOf ("p1.analog.cutoff"), a);
+            m.setLane (0, 1, reg.indexOf ("p1.analog.reso"), b);
+            m.setLane (0, 2, reg.indexOf ("p1.analog.detune"), c);
+            setPlain (p, "p1.motion.len", 12.0f);
+            setPlain (p, "p1.motion.on", 1.0f);
+            setPlain (p, "seq.run", 1.0f);
+            playAnimated (p, e, 2, { 48, 55 });
+            playAnimated (p, e, 45);
+            save (e, dir.getChildFile ("ohpe-motion-view" + suffix + ".png"));
+            release (p, { 48, 55 });
+            setPlain (p, "seq.run", 0.0f);
+            setPlain (p, "p1.motion.on", 0.0f);
+            setPlain (p, "p1.motion.len", 16.0f);
+            m.clearAll();
             run (p, 8);
             e.selectView (0);
         }

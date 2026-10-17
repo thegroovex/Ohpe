@@ -486,6 +486,15 @@ const std::map<juce::String, juce::String>& table()
         { "The file is not an Ohpe wavetable.", "Die Datei ist keine Ohpe-Wavetable." },
         { "The wavetable file is damaged.", "Die Wavetable-Datei ist beschädigt." },
         { "The wavetable file was not found.", "Die Wavetable-Datei wurde nicht gefunden." },
+        // p22: the motion recorder
+        { "Empty", "Leer" },
+        { "steps", "Schritte" },
+        { "lanes", "Spuren" },
+        { "Armed - press Play, then turn a knob", "Bereit – Start drücken, dann an einem Regler drehen" },
+        { "Recording - turn a knob of this part", "Aufnahme – an einem Regler dieses Parts drehen" },
+        { "Recording - all lanes taken, overdub them", "Aufnahme – alle Spuren belegt, sie werden überschrieben" },
+        { "Press Rec, play, and turn knobs - each takes a lane", "Rec drücken, abspielen und an Reglern drehen – jeder bekommt eine Spur" },
+        { "Off - Play loops the lanes", "Aus – Start spielt die Spuren als Schleife" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;
