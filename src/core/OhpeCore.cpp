@@ -276,6 +276,29 @@ void Core::addRouted (const MidiEvent& e, int part) noexcept
     }
 }
 
+void Core::followWheels (const MidiEvent& e) noexcept
+{
+    const int type = e.status & 0xf0;
+    const bool bendMsg = type == 0xe0, modMsg = type == 0xb0 && e.data1 == 1;
+    if (! bendMsg && ! modMsg) return;
+    // the edit part's channel (any for an omni part; the master channel 1 for an MPE part: member bends are per note)
+    const int edit = editPartIndex >= 0 ? std::clamp ((int) std::lround (snapshot[editPartIndex]) - 1, 0, numParts - 1) : 0;
+    const auto& r = routing[(size_t) edit];
+    const int ch = e.channel();
+    if (r.mpe ? ch != 1 : (r.channel == 0 ? ch == drumChannel : ch != r.channel)) return;
+    if (bendMsg)
+    {
+        const int v = (e.data1 & 0x7f) | ((e.data2 & 0x7f) << 7);
+        wheelMidiBend.store (std::clamp ((float) (v - 8192) / 8191.0f, -1.0f, 1.0f), std::memory_order_relaxed);
+        wheelMidiBendSeq.fetch_add (1, std::memory_order_release);
+    }
+    else
+    {
+        wheelMidiMod.store ((float) (e.data2 & 0x7f) / 127.0f, std::memory_order_relaxed);
+        wheelMidiModSeq.fetch_add (1, std::memory_order_release);
+    }
+}
+
 void Core::routeLive (const MidiEvent& e) noexcept
 {
     // keyboard / host / device MIDI: to every part listening on its channel (MPE parts listen to all).
@@ -528,8 +551,11 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         }
     }
     for (int i = 0; i < numMidi; ++i)
+    {
+        if (midi[i].status < 0xf0) followWheels (midi[i]); // p28: the on-screen wheels show a controller's wheels
         if (midi[i].status < 0xf0 && ! mapper.handleMidi (midi[i]))
             routeLive (midi[i]);
+    }
     GridEvent ge; // p24: the on-screen grid keyboard plays one part
     while (gridEvents.pop (ge))
     {

@@ -124,7 +124,7 @@ the arp settings that belong to its sound in an optional `"arp"` object:
 | `oct` | `seq.arp.oct` | octaves `1`–`4` |
 | `gate` | `seq.arp.gate` | `0.05`–`1.0` (note length as part of a step) |
 | `rate` | `seq.arp.rate` | `0` 1/4, `1` 1/8, `2` 1/16, `3` 1/32, `4` 1/4T, `5` 1/8T, `6` 1/16T, `7` 1/32T, `8` 1/4., `9` 1/8., `10` 1/16. |
-| `latch` | `seq.arp.latch` | `1` / `0` |
+| `latch` | `seq.arp.latch` | read for compatibility but **not applied** (since 0.9 fix batch p28): Latch is the player's setting, off by default; *Save preset* no longer writes it |
 
 What happens when a part preset loads into part *N*:
 
@@ -143,9 +143,9 @@ What happens when a part preset loads into part *N*:
 * *Save preset → This part* writes the arp block when the arp is on and plays that part, so a saved
   arp sound loads with its arp.
 
-The factory Arp presets are latched: press a key (or a chord) once and the arpeggio keeps running;
-the next key or chord pressed with no key held starts a new one. Switch *Latch* or the arp off on
-the sequencer page to stop it.
+The factory Arp presets play while you hold keys and stop when you let go. To keep an arpeggio
+running hands-free, switch *Latch* on on the sequencer page (`seq.arp.latch`, MIDI-mappable): then
+the next key or chord pressed with no key held starts a new one.
 
 ### Morph block
 
