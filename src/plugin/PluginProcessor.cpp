@@ -40,7 +40,10 @@ const char* const* triggerIds()
                                        // p24: harmony brain
                                        Core::Ids::harmonyTake, Core::Ids::harmonyClear,
                                        // p38: clear the edit track / the whole tape
-                                       Core::Ids::tapeClearTrack, Core::Ids::tapeClearAll };
+                                       Core::Ids::tapeClearTrack, Core::Ids::tapeClearAll,
+                                       // p42: the tape loop by hand
+                                       Core::Ids::tapeLoopSetIn, Core::Ids::tapeLoopSetOut, Core::Ids::tapeLoopUndo, Core::Ids::tapeLoopRedo,
+                                       Core::Ids::tapeLoopHalf, Core::Ids::tapeLoopDouble };
     return ids;
 }
 } // namespace
@@ -300,6 +303,7 @@ void OhpeProcessor::timerCallback()
     userTableManager.timerTick(); // p20
     bounceManager.timerTick();    // p23
     pollRemoteControls();
+    watchTapeLoop (juce::Time::getMillisecondCounterHiRes() * 0.001); // p42: loop range rules, loop undo steps
     applyPendingPresetUid(); // p40
     {
         auto uid = presetManager->currentUid();
@@ -345,6 +349,15 @@ void OhpeProcessor::pollRemoteControls()
             else if (id == Core::Ids::harmonyTake) takeHarmonyKey();    // p24
             else if (id == Core::Ids::harmonyClear) ohpeCore.harmony().requestClear(); // p24
             else if (id == Core::Ids::tapeClearAll) tapeClearAllRequests.fetch_add (1); // p38: the editor asks first
+            else if (id.startsWith ("tape.edit.loop")) // p42: the loop by hand; the display shows what happened
+            {
+                const auto msg = tapeLoopAction (id);
+                {
+                    const juce::ScopedLock sl (transportLock);
+                    transportMessage = msg;
+                }
+                transportMessages.fetch_add (1);
+            }
             else if (id.startsWith ("tape.tx."))
             {
                 const auto action = id == Core::Ids::tapeTxPlay ? TransportKey::PlayStop
@@ -416,6 +429,118 @@ void OhpeProcessor::tapTempo()
     if (bpm > 0.0) setTempoFromUi ((float) bpm);
 }
 
+// ---------------------------------------------------------------- p42: the tape loop by hand
+double OhpeProcessor::tapeLengthSeconds() const { return juce::jmax (1.0, const_cast<Core&> (ohpeCore).tape().lengthSeconds()); }
+double OhpeProcessor::tapeBpm() const { return juce::jmax (20.0, (double) ohpeCore.params().get (Core::Ids::tempo)); }
+
+tapeloop::Range OhpeProcessor::tapeLoopRange() const
+{
+    const auto& reg = ohpeCore.params();
+    return { (double) reg.get ("tape.loopin"), (double) reg.get ("tape.loopout") };
+}
+
+tapeloop::Snap OhpeProcessor::tapeLoopSnap() const
+{
+    return (tapeloop::Snap) juce::jlimit (0, 2, (int) std::lround (ohpeCore.params().get (Core::Ids::tapeLoopSnap)));
+}
+
+void OhpeProcessor::writeTapeLoop (tapeloop::Range r)
+{
+    // out first when the loop moves right, in first when it moves left: the pair is never crossed on the way
+    if (r.in >= ohpeCore.params().get ("tape.loopout"))
+    {
+        setPlainFromUi ("tape.loopout", (float) r.out);
+        setPlainFromUi ("tape.loopin", (float) r.in);
+    }
+    else
+    {
+        setPlainFromUi ("tape.loopin", (float) r.in);
+        setPlainFromUi ("tape.loopout", (float) r.out);
+    }
+}
+
+juce::String OhpeProcessor::tapeTimeText (double seconds) const
+{
+    seconds = juce::jmax (0.0, seconds);
+    const int ms = (int) std::lround (seconds * 1000.0);
+    const double beats = seconds * tapeBpm() / 60.0 + 1.0e-6;
+    const int bar = (int) (beats / tapeloop::beatsPerBar) + 1, beat = (int) std::fmod (beats, (double) tapeloop::beatsPerBar) + 1;
+    return juce::String (ms / 60000) + ":" + juce::String ((ms / 1000) % 60).paddedLeft ('0', 2) + "." + juce::String ((ms / 100) % 10)
+           + juce::String::fromUTF8 (" \xc2\xb7 ") + juce::String (bar) + "." + juce::String (beat);
+}
+
+juce::String OhpeProcessor::setTapeLoopEdge (bool inEdge, bool free)
+{
+    using i18n::tr;
+    auto& tape = ohpeCore.tape();
+    const double sr = juce::jmax (1.0, tape.sampleRate());
+    const double at = (double) tape.positionFrames() / sr;
+    const auto snap = free ? tapeloop::Snap::Off : tapeLoopSnap();
+    const auto before = tapeLoopRange();
+    const auto after = inEdge ? tapeloop::setIn (before, at, tapeLengthSeconds(), snap, tapeBpm())
+                              : tapeloop::setOut (before, at, tapeLengthSeconds(), snap, tapeBpm());
+    writeTapeLoop (after);
+    tapeLoopTracker.commit (before, tapeLoopRange());
+    if (! inEdge)
+    {
+        setPlainFromUi ("tape.loop", 1.0f); // loop out closes the loop: it plays at once
+        // the playhead is already past the new loop out (snapped back to the nearest line): into the loop at once
+        if (tapeRolling() && ohpeCore.params().get ("tape.reverse") < 0.5f && at >= after.out && after.valid())
+            tape.locate (after.in + std::fmod (at - after.out, after.length()));
+    }
+    return (inEdge ? tr ("Loop in") : tr ("Loop out")) + " " + tapeTimeText (inEdge ? after.in : after.out);
+}
+
+juce::String OhpeProcessor::tapeLoopAction (const juce::String& id, bool free)
+{
+    using i18n::tr;
+    if (id == Core::Ids::tapeLoopSetIn) return setTapeLoopEdge (true, free);
+    if (id == Core::Ids::tapeLoopSetOut) return setTapeLoopEdge (false, free);
+    const auto before = tapeLoopRange();
+    const auto snap = free ? tapeloop::Snap::Off : tapeLoopSnap();
+    if (id == Core::Ids::tapeLoopUndo || id == Core::Ids::tapeLoopRedo)
+    {
+        const bool undo = id == Core::Ids::tapeLoopUndo;
+        tapeloop::Range r;
+        if (! (undo ? tapeLoopTracker.undo (before, r) : tapeLoopTracker.redo (before, r)))
+            return undo ? tr ("Nothing to undo") : tr ("Nothing to redo");
+        writeTapeLoop (r);
+        return (undo ? tr ("Loop undone") : tr ("Loop redone")) + ": " + tapeTimeText (r.in) + juce::String::fromUTF8 (" \xe2\x80\x93 ") + tapeTimeText (r.out);
+    }
+    if (id == Core::Ids::tapeLoopHalf || id == Core::Ids::tapeLoopDouble)
+    {
+        if (! before.valid()) return tr ("Set loop in and out first");
+        const auto after = id == Core::Ids::tapeLoopHalf ? tapeloop::halve (before, tapeLengthSeconds(), snap, tapeBpm())
+                                                          : tapeloop::doubled (before, tapeLengthSeconds(), snap, tapeBpm());
+        writeTapeLoop (after);
+        tapeLoopTracker.commit (before, tapeLoopRange());
+        return (id == Core::Ids::tapeLoopHalf ? tr ("Loop halved") : tr ("Loop doubled")) + ": " + tapeTimeText (after.in)
+               + juce::String::fromUTF8 (" \xe2\x80\x93 ") + tapeTimeText (after.out);
+    }
+    return {};
+}
+
+void OhpeProcessor::dragTapeLoopEdge (bool inEdge, double seconds, bool free)
+{
+    const auto snap = free ? tapeloop::Snap::Off : tapeLoopSnap();
+    writeTapeLoop (tapeloop::dragEdge (tapeLoopRange(), inEdge, seconds, tapeLengthSeconds(), snap, tapeBpm()));
+}
+
+void OhpeProcessor::endTapeLoopDrag()
+{
+    tapeloop::Range fixed;
+    tapeLoopTracker.observe (tapeLoopRange(), 0.0, tapeLengthSeconds(), tapeloop::minFreeSeconds, fixed);
+    tapeLoopTracker.flush(); // the whole drag is one step
+}
+
+void OhpeProcessor::watchTapeLoop (double now)
+{
+    tapeloop::Range fixed;
+    // encoders / MIDI / host: the edge that moved wins, the other one gives way (free minimum: the grid is for keys)
+    if (tapeLoopTracker.observe (tapeLoopRange(), now, tapeLengthSeconds(), tapeloop::minFreeSeconds, fixed))
+        writeTapeLoop (fixed);
+}
+
 // ---------------------------------------------------------------- p38: tape files
 bool OhpeProcessor::saveTapeFile (const juce::File& file, juce::String& message)
 {
@@ -460,6 +585,8 @@ bool OhpeProcessor::loadTapeFile (const juce::File& file, juce::String& message)
     setPlainFromUi ("tape.loopout", (float) s.loopOut);
     setPlainFromUi ("tape.loop", s.loop ? 1.0f : 0.0f);
     setPlainFromUi (Core::Ids::tapeEditTrack, (float) s.editTrack);
+    tapeLoopTracker.history().clear(); // p42: a new tape starts a new loop history
+    tapeLoopTracker.reset (tapeLoopRange());
     message = tr ("Tape loaded") + ": " + file.getFileName();
     sendChangeMessage();
     return true;

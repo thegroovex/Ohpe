@@ -9,6 +9,7 @@
 // p32: the settings menu (ohpe-settings*, ohpe-about*, ohpe-help-overlay*), the night skin (ohpe-dark, *-dark).
 // p23: bounce to engine - a loop bounced into Grain (ohpe-bounce). p33: the Expression page (ohpe-expression).
 // p38: the tape page's clear-all confirmation (ohpe-tape-clear, ohpe-tape-clear-dark) and the tape page at night (ohpe-tape-dark).
+// p42: the tape page's loop keys and loop readout (ohpe-tape-loop, ohpe-tape-loop-dark).
 // p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
 // octave block while recording (ohpe-transport, 2x crop; REC and PLAY at the top of their breathing).
 // p39: tempo, metronome, count-in on the tape page during a count-in (ohpe-metronome*, ohpe-tempo-panel* 2x crop).
@@ -341,6 +342,15 @@ int main (int argc, char* argv[])
                 save (e, dir.getChildFile ("ohpe-tape-dark" + suffix + ".png"));
                 confirmShot ("ohpe-tape-clear-dark");
                 setSkin (false);
+                // p42: the loop keys behind the loop readout (the loop of the recording, on the bar grid)
+                e.showTapeLoopKeys (true);
+                for (int k = 0; k < 12; ++k) e.advanceAnimation (0.5f); // messages fade: the readout shows the loop
+                save (e, dir.getChildFile ("ohpe-tape-loop" + suffix + ".png"));
+                setSkin (true);
+                for (int k = 0; k < 4; ++k) e.advanceAnimation (0.5f);
+                save (e, dir.getChildFile ("ohpe-tape-loop-dark" + suffix + ".png"));
+                setSkin (false);
+                e.showTapeLoopKeys (false);
                 tmp.deleteRecursively();
                 e.setLanguage (lang);
             }

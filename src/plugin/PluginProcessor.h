@@ -8,6 +8,7 @@
 #include "PresetManager.h"
 #include "SampleLoader.h"
 #include "UserTables.h"
+#include "tape/TapeLoop.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_audio_utils/juce_audio_utils.h>
@@ -120,6 +121,28 @@ public:
         one tape undo step. */
     bool saveTapeFile (const juce::File& file, juce::String& message);
     bool loadTapeFile (const juce::File& file, juce::String& message);
+    /**
+        p42: the tape loop by hand (message thread; see tape/TapeLoop.h and docs TAPE-MIXER-FX "Setting the loop").
+        - setTapeLoopEdge: loop in / out at the playhead (also while the tape plays), snapped to "tape.loopsnap"
+          (nearest beat / bar) unless `free` (Shift). Setting loop out switches the loop on; a playhead already past
+          the new loop out jumps back into the loop at once. Returns the line for the display.
+        - tapeLoopAction: one of the "tape.edit.loop*" triggers (set in / out, half, double, undo, redo).
+        - dragTapeLoopEdge: dragging an edge on the track lanes (call endTapeLoopDrag() on mouse up: one undo step).
+        Every change of the range - keys, drags, encoders, MIDI, host - is one step of the loop history (encoder turns
+        and drags once they rest); the loop range is never left with loop out before loop in.
+    */
+    juce::String setTapeLoopEdge (bool inEdge, bool free);
+    juce::String tapeLoopAction (const juce::String& triggerId, bool free = false);
+    void dragTapeLoopEdge (bool inEdge, double seconds, bool free);
+    void endTapeLoopDrag();
+    tapeloop::Range tapeLoopRange() const;
+    tapeloop::Snap tapeLoopSnap() const;
+    bool canUndoTapeLoop() const noexcept { return tapeLoopTracker.history().canUndo(); }
+    bool canRedoTapeLoop() const noexcept { return tapeLoopTracker.history().canRedo(); }
+    /** p42: watches the loop range (corrections, undo steps); the timer calls it, tests with their own clock. */
+    void watchTapeLoop (double nowSeconds);
+    /** p42: "0:04.5 · 2.3" - tape time and bar.beat of a point on the tape (display lines). */
+    juce::String tapeTimeText (double seconds) const;
     /** Handles pending remote-control presses (called by the processor's timer; public for tests). */
     void pollRemoteControls();
     /** p24: writes the harmony brain's remembered key into "key.root" / "key.scale" (host notified). Message thread. */
@@ -227,7 +250,7 @@ private:
     int syncSourceParam = -1, tempoParam = -1;
 
     // 0.3: remote controls
-    static constexpr int numTriggers = 24; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*, p23: + bounce.go, p24: + harmony.take / clear, p38: + tape.edit.clear / clearall
+    static constexpr int numTriggers = 30; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*, p23: + bounce.go, p24: + harmony.take / clear, p38: + tape.edit.clear / clearall, p42: + tape.edit.loop*
     void setPlainFromUi (const char* id, float plain);
     juce::CriticalSection transportLock;
     juce::String transportMessage;
@@ -237,6 +260,10 @@ private:
     std::array<std::atomic<int>, numTriggers> triggerPresses {};
     std::atomic<int> libraryToggles { 0 };
     std::atomic<int> tapeClearAllRequests { 0 }; ///< p38
+    tapeloop::Tracker tapeLoopTracker; ///< p42: message thread
+    void writeTapeLoop (tapeloop::Range r);
+    double tapeLengthSeconds() const;
+    double tapeBpm() const;
     std::array<std::atomic<int>, 3> breedRequests {}; ///< p18
     std::unique_ptr<PresetManager> presetManager;
     // p40: the loaded preset's uid for the session (getStateInformation may run off the message thread)
