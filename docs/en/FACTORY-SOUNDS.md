@@ -462,12 +462,12 @@ Presets marked *Arp:* switch the arpeggiator on for the part they load into; it 
 | Digital Pluck Arp | FM | – | Clicky digital pluck that loves fast sixteenths. *Arp: Up · 1/16 · 2 oct* |
 | Dream Tine Arp | Sampler | Keys | Tine piano arpeggio in eighths with chorus, delay and hall: dreamy and full. *Arp: Up/Down · 1/8 · 2 oct* |
 | FM Arp Bell | FM | Keys | Short glassy FM bells for sequences. *Arp: Up/Down · 1/16 · 2 oct* |
-| Figure Eight Arp | Wavetable | 3D | Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. Latched. *Arp: Up/Down · 1/16 · 2 oct* |
+| Figure Eight Arp | Wavetable | 3D | Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. *Arp: Up/Down · 1/16 · 2 oct* |
 | Formant Arp | Wavetable | Vocal | Vowel blips for talking sequences. *Arp: Up · 1/16 · 2 oct* |
 | Glock Arp | Sampler | Keys | Recorded glockenspiel for sparkling arpeggios (CC0). *Arp: Up · 1/16 · 2 oct* |
 | Mallet Echo Arp | Sampler | Plucks | Glockenspiel arpeggio with long dotted echoes - sparkling and wide. *Arp: Up · 1/8 · 3 oct* |
 | Neuro Arp | Wavetable | Bass | Growling FM sixteenths in one octave: a rolling neuro sequence from a single held note. *Arp: As Played · 1/16 · 1 oct* |
-| Orbit Arp | Pluck | 3D | Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast. Latched: hold a chord. *Arp: Up · 1/16 · 2 oct* |
+| Orbit Arp | Pluck | 3D | Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast. *Arp: Up · 1/16 · 2 oct* |
 | Pizzicato Arp | Pluck | Plucks | Short plucked strings for ostinatos. *Arp: Up/Down · 1/16 · 2 oct* |
 | Random Spark Arp | FM | FX | Random thirty-second FM blips over four octaves through a ping-pong delay: sparks. *Arp: Random · 1/32 · 4 oct* |
 | Ripple Arp | Analog | – | Analog saw arp in sixteenth triplets with a sweeping phaser and stereo echo. *Arp: Up · 1/16T · 2 oct* |
@@ -586,11 +586,11 @@ Presets marked *Arp:* switch the arpeggiator on for the part they load into; it 
 |---|---|---|---|
 | Binaural Lead | Wavetable | Leads, MPE | Expressive lead placed in front of you: slide moves it up over your head, pressure brings it right up to your ear, a slow drift keeps it alive. Made for MPE controllers and headphones. |
 | Doppler Fly-By | Wavetable | FX | A siren tone racing past from left to right and back - the pitch bends with the Doppler effect as it passes. |
-| Figure Eight Arp | Wavetable | Arp | Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. Latched. *Arp: Up/Down · 1/16 · 2 oct* |
+| Figure Eight Arp | Wavetable | Arp | Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. *Arp: Up/Down · 1/16 · 2 oct* |
 | Halo Drift | Cluster | Pads, MPE | Detuned cluster choir wandering around and above you on a slow random orbit - never the same place twice. |
 | Neuro Swirl | Wavetable | Bass, MPE | Talking formant growl swirling in a figure eight once a bar - the vowel moves, the space moves, the sub does not. |
 | Night Swarm | FM | Textures, MPE | Glassy FM bells scattered on a fast random orbit at different distances: a swarm of lights around your head. |
-| Orbit Arp | Pluck | Arp | Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast. Latched: hold a chord. *Arp: Up · 1/16 · 2 oct* |
+| Orbit Arp | Pluck | Arp | Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast. *Arp: Up · 1/16 · 2 oct* |
 | Orbit Atmos | Wavetable | Pads, MPE | Wide wavetable atmosphere circling your head once every eight bars on a gently tilted orbit, in a soft room. Best with headphones: slide lifts it, pressure pulls it closer. |
 | Orbit Reese | Wavetable | Bass, MPE | Neurofunk reese whose growling mid range circles your head every two bars while the sub below 160 Hz stays dead centre and mono - club-safe movement. |
 | Overhead Choir | Vocal | Pads, Vocal, MPE | Breathy 'ooh' choir swinging from in front of you, over your head to behind you and back - a pendulum through the room. |
@@ -607,7 +607,7 @@ Presets marked *Arp:* switch the arpeggiator on for the part they load into; it 
 | Ambient Drift | Pads, Textures | A slow fifths pad, a generative kalimba from four Orbit lanes of 5, 7, 11 and 16 steps with a tempo-synced dotted-eighth delay, sparse singing-glass tones from Euclid. No drums. |
 | Synth-Pop | Drums, Bass, Leads | Bright four-on-the-floor on the Tight kit from Euclid (snare and clap on 2 and 4, eighth hats), an octave-bouncing bass, lush poly brass and a sparkle arpeggio from three Orbit lanes over Am-F-C-G, and a lead melody from the step sequencer. |
 | Euclid Polyrhythm | Drums, Arp | Four Euclid rings of 8, 12, 16 and 9 steps on the Room kit, a marimba from Orbit lanes of 5, 6, 7 and 8 steps and a pedal bass. |
-| Arp Sequence | Arp, Drums | A 64-step arpeggio over Am, Fmaj7, G and Em on an A pedal, Studio-kit drums from Orbit. The arpeggiator is latched on part 3: play chords. |
+| Arp Sequence | Arp, Drums | A 64-step arpeggio over Am, Fmaj7, G and Em on an A pedal, Studio-kit drums from Orbit. The arpeggiator plays part 3: hold chords. |
 | Deep House | Drums, Bass, Keys | Shuffled hats and a deep kick on the Tight kit (Orbit), a syncopated organ bass (step sequencer) and Euclid chord stabs. |
 | Sub & Glide | Pads, Bass, Drums, Boom | Seventh chords that slide into each other (Glide Strings, poly glide), a long sliding sub on Orbit lane 1 and a half-time beat on the Boom kit from Orbit lanes 2-4, sparkle bells from Euclid. Cm7 - Abmaj7 - Ebmaj7 - Bb7. |
 | Lofi Kit | Drums | The Lo-Fi kit set up for lo-fi hip-hop: muffled, round kick, soft snare with ghost notes and a rim, dull shuffled hats with velocity variation (Orbit, lazy swing), vinyl crackle on part 4 (Orbit lane 4) and a dark master. Play your own keys on part 1. |

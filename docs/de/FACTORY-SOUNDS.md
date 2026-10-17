@@ -464,12 +464,12 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 | Digital Pluck Arp | FM | – | Klickender digitaler Pluck für schnelle Sechzehntel. *Arp: Aufwärts · 1/16 · 2 Okt.* |
 | Dream Tine Arp | Sampler | Tasten | Tine-Piano-Arpeggio in Achteln mit Chorus, Delay und Hall: verträumt und voll. *Arp: Auf/Ab · 1/8 · 2 Okt.* |
 | FM Arp Bell | FM | Tasten | Kurze gläserne FM-Glocken für Sequenzen. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
-| Figure Eight Arp | Wavetable | 3D | Digitales Arpeggio, das eine liegende Acht um dich zeichnet – links vorn, quer, rechts hinten – über zwei Takte. Gehalten. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
+| Figure Eight Arp | Wavetable | 3D | Digitales Arpeggio, das eine liegende Acht um dich zeichnet – links vorn, quer, rechts hinten – über zwei Takte. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
 | Formant Arp | Wavetable | Vokal | Vokal-Blips für sprechende Sequenzen. *Arp: Aufwärts · 1/16 · 2 Okt.* |
 | Glock Arp | Sampler | Tasten | Aufgenommenes Glockenspiel für funkelnde Arpeggien (CC0). *Arp: Aufwärts · 1/16 · 2 Okt.* |
 | Mallet Echo Arp | Sampler | Zupfer | Glockenspiel-Arpeggio mit langen punktierten Echos – funkelnd und breit. *Arp: Aufwärts · 1/8 · 3 Okt.* |
 | Neuro Arp | Wavetable | Bass | Knurrende FM-Sechzehntel in einer Oktave: eine rollende Neuro-Sequenz aus einer gehaltenen Note. *Arp: Wie gespielt · 1/16 · 1 Okt.* |
-| Orbit Arp | Zupfen | 3D | Sechzehntel-Zupf-Arpeggio, das einmal pro Takt um deinen Kopf fliegt – nah, hell und schnell. Gehalten: Akkord drücken. *Arp: Aufwärts · 1/16 · 2 Okt.* |
+| Orbit Arp | Zupfen | 3D | Sechzehntel-Zupf-Arpeggio, das einmal pro Takt um deinen Kopf fliegt – nah, hell und schnell. *Arp: Aufwärts · 1/16 · 2 Okt.* |
 | Pizzicato Arp | Zupfen | Zupfer | Kurze gezupfte Saiten für Ostinati. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
 | Random Spark Arp | FM | FX | Zufällige FM-Blips in Zweiunddreißigsteln über vier Oktaven durch ein Ping-Pong-Delay: Funken. *Arp: Zufall · 1/32 · 4 Okt.* |
 | Ripple Arp | Analog | – | Analoges Sägezahn-Arp in Sechzehnteltriolen mit schwebendem Phaser und Stereo-Echo. *Arp: Aufwärts · 1/16T · 2 Okt.* |
@@ -588,11 +588,11 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 |---|---|---|---|
 | Binaural Lead | Wavetable | Leads, MPE | Ausdrucksstarkes Lead vor dir: Slide hebt es über deinen Kopf, Druck holt es bis ans Ohr, eine langsame Drift hält es lebendig. Für MPE-Controller und Kopfhörer. |
 | Doppler Fly-By | Wavetable | FX | Ein Sirenenton rast von links nach rechts und zurück an dir vorbei – die Tonhöhe biegt sich beim Vorbeiflug durch den Doppler-Effekt. |
-| Figure Eight Arp | Wavetable | Arp | Digitales Arpeggio, das eine liegende Acht um dich zeichnet – links vorn, quer, rechts hinten – über zwei Takte. Gehalten. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
+| Figure Eight Arp | Wavetable | Arp | Digitales Arpeggio, das eine liegende Acht um dich zeichnet – links vorn, quer, rechts hinten – über zwei Takte. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
 | Halo Drift | Cluster | Flächen, MPE | Verstimmter Cluster-Chor, der auf einem langsamen Zufallsorbit um und über dir wandert – nie zweimal am selben Ort. |
 | Neuro Swirl | Wavetable | Bass, MPE | Sprechender Formant-Growl, der einmal pro Takt eine Acht zieht – der Vokal bewegt sich, der Raum bewegt sich, der Sub nicht. |
 | Night Swarm | FM | Texturen, MPE | Gläserne FM-Glocken auf einem schnellen Zufallsorbit in wechselnden Entfernungen: ein Lichterschwarm um deinen Kopf. |
-| Orbit Arp | Zupfen | Arp | Sechzehntel-Zupf-Arpeggio, das einmal pro Takt um deinen Kopf fliegt – nah, hell und schnell. Gehalten: Akkord drücken. *Arp: Aufwärts · 1/16 · 2 Okt.* |
+| Orbit Arp | Zupfen | Arp | Sechzehntel-Zupf-Arpeggio, das einmal pro Takt um deinen Kopf fliegt – nah, hell und schnell. *Arp: Aufwärts · 1/16 · 2 Okt.* |
 | Orbit Atmos | Wavetable | Flächen, MPE | Breite Wavetable-Atmosphäre, die alle acht Takte auf einer leicht geneigten Bahn um deinen Kopf kreist, in einem weichen Raum. Am besten mit Kopfhörern: Slide hebt sie an, Druck holt sie näher. |
 | Orbit Reese | Wavetable | Bass, MPE | Neurofunk-Reese, dessen knurrende Mitten alle zwei Takte um deinen Kopf kreisen, während der Sub unter 160 Hz genau in der Mitte und mono bleibt – clubtaugliche Bewegung. |
 | Overhead Choir | Vocal | Flächen, Vokal, MPE | Hauchiger „Uh“-Chor, der von vorn über deinen Kopf nach hinten und zurück schwingt – ein Pendel durch den Raum. |
@@ -609,7 +609,7 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 | Ambient Drift | Flächen, Texturen | Langsame Quinten-Fläche, eine generative Kalimba aus vier Orbit-Spuren mit 5, 7, 11 und 16 Steps mit tempo-synchronem punktiertem Achtel-Delay, spärliche Klangglas-Töne aus Euklid. Ohne Drums. |
 | Synth-Pop | Drums, Bass, Leads | Heller Four-on-the-floor auf dem Trocken-Kit aus Euklid (Snare und Clap auf 2 und 4, Achtel-Hats), ein hüpfender Oktav-Bass, üppiges Poly-Brass und ein funkelndes Arpeggio aus drei Orbit-Spuren über Am–F–C–G und eine Lead-Melodie aus dem Step-Sequenzer. |
 | Euclid Polyrhythm | Drums, Arp | Vier Euklid-Ringe mit 8, 12, 16 und 9 Steps auf dem Room-Kit, eine Marimba aus Orbit-Spuren mit 5, 6, 7 und 8 Steps und ein Orgelpunkt-Bass. |
-| Arp Sequence | Arp, Drums | Ein 64-Step-Arpeggio über Am, Fmaj7, G und Em auf einem A-Orgelpunkt, Studio-Kit-Drums aus Orbit. Der Arpeggiator ist auf Part 3 gelatcht: Akkorde spielen. |
+| Arp Sequence | Arp, Drums | Ein 64-Step-Arpeggio über Am, Fmaj7, G und Em auf einem A-Orgelpunkt, Studio-Kit-Drums aus Orbit. Der Arpeggiator spielt Part 3: Akkorde halten. |
 | Deep House | Drums, Bass, Tasten | Geshuffelte Hats und eine tiefe Kick auf dem Tight-Kit (Orbit), ein synkopierter Orgel-Bass (Step-Sequenzer) und Euklid-Akkord-Stabs. |
 | Sub & Glide | Flächen, Bass, Drums, Boom | Septakkorde, die ineinander gleiten (Glide Strings, Poly-Glide), ein langer gleitender Sub auf Orbit-Spur 1 und ein Halftime-Beat auf dem Boom-Kit aus den Orbit-Spuren 2–4, funkelnde Glocken aus Euklid. Cm7 – Abmaj7 – Ebmaj7 – Bb7. |
 | Lofi Kit | Drums | Das Lo-Fi-Kit für Lo-Fi-Hip-Hop eingestellt: dumpfe, runde Kick, weiche Snare mit Ghost Notes und Rim, matte geshuffelte Hats mit Anschlags-Variation (Orbit, träger Swing), Vinyl-Knistern auf Part 4 (Orbit-Spur 4) und ein dunkler Master. Eigene Keys auf Part 1 spielen. |

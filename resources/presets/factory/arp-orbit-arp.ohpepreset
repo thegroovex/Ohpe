@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "pluck",
-  "comment": "Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast. Latched: hold a chord.",
+  "comment": "Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast.",
   "params": {
     "engine": 3,
     "pluck.material": 0.35,

@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "wavetable",
-  "comment": "Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. Latched.",
+  "comment": "Digital arp tracing a lying eight around you - left front, across, right behind - over two bars.",
   "params": {
     "engine": 1,
     "wavetable.table": 3,
