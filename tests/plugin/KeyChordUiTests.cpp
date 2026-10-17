@@ -140,7 +140,7 @@ TEST_CASE ("p45 key control: on the header left of TAP, drag / wheel / menu, Sca
     CHECK_FALSE (k.getBounds().intersects (d.headerTempo().getBounds()));
     CHECK (k.shownText() == "C MAJ");
     // drag up 24 px = two semitones
-    const juce::Point<float> c (k.getWidth() * 0.3f, k.getHeight() * 0.5f);
+    const juce::Point<float> c (k.lockArea().getX() * 0.4f, k.getHeight() * 0.5f); // on the text, not the lock
     k.mouseDown (mouseEvent (k, c, c));
     k.mouseDrag (mouseEvent (k, c.translated (0.0f, -24.0f), c));
     k.mouseUp (mouseEvent (k, c.translated (0.0f, -24.0f), c));

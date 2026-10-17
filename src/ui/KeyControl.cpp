@@ -73,7 +73,8 @@ juce::String KeyReadout::compactText() const
 float KeyReadout::neededWidth (float h, bool compactForm) const
 {
     const auto f = monoFont (h * (compactForm ? 0.46f : 0.5f));
-    return juce::GlyphArrangement::getStringWidth (f, compactForm ? compactText() : shownText()) + h * 1.0f; // the lock and some air
+    // the lock and some air; at least room to grab the text left of the lock ("C" alone)
+    return juce::jmax (h * 1.9f, juce::GlyphArrangement::getStringWidth (f, compactForm ? compactText() : shownText()) + h * 1.0f);
 }
 
 float KeyReadout::preferredWidth (float h, bool host)
