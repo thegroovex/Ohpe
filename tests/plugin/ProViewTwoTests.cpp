@@ -213,7 +213,8 @@ TEST_CASE ("pro view 2.0: a modulation source dropped onto a picture creates a m
     CHECK (r.getStart() < 0.0f); // LFO 2 is bipolar
     CHECK (r.getEnd() > 0.0f);
     // a second drop takes the next free slot
-    CHECK (ui::pro::addRouting (f.p, 0, mod::SrcModEnv, "p1.amp.d") == 1);
+    CHECK (ui::pro::addRouting (f.p, 0, mod::SrcModEnv, "p1.analog.shape") == 1);
+    CHECK (ui::pro::addRouting (f.p, 0, mod::SrcModEnv, "p1.amp.d") == -1); // not a matrix target
     CHECK (ui::pro::sourceFromDragDescription ("something") == -1);
     e.advanceAnimation (1.0f / 30.0f);
     CHECK (e.createComponentSnapshot (e.getLocalBounds()).isValid());
