@@ -160,7 +160,8 @@ Schema Schema::forPart (const ParamRegistry& reg, int partIndex)
 
         if (g.id == "tune" || g.id == "fine" || g.id == "voices" || g.id == "bend" || g.id == "midich" || g.id == "quant"
             || g.id == "chord" || g.id == "mpe" || g.id == "mpe.bend" || g.id == "mpe.press" || g.id == "mpe.timbre"
-            || g.id == "seqlane" || head == "morph" || head == "motion" || head == "usertable") // usertable: follows its table, never bred
+            || g.id == "seqlane" || head == "morph" || head == "motion" || head == "usertable" // usertable: follows its table, never bred
+            || g.id == "glide.press") // p32: how the player's pressure shapes the glide (an expression setting, like mpe.press)
         {
             g.group = Fixed;
             g.mutable_ = false;
