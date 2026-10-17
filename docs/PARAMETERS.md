@@ -881,7 +881,7 @@ user in `Settings/update.json`, not in projects or presets / Seine Einstellungen
 Guides: [English](en/EXPRESSION.md) · [Deutsch](de/AUSDRUCK.md). Twelve parameters per part, appended after
 `harmony.p4.follow` (`p1.expr.vel.dst1` … `p4.expr.at.curve2`, per part in this order: velocity slot 1 target / amount /
 curve, velocity slot 2, aftertouch slot 1, aftertouch slot 2). Each slot is a routing of the part's modulation matrix;
-amount 0 (the default) leaves the sound untouched. Part presets carry them; preset breeding mutates only the amounts.
+amount 0 (the default) leaves the sound untouched. Part presets carry them; preset breeding and Discover leave them as they are (how a sound responds to playing).
 
 | ID | English | Deutsch | Range | Default |
 |---|---|---|---|---|
