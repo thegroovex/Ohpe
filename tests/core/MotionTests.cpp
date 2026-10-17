@@ -35,6 +35,7 @@ struct Rig
         for (auto& v : r) v.assign (block, 0.0f);
         set ("mix.master.limit", 0.0f);
         for (int p = 2; p <= 4; ++p) set ("p" + std::to_string (p) + ".vol", 0.0f);
+        set ("seq.run", 1.0f); // the instrument's PLAY: the host transport runs the sequencers (and the lanes) only with it
     }
     void set (const std::string& id, float v) { REQUIRE_MESSAGE (core.params().set (id, v), id); }
     float get (const std::string& id) const { return core.params().get (id); }
