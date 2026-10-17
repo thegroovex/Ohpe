@@ -5,6 +5,13 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
+## Unreleased
+
+- EN: 3D Space – six new motion paths (Ping-Pong F/B, Swarm, Whisper, Distance Walk, Over the Head, Weave) and a path
+  preview in the 3D view.
+- DE: 3D-Raum – sechs neue Bewegungspfade (Ping-Pong v/h, Schwarm, Flüstern, Entfernungsgang, Über den Kopf,
+  Wellenorbit) und eine Pfad-Vorschau in der 3D-Ansicht.
+
 ## 0.4.0 Preview – 2026-10-17
 
 [Notes / Hinweise](docs/release-notes/0.4.0.md)
