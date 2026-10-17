@@ -110,6 +110,7 @@ int Display::scopeSource() const
         case Visual::Scope:
         case Visual::Terrain:
         case Visual::Space: return ScopeTap::Master; // 1.0: the 3D view shows the master correlation
+        case Visual::Living: return mode == Mode::Mixer ? (int) ScopeTap::Master : juce::jlimit (0, Core::numParts - 1, ctx.part); // p26
         case Visual::Character:
         case Visual::numVisuals: break;
     }
@@ -355,6 +356,7 @@ void Display::showVisualMenu()
     m.addItem (2, tr ("Stereo scope"), ! forced, userVisual == Visual::Scope);
     m.addItem (3, tr ("Spectrum terrain"), ! forced && animated, userVisual == Visual::Terrain);
     m.addItem (4, tr ("3D space"), ! forced, userVisual == Visual::Space); // 1.0
+    m.addItem (5, tr ("Living object"), ! forced, userVisual == Visual::Living); // p26
     m.addSeparator();
     m.addItem (10, tr ("Animated 3D visuals"), true, animated);
     juce::Component::SafePointer<Display> safe (this);
@@ -496,7 +498,35 @@ void Display::tick (float seconds)
         modHistory.push_back (m.uiRouteValue (juce::jlimit (0, mod::numSlots - 1, ctx.modRouting)));
         if (modHistory.size() > 96) modHistory.erase (modHistory.begin());
     }
+    livingDirty = {};
+    if (livingOnScreen()) // p26: the object repaints only its own region, and only while it moves
+    {
+        const auto area = characterArea();
+        livingObj.update (living::gather (proc.core(), lastSource == ScopeTap::Master ? ctx.part : lastSource, visuals), seconds, animated);
+        const bool settled = parallax.getDistanceFrom (parallaxTarget) < 0.002f || ! animated;
+        juce::RectangleList<int> rest (getLocalBounds());
+        rest.subtract (area.toNearestInt());
+        if (! settled) rest = juce::RectangleList<int> (getLocalBounds()); // parallax moves the grid layer
+        for (const auto& r : rest) repaint (r);
+        if (livingObj.consumeChanged() || ! settled)
+        {
+            const auto now = living::objectBounds (area, livingObj);
+            livingDirty = now.getUnion (livingLast.isEmpty() ? now : livingLast).getUnion (living::readoutArea (area))
+                              .getUnion (area.withTrimmedTop (area.getHeight() * 0.7f).withHeight (area.getHeight() * 0.14f)); // the rest hint
+            livingLast = now;
+            repaint (livingDirty.getSmallestIntegerContainer());
+        }
+        return;
+    }
+    livingObj.reset();
+    livingLast = {};
     repaint();
+}
+
+bool Display::livingOnScreen() const
+{
+    return shownVisual() == Visual::Living && mode != Mode::Tape && ! showsModView() && ! showsRackView() && ! showsSpaceView()
+        && ! showsBodyView() && ! showsMorphView() && ! showsMotionView();
 }
 
 void Display::updateTapeOverview()
@@ -1096,6 +1126,14 @@ void Display::paint (juce::Graphics& g)
     else if (shown == Visual::Space) // 1.0
     {
         spaceScene.paint (g, pictoArea.reduced (u * 0.4f, u * 0.2f), core, ctx.part, parallax, visuals.correlation());
+    }
+    else if (shown == Visual::Living) // p26: drawn only where the tick asked for it (the clip)
+    {
+        const auto area = characterArea();
+        if (g.clipRegionIntersects (area.getSmallestIntegerContainer()))
+            living::paint (g, area, livingObj, colour::encoder (juce::jlimit (0, Core::numParts - 1, ctx.part)),
+                           lastSource == ScopeTap::Master ? i18n::upper (tr ("Master")) : "P" + juce::String (juce::jlimit (0, Core::numParts - 1, ctx.part) + 1),
+                           animated ? parallax : juce::Point<float>());
     }
     else if (shown == Visual::Terrain)
     {

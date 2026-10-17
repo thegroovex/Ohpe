@@ -50,7 +50,7 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **MIDI** | per-part channels, MPE, every control is MIDI-learnable (right-click → MIDI Learn), maps can be exported / imported; all parameters are automatable |
 | **Standalone app** | choose audio system, device, sample rate and buffer size, latency display, multi-out routing to device channels, MIDI inputs |
 | **Preset library** | one LIBRARY key: categories (Bass, Keys, Pads, Leads, Plucks, Drums, FX, Arp, Textures, Vocal), engine filter, search, favourites, star ratings, sorting, factory and user banks, preview by selecting, part and whole-project presets, previous / next from MIDI |
-| **Display** | a deep, layered display with parallax; stereo scope (goniometer, correlation, M / S levels), a moving 3D spectrum terrain and the head-centred 3D space view |
+| **Display** | a deep, layered display with parallax; stereo scope (goniometer, correlation, M / S levels), a moving 3D spectrum terrain, the head-centred 3D space view and the living display – the sound as a 3D object that breathes with the envelope, bulges with the LFOs and stretches with the stereo width – see [Living display](docs/en/LIVING-DISPLAY.md) |
 | **Direct manipulation** | drag the value bars on the display, Shift / Cmd / Ctrl for fine control, double-click to reset; pro view with every parameter of a mode at once – as editable pictures (envelopes, filter, LFO, FM graph, wavetable, grains, 3D) with violet modulation ranges, plus Discover: BRIGHT / HARD / ALIVE / WIDE, VARY, cross, dice, history |
 | **Languages** | English and German, switchable at any time |
 
@@ -139,6 +139,7 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 * [Morph space](docs/en/MORPH.md) – the XY pad between four complete sounds per part
 * [Resonator body](docs/en/RESONATOR.md) – strings, plates and tubes the sound excites, sympathetic strings
 * [Motion recorder](docs/en/MOTION.md) – knob movements per part as looping, polymetric lanes
+* [Living display](docs/en/LIVING-DISPLAY.md) – the sound as a 3D object reacting to envelopes, modulation and stereo width
 * [Preset breeding](docs/en/BREEDING.md) – cross two sounds, keep the best children, breed generations
 * [Bounce to engine](docs/en/BOUNCE.md) – tape or live input into Grain / Sampler, endless loops
 * [Modulation matrix](docs/en/MODULATION.md) – routings, sources, targets, LFO 2 / 3, envelope 3, macros
