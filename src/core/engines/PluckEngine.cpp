@@ -214,9 +214,11 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
                 x = x * (1.0f - 0.4f * bodyAmt) + b * bodyK * bodyAmt * 1.2f;
             }
             modEnv.next();
-            const float out = x * ampEnv.next() * gain;
+            const float ae = ampEnv.next();
+            const float out = x * ae * gain;
             l[done + i] += out * panL;
             r[done + i] += out * panR;
+            if (subOn) subAddDirect (ae, l[done + i], r[done + i]); // p31: SUB layer (after the string)
         }
         writePos &= mask;
         done += n;

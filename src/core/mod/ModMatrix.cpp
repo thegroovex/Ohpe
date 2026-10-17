@@ -106,6 +106,8 @@ const std::vector<DestInfo>& destTable()
         add ("charhard", "Hard", "Hart", DestKind::PartParam, 0, "char.hard");
         add ("charalive", "Alive", "Lebendig", DestKind::PartParam, 0, "char.alive");
         add ("charwide", "Wide", "Weit", DestKind::PartParam, 0, "char.wide");
+        // p31: the SUB layer
+        add ("sublevel", "Sub Level", "Sub-Pegel", DestKind::PartParam, 0, "sub.level");
         return v;
     }();
     return t;

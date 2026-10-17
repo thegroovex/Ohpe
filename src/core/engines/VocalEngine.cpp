@@ -162,9 +162,11 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
             for (int k = 0; k < numFormants; ++k) y += gains[(size_t) k] * res[(size_t) k].process (exc);
 
             modEnv.next();
-            const float out = air.lowpass (dsp::softClip (y * 2.5f)) * ampEnv.next() * gain;
+            const float ae = ampEnv.next();
+            const float out = air.lowpass (dsp::softClip (y * 2.5f)) * ae * gain;
             l[done + i] += out * panL;
             r[done + i] += out * panR;
+            if (subOn) subAddDirect (ae, l[done + i], r[done + i]); // p31: SUB layer (after the voice)
         }
         done += n;
     }

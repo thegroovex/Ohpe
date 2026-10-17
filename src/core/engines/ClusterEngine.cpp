@@ -151,9 +151,11 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
             const float yL = filterL.process (sL * 0.7f, dsp::Svf::LowPass);
             const float yR = filterR.process (sR * 0.7f, dsp::Svf::LowPass);
             modEnv.next();
-            const float env = ampEnv.next() * gain;
+            const float ae = ampEnv.next();
+            const float env = ae * gain;
             l[done + i] += yL * env * panL * 1.41421356f;
             r[done + i] += yR * env * panR * 1.41421356f;
+            if (subOn) subAddDirect (ae, l[done + i], r[done + i]); // p31: SUB layer (after the engine's tone)
         }
         done += n;
     }
