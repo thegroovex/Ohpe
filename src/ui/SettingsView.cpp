@@ -693,12 +693,11 @@ void SettingsView::paintControllerPreview (juce::Graphics& g, juce::Rectangle<fl
         const auto c = juce::Rectangle<float> (padArea.getX() + cell * (float) col, padArea.getY() + cell * (float) (7 - r), cell, cell).reduced (cell * 0.08f);
         const int v = codes[(size_t) pad];
         juce::Colour col2 = colour::displayGrid;
-        if (v > 0)
+        if (const auto pc = gridctl::padColourOf (v); pc != gridctl::Colour::Off)
         {
-            const int hue = (v - 1) / 6; // red, amber, yellow, green
-            const bool full = ((v - 1) % 6) >= 3;
+            const int k = (int) pc - 1; // red dim, red, amber dim, amber, yellow dim, yellow, green dim, green
             const juce::Colour hues[] = { colour::signalRed, juce::Colour (0xfff08a24), colour::sunYellow, colour::playGreenLit };
-            col2 = hues[juce::jlimit (0, 3, hue)].withAlpha (full ? 1.0f : 0.42f);
+            col2 = hues[juce::jlimit (0, 3, k / 2)].withAlpha (k % 2 == 1 ? 1.0f : 0.42f);
         }
         g.setColour (col2);
         g.fillRoundedRectangle (c, cell * 0.15f);

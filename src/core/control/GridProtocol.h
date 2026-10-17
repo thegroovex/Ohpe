@@ -16,7 +16,8 @@ namespace ohpe::gridctl
     MIDI / SysEx interface; no message thread, no JUCE (core tests check every encoding).
 
     * Pads: notes 36 .. 99 on channel 1, pad (col, row) = 36 + row * 8 + col (row 0 = the bottom row). Pressure as
-      poly aftertouch (or channel pressure). Pad light: a note-on to the pad's note, velocity = colour code.
+      poly aftertouch (or channel pressure). Pad light: a note-on to the pad's note, velocity = an index of the pads'
+      128-colour palette (padColourCode).
     * Encoders: CC 71 .. 78 (relative: 1 .. 63 up, 127 .. 65 down), master encoder CC 79, tempo CC 14, swing CC 15;
       touching an encoder sends note 0 .. 10 (velocity > 0 = touched).
     * Buttons: CC (127 pressed, 0 released); the light of a button is the same CC sent back (value = light code).
@@ -59,6 +60,11 @@ enum class Colour { Off = 0, RedDim, Red, AmberDim, Amber, YellowDim, Yellow, Gr
 /** Light code of a pad / coloured button (note velocity / CC value): 0 off, red 1 / 4, amber 7 / 10, yellow 13 / 16,
     green 19 / 22 (dim / full). blink: + 1 (slow). */
 int colourCode (Colour c, bool blink = false) noexcept;
+/** Pad light: index of the pads' colour palette (four shades per hue: light, full, dark, darker; red 4 .., amber /
+    orange 8 .., yellow 12 .., green 20 ..): full = the hue's full shade, dim = its darkest shade, Off = 0. */
+int padColourCode (Colour c) noexcept;
+/** The colour a pad palette index stands for (the virtual controller view; Off for anything else). */
+Colour padColourOf (int code) noexcept;
 /** Light code of a plain (one-colour) button: 0 off, 1 dim, 4 on (blink: 2 / 5). */
 int buttonCode (bool on, bool dimWhenOff = true, bool blink = false) noexcept;
 

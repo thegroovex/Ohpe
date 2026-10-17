@@ -661,7 +661,7 @@ void GridController::refreshLights()
             const int note = padMap[(size_t) pad].load();
             if (note >= 0) c = g::roleColour (g::padRole (note, key, chordMask, down));
         }
-        padLight[(size_t) pad] = g::colourCode (c);
+        padLight[(size_t) pad] = g::padColourCode (c);
     }
     // buttons
     ccLight.fill (-1);

@@ -85,6 +85,14 @@ TEST_CASE ("p46 grid controller: encoder deltas, light codes, pad notes")
     CHECK (g::colourCode (g::Colour::Yellow) == 16);
     CHECK (g::colourCode (g::Colour::Green) == 22);
     CHECK (g::colourCode (g::Colour::Green, true) == 23);
+    // pads: the 128-colour palette (full / darkest shade of each hue)
+    CHECK (g::padColourCode (g::Colour::Off) == 0);
+    CHECK (g::padColourCode (g::Colour::Amber) == 9);
+    CHECK (g::padColourCode (g::Colour::YellowDim) == 15);
+    CHECK (g::padColourCode (g::Colour::Green) == 21);
+    CHECK (g::padColourCode (g::Colour::GreenDim) == 23);
+    for (int k = 0; k <= (int) g::Colour::Green; ++k) CHECK (g::padColourOf (g::padColourCode ((g::Colour) k)) == (g::Colour) k);
+    CHECK (g::padColourOf (100) == g::Colour::Off);
     CHECK (g::buttonCode (true) == 4);
     CHECK (g::buttonCode (false) == 1);
     CHECK (g::buttonCode (false, false) == 0);

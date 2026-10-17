@@ -29,6 +29,29 @@ int colourCode (Colour c, bool blink) noexcept
     return blink ? v + 1 : v;
 }
 
+int padColourCode (Colour c) noexcept
+{
+    switch (c)
+    {
+        case Colour::Red: return 5;
+        case Colour::RedDim: return 7;
+        case Colour::Amber: return 9;
+        case Colour::AmberDim: return 11;
+        case Colour::Yellow: return 13;
+        case Colour::YellowDim: return 15;
+        case Colour::Green: return 21;
+        case Colour::GreenDim: return 23;
+        default: return 0;
+    }
+}
+
+Colour padColourOf (int code) noexcept
+{
+    for (int k = 1; k <= (int) Colour::Green; ++k)
+        if (padColourCode ((Colour) k) == code) return (Colour) k;
+    return Colour::Off;
+}
+
 int buttonCode (bool on, bool dimWhenOff, bool blink) noexcept
 {
     if (on) return blink ? 5 : 4;

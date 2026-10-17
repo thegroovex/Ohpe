@@ -200,10 +200,10 @@ TEST_CASE ("p46 grid controller: the pads are the on-screen grid keyboard - layo
     CHECK (r.c->padNoteNow (0) == 48);
 
     // colours: C major (nothing heard yet) - C root amber, C# off, D yellow dim
-    CHECK (r.c->padCodes()[0] == g::colourCode (g::Colour::Amber));
+    CHECK (r.c->padCodes()[0] == g::padColourCode (g::Colour::Amber));
     CHECK (r.c->padCodes()[1] == 0);
-    CHECK (r.c->padCodes()[2] == g::colourCode (g::Colour::YellowDim));
-    CHECK (r.mock.lastPadCode (0) == g::colourCode (g::Colour::Amber));
+    CHECK (r.c->padCodes()[2] == g::padColourCode (g::Colour::YellowDim));
+    CHECK (r.mock.lastPadCode (0) == g::padColourCode (g::Colour::Amber));
 
     // In Key: only key notes, the key from the key setting (D minor)
     r.setHost ("key.root", 2.0f);
@@ -225,12 +225,12 @@ TEST_CASE ("p46 grid controller: the pads are the on-screen grid keyboard - layo
     r.in (juce::MidiMessage::noteOn (1, g::padNote (2, 1), (juce::uint8) 100));
     r.play (2);
     CHECK (r.p.core().lastNote() == r.c->padNoteNow (g::cols + 2));
-    CHECK (r.c->padCodes()[(size_t) (g::cols + 2)] == g::colourCode (g::Colour::Green));
+    CHECK (r.c->padCodes()[(size_t) (g::cols + 2)] == g::padColourCode (g::Colour::Green));
     r.in (juce::MidiMessage::aftertouchChange (1, g::padNote (2, 1), 80));
     r.play (1);
     r.in (juce::MidiMessage::noteOff (1, g::padNote (2, 1)));
     r.play (1);
-    CHECK (r.c->padCodes()[(size_t) (g::cols + 2)] != g::colourCode (g::Colour::Green));
+    CHECK (r.c->padCodes()[(size_t) (g::cols + 2)] != g::padColourCode (g::Colour::Green));
 
     // the scales button steps through the layouts like the on-screen layout setting
     const int layoutBefore = (int) std::lround (r.p.core().params().get ("harmony.kb.layout"));
@@ -262,7 +262,7 @@ TEST_CASE ("p46 grid controller: pad modes, transport and metronome buttons, tou
     CHECK_FALSE (core.stepSequencer().getStep (3).on);
     r.in (juce::MidiMessage::noteOn (1, g::padNote (3, 7), (juce::uint8) 100));
     CHECK (core.stepSequencer().getStep (3).on);
-    CHECK (r.c->padCodes()[(size_t) (7 * g::cols + 3)] == g::colourCode (g::Colour::Yellow));
+    CHECK (r.c->padCodes()[(size_t) (7 * g::cols + 3)] == g::padColourCode (g::Colour::Yellow));
     r.in (juce::MidiMessage::noteOn (1, g::padNote (3, 7), (juce::uint8) 100));
     CHECK_FALSE (core.stepSequencer().getStep (3).on);
     r.press (g::cc::note);
