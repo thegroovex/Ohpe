@@ -85,8 +85,8 @@ TEST_CASE ("plug-in p23: bounce a tape track into Grain (endless loop), the libr
     CHECK (p.core().params().get ("p2.engine") == (float) EngineType::Grain);
     CHECK (p.parameter ("p2.engine")->convertFrom0to1 (p.parameter ("p2.engine")->getValue()) == (float) EngineType::Grain);
     auto* g = grainOf (p, 1);
-    REQUIRE (g != nullptr);
-    REQUIRE (g->sample() != nullptr);
+    REQUIRE ((g != nullptr));
+    REQUIRE ((g->sample() != nullptr));
     CHECK (g->sample()->endless);
     int64_t ls = 0, le = 0;
     CHECK (g->sample()->seamlessLoop (ls, le));
@@ -129,8 +129,8 @@ TEST_CASE ("plug-in p23: bounce a tape track into Grain (endless loop), the libr
         q.prepareToPlay (48000.0, 256);
         q.setStateInformation (state.getData(), (int) state.getSize());
         auto* back = grainOf (q, 1);
-        REQUIRE (back != nullptr);
-        REQUIRE (back->sample() != nullptr);
+        REQUIRE ((back != nullptr));
+        REQUIRE ((back->sample() != nullptr));
         CHECK (juce::String (back->sample()->path()) == file.getFullPathName());
         CHECK (back->sample()->endless);
         CHECK (back->sample()->numFrames() == g->sample()->numFrames());
@@ -153,7 +153,7 @@ TEST_CASE ("plug-in p23: Sampler one-shot, empty tracks, the input recording, th
     CHECK (p.core().params().get ("p3.engine") == (float) EngineType::Sampler);
     CHECK (p.core().params().get ("p3.sampler.loop") == (float) sampler::LoopOff);
     auto* s = samplerOf (p, 2);
-    REQUIRE (s != nullptr);
+    REQUIRE ((s != nullptr));
     REQUIRE (s->zones().size() == 1);
     CHECK_FALSE (s->zones()[0].sample->endless);
     CHECK (s->zones()[0].rootKey == 60);

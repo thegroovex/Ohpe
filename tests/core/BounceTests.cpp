@@ -157,7 +157,7 @@ TEST_CASE ("p23 bounce: endless loop - the seam is as smooth as the material, gu
     CHECK (maxStep (a.l.data(), 0, n, true) > 4.0f * stepInside); // the raw material clicks at its seam
 
     auto s = bounce::prepare (a, {});
-    REQUIRE (s != nullptr);
+    REQUIRE ((s != nullptr));
     int64_t ls = 0, le = 0;
     REQUIRE (s->seamlessLoop (ls, le));
     CHECK (s->endless);
@@ -194,7 +194,7 @@ TEST_CASE ("p23 bounce: one-shot - silence trimmed, faded edges, normalised; sil
     bounce::Options o;
     o.endless = false;
     auto s = bounce::prepare (padded, o, "", "Tape 1");
-    REQUIRE (s != nullptr);
+    REQUIRE ((s != nullptr));
     CHECK_FALSE (s->endless);
     int64_t ls = 0, le = 0;
     CHECK_FALSE (s->seamlessLoop (ls, le));
@@ -211,14 +211,14 @@ TEST_CASE ("p23 bounce: one-shot - silence trimmed, faded edges, normalised; sil
     bounce::Audio silent;
     silent.l.assign (48000, 0.0f);
     silent.r.assign (48000, 0.0f);
-    CHECK (bounce::prepare (silent, {}) == nullptr);
-    CHECK (bounce::prepare (silent, o) == nullptr);
-    CHECK (bounce::prepare (bounce::Audio(), {}) == nullptr);
+    CHECK ((bounce::prepare (silent, {}) == nullptr));
+    CHECK ((bounce::prepare (silent, o) == nullptr));
+    CHECK ((bounce::prepare (bounce::Audio(), {}) == nullptr));
     // quiet material is lifted at most +24 dB; mono material stays one channel
     auto quiet = tone (0.3, 440.0, 0.002f);
     quiet.r = quiet.l;
     auto q = bounce::prepare (quiet, o);
-    REQUIRE (q != nullptr);
+    REQUIRE ((q != nullptr));
     CHECK (q->numChannels() == 1);
     CHECK (q->peak() == doctest::Approx (0.002f * bounce::maxGain).epsilon (0.02));
 }
@@ -258,17 +258,17 @@ TEST_CASE ("p23 bounce: apply - switches the part to Grain / Sampler and loads t
     CHECK (core.params().get ("p3.engine") == (float) EngineType::Grain);
     CHECK (core.params().get ("p3.grain.source") == (float) grain::SourceSample);
     auto* g = dynamic_cast<GrainEngine*> (core.part (2).engine (EngineType::Grain));
-    REQUIRE (g != nullptr);
-    CHECK (g->sample() == loop);
+    REQUIRE ((g != nullptr));
+    CHECK ((g->sample() == loop));
 
     REQUIRE (bounce::apply (core, 1, bounce::TargetSampler, loop, set));
     CHECK (core.params().get ("p2.engine") == (float) EngineType::Sampler);
     CHECK (core.params().get ("p2.sampler.loop") == (float) sampler::LoopForward);
     CHECK (core.params().get ("p2.sampler.start") == 0.0f);
     auto* s = dynamic_cast<SamplerEngine*> (core.part (1).engine (EngineType::Sampler));
-    REQUIRE (s != nullptr);
+    REQUIRE ((s != nullptr));
     REQUIRE (s->zones().size() == 1);
-    CHECK (s->zones()[0].sample == loop);
+    CHECK ((s->zones()[0].sample == loop));
     CHECK (s->zones()[0].rootKey == 60);
 
     bounce::Options o;
@@ -280,13 +280,13 @@ TEST_CASE ("p23 bounce: apply - switches the part to Grain / Sampler and loads t
     CHECK (sets.count ("p1.engine") == 0);
     CHECK (sets.count ("p4.engine") == 0);
     CHECK_FALSE (bounce::apply (core, 4, bounce::TargetGrain, loop, set));
-    CHECK_FALSE (bounce::apply (core, 0, bounce::TargetGrain, nullptr, set));
+    CHECK_FALSE ((bounce::apply (core, 0, bounce::TargetGrain, nullptr, set)));
 }
 
 TEST_CASE ("p23 bounce: the Sampler holds an endless loop as long as the key, a one-shot ends")
 {
     auto loop = bounce::prepare (tone (0.4, 220.0), {});
-    REQUIRE (loop != nullptr);
+    REQUIRE ((loop != nullptr));
     Rig<SamplerEngine> rig;
     rig.e.setParam (sampler::LoopMode, (float) sampler::LoopForward);
     rig.e.setSample (loop, 60);
@@ -313,7 +313,7 @@ TEST_CASE ("p23 bounce: the Sampler holds an endless loop as long as the key, a 
 TEST_CASE ("p23 bounce: Grain wraps across an endless loop's seam - bounded, finite, keeps sounding at the end")
 {
     auto loop = bounce::prepare (tone (0.5, 180.0), {});
-    REQUIRE (loop != nullptr);
+    REQUIRE ((loop != nullptr));
     Rig<GrainEngine> rig;
     rig.e.setSample (loop);
     rig.e.setParam (grain::Position, 0.98f); // grains start at the end and run across the seam
