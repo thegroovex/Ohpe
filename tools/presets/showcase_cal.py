@@ -155,6 +155,27 @@ def main():
         print("round %d: %d gains changed" % (rnd + 1, changed))
         if changed == 0:
             break
+    # projects: the master volume brings the mix (limiter on, as heard) to -14 dBFS active RMS over 8 s
+    pfiles = [os.path.join(OUT, f) for f in manifest if f.startswith("project-")]
+    for rnd in range(0 if a.report else 3):
+        rows = render(a, pfiles, ["--seconds", "8", "--limit"])
+        changed = 0
+        for f in pfiles:
+            doc = json.load(open(f))
+            r = rows.get(os.path.basename(f)[:-len(".ohpepreset")])
+            if r is None:
+                continue
+            step = -14.0 - r["active"]
+            if abs(step) > 0.5:
+                levels[doc["name"]] = round(max(-24.0, min(12.0, doc["params"].get("mix.master.vol", 0.0) + step)), 1)
+                changed += 1
+        json.dump(dict(sorted(levels.items())), open(LEVELS, "w"), indent=1)
+        subprocess.run([sys.executable, os.path.join(HERE, "make_showcase.py")], check=True)
+        if changed == 0:
+            break
+    for k, r in sorted(render(a, pfiles, ["--seconds", "4", "--limit"]).items()):
+        print("project %-30s active %.1f peak %.1f tp %.1f mmax %.1f lufs %.1f" % (r["name"], r["active"], r["peak"], r.get("tp", 0),
+              r.get("mmax", 0), r.get("lufs", 0)))
     # report: category phrase and the plug-in test's window (4 beats + 1 s)
     files = [os.path.join(OUT, f) for f in manifest if not f.startswith("project-")]
     full = render(a, files)

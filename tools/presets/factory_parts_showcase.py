@@ -125,7 +125,7 @@ def S(name, tags, engine, features, en, de, *dicts, wheel=None, routes=(), usert
         for n, f in enumerate(chain(fxs), 1):
             rest.append({slot_prefix(n - 1) + k: v for k, v in f["params"].items()})
     if guard is not None:  # a fast peak compressor after the whole chain (peaks of a near pass, grain bursts)
-        g = dict(GUARD, thresh=guard)
+        g = dict(GUARD, thresh=guard[0], makeup=guard[1]) if isinstance(guard, tuple) else dict(GUARD, thresh=guard)
         rest.append(dict({slot_prefix(n) + "type": 10}, **{slot_prefix(n) + "compressor." + k: v for k, v in g.items()}))
     rr = list(routes)
     if wheel is not None:
@@ -564,19 +564,19 @@ S("Orbit Space Arp", ["Arp", "3D"], "fm", ["space", "tempo"],
   expr(vel=[("fm", 0.25)]), arp_block=("up", 2, 0.5, "1/16"),
   routes=[route("pressure", "distance", -0.2)], wheel=("distance", 0.1), voices=8, velsens=0.5)
 
-S("Resonant Comb Arp", ["Arp"], "analog", ["reso", "tempo"],
-  "A plucky saw arpeggio through the Resonator as a rack effect: a string body tuned to the chord you hold rings under "
-  "every step. The mod wheel lets the body ring longer, the echo is a synced dotted eighth.",
-  "Ein zupfiges Sägezahn-Arpeggio durch den Resonanzkörper als Rack-Effekt: ein Saitenkörper im gehaltenen Akkord klingt "
-  "unter jedem Schritt. Das Modrad lässt den Körper länger klingen, das Echo ist eine synchrone punktierte Achtel.",
-  an(shape=0.05, detune=0.06, cutoff=1100, reso=0.25, oscmix=0.3, sub=0.0, drive=0.2, keytrack=0.3),
-  amp(0.003, 0.25, 0.0, 0.15), mod(0.001, 0.15, 0.0, 0.1, 0.45), lfo(0.09, 0.15, "tri", "timbre"),
+S("Resonant Comb Arp", ["Arp"], "pluck", ["reso", "tempo"],
+  "A plucked-string arpeggio through the Resonator as a rack effect: a string body tuned to the chord you hold rings "
+  "under every step. The mod wheel lets the body ring longer, the echo is a synced dotted eighth.",
+  "Ein Arpeggio aus gezupften Saiten durch den Resonanzkörper als Rack-Effekt: ein Saitenkörper im gehaltenen Akkord "
+  "klingt unter jedem Schritt. Das Modrad lässt den Körper länger klingen, das Echo ist eine synchrone punktierte Achtel.",
+  pl(material=0.1, damping=0.45, bright=0.4, body=0.3, excite=0.45, pickpos=0.2, bodysize=0.4),
+  amp(0.002, 0.8, 0.0, 0.3), mod(0.001, 0.2, 0.0, 0.1, 0.1), lfo(0.09, 0.15, "tri", "timbre"),
   reso_fx(0, "string", "chord", size=0.7, material=0.45, decay=2.5, position=0.25, inharm=0.1, sympathetic=0.6,
           width=0.8, mix=0.35),
   fx(4, "echo", sync="1/8.", feedback=0.3, mix=0.18),
   fx(5, "reverb", size=0.5, damping=0.5, predelay=0.02, mix=0.12),
   expr(vel=[("cutoff", 0.3)]), arp_block=("up", 2, 0.45, "1/16"),
-  wheel=("fx1p3", 0.3), voices=8, velsens=0.5, guard=-9.0)
+  wheel=("fx1p3", 0.3), voices=8, velsens=0.5)
 
 S("Living Bell Arp", ["Arp"], "fm", ["life", "char"],
   "Soft FM bells arpeggiated in sixteenths, with Life and Alive keeping every repeat a little different - drift, tone "

@@ -44,8 +44,9 @@ def all_presets():
     import factory_parts_showcase as sc
     parts = list(sc.PRESETS_SHOWCASE)
     import showcase_extra
-    parts += showcase_extra.morph_presets(parts)
     parts += showcase_extra.usertable_presets()
+    showcase_extra.REG.update({p["name"]: p for p in parts})
+    parts += showcase_extra.morph_presets(parts)
     projects = showcase_extra.projects()
     return parts, projects
 
@@ -64,6 +65,75 @@ def write(path, doc):
         f.write("\n")
 
 
+FEATURE = {"life": ("Life", "Leben"), "morph": ("Morph pad", "Morph-Pad"), "usertable": ("User wavetable", "Eigene Wavetable"),
+           "reso": ("Resonator", "Resonanzkörper"), "char": ("Character macros", "Charakter-Makros"),
+           "space": ("3D motion path", "3D-Bewegungspfad"), "sub": ("SUB layer", "SUB-Ebene"),
+           "expr": ("Expression", "Ausdruck"), "glidepress": ("Glide pressure", "Glide-Druck"),
+           "tempo": ("Tempo-synced", "Tempo-synchron"), "harmony": ("Harmony follow", "Harmonie-Folgen"),
+           "motion": ("Motion lanes", "Bewegungsspuren"), "pads": ("Performance pads", "Performance-Pads")}
+CAT_DE = {"Bass": "Bass", "Keys": "Tasten", "Pads": "Flächen", "Leads": "Leads", "Plucks": "Zupfer", "Drums": "Drums",
+          "FX": "FX", "Arp": "Arp", "Textures": "Texturen", "Vocal": "Vokal", "Boom": "Boom", "Hybrid": "Hybrid",
+          "Piano": "Klavier", "3D": "3D", "Morph": "Morph", "MPE": "MPE"}
+ENG = {"fm": "FM", "wavetable": "Wavetable", "analog": "Analog", "pluck": ("Pluck", "Zupfen"), "grain": "Grain",
+       "vocal": "Vocal", "cluster": "Cluster", "sampler": "Sampler"}
+ORDER = ["Bass", "Keys", "Pads", "Leads", "Plucks", "Arp", "Textures", "FX", "Vocal"]
+INTRO = {
+    "en": "## Showcase presets (p44)\n\n"
+          "%d part presets and %d projects built around the newer features: Life, the morph pad, user wavetables analysed "
+          "from the factory recordings, the resonator body (stage and rack effect), the character macros, the 3D motion "
+          "paths (best with headphones), the SUB layer, the Expression page (velocity / aftertouch), pressure glide and "
+          "tempo-synced movement (LFO 2 / 3 and motion paths measured in bars follow the tempo, whether the metronome clicks "
+          "or not). The projects show what only a project carries: the harmony brain's Follow, recorded motion lanes, the "
+          "performance pads' settings and four 3D parts at once. Every one is level-matched to the factory median, has a "
+          "musical mod wheel and answers velocity; only the glide presets glide. They are listed in the library with "
+          "the other factory presets (search for a feature, e.g. *3D* or *Morph*).\n",
+    "de": "## Showcase-Presets (p44)\n\n"
+          "%d Part-Presets und %d Projekte rund um die neueren Funktionen: Leben, das Morph-Pad, eigene Wavetables, analysiert "
+          "aus den Werksaufnahmen, der Resonanzkörper (Stufe und Rack-Effekt), die Charakter-Makros, die 3D-Bewegungspfade "
+          "(am besten mit Kopfhörern), die SUB-Ebene, die Ausdrucks-Seite (Anschlag / Aftertouch), Glide-Druck und "
+          "tempo-synchrone Bewegung (LFO 2 / 3 und in Takten bemessene Bewegungspfade folgen dem Tempo, ob das Metronom "
+          "klickt oder nicht). Die Projekte zeigen, was nur ein Projekt trägt: das Folgen des Harmonie-Gehirns, "
+          "aufgenommene Bewegungsspuren, die Einstellungen der Performance-Pads und vier 3D-Parts gleichzeitig. Jedes ist "
+          "auf den Werks-Median eingepegelt, hat ein musikalisches Modrad und reagiert auf Anschlag; nur die Glide-Presets "
+          "gleiten. Sie stehen in der Bibliothek bei den anderen Werks-Presets (Suche nach einer Funktion, z. B. *3D* "
+          "oder *Morph*).\n",
+}
+
+
+def docs(parts, projects):
+    """The showcase section of docs/en|de/FACTORY-SOUNDS.md (between <!-- showcase:begin / end -->, before the drum kits)."""
+    for lang, head in (("en", "## Drum kits"), ("de", "## Drum-Kits")):
+        de = lang == "de"
+        rows = [INTRO[lang] % (len(parts), len(projects)), "<!-- showcase:begin -->"]
+        rows.append("| Name | %s | Engine | %s | %s |" % ("Kategorie" if de else "Category", "Funktionen" if de else "Features",
+                                                      "Beschreibung" if de else "Description"))
+        rows.append("|---|---|---|---|---|")
+        key = lambda p: (ORDER.index(p["tags"][0]) if p["tags"][0] in ORDER else 99, p["name"])
+        for p in sorted(parts, key=key):
+            eng = ENG[p["engine"]]
+            eng = eng[1 if de else 0] if isinstance(eng, tuple) else eng
+            tags = ", ".join(CAT_DE.get(t, t) if de else t for t in p["tags"] if t != "MPE")
+            feats = ", ".join(FEATURE[f][1 if de else 0] for f in p["features"])
+            rows.append("| %s | %s | %s | %s | %s |" % (p["name"], tags, eng, feats, p["de"] if de else p["comment"]))
+        for p in projects:
+            tags = ", ".join(CAT_DE.get(t, t) if de else t for t in p["tags"])
+            feats = ", ".join(FEATURE[f][1 if de else 0] for f in p["features"])
+            rows.append("| %s | %s | %s | %s | %s |" % (p["name"], tags, "Projekt" if de else "Project", feats,
+                                                       p["de"] if de else p["comment"]))
+        rows.append("<!-- showcase:end -->\n")
+        block = "\n".join(rows)
+        path = os.path.join(ROOT, "docs", lang, "FACTORY-SOUNDS.md")
+        text = open(path, encoding="utf-8").read()
+        if "<!-- showcase:begin -->" in text:
+            start = text.index(INTRO[lang][:20])
+            end = text.index("<!-- showcase:end -->") + len("<!-- showcase:end -->\n")
+            text = text[:start] + block + text[end:]
+        else:
+            i = text.index(head)
+            text = text[:i] + block + "\n" + text[i:]
+        open(path, "w", encoding="utf-8").write(text)
+
+
 def main():
     old = json.load(open(MANIFEST)) if os.path.exists(MANIFEST) else []
     for f in old:
@@ -77,7 +147,8 @@ def main():
         assert p["name"] not in taken, "name already in the bank: " + p["name"]
         assert p["name"].casefold() > first.casefold(), p["name"] + " would sort before the start sound " + first
         taken.add(p["name"])
-        fn = "%s-%s.ohpepreset" % (p["tags"][0].lower(), slug(p["name"]))
+        prefix = p.get("file_prefix", p["tags"][0].lower())
+        fn = "%s-%s.ohpepreset" % (prefix, re.sub("^" + prefix + "-", "", slug(p["name"])))
         assert fn not in files and not os.path.exists(os.path.join(OUT, fn)), fn
         write(os.path.join(OUT, fn), part_doc(p))
         files.append(fn)
@@ -90,6 +161,7 @@ def main():
         write(os.path.join(OUT, fn), project_doc(p))
         files.append(fn)
     json.dump(sorted(files), open(MANIFEST, "w"), indent=1)
+    docs(parts, projects)
     print("%d showcase part presets, %d projects -> %s" % (len(parts), len(projects), OUT))
 
 

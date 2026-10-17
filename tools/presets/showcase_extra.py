@@ -26,7 +26,12 @@ ENGINES = ["fm", "wavetable", "analog", "pluck", "grain", "vocal", "cluster", "s
 DE = {}  # German descriptions of the presets made here
 
 
+REG = {}  # the showcase part presets of this run, by name (make_showcase.py fills it)
+
+
 def _load(name):
+    if name in REG:
+        return REG[name]
     for f in os.listdir(OUT):
         if f.endswith(".ohpepreset"):
             d = json.load(open(os.path.join(OUT, f), encoding="utf-8"))
@@ -215,10 +220,10 @@ def usertable_presets():
     b = sc.S("Recorder Breath Table", ["Pads"], "wavetable", ["usertable", "life", "tempo"],
              "A wavetable analysed from the recorded recorder, eight frames from the breathy onset to the singing body, "
              "slowly scanned in two-bar cycles of the tempo and drifting with Life: a soft, woody pad. The mod wheel "
-             "deepens the scan.",
+             "moves it towards the singing frames.",
              "Eine Wavetable, analysiert aus der aufgenommenen Blockflöte, acht Frames vom hauchigen Einsatz bis zum "
              "singenden Ton, langsam in Zwei-Takt-Zyklen des Tempos durchfahren und mit Leben driftend: eine weiche, "
-             "holzige Fläche. Das Modrad vertieft das Durchfahren.",
+             "holzige Fläche. Das Modrad schiebt sie zu den singenden Frames.",
              wt(table="classic", pos=0.5, warp=0.0, tone=0.5, unison=0.35, univoices=6, uniwidth=0.85, keytrack=0.4,
                 lfopos=0.0),
              {"usertable.wt": 1, "lfo.depth": 0.0}, amp(0.8, 1.5, 0.9, 2.0), mod(0.8, 1.5, 0.7, 1.8, 0.1),
@@ -226,7 +231,7 @@ def usertable_presets():
              sc.fx(1, "chorus", rate=0.25, depth=0.6, mix=0.3, voices=4, drift=0.45, spread=0.85, lowcut=180.0),
              sc.fx(5, "reverb", size=0.75, damping=0.45, predelay=0.03, mix=0.24),
              expr(vel=[("attack", -0.2)], at=[("cutoff", 0.3, "s")]),
-             routes=[route("lfo2", "engine1", 0.35)], wheel=("lfo2depth", 0.4), voices=10, velsens=0.25)
+             routes=[route("lfo2", "engine1", 0.35)], wheel=("engine1", 0.3), voices=10, velsens=0.25)
     sc.PRESETS_SHOWCASE.remove(a)
     sc.PRESETS_SHOWCASE.remove(b)
     a["usertables"] = _usertables(0)
@@ -251,6 +256,17 @@ def part(n, name, **override):
     for k, v in override.items():
         p["p%d.%s" % (n, k.replace("__", "."))] = v
     return p
+
+
+def add_route(params, n, src, dst, amt, curve="lin"):
+    """Appends a matrix routing to part n's first free slot."""
+    for k in range(1, 17):
+        s = "p%d.mod.s%d." % (n, k)
+        if int(params.get(s + "src", 0)) == 0:
+            params.update({s + "src": SRC.index(src), s + "via": 0, s + "dst": DST.index(dst), s + "amt": amt,
+                           s + "curve": CURVE[curve]})
+            return params
+    raise RuntimeError("no free matrix slot")
 
 
 def lanes(lengths, rates, parts=(0, 0, 0, 0)):
@@ -316,7 +332,8 @@ def mixer(**kw):
 
 
 MASTER = {"mix.master.comp": 1, "mix.master.comp.thresh": -14.0, "mix.master.comp.ratio": 2.5, "mix.master.comp.attack": 0.012,
-          "mix.master.comp.release": 0.16, "mix.master.comp.makeup": 0.0, "mix.master.limit": 1}
+          "mix.master.comp.release": 0.16, "mix.master.comp.makeup": 0.0, "mix.master.limit": 1,
+          "mix.master.ceiling": -1.5}  # true peak at most -1 dBTP
 
 
 def motion_lane(target, points):
@@ -359,9 +376,10 @@ def projects():
     #    and follow the CHORD, the pad (Orbit lane 4) holds one note that follows the chord too - the parts change with the
     #    chords without a single programmed chord change. Tight kit: none (a pure harmony piece, 96 BPM).
     voic = [(57, 60, 64), (57, 60, 65), (55, 60, 64), (55, 59, 62)]  # Am, F, C, G (close voicings around middle C)
-    cells = [[(v[k], 84 - 4 * k)] * 4 for v in voic]
-    chord_lane = lambda k: [c for bar in cells for c in [bar[0][k]] * 4 if True] if False else \
-        [(v[k], 84 - 4 * k) for v in voic for _ in range(4)]
+
+    def chord_lane(k):  # one chord tone per lane, a bar (four quarter steps, tied) per chord
+        return [(v[k], 84 - 4 * k) for v in voic for _ in range(4)]
+
     bass = note_steps([(45, 110, 0.7), None, (45, 84, 0.4), (57, 96, 0.3), None, (45, 90, 0.5), None, (52, 92, 0.4),
                        (45, 108, 0.7), None, (45, 80, 0.4), (57, 96, 0.3), None, (52, 90, 0.5), (55, 88, 0.4), None])
     out.append(project(
@@ -433,27 +451,25 @@ def projects():
 
     # 3. Performance Pads: a house loop set up for the four pads (stutter 1/16, tape stop over one bar, low-pass sweep
     #    over two bars, reverb freeze), the pad part opens its own filter against the master sweep (Pad Sweep source) and the
-    #    plucks throw their echo while any pad is held (Pads Held source).
+    #    plucks step back while any pad is held (Pads Held source).
     house_bass = note_steps([None, None, (36, 100, 0.4), None, None, None, (36, 92, 0.4), (48, 84, 0.3)] * 2)
     out.append(project(
         "Pads Performance Set", ["Drums", "Bass", "FX"],
         "A house loop set up for the performance pads (Effects mode, Pads): stutter on sixteenths, a one-bar tape stop, a "
         "low-pass sweep over two bars and a reverb freeze, all on the beat. While the sweep closes, the pad opens its own "
-        "filter against it; while any pad is held the plucks throw their echo. Press Play, then hold the pads.",
+        "filter against it; while any pad is held the plucks step back. Press Play, then hold the pads.",
         "Ein House-Loop, eingerichtet für die Performance-Pads (Effekt-Modus, Pads): Stottern in Sechzehnteln, ein Bandstopp "
         "über einen Takt, ein Tiefpass-Sweep über zwei Takte und ein Hall-Freeze, alles im Takt. Während der Sweep "
-        "schließt, öffnet die Fläche ihr eigenes Filter dagegen; solange ein Pad gehalten wird, werfen die Zupfer ihr Echo. "
+        "schließt, öffnet die Fläche ihr eigenes Filter dagegen; solange ein Pad gehalten wird, treten die Zupfer zurück. "
         "Play drücken, dann die Pads halten.",
         ["pads", "tempo"],
         {"tempo": 124, "drum.kit": KITS["tight"], "key.root": 2, "key.scale": 3, "seq.step.channel": 2,
          "seq.step.rate": STEP_RATE["1/16"], "seq.step.length": 16,
          "pads.quant": 1, "pads.stutter.div": 2, "pads.stop.len": 3, "pads.sweep.mode": 0, "pads.sweep.len": 5,
          "pads.sweep.res": 0.5, "pads.freeze.mix": 0.6},
-        part(1, "Tempo Tide Pad", **{"mod.s5.src": SRC.index("padsweep"), "mod.s5.via": 0, "mod.s5.dst": DST.index("timbre"),
-                                     "mod.s5.amt": 0.5, "mod.s5.curve": 0}),
+        add_route(part(1, "Tempo Tide Pad"), 1, "padsweep", "timbre", 0.5),
         part(2, "Round Square Sub"),
-        part(3, "Ping-Pong Space Pluck", **{"mod.s3.src": SRC.index("padheld"), "mod.s3.via": 0,
-                                            "mod.s3.dst": DST.index("fx1mix"), "mod.s3.amt": 0.0, "mod.s3.curve": 0}),
+        add_route(part(3, "Ping-Pong Space Pluck"), 3, "padheld", "level", -0.45),
         part(4, "Resonant Impact"),
         {"seq.orbit.on": 1, "seq.orbit.drums": 1, "seq.orbit.gate": 0.5, "seq.orbit.human": 0.1},
         lanes([16, 16, 16, 16], ["1/16"] * 4),

@@ -9,7 +9,7 @@
     "Pads"
   ],
   "engine": "vocal",
-  "comment": "A wide 'ah' choir where every singer drifts on their own (Life full up, Alive and Wide on): it sounds like a group, not a copy. The mod wheel moves the vowel towards 'oh'.",
+  "comment": "A wide 'ah' choir where every singer drifts on their own (Life full up, Alive and Wide on): it sounds like a group, not a copy. The mod wheel adds a wider choir vibrato.",
   "params": {
     "engine": 5,
     "vocal.vowel": 0.0,
@@ -51,10 +51,10 @@
     "fx2.reverb.damping": 0.45,
     "fx2.reverb.predelay": 0.03,
     "fx2.reverb.mix": 0.22,
-    "mod.s1.src": 9,
-    "mod.s1.via": 0,
-    "mod.s1.dst": 5,
-    "mod.s1.amt": 0.15,
+    "mod.s1.src": 32,
+    "mod.s1.via": 9,
+    "mod.s1.dst": 1,
+    "mod.s1.amt": 0.02,
     "mod.s1.curve": 0,
     "voices": 12,
     "velsens": 0.3,

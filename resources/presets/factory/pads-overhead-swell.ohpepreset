@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "vocal",
-  "comment": "Breathy voices that rise from in front of you, pass over your head and land behind you (motion path Over the Head, four bars, in tempo). Pressure swells them; the mod wheel moves the vowel. Best with headphones.",
+  "comment": "Breathy voices that rise from in front of you, pass over your head and land behind you (motion path Over the Head, four bars, in tempo). Pressure swells them; the mod wheel adds a choir vibrato. Best with headphones.",
   "params": {
     "engine": 5,
     "vocal.vowel": 1.0,
@@ -57,10 +57,10 @@
     "fx.reverb.damping": 0.45,
     "fx.reverb.predelay": 0.03,
     "fx.reverb.mix": 0.22,
-    "mod.s1.src": 9,
-    "mod.s1.via": 0,
-    "mod.s1.dst": 5,
-    "mod.s1.amt": 0.2,
+    "mod.s1.src": 32,
+    "mod.s1.via": 9,
+    "mod.s1.dst": 1,
+    "mod.s1.amt": 0.02,
     "mod.s1.curve": 0,
     "voices": 8,
     "velsens": 0.25,
