@@ -86,10 +86,10 @@ float Shape::radius (float polar, float azimuth) const noexcept
     const float local = azimuth - turn;                // the surface turns with the object ...
     const float x = st * std::cos (azimuth);           // ... the stereo pinch stays left / right
     float r = 1.0f + 0.32f * env + 0.12f * lvl;
-    r += 0.20f * lobes[0] * (1.5f * z * z - 0.5f);                              // LFO 1: squash / stretch upright
-    r += 0.18f * lobes[1] * st * st * std::cos (2.0f * local + phase);           // LFO 2: a twisting waist
-    r += 0.16f * lobes[2] * 2.0f * z * st * std::cos (local);                    // LFO 3: tilt
-    r += 0.10f * ripple * std::sin (5.0f * local + 3.0f * phase) * std::sin (4.0f * polar); // mod env + matrix depth
+    r += 0.26f * lobes[0] * (1.5f * z * z - 0.5f);                              // LFO 1: squash / stretch upright
+    r += 0.24f * lobes[1] * st * st * std::cos (2.0f * local + phase);           // LFO 2: a twisting waist
+    r += 0.20f * lobes[2] * 2.0f * z * st * std::cos (local);                    // LFO 3: tilt
+    r += 0.14f * ripple * std::sin (5.0f * local + 3.0f * phase) * std::sin (4.0f * polar); // mod env + matrix depth
     r *= 1.0f - 0.55f * pinch * (1.0f - x * x);                                  // out of phase: two lobes left / right
     return std::clamp (r, minRadius, maxRadius);
 }

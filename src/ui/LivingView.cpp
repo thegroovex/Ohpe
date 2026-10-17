@@ -33,7 +33,7 @@ Frame frameOf (juce::Rectangle<float> area)
     const auto body = area.withTrimmedTop (area.getHeight() * 0.1f).withTrimmedBottom (area.getHeight() * 0.16f);
     Frame f;
     f.centre = body.getCentre().translated (0.0f, body.getHeight() * 0.02f);
-    f.scale = juce::jmin (body.getWidth() / (2.0f * 2.5f), body.getHeight() / (2.0f * 1.75f));
+    f.scale = juce::jmin (body.getWidth() / (2.0f * 2.2f), body.getHeight() / (2.0f * 1.5f));
     return f;
 }
 
