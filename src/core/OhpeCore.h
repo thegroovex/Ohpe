@@ -18,6 +18,7 @@
 #include "morph/MorphSpace.h"
 #include "motion/MotionRecorder.h"
 #include "perform/PerformancePads.h"
+#include "sample/SampleData.h"
 #include "harmony/HarmonyBrain.h"
 #include "seq/Arpeggiator.h"
 #include "seq/EuclidSequencer.h"
