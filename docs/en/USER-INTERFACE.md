@@ -509,6 +509,16 @@ the SHA-256 check, **SKIP THIS VERSION**, **REMIND ME LATER**, the settings (dai
 on, never while playing –, channel Stable / Preview), content packs and **PREVIOUS VERSION**. Details:
 [Updates](UPDATES.md).
 
+## CPU meter (p35)
+
+![The CPU meter on the mode column's legend line](../images/ohpe-cpu-meter.png)
+
+`CPU 12 %` on the legend line of the mode column (right, next to MODE) shows how much of each audio block's time Ohpe
+needs to compute its sound – averaged over about half a second; 100 % would be the whole time (the audio would break
+up). The tooltip adds the slowest block of the last two seconds. The legend turns red from 80 % on average or when a
+block took longer than its own time. It is a display only (no parameter, not saved). Parts that have been silent for a
+few seconds sleep and cost almost nothing until they play again. Details: [Performance](PERFORMANCE.md).
+
 ## Keys and shortcuts
 
 | Key | Action |

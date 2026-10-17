@@ -532,6 +532,17 @@ violettem Fortschrittsbalken, **ABBRECHEN**), **INSTALLIEREN** nach der SHA-256-
 Wiedergabe –, Kanal Stabil / Vorschau), Inhaltspakete und **VORIGE VERSION**. Einzelheiten:
 [Aktualisierung](AKTUALISIERUNG.md).
 
+## CPU-Anzeige (p35)
+
+![Die CPU-Anzeige auf der Beschriftungszeile der Modus-Spalte](../images/ohpe-cpu-meter-de.png)
+
+`CPU 12 %` auf der Beschriftungszeile der Modus-Spalte (rechts, neben MODUS) zeigt, wie viel der Zeit jedes
+Audioblocks Ohpe braucht, um seinen Klang zu berechnen – gemittelt über etwa eine halbe Sekunde; 100 % wäre die ganze
+Zeit (der Ton würde aussetzen). Der Tooltip nennt zusätzlich den langsamsten Block der letzten zwei Sekunden. Die
+Beschriftung wird rot ab 80 % im Mittel oder wenn ein Block länger als seine eigene Zeit brauchte. Es ist nur eine
+Anzeige (kein Parameter, wird nicht gespeichert). Parts, die einige Sekunden still waren, schlafen und kosten fast
+nichts, bis sie wieder spielen. Einzelheiten: [Leistung](LEISTUNG.md).
+
 ## Tasten
 
 | Taste | Aktion |
