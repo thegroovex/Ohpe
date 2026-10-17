@@ -45,6 +45,11 @@
     "fx.reverb.mix": 0.18,
     "voices": 8,
     "velsens": 0.8,
-    "gain": 5.9
+    "gain": 5.9,
+    "mod.s1.src": 9,
+    "mod.s1.via": 0,
+    "mod.s1.dst": 82,
+    "mod.s1.amt": 0.25,
+    "mod.s1.curve": 0
   }
 }

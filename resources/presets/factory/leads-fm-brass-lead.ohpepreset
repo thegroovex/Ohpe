@@ -56,8 +56,13 @@
     "fx2.chorus.spread": 0.85,
     "fx2.chorus.lowcut": 220.0,
     "gain": 14.5,
-    "expr.at.dst1": 12,
+    "mod.s1.src": 1,
+    "mod.s1.via": 9,
+    "mod.s1.dst": 1,
+    "mod.s1.amt": 0.03,
+    "mod.s1.curve": 0,
+    "expr.at.curve1": 3,
     "expr.at.amt1": 0.3,
-    "expr.at.curve1": 3
+    "expr.at.dst1": 12
   }
 }

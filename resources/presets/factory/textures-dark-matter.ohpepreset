@@ -136,6 +136,11 @@
     "fx6.compressor.release": 180.0,
     "fx6.compressor.knee": 6.0,
     "fx6.compressor.makeup": 0.0,
-    "fx6.compressor.mix": 1.0
+    "fx6.compressor.mix": 1.0,
+    "mod.s7.src": 9,
+    "mod.s7.via": 0,
+    "mod.s7.dst": 4,
+    "mod.s7.amt": 0.3,
+    "mod.s7.curve": 0
   }
 }

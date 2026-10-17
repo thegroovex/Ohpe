@@ -61,7 +61,12 @@
     "lfo.dest": 1,
     "wavetable.lfopos": 0.12,
     "voices": 8,
-    "gain": 14.9
+    "gain": 14.9,
+    "mod.s1.src": 9,
+    "mod.s1.via": 0,
+    "mod.s1.dst": 52,
+    "mod.s1.amt": 0.25,
+    "mod.s1.curve": 0
   },
   "arp": {
     "on": 1,

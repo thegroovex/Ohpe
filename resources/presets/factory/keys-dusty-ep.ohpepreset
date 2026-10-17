@@ -58,6 +58,18 @@
     "fx2.chorus.spread": 0.85,
     "fx2.chorus.lowcut": 150.0,
     "gain": 9.9,
-    "life": 0.15
+    "life": 0.15,
+    "lfo2.rate": 5.3,
+    "lfo2.sync": 0,
+    "lfo2.shape": 0,
+    "lfo2.phase": 0.0,
+    "lfo2.fade": 0.25,
+    "lfo2.mode": 1,
+    "lfo2.depth": 1.0,
+    "mod.s1.src": 2,
+    "mod.s1.via": 9,
+    "mod.s1.dst": 1,
+    "mod.s1.amt": 0.015,
+    "mod.s1.curve": 0
   }
 }

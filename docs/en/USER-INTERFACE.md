@@ -17,7 +17,7 @@ and EN / DE. Every function can be reached with the mouse and – through MIDI l
 | Control | What it does |
 |---|---|
 | **PITCH** wheel | pitch bend for the edit part (its MIDI channel, like the on-screen keyboard); range = the part's *Bend Range*. Drag up / down; it springs back to the centre when you let go. |
-| **MOD** wheel | the mod wheel (CC 1): a source in the [modulation matrix](MODULATION.md). Stays where you leave it; double-click = 0. |
+| **MOD** wheel | the mod wheel (CC 1): a source in the [modulation matrix](MODULATION.md); every factory preset answers it ([factory sounds](FACTORY-SOUNDS.md#mod-wheel-p29)). Stays where you leave it; double-click = 0. |
 | Keyboard | three octaves (C3–C6 by default); **OCTAVE −/+** moves it. **GRID** (between OCTAVE + and MIDI) swaps it for the isomorphic [grid keyboard](HARMONY.md#the-grid-keyboard) with MPE (p24). |
 | **PORTAMENTO**: AUTO / LEGATO / ALWAYS | glide mode of the edit part: *Auto* glides while the previous note still sounds, *Legato* only while another key is held, *Always* from every previous note. |
 | **GLIDE** | glide time of the edit part (0 = off). |

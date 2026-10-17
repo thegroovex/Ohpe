@@ -76,6 +76,11 @@
     "mpe.smooth": 0.04,
     "mpe.bend": 48,
     "voices": 8,
-    "gain": 13.9
+    "gain": 13.9,
+    "mod.s3.src": 9,
+    "mod.s3.via": 0,
+    "mod.s3.dst": 4,
+    "mod.s3.amt": 0.08,
+    "mod.s3.curve": 0
   }
 }

@@ -184,7 +184,7 @@ DE = {
     "Ambient Drift": "Langsame Quinten-Fläche, eine generative Kalimba aus vier Orbit-Spuren mit 5, 7, 11 und 16 Steps mit tempo-synchronem punktiertem Achtel-Delay, spärliche Klangglas-Töne aus Euklid. Ohne Drums.",
     "Synth-Pop": "Heller Four-on-the-floor auf dem Trocken-Kit aus Euklid (Snare und Clap auf 2 und 4, Achtel-Hats), ein hüpfender Oktav-Bass, üppiges Poly-Brass und ein funkelndes Arpeggio aus drei Orbit-Spuren über Am–F–C–G und eine Lead-Melodie aus dem Step-Sequenzer.",
     "Euclid Polyrhythm": "Vier Euklid-Ringe mit 8, 12, 16 und 9 Steps auf dem Room-Kit, eine Marimba aus Orbit-Spuren mit 5, 6, 7 und 8 Steps und ein Orgelpunkt-Bass.",
-    "Arp Sequence": "Ein 64-Step-Arpeggio über Am, Fmaj7, G und Em auf einem A-Orgelpunkt, Studio-Kit-Drums aus Orbit. Der Arpeggiator ist auf Part 3 gelatcht: Akkorde spielen.",
+    "Arp Sequence": "Ein 64-Step-Arpeggio über Am, Fmaj7, G und Em auf einem A-Orgelpunkt, Studio-Kit-Drums aus Orbit. Der Arpeggiator spielt Part 3: Akkorde halten.",
     "Sub & Glide": "Septakkorde, die ineinander gleiten (Glide Strings, Poly-Glide), ein langer gleitender Sub auf Orbit-Spur 1 und ein Halftime-Beat auf dem Boom-Kit aus den Orbit-Spuren 2–4, funkelnde Glocken aus Euklid. Cm7 – Abmaj7 – Ebmaj7 – Bb7.",
     "Deep House": "Geshuffelte Hats und eine tiefe Kick auf dem Tight-Kit (Orbit), ein synkopierter Orgel-Bass (Step-Sequenzer) und Euklid-Akkord-Stabs.",
 }

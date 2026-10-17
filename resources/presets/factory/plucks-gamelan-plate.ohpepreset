@@ -46,6 +46,11 @@
     "fx.delay.mix": 0.14,
     "voices": 8,
     "velsens": 0.9,
-    "gain": 2.5
+    "gain": 2.5,
+    "mod.s1.src": 9,
+    "mod.s1.via": 0,
+    "mod.s1.dst": 82,
+    "mod.s1.amt": 0.25,
+    "mod.s1.curve": 0
   }
 }

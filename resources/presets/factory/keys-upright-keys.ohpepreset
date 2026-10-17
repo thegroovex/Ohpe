@@ -50,6 +50,11 @@
     "mpe.bend": 48,
     "voices": 16,
     "velsens": 0.7,
-    "gain": 4.8
+    "gain": 4.8,
+    "mod.s1.src": 9,
+    "mod.s1.via": 0,
+    "mod.s1.dst": 4,
+    "mod.s1.amt": -0.45,
+    "mod.s1.curve": 0
   }
 }

@@ -9,6 +9,7 @@
 //               [--seconds S] [--bpm B] [--limit] [--hold S] [--beats N] [--tail S] preset.ohpepreset ...
 //
 // --hold S: part presets hold one note (bass, lead) or a chord for S seconds instead of their phrase (movement check).
+// --wheel V: the mod wheel at V (0..127) from the start (factory wheel routings, level check).
 // --notes N,N,.. / --vel V: with --hold, the held notes and their velocity (click checks at other pitches).
 // --beats N / --tail S: shorten the phrase and its tail (the factory level tests render 4 beats + 1 s).
 //
@@ -162,7 +163,7 @@ int main (int argc, char** argv)
     bool limiter = false;
     std::vector<std::string> files;
     std::vector<int> notes;
-    int vel = 0;
+    int vel = 0, wheel = -1;
     for (int i = 1; i < argc; ++i)
     {
         const std::string a = argv[i];
@@ -183,6 +184,7 @@ int main (int argc, char** argv)
             for (std::string t; std::getline (ns, t, ',');) notes.push_back (std::stoi (t));
         }
         else if (a == "--vel") vel = std::stoi (next()); // with --hold: their velocity
+        else if (a == "--wheel") wheel = std::stoi (next()); // p29: mod wheel position 0..127 (CC 1 at the start)
         else files.push_back (a);
     }
     const auto bank = loadBank (bankFile, wavdir);
@@ -204,7 +206,7 @@ int main (int argc, char** argv)
         core->prepare (48000.0, 256);
         for (const auto& [pad, s] : bank.studio) core->drumKit().setFactorySample (pad, s);
         const bool project = p.meta.kind == preset::Kind::Project;
-        const auto audio = project ? render::renderProject (*core, p, seconds, limiter) : render::renderPart (*core, p, part, bpm, beats, tail, hold, notes, vel);
+        const auto audio = project ? render::renderProject (*core, p, seconds, limiter, wheel) : render::renderPart (*core, p, part, bpm, beats, tail, hold, notes, vel, wheel);
         const auto m = render::measure (audio);
         if (! out.empty()) writeWav (out / (base (file) + ".wav"), audio);
 
