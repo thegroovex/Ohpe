@@ -93,6 +93,29 @@ Acht Part-Presets nutzen **LEBEN**, damit gehaltene Töne weiterleben: *Analog D
 LEBEN auf 0 ergibt die statische Fassung ([BEDIENUNG.md](BEDIENUNG.md#leben)); die Liste steht in
 `tools/presets/factory_parts_life.py`.
 
+## Modulationsrad (p29)
+
+Jedes Werks-Preset reagiert auf das **Modulationsrad** (das MOD-Rad auf dem Bildschirm, CC 1 vom Controller): eine
+Zuweisung der Modulationsmatrix des Parts mit der Quelle (oder Via) *Modulationsrad*, passend zur Rolle des Klangs.
+Mit dem Rad unten klingt jedes Preset genau wie vorher.
+
+| Klänge | Rad hoch |
+|---|---|
+| Leads, Solostimmen, Orgeln, Bläser | Vibrato (etwa ±0,35 Halbtöne; LFO 1, wo er schon im Vibrato-Tempo läuft, sonst LFO 2 mit 5,3 Hz und kurzem Einblenden) |
+| Tines, Reeds, Vibes mit Auto-Pan | tieferes Auto-Pan / Tremolo (LFO 1 Tiefe) |
+| Flächen, Bässe, Zupfer, Tasten, FX | Filter / Klang öffnet sich (Klangfarbe: Cutoff, FM-Index, Zupf-Helligkeit) |
+| Grain-Flächen, Texturen und FX | Korn-Streuung |
+| Chöre der Vokal-Engine | der Vokal wandert |
+| Subs, Booms, Kicks | härterer, angezerrter Charakter (Charakter Hart) |
+| Arps mit Delay / Echo | Echo-Wurf (Mischung des Delay-Slots) |
+| Morph-Presets | Morph X (schon bisher, über die Rad-Steuerung des Morph-Pads) |
+| Projekt-Presets | jeder Part nach seiner Engine (Streuung, Vokal, Klang) |
+
+Die Zuweisung liegt im ersten freien Matrix-Slot und lässt sich in der Mod-Ansicht ändern oder entfernen. Die Mengen
+wurden mit internen Renderings geprüft: mit dem Rad ganz oben wird kein Preset mehr als 3 dB lauter oder übersteuert.
+Das Skript ist `tools/presets/add_modwheel.py`; die Core-Tests prüfen, dass jedes Werks-Preset eine Rad-Zuweisung hat
+und das Rad ganz oben den Klang sauber verändert.
+
 ## Drum-Kits
 
 `drum.kit` wählt die Aufnahmen, die die 24 Pads spielen. Alle Kits haben dieselbe Pad-Belegung,

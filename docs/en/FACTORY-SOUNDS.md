@@ -91,6 +91,29 @@ Eight part presets use **LIFE** so their held notes keep evolving: *Analog Dawn*
 Turn LIFE to 0 for the static version ([USER-INTERFACE.md](USER-INTERFACE.md#life)); the list lives in
 `tools/presets/factory_parts_life.py`.
 
+## Mod wheel (p29)
+
+Every factory preset answers the **mod wheel** (the on-screen MOD wheel, CC 1 from a controller): a routing of the
+part's modulation matrix with the source (or via) *Mod Wheel*, chosen by the sound's role. With the wheel down every
+preset sounds exactly as before.
+
+| Sounds | Wheel up |
+|---|---|
+| Leads, solo voices, organs, brass | vibrato (about ±0.35 semitones; LFO 1 where it already runs at a vibrato rate, otherwise LFO 2 at 5.3 Hz with a short fade-in) |
+| Tines, reeds, vibes with an auto-pan | deeper auto-pan / tremolo (LFO 1 depth) |
+| Pads, basses, plucks, keys, FX | the filter / tone opens (Timbre: cutoff, FM index, pluck brightness) |
+| Grain pads, textures and FX | grain spray |
+| Vocal-engine choirs | the vowel moves |
+| Subs, booms, kicks | harder, driven character (Character Hard) |
+| Arps with a delay / echo | echo throw (the delay slot's mix) |
+| Morph presets | Morph X (already, through the morph pad's wheel control) |
+| Project presets | every part, by its engine (spray, vowel, tone) |
+
+The routing sits in the first free matrix slot, so it can be changed or removed in the Mod view. Amounts were
+checked with internal renders: with the wheel fully up no preset gets more than 3 dB louder or clips. The script is
+`tools/presets/add_modwheel.py`; the core tests check that every factory preset has a wheel routing and that the
+wheel fully up changes the sound cleanly.
+
 ## Drum kits
 
 `drum.kit` chooses the recordings the 24 pads play. All kits have the same pad layout, so every

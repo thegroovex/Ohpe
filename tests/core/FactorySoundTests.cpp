@@ -6,6 +6,8 @@
 #include "OhpeCore.h"
 #include "TestHelpers.h"
 #include "../TestSlice.h"
+#include "mod/ModMatrix.h"
+#include "morph/MorphSpace.h"
 #include "preset/Preset.h"
 #include "render/PresetRender.h"
 #include "sample/FactoryBank.h"
@@ -41,6 +43,33 @@ std::vector<fs::path> factoryFiles()
         if (e.path().extension() == ".ohpepreset") files.push_back (e.path());
     std::sort (files.begin(), files.end());
     return files;
+}
+
+preset::Preset loadPreset (const fs::path& file)
+{
+    std::ifstream f (file);
+    std::stringstream ss;
+    ss << f.rdbuf();
+    preset::Preset p;
+    REQUIRE (preset::fromJson (ss.str(), p));
+    return p;
+}
+
+/** p29: a routing of the part (local IDs after `pre`) that the mod wheel drives (source, or via with a source). */
+bool hasWheelRouting (const std::map<std::string, float>& params, const std::string& pre)
+{
+    const int wheel = mod::sourceIndexOfKey ("modwheel");
+    auto get = [&] (const std::string& id) { const auto i = params.find (pre + id); return i != params.end() ? i->second : 0.0f; };
+    for (int k = 1; k <= mod::numSlots; ++k)
+    {
+        const auto s = "mod.s" + std::to_string (k) + ".";
+        const int src = (int) get (s + "src"), via = (int) get (s + "via"), dst = (int) get (s + "dst");
+        if ((src == wheel || (via == wheel && src != mod::SrcOff)) && dst > mod::DstOff && dst < mod::numDests && get (s + "amt") != 0.0f)
+            return true;
+    }
+    // morph presets: the wheel moves the morph pad (morph.xsrc / ysrc = Mod Wheel)
+    const int ctrl = (int) MorphSpace::CtrlModWheel;
+    return get ("morph.on") > 0.5f && ((int) get ("morph.xsrc") == ctrl || (int) get ("morph.ysrc") == ctrl);
 }
 } // namespace
 
@@ -233,4 +262,72 @@ TEST_CASE ("factory presets: every preset loads and renders finite, unclipped au
     }
     CHECK (parts >= 100);
     CHECK (projects >= 6);
+}
+
+TEST_CASE ("factory presets: every preset does something on the mod wheel (p29)")
+{
+    const auto files = factoryFiles();
+    REQUIRE (files.size() >= 100);
+    REQUIRE (mod::sourceIndexOfKey ("modwheel") == mod::SrcModWheel);
+    for (const auto& file : files)
+    {
+        CAPTURE (file.filename().string());
+        const auto p = loadPreset (file);
+        if (p.meta.kind == preset::Kind::Part)
+            CHECK (hasWheelRouting (p.params, ""));
+        else
+        {
+            int parts = 0;
+            for (int n = 1; n <= Core::numParts; ++n)
+            {
+                const auto pre = "p" + std::to_string (n) + ".";
+                if (p.params.count (pre + "engine") == 0) continue;
+                ++parts;
+                CAPTURE (n);
+                CHECK (hasWheelRouting (p.params, pre)); // every part of a project
+            }
+            CHECK (parts >= 1);
+        }
+    }
+}
+
+TEST_CASE ("factory presets: the mod wheel fully up changes the sound, stays finite and level-safe (p29)" * doctest::test_suite ("sliced"))
+{
+    const auto files = factoryFiles();
+    const auto slice = test::testSlice();
+    long long item = 0;
+    for (const auto& file : files)
+    {
+        const auto p = loadPreset (file);
+        if (p.meta.kind != preset::Kind::Part || ! slice.has (item++)) continue;
+        CAPTURE (file.filename().string());
+        auto render = [&] (int wheel) {
+            Core core;
+            core.prepare (48000.0, 256);
+            return render::renderPart (core, p, 0, 100.0, 2.0, 0.4, 0.0, {}, 0, wheel);
+        };
+        const auto off = render (0), on = render (127);
+        const auto m0 = render::measure (off), m1 = render::measure (on);
+        CHECK (m1.nonFinite == 0);
+        CHECK (m1.denormals == 0);
+        CHECK (std::abs (m1.dc) < 0.01);
+        // something audible happens: the difference of the two renders is clearly above numerical noise
+        double diff = 0.0, ref = 0.0;
+        for (size_t i = 0; i < std::min (off.size(), on.size()); ++i)
+            for (int c = 0; c < 2; ++c)
+            {
+                const double a = c == 0 ? off.l[i] : off.r[i], b = c == 0 ? on.l[i] : on.r[i];
+                diff += (b - a) * (b - a);
+                ref += a * a;
+            }
+        CAPTURE (10.0 * std::log10 ((diff + 1.0e-20) / (ref + 1.0e-20)));
+        CHECK (diff > ref * 1.0e-4); // at least -40 dB below the sound itself
+        // level-safe: not much louder than with the wheel down, and no clipping where the core renders the real sound
+        const auto inst = [&] (const char* id) { const auto i = p.params.find (id); return i != p.params.end() && i->second > 0.5f; };
+        const bool recording = inst ("sampler.inst") || inst ("grain.inst") || inst ("sampler.inst2") || inst ("grain.inst2");
+        CAPTURE (m0.activeRmsDb);
+        CAPTURE (m1.activeRmsDb);
+        CHECK (m1.activeRmsDb < m0.activeRmsDb + 3.0);
+        if (! recording) CHECK (m1.peakDb < 0.0);
+    }
 }
