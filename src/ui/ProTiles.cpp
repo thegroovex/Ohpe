@@ -1603,7 +1603,8 @@ private:
         if (s.startsWithIgnoreCase ("Squ")) return ph < 0.5f ? 0.85f : -0.85f;
         if (s.startsWithIgnoreCase ("Round"))
         {
-            const float tri = 1.0f - 4.0f * std::abs (ph - 0.5f);
+            const float q = std::fmod (ph + 0.25f, 1.0f); // as the sound: starts at 0 and rises
+            const float tri = 1.0f - 4.0f * std::abs (q - 0.5f);
             return std::sin (0.25f * twoPi * tri);
         }
         return std::sin (twoPi * ph);
