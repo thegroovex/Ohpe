@@ -875,3 +875,21 @@ No new parameters / keine neuen Parameter: the updater ([English](en/UPDATES.md)
 not a sound or performance control. Its settings (automatic check, channel, last check, skipped version) are stored per
 user in `Settings/update.json`, not in projects or presets / Seine Einstellungen liegen pro Benutzer in
 `Settings/update.json`, nicht in Projekten oder Presets.
+
+## SUB layer (p31)
+
+Appended after the harmony brain (`harmony.p4.follow`), part by part (`p1.sub.*` … `p4.sub.*`, 16 IDs, group
+"partN/sub"). Guides: [English](en/SUB.md) · [Deutsch](de/SUB-EBENE.md).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.sub.level` | Part N Sub Level | Part N Sub-Pegel | 0 … 1 (0 – 100 %; 0 = off) | 0 |
+| `pN.sub.oct` | Part N Sub Octave | Part N Sub-Oktave | −1 Oct, −2 Oct | −1 Oct |
+| `pN.sub.shape` | Part N Sub Shape | Part N Sub-Form | Sine, Round, Square | Sine |
+| `pN.sub.direct` | Part N Sub Direct | Part N Sub direkt | Off / On | Off |
+
+A sub oscillator under every voice of the part's main engine (all eight synth engines; not the layer engine, not the
+drum kit), phase-locked to the voice's pitch (glide, bend, pitch envelope, matrix pitch, life), band-limited, mono,
+on the voice's amp envelope. Level 0 leaves the sound bit-identical. Direct off = into the voice filter (Analog,
+Wavetable); the other engines always add it after their own tone shaping. The modulation matrix gains the target
+**Sub Level** (85, key `sublevel`, after Wide 84); the target choice list grows at its end. No new sources.
