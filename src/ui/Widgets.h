@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
+#include "Palette.h"
 #include "Pictograms.h"
 #include "plugin/PluginProcessor.h"
 
@@ -69,6 +70,7 @@ public:
     void refreshVirtual(); ///< re-reads the virtual control's value (timer)
     /** 0.7: modulation ring - the reach of the matrix routings (normalised lo..hi) and the live position. */
     void setModulation (bool any, float lo, float hi, float live);
+    void refreshColours() { knob.setColour (juce::Slider::rotarySliderFillColourId, colour::encoder (index)); repaint(); } ///< p32: skin change
 
     void paint (juce::Graphics& g) override;
     void resized() override;
@@ -177,6 +179,7 @@ public:
     static constexpr int numOctaves = 3;
     explicit Keyboard (juce::MidiKeyboardState& s);
     void setBaseOctave (int octave); ///< lowest C = 12 * (octave + 1)
+    void refreshColours(); ///< p32: after a skin change
     int getBaseOctave() const noexcept { return baseOctave; }
     void resized() override;
 
@@ -257,6 +260,7 @@ class MiniKnob : public juce::Component, public juce::SettableTooltipClient
 {
 public:
     MiniKnob (OhpeProcessor& p, juce::String legendEnglish);
+    void refreshColours() { knob.setColour (juce::Slider::rotarySliderFillColourId, colour::capInk); repaint(); } ///< p32: skin change
     ~MiniKnob() override;
     void bind (const juce::String& paramId);
     const juce::String& boundId() const noexcept { return id; }

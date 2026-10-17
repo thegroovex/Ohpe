@@ -81,6 +81,8 @@ target_sources(ohpe_core PRIVATE
     update/UpdateSettings.cpp
     update/Download.cpp
     update/ContentPacks.cpp)
+# p32: the user's settings (language, help, skin, display, animations - per user, not per project)
+target_sources(ohpe_core PRIVATE settings/UserSettings.cpp)
 
 # 0.4 (package F): factory sample bank (instruments, drum kits)
 target_sources(ohpe_core PRIVATE sample/FactoryBank.cpp)

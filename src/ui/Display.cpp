@@ -410,7 +410,7 @@ void Display::renderLayers()
         g.fillPath (glassPath);
         g.saveState();
         g.reduceClipRegion (glassPath);
-        g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.035f), glass.getCentreX(), glass.getY() + glass.getHeight() * 0.3f,
+        g.setGradientFill (juce::ColourGradient (colour::sheen.withAlpha (0.035f), glass.getCentreX(), glass.getY() + glass.getHeight() * 0.3f,
                                                  juce::Colours::transparentWhite, glass.getCentreX(), glass.getY() + glass.getHeight() * 1.1f, true));
         g.fillRect (glass);
         g.setGradientFill (juce::ColourGradient (juce::Colours::transparentBlack, glass.getCentreX(), glass.getCentreY(),
@@ -443,7 +443,7 @@ void Display::renderLayers()
         g.setGradientFill (juce::ColourGradient (juce::Colours::black.withAlpha (0.3f), glass.getRight(), 0, juce::Colours::transparentBlack,
                                                  glass.getRight() - u * 1.2f, 0, false));
         g.fillRect (glass.withLeft (glass.getRight() - u * 1.2f));
-        g.setColour (juce::Colours::white.withAlpha (0.07f));
+        g.setColour (colour::sheen.withAlpha (0.07f));
         g.fillRect (glass.withTop (glass.getBottom() - 1.2f).reduced (u * 1.2f, 0));
         juce::Path sheen;
         sheen.startNewSubPath (glass.getX(), glass.getY());
@@ -451,7 +451,7 @@ void Display::renderLayers()
         sheen.lineTo (glass.getX() + glass.getWidth() * 0.30f, glass.getBottom());
         sheen.lineTo (glass.getX(), glass.getBottom());
         sheen.closeSubPath();
-        g.setGradientFill (juce::ColourGradient (juce::Colours::white.withAlpha (0.045f), glass.getX(), glass.getY(), juce::Colours::transparentWhite,
+        g.setGradientFill (juce::ColourGradient (colour::sheen.withAlpha (0.045f), glass.getX(), glass.getY(), juce::Colours::transparentWhite,
                                                  glass.getX() + glass.getWidth() * 0.42f, glass.getY() + glass.getHeight() * 0.5f, false));
         g.fillPath (sheen);
         g.setColour (juce::Colours::black.withAlpha (0.7f));

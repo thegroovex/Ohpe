@@ -144,3 +144,45 @@ TEST_CASE ("midi map: unknown parameter IDs are kept but inactive")
     CHECK_FALSE (r.mapper->handleMidi (MidiEvent::controller (1, 1, 64)));
     CHECK (r.map.mappings().size() == 1);
 }
+
+// p32: the settings' MIDI learn list edits and removes single mappings
+TEST_CASE ("midi map: replace and remove by index")
+{
+    MidiMap map;
+    MidiMapping a;
+    a.paramId = "tempo";
+    a.number = 20;
+    MidiMapping b = a;
+    b.paramId = "p1.vol";
+    b.number = 21;
+    map.add (a);
+    map.add (b);
+    REQUIRE (map.mappings().size() == 2);
+    auto e = map.mappings()[1];
+    e.channel = 99;           // clamped
+    e.mode = MidiMapMode::Toggle;
+    e.minNorm = 1.0f;         // inverted range is allowed
+    e.maxNorm = 0.0f;
+    CHECK (map.replace (1, e));
+    CHECK (map.mappings()[1].channel == 16);
+    CHECK (map.mappings()[1].mode == MidiMapMode::Toggle);
+    CHECK (map.mappings()[1].minNorm == doctest::Approx (1.0f));
+    CHECK_FALSE (map.replace (5, e));
+    CHECK_FALSE (map.remove (5));
+    // an edit that duplicates another mapping of the same parameter keeps only the edited one
+    MidiMapping c = a;
+    c.number = 30;
+    map.add (c);
+    REQUIRE (map.mappings().size() == 3);
+    auto d = map.mappings()[2];
+    d.number = 20;
+    CHECK (map.replace (2, d));
+    CHECK (map.mappings().size() == 2);
+    CHECK (map.forParam ("tempo").size() == 1);
+    CHECK (map.remove (0));
+    CHECK (map.mappings().size() == 1);
+    // round trip still works after edits
+    MidiMap back;
+    CHECK (back.fromJson (map.toJson()));
+    CHECK (back.mappings().size() == map.mappings().size());
+}
