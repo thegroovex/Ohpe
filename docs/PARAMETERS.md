@@ -927,3 +927,11 @@ amount 0 (the default) leaves the sound untouched. Part presets carry them; pres
 
 The modulation matrix gains the source **Vibrato (5.5 Hz)** (32) and the targets **Glide Time**, **Amp Attack**,
 **Amp Decay**, **Amp Release** (86 – 89); both choice lists grow at their end.
+
+## p32 – Settings menu / Einstellungsmenü
+
+No new parameters / keine neuen Parameter. The settings ([English](en/SETTINGS.md) · [Deutsch](de/EINSTELLUNGEN.md))
+are per user (`Settings/settings.json`: language, tooltips, help overlay, skin, display brightness, animations, window
+size) and not automatable. Their MIDI page shows existing parameters – `pN.midich`, `pN.mpe`, `pN.bend`, `pN.mpe.bend`,
+`sync.src`, `sync.clockout`, `sync.smooth` – unchanged and still automatable / MIDI-mappable / Die MIDI-Seite zeigt
+bestehende Parameter, unverändert und weiterhin automatisierbar und MIDI-zuweisbar.

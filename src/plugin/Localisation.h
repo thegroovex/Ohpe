@@ -11,6 +11,8 @@ enum class Language { English = 0, German };
 /** Current UI language (process-wide). Default: German if the system language is German, else English. */
 Language current() noexcept;
 void setCurrent (Language lang) noexcept;
+/** p32: back to the system language (OHPE_LANGUAGE still wins), as the settings' "System" choice. */
+void followSystem() noexcept;
 Language systemDefault();
 
 /** Translates an English UI text into the current language (English text = key). */

@@ -571,6 +571,25 @@ void glyph (juce::Graphics& g, juce::Rectangle<float> r, Picto id, juce::Colour 
                 }
             break;
         }
+        // p32: SETTINGS - a gear: eight teeth around a ring, a hub
+        case Picto::Settings:
+        {
+            constexpr int teeth = 8;
+            const float ro = s * 1.05f, ri = s * 0.78f, tw = juce::MathConstants<float>::twoPi / (float) (teeth * 2);
+            for (int i = 0; i < teeth * 2; ++i)
+            {
+                const float rad = i % 2 == 0 ? ro : ri;
+                const float a0 = (float) i * tw - tw * 0.5f, a1 = a0 + tw;
+                const juce::Point<float> p0 (c.x + rad * std::sin (a0), c.y - rad * std::cos (a0));
+                if (i == 0) p.startNewSubPath (p0);
+                else p.lineTo (p0);
+                p.lineTo (c.x + rad * std::sin (a1), c.y - rad * std::cos (a1));
+            }
+            p.closeSubPath();
+            g.strokePath (p, juce::PathStrokeType (lw * 0.75f, juce::PathStrokeType::mitered, juce::PathStrokeType::rounded));
+            g.drawEllipse (juce::Rectangle<float> (s * 0.7f, s * 0.7f).withCentre (c), lw * 0.75f);
+            break;
+        }
         // p14: SAVE - a preset card with a plus: "keep this sound"
         case Picto::Save:
         {

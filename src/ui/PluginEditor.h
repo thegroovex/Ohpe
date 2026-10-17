@@ -8,6 +8,7 @@
 #include "LibraryBrowser.h"
 #include "OhpeLookAndFeel.h"
 #include "ProView.h"
+#include "SettingsView.h"
 #include "UpdateView.h"
 #include "Widgets.h"
 #include "plugin/Localisation.h"
@@ -77,7 +78,7 @@ private:
 };
 /**
     p35: the CPU meter on the legend line of the mode column, right-aligned ("CPU 12 %"): the average share of each
-    audio block's time the processing takes (the slowest block in the tooltip). Engraved like the legends; red from
+    audio block's time the processing takes (the slowest block in the tooltip). Engraved like the legends (engraving / alertInk follow the light and night skins); red from
     80 % average or a block over 100 % (the audio may break up). Display only - not a parameter.
 */
 class CpuMeter : public juce::Component, public juce::TooltipClient
@@ -110,6 +111,7 @@ public:
     ~OhpeEditor() override;
 
     void paint (juce::Graphics&) override;
+    void paintOverChildren (juce::Graphics&) override; ///< p32: display brightness
     void resized() override;
     bool keyPressed (const juce::KeyPress& key) override;
 
@@ -158,7 +160,10 @@ public:
         A = arm the edit track. Returns false for other keys and in plug-in hosts (the host owns them). */
     bool handleShortcut (const juce::KeyPress& key);
     /** The library or the pro view lies on the plate: the plate's controls are hidden. */
-    bool overlayOpen() const { return library.isVisible() || proView.isVisible() || breedView.isVisible() || updateView.isVisible(); }
+    bool overlayOpen() const
+    {
+        return library.isVisible() || proView.isVisible() || breedView.isVisible() || updateView.isVisible() || settingsView.isVisible();
+    }
     /** p27: the update view (a click on the version legend / wordmark). */
     void showUpdates (bool show);
     bool updatesVisible() const { return updateView.isVisible(); }
@@ -166,6 +171,17 @@ public:
     ui::VersionBadge& versionBadgeComponent() { return versionBadge; }
     ui::CpuMeter& cpuMeterComponent() { return cpuMeter; } ///< p35
     Updater& updaterInstance() { return *updater; }
+    /** p32: the settings view (gear key in the header, the wordmark opens its About page). `page` -1 = the page shown last. */
+    void showSettings (bool show, int page = -1);
+    bool settingsVisible() const { return settingsView.isVisible(); }
+    ui::SettingsView& settingsComponent() { return settingsView; }
+    ui::PictoKey& settingsKeyComponent() { return settingsKey; }
+    ui::HelpOverlay& helpOverlayComponent() { return helpOverlay; }
+    UserSettingsStore& userSettingsStore() { return *userSettings; }
+    /** p32: applies the user settings (language, skin, tooltips, help overlay, brightness, animations, window size). */
+    void applyUserSettings();
+    bool tooltipsEnabled() const noexcept { return tooltipsOn; }
+    float animationRate() const noexcept { return animRate; }
     ui::PictoKey& recordKey() { return recKey; }
     ui::PictoKey& playTransportKey() { return playKey; }
     juce::String lastFlash() const { return lastFlashText; }
@@ -224,6 +240,9 @@ private:
     void loadUiState();
     void setParamPlain (const juce::String& id, float plain);
     void refreshVersionBadge(); ///< p27: "V0.3.0" / "UPDATE 0.4.0" above the wordmark
+    void applyAccents();        ///< p32: key / encoder accent colours of the current skin
+    void applySkinNow();        ///< p32: palette, look and feel, cached images
+    void refreshHelpOverlay();  ///< p32: texts and visibility of the help overlay
     void refreshPadKeys(); ///< p25: the Pads view's soft keys follow the pad parameters
     void onSoftKey (int id);
     void showBounceMenu();                      ///< p23: the BOUNCE soft key of the Grain / Sampler page (source, loop)
@@ -274,7 +293,7 @@ private:
     float spatialTime = 0.0f;
     juce::TooltipWindow tooltips { this, 600 }; ///< 1.0: tooltips (3D badge, part selector)
     ui::PresetStrip presetStrip;
-    juce::TextButton langEn { "EN" }, langDe { "DE" };
+    ui::PictoKey settingsKey { ui::Picto::Settings, "Settings" }; ///< p32: replaces the language pills
     ui::Keyboard keyboard;
     ui::GridKeyboard grid; ///< p24
     ui::ProView proView;
@@ -282,6 +301,15 @@ private:
     ui::BreedView breedView; ///< p18
     juce::SharedResourcePointer<Updater> updater; ///< p27: one per process
     ui::UpdateView updateView;
+    juce::SharedResourcePointer<UserSettingsStore> userSettings; ///< p32: per user, shared by every open editor
+    ui::SettingsView settingsView;
+    ui::HelpOverlay helpOverlay;
+    bool tooltipsOn = true;
+    float animRate = 1.0f;
+    int skinPoll = 0;
+    int shownSkin = -1;
+    int shownLanguage = -1; ///< the language setting applied last (-1: none yet)
+    float shownWindowScale = 0.0f;
     ui::VersionBadge versionBadge;
     ui::CpuMeter cpuMeter; ///< p35
     void refreshCpuMeter();
