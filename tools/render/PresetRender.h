@@ -8,6 +8,7 @@
 
 #include "OhpeCore.h"
 #include "preset/Preset.h"
+#include "wavetable/UserTableState.h"
 
 #include <algorithm>
 #include <cmath>
@@ -186,6 +187,9 @@ inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0,
     preset::PartOptions opt;
     opt.arp = false; // measure the sound itself: the phrase plays the notes, not the arpeggiator
     preset::applyPart (p, core.params(), partIndex, opt);
+    // p44: a preset's own user wavetable (embedded copy) plays too, as the plug-in's preset manager loads it
+    usertable::partFromJson (core, partIndex, p.userTables ? *p.userTables : std::string(),
+                             [] (const std::string&, const std::string&) { return usertable::UserTablePtr(); });
     core.params().set ("tempo", (float) bpm);
     core.params().set ("mix.master.limit", 0.0f); // measure the preset itself, not the master limiter
     core.prepareEffects(); // rack slots 2-6 prepare their types lazily (the plugin does this on the message thread)
