@@ -940,10 +940,16 @@ void OhpeEditor::applyUserSettings()
     const auto& us = userSettings->get();
     // language (only a fixed choice overrides the process-wide language; System follows the system / OHPE_LANGUAGE)
     {
+        // only a change of the setting acts, so a language chosen for the session (setLanguage) stays until then
         const auto before = i18n::current();
-        if (us.language == settings::Language::English) i18n::setCurrent (i18n::Language::English);
-        else if (us.language == settings::Language::German) i18n::setCurrent (i18n::Language::German);
-        else if (shownSkin >= 0) i18n::followSystem(); // a change to System in the settings (not at start-up)
+        const int lang = (int) us.language;
+        if (lang != shownLanguage)
+        {
+            if (us.language == settings::Language::English) i18n::setCurrent (i18n::Language::English);
+            else if (us.language == settings::Language::German) i18n::setCurrent (i18n::Language::German);
+            else if (shownLanguage >= 0) i18n::followSystem(); // a change to System in the settings (not at start-up)
+            shownLanguage = lang;
+        }
         if (i18n::current() != before)
         {
             library.languageChanged();

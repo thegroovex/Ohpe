@@ -290,6 +290,7 @@ private:
     float animRate = 1.0f;
     int skinPoll = 0;
     int shownSkin = -1;
+    int shownLanguage = -1; ///< the language setting applied last (-1: none yet)
     float shownWindowScale = 0.0f;
     ui::VersionBadge versionBadge;
     int contentGenerationSeen = 0;
