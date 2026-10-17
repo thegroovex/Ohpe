@@ -155,7 +155,8 @@ TEST_CASE ("p31 sub: level 0 is neutral - bit-identical whatever the other sub s
     }
     // the core: the sub turned up and back to 0 while nothing sounds leaves no trace
     auto render = [] (bool touch) {
-        Core core;
+        auto owner = std::make_unique<Core>();
+        Core& core = *owner;
         core.prepare (sampleRate, 512);
         core.params().set ("mix.master.limit", 0.0f);
         core.params().set ("p1.engine", (float) EngineType::Analog);
@@ -306,7 +307,8 @@ TEST_CASE ("p31 sub: turning the level (even in jumps) never clicks; it ramps")
 TEST_CASE ("p31 sub: the core plays it from the parameters; a matrix target; state round trip")
 {
     auto render = [] (float level) {
-        Core core;
+        auto owner = std::make_unique<Core>();
+        Core& core = *owner;
         core.prepare (sampleRate, 512);
         core.params().set ("p1.engine", (float) EngineType::Wavetable);
         core.params().set ("p1.sub.level", level);
@@ -320,7 +322,8 @@ TEST_CASE ("p31 sub: the core plays it from the parameters; a matrix target; sta
     CHECK (bandEnergy (wet.l, fs, 4800) > 10.0 * bandEnergy (dry.l, fs, 4800));
 
     // macro 1 -> sub level: the matrix moves it, the parameter itself stays
-    Core core;
+    auto coreOwner = std::make_unique<Core>();
+    Core& core = *coreOwner;
     core.prepare (sampleRate, 512);
     const int idx = core.params().indexOf ("p1.sub.level");
     REQUIRE (core.params().set ("p1.macro1", 1.0f));
@@ -333,13 +336,15 @@ TEST_CASE ("p31 sub: the core plays it from the parameters; a matrix target; sta
     CHECK (core.params().get (idx) == 0.0f);
 
     // state
-    Core a;
+    auto aOwner = std::make_unique<Core>();
+    Core& a = *aOwner;
     a.params().set ("p3.sub.level", 0.4f);
     a.params().set ("p3.sub.oct", 1.0f);
     a.params().set ("p3.sub.shape", 2.0f);
     a.params().set ("p3.sub.direct", 1.0f);
     const auto json = a.saveState ("{}");
-    Core b;
+    auto bOwner = std::make_unique<Core>();
+    Core& b = *bOwner;
     REQUIRE (b.loadState (json, nullptr));
     for (const char* id : { "p3.sub.level", "p3.sub.oct", "p3.sub.shape", "p3.sub.direct" })
         CHECK_MESSAGE (b.params().get (id) == a.params().get (id), id);
