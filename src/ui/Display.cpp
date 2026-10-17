@@ -169,7 +169,7 @@ namespace
 juce::String clockText (double seconds)
 {
     seconds = juce::jmax (0.0, seconds);
-    const int tenths = (int) (seconds * 10.0);
+    const int tenths = (int) (seconds * 10.0 + 1.0e-3); // p42: 0.99999 s (a host-rounded loop point) reads 0:01.0
     return juce::String (tenths / 600) + ":" + juce::String ((tenths / 10) % 60).paddedLeft ('0', 2) + "." + juce::String (tenths % 10);
 }
 
