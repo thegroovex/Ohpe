@@ -933,6 +933,13 @@ int main (int argc, char* argv[])
                 e.settingsComponent().setHelpTopic (1);
                 e.showSettings (true, ui::SettingsView::Help);
                 shot (dark ? "ohpe-settings-help-dark" : "ohpe-settings-help");
+                if (! dark) // p48: the help page of the grid keyboard
+                {
+                    for (int t = 0; t < ui::SettingsView::numHelpTopics(); ++t)
+                        if (ui::SettingsView::helpTitle (t) == i18n::tr ("Grid keyboard")) e.settingsComponent().setHelpTopic (t);
+                    e.showSettings (true, ui::SettingsView::Help);
+                    shot ("ohpe-settings-help-grid");
+                }
                 e.showSettings (true, ui::SettingsView::About);
                 shot (dark ? "ohpe-about-dark" : "ohpe-about");
                 e.showSettings (false);
