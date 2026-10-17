@@ -94,7 +94,9 @@ Every rolled sound is meant to be playable straight away:
   pressure is neutral.
 * **Level-matched**: Ohpe plays the new sound offline (C4 + G4), rolls again if it is silent or broken, and
   sets the part **Gain** so it plays as loud as the factory presets (the median of their loudest moment, K-weighted – plucks and pads are compared by how loud a note sounds, not by how long it lasts) with
-  its true peak at or below -1 dBTP. The part volume is not touched.
+  its true peak at or below -1 dBTP. The part volume is not touched. When the part's own effects keep the
+  level down (a compressor first in its rack, say), the new sound plays about as loud as the sound it was
+  rolled from.
 
 **Hold RANDOM** (or right-click it) to open **[breeding](BREEDING.md)**: cross two sounds, hear six children,
 keep the best and breed further. While the breeding view is open, RANDOM rolls a new parent B and SAVE stores

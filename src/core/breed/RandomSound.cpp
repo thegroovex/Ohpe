@@ -457,6 +457,7 @@ Result make (breed::Audition& audition, const breed::Genome& base, int engineTyp
     breed::Genome best;
     Loudness bestM;
     double bestPenalty = 1.0e30;
+    int tooQuiet = 0; // candidates that only failed by needing more gain than the part has
     for (int a = 0; a < maxAttempts; ++a)
     {
         if (audition.aborted()) break;
@@ -479,6 +480,8 @@ Result make (breed::Audition& audition, const breed::Genome& base, int engineTyp
             bestM = m;
         }
         if (penalty <= 0.0) break;
+        // the part's own chain (a compressor first in the rack, say) caps it: more rolls rarely help
+        if (penalty < 1.0e6 && m.flatness <= maxFlatness && ++tooQuiet >= 2) break;
     }
     if (best.empty() || bestM.nonFinite > 0 || bestM.momentaryMax < silentLufs - 30.0f)
     {
@@ -487,26 +490,43 @@ Result make (breed::Audition& audition, const breed::Genome& base, int engineTyp
     }
     res.usable = bestPenalty <= 0.0;
 
-    // level: the factory median, true peak below the ceiling (a few corrections: effects may not be linear)
+    // level: the factory median, true peak below the ceiling. Effects after the gain (compressors, drive) need not
+    // follow it 1:1, so each correction uses the measured slope of the previous one.
     auto m = bestM;
     if (gainK >= 0)
     {
         const auto& gene = s.gene (gainK);
+        const float top = std::min (gene.maxValue, maxGainDb);
+        float prevGain = 0.0f, prevLevel = 0.0f;
+        bool havePrev = false;
         for (int pass = 0; pass < 4; ++pass)
         {
             const float cur = best[(size_t) gainK];
-            float delta = targetLufs - m.momentaryMax;
+            float slope = 1.0f;
+            if (havePrev && std::abs (cur - prevGain) > 0.5f)
+                slope = std::clamp ((m.momentaryMax - prevLevel) / (cur - prevGain), 0.25f, 1.5f);
+            float delta = (targetLufs - m.momentaryMax) / slope;
             if (pass == 3) delta = std::min (0.0f, delta); // the last pass only ever lowers (true-peak safety)
-            delta = std::min (delta, truePeakCeilingDb - 0.2f - m.truePeakDb);
-            if (pass > 0 && std::abs (delta) < 0.75f && m.truePeakDb <= truePeakCeilingDb) break;
-            const float next = std::clamp (cur + delta, gene.minValue, std::min (gene.maxValue, maxGainDb));
+            delta = std::min (delta, (truePeakCeilingDb - 0.2f - m.truePeakDb) / slope);
+            if (pass > 0 && std::abs (targetLufs - m.momentaryMax) < 0.75f && m.truePeakDb <= truePeakCeilingDb) break;
+            const float next = std::clamp (cur + delta, gene.minValue, top);
             if (std::abs (next - cur) < 0.05f) break;
+            prevGain = cur;
+            prevLevel = m.momentaryMax;
+            havePrev = true;
             best[(size_t) gainK] = next;
             audition.renderAudio (best, l, r, hold);
             ++res.renders;
             m = measure (l, r, sr, hold);
         }
         res.gainDb = best[(size_t) gainK];
+        // gain at the top and still quiet: the sound it was rolled from is the reference (its chain caps the level)
+        if (res.gainDb >= top - 0.05f && m.momentaryMax < targetLufs - 3.0f)
+        {
+            audition.renderAudio (base, l, r, hold);
+            ++res.renders;
+            res.baseMomentary = measure (l, r, sr, hold).momentaryMax;
+        }
     }
     res.genome = std::move (best);
     res.loudness = m;

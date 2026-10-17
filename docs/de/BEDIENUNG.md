@@ -101,7 +101,8 @@ Jeder gewürfelte Klang soll sofort spielbar sein:
   fehlerhaft ist, und stellt den Part-**Gain** so ein, dass er so laut spielt wie die Werks-Presets (Median ihres
   lautesten Moments, K-gewichtet – Plucks und Flächen werden danach verglichen, wie laut ein Ton klingt, nicht wie
   lange er dauert), mit einem True Peak von höchstens -1 dBTP. Die Part-Lautstärke bleibt
-  unverändert.
+  unverändert. Halten die Effekte des Parts den Pegel unten (etwa ein Kompressor vorn im Rack), spielt der
+  neue Klang ungefähr so laut wie der Klang, von dem aus gewürfelt wurde.
 
 **ZUFALL halten** (oder rechts anklicken) öffnet die **[Zucht](ZUCHT.md)**: zwei Klänge kreuzen, sechs Kinder hören,
 die besten behalten und weiterzüchten. Solange die Zucht-Ansicht offen ist, würfelt ZUFALL einen neuen

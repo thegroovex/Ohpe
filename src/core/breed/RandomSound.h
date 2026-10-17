@@ -21,7 +21,9 @@
     measuring chord) and checks it: a near-silent, broken (non-finite) or noise-like candidate (spectral flatness
     above maxFlatness) is rolled again (a few attempts, the best one is kept). Finally the part gain is set so the
     sound plays at the factory presets' median loudness (targetLufs: loudest 400 ms, K-weighted) with its true peak at or
-    below truePeakCeilingDb. Message / worker thread only - never the audio thread.
+    below truePeakCeilingDb. The gain sits before the part's effects; when a compressor or the like in the part's own
+    chain keeps the level down even at the top of the gain range, the sound ends up as loud as the sound it was rolled
+    from. Message / worker thread only - never the audio thread.
 
     Deterministic: a seed gives the same sound on every platform (breed::Rng).
 */
@@ -30,7 +32,7 @@ namespace ohpe::randomsound
 /** Median loudness of the factory part presets in the audition render: the loudest 400 ms (momentary, K-weighted)
     of the chord, so plucks and pads are compared by how loud a note sounds, not by how long it lasts. Measured by the
     core test "random sound: the loudness target is the factory median". */
-constexpr float targetLufs = -13.5f;
+constexpr float targetLufs = -14.4f;
 constexpr float truePeakCeilingDb = -1.0f;
 /** A candidate quieter than this before the gain is set counts as near-silent and is rolled again. */
 constexpr float silentLufs = -48.0f;
@@ -70,6 +72,9 @@ struct Result
     int attempts = 0;
     int renders = 0;
     bool usable = false;  ///< passed every check (false only when every attempt failed: the best one is returned)
+    /** Only when the gain reached its top and the sound is still more than 3 dB under the target: the loudness of the
+        sound it was rolled from (its effects chain caps the level, e.g. a compressor first in the rack). */
+    float baseMomentary = -200.0f;
 };
 
 /** Rolls, checks and level-normalises a new sound (see the class comment). */
