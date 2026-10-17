@@ -258,7 +258,15 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     midiKey.onClick = [this] { showMidiMenu(); };
     // p24: GRID swaps the piano keys for the isomorphic grid keyboard (yellow bar while it is shown)
     gridKey.setHasLed (true);
-    gridKey.onClick = [this] { showGridKeyboard (! grid.isVisible()); saveUiState(); };
+    gridKey.onClick = [this] {
+        const bool show = ! grid.isVisible();
+        // p47: the first time the grid is switched on (per project), a one-line hint in the keyboard readout for 5 s
+        if (show && ! (bool) proc.uiState.getProperty ("gridHintSeen", false))
+            gridHintUntil = juce::Time::getMillisecondCounterHiRes() + 5000.0;
+        if (! show) gridHintUntil = 0.0;
+        showGridKeyboard (show);
+        saveUiState();
+    };
     addAndMakeVisible (gridKey);
     libraryKey.setAccent (colour::sunYellow);
     libraryKey.onClick = [this] { showLibrary (! library.isVisible()); };
@@ -308,6 +316,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     // p32: the gear key (where the language pills were) opens the settings; the language lives there now
     settingsKey.setStyle (PictoKey::Style::Round);
     settingsKey.setLegendOnTop (true);
+    settingsKey.setFlushRight (true); // p47
     settingsKey.onClick = [this] { showSettings (! settingsView.isVisible()); };
     addAndMakeVisible (settingsKey);
 
@@ -477,7 +486,9 @@ juce::Rectangle<float> OhpeEditor::designArea (const char* name)
         { "libraryKey", 760, 20, 80, 56 },      { "proKey", 848, 20, 80, 56 },
         { "randomKey", 936, 20, 64, 56 },       { "saveKey", 1008, 20, 64, 56 },
         // p32: the gear key ends 32 units from the housing's right edge (the language pills moved into the settings)
-        { "settingsKey", 1096, 20, 64, 56 },
+        // p47: flush right - its ring and legend end on x 1160 (as the mode column's content, the CPU meter), mirroring
+        // the left edge x 40 of the version legend, the logo mark and the engine caption; 8 units after SAVE
+        { "settingsKey", 1080, 20, 80, 56 },
         // p27: the version legend on the header's legend line above the wordmark (the click area covers the wordmark)
         { "versionBadge", 40, 20, 248, 56 },
         // p35: the CPU meter, right-aligned on the mode column's legend line
@@ -672,7 +683,8 @@ void OhpeEditor::paint (juce::Graphics& g)
         const float baseline = brand::baselineCentredOn (wordFont, 56.0f * s);
         const float capMid = baseline - wordFont.getHeight() * 0.274f; // cap height 0.549 of the font height
         const float markSize = 22.0f * s;
-        brand::drawMark (g, juce::Rectangle<float> (40.0f * s, capMid - markSize * 0.5f, markSize, markSize), colour::ink, colour::signalRed);
+        // the ring's ink starts on x 40 (round: a hair over the edge, as an O overshoots a stem)
+        brand::drawMark (g, juce::Rectangle<float> (39.6f * s, capMid - markSize * 0.5f, markSize, markSize), colour::ink, colour::signalRed);
         const float right = brand::drawWordmark (g, wordFont, 72.0f * s, baseline, colour::ink, colour::signalRed);
         const auto tagFont = labelFont (12.0f * s);
         const float tagX = right + 12.0f * s;
@@ -684,11 +696,11 @@ void OhpeEditor::paint (juce::Graphics& g)
     }
 
     // engraved section legends (small caps, no rules: the recessed panels carry the structure)
-    auto legend = [&] (const juce::String& text, const char* area) {
+    auto legend = [&] (const juce::String& text, const char* area, bool optical = false) {
         const auto r = designArea (area);
         g.setColour (colour::engraving);
         drawBaselineLegend (g, i18n::upper (text), juce::Rectangle<float> (r.getX() * s, r.getY() * s, r.getWidth() * s, r.getHeight() * s),
-                            11.0f * s, juce::Justification::centredLeft);
+                            11.0f * s, juce::Justification::centredLeft, optical);
     };
     legend (tr ("Part"), "partLegend");
     legend (tr ("Preset"), "presetLegend");
@@ -696,7 +708,7 @@ void OhpeEditor::paint (juce::Graphics& g)
     // pro view lies on the plate
     if (! overlayOpen())
     {
-        legend (tr ("Engine") + " / P" + juce::String (ctx.part + 1), "engineLegend");
+        legend (tr ("Engine") + " / P" + juce::String (ctx.part + 1), "engineLegend", true); // p47: ink on x 40
         legend (tr ("Mode"), "modeLegend");
     }
 }
@@ -1224,6 +1236,8 @@ void OhpeEditor::refreshTransportKeys()
             keysReadout.setContent (i18n::upper (tr ("MIDI Learn")), blink ? colour::signalRed : colour::signalRed.withAlpha (0.45f), range, shift);
         else
             keysReadout.setContent (i18n::upper (tr (gridShown ? "Grid" : "Keys")), colour::displayDim, range, shift);
+        keysReadout.setHint (gridShown && ! learning && juce::Time::getMillisecondCounterHiRes() < gridHintUntil
+                                 ? tr ("Same chord shape in every key") : juce::String()); // p47
     }
 }
 
@@ -2143,7 +2157,8 @@ void OhpeEditor::refreshKeys()
     toStartKey.setTooltip (tip ("To the start of the tape", "Enter"));
     loopKey.setTooltip (tip ("Loop between loop in and out", "L") + "\n" + tr ("Bar: yellow = loop on"));
     midiKey.setTooltip (tr ("MIDI maps and remote controls") + "\n" + tr ("Bar: red = MIDI learn"));
-    gridKey.setTooltip (tr ("Grid keyboard: isomorphic, MPE - swaps the piano keys") + "\n" + tr ("Bar: yellow = grid shown")); // p24
+    gridKey.setTooltip (tr ("Grid keyboard: 4 x 24 pads with MPE - every chord has the same shape in every key (fourths, thirds, whole tones or key notes only); swaps the piano keys")
+                        + "\n" + tr ("Bar: yellow = grid shown")); // p24, p47
     grid.setTooltip (tr ("Every chord has the same shape everywhere. With MPE on: slide sideways = bend, up / down = slide"));
     tapeReadout.setTooltip (tr ("Tape position (minutes:seconds) and bar.beat; REC = recording, PLAY = tape rolling"));
     keysReadout.setTooltip (tr ("Range of the on-screen keyboard and its octave shift; red during MIDI learn"));
@@ -2477,6 +2492,7 @@ void OhpeEditor::saveUiState()
     obj->setProperty ("channel", ctx.mixerChannel);
     obj->setProperty ("octave", keyboard.getBaseOctave());
     obj->setProperty ("grid", grid.isVisible()); // p24
+    if (gridHintUntil > 0.0 || obj->hasProperty ("gridHintSeen")) obj->setProperty ("gridHintSeen", true); // p47
     obj->setProperty ("seqView", (int) ctx.seqView);
     obj->setProperty ("drumPad", ctx.drumPad);
     obj->setProperty ("lfoView", ctx.lfoView);    // 0.7
@@ -2534,7 +2550,7 @@ void VersionBadge::paint (juce::Graphics& g)
     const float s = (float) getHeight() / 56.0f; // design units
     const auto legendArea = juce::Rectangle<float> (0, 0, (float) getWidth(), 12.0f * s);
     g.setColour (colour::engraving);
-    drawBaselineLegend (g, versionText, legendArea, 11.0f * s, juce::Justification::centredLeft);
+    drawBaselineLegend (g, versionText, legendArea, 11.0f * s, juce::Justification::centredLeft, true); // p47: ink on x 40
     if (updateText.isNotEmpty())
     {
         const float x = juce::GlyphArrangement::getStringWidth (labelFont (11.0f * s), versionText) + 10.0f * s;
@@ -2569,6 +2585,6 @@ void CpuMeter::paint (juce::Graphics& g)
     const bool hot = avgPercent >= 80 || peakPercent >= 100;
     g.setColour (hot ? colour::alertInk : colour::engraving); // both follow the skin (light / night)
     drawBaselineLegend (g, "CPU " + juce::String (juce::jmax (0, avgPercent)) + " %", getLocalBounds().toFloat(), 11.0f * s,
-                        juce::Justification::centredRight);
+                        juce::Justification::centredRight, true); // p47: ink on x 1160
 }
 } // namespace ohpe::ui

@@ -11,6 +11,7 @@
 // p38: the tape page's clear-all confirmation (ohpe-tape-clear, ohpe-tape-clear-dark) and the tape page at night (ohpe-tape-dark).
 // p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
 // octave block while recording (ohpe-transport, 2x crop; REC and PLAY at the top of their breathing).
+// p47: the wordmark / header close-ups (ohpe-wordmark*, ohpe-header-right*, ohpe-about-wordmark*, 3x crops).
 // p39: tempo, metronome, count-in on the tape page during a count-in (ohpe-metronome*, ohpe-tempo-panel* 2x crop).
 // 0.7: the Mod view (modulation matrix), the part's FX rack and the master rack; the Mid/Side scope,
 // the master scope view and the spectrum terrain. 1.0: the 3D Space view and the 3D badge. The
@@ -876,6 +877,13 @@ int main (int argc, char* argv[])
                     shot ("ohpe-dark"); // the whole plate in the night skin
                     release (p, { 60, 67 });
                 }
+                {   // p47: the header's left block (version legend, logo mark, wordmark, engine caption) and its right
+                    // block (keys flush on x 1160, CPU meter), 3x close-ups
+                    e.advanceAnimation (0.2f);
+                    const juce::String sk = dark ? "-dark" : "";
+                    save (e, dir.getChildFile ("ohpe-wordmark" + sk + suffix + ".png"), 3.0f, juce::Rectangle<int> (24, 12, 280, 96));
+                    save (e, dir.getChildFile ("ohpe-header-right" + sk + suffix + ".png"), 3.0f, juce::Rectangle<int> (744, 12, 432, 96));
+                }
                 set ([] (settings::UserSettings& v) { v.helpOverlay = true; });
                 shot (dark ? "ohpe-help-overlay-dark" : "ohpe-help-overlay");
                 set ([] (settings::UserSettings& v) { v.helpOverlay = false; });
@@ -912,6 +920,8 @@ int main (int argc, char* argv[])
                 shot (dark ? "ohpe-settings-help-dark" : "ohpe-settings-help");
                 e.showSettings (true, ui::SettingsView::About);
                 shot (dark ? "ohpe-about-dark" : "ohpe-about");
+                save (e, dir.getChildFile (juce::String (dark ? "ohpe-about-wordmark-dark" : "ohpe-about-wordmark") + suffix + ".png"), 3.0f,
+                      juce::Rectangle<int> (248, 164, 340, 116)); // p47: the About header, 3x
                 e.showSettings (false);
                 {   // p39: tempo, metronome and count-in - the tape page one beat into a one-bar count-in (the countdown,
                     // the header tempo with TAP, the transport panel's tempo / click / count-in), a 2x crop of the panel

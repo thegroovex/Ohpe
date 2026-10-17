@@ -603,7 +603,9 @@ const std::map<juce::String, juce::String>& table()
         { "chords in memory", "Akkorde im Gedächtnis" },
         { "Listening - play chords on a part that does not follow", "Hört zu – Akkorde auf einem Part spielen, der nicht folgt" },
         { "Held - the memory does not change", "Gehalten – das Gedächtnis ändert sich nicht" },
-        { "Grid keyboard: isomorphic, MPE - swaps the piano keys", "Raster-Tastatur: isomorph, MPE – ersetzt die Klaviertasten" },
+        { "Grid keyboard: 4 x 24 pads with MPE - every chord has the same shape in every key (fourths, thirds, whole tones or key notes only); swaps the piano keys",
+          "Raster-Tastatur: 4 × 24 Felder mit MPE – jeder Akkord hat in jeder Tonart dieselbe Form (Quarten, Terzen, Ganztöne oder nur Tonart-Töne); ersetzt die Klaviertasten" },
+        { "Same chord shape in every key", "Gleiche Akkordform in jeder Tonart" }, // p47: the grid's first-use hint
         { "Bar: yellow = grid shown", "Balken: gelb = Raster sichtbar" },
         { "Every chord has the same shape everywhere. With MPE on: slide sideways = bend, up / down = slide",
           "Jeder Akkord hat überall dieselbe Form. Mit MPE: seitlich schieben = Bend, hoch / runter = Slide" },        // p27: the updater
