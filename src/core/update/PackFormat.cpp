@@ -83,6 +83,12 @@ std::vector<std::string> kindExtensions (PackKind k)
     return {};
 }
 
+bool isPackJsonId (const std::string& id)
+{
+    if (id.empty() || id.size() > 64 || id[0] == '-') return false;
+    return std::all_of (id.begin(), id.end(), [] (char c) { return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-'; });
+}
+
 bool parsePackInfo (const std::string& jsonText, PackInfo& out, std::string* error)
 {
     auto fail = [error] (const char* e) {
@@ -100,10 +106,50 @@ bool parsePackInfo (const std::string& jsonText, PackInfo& out, std::string* err
     bilingual (j, "name", p.nameEn, p.nameDe);
     bilingual (j, "description", p.descriptionEn, p.descriptionDe);
     p.minApp = text (j, "minApp");
-    if (! isSafePackId (p.id)) return fail ("pack.json: the id is missing or not valid");
+    if (! isPackJsonId (p.id)) return fail ("pack.json: the id is missing or not valid (a-z, 0-9, -)");
     if (! Version::of (p.version).valid()) return fail ("pack.json: the version is missing or not valid");
     if (kindFromName (p.kind) == PackKind::Unknown) return fail ("pack.json: unknown kind");
     if (! p.minApp.empty() && ! Version::of (p.minApp).valid()) return fail ("pack.json: minApp is not a version");
+    if (j.contains ("files"))
+    {
+        if (! j["files"].is_object()) return fail ("pack.json: files is not a list of checksums");
+        for (const auto& [path, sum] : j["files"].items())
+        {
+            if (! isSafeEntryPath (path) || path == packInfoFile) return fail ("pack.json: files lists a path that is not valid");
+            if (! sum.is_string()) return fail ("pack.json: a checksum is not valid");
+            auto hex = sum.get<std::string>();
+            std::transform (hex.begin(), hex.end(), hex.begin(), [] (unsigned char c) { return (char) std::tolower (c); });
+            if (hex.size() != 64 || hex.find_first_not_of ("0123456789abcdef") != std::string::npos) return fail ("pack.json: a checksum is not valid");
+            p.files[path] = hex;
+        }
+    }
+    if (j.contains ("license"))
+    {
+        const auto& l = j["license"];
+        if (l.is_string()) p.license.type = l.get<std::string>();
+        else if (l.is_object())
+        {
+            p.license.type = text (l, "type");
+            p.license.productId = text (l, "productId");
+        }
+        else return fail ("pack.json: license is not valid");
+        if (p.license.type.empty()) p.license.type = "free";
+        if (p.license.type != "free" && p.license.type != "paid") return fail ("pack.json: license type must be free or paid");
+        if (p.license.productId.size() > 128) return fail ("pack.json: license productId is too long");
+    }
+    if (j.contains ("signature"))
+    {
+        const auto& sg = j["signature"];
+        if (sg.is_string()) { p.signature.algorithm = "ed25519"; p.signature.value = sg.get<std::string>(); }
+        else if (sg.is_object())
+        {
+            p.signature.algorithm = text (sg, "alg");
+            p.signature.keyId = text (sg, "keyId");
+            p.signature.value = text (sg, "value");
+        }
+        else return fail ("pack.json: signature is not valid");
+        if (p.signature.value.size() > 1024 || p.signature.keyId.size() > 128) return fail ("pack.json: signature is not valid");
+    }
     if (p.nameEn.empty()) p.nameEn = p.id;
     if (p.nameDe.empty()) p.nameDe = p.nameEn;
     if (p.descriptionDe.empty()) p.descriptionDe = p.descriptionEn;
@@ -120,7 +166,38 @@ std::string packInfoToJson (const PackInfo& p)
                { "name", { { "en", p.nameEn }, { "de", p.nameDe } } },
                { "description", { { "en", p.descriptionEn }, { "de", p.descriptionDe } } },
                { "minApp", p.minApp } };
+    if (! p.files.empty())
+    {
+        json f = json::object();
+        for (const auto& [path, sum] : p.files) f[path] = sum;
+        j["files"] = f;
+    }
+    if (p.license.paid() || ! p.license.productId.empty()) j["license"] = { { "type", p.license.type }, { "productId", p.license.productId } };
+    if (p.signature.present()) j["signature"] = { { "alg", p.signature.algorithm }, { "keyId", p.signature.keyId }, { "value", p.signature.value } };
     return j.dump (2);
+}
+
+std::string canonicalPackJson (const std::string& text)
+{
+    json j = json::parse (text, nullptr, false);
+    if (j.is_discarded() || ! j.is_object()) return {};
+    j.erase ("signature");
+    return j.dump(); // nlohmann objects keep their keys sorted; dump() writes no white space
+}
+
+namespace
+{
+class OpenGate final : public PackGate
+{
+public:
+    PackAccess access (const PackInfo&, const std::string&) const override { return PackAccess::Allowed; }
+};
+} // namespace
+
+const PackGate& openGate()
+{
+    static const OpenGate gate;
+    return gate;
 }
 
 bool parsePackFileName (const std::string& fileName, std::string& id, std::string& version)
@@ -146,7 +223,8 @@ KindLimits limitsFor (PackKind k) noexcept
     return { 0, 0, 0 };
 }
 
-PackPlan planPack (const std::vector<ZipItem>& items, const std::string& packJson, const PackInfo& expected, uint64_t usedBytes)
+PackPlan planPack (const std::vector<ZipItem>& items, const std::string& packJson, const PackInfo& expected, uint64_t usedBytes,
+                   bool requireChecksums)
 {
     PackPlan plan;
     auto fail = [&plan] (const char* e, std::string detail = {}) {
@@ -175,6 +253,8 @@ PackPlan planPack (const std::vector<ZipItem>& items, const std::string& packJso
             return fail ("The content pack does not match its description", plan.info.version);
         if (! expected.kind.empty() && expected.kind != plan.info.kind) return fail ("The content pack does not match its description", plan.info.kind);
     }
+    else if (requireChecksums)
+        return fail ("The content pack has no description (pack.json)");
     else
     {
         plan.info = expected;
@@ -186,6 +266,8 @@ PackPlan planPack (const std::vector<ZipItem>& items, const std::string& packJso
     }
     plan.kind = kindFromName (plan.info.kind);
     if (plan.kind == PackKind::Unknown) return fail ("This kind of content pack needs a newer Ohpe", plan.info.kind);
+    if (requireChecksums && plan.info.files.empty()) return fail ("The content pack has no checksums");
+    const bool checksums = ! plan.info.files.empty();
 
     const std::string folder = std::string (kindFolder (plan.kind)) + "/";
     const auto exts = kindExtensions (plan.kind);
@@ -226,9 +308,24 @@ PackPlan planPack (const std::vector<ZipItem>& items, const std::string& packJso
             if (it.size > limits.maxFileBytes) return fail ("A file of the content pack is too big", path);
             ++contentFiles;
         }
+        std::string sum;
+        if (checksums && path != packInfoFile)
+        {
+            const auto listed = plan.info.files.find (path);
+            if (listed == plan.info.files.end()) return fail ("A file of the content pack is not in its checksum list", path);
+            sum = listed->second;
+        }
         plan.totalBytes += it.size;
-        plan.files.push_back ({ i, target, it.size });
+        plan.files.push_back ({ i, target, it.size, sum });
     }
+    if (checksums)
+        for (const auto& [path, sum] : plan.info.files)
+        {
+            const bool there = std::any_of (items.begin(), items.end(), [&path = path] (const ZipItem& it) {
+                return ! it.directory && normalised (it.path) == path;
+            });
+            if (! there) return fail ("The content pack is not complete", path);
+        }
     if (contentFiles == 0) return fail ("The content pack holds no content", plan.info.kind);
     if (contentFiles > limits.maxFiles) return fail ("The content pack has too many files", std::to_string (contentFiles));
     if (plan.totalBytes > limits.maxPackBytes) return fail ("The content pack is too big", std::to_string (plan.totalBytes / (1024 * 1024)) + " MB");
@@ -296,16 +393,4 @@ RefState ContentIndex::resolve (const ContentRef& ref, PackKind kind) const
     return RefState::ItemMissing;
 }
 
-bool isAllowedContentUrl (const std::string& url, bool allowLocal)
-{
-    if (allowLocal && url.rfind ("file:", 0) == 0) return true;
-    if (url.find ("..") != std::string::npos || url.find ('@') != std::string::npos || url.find ('\\') != std::string::npos) return false;
-    static const char* const prefixes[] = { "https://github.com/thegroovex/OhpePacks/releases/download/",
-                                            "https://github.com/thegroovex/Ohpe/releases/download/",
-                                            "https://objects.githubusercontent.com/",
-                                            "https://release-assets.githubusercontent.com/" };
-    for (const auto* p : prefixes)
-        if (url.rfind (p, 0) == 0 && url.size() > std::char_traits<char>::length (p)) return true;
-    return false;
-}
 } // namespace ohpe::update

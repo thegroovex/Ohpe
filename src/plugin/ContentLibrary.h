@@ -34,13 +34,31 @@ struct InstallResult
     int files = 0;
 };
 
+struct InstallOptions
+{
+    /** .ohpepack: pack.json with a SHA-256 for every file is required. (Whenever pack.json lists checksums they are
+        checked; a mismatch stops the install and leaves the installed version as it was.) */
+    bool requireChecksums = false;
+    /** Packs that need a newer Ohpe (pack.json "minApp") are refused. */
+    update::Version app;
+    /** License / signature hook; nullptr = update::openGate() (not enforced). */
+    const update::PackGate* gate = nullptr;
+    const std::atomic<bool>* cancel = nullptr;
+};
+
 /**
     Installs `zip` into `contentFolder`. `expected`: what the caller knows (manifest entry; or nothing for a local
     file - then the file name "Ohpe-content-<id>-<version>.zip" fills id / version if the zip has no pack.json).
     Updates `registry` and writes Content/installed.json on success.
 */
 InstallResult installZip (const juce::File& zip, const juce::File& contentFolder, const update::PackInfo& expected,
-                          update::ContentRegistry& registry, const std::atomic<bool>* cancel = nullptr);
+                          update::ContentRegistry& registry, const InstallOptions& options = {});
+
+/** Removes an installed pack (its folder and its backup) and its registry entry. False if it is not installed. */
+bool removePack (const juce::File& contentFolder, const juce::String& id, update::ContentRegistry& registry);
+
+/** Bytes of one installed pack on disk. */
+uint64_t packBytes (const juce::File& contentFolder, const juce::String& id);
 
 /** Bytes used by the installed packs (without .backup / .staging), leaving out pack `exceptId`. */
 uint64_t usedBytes (const juce::File& contentFolder, const juce::String& exceptId = {});

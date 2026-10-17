@@ -71,6 +71,10 @@ TEST_CASE ("content packs: pack.json parse, defaults, round trip, invalid fields
                              R"({"format":9,"id":"a","version":"1.0.0"})" })
         CHECK_MESSAGE (! parsePackInfo (bad, p, &err), bad);
 
+    CHECK_FALSE (parsePackInfo (R"({"id":"drums_2.1","version":"1.0.0"})", p)); // pack.json ids: a-z, 0-9, - only
+    CHECK (isPackJsonId ("drum-and-bass"));
+    CHECK_FALSE (isPackJsonId ("-x"));
+
     std::string id, ver;
     CHECK (parsePackFileName ("Ohpe-content-drum-and-bass-1.0.0.zip", id, ver));
     CHECK (id == "drum-and-bass");
@@ -84,6 +88,72 @@ TEST_CASE ("content packs: pack.json parse, defaults, round trip, invalid fields
     CHECK (std::string (kindFolder (PackKind::Presets)) == "presets");
     CHECK (std::string (kindFolder (PackKind::Wavetables)) == "wavetables");
     CHECK (kindFromName ("samples") == PackKind::Unknown);
+}
+
+TEST_CASE ("content packs: checksums per file, license and signature (read, not enforced), canonical pack.json")
+{
+    const std::string sumA (64, 'a'), sumB (64, 'b');
+    const std::string json = R"({"format":1,"id":"atmo","version":"1.0.0","kind":"presets","minApp":"0.5.0",
+        "name":{"en":"Atmo","de":"Atmo"},
+        "files":{"presets/a.ohpepreset":")" + sumA + R"(","readme.txt":")" + std::string (64, 'B') + R"("},
+        "license":{"type":"paid","productId":"ohpe-atmo"},
+        "signature":{"alg":"ed25519","keyId":"groovex-1","value":"c2lnbmF0dXJl"}})";
+    PackInfo p;
+    std::string err;
+    REQUIRE (parsePackInfo (json, p, &err));
+    CHECK (p.files.size() == 2);
+    CHECK (p.files["readme.txt"] == sumB); // lower case
+    CHECK (p.license.paid());
+    CHECK (p.license.productId == "ohpe-atmo");
+    CHECK (p.signature.present());
+    CHECK (p.signature.keyId == "groovex-1");
+    PackInfo back;
+    REQUIRE (parsePackInfo (packInfoToJson (p), back));
+    CHECK (back.files == p.files);
+    CHECK (back.license.productId == "ohpe-atmo");
+    CHECK (back.signature.value == "c2lnbmF0dXJl");
+    // no license = free
+    REQUIRE (parsePackInfo (atmoJson, back));
+    CHECK_FALSE (back.license.paid());
+    CHECK_FALSE (back.signature.present());
+    for (const char* bad : { R"({"id":"a","version":"1.0.0","files":{"x.ohpepreset":"123"}})",
+                             R"({"id":"a","version":"1.0.0","files":{"../x":"aaaa"}})",
+                             R"({"id":"a","version":"1.0.0","files":[]})",
+                             R"({"id":"a","version":"1.0.0","license":{"type":"rented"}})",
+                             R"({"id":"a","version":"1.0.0","signature":42})" })
+        CHECK_MESSAGE (! parsePackInfo (bad, p, &err), bad);
+
+    // the signature covers pack.json without "signature", keys sorted, no white space
+    const auto canon = canonicalPackJson (json);
+    CHECK (canon.find ("signature") == std::string::npos);
+    CHECK (canon.find (' ') == std::string::npos);
+    CHECK (canon.find ("\"files\"") < canon.find ("\"id\""));
+    CHECK (canon == canonicalPackJson (R"({"signature":"other","version":"1.0.0","id":"atmo","name":{"de":"Atmo","en":"Atmo"},"minApp":"0.5.0",
+        "license":{"productId":"ohpe-atmo","type":"paid"},"kind":"presets","format":1,
+        "files":{"readme.txt":")" + std::string (64, 'B') + R"(","presets/a.ohpepreset":")" + sumA + R"("}})"));
+    CHECK (canonicalPackJson ("[]").empty());
+    // today's gate allows every pack
+    CHECK (openGate().access (p, canon) == PackAccess::Allowed);
+
+    // plan: checksums travel with the files; the list must match the zip exactly
+    const std::vector<ZipItem> items { { "pack.json", 500 }, { "presets/a.ohpepreset", 10 }, { "readme.txt", 5 }, { "cover.png", 3 } };
+    auto plan = planPack (items, json, {}, 0, true);
+    REQUIRE (plan.ok);
+    REQUIRE (fileTo (plan, "presets/a.ohpepreset") != nullptr);
+    CHECK (fileTo (plan, "presets/a.ohpepreset")->sha256 == sumA);
+    CHECK (fileTo (plan, "pack.json")->sha256.empty());
+    CHECK (plan.info.license.paid());
+    // a content file that is not listed
+    auto more = items;
+    more.push_back ({ "presets/b.ohpepreset", 10 });
+    CHECK (planPack (more, json, {}, 0, true).error == "A file of the content pack is not in its checksum list");
+    // a listed file that is not there
+    CHECK (planPack ({ { "pack.json", 500 }, { "presets/a.ohpepreset", 10 } }, json, {}, 0, true).error == "The content pack is not complete");
+    // .ohpepack: pack.json and checksums are required
+    CHECK (planPack ({ { "presets/a.ohpepreset", 10 } }, {}, expectedOf ("atmo", "1.0.0"), 0, true).error
+           == "The content pack has no description (pack.json)");
+    CHECK (planPack ({ { "pack.json", 50 }, { "presets/a.ohpepreset", 10 } }, atmoJson, {}, 0, true).error == "The content pack has no checksums");
+    CHECK (planPack ({ { "pack.json", 50 }, { "presets/a.ohpepreset", 10 } }, atmoJson, {}, 0, false).ok); // own content without sums
 }
 
 TEST_CASE ("content packs: plan - kind folder, old flat packs, notes kept, other files skipped")
@@ -192,7 +262,7 @@ TEST_CASE ("content packs: library uid stays the same for flat and kind-folder p
     CHECK (preset::usedPacks (list) == std::vector<std::string> { "atmo", "bass-music" });
 }
 
-TEST_CASE ("content packs: references <pack>/<item>, index resolve, allowed download URLs")
+TEST_CASE ("content packs: references <pack>/<item>, index resolve")
 {
     const auto r = ContentRef::parse ("atmo/glass-choir");
     REQUIRE (r.valid());
@@ -212,15 +282,6 @@ TEST_CASE ("content packs: references <pack>/<item>, index resolve, allowed down
     CHECK (idx.resolve (ContentRef {}, PackKind::Wavetables) == RefState::Invalid);
     CHECK (std::string (refStateName (RefState::PackMissing)) == "pack-missing");
 
-    CHECK (isAllowedContentUrl ("https://github.com/thegroovex/OhpePacks/releases/download/atmo-v1.0.0/Ohpe-content-atmo-1.0.0.zip"));
-    CHECK (isAllowedContentUrl ("https://github.com/thegroovex/Ohpe/releases/download/v1.0.0/Ohpe-content-keys-1.0.0.zip"));
-    CHECK (isAllowedContentUrl ("https://objects.githubusercontent.com/github-production-release-asset/123"));
-    for (const char* bad : { "http://github.com/thegroovex/OhpePacks/releases/download/a/b.zip", "https://example.com/x.zip",
-                             "https://github.com/someone/OhpePacks/releases/download/a/b.zip",
-                             "https://github.com/thegroovex/OhpePacks/releases/download/../../x", "https://github.com/thegroovex/OhpePacks/releases/download/",
-                             "https://github.com@evil.example/thegroovex/OhpePacks/releases/download/a/b.zip", "file:///tmp/x.zip" })
-        CHECK_MESSAGE (! isAllowedContentUrl (bad), bad);
-    CHECK (isAllowedContentUrl ("file:///tmp/x.zip", true));
 }
 
 TEST_CASE ("content packs: user wavetables keep pack references; a missing pack is reported, never silently replaced")

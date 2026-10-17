@@ -97,7 +97,7 @@ public:
     std::string partJson (int part);
     usertable::RestoreResult applyPartJson (int part, const std::string& json);
 
-    /** Content packs (Content/<pack>/wavetables/*.wav, read-only): where they are (default: the updater's folder). */
+    /** Content packs (the wavetables/ folder of each Content/<pack>/, .wav files, read-only): where they are (default: the updater's folder). */
     void setContentFolder (const juce::File& folder) { contentDir = folder; }
     const juce::File& contentFolder() const noexcept { return contentDir; }
     /** Loads the pack table a reference "<pack>/<table>" points at (a single-cycle set, frames of 2048 samples,

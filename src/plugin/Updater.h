@@ -95,12 +95,22 @@ public:
     void remindLater();
     void installPack (const juce::String& id);
     bool rollbackPack (const juce::String& id);
-    /** "Install pack ...": a pack zip from a local file - the same checks and unpacking as a downloaded pack
-        (pack.json read, kind folders, size limits, quota, one step of backup). Old packs without pack.json are
+    /** "Install pack ...": an .ohpepack file (picked or dropped on the window) - the same unpacking as a downloaded
+        pack (pack.json, kind folders, size limits, quota, one step of backup) plus a SHA-256 for every file (a
+        mismatch stops the install, the installed version stays). Old flat .zip packs without pack.json still install,
         named by their file name "Ohpe-content-<id>-<version>.zip". */
-    void installPackFile (const juce::File& zip);
-    /** The installed packs (pack.json of each Content/<id>/), sorted by id. */
-    std::vector<update::PackInfo> installedPacks() const;
+    void installPackFile (const juce::File& pack);
+    /** Removes an installed pack (and its backup). False while busy or if it is not installed. */
+    bool removePack (const juce::String& id);
+
+    struct InstalledPack
+    {
+        update::PackInfo info; ///< pack.json (license / signature shown, not enforced)
+        uint64_t bytes = 0;    ///< on disk
+        int items = 0;         ///< presets / tables
+    };
+    /** The installed packs, sorted by id. */
+    std::vector<InstalledPack> installedPacks() const;
     bool busy() const { return isThreadRunning(); }
 
     /** Counts content pack installs / rollbacks: an editor that sees it change rescans the library. */

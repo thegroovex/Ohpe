@@ -517,11 +517,6 @@ void Updater::doInstallPack (juce::String id)
         setState (s, msg, detail);
     };
     if (pack.sha256.empty()) { done (State::Failed, "The release has no checksum - not installed", id); return; }
-    if (! update::isAllowedContentUrl (pack.url, testFolder != juce::File()))
-    {
-        done (State::Failed, "The content pack is not from the Ohpe release pages - not installed", str (pack.url));
-        return;
-    }
     const auto prevState = snapshot().state;
     setState (State::Downloading, "Downloading the content pack", str (pack.nameEn));
     const auto content = folder().getChildFile ("Content");
@@ -548,7 +543,10 @@ void Updater::doInstallPack (juce::String id)
         std::lock_guard<std::mutex> g (lock);
         reg = registry;
     }
-    const auto res = content::installZip (zipFile, content, expected, reg, &cancelFlag);
+    content::InstallOptions opt;
+    opt.app = currentVersion();
+    opt.cancel = &cancelFlag;
+    const auto res = content::installZip (zipFile, content, expected, reg, opt);
     if (! res.ok)
     {
         done (State::Failed, res.error, res.detail.isNotEmpty() ? res.detail : str (pack.nameEn));
@@ -573,7 +571,12 @@ void Updater::doInstallPackFile (juce::File zip)
         { std::lock_guard<std::mutex> g (lock); snap.busyPack.clear(); }
         setState (s, msg, detail);
     };
-    if (! zip.existsAsFile() || ! zip.hasFileExtension ("zip")) { done (State::Failed, "Choose a content pack (.zip)", zip.getFileName()); return; }
+    const bool ohpepack = zip.hasFileExtension (update::packFileExtension);
+    if (! zip.existsAsFile() || ! (ohpepack || zip.hasFileExtension ("zip")))
+    {
+        done (State::Failed, "Choose a content pack (.ohpepack)", zip.getFileName());
+        return;
+    }
     {
         std::lock_guard<std::mutex> g (lock);
         snap.busyPack = zip.getFileName();
@@ -584,18 +587,12 @@ void Updater::doInstallPackFile (juce::File zip)
         std::lock_guard<std::mutex> g (lock);
         reg = registry;
     }
-    cancelFlag = false;
-    const auto res = content::installZip (zip, folder().getChildFile ("Content"), {}, reg, &cancelFlag);
+    content::InstallOptions opt;
+    opt.requireChecksums = ohpepack; // old .zip packs (flat, no checksums) still install
+    opt.app = currentVersion();
+    opt.cancel = &cancelFlag;
+    const auto res = content::installZip (zip, folder().getChildFile ("Content"), {}, reg, opt);
     if (! res.ok) { done (State::Failed, res.error, res.detail.isNotEmpty() ? res.detail : zip.getFileName()); return; }
-    if (! res.info.minApp.empty() && currentVersion() < update::Version::of (res.info.minApp))
-    {
-        // installed, but this Ohpe is too old for it: say so (the library still lists what it can read)
-        { std::lock_guard<std::mutex> g (lock); registry = reg; }
-        refreshPacks();
-        ++contentGen;
-        done (State::Failed, "Installed - this pack needs a newer Ohpe", str (res.info.nameEn) + " " + str (res.info.minApp));
-        return;
-    }
     {
         std::lock_guard<std::mutex> g (lock);
         registry = reg;
@@ -606,16 +603,43 @@ void Updater::doInstallPackFile (juce::File zip)
           "Content pack installed", str (res.info.nameEn) + " " + str (res.info.version));
 }
 
-std::vector<update::PackInfo> Updater::installedPacks() const
+bool Updater::removePack (const juce::String& id)
+{
+    if (isThreadRunning()) return false;
+    bool ok = false;
+    {
+        std::lock_guard<std::mutex> g (lock);
+        ok = content::removePack (folder().getChildFile ("Content"), id, registry);
+    }
+    if (! ok) return false;
+    refreshPacks();
+    {
+        std::lock_guard<std::mutex> g (lock);
+        snap.message = "Content pack removed";
+        snap.detail = id;
+    }
+    ++contentGen;
+    sendChangeMessage();
+    return true;
+}
+
+std::vector<Updater::InstalledPack> Updater::installedPacks() const
 {
     update::ContentRegistry reg;
     {
         std::lock_guard<std::mutex> g (lock);
         reg = registry;
     }
-    std::vector<update::PackInfo> out;
-    const auto index = content::scan (folder().getChildFile ("Content"));
-    for (const auto& p : index.packs) out.push_back (content::installedInfo (folder().getChildFile ("Content"), str (p.id), &reg));
+    std::vector<InstalledPack> out;
+    const auto dir = folder().getChildFile ("Content");
+    for (const auto& p : content::scan (dir).packs)
+    {
+        InstalledPack row;
+        row.info = content::installedInfo (dir, str (p.id), &reg);
+        row.bytes = content::packBytes (dir, str (p.id));
+        row.items = (int) p.items.size();
+        out.push_back (std::move (row));
+    }
     return out;
 }
 

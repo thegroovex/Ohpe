@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "ContentLibrary.h"
 
+#include "update/Sha256.h"
+
 #include <algorithm>
 
 namespace ohpe::content
@@ -29,29 +31,37 @@ InstallResult failed (const juce::String& error, const juce::String& detail = {}
     return r;
 }
 
-/** Copies one zip entry to `target`, at most `limit` bytes (a zip that lies about its sizes is refused). */
-bool extract (juce::ZipFile& zip, int index, const juce::File& target, uint64_t limit, const std::atomic<bool>* cancel)
+enum class Extract { Ok = 0, Failed, Checksum };
+
+/** Copies one zip entry to `target`, at most `limit` bytes (a zip that lies about its sizes is refused); checks the
+    SHA-256 when `sha256` is given. */
+Extract extract (juce::ZipFile& zip, int index, const juce::File& target, uint64_t limit, const std::string& sha256,
+                 const std::atomic<bool>* cancel)
 {
     std::unique_ptr<juce::InputStream> in (zip.createStreamForEntry (index));
-    if (in == nullptr) return false;
-    if (! target.getParentDirectory().createDirectory()) return false;
+    if (in == nullptr) return Extract::Failed;
+    if (! target.getParentDirectory().createDirectory()) return Extract::Failed;
     target.deleteFile();
     juce::FileOutputStream out (target);
-    if (! out.openedOk()) return false;
+    if (! out.openedOk()) return Extract::Failed;
     juce::HeapBlock<char> buffer (65536);
+    update::Sha256 hash;
     uint64_t written = 0;
     for (;;)
     {
-        if (cancel != nullptr && cancel->load()) return false;
+        if (cancel != nullptr && cancel->load()) return Extract::Failed;
         const int got = in->read (buffer.get(), 65536);
-        if (got < 0) return false;
+        if (got < 0) return Extract::Failed;
         if (got == 0) break;
         written += (uint64_t) got;
-        if (written > limit) return false;
-        if (! out.write (buffer.get(), (size_t) got)) return false;
+        if (written > limit) return Extract::Failed;
+        hash.update (buffer.get(), (size_t) got);
+        if (! out.write (buffer.get(), (size_t) got)) return Extract::Failed;
     }
     out.flush();
-    return out.getStatus().wasOk();
+    if (! out.getStatus().wasOk()) return Extract::Failed;
+    if (! sha256.empty() && ! update::Sha256::sameDigest (hash.finishHex(), sha256)) return Extract::Checksum;
+    return Extract::Ok;
 }
 } // namespace
 
@@ -65,8 +75,9 @@ uint64_t usedBytes (const juce::File& contentFolder, const juce::String& exceptI
 }
 
 InstallResult installZip (const juce::File& zipFile, const juce::File& contentFolder, const update::PackInfo& expectedIn,
-                          update::ContentRegistry& registry, const std::atomic<bool>* cancel)
+                          update::ContentRegistry& registry, const InstallOptions& options)
 {
+    const auto* cancel = options.cancel;
     juce::ZipFile zip (zipFile);
     if (zip.getNumEntries() == 0) return failed ("The content pack is damaged", zipFile.getFileName());
 
@@ -105,8 +116,13 @@ InstallResult installZip (const juce::File& zipFile, const juce::File& contentFo
         update::PackInfo peek;
         if (update::parsePackInfo (packJson, peek)) ownId = str (peek.id);
     }
-    const auto plan = update::planPack (items, packJson, expected, usedBytes (contentFolder, ownId));
+    const auto plan = update::planPack (items, packJson, expected, usedBytes (contentFolder, ownId), options.requireChecksums);
     if (! plan.ok) return failed (str (plan.error), str (plan.detail));
+    if (! plan.info.minApp.empty() && options.app.valid() && options.app < update::Version::of (plan.info.minApp))
+        return failed ("This pack needs a newer Ohpe", str (plan.info.minApp));
+    const auto& gate = options.gate != nullptr ? *options.gate : update::openGate();
+    if (gate.access (plan.info, update::canonicalPackJson (packJson)) != update::PackAccess::Allowed)
+        return failed ("This pack is locked", str (plan.info.license.productId));
 
     const auto id = str (plan.info.id);
     const auto staging = contentFolder.getChildFile (".staging").getChildFile (id);
@@ -116,10 +132,13 @@ InstallResult installZip (const juce::File& zipFile, const juce::File& contentFo
     for (const auto& f : plan.files)
     {
         const auto target = staging.getChildFile (str (f.target));
-        if (! target.isAChildOf (staging) // belt and braces: planPack already refused such paths
-            || ! extract (zip, f.index, target, juce::jmin (f.size, limits.maxPackBytes), cancel))
+        const auto res = target.isAChildOf (staging) // belt and braces: planPack already refused such paths
+                             ? extract (zip, f.index, target, juce::jmin (f.size, limits.maxPackBytes), f.sha256, cancel)
+                             : Extract::Failed;
+        if (res != Extract::Ok)
         {
-            staging.deleteRecursively();
+            staging.deleteRecursively(); // nothing installed changes: the old version stays
+            if (res == Extract::Checksum) return failed ("A file of the content pack is damaged (checksum)", str (f.target));
             return failed (cancel != nullptr && cancel->load() ? "Install cancelled" : "Could not unpack the content pack", str (f.target));
         }
     }
@@ -155,6 +174,29 @@ InstallResult installZip (const juce::File& zipFile, const juce::File& contentFo
     r.skipped = plan.skipped;
     r.files = (int) plan.files.size();
     return r;
+}
+
+bool removePack (const juce::File& contentFolder, const juce::String& id, update::ContentRegistry& registry)
+{
+    if (! update::isSafePackId (std8 (id))) return false;
+    const auto dir = contentFolder.getChildFile (id), backup = contentFolder.getChildFile (".backup").getChildFile (id);
+    if (! dir.isDirectory() || ! dir.isAChildOf (contentFolder)) return false;
+    // move aside first, so a half-deleted pack never shows up in the library
+    const auto trash = contentFolder.getChildFile (".staging").getChildFile (id + "-removed");
+    trash.deleteRecursively();
+    trash.getParentDirectory().createDirectory();
+    if (! dir.moveFileTo (trash)) return false;
+    trash.deleteRecursively();
+    backup.deleteRecursively();
+    registry.removed (std8 (id));
+    contentFolder.getChildFile ("installed.json").replaceWithText (str (registry.toJson()));
+    return true;
+}
+
+uint64_t packBytes (const juce::File& contentFolder, const juce::String& id)
+{
+    const auto dir = contentFolder.getChildFile (id);
+    return dir.isDirectory() ? folderBytes (dir) : 0;
 }
 
 update::PackInfo installedInfo (const juce::File& contentFolder, const juce::String& id, const update::ContentRegistry* registry)

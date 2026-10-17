@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 //
 // Content packs - the shared loader on disk: "Install pack ..." from a local zip (old flat packs and pack.json packs),
-// backup / rollback, refused packs leave nothing behind, only release URLs are downloaded, the library reads the
+// backup / rollback, refused packs leave nothing behind, the library reads the
 // kind folders (uid unchanged for old packs) and filters by pack, user wavetables resolve "<pack>/<table>" and say
 // "content pack missing" when the pack is not there.
 
@@ -12,6 +12,7 @@
 #include "plugin/PluginProcessor.h"
 #include "plugin/Updater.h"
 #include "preset/Preset.h"
+#include "update/Sha256.h"
 
 #include <cmath>
 
@@ -40,6 +41,24 @@ juce::File makeZip (const juce::File& f, const std::vector<std::pair<juce::Strin
     juce::FileOutputStream out (f);
     b.writeToStream (out, nullptr);
     return f;
+}
+
+/** An .ohpepack: pack.json (with `meta` + a SHA-256 for every file, unless `sums` is false) and the files. */
+juce::File makePack (const juce::File& f, juce::String meta, const std::vector<std::pair<juce::String, juce::String>>& files, bool sums = true,
+                     const juce::String& tamperPath = {})
+{
+    juce::String list;
+    for (const auto& [path, text] : files)
+    {
+        auto bytes = std::string (text.toRawUTF8());
+        if (path == tamperPath) bytes += "x"; // listed checksum of other bytes
+        if (list.isNotEmpty()) list << ",";
+        list << "\"" << path << "\":\"" << juce::String (update::Sha256::of (bytes)) << "\"";
+    }
+    if (sums) meta = meta.upToLastOccurrenceOf ("}", false, false) + ",\"files\":{" + list + "}}";
+    auto entries = files;
+    entries.insert (entries.begin(), { "pack.json", meta });
+    return makeZip (f, entries);
 }
 
 juce::String presetText (const std::string& name)
@@ -78,7 +97,8 @@ struct Dir
 };
 
 const char* packJsonV11 = R"({"format":1,"id":"atmo","version":"1.1.0","kind":"presets","minApp":"0.0.1",
-    "name":{"en":"Atmo","de":"Atmo"},"description":{"en":"Dark and wide","de":"Dunkel und weit"}})";
+    "name":{"en":"Atmo","de":"Atmo"},"description":{"en":"Dark and wide","de":"Dunkel und weit"},
+    "license":{"type":"paid","productId":"ohpe-atmo"},"signature":{"alg":"ed25519","keyId":"groovex-1","value":"c2ln"}})";
 } // namespace
 
 TEST_CASE ("content loader: install pack from a local zip - old flat pack, pack.json pack, backup and rollback")
@@ -105,32 +125,56 @@ TEST_CASE ("content loader: install pack from a local zip - old flat pack, pack.
     CHECK (u.contentGeneration() == gen0 + 1);
     auto installed = u.installedPacks();
     REQUIRE (installed.size() == 1);
-    CHECK (installed[0].id == "atmo");
-    CHECK (installed[0].version == "1.0.0");
+    CHECK (installed[0].info.id == "atmo");
+    CHECK (installed[0].info.version == "1.0.0");
 
-    // a new version with pack.json in the kind folder: the old one becomes the backup
-    const auto v11 = makeZip (d.root.getChildFile ("atmo-new.zip"), { { "pack.json", packJsonV11 },
-                                                                       { "presets/pads-night-tide.ohpepreset", presetText ("Night Tide 2") },
-                                                                       { "readme.txt", "v1.1" },
-                                                                       { "cover.png", "not content" } });
+    // an .ohpepack (pack.json with checksums, kind folder): the old version becomes the backup
+    const auto v11 = makePack (d.root.getChildFile ("Atmo 1.1.ohpepack"), packJsonV11,
+                               { { "presets/pads-night-tide.ohpepreset", presetText ("Night Tide 2") }, { "readme.txt", "v1.1" } });
     u.installPackFile (v11);
     REQUIRE (u.waitIdle (20000));
     CHECK (u.snapshot().message == "Content pack installed");
     CHECK (content.getChildFile ("atmo/readme.txt").loadFileAsString() == "v1.1");
-    CHECK_FALSE (content.getChildFile ("atmo/cover.png").exists()); // not content of this kind: left out
     CHECK (content.getChildFile (".backup/atmo/presets/keys-crypt-organ.ohpepreset").existsAsFile());
     installed = u.installedPacks();
     REQUIRE (installed.size() == 1);
-    CHECK (installed[0].version == "1.1.0");
-    CHECK (installed[0].descriptionDe == "Dunkel und weit");
+    CHECK (installed[0].info.version == "1.1.0");
+    CHECK (installed[0].info.descriptionDe == "Dunkel und weit");
+    CHECK (installed[0].info.license.paid());             // shown, not enforced
+    CHECK (installed[0].info.signature.keyId == "groovex-1");
+    CHECK (installed[0].bytes > 0);
+    CHECK (installed[0].items == 1);
+
+    // a damaged file (checksum differs): the install stops, 1.1.0 stays as it was
+    const auto bad12 = makePack (d.root.getChildFile ("Atmo 1.2.ohpepack"), juce::String (packJsonV11).replace ("1.1.0", "1.2.0"),
+                                 { { "presets/pads-night-tide.ohpepreset", presetText ("Night Tide 3") }, { "readme.txt", "v1.2" } }, true, "readme.txt");
+    u.installPackFile (bad12);
+    REQUIRE (u.waitIdle (20000));
+    CHECK (u.snapshot().state == Updater::State::Failed);
+    CHECK (u.snapshot().message == "A file of the content pack is damaged (checksum)");
+    CHECK (content.getChildFile ("atmo/readme.txt").loadFileAsString() == "v1.1");
+    CHECK (u.installedPacks()[0].info.version == "1.1.0");
+    CHECK_FALSE (content.getChildFile (".staging/atmo").exists());
+    // an .ohpepack without checksums is refused; one for a newer Ohpe too
+    u.installPackFile (makePack (d.root.getChildFile ("nosums.ohpepack"), juce::String (packJsonV11).replace ("1.1.0", "1.3.0"),
+                                 { { "presets/x.ohpepreset", presetText ("X") } }, false));
+    REQUIRE (u.waitIdle (20000));
+    CHECK (u.snapshot().message == "The content pack has no checksums");
+    u.installPackFile (makePack (d.root.getChildFile ("future-app.ohpepack"),
+                                 juce::String (packJsonV11).replace ("1.1.0", "1.4.0").replace ("0.0.1", "99.0.0"),
+                                 { { "presets/x.ohpepreset", presetText ("X") } }));
+    REQUIRE (u.waitIdle (20000));
+    CHECK (u.snapshot().message == "This pack needs a newer Ohpe");
+    CHECK (u.installedPacks()[0].info.version == "1.1.0");
+
     CHECK (u.rollbackPack ("atmo"));
     CHECK (content.getChildFile ("atmo/presets/keys-crypt-organ.ohpepreset").existsAsFile());
-    CHECK (u.installedPacks()[0].version == "1.0.0");
+    CHECK (u.installedPacks()[0].info.version == "1.0.0");
 
     // refused packs leave nothing behind
     struct Bad { const char* file; std::vector<std::pair<juce::String, juce::String>> entries; const char* error; };
     const std::vector<Bad> bad {
-        { "evil.zip", { { "pack.json", R"({"id":"evil","version":"1.0.0"})" }, { "../escape.ohpepreset", "{}" } }, "The content pack is damaged" },
+        { "evil.ohpepack", { { "pack.json", R"({"id":"evil","version":"1.0.0"})" }, { "../escape.ohpepreset", "{}" } }, "The content pack is damaged" },
         { "noname.zip", { { "a.ohpepreset", "{}" } }, "The content pack has no description (pack.json)" },
         { "empty-pack.zip", { { "pack.json", R"({"id":"empty","version":"1.0.0"})" }, { "readme.txt", "hi" } }, "The content pack holds no content" },
         { "future.zip", { { "pack.json", R"({"id":"future","version":"1.0.0","kind":"holograms"})" }, { "x.bin", "" } },
@@ -147,36 +191,26 @@ TEST_CASE ("content loader: install pack from a local zip - old flat pack, pack.
     CHECK_FALSE (content.getChildFile ("escape.ohpepreset").exists());
     CHECK_FALSE (data.getChildFile ("escape.ohpepreset").exists());
     CHECK (u.installedPacks().size() == 1);
-    // not a zip at all
+    // other files are not packs
+    u.installPackFile (makeZip (d.root.getChildFile ("song.wav"), { { "a", "b" } }));
+    REQUIRE (u.waitIdle (20000));
+    CHECK (u.snapshot().message == "Choose a content pack (.ohpepack)");
+    // not there at all
     u.installPackFile (d.root.getChildFile ("missing.zip"));
     REQUIRE (u.waitIdle (20000));
     CHECK (u.snapshot().state == Updater::State::Failed);
 
-    CHECK (userPreset.loadFileAsString() == "{\"mine\":true}");
-}
+    // remove: folder and backup gone, the user's presets untouched
+    const int genBefore = u.contentGeneration();
+    CHECK (u.removePack ("atmo"));
+    CHECK_FALSE (content.getChildFile ("atmo").exists());
+    CHECK_FALSE (content.getChildFile (".backup/atmo").exists());
+    CHECK (u.installedPacks().empty());
+    CHECK (u.contentGeneration() == genBefore + 1);
+    CHECK_FALSE (u.removePack ("atmo"));
+    CHECK_FALSE (u.removePack ("../data"));
 
-TEST_CASE ("content loader: downloads only from the release pages (SHA-256 stays mandatory)")
-{
-    Dir d;
-    Updater u;
-    u.setDataFolderForTests (d.root.getChildFile ("data"));
-    update::Release r;
-    r.version = update::Version::of ("99.0.0");
-    update::ContentPack p;
-    p.id = "atmo";
-    p.version = "1.0.0";
-    p.kind = "presets";
-    p.nameEn = p.nameDe = "Atmo";
-    p.url = "https://example.com/Ohpe-content-atmo-1.0.0.zip";
-    p.sha256 = std::string (64, 'a');
-    p.size = 10;
-    r.content.push_back (p);
-    u.showReleaseForTests (r);
-    u.installPack ("atmo");
-    REQUIRE (u.waitIdle (20000));
-    CHECK (u.snapshot().state == Updater::State::Failed);
-    CHECK (u.snapshot().message == "The content pack is not from the Ohpe release pages - not installed");
-    CHECK_FALSE (d.root.getChildFile ("data/Content/atmo").exists());
+    CHECK (userPreset.loadFileAsString() == "{\"mine\":true}");
 }
 
 TEST_CASE ("content loader: the library reads kind folders and old flat packs, uid unchanged, filter by pack")
