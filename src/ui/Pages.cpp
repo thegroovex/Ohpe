@@ -386,7 +386,7 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
             take ("Pitch & Level");
             take ("Mod Envelope");
             take ("Voice");
-            groups.push_back ({ "Glide", 0, { p + "glide.mode", p + "glide.rate" } });
+            groups.push_back ({ "Glide", 0, { p + "glide.mode", p + "glide.rate", p + "glide.press" } });
             groups.push_back ({ "Pitch Envelope", 0, { p + "pitchenv.amt", p + "pitchenv.time", p + "pitchenv.curve" } });
             if (core.params().indexOf (p + "sub.level") >= 0) // p31: the SUB layer
                 groups.push_back ({ "Sub", 0, { p + "sub.level", p + "sub.oct", p + "sub.shape", p + "sub.direct" } });

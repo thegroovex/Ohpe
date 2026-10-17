@@ -79,6 +79,8 @@ juce::String explanation (const std::string& paramId)
         { "tune", "Coarse tuning of the part in semitones.", "Grobstimmung des Parts in Halbtönen." },
         { "fine", "Fine tuning of the part in cents.", "Feinstimmung des Parts in Cent." },
         { "vol", "Output level of the part.", "Ausgangspegel des Parts." },
+        { "glide.press", "Aftertouch changes the glide time: right = pressing harder glides slower, left = faster.",
+          "Aftertouch ändert die Glide-Zeit: rechts = fester drücken gleitet langsamer, links = schneller." },
         { "life", "Held notes keep evolving: drift, breathing, motion.", "Gehaltene Töne leben weiter: Drift, Atmen, Bewegung." },
         { "sub.level", "Extra low end: a sub oscillator under every voice (0 = off) - drag the picture up or down.", "Mehr Tiefe: ein Suboszillator unter jeder Stimme (0 = aus) - das Bild nach oben oder unten ziehen." },
         { "sub.oct", "How far below the played note the sub sounds: one or two octaves.", "Wie weit unter der gespielten Note der Sub klingt: eine oder zwei Oktaven." },

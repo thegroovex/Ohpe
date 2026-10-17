@@ -182,7 +182,8 @@ built-in material (`pN.usertable.wt` / `pN.usertable.vocal`), **CLEAR** removes 
 ![Pro view](../images/ohpe-pro-view.png)
 
 **PRO** opens the pro view: **every parameter of the current mode at once**, in groups – in Synth
-mode the engine, its filter, the envelopes, LFO, pitch & level, voice, glide, pitch envelope, sub, layer and
+mode the engine, its filter, the envelopes, LFO, pitch & level, voice, glide (p32: with *Glide Pressure*,
+[MIDI.md](MIDI.md)), pitch envelope, sub, layer and
 MIDI of the part; in Tape mode the transport, loop, tape character and all eight tracks; in Drum mode the
 kit and all 24 pads. The tabs on top switch the mode. The layout uses one to four columns, as many as the
 window is wide, and scrolls when a mode has more than fits.

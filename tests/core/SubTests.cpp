@@ -119,11 +119,11 @@ Stereo renderCore (Core& core, int blocks, int block = 512)
 }
 } // namespace
 
-TEST_CASE ("p31 sub: parameters appended after the harmony brain, defaults off; matrix target Sub Level after Wide")
+TEST_CASE ("p31 sub: parameters appended after pressure glide, defaults off; matrix target Sub Level after Wide")
 {
     auto owner = std::make_unique<Core>();
     const auto& reg = owner->params();
-    int expect = reg.indexOf ("harmony.p4.follow") + 1;
+    int expect = reg.indexOf ("p4.glide.press") + 1; // after pressure glide (p32)
     REQUIRE (expect > 0);
     for (int p = 1; p <= Core::numParts; ++p)
         for (const char* k : { "level", "oct", "shape", "direct" })
