@@ -47,7 +47,10 @@
     "morph.y": 0.0,
     "morph.glide": 0.08,
     "morph.xsrc": 3,
-    "morph.ysrc": 1
+    "morph.ysrc": 1,
+    "expr.at.dst1": 12,
+    "expr.at.amt1": 0.3,
+    "expr.at.curve1": 3
   },
   "morph": {
     "corners": [

@@ -234,6 +234,11 @@ if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/BreedUiTests.cpp)
 endif()
 
+# ---------------------------------------------------------------- p33: expressive playing (Envelope mode: the Expression pages)
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/ExpressionUiTests.cpp)
+endif()
+
 # ---------------------------------------------------------------- p21: pro view 2.0 (pictures, Discover, Simple / All)
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/ProViewTwoTests.cpp)

@@ -161,6 +161,13 @@ Siehe [SEQUENZER.md](SEQUENZER.md#portamento-und-tonhöhen-hüllkurve-06). Danac
 Oktave, Form, Direkt) – die [SUB-Ebene](SUB-EBENE.md) des Parts, ein Suboszillator eine oder zwei Oktaven unter jeder
 Stimme für mehr Tiefe.
 
+**Hüllkurven-Modus** (p33): nach den Hüllkurven und den Stimmen-Seiten folgen die **Ausdrucks**-Seiten – **Anschlag**
+(Ziel 1, Menge 1, Ziel 2, Menge 2), **Aftertouch** (ebenso, für Kanal-, Poly- und MPE-Druck) und **Ausdruckskurven**.
+Das Display zeichnet das Ansprechen jedes Slots mit einem Punkt, der deinem Spiel folgt; die Profi-Ansicht (Synth)
+zeigt sie als Gruppe *Ausdruck*. Siehe [Ausdrucksstark spielen](AUSDRUCK.md).
+
+![Die Ausdrucks-Seite (Aftertouch)](../images/ohpe-expression-de.png)
+
 ## Samples für Sampler und Grain
 
 Ist auf dem bearbeiteten Part die Sampler- oder Grain-Engine gewählt, zeigt das Display

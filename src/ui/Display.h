@@ -46,6 +46,9 @@ public:
     /** Paints the stereo scope of the current scope source into `area` (for other views, e.g. an
         FX rack slot visual of a Mid/Side slot). */
     void paintStereoScope (juce::Graphics& g, juce::Rectangle<float> area) const;
+    /** p33: the Expression pages - the response of each shown velocity / aftertouch slot and the live input. */
+    bool showsExpression() const;
+    void paintExpression (juce::Graphics& g, juce::Rectangle<float> area) const;
     /** p26: the living object (state, tests) and the region the last tick asked to repaint for it (empty = it rested:
         nothing of the object was repainted). */
     const ohpe::living::Shape& livingShape() const noexcept { return livingObj; }

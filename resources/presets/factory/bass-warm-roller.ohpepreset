@@ -68,6 +68,9 @@
     "monobass": 150.0,
     "velsens": 0.4,
     "glide": 0.02,
-    "gain": 9.0
+    "gain": 9.0,
+    "expr.at.dst1": 12,
+    "expr.at.amt1": 0.3,
+    "expr.at.curve1": 3
   }
 }

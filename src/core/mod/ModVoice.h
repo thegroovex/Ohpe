@@ -23,6 +23,7 @@ enum Source
     SrcMotion1, SrcMotion2, SrcMotion3, SrcMotion4, // p22: the motion recorder's lanes (Part scope, fed by the core)
     SrcPadSweep, SrcPadHeld, // p25: the performance pads (Part scope, fed by the core)
     SrcChordRoot, SrcChordChange, SrcTension, // p24: the harmony brain (Part scope, the same value for every part)
+    SrcVibrato, // p33: a 5.5 Hz sine per voice (Voice scope; the Expression page's Vibrato target uses it)
     numSources
 };
 /** Sources of the 0.7 list; sources appended later (from here on) are Part-scope values fed by other modules. */
@@ -45,19 +46,23 @@ enum Dest
     DstResoTune, DstResoSize, DstResoMaterial, DstResoDecay, DstResoPosition, DstResoMix, // p19: the resonator body ("pN.reso.*")
     DstCharBright, DstCharHard, DstCharAlive, DstCharWide, // p21: the character macros ("pN.char.*")
     DstSubLevel, // p31: the SUB layer's level ("pN.sub.level")
+    DstGlide, DstAmpAttack, DstAmpDecay, DstAmpRelease, // p33: glide time ("pN.glide"), amp envelope ("pN.amp.a/d/r")
     numDests
 };
 static constexpr int numEngineDests = 24;
 static constexpr int numFxSlots = 6;
 static constexpr int numFxDestParams = 4;
-static constexpr int numSlots = 16; ///< routings per part
+static constexpr int numSlots = 16; ///< routings per part ("pN.mod.s1" ... "pN.mod.s16")
+static constexpr int numExprSlots = 4; ///< p33: the Expression page's routings (velocity x 2, aftertouch x 2), after them
+static constexpr int numAllSlots = numSlots + numExprSlots;
+static constexpr float vibratoHz = 5.5f; ///< p33: rate of SrcVibrato
 
 enum Curve { CurveLinear = 0, CurveExp, CurveLog, CurveS, CurveSteps, numCurves };
 
 inline bool isBipolar (int src) noexcept
 {
     return src == SrcLfo1 || src == SrcLfo2 || src == SrcLfo3 || src == SrcKeyTrack || src == SrcPitchBend || src == SrcSlide
-        || src == SrcNoteBend || src == SrcRandom;
+        || src == SrcNoteBend || src == SrcRandom || src == SrcVibrato;
 }
 inline bool isVoiceDest (int dst) noexcept { return dst >= DstPitch && dst <= DstTimbre; }
 
@@ -272,7 +277,7 @@ inline float evaluate (const Route& r, const float* sources) noexcept
 */
 struct VoiceProgram
 {
-    std::array<Route, numSlots> routes {};
+    std::array<Route, numAllSlots> routes {};
     int numRoutes = 0;
     std::array<LfoSettings, 2> lfo {}; ///< LFO 2, LFO 3
     Env3Settings env3;
@@ -302,6 +307,7 @@ public:
         for (size_t i = 0; i < 2; ++i) lfo[i].trigger (p.lfo[i], p.seed + (uint32_t) i * 7919u);
         env3.noteOn();
         age = 0.0f;
+        vibPhase = 0.0f;
         first = true;
     }
     void release() noexcept { env3.noteOff(); }
@@ -334,6 +340,9 @@ public:
         s[SrcSlide] = slide;
         s[SrcNoteBend] = noteBend;
         s[SrcRandom] = random;
+        s[SrcVibrato] = std::sin (vibPhase); // p33
+        vibPhase += 6.2831853f * vibratoHz * (float) n / sr;
+        if (vibPhase > 6.2831853f) vibPhase -= 6.2831853f;
 
         float pitch = 0.0f, level = 0.0f, pan = 0.0f, timbre = 0.0f;
         for (int i = 0; i < p.numRoutes; ++i)
@@ -365,7 +374,7 @@ private:
     std::array<ModLfo, 2> lfo;
     ModEnv3 env3;
     dsp::Random rng { 7u };
-    float key = 0.0f, vel = 1.0f, random = 0.0f, age = 0.0f;
+    float key = 0.0f, vel = 1.0f, random = 0.0f, age = 0.0f, vibPhase = 0.0f;
     bool first = true;
     VoiceOut result;
 };

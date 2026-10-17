@@ -50,6 +50,9 @@
     "fx2.compressor.release": 180.0,
     "fx2.compressor.knee": 6.0,
     "fx2.compressor.makeup": 0.0,
-    "fx2.compressor.mix": 1.0
+    "fx2.compressor.mix": 1.0,
+    "expr.at.dst1": 12,
+    "expr.at.amt1": 0.15,
+    "expr.at.curve1": 3
   }
 }
