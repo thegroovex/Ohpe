@@ -75,6 +75,23 @@ public:
 private:
     juce::String versionText, updateText;
 };
+/**
+    p35: the CPU meter on the legend line of the mode column, right-aligned ("CPU 12 %"): the average share of each
+    audio block's time the processing takes (the slowest block in the tooltip). Engraved like the legends; red from
+    80 % average or a block over 100 % (the audio may break up). Display only - not a parameter.
+*/
+class CpuMeter : public juce::Component, public juce::TooltipClient
+{
+public:
+    /** Loads as fractions (1 = all of a block's time). Repaints only when the shown whole percent changes. */
+    void setLoad (float average, float peak);
+    juce::String getTooltip() override;
+    void paint (juce::Graphics& g) override;
+    int shownPercent() const noexcept { return avgPercent; }
+
+private:
+    int avgPercent = -1, peakPercent = -1;
+};
 } // namespace ui
 
 /**
@@ -147,6 +164,7 @@ public:
     bool updatesVisible() const { return updateView.isVisible(); }
     ui::UpdateView& updateComponent() { return updateView; }
     ui::VersionBadge& versionBadgeComponent() { return versionBadge; }
+    ui::CpuMeter& cpuMeterComponent() { return cpuMeter; } ///< p35
     Updater& updaterInstance() { return *updater; }
     ui::PictoKey& recordKey() { return recKey; }
     ui::PictoKey& playTransportKey() { return playKey; }
@@ -265,6 +283,8 @@ private:
     juce::SharedResourcePointer<Updater> updater; ///< p27: one per process
     ui::UpdateView updateView;
     ui::VersionBadge versionBadge;
+    ui::CpuMeter cpuMeter; ///< p35
+    void refreshCpuMeter();
     int contentGenerationSeen = 0;
     juce::uint32 randomPressedAt = 0; ///< p18: RANDOM held >= 450 ms opens the breeding view
     std::array<int, 3> breedRequestsSeen {};

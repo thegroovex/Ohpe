@@ -207,7 +207,9 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
 
 GrainEngine::GrainEngine()
 {
-    builtInTone = sample::makePadTexture (48000.0, (float) grain::rootNote, 6.0f);
+    // p35: the built-in texture is the same for every instance (immutable): made once per process, not per part / lane
+    static const SamplePtr padTexture = sample::makePadTexture (48000.0, (float) grain::rootNote, 6.0f);
+    builtInTone = padTexture;
     source.set (builtInTone);
     shared.sample = &source;
     shared.tapeRegion = &tapeRegion;

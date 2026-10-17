@@ -19,6 +19,25 @@ inline float semitonesToRatio (float st) noexcept { return std::pow (2.0f, st / 
 /** Flushes denormal-range values to zero (filters call it on their state). */
 inline float flush (float x) noexcept { return std::abs (x) < 1.0e-15f ? 0.0f : x; }
 
+/**
+    p35: sin (2 pi x) for x in turns (any finite x), without a library call: the argument is reduced to the nearest
+    whole turn, folded into a quarter wave and evaluated with a degree-9 odd polynomial (minimax). Maximum error
+    about 2e-7 - the size of the float rounding of the library sine's own argument. Hot oscillator loops (FM).
+*/
+inline float sinTurns (float x) noexcept
+{
+    if (! (std::abs (x) < 4194304.0f)) return std::sin (twoPi * x); // huge or not finite: the library (never in practice)
+    constexpr float round = 12582912.0f; // 1.5 * 2^23: adding and subtracting it rounds to the nearest whole turn
+    const float t = x - ((x + round) - round); // -0.5 .. 0.5
+    const float a = std::abs (t);
+    const float q = std::copysign (std::min (a, 0.5f - a), t); // sin (pi - a) = sin a: a quarter wave, -0.25 .. 0.25
+    const float u = q * q, u2 = u * u;
+    // degree-9 minimax polynomial, evaluated in parallel halves (shorter dependency chain than Horner)
+    const float lo = 6.283185160e+00f + u * -4.134165503e+01f;
+    const float hi = 8.160100406e+01f + u * -7.654978199e+01f;
+    return q * (lo + u2 * (hi + u2 * 3.953670361e+01f));
+}
+
 inline float clamp01 (float x) noexcept { return std::min (1.0f, std::max (0.0f, x)); }
 inline float lerp (float a, float b, float t) noexcept { return a + (b - a) * t; }
 

@@ -143,6 +143,14 @@ jobs:
           python3 scripts/ci/run-tests.py --build-dir build-core --split core_tests -j "$(nproc)" \
             --shard ${{ matrix.shard }}/2 --timings .ci-timings/linux-core.json
 
+      # p35: CPU benchmark - printed (log + job summary) for information only. Nothing gates on timing; the step fails
+      # only when a scenario renders a non-finite or runaway output.
+      - name: Benchmark (informational, percent of one core)
+        if: matrix.shard == 0
+        run: |
+          build-core/tests/core/ohpe_bench --quick | tee bench.txt
+          { echo '### ohpe_bench (CI runner, informational)'; echo '```'; cat bench.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
   linux-build:
     name: Linux build
     needs: changes

@@ -621,6 +621,9 @@ const std::map<juce::String, juce::String>& table()
         { "Later", "Später" },
         { "The installer is open. Save your project and quit the host program before the installer continues.", "Der Installer ist geöffnet. Projekt speichern und das Host-Programm beenden, bevor der Installer weitermacht." },
         { "Version and updates", "Version und Updates" },
+        // p35: the CPU meter
+        { "CPU load: share of the audio time the sound takes to compute", "Rechenlast: Anteil der Audiozeit, den die Klangberechnung braucht" },
+        { "Peak", "Spitze" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;

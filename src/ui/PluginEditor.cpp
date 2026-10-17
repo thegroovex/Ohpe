@@ -379,6 +379,8 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
         versionBadge.setName ("versionBadge");
         versionBadge.onClick = [this] { showUpdates (! updateView.isVisible()); };
         addAndMakeVisible (versionBadge);
+        cpuMeter.setName ("cpuMeter"); // p35
+        addAndMakeVisible (cpuMeter);
         contentGenerationSeen = updater->contentGeneration();
         refreshVersionBadge();
     }
@@ -437,6 +439,8 @@ juce::Rectangle<float> OhpeEditor::designArea (const char* name)
         { "langEn", 1080, 44, 36, 24 },         { "langDe", 1124, 44, 36, 24 },
         // p27: the version legend on the header's legend line above the wordmark (the click area covers the wordmark)
         { "versionBadge", 40, 20, 248, 56 },
+        // p35: the CPU meter, right-aligned on the mode column's legend line
+        { "cpuMeter", 1064, 88, 96, 12 },
         { "engineLegend", 40, 88, 200, 12 },    { "modeLegend", 968, 88, 192, 12 },
         { "overlay", 24, 104, 1152, 512 },
         { "engineColumn", 32, 112, 208, 336 },  { "modeColumn", 960, 112, 208, 336 },
@@ -528,6 +532,7 @@ void OhpeEditor::resized()
     place (breedView, "overlay"); // p18
     place (updateView, "overlay"); // p27
     place (versionBadge, "versionBadge");
+    place (cpuMeter, "cpuMeter"); // p35
     for (auto& k : engineKeys) k->setUiScale (s);
     for (auto& k : modeKeys) k->setUiScale (s);
     for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey, &gridKey, &libraryKey, &proKey, &randomKey, &saveKey })
@@ -873,6 +878,8 @@ void OhpeEditor::refreshVersionBadge()
     versionBadge.setTexts ("V" + juce::String (OHPE_VERSION),
                            us.hasRelease ? i18n::upper (tr ("Update")) + " " + juce::String::fromUTF8 (us.release.version.toString().c_str()) : juce::String());
 }
+
+void OhpeEditor::refreshCpuMeter() { cpuMeter.setLoad (proc.cpuLoad().average(), proc.cpuLoad().peak()); }
 
 void OhpeEditor::showUpdates (bool show)
 {
@@ -1268,6 +1275,7 @@ void OhpeEditor::rebindEncoders()
     partSelector.setPart (ctx.part);
     presetStrip.setName (proc.presets().currentName());
     refreshVersionBadge(); // p27
+    refreshCpuMeter(); // p35
     repaint (scaled (30, 60, 220, 40)); // engine legend shows the part
 }
 
@@ -1297,6 +1305,7 @@ void OhpeEditor::advanceAnimation (float seconds)
     // headless renders call this instead of the timer: keep the preset name current after a load
     presetStrip.setName (proc.presets().currentName());
     refreshVersionBadge(); // p27
+    refreshCpuMeter(); // p35
 }
 
 void OhpeEditor::refreshSoftKeys()
@@ -1877,6 +1886,7 @@ void OhpeEditor::timerCallback()
     // p27: the daily update check (opt-in; never while the transport or the tape runs), the version legend, content packs
     updater->maybeAutoCheck (core.transportPlaying() || proc.tapeRolling());
     refreshVersionBadge();
+    refreshCpuMeter(); // p35
     if (const int gen = updater->contentGeneration(); gen != contentGenerationSeen)
     {
         contentGenerationSeen = gen;
@@ -2180,5 +2190,32 @@ void VersionBadge::paint (juce::Graphics& g)
         g.setColour (colour::engraving);
         drawBaselineLegend (g, updateText, legendArea.withTrimmedLeft (x + 18.0f * s), 11.0f * s, juce::Justification::centredLeft);
     }
+}
+
+// ---------------------------------------------------------------- p35: CPU meter
+void CpuMeter::setLoad (float average, float peak)
+{
+    const int a = juce::jlimit (0, 999, juce::roundToInt (juce::jmax (0.0f, average) * 100.0f));
+    const int p = juce::jlimit (0, 999, juce::roundToInt (juce::jmax (0.0f, peak) * 100.0f));
+    if (a == avgPercent && p == peakPercent) return;
+    const bool repaintNeeded = a != avgPercent || (p >= 100) != (peakPercent >= 100);
+    avgPercent = a;
+    peakPercent = p;
+    if (repaintNeeded) repaint();
+}
+
+juce::String CpuMeter::getTooltip()
+{
+    return i18n::tr ("CPU load: share of the audio time the sound takes to compute") + " - " + i18n::tr ("Peak") + " "
+           + juce::String (juce::jmax (0, peakPercent)) + " %";
+}
+
+void CpuMeter::paint (juce::Graphics& g)
+{
+    const float s = (float) getHeight() / 12.0f; // design units
+    const bool hot = avgPercent >= 80 || peakPercent >= 100;
+    g.setColour (hot ? colour::signalRed : colour::engraving);
+    drawBaselineLegend (g, "CPU " + juce::String (juce::jmax (0, avgPercent)) + " %", getLocalBounds().toFloat(), 11.0f * s,
+                        juce::Justification::centredRight);
 }
 } // namespace ohpe::ui
