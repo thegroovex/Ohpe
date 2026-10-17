@@ -5,7 +5,7 @@
 //   usage: ohpe_screenshot <output directory>
 // Writes ohpe-<view>.png (English) and ohpe-<view>-de.png (German).
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
-// p20: the user wavetable frame stack (ohpe-user-wavetable).
+// p20: the user wavetable frame stack (ohpe-user-wavetable). p27: the update view (ohpe-update).
 // p23: bounce to engine - a loop bounced into Grain (ohpe-bounce).
 // p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
 // octave block while recording (ohpe-transport, 2x crop; REC and PLAY at the top of their breathing).
@@ -18,6 +18,7 @@
 #include "ui/PluginEditor.h"
 #include "ui/ProTiles.h"
 #include "mod/ModVoice.h"
+#include "plugin/Updater.h"
 
 #include <cmath>
 #include <algorithm>
@@ -701,6 +702,47 @@ int main (int argc, char* argv[])
             p.core().harmony().requestClear();
             run (p, 8);
             e.selectView (0);
+        }
+
+        // p27: the update view - a newer version on offer with its notes in the UI language, a content pack (no network)
+        {
+            update::Release r;
+            r.version = update::Version::of ("0.4.0");
+            r.tag = "v0.4.0";
+            r.channel = update::Channel::Preview;
+            r.date = "2026-11-02";
+            r.notesEn = "**Preview release** - for testing and feedback.\n\n### In-app updates\n- Check for new versions from inside Ohpe, "
+                        "download in the background, verified before it opens.\n- Stable and preview channels, skip a version or be reminded later.\n\n"
+                        "### Content packs\n- New factory presets without reinstalling; the previous pack is kept for a rollback.\n\n"
+                        "### Fixes\n- Smoother glide on held chords.\n- The library remembers the last filter.";
+            r.notesDe = "**Vorschau-Release** - zum Testen und für Rückmeldungen.\n\n### Updates in der App\n- Neue Versionen direkt in Ohpe finden, "
+                        "im Hintergrund laden, vor dem Öffnen geprüft.\n- Kanäle Stabil und Vorschau, eine Version überspringen oder später erinnern.\n\n"
+                        "### Inhaltspakete\n- Neue Werks-Presets ohne Neuinstallation; das vorige Paket bleibt für ein Zurücksetzen.\n\n"
+                        "### Korrekturen\n- Weicheres Glide bei gehaltenen Akkorden.\n- Die Bibliothek merkt sich den letzten Filter.";
+            update::Asset a;
+            a.platform = update::currentPlatform();
+            a.kind = "installer";
+            a.part = "all";
+            a.name = "Ohpe-0.4.0-Installer";
+            a.url = "https://example.invalid/Ohpe-0.4.0";
+            a.size = 48u * 1024u * 1024u;
+            a.sha256 = std::string (64, 'a');
+            r.assets.push_back (a);
+            update::ContentPack pk;
+            pk.id = "night-keys";
+            pk.version = "1.0.0";
+            pk.kind = "presets";
+            pk.nameEn = "Night Keys (24 presets)";
+            pk.nameDe = juce::String::fromUTF8 ("Nachttasten (24 Presets)").toStdString();
+            pk.url = "https://example.invalid/night-keys.zip";
+            pk.sha256 = std::string (64, 'b');
+            r.content.push_back (pk);
+            e.updaterInstance().showReleaseForTests (r);
+            e.showUpdates (true);
+            e.advanceAnimation (0.2f);
+            animate (p, e, 2);
+            save (e, dir.getChildFile ("ohpe-update" + suffix + ".png"));
+            e.showUpdates (false);
         }
 
         // p20: a user wavetable from a sound whose harmonics evolve (analysed like an imported file), the frame stack

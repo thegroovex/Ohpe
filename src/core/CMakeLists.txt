@@ -73,6 +73,14 @@ target_sources(ohpe_core PRIVATE perform/PerformancePads.cpp)
 target_sources(ohpe_core PRIVATE visual/LivingShape.cpp)
 # p24: the harmony brain (scale and chord memory of all parts)
 target_sources(ohpe_core PRIVATE harmony/HarmonyBrain.cpp)
+# p27: the in-app updater (versions, manifest, settings, SHA-256, resumable download, content packs)
+target_sources(ohpe_core PRIVATE
+    update/Version.cpp
+    update/Sha256.cpp
+    update/UpdateManifest.cpp
+    update/UpdateSettings.cpp
+    update/Download.cpp
+    update/ContentPacks.cpp)
 
 # 0.4 (package F): factory sample bank (instruments, drum kits)
 target_sources(ohpe_core PRIVATE sample/FactoryBank.cpp)

@@ -84,5 +84,7 @@ target_sources(ohpe_core_tests PRIVATE PadsTests.cpp)
 target_sources(ohpe_core_tests PRIVATE LivingShapeTests.cpp)
 # p24: the harmony brain
 target_sources(ohpe_core_tests PRIVATE HarmonyTests.cpp)
+# p27: the in-app updater (version order, manifest, settings, SHA-256, resumable download, content packs)
+target_sources(ohpe_core_tests PRIVATE UpdateTests.cpp)
 # p31: the SUB layer per part
 target_sources(ohpe_core_tests PRIVATE SubTests.cpp)
