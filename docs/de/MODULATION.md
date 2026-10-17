@@ -92,7 +92,8 @@ Verzögerung 0 … 4 s, Attack 1 ms … 10 s (linear), Halten 0 … 4 s, Decay 1
 | 72 | Leben | – | p15: der Leben-Anteil des Parts `pN.life` ([BEDIENUNG.md](BEDIENUNG.md#leben)), 0 … 100 %; z. B. Mod-Rad → Leben, um gehaltene Töne zu beleben, Notendruck → Leben für MPE |
 | 73, 74 | Morph X, Morph Y | – | p16: die Position des [Morph-Pads](MORPH-RAUM.md) des Parts (`pN.morph.x` / `.y`), ganze Breite; z. B. LFO 2 → Morph X, Notendruck → Morph Y |
 | 75 – 80 | Körper-Stimmung, Körper-Größe, Körper-Material, Körper-Ausklang, Körper-Position, Körper-Mischung | – | p19: der [Resonanzkörper](RESONANZKOERPER.md) des Parts (`pN.reso.tune` … `.mix`), ganzer Bereich (Stimmung ±24 Halbtöne); z. B. LFO 2 → Körper-Position für einen wandernden Anregungspunkt, Hüllkurve 3 → Körper-Mischung |
-| 85 – 88 | Glide-Zeit, Amp Attack, Amp Decay, Amp Release | – | p33: die Glide-Zeit `pN.glide` des Parts (zusätzlich zum Parameter oder einer CC-5-Portamento-Zeit) und die Lautstärke-Hüllkurve `pN.amp.a` / `.d` / `.r`, ganzer Bereich; z. B. Notendruck → Glide-Zeit (die Werksklänge mit Glide), Anschlag → Amp Attack (negativ: harte Noten setzen schneller ein) |
+| 85 | Sub-Pegel | – | p31: Pegel der [SUB-Ebene](SUB-EBENE.md) des Parts `pN.sub.level`, 0 … 100 %; z. B. Anschlag → Sub-Pegel für mehr Tiefe bei harten Noten, Mod-Hüllkurve → Sub-Pegel für einen Sub, der nur am Anfang drückt (81 – 84: die Charakter-Makros) |
+| 86 – 89 | Glide-Zeit, Amp Attack, Amp Decay, Amp Release | – | p33: die Glide-Zeit `pN.glide` des Parts (zusätzlich zum Parameter oder einer CC-5-Portamento-Zeit) und die Lautstärke-Hüllkurve `pN.amp.a` / `.d` / `.r`, ganzer Bereich; z. B. Notendruck → Glide-Zeit (die Werksklänge mit Glide), Anschlag → Amp Attack (negativ: harte Noten setzen schneller ein) |
 
 Die [Ausdrucks-Seite](AUSDRUCK.md) (p33) fügt pro Part vier weitere Verbindungen hinzu – Anschlag und Aftertouch auf
 je zwei Funktionen –, die genau wie die 16 hier arbeiten.

@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Part.h"
+#include "PartSub.h"
 
 #include <algorithm>
 #include <cmath>
@@ -249,6 +250,17 @@ void Part::registerLate32GlidePressParams (ParamRegistry& reg) const
     reg.add (std::move (d));
 }
 
+void Part::registerLate31SubParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const std::string P = "Part " + n + " ";
+    auto add = [&] (ParamDescriptor d) { d.group = "part" + n + "/sub"; reg.add (std::move (d)); };
+    add (continuous (id ("sub.level"), P + "Sub Level", P + "Sub-Pegel", 0.0f, 1.0f, 0.0f, ParamUnit::Percent));
+    add (choice (id ("sub.oct"), P + "Sub Octave", P + "Sub-Oktave", { "-1 Oct", "-2 Oct" }, { "-1 Okt.", "-2 Okt." }, 0));
+    add (choice (id ("sub.shape"), P + "Sub Shape", P + "Sub-Form", { "Sine", "Round", "Square" }, { "Sinus", "Rund", "Rechteck" }, 0));
+    add (toggle (id ("sub.direct"), P + "Sub Direct", P + "Sub direkt", false));
+}
 void Part::registerLate33ExpressionParams (ParamRegistry& reg) const { mod::PartMatrix::registerExpressionParams (reg, idPrefix, number); }
 
 void Part::applyReso (float* l, float* r, int n) noexcept
@@ -369,6 +381,10 @@ void Part::bind (const ParamRegistry& reg)
     monoBassIndex = reg.indexOf (id ("monobass"));
     lifeIndex = reg.indexOf (id ("life")); // p15
     glidePressIndex = reg.indexOf (id ("glide.press")); // p32
+    {
+        static const char* subKeys[4] = { "sub.level", "sub.oct", "sub.shape", "sub.direct" }; // p31
+        for (size_t k = 0; k < subIndex.size(); ++k) subIndex[k] = reg.indexOf (id (subKeys[k]));
+    }
     userWtIndex = reg.indexOf (id ("usertable.wt"));       // p20
     userVocalIndex = reg.indexOf (id ("usertable.vocal")); // p20
     for (int m = 0; m < character::numMacros; ++m) charIndex[(size_t) m] = reg.indexOf (id (std::string ("char.") + character::key (m))); // p21
@@ -578,6 +594,11 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
     common.life = lifeIndex >= 0 ? dsp::clamp01 (s[lifeIndex]) : 0.0f; // p15 (the matrix may move it: "life" target)
     if (charActive) common.life = dsp::clamp01 (common.life + character::lifeAlive * charAmount[character::Alive]); // p21 ALIVE
     common.lifeSeed = 0x51ED27u * (uint32_t) number;
+    // p31: the SUB layer (the matrix may move the level: "sublevel" target)
+    common.subLevel = subIndex[0] >= 0 ? dsp::clamp01 (s[subIndex[0]]) : 0.0f;
+    common.subOct = subIndex[1] >= 0 ? std::clamp (s.getInt (subIndex[1]), 0, 1) : 0;
+    common.subShape = subIndex[2] >= 0 ? std::clamp (s.getInt (subIndex[2]), 0, (int) PartSub::numShapes - 1) : 0;
+    common.subDirect = subIndex[3] >= 0 && s.getBool (subIndex[3]);
     // p20: user wavetable / user formants
     if (auto* e = engines[(size_t) EngineType::Wavetable].get()) e->setUserSource (userWtIndex >= 0 && s.getBool (userWtIndex));
     if (auto* e = engines[(size_t) EngineType::Vocal].get()) e->setUserSource (userVocalIndex >= 0 && s.getBool (userVocalIndex));
@@ -663,6 +684,7 @@ void Part::pushCommon() noexcept
         VoiceCommon c = common;
         c.pitchOffset += layerTune;
         c.lifeSeed ^= 0x5BD1E995u; // p15: the layer's voices move on their own
+        c.subLevel = 0.0f;         // p31: one SUB layer per part (under the main engine only)
         if (layerOwnEnv) c.amp = layerAmp;
         le->setCommon (c);
     }

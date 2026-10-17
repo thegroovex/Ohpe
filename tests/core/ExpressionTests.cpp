@@ -82,7 +82,7 @@ MidiEvent channelPressure (int value) { return MidiEvent { 0, (uint8_t) 0xd0, (u
 MidiEvent polyPressure (int note, int value) { return MidiEvent { 0, (uint8_t) 0xa0, (uint8_t) note, (uint8_t) value }; }
 } // namespace
 
-TEST_CASE ("p33: the Expression page IDs follow the pressure-glide block (p32), 12 per part in their documented order")
+TEST_CASE ("p33: the Expression page IDs follow the SUB layer block (p31), 12 per part in their documented order")
 {
     Core core;
     std::vector<std::string> ids;
@@ -90,7 +90,7 @@ TEST_CASE ("p33: the Expression page IDs follow the pressure-glide block (p32), 
     const auto it = std::find (ids.begin(), ids.end(), "p1.expr.vel.dst1");
     REQUIRE (it != ids.end());
     const auto first = (size_t) (it - ids.begin());
-    CHECK ((int) first == core.params().indexOf ("p4.glide.press") + 1);
+    CHECK ((int) first == core.params().indexOf ("p4.sub.direct") + 1); // after p32 pressure glide and the p31 SUB layer
     size_t k = first;
     for (int p = 1; p <= Core::numParts; ++p)
         for (const char* in : { "vel", "at" })
@@ -121,6 +121,10 @@ TEST_CASE ("p33: the Expression page IDs follow the pressure-glide block (p32), 
     CHECK (mod::destTable().size() == (size_t) mod::numDests);
     CHECK (mod::sourceIndexOfKey ("vibrato") == mod::SrcVibrato);
     CHECK (mod::destIndexOfKey ("glide") == mod::DstGlide);
+    CHECK (mod::DstGlide == mod::DstSubLevel + 1); // appended after the p31 SUB target (85)
+    CHECK (mod::DstGlide == 86);
+    CHECK (mod::DstAmpRelease == 89);
+    CHECK (mod::SrcVibrato == 32);
     CHECK (mod::destIndexOfKey ("ampattack") == mod::DstAmpAttack);
     CHECK (core.part (0).destParamIndex (mod::DstGlide) == reg.indexOf ("p1.glide"));
     CHECK (core.part (2).destParamIndex (mod::DstAmpRelease) == reg.indexOf ("p3.amp.r"));

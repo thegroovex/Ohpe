@@ -115,7 +115,9 @@ TEST_CASE ("p32: pressure glide is appended as pN.glide.press (-1..+1, default 0
         CHECK (d.nameEn == "Part " + std::to_string (n) + " Glide Pressure");
         CHECK (d.nameDe == "Part " + std::to_string (n) + " Glide-Druck");
     }
-    CHECK (reg.indexOf ("p4.glide.press") == reg.indexOf ("harmony.p4.follow") + 4); // p33's Expression block follows
+    // appended right after the harmony brain, one per part (later blocks, e.g. the p31 SUB layer, follow it)
+    CHECK (reg.indexOf ("p1.glide.press") == reg.indexOf ("harmony.p4.follow") + 1);
+    CHECK (reg.indexOf ("p4.glide.press") == reg.indexOf ("harmony.p4.follow") + 4);
 }
 
 TEST_CASE ("p32: amount 0 (or no pressure) leaves the glide exactly as before")

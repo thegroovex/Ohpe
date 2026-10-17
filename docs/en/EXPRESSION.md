@@ -88,4 +88,4 @@ this); for your own sounds pick one, or use both on purpose.
 Each of the four slots is one more routing of the part's [modulation matrix](MODULATION.md) – same sources, curves,
 scaling and smoothing as the 16 routings of the Mod view (source Velocity or Note Pressure, the Vibrato source for
 Vibrato). The matrix gained the source **Vibrato (5.5 Hz)** (32) and the targets **Glide Time**, **Amp Attack**,
-**Amp Decay** and **Amp Release** (85 – 88), usable in the Mod view as well.
+**Amp Decay** and **Amp Release** (86 – 89), usable in the Mod view as well.

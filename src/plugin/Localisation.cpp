@@ -292,6 +292,10 @@ const std::map<juce::String, juce::String>& table()
         { "Resonator off - switch it on with the first encoder", "Resonanzkörper aus – mit dem ersten Regler einschalten" },
         { "Glide", "Glide" },
         { "Pitch Envelope", "Tonhöhen-Hüllkurve" },
+        // p31: the SUB layer
+        { "Sub", "Sub" },
+        { "Direct", "Direkt" },
+        { "Into filter", "Ins Filter" },
         // p33: the Expression pages
         { "Aftertouch", "Aftertouch" },
         { "Expression", "Ausdruck" },

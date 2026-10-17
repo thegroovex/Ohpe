@@ -88,4 +88,6 @@ target_sources(ohpe_core_tests PRIVATE HarmonyTests.cpp)
 target_sources(ohpe_core_tests PRIVATE UpdateTests.cpp)
 # p32: pressure glide (aftertouch scales the glide time)
 target_sources(ohpe_core_tests PRIVATE GlidePressTests.cpp)
+# p31: the SUB layer per part
+target_sources(ohpe_core_tests PRIVATE SubTests.cpp)
 target_sources(ohpe_core_tests PRIVATE ExpressionTests.cpp) # p33: expressive playing

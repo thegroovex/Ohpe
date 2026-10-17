@@ -122,6 +122,8 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             ids = padded (ids);
             for (const char* k : { "glide", "glide.mode", "glide.rate", "polyglide", "pitchenv.amt", "pitchenv.time", "pitchenv.curve", "voices" })
                 ids.push_back (p + k);
+            if (core.params().indexOf (p + "sub.level") >= 0) // p31: the SUB layer page
+                for (const char* k : { "sub.level", "sub.oct", "sub.shape", "sub.direct" }) ids.push_back (p + k);
             if (core.params().indexOf (p + "layer.engine") >= 0) // 0.8: the layer engine pages
                 for (const auto& id : layerParams (partIndex)) ids.push_back (id);
             return ids;
@@ -255,13 +257,16 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
     if (m == Mode::Synth)
     {
         for (size_t i = 1; i < t.size(); ++i) t[i] = "Engine";
-        const size_t layerPages = core.params().indexOf (core.part (juce::jlimit (0, Core::numParts - 1, ctx.part)).id ("layer.engine")) >= 0 ? 3 : 0;
-        if (t.size() >= 3 + layerPages)
+        auto& pt = core.part (juce::jlimit (0, Core::numParts - 1, ctx.part));
+        const size_t layerPages = core.params().indexOf (pt.id ("layer.engine")) >= 0 ? 3 : 0;
+        const size_t subPages = core.params().indexOf (pt.id ("sub.level")) >= 0 ? 1 : 0; // p31
+        if (t.size() >= 3 + layerPages + subPages)
         {
-            const size_t g = t.size() - layerPages;
+            const size_t g = t.size() - layerPages - subPages;
             t[g - 2] = "Glide";
             t[g - 1] = "Pitch Envelope"; // 0.6
-            for (size_t i = g; i < t.size(); ++i) t[i] = "Layer"; // 0.8
+            if (subPages > 0) t[g] = "Sub"; // p31
+            for (size_t i = g + subPages; i < t.size(); ++i) t[i] = "Layer"; // 0.8
         }
     }
     if (m == Mode::Effects && ctx.fxView == modfx::FxViewSpace)
@@ -390,6 +395,8 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
             take ("Voice");
             groups.push_back ({ "Glide", 0, { p + "glide.mode", p + "glide.rate", p + "glide.press" } });
             groups.push_back ({ "Pitch Envelope", 0, { p + "pitchenv.amt", p + "pitchenv.time", p + "pitchenv.curve" } });
+            if (core.params().indexOf (p + "sub.level") >= 0) // p31: the SUB layer
+                groups.push_back ({ "Sub", 0, { p + "sub.level", p + "sub.oct", p + "sub.shape", p + "sub.direct" } });
             for (const char* t : { "Velocity", "Aftertouch", "Expression Curves" }) // p33: one Expression group instead of the three pages
                 pages.erase (std::remove_if (pages.begin(), pages.end(), [t] (const ParamGroup& g) { return g.title == t; }), pages.end());
             if (core.params().indexOf (p + "expr.vel.dst1") >= 0)

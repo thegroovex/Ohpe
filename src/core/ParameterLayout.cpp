@@ -299,6 +299,8 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     HarmonyBrain::registerParams (reg, Core::numParts);
     // ---- p32: pressure glide per part ("pN.glide.press": aftertouch makes the glide longer or shorter) ------------
     for (auto& p : parts) p->registerLate32GlidePressParams (reg);
+    // ---- p31: the SUB layer per part (level 0 = off, octave, shape, direct = after the voice filter) ---------------
+    for (auto& p : parts) p->registerLate31SubParams (reg);
     // ---- p33: expressive playing - per part: velocity / aftertouch -> two functions each (amount, curve) ------------
     for (auto& p : parts) p->registerLate33ExpressionParams (reg);
 }

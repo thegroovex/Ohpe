@@ -891,10 +891,28 @@ amount < 0 → time × (1 + amount × pressure), at least 0 (−1 at full pressu
 Not a modulation-matrix target (no new sources or targets). / Aftertouch skaliert die Glide-Zeit; 0 oder kein Druck =
 unverändert. Kein neues Ziel in der Modulationsmatrix.
 
+## SUB layer (p31)
+
+Appended after pressure glide (`p4.glide.press`), part by part (`p1.sub.*` … `p4.sub.*`, 16 IDs, group
+"partN/sub"). Guides: [English](en/SUB.md) · [Deutsch](de/SUB-EBENE.md).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.sub.level` | Part N Sub Level | Part N Sub-Pegel | 0 … 1 (0 – 100 %; 0 = off) | 0 |
+| `pN.sub.oct` | Part N Sub Octave | Part N Sub-Oktave | −1 Oct, −2 Oct | −1 Oct |
+| `pN.sub.shape` | Part N Sub Shape | Part N Sub-Form | Sine, Round, Square | Sine |
+| `pN.sub.direct` | Part N Sub Direct | Part N Sub direkt | Off / On | Off |
+
+A sub oscillator under every voice of the part's main engine (all eight synth engines; not the layer engine, not the
+drum kit), phase-locked to the voice's pitch (glide, bend, pitch envelope, matrix pitch, life), band-limited, mono,
+on the voice's amp envelope. Level 0 leaves the sound bit-identical. Direct off = into the voice filter (Analog,
+Wavetable); the other engines always add it after their own tone shaping. The modulation matrix gains the target
+**Sub Level** (85, key `sublevel`, after Wide 84); the target choice list grows at its end. No new sources.
+
 ## p33 – Expressive playing
 
 Guides: [English](en/EXPRESSION.md) · [Deutsch](de/AUSDRUCK.md). Twelve parameters per part, appended after
-`p4.glide.press` (p32) (`p1.expr.vel.dst1` … `p4.expr.at.curve2`, per part in this order: velocity slot 1 target / amount /
+`p4.sub.direct` (p31 SUB layer) (`p1.expr.vel.dst1` … `p4.expr.at.curve2`, per part in this order: velocity slot 1 target / amount /
 curve, velocity slot 2, aftertouch slot 1, aftertouch slot 2). Each slot is a routing of the part's modulation matrix;
 amount 0 (the default) leaves the sound untouched. Part presets carry them; preset breeding and Discover leave them as they are (how a sound responds to playing).
 
@@ -908,4 +926,4 @@ amount 0 (the default) leaves the sound untouched. Part presets carry them; pres
 | `pN.expr.at.curve1` / `.curve2` | Part N Aftertouch 1 / 2 Curve | Part N Aftertouch 1 / 2 Kurve | as above | Linear |
 
 The modulation matrix gains the source **Vibrato (5.5 Hz)** (32) and the targets **Glide Time**, **Amp Attack**,
-**Amp Decay**, **Amp Release** (85 – 88); both choice lists grow at their end.
+**Amp Decay**, **Amp Release** (86 – 89); both choice lists grow at their end.

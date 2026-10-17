@@ -82,6 +82,10 @@ juce::String explanation (const std::string& paramId)
         { "glide.press", "Aftertouch changes the glide time: right = pressing harder glides slower, left = faster.",
           "Aftertouch ändert die Glide-Zeit: rechts = fester drücken gleitet langsamer, links = schneller." },
         { "life", "Held notes keep evolving: drift, breathing, motion.", "Gehaltene Töne leben weiter: Drift, Atmen, Bewegung." },
+        { "sub.level", "Extra low end: a sub oscillator under every voice (0 = off) - drag the picture up or down.", "Mehr Tiefe: ein Suboszillator unter jeder Stimme (0 = aus) - das Bild nach oben oder unten ziehen." },
+        { "sub.oct", "How far below the played note the sub sounds: one or two octaves.", "Wie weit unter der gespielten Note der Sub klingt: eine oder zwei Oktaven." },
+        { "sub.shape", "Wave of the sub: Sine (pure), Round (a little warmer), Square (hollow, more push) - swipe the picture.", "Welle des Subs: Sinus (rein), Rund (etwas wärmer), Rechteck (hohl, mehr Druck) - über das Bild wischen." },
+        { "sub.direct", "On: the sub skips the engine's filter and stays full under a closed filter.", "An: der Sub umgeht das Filter der Engine und bleibt auch bei geschlossenem Filter voll." },
         // p33: the Expression page
         { "expr.vel.dst1", "What playing harder moves (velocity target 1).", "Was härteres Anschlagen bewegt (Anschlagsziel 1)." },
         { "expr.vel.amt1", "How far velocity moves its target - negative: harder notes move it the other way.", "Wie weit der Anschlag sein Ziel bewegt - negativ: härtere Noten bewegen es in die andere Richtung." },
@@ -1511,6 +1515,116 @@ private:
     float start = 0.0f;
 };
 
+// ---------------------------------------------------------------- p31: SUB layer (the voice wave over its sub wave)
+class SubTile final : public Tile
+{
+public:
+    SubTile (OhpeProcessor& p, int prt, std::vector<std::string> v) : Tile (p, prt, std::move (v)) {}
+
+    std::string paramAt (juce::Point<float> p) const override
+    {
+        const float u = unit();
+        if (p.y < u * 1.8f) return p.x < (float) getWidth() * 0.5f ? ids[1] : ids[0];
+        if (p.y > (float) getHeight() - u * 1.8f && p.x < (float) getWidth() * 0.5f) return ids[3];
+        return ids[0];
+    }
+    void mouseDown (const juce::MouseEvent& e) override
+    {
+        if (e.mods.isPopupMenu()) { showControlMenu (proc, juce::String (paramAt (e.position)), this); return; }
+        anchor = e.position;
+        level0 = normAt (0);
+        downTime = juce::Time::getMillisecondCounterHiRes();
+        dragged = false;
+    }
+    void mouseDrag (const juce::MouseEvent& e) override
+    {
+        if (e.getDistanceFromDragStart() < 3 && ! dragged) return;
+        dragged = true;
+        const float k = isFineDrag (e.mods) ? 0.1f : 1.0f;
+        set (ids[0], level0 - (e.position.y - anchor.y) / (float) getHeight() * k);
+    }
+    void mouseUp (const juce::MouseEvent& e) override
+    {
+        const double ms = juce::Time::getMillisecondCounterHiRes() - downTime;
+        const float dx = e.position.x - anchor.x, dy = e.position.y - anchor.y;
+        if (ms < 260.0 && std::abs (dx) > (float) getWidth() * 0.25f && std::abs (dy) < std::abs (dx) * 0.5f)
+        {
+            set (ids[0], level0); // a swipe changes the shape, not the level
+            endAll();
+            stepChoice (ids[2], dx > 0.0f ? 1 : -1);
+            return;
+        }
+        endAll();
+        if (! dragged) // a click on a caption: octave / route
+        {
+            const auto id = paramAt (e.position);
+            if (id == ids[1]) stepChoice (ids[1], 1);
+            else if (id == ids[3]) { begin (ids[3]); set (ids[3], normAt (3) > 0.5f ? 0.0f : 1.0f); end (ids[3]); }
+        }
+    }
+    void mouseDoubleClick (const juce::MouseEvent&) override { reset (ids[0]); }
+    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& w) override { nudge (ids[0], w.deltaY * 0.05f); }
+
+protected:
+    void paintTile (juce::Graphics& g, juce::Rectangle<float> area) override
+    {
+        const float u = unit();
+        const auto plot = area.withTrimmedTop (u * 1.8f).withTrimmedBottom (u * 1.8f).withTrimmedRight (u * 2.4f);
+        const float level = normAt (0);
+        const int div = choiceText (ids[1]).startsWith ("-2") ? 4 : 2;
+        const auto shape = choiceText (ids[2]);
+        const bool direct = normAt (3) > 0.5f;
+        g.setColour (colour::displayGrid.brighter (0.15f));
+        g.drawHorizontalLine ((int) plot.getCentreY(), plot.getX(), plot.getRight());
+        // the voice: four cycles, thin and dim
+        const float cycles = 4.0f;
+        juce::Path voice, sub;
+        const float vAmp = plot.getHeight() * 0.18f, sAmp = plot.getHeight() * 0.46f * juce::jmax (0.08f, level);
+        for (int i = 0; i <= 128; ++i)
+        {
+            const float x = (float) i / 128.0f;
+            const float px = plot.getX() + plot.getWidth() * x;
+            const float vy = plot.getCentreY() - vAmp * std::sin (twoPi * x * cycles);
+            const float ph = std::fmod (x * cycles / (float) div, 1.0f);
+            const float sy = plot.getCentreY() - sAmp * subShape (shape, ph);
+            if (i == 0) { voice.startNewSubPath (px, vy); sub.startNewSubPath (px, sy); }
+            else { voice.lineTo (px, vy); sub.lineTo (px, sy); }
+        }
+        g.setColour (colour::displayDim);
+        g.strokePath (voice, juce::PathStrokeType (u * 0.18f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        g.setColour (level > 0.001f ? edit() : colour::displayDim.withAlpha (0.6f));
+        g.strokePath (sub, juce::PathStrokeType (u * 0.34f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+        // level: a small fader on the right
+        const auto f = juce::Rectangle<float> (u * 0.9f, plot.getHeight()).withX (area.getRight() - u * 1.4f).withY (plot.getY());
+        g.setColour (colour::displayGrid.brighter (0.3f));
+        g.fillRoundedRectangle (f, u * 0.3f);
+        g.setColour (edit());
+        g.fillRoundedRectangle (f.withTrimmedTop (f.getHeight() * (1.0f - level)), u * 0.3f);
+        drawModBar (g, { f.getX() - u * 0.5f, f.getBottom() }, { f.getX() - u * 0.5f, f.getY() }, ids[0]);
+        caption (g, area.withHeight (u * 1.8f), i18n::upper (valueText (ids[2]) + "  " + valueText (ids[1])), juce::Justification::topLeft, u);
+        caption (g, area.withHeight (u * 1.8f), level > 0.0f ? valueText (ids[0]) : i18n::upper (tr ("Off")), juce::Justification::topRight, u,
+                 level > 0.0f ? edit() : colour::displayDim);
+        caption (g, area.withTrimmedTop (area.getHeight() - u * 1.8f), i18n::upper (tr (direct ? "Direct" : "Into filter")), juce::Justification::bottomLeft, u);
+    }
+
+private:
+    static float subShape (const juce::String& s, float ph)
+    {
+        if (s.startsWithIgnoreCase ("Squ")) return ph < 0.5f ? 0.85f : -0.85f;
+        if (s.startsWithIgnoreCase ("Round"))
+        {
+            const float q = std::fmod (ph + 0.25f, 1.0f); // as the sound: starts at 0 and rises
+            const float tri = 1.0f - 4.0f * std::abs (q - 0.5f);
+            return std::sin (0.25f * twoPi * tri);
+        }
+        return std::sin (twoPi * ph);
+    }
+    juce::Point<float> anchor;
+    float level0 = 0.0f;
+    double downTime = 0.0;
+    bool dragged = false;
+};
+
 // ---------------------------------------------------------------- FX slot: a mini visual of the effect type (chain of cards)
 class FxTile final : public Tile
 {
@@ -1795,6 +1909,7 @@ std::unique_ptr<Tile> makeTile (OhpeProcessor& proc, Mode mode, int part, const 
     if (t == "LFO 2") return std::make_unique<LfoTile> (proc, part, p + "lfo2.rate", p + "lfo2.depth", p + "lfo2.shape", mod::SrcLfo2);
     if (t == "LFO 3") return std::make_unique<LfoTile> (proc, part, p + "lfo3.rate", p + "lfo3.depth", p + "lfo3.shape", mod::SrcLfo3);
     if (t == "Pitch & Level") return std::make_unique<PitchLevelTile> (proc, part, p + "tune", p + "fine", p + "vol");
+    if (t == "Sub" && mode == Mode::Synth && g.ids.size() >= 4) return std::make_unique<SubTile> (proc, part, g.ids); // p31
     if (mode == Mode::Effects && (t == "FX" || t == "Master FX") && g.ids.size() >= 3)
     {
         std::vector<std::string> v (g.ids.begin(), g.ids.begin() + 3);

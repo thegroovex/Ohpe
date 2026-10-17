@@ -89,4 +89,4 @@ Ausdrucks-Slot; ein Test prüft das); für eigene Klänge besser einen wählen o
 Jeder der vier Slots ist eine weitere Verbindung der [Modulationsmatrix](MODULATION.md) des Parts – gleiche Quellen,
 Kurven, Skalierung und Glättung wie die 16 Verbindungen der Mod-Ansicht (Quelle Anschlag oder Notendruck, für
 Vibrato die Vibrato-Quelle). Die Matrix hat dafür die Quelle **Vibrato (5,5 Hz)** (32) und die Ziele **Glide-Zeit**,
-**Amp Attack**, **Amp Decay** und **Amp Release** (85 – 88) bekommen, auch in der Mod-Ansicht nutzbar.
+**Amp Attack**, **Amp Decay** und **Amp Release** (86 – 89) bekommen, auch in der Mod-Ansicht nutzbar.
