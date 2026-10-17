@@ -24,6 +24,9 @@ and EN / DE. Every function can be reached with the mouse and – through MIDI l
 
 Both wheels are host parameters (*Pitch Wheel* `perf.bend`, *Mod Wheel* `perf.mod`): right-click for MIDI
 learn, Shift / Cmd / Ctrl for fine control. They are performance controls, not part of presets.
+The on-screen wheels also **follow your controller**: pitch bend and the mod wheel (CC 1) arriving from the host or a
+MIDI device on the edit part's channel (an omni part: any channel but the drum channel; an MPE part: channel 1) move
+them, as do host automation and MIDI learn of `perf.bend` / `perf.mod` – whichever moved last is shown.
 
 ## Life
 
@@ -484,11 +487,22 @@ The **GRID** key (between OCTAVE + and MIDI) swaps the piano keys for the isomor
 fourths, thirds, whole tones or only the key's notes; chord tones carry a violet bar. With MPE on for the edit part
 each touch has its own channel – slide sideways to bend, up / down for slide, pressure from touch or pen.
 
+## Updates (p27)
+
+![The update view](../images/ohpe-update.png)
+
+A click on the **version legend** above the wordmark (or the wordmark) opens the update view. A small yellow light bar
+and `UPDATE x.y.z` next to the version say that a newer version is on offer. The view shows its release notes in the
+UI language, **CHECK NOW**, **UPDATE** (background download with a violet progress bar, **CANCEL**), **INSTALL** after
+the SHA-256 check, **SKIP THIS VERSION**, **REMIND ME LATER**, the settings (daily automatic check – off until switched
+on, never while playing –, channel Stable / Preview), content packs and **PREVIOUS VERSION**. Details:
+[Updates](UPDATES.md).
+
 ## Keys and shortcuts
 
 | Key | Action |
 |---|---|
-| Esc | closes the library (cancel) or the pro view, or ends step editing |
+| Esc | closes the library (cancel), the pro view or the update view, or ends step editing |
 | Space (standalone) | PLAY / stop |
 | R (standalone) | REC: record on the tape / punch out |
 | Enter or Home (standalone) | tape to the start |

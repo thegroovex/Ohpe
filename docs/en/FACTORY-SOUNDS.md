@@ -451,31 +451,31 @@ Tools, for contributors:
 
 ### Arp (21)
 
-Presets marked *Arp:* switch the arpeggiator on for the part they load into (latched: press a key once, it keeps playing; press a new key or chord to change it). Loading a preset without arp into that part switches it off again. See [PRESETS.md](PRESETS.md#arp-block).
+Presets marked *Arp:* switch the arpeggiator on for the part they load into; it plays while you hold keys and stops when you let go (switch *Latch* on on the sequencer page to keep it running). Loading a preset without arp into that part switches it off again. See [PRESETS.md](PRESETS.md#arp-block).
 
 | Name | Engine | Also in | Description |
 |---|---|---|---|
-| Analog Arp | Analog | Plucks | Resonant square blips with a ping-pong delay. *Arp: Up/Down · 1/16 · 2 oct · latch* |
-| Bell Cascade Arp | FM | Keys | FM bells cascading down three octaves in triplets, with echoes and a bright hall. *Arp: Down · 1/16T · 3 oct · latch* |
-| Bubble Arp | Analog | – | Narrow pulse through a resonant filter: bubbly and round. *Arp: Up · 1/16 · 2 oct · latch* |
-| Chord Stab Arp | Cluster | Keys | Rhythmic chord stabs (chord mode, eighths) from a wide saw stack - instant house groove. *Arp: Chord · 1/8 · 1 oct · latch* |
-| Digital Pluck Arp | FM | – | Clicky digital pluck that loves fast sixteenths. *Arp: Up · 1/16 · 2 oct · latch* |
-| Dream Tine Arp | Sampler | Keys | Tine piano arpeggio in eighths with chorus, delay and hall: dreamy and full. *Arp: Up/Down · 1/8 · 2 oct · latch* |
-| FM Arp Bell | FM | Keys | Short glassy FM bells for sequences. *Arp: Up/Down · 1/16 · 2 oct · latch* |
-| Figure Eight Arp | Wavetable | 3D | Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. Latched. *Arp: Up/Down · 1/16 · 2 oct · latch* |
-| Formant Arp | Wavetable | Vocal | Vowel blips for talking sequences. *Arp: Up · 1/16 · 2 oct · latch* |
-| Glock Arp | Sampler | Keys | Recorded glockenspiel for sparkling arpeggios (CC0). *Arp: Up · 1/16 · 2 oct · latch* |
-| Mallet Echo Arp | Sampler | Plucks | Glockenspiel arpeggio with long dotted echoes - sparkling and wide. *Arp: Up · 1/8 · 3 oct · latch* |
-| Neuro Arp | Wavetable | Bass | Growling FM sixteenths in one octave: a rolling neuro sequence from a single held note. *Arp: As Played · 1/16 · 1 oct · latch* |
-| Orbit Arp | Pluck | 3D | Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast. Latched: hold a chord. *Arp: Up · 1/16 · 2 oct · latch* |
-| Pizzicato Arp | Pluck | Plucks | Short plucked strings for ostinatos. *Arp: Up/Down · 1/16 · 2 oct · latch* |
-| Random Spark Arp | FM | FX | Random thirty-second FM blips over four octaves through a ping-pong delay: sparks. *Arp: Random · 1/32 · 4 oct · latch* |
-| Ripple Arp | Analog | – | Analog saw arp in sixteenth triplets with a sweeping phaser and stereo echo. *Arp: Up · 1/16T · 2 oct · latch* |
-| Sparkle Bell | FM | Plucks | Short, bright FM bell for sparkling arpeggios over chords. *Arp: Up · 1/16 · 2 oct · latch* |
-| Spiral Arp | FM | 3D | Bell arpeggio spiralling up from ear height to above your head over four bars, then dropping back for the next round. *Arp: Up · 1/16 · 3 oct · latch* |
-| Table Arp | Wavetable | – | Wavetable sequence sound: the position snaps with each note. *Arp: Up/Down · 1/16 · 2 oct · latch* |
-| Trance Gate Arp | Cluster | Leads | Supersaw stack on a sixteenth arp over two octaves, ping-pong delay and hall. *Arp: Up · 1/16 · 2 oct · latch* |
-| Wide Pluck Arp | Wavetable | Plucks | Six-voice stereo pluck, up / down over three octaves, dotted ping-pong delay. *Arp: Up/Down · 1/16 · 3 oct · latch* |
+| Analog Arp | Analog | Plucks | Resonant square blips with a ping-pong delay. *Arp: Up/Down · 1/16 · 2 oct* |
+| Bell Cascade Arp | FM | Keys | FM bells cascading down three octaves in triplets, with echoes and a bright hall. *Arp: Down · 1/16T · 3 oct* |
+| Bubble Arp | Analog | – | Narrow pulse through a resonant filter: bubbly and round. *Arp: Up · 1/16 · 2 oct* |
+| Chord Stab Arp | Cluster | Keys | Rhythmic chord stabs (chord mode, eighths) from a wide saw stack - instant house groove. *Arp: Chord · 1/8 · 1 oct* |
+| Digital Pluck Arp | FM | – | Clicky digital pluck that loves fast sixteenths. *Arp: Up · 1/16 · 2 oct* |
+| Dream Tine Arp | Sampler | Keys | Tine piano arpeggio in eighths with chorus, delay and hall: dreamy and full. *Arp: Up/Down · 1/8 · 2 oct* |
+| FM Arp Bell | FM | Keys | Short glassy FM bells for sequences. *Arp: Up/Down · 1/16 · 2 oct* |
+| Figure Eight Arp | Wavetable | 3D | Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. Latched. *Arp: Up/Down · 1/16 · 2 oct* |
+| Formant Arp | Wavetable | Vocal | Vowel blips for talking sequences. *Arp: Up · 1/16 · 2 oct* |
+| Glock Arp | Sampler | Keys | Recorded glockenspiel for sparkling arpeggios (CC0). *Arp: Up · 1/16 · 2 oct* |
+| Mallet Echo Arp | Sampler | Plucks | Glockenspiel arpeggio with long dotted echoes - sparkling and wide. *Arp: Up · 1/8 · 3 oct* |
+| Neuro Arp | Wavetable | Bass | Growling FM sixteenths in one octave: a rolling neuro sequence from a single held note. *Arp: As Played · 1/16 · 1 oct* |
+| Orbit Arp | Pluck | 3D | Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast. Latched: hold a chord. *Arp: Up · 1/16 · 2 oct* |
+| Pizzicato Arp | Pluck | Plucks | Short plucked strings for ostinatos. *Arp: Up/Down · 1/16 · 2 oct* |
+| Random Spark Arp | FM | FX | Random thirty-second FM blips over four octaves through a ping-pong delay: sparks. *Arp: Random · 1/32 · 4 oct* |
+| Ripple Arp | Analog | – | Analog saw arp in sixteenth triplets with a sweeping phaser and stereo echo. *Arp: Up · 1/16T · 2 oct* |
+| Sparkle Bell | FM | Plucks | Short, bright FM bell for sparkling arpeggios over chords. *Arp: Up · 1/16 · 2 oct* |
+| Spiral Arp | FM | 3D | Bell arpeggio spiralling up from ear height to above your head over four bars, then dropping back for the next round. *Arp: Up · 1/16 · 3 oct* |
+| Table Arp | Wavetable | – | Wavetable sequence sound: the position snaps with each note. *Arp: Up/Down · 1/16 · 2 oct* |
+| Trance Gate Arp | Cluster | Leads | Supersaw stack on a sixteenth arp over two octaves, ping-pong delay and hall. *Arp: Up · 1/16 · 2 oct* |
+| Wide Pluck Arp | Wavetable | Plucks | Six-voice stereo pluck, up / down over three octaves, dotted ping-pong delay. *Arp: Up/Down · 1/16 · 3 oct* |
 
 ### Textures (26)
 
@@ -586,16 +586,16 @@ Presets marked *Arp:* switch the arpeggiator on for the part they load into (lat
 |---|---|---|---|
 | Binaural Lead | Wavetable | Leads, MPE | Expressive lead placed in front of you: slide moves it up over your head, pressure brings it right up to your ear, a slow drift keeps it alive. Made for MPE controllers and headphones. |
 | Doppler Fly-By | Wavetable | FX | A siren tone racing past from left to right and back - the pitch bends with the Doppler effect as it passes. |
-| Figure Eight Arp | Wavetable | Arp | Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. Latched. *Arp: Up/Down · 1/16 · 2 oct · latch* |
+| Figure Eight Arp | Wavetable | Arp | Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. Latched. *Arp: Up/Down · 1/16 · 2 oct* |
 | Halo Drift | Cluster | Pads, MPE | Detuned cluster choir wandering around and above you on a slow random orbit - never the same place twice. |
 | Neuro Swirl | Wavetable | Bass, MPE | Talking formant growl swirling in a figure eight once a bar - the vowel moves, the space moves, the sub does not. |
 | Night Swarm | FM | Textures, MPE | Glassy FM bells scattered on a fast random orbit at different distances: a swarm of lights around your head. |
-| Orbit Arp | Pluck | Arp | Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast. Latched: hold a chord. *Arp: Up · 1/16 · 2 oct · latch* |
+| Orbit Arp | Pluck | Arp | Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast. Latched: hold a chord. *Arp: Up · 1/16 · 2 oct* |
 | Orbit Atmos | Wavetable | Pads, MPE | Wide wavetable atmosphere circling your head once every eight bars on a gently tilted orbit, in a soft room. Best with headphones: slide lifts it, pressure pulls it closer. |
 | Orbit Reese | Wavetable | Bass, MPE | Neurofunk reese whose growling mid range circles your head every two bars while the sub below 160 Hz stays dead centre and mono - club-safe movement. |
 | Overhead Choir | Vocal | Pads, Vocal, MPE | Breathy 'ooh' choir swinging from in front of you, over your head to behind you and back - a pendulum through the room. |
 | Pendulum Wobble | Wavetable | Bass, MPE | Half-time dubstep wobble that swings over your head and back with the bar: the wobble and the space breathe together. |
-| Spiral Arp | FM | Arp | Bell arpeggio spiralling up from ear height to above your head over four bars, then dropping back for the next round. *Arp: Up · 1/16 · 3 oct · latch* |
+| Spiral Arp | FM | Arp | Bell arpeggio spiralling up from ear height to above your head over four bars, then dropping back for the next round. *Arp: Up · 1/16 · 3 oct* |
 | Spiral Riser | Analog | FX | Hold a key: noise and saws climb for four seconds while spiralling from below your ears to high above your head. |
 
 ### Projects / demo patterns (14)

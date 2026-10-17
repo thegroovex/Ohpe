@@ -25,6 +25,10 @@ und -Zeit. In der Kopfzeile liegen die **Part-Auswahl**, der **Preset-Streifen**
 
 Beide Räder sind Host-Parameter (*Pitch-Rad* `perf.bend`, *Mod-Rad* `perf.mod`): Rechtsklick = MIDI Learn,
 Shift / Cmd / Strg = fein. Sie sind Spielhilfen und gehören nicht zu Presets.
+Die Räder auf dem Bildschirm **folgen auch deinem Controller**: Pitch Bend und Modulationsrad (CC 1) vom Host oder
+einem MIDI-Gerät auf dem Kanal des bearbeiteten Parts (Omni-Part: jeder Kanal außer dem Drum-Kanal; MPE-Part: Kanal 1)
+bewegen sie, ebenso Host-Automation und MIDI Learn von `perf.bend` / `perf.mod` – angezeigt wird, was sich zuletzt
+bewegt hat.
 
 ## Leben
 
@@ -504,11 +508,23 @@ Die Taste **RASTER** (zwischen OKTAVE + und MIDI) tauscht die Klaviertasten gege
 Mit MPE für den Edit-Part hat jede Berührung ihren eigenen Kanal – seitlich schieben biegt, hoch / runter für Slide,
 Druck von Touch oder Stift.
 
+## Updates (p27)
+
+![Die Update-Ansicht](../images/ohpe-update-de.png)
+
+Ein Klick auf die **Versionsbeschriftung** über dem Schriftzug (oder den Schriftzug) öffnet die Update-Ansicht. Ein
+kleiner gelber Leuchtbalken und `UPDATE x.y.z` neben der Version zeigen, dass eine neuere Version angeboten wird. Die
+Ansicht zeigt ihre Release-Hinweise in der UI-Sprache, **JETZT PRÜFEN**, **UPDATE** (Download im Hintergrund mit
+violettem Fortschrittsbalken, **ABBRECHEN**), **INSTALLIEREN** nach der SHA-256-Prüfung, **DIESE VERSION ÜBERSPRINGEN**,
+**SPÄTER ERINNERN**, die Einstellungen (tägliche automatische Prüfung – aus, bis eingeschaltet, nie während der
+Wiedergabe –, Kanal Stabil / Vorschau), Inhaltspakete und **VORIGE VERSION**. Einzelheiten:
+[Aktualisierung](AKTUALISIERUNG.md).
+
 ## Tasten
 
 | Taste | Aktion |
 |---|---|
-| Esc | schließt die Bibliothek (Abbrechen) oder die Profiansicht oder beendet das Schritt-Bearbeiten |
+| Esc | schließt die Bibliothek (Abbrechen), die Profiansicht oder die Update-Ansicht oder beendet das Schritt-Bearbeiten |
 | Leertaste (Standalone) | START / Stopp |
 | R (Standalone) | REC: aufs Band aufnehmen / aussteigen |
 | Enter oder Pos1 (Standalone) | Band zum Anfang |

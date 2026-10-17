@@ -26,8 +26,12 @@ Granularsynthese: Jede Stimme verstreut kurze, weich gefensterte Körner (Grains
 | **Klang** | Tiefpass-Helligkeit; Mod-Hüllkurve und LFO-Ziel *Klangfarbe* bewegen sie |
 
 Die gespielte Note transponiert relativ zu **C4 (MIDI 60)**: C4 spielt die Quelle in Originaltonhöhe.
-Mit *Quelle = Tape* granuliert die Engine den Tape-Bereich, den die Tape-Maschine über die
-Schnittstelle `IAudioRegion` übergibt; ohne Bereich nimmt sie das Sample.
+Mit *Quelle = Tape* granuliert die Engine das Band: die **Bearbeitungsspur** der Tape-Seite (*Spur* /
+`tape.edit.track`) oder, solange sie leer ist, den **Mix aller Spuren** – die aufgenommene Länge ab Bandanfang,
+höchstens 60 s, normalisiert wie ein Bounce. Sie folgt dem Band: nach einem Aufnahmedurchgang, einem Schnitt,
+Rückgängig / Wiederholen oder einem Wechsel der Bearbeitungsspur lesen die Grains gleich das neue Material. Bei
+leerem Band spielt die Engine ihr Sample (oder die eingebaute Textur). Um eine Aufnahme festzuhalten, während das
+Band weiterläuft, nimm stattdessen **BOUNCE**.
 
 ## Vokal
 

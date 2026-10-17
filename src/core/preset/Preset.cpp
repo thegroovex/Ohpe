@@ -104,7 +104,8 @@ Preset capturePart (const ParamRegistry& reg, int partIndex, Meta meta)
     if (reg.get (arpId ("on")) > 0.5f && (int) std::lround (reg.get (arpId ("part"))) == partIndex + 1)
     {
         std::map<std::string, float> arp;
-        for (const auto& k : arpKeys()) arp[k] = reg.get (arpId (k));
+        for (const auto& k : arpKeys())
+            if (k != "latch") arp[k] = reg.get (arpId (k)); // p28: latch is the player's choice, not the sound's
         p.arp = std::move (arp);
     }
     return p;
@@ -256,15 +257,19 @@ ApplyResult applyPart (const Preset& p, ParamRegistry& reg, int partIndex, const
     }
     if (options.arp && p.arp)
     {
-        // the arp block describes the whole arpeggiator: unlisted keys return to their defaults,
-        // "on" defaults to on, the target is the part the preset loads into
+        // the arp block describes the arpeggiator: unlisted keys return to their defaults,
+        // "on" defaults to on, the target is the part the preset loads into.
+        // p28: "latch" is not applied - by default the arp runs while keys are held and stops on release;
+        // Latch stays the player's own setting (seq.arp.latch, off by default)
         for (const auto& k : arpKeys())
         {
+            if (k == "latch") continue;
             const int idx = reg.indexOf (arpId (k));
             if (idx >= 0) reg.set (idx, reg.descriptor (idx).defaultValue);
         }
         reg.set (arpId ("on"), 1.0f);
-        for (const auto& [k, v] : *p.arp) reg.set (arpId (k), v);
+        for (const auto& [k, v] : *p.arp)
+            if (k != "latch") reg.set (arpId (k), v);
         reg.set (arpId ("part"), (float) (partIndex + 1));
         r.arpApplied = true;
     }

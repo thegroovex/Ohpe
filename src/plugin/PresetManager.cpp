@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "PresetManager.h"
+#include "Updater.h"
 
 #include "OhpePresets.h"
 #include "PluginProcessor.h"
@@ -83,6 +84,27 @@ void PresetManager::rescan()
         e.meta = std::move (p.meta);
         list.push_back (std::move (e));
     }
+    // p27: content packs installed by the updater (Content/<pack>/...): read-only like the factory bank
+    {
+        const auto content = Updater::contentFolder();
+        if (content.isDirectory())
+            for (const auto& packDir : content.findChildFiles (juce::File::findDirectories, false))
+            {
+                if (packDir.getFileName().startsWithChar ('.')) continue; // .backup, .staging
+                for (const auto& f : packDir.findChildFiles (juce::File::findFiles, true, "*" + juce::String (preset::fileExtension)))
+                {
+                    preset::Preset p;
+                    if (! preset::fromJson (std8 (f.loadFileAsString()), p)) continue;
+                    preset::Entry e;
+                    e.factory = true;
+                    e.location = std8 (f.getFullPathName());
+                    e.uid = "content:" + std8 (f.getRelativePathFrom (content).replaceCharacter ('\\', '/'));
+                    e.meta = std::move (p.meta);
+                    if (e.meta.name.empty()) e.meta.name = std8 (f.getFileNameWithoutExtension());
+                    list.push_back (std::move (e));
+                }
+            }
+    }
     if (folder.isDirectory())
         for (const auto& f : folder.findChildFiles (juce::File::findFiles, true, "*" + juce::String (preset::fileExtension)))
         {
@@ -107,7 +129,7 @@ void PresetManager::rescan()
 
 std::string PresetManager::read (const preset::Entry& e) const
 {
-    if (e.factory)
+    if (e.factory && e.uid.rfind ("content:", 0) != 0)
     {
         int size = 0;
         const char* data = OhpePresets::getNamedResource (e.location.c_str(), size);

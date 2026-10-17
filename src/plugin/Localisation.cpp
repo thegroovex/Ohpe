@@ -17,6 +17,12 @@ struct Entry
     const char* de; ///< UTF-8
 };
 
+juce::StringArray& duplicates()
+{
+    static juce::StringArray d;
+    return d;
+}
+
 const std::map<juce::String, juce::String>& table()
 {
     // the literals are UTF-8: convert explicitly (juce::String (const char*) would read them as ASCII)
@@ -146,7 +152,6 @@ const std::map<juce::String, juce::String>& table()
         { "Orbit", "Orbit" },
         { "Song", "Song" },
         { "Pattern", "Pattern" },
-        { "Part", "Part" },
         { "Scale", "Skala" },
         { "Chord", "Akkord" },
         // 0.3 (package E): pro view, library, lock editing, tape / drum pages
@@ -554,12 +559,69 @@ const std::map<juce::String, juce::String>& table()
         { "Grid keyboard: isomorphic, MPE - swaps the piano keys", "Raster-Tastatur: isomorph, MPE – ersetzt die Klaviertasten" },
         { "Bar: yellow = grid shown", "Balken: gelb = Raster sichtbar" },
         { "Every chord has the same shape everywhere. With MPE on: slide sideways = bend, up / down = slide",
-          "Jeder Akkord hat überall dieselbe Form. Mit MPE: seitlich schieben = Bend, hoch / runter = Slide" },
+          "Jeder Akkord hat überall dieselbe Form. Mit MPE: seitlich schieben = Bend, hoch / runter = Slide" },        // p27: the updater
+        { "Updates", "Aktualisierung" },
+        { "Installed", "Installiert" },
+        { "Update", "Update" },
+        { "Update to", "Update auf" },
+        { "Check now", "Jetzt prüfen" },
+        { "Install", "Installieren" },
+        { "Skip this version", "Diese Version überspringen" },
+        { "Remind me later", "Später erinnern" },
+        { "Settings", "Einstellungen" },
+        { "Check automatically (once a day)", "Automatisch prüfen (einmal am Tag)" },
+        { "Stable", "Stabil" },
+        { "Preview", "Vorschau" },
+        { "Last check", "Zuletzt geprüft" },
+        { "never", "nie" },
+        { "Content packs", "Inhaltspakete" },
+        { "No content packs offered", "Keine Inhaltspakete angeboten" },
+        { "Loading", "Lädt" },
+        { "Roll back", "Zurück" },
+        { "Needs a newer Ohpe", "Braucht ein neueres Ohpe" },
+        { "Previous version", "Vorige Version" },
+        { "Not checked yet", "Noch nicht geprüft" },
+        { "Ohpe is up to date", "Ohpe ist aktuell" },
+        { "Checking for updates", "Suche nach Updates" },
+        { "New version available", "Neue Version verfügbar" },
+        { "No connection to the update server", "Keine Verbindung zum Update-Server" },
+        { "Could not check for updates (offline?)", "Updates konnten nicht geprüft werden (offline?)" },
+        { "Ohpe looks for new versions in the public release list of the project. Nothing about you or your music is sent.", "Ohpe sucht neue Versionen in der öffentlichen Release-Liste des Projekts. Nichts über dich oder deine Musik wird gesendet." },
+        { "Check now, or switch on the daily check on the right.", "Jetzt prüfen oder rechts die tägliche Prüfung einschalten." },
+        { "No telemetry: Ohpe only reads the public release list. Your presets and settings are never touched.", "Keine Telemetrie: Ohpe liest nur die öffentliche Release-Liste. Deine Presets und Einstellungen bleiben unberührt." },
+        { "Downloading the update", "Lade das Update" },
+        { "Downloading the previous version", "Lade die vorige Version" },
+        { "Downloading the content pack", "Lade das Inhaltspaket" },
+        { "Download paused - it continues where it stopped", "Download angehalten – er geht dort weiter, wo er stoppte" },
+        { "Download interrupted - try again to continue it", "Download unterbrochen – erneut starten, um fortzusetzen" },
+        { "The download failed the checksum test and was deleted", "Der Download hat die Prüfsumme nicht bestanden und wurde gelöscht" },
+        { "Could not write the download", "Der Download konnte nicht gespeichert werden" },
+        { "No download for this system - see the release page", "Kein Download für dieses System – siehe Release-Seite" },
+        { "The release has no checksum - not installed", "Das Release hat keine Prüfsumme – nicht installiert" },
+        { "Verified - ready to install", "Geprüft – bereit zur Installation" },
+        { "Verified - ready to unpack", "Geprüft – bereit zum Entpacken" },
+        { "Version skipped", "Version übersprungen" },
+        { "I will remind you in three days", "Erinnerung in drei Tagen" },
+        { "Content pack installed", "Inhaltspaket installiert" },
+        { "Content pack rolled back", "Inhaltspaket zurückgesetzt" },
+        { "The content pack is damaged", "Das Inhaltspaket ist beschädigt" },
+        { "Could not unpack the content pack", "Das Inhaltspaket konnte nicht entpackt werden" },
+        { "Could not back up the installed pack", "Das installierte Paket konnte nicht gesichert werden" },
+        { "Could not install the content pack", "Das Inhaltspaket konnte nicht installiert werden" },
+        { "The installer is open. Quit Ohpe now so it can replace the program?", "Der Installer ist geöffnet. Ohpe jetzt beenden, damit er das Programm ersetzen kann?" },
+        { "Quit Ohpe", "Ohpe beenden" },
+        { "Later", "Später" },
+        { "The installer is open. Save your project and quit the host program before the installer continues.", "Der Installer ist geöffnet. Projekt speichern und das Host-Programm beenden, bevor der Installer weitermacht." },
+        { "Version and updates", "Version und Updates" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;
         for (const auto& e : entries)
-            m[juce::String::fromUTF8 (e.en)] = juce::String::fromUTF8 (e.de);
+        {
+            const auto key = juce::String::fromUTF8 (e.en);
+            if (m.count (key) != 0) duplicates().addIfNotAlreadyThere (key);
+            m[key] = juce::String::fromUTF8 (e.de);
+        }
         return m;
     }();
     return t;
@@ -622,5 +684,10 @@ juce::StringArray allKeys()
     juce::StringArray keys;
     for (const auto& [k, v] : table()) keys.add (k);
     return keys;
+}
+juce::StringArray duplicateKeys()
+{
+    (void) table();
+    return duplicates();
 }
 } // namespace ohpe::i18n

@@ -35,7 +35,11 @@ TEST_CASE ("state: full round-trip of parameters, MIDI map, pattern and UI secti
     for (int i = 0; i < reg.size(); ++i)
     {
         CAPTURE (reg.descriptor (i).id);
-        CHECK (b.params().get (i) == reg.get (i));
+        const auto& id = reg.descriptor (i).id;
+        if (id == "pads.stutter" || id == "pads.stop" || id == "pads.sweep" || id == "pads.freeze")
+            CHECK (b.params().get (i) == 0.0f); // p28: held / latched pads are not restored
+        else
+            CHECK (b.params().get (i) == reg.get (i));
     }
     REQUIRE (b.midiMap().mappings().size() == 1);
     CHECK (b.midiMap().mappings()[0].paramId == "p1.fm.index");

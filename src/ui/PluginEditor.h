@@ -8,6 +8,7 @@
 #include "LibraryBrowser.h"
 #include "OhpeLookAndFeel.h"
 #include "ProView.h"
+#include "UpdateView.h"
 #include "Widgets.h"
 #include "plugin/Localisation.h"
 
@@ -55,6 +56,24 @@ public:
 private:
     juce::Rectangle<float> arrow (bool right) const;
     juce::String name;
+};
+/** p27: the version legend above the wordmark ("V0.3.0", "UPDATE 0.4.0" in yellow when one is offered); a click on it
+    or on the wordmark opens the update view. */
+class VersionBadge : public juce::Component, public juce::TooltipClient
+{
+public:
+    void setTexts (const juce::String& version, const juce::String& update)
+    {
+        if (version != versionText || update != updateText) { versionText = version; updateText = update; repaint(); }
+    }
+    bool showsUpdate() const { return updateText.isNotEmpty(); }
+    std::function<void()> onClick;
+    juce::String getTooltip() override;
+    void paint (juce::Graphics& g) override;
+    void mouseDown (const juce::MouseEvent&) override { if (onClick) onClick(); }
+
+private:
+    juce::String versionText, updateText;
 };
 } // namespace ui
 
@@ -122,7 +141,13 @@ public:
         A = arm the edit track. Returns false for other keys and in plug-in hosts (the host owns them). */
     bool handleShortcut (const juce::KeyPress& key);
     /** The library or the pro view lies on the plate: the plate's controls are hidden. */
-    bool overlayOpen() const { return library.isVisible() || proView.isVisible() || breedView.isVisible(); }
+    bool overlayOpen() const { return library.isVisible() || proView.isVisible() || breedView.isVisible() || updateView.isVisible(); }
+    /** p27: the update view (a click on the version legend / wordmark). */
+    void showUpdates (bool show);
+    bool updatesVisible() const { return updateView.isVisible(); }
+    ui::UpdateView& updateComponent() { return updateView; }
+    ui::VersionBadge& versionBadgeComponent() { return versionBadge; }
+    Updater& updaterInstance() { return *updater; }
     ui::PictoKey& recordKey() { return recKey; }
     ui::PictoKey& playTransportKey() { return playKey; }
     juce::String lastFlash() const { return lastFlashText; }
@@ -180,6 +205,7 @@ private:
     void saveUiState();
     void loadUiState();
     void setParamPlain (const juce::String& id, float plain);
+    void refreshVersionBadge(); ///< p27: "V0.3.0" / "UPDATE 0.4.0" above the wordmark
     void refreshPadKeys(); ///< p25: the Pads view's soft keys follow the pad parameters
     void onSoftKey (int id);
     void showBounceMenu();                      ///< p23: the BOUNCE soft key of the Grain / Sampler page (source, loop)
@@ -236,6 +262,10 @@ private:
     ui::ProView proView;
     ui::LibraryBrowser library;
     ui::BreedView breedView; ///< p18
+    juce::SharedResourcePointer<Updater> updater; ///< p27: one per process
+    ui::UpdateView updateView;
+    ui::VersionBadge versionBadge;
+    int contentGenerationSeen = 0;
     juce::uint32 randomPressedAt = 0; ///< p18: RANDOM held >= 450 ms opens the breeding view
     std::array<int, 3> breedRequestsSeen {};
 
