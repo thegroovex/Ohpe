@@ -174,6 +174,7 @@ private:
     void saveUiState();
     void loadUiState();
     void setParamPlain (const juce::String& id, float plain);
+    void refreshPadKeys(); ///< p25: the Pads view's soft keys follow the pad parameters
     void onSoftKey (int id);
     void showBounceMenu();                      ///< p23: the BOUNCE soft key of the Grain / Sampler page (source, loop)
     void showTableImportMenu();                 ///< p20: the IMPORT soft key (file, tape track, input, library, options)
