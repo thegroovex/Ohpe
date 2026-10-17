@@ -190,9 +190,8 @@ void PhaserEffect::process (float* l, float* r, int n) noexcept
     const float inc = rate / sr;
     for (int i = 0; i < n; ++i)
     {
-        const float a = dsp::twoPi * phase;
-        // exponential sweep, left / right a quarter period apart
-        const float ml = 0.5f + 0.5f * std::sin (a), mr = 0.5f + 0.5f * std::cos (a);
+        // exponential sweep, left / right a quarter period apart (p35: polynomial sine, cos = sine a quarter turn on)
+        const float ml = 0.5f + 0.5f * dsp::sinTurns (phase), mr = 0.5f + 0.5f * dsp::sinTurns (phase + 0.25f);
         const float fl = 150.0f * std::pow (33.0f, ml * depth + (1.0f - depth) * 0.3f);
         const float fr = 150.0f * std::pow (33.0f, mr * depth + (1.0f - depth) * 0.3f);
         const float tl = std::tan (dsp::pi * std::min (fl, sr * 0.45f) / sr);
