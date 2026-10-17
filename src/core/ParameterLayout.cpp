@@ -297,5 +297,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     PerformancePads::registerParams (reg);
     // ---- p24: the harmony brain - memory, hold, take key, clear, grid layout; per part: follow --------------------
     HarmonyBrain::registerParams (reg, Core::numParts);
+    // ---- p33: expressive playing - per part: velocity / aftertouch -> two functions each (amount, curve) ------------
+    for (auto& p : parts) p->registerLate33ExpressionParams (reg);
 }
 } // namespace ohpe

@@ -97,6 +97,13 @@ public:
         see mod/Character.h): each moves several parameters of the part at once (inside the part, after the matrix).
     */
     void registerLate21CharacterParams (ParamRegistry& reg) const;
+    /** p33: the Expression page "pN.expr.vel.*" / "pN.expr.at.*" (velocity / aftertouch -> two functions each; matrix routings). */
+    void registerLate33ExpressionParams (ParamRegistry& reg) const;
+    /** p33: the matrix target an Expression page function (mod::expr::Target) drives on engine `type` (-1 = none there). */
+    int expressionTarget (EngineType type, int function) const noexcept
+    {
+        return function >= 0 && function < mod::expr::numTargets ? exprDest[(size_t) type][(size_t) function] : -1;
+    }
     /** 1.0, audio thread: master monitoring mode (SpaceEffect::Headphones / Speakers) for the stage and the rack. */
     void setMonitorMode (int mode) noexcept
     {
@@ -253,11 +260,13 @@ private:
         int index = -1;
         float baseNorm = 0.0f;
     };
-    std::array<ModTarget, mod::numSlots> modTargets {};
-    std::array<int, mod::numSlots> slotTarget {}; ///< routing -> modTargets entry (-1 = none)
+    std::array<ModTarget, mod::numAllSlots> modTargets {};
+    std::array<int, mod::numAllSlots> slotTarget {}; ///< routing -> modTargets entry (-1 = none); p33: + the expression slots
     int numModTargets = 0;
-    std::array<std::atomic<int>, mod::numSlots> uiTargetIndex {};
-    std::array<std::atomic<float>, mod::numSlots> uiTargetDelta {};
+    std::array<std::atomic<int>, mod::numAllSlots> uiTargetIndex {};
+    std::array<std::atomic<float>, mod::numAllSlots> uiTargetDelta {};
+    std::array<std::array<int, mod::expr::numTargets>, numEngineTypes> exprDest {}; ///< p33: function -> matrix target per engine
+    float glideMod = 0.0f; ///< p33: the matrix's offset on the glide time (seconds; added to the parameter or CC 5 time)
     std::array<int, mod::numDests> partDestIndex {}; ///< registry index of every PartParam target (-1: not registered)
     float lastGain = -1.0f;
     // ---- 1.0: 3D spatialiser stage

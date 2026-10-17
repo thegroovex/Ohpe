@@ -43,6 +43,7 @@ const std::vector<SourceInfo>& sourceTable()
         { "chordroot", "Chord Root", "Akkord-Grundton", false, S::Part }, // p24: the harmony brain
         { "chordchange", "Chord Change", "Akkordwechsel", false, S::Part },
         { "tension", "Tension", "Spannung", false, S::Part },
+        { "vibrato", "Vibrato (5.5 Hz)", "Vibrato (5,5 Hz)", true, S::Voice }, // p33
     };
     return t;
 }
@@ -106,6 +107,11 @@ const std::vector<DestInfo>& destTable()
         add ("charhard", "Hard", "Hart", DestKind::PartParam, 0, "char.hard");
         add ("charalive", "Alive", "Lebendig", DestKind::PartParam, 0, "char.alive");
         add ("charwide", "Wide", "Weit", DestKind::PartParam, 0, "char.wide");
+        // p33: glide time and the amp envelope (the Expression page's Glide Time / Amp Attack / Decay / Release)
+        add ("glide", "Glide Time", "Glide-Zeit", DestKind::PartParam, 0, "glide");
+        add ("ampattack", "Amp Attack", "Amp Attack", DestKind::PartParam, 0, "amp.a");
+        add ("ampdecay", "Amp Decay", "Amp Decay", DestKind::PartParam, 0, "amp.d");
+        add ("amprelease", "Amp Release", "Amp Release", DestKind::PartParam, 0, "amp.r");
         return v;
     }();
     return t;
@@ -217,6 +223,28 @@ void PartMatrix::registerParams (ParamRegistry& reg, const std::string& pp, int 
     add (continuous (pp + "seqlane", pe + "Seq Lane", pg + "Seq-Spur", 0.0f, 1.0f, 0.0f));
 }
 
+void PartMatrix::registerExpressionParams (ParamRegistry& reg, const std::string& pp, int partNumber)
+{
+    using namespace pd;
+    const auto n = std::to_string (partNumber);
+    auto add = [&] (ParamDescriptor d) { d.group = "part" + n + "/expr"; reg.add (std::move (d)); };
+    const std::string P = "Part " + n + " ";
+    for (int in = 0; in < expr::numInputs; ++in)
+    {
+        const std::string en = in == expr::Velocity ? "Velocity " : "Aftertouch ", de = in == expr::Velocity ? "Anschlag " : "Aftertouch ";
+        for (int k = 0; k < expr::slotsPerInput; ++k)
+        {
+            const auto num = std::to_string (k + 1) + " ";
+            add (choice (pp + expr::slotSuffix (in, k, "dst"), P + en + num + "Target", P + de + num + "Ziel", expr::targetNamesEn(),
+                         expr::targetNamesDe(), expr::defaultTarget (in, k)));
+            add (continuous (pp + expr::slotSuffix (in, k, "amt"), P + en + num + "Amount", P + de + num + "Menge", -1.0f, 1.0f, 0.0f,
+                             ParamUnit::Percent));
+            add (choice (pp + expr::slotSuffix (in, k, "curve"), P + en + num + "Curve", P + de + num + "Kurve", curveNamesEn(),
+                         curveNamesDe(), CurveLinear));
+        }
+    }
+}
+
 void PartMatrix::bind (const ParamRegistry& reg, const std::string& pp)
 {
     for (int k = 0; k < numSlots; ++k)
@@ -225,6 +253,11 @@ void PartMatrix::bind (const ParamRegistry& reg, const std::string& pp)
         idx[(size_t) k] = { reg.indexOf (s + "src"), reg.indexOf (s + "via"), reg.indexOf (s + "dst"), reg.indexOf (s + "amt"),
                             reg.indexOf (s + "curve") };
     }
+    for (int in = 0; in < expr::numInputs; ++in) // p33: the Expression page
+        for (int k = 0; k < expr::slotsPerInput; ++k)
+            idx[(size_t) (numSlots + in * expr::slotsPerInput + k)] = { -1, -1, reg.indexOf (pp + expr::slotSuffix (in, k, "dst")),
+                                                                         reg.indexOf (pp + expr::slotSuffix (in, k, "amt")),
+                                                                         reg.indexOf (pp + expr::slotSuffix (in, k, "curve")) };
     static const char* lfoKeys[7] = { "rate", "sync", "shape", "phase", "fade", "mode", "depth" };
     for (int l = 0; l < 2; ++l)
         for (int k = 0; k < 7; ++k) lfoIdx[(size_t) l][(size_t) k] = reg.indexOf (pp + "lfo" + std::to_string (l + 2) + "." + lfoKeys[k]);
@@ -253,25 +286,39 @@ void PartMatrix::reset() noexcept
     lastNote = -1;
     fresh.fill (true);
     value.fill (0.0f);
-    for (auto s : { SrcLfo1, SrcLfo2, SrcLfo3, SrcAmpEnv, SrcModEnv, SrcEnv3, SrcRandom, SrcNotePressure, SrcSlide, SrcNoteBend })
+    for (auto s : { SrcLfo1, SrcLfo2, SrcLfo3, SrcAmpEnv, SrcModEnv, SrcEnv3, SrcRandom, SrcNotePressure, SrcSlide, SrcNoteBend, SrcVibrato })
         mono[(size_t) s] = 0.0f;
+    vibPhase = 0.0f;
 }
 
 void PartMatrix::pull (const ParamSnapshot& s, const dsp::AdsrParams& amp, const dsp::AdsrParams& modP, float lfo1Rate, int lfo1Shape) noexcept
 {
     numParamRoutes = 0;
     program.numRoutes = 0;
-    for (int k = 0; k < numSlots; ++k)
+    for (int k = 0; k < numAllSlots; ++k)
     {
         const auto& ix = idx[(size_t) k];
         Route r;
-        if (ix.src >= 0)
+        if (k < numSlots && ix.src >= 0)
         {
             r.src = std::clamp (s.getInt (ix.src), 0, numSources - 1);
             r.via = std::clamp (s.getInt (ix.via), 0, numSources - 1);
             r.dst = std::clamp (s.getInt (ix.dst), 0, numDests - 1);
             r.amount = std::clamp (s[ix.amt], -1.0f, 1.0f);
             r.curve = std::clamp (s.getInt (ix.curve), 0, numCurves - 1);
+        }
+        else if (k >= numSlots && ix.dst >= 0 && exprMap != nullptr) // p33: an Expression page slot
+        {
+            const int fn = std::clamp (s.getInt (ix.dst), 0, expr::numTargets - 1);
+            const int d = fn == expr::Off ? -1 : exprMap[fn];
+            if (d > DstOff && d < numDests)
+            {
+                r.src = k - numSlots < expr::slotsPerInput ? SrcVelocity : SrcNotePressure; // aftertouch: channel + poly / MPE
+                r.dst = d;
+                r.amount = std::clamp (s[ix.amt], -1.0f, 1.0f);
+                r.curve = std::clamp (s.getInt (ix.curve), 0, numCurves - 1);
+                if (fn == expr::Vibrato) { r.via = SrcVibrato; r.amount *= expr::vibratoScale; }
+            }
         }
         auto& old = slots[(size_t) k];
         if (old.src != r.src || old.dst != r.dst) fresh[(size_t) k] = true;
@@ -315,7 +362,7 @@ void PartMatrix::noteOn (int note, float velocity) noexcept
     mono[SrcVelocity] = velocity;
     mono[SrcKeyTrack] = std::clamp (((float) note - 60.0f) / 60.0f, -1.0f, 1.0f);
     mono[SrcRandom] = rng.nextBipolar();
-    mono[SrcNotePressure] = 0.0f;
+    mono[SrcNotePressure] = mono[SrcChannelPressure]; // p33: held channel pressure applies to the new note too
     mono[SrcSlide] = 0.0f;
     mono[SrcNoteBend] = 0.0f;
     ampEnv.setParams (ampParams);
@@ -391,6 +438,9 @@ void PartMatrix::advance (int n) noexcept
     }
     ppqPos += beatsPerSample * n;
     mono[SrcEnv3] = env3.advance (program.env3, n, sr);
+    mono[SrcVibrato] = std::sin (vibPhase); // p33: part-wide vibrato (routings to parameters)
+    vibPhase += 6.2831853f * vibratoHz * (float) n / sr;
+    vibPhase -= 6.2831853f * std::floor (vibPhase / 6.2831853f);
     sinceNote += (float) n / sr;
     program.mono = mono;
     program.bpm = tempo;
@@ -403,7 +453,7 @@ void PartMatrix::tickParamRoutes (int n) noexcept
     for (size_t i = 0; i < 2; ++i) s[(size_t) SrcLfo2 + i] *= fadeGain (program.lfo[i].fade, sinceNote);
     // ~1.5 ms glide: smooth enough for filters and FX, fast enough for snappy envelopes and steps
     const float a = 1.0f - std::exp (-(float) std::max (1, n) / (0.0015f * sr));
-    for (int k = 0; k < numSlots; ++k)
+    for (int k = 0; k < numAllSlots; ++k)
     {
         const auto& r = slots[(size_t) k];
         if (r.src == SrcOff || r.dst == DstOff || r.amount == 0.0f) continue;
@@ -417,7 +467,7 @@ void PartMatrix::tickParamRoutes (int n) noexcept
 
 void PartMatrix::publishUi() noexcept
 {
-    for (int k = 0; k < numSlots; ++k) uiValue[(size_t) k].store (value[(size_t) k], std::memory_order_relaxed);
+    for (int k = 0; k < numAllSlots; ++k) uiValue[(size_t) k].store (value[(size_t) k], std::memory_order_relaxed);
     for (int s = 0; s < numSources; ++s) uiSource[(size_t) s].store (mono[(size_t) s], std::memory_order_relaxed);
     uiStage[0].store ((int) ampEnv.getStage(), std::memory_order_relaxed); // p21: the pro view's envelope playheads
     uiStage[1].store ((int) modEnv.getStage(), std::memory_order_relaxed);
