@@ -85,6 +85,7 @@ TEST_CASE ("preset: part preset round-trip (save -> JSON -> load into another pa
         const auto& id = reg.descriptor (i).id;
         if (id.rfind ("p1.", 0) != 0 || id == "p1.midich" || b.params().indexOf ("p3." + id.substr (3)) < 0) continue;
         if (id.rfind ("p1.motion.", 0) == 0) continue; // p22: the motion block is not part of a part preset
+        if (id.rfind ("p1.harmony.", 0) == 0) continue; // p24: nor the harmony follow mode
         CAPTURE (id);
         CHECK (b.params().get ("p3." + id.substr (3)) == doctest::Approx (reg.get (i)));
     }

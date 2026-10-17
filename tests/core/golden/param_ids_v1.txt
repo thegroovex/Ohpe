@@ -6723,3 +6723,12 @@ p4.motion.rec
 p4.motion.len
 p4.motion.amt
 p4.motion.clear
+harmony.memory
+harmony.hold
+harmony.take
+harmony.clear
+harmony.kb.layout
+p1.harmony.follow
+p2.harmony.follow
+p3.harmony.follow
+p4.harmony.follow

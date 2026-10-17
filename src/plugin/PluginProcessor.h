@@ -102,6 +102,8 @@ public:
     bool runTapeEdit (const char* triggerId);
     /** Handles pending remote-control presses (called by the processor's timer; public for tests). */
     void pollRemoteControls();
+    /** p24: writes the harmony brain's remembered key into "key.root" / "key.scale" (host notified). Message thread. */
+    void takeHarmonyKey();
 
     /**
         Tape transport (p11): the actions of the transport keys, the same for the keys on the body,
@@ -170,7 +172,7 @@ private:
     int syncSourceParam = -1, tempoParam = -1;
 
     // 0.3: remote controls
-    static constexpr int numTriggers = 20; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*, p23: + bounce.go
+    static constexpr int numTriggers = 22; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*, p23: + bounce.go, p24: + harmony.take / clear
     void setPlainFromUi (const char* id, float plain);
     juce::CriticalSection transportLock;
     juce::String transportMessage;

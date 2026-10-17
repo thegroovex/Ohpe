@@ -79,7 +79,7 @@ TEST_CASE ("p22 motion: parameters appended after the bounce block; matrix sourc
     for (int p = 1; p <= 4; ++p)
         for (const char* k : keys)
             CHECK (reg.indexOf ("p" + std::to_string (p) + ".motion." + k) == expect++);
-    CHECK (reg.indexOf ("p4.motion.clear") == reg.size() - 1);
+    CHECK (reg.indexOf ("p4.motion.clear") < reg.size()); // later blocks (p24 harmony ...) may follow
     CHECK (reg.get ("p1.motion.on") == 0.0f);
     CHECK (reg.get ("p1.motion.len") == 16.0f);
     CHECK (reg.get ("p1.motion.amt") == 1.0f);

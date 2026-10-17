@@ -122,7 +122,7 @@ bool isBreedable (const std::string& id) noexcept
     // the part's routing, performance and housekeeping stay as they are
     static const char* exact[] = { "engine", "vol", "voices", "midich", "quant", "chord", "bend", "gain", "polyglide", "glide.mode",
                                    "glide.rate", "monobass", "velsens", "tune", "life", "layer.engine", "layer.ownenv", "seqlane" };
-    static const char* prefix[] = { "mpe", "morph.", "macro", "char.", "fx", "space.", "usertable.", "motion." }; // p22: motion = performance
+    static const char* prefix[] = { "mpe", "morph.", "macro", "char.", "fx", "space.", "usertable.", "motion.", "harmony." }; // p22: motion = performance, p24: harmony follow = the part's role
     for (const char* e : exact)
         if (id == e) return false;
     for (const char* p : prefix)

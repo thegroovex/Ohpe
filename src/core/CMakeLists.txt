@@ -67,6 +67,9 @@ target_sources(ohpe_core PRIVATE morph/MorphSpace.cpp)
 # p22: the motion recorder (knob movements per part as looping lanes)
 target_sources(ohpe_core PRIVATE motion/MotionRecorder.cpp)
 
+# p24: the harmony brain (scale and chord memory of all parts)
+target_sources(ohpe_core PRIVATE harmony/HarmonyBrain.cpp)
+
 # 0.4 (package F): factory sample bank (instruments, drum kits)
 target_sources(ohpe_core PRIVATE sample/FactoryBank.cpp)
 
