@@ -65,6 +65,12 @@ SamplePtr SampleLoader::decode (const juce::File& file, juce::String* errorOut, 
         {
             s->fileLoopStart = start;
             s->fileLoopEnd = end;
+            // p23: a bounced endless loop (the "smpl" chunk stores the last loop frame, inclusive)
+            if (sample::hasEndlessLayout (start, end + 1, frames))
+            {
+                s->fileLoopEnd = end + 1;
+                s->endless = true;
+            }
         }
     }
     error.clear();

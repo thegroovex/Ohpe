@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
+#include "BounceToEngine.h"
 #include "OhpeCore.h"
 #include "PresetManager.h"
 #include "SampleLoader.h"
@@ -62,6 +63,8 @@ public:
     SampleLoader& sampleLoader() noexcept { return samples; }
     /** p20: user wavetables / formant tracks (audio to wavetable). Message thread. */
     UserTableManager& userTables() noexcept { return userTableManager; }
+    /** p23: bounce to engine (tape / live input -> Grain or Sampler). Message thread. */
+    BounceManager& bounces() noexcept { return bounceManager; }
     juce::AudioProcessorValueTreeState& state() noexcept { return apvts; }
     juce::RangedAudioParameter* parameter (const juce::String& id) const { return apvts.getParameter (id); }
     juce::RangedAudioParameter* parameter (int registryIndex) const;
@@ -156,6 +159,7 @@ private:
     Core ohpeCore;
     SampleLoader samples { ohpeCore };
     UserTableManager userTableManager { ohpeCore }; ///< p20
+    BounceManager bounceManager { ohpeCore };       ///< p23
     juce::AudioProcessorValueTreeState apvts;
     std::vector<std::atomic<float>*> rawValues;
     std::vector<juce::RangedAudioParameter*> params;
@@ -166,7 +170,7 @@ private:
     int syncSourceParam = -1, tempoParam = -1;
 
     // 0.3: remote controls
-    static constexpr int numTriggers = 19; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*
+    static constexpr int numTriggers = 20; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*, p23: + bounce.go
     void setPlainFromUi (const char* id, float plain);
     juce::CriticalSection transportLock;
     juce::String transportMessage;

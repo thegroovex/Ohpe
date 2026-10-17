@@ -6682,3 +6682,8 @@ mfx4.resonator.slideamt
 lib.breed
 lib.breed.go
 lib.breed.next
+bounce.src
+bounce.to
+bounce.loop
+bounce.len
+bounce.go

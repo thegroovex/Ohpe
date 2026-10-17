@@ -486,6 +486,25 @@ const std::map<juce::String, juce::String>& table()
         { "The file is not an Ohpe wavetable.", "Die Datei ist keine Ohpe-Wavetable." },
         { "The wavetable file is damaged.", "Die Wavetable-Datei ist beschädigt." },
         { "The wavetable file was not found.", "Die Wavetable-Datei wurde nicht gefunden." },
+        // p23: bounce to engine
+        { "Input", "Eingang" },
+        { "Tape Mix", "Tape-Mix" },
+        { "Edit track", "Bearbeitungsspur" },
+        { "Endless loop", "Endlosschleife" },
+        { "endless loop", "Endlosschleife" },
+        { "Bounce into this engine", "In diese Engine bouncen" },
+        { "Finish the recording", "Aufnahme beenden" },
+        { "Cancel the bounce", "Bounce abbrechen" },
+        { "Recording the input for the bounce", "Eingang wird für den Bounce aufgenommen" },
+        { "Nothing to bounce - the track is empty", "Nichts zum Bouncen – die Spur ist leer" },
+        { "Nothing to bounce - the material is silent", "Nichts zum Bouncen – das Material ist stumm" },
+        { "Bounce cancelled", "Bounce abgebrochen" },
+        { "The bounce could not be loaded", "Der Bounce konnte nicht geladen werden" },
+        { "Bounced to the Sampler", "In den Sampler gebounct" },
+        { "Bounced to Grain", "In Grain gebounct" },
+        { "this session only", "nur für diese Sitzung" },
+        { "bars", "Takte" },
+        { "Input Length", "Eingangslänge" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;
