@@ -1,6 +1,8 @@
 name: release-assets
 
 # Attaches the build artefacts of a finished CI run to an existing GitHub release.
+# p27: also writes the update manifest (ohpe-update.json: assets with sizes and SHA-256, the EN / DE notes from the
+# release text, content packs from packaging/content) that the in-app updater reads, and SHA256SUMS.txt.
 on:
   workflow_dispatch:
     inputs:
@@ -19,6 +21,11 @@ jobs:
   attach:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            tools/update
+            packaging
       - uses: actions/download-artifact@v4
         with:
           run-id: ${{ inputs.run_id }}
@@ -37,6 +44,16 @@ jobs:
             b=$(basename "$f"); cp "$f" "out/Ohpe-$ver-${b#Ohpe-}"
           done
           find art -type f | sed 's/^/  /'
+      - name: Update manifest and checksums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          gh release view "${{ inputs.tag }}" --repo "${{ github.repository }}" --json body,isPrerelease > release.json
+          python3 -c "import json; d = json.load(open('release.json')); open('body.md', 'w', encoding='utf-8').write(d.get('body') or '')"
+          pre=$(python3 -c "import json; print('--prerelease' if json.load(open('release.json')).get('isPrerelease') else '')")
+          python3 tools/update/make_manifest.py --tag "${{ inputs.tag }}" --repo "${{ github.repository }}" --dir out \
+            --body-file body.md --content-dir packaging/content $pre
           (cd out && sha256sum * > SHA256SUMS.txt)
           ls -la out
       - name: Upload to release
