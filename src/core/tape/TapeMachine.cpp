@@ -317,6 +317,7 @@ void TapeMachine::pushSnapshotLocked (Snapshot s)
     history.resize ((size_t) cursor + 1); // drops the redo branch
     history.push_back (std::move (s));
     cursor = (int) history.size() - 1;
+    revision.fetch_add (1, std::memory_order_acq_rel);
 }
 
 void TapeMachine::installLocked (const Snapshot& s)
@@ -328,6 +329,7 @@ void TapeMachine::installLocked (const Snapshot& s)
         for (size_t p = 0; p < lv.size(); ++p) lv[p] = p < list.size() ? list[p].get() : nullptr;
     }
     dirty.store (false);
+    revision.fetch_add (1, std::memory_order_acq_rel);
 }
 
 bool TapeMachine::beginEdit (std::unique_lock<std::mutex>&)

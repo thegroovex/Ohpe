@@ -60,8 +60,9 @@ are held and played one after another.
 * **Mode**: Up, Down, Up/Down (turning points are not repeated), Random, As Played, Chord (all
   held notes on every step).
 * **Octaves** 1–4, **Gate** 5–100 %, **Rate** 1/4 … 1/32 including triplets (T) and dotted (.).
-* **Latch** keeps the notes after the keys are released; the next key pressed with no key held
-  starts a new set.
+* By default the arpeggio plays **while keys are held** and stops when you let go.
+  **Latch** (option, off by default) keeps the notes after the keys are released; the next key pressed with
+  no key held starts a new set. Latch is your playing choice: loading a part preset never switches it on or off.
 * While the transport runs the steps sit on its grid. When it is stopped the arpeggiator runs
   free at the current tempo and starts exactly on the first key.
 

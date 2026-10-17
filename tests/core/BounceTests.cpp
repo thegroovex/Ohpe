@@ -360,3 +360,74 @@ TEST_CASE ("p23 bounce: the stereo input capture records, stops at its length, h
     cap.push (l.data(), r.data(), 256); // not armed: ignored
     CHECK (cap.take().frames() == 0);
 }
+
+TEST_CASE ("p28 grain source Tape: the core hands the Grain engines the edit track, else the tape mix")
+{
+    auto owner = std::make_unique<Core>();
+    Core& core = *owner;
+    core.prepare (sampleRate, 512);
+    auto* g = dynamic_cast<GrainEngine*> (core.part (0).engine (EngineType::Grain));
+    REQUIRE ((g != nullptr));
+
+    // nobody uses Source = Tape: nothing is built
+    CHECK_FALSE (core.updateTapeGrain());
+    CHECK ((core.tapeGrainRegion() == nullptr));
+
+    REQUIRE (core.params().set ("p1.engine", (float) EngineType::Grain));
+    REQUIRE (core.params().set ("p1.grain.source", (float) grain::SourceTape));
+    g->setParam (grain::Source, (float) grain::SourceTape); // as the next audio block would
+    core.updateTapeGrain();
+    CHECK ((core.tapeGrainRegion() == nullptr)); // empty tape: the engine keeps its sample
+    CHECK ((g->getShared().activeSource() != nullptr));
+
+    TapeRig rig;
+    const auto a = tone (0.5, 200.0, 0.2f);
+    const auto b = tone (0.25, 300.0, 0.1f);
+    rig.record (a, 2, 0);
+    rig.record (b, 5, 0);
+    core.tape().shareContentFrom (rig.tape);
+
+    // edit track 1 is empty: the mix of all tracks
+    REQUIRE (core.params().set (Core::Ids::tapeEditTrack, 1.0f));
+    CHECK (core.updateTapeGrain());
+    const auto* mix = core.tapeGrainRegion();
+    REQUIRE ((mix != nullptr));
+    CHECK (mix->numFrames() > (int64_t) (0.4 * sampleRate));
+    CHECK ((g->getShared().activeSource() == mix));
+    CHECK_FALSE (core.updateTapeGrain()); // nothing changed: nothing rebuilt
+
+    // edit track 6 (the short one)
+    REQUIRE (core.params().set (Core::Ids::tapeEditTrack, 6.0f));
+    CHECK (core.updateTapeGrain());
+    const auto* t6 = core.tapeGrainRegion();
+    REQUIRE ((t6 != nullptr));
+    CHECK (t6->numFrames() < (int64_t) (0.3 * sampleRate));
+    CHECK ((g->getShared().activeSource() == t6));
+
+    // the grains play it: bounded, finite, sounding
+    g->setCommon (plainCommon());
+    const auto d = g->getParamDescriptors();
+    for (size_t i = 0; i < d.size(); ++i) g->setParam ((int) i, d[i].defaultValue);
+    g->setParam (grain::Source, (float) grain::SourceTape);
+    CHECK ((g->getShared().activeSource() == t6));
+    g->allNotesOff (true);
+    g->noteOn (60, 1.0f);
+    const auto out = renderEngine (*g, (size_t) (0.5 * sampleRate));
+    CHECK (allFinite (out.l));
+    CHECK (noDenormals (out.l));
+    CHECK (peak (out.l) < 4.0f);
+    CHECK (rms (out.l, 4000) > 0.01f);
+
+    // a tape edit rebuilds it
+    REQUIRE (core.tape().clearTrack (5));
+    CHECK (core.updateTapeGrain());
+    CHECK ((core.tapeGrainRegion() != nullptr));
+    CHECK (core.tapeGrainRegion()->numFrames() > (int64_t) (0.4 * sampleRate)); // track 6 empty again: the mix
+
+    // back to Source = Sample: the engines let go of the tape
+    REQUIRE (core.params().set ("p1.grain.source", (float) grain::SourceSample));
+    core.updateTapeGrain();
+    CHECK ((core.tapeGrainRegion() == nullptr));
+    g->setParam (grain::Source, (float) grain::SourceTape);
+    CHECK ((g->getShared().activeSource() != nullptr)); // tape region cleared: falls back to the sample
+}

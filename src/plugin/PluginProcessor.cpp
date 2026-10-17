@@ -255,6 +255,7 @@ void OhpeProcessor::timerCallback()
     pollRemoteControls();
     if (ohpeCore.effectsWaiting()) ohpeCore.prepareEffects(); // 0.7: FX rack slot types chosen by the host / a preset
     ohpeCore.updateMorph(); // p16: morph plans follow the part's own sound under empty corners
+    ohpeCore.updateTapeGrain(); // p28: Grain "Source = Tape" granulates the edit track / the tape mix
 }
 
 void OhpeProcessor::pollRemoteControls()

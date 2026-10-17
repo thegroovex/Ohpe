@@ -45,4 +45,4 @@ automate the throws in your DAW or map them by MIDI learn. The modulation matrix
 (the sweep position, 0 … 1) and **Pads Held** (1 while any pad plays) – so a part can, say, open its own filter
 against the master sweep or duck its reverb send while a pad is held.
 
-The four pads themselves are performance: project presets keep the settings but not whether a pad was held.
+The four pads themselves are performance: project presets and the saved host session keep the settings but not whether a pad was held or latched – reopening a song always starts with all pads off.

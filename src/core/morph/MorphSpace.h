@@ -96,6 +96,9 @@ public:
         stands in for an empty corner, frees retired plans. True when it rebuilt anything. */
     bool update();
 
+    /** p28, message thread: the extra Part instances (sound lanes) of a part, for engine-level hand-overs. */
+    std::vector<Part*> laneParts (int part) const;
+
     /** Message thread: lanes of the current plan (1 = one sound, interpolated) and the lane of a corner. */
     int numLanes (int part) const;
     int laneOfCorner (int part, int corner) const;

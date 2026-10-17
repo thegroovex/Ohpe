@@ -628,8 +628,23 @@ void Wheel::set (float norm)
 
 void Wheel::refresh()
 {
-    const float v = value();
-    if (std::abs (v - shown) > 1.0e-4f) { shown = v; repaint(); }
+    // p28: follow whichever moved last - the parameter (mouse, host automation, MIDI learn) or the controller's wheel
+    const auto& core = proc.core();
+    const bool bend = spring;
+    const uint32_t seq = bend ? core.midiWheelBendCount() : core.midiWheelModCount();
+    const float param = value();
+    float next = shown < 0.0f ? param : shown;
+    if (! midiInit) { midiInit = true; midiSeen = seq; next = param; }
+    else if (seq != midiSeen && ! dragging)
+    {
+        midiSeen = seq;
+        next = bend ? 0.5f + 0.5f * core.midiWheelBend() : core.midiWheelMod();
+    }
+    else if (std::abs (param - lastParam) > 1.0e-6f) next = param;
+    if (seq != midiSeen) midiSeen = seq; // while dragging: the mouse wins
+    lastParam = param;
+    next = juce::jlimit (0.0f, 1.0f, next);
+    if (std::abs (next - shown) > 1.0e-4f) { shown = next; repaint(); }
 }
 
 juce::Rectangle<float> Wheel::slotArea() const
@@ -654,7 +669,7 @@ void Wheel::paint (juce::Graphics& g)
     cyl.addColour (0.5, colour::keyDarkTop.brighter (0.25f));
     g.setGradientFill (cyl);
     g.fillRoundedRectangle (wheel, wheel.getWidth() * 0.18f);
-    const float v = value();
+    const float v = shownValue(); // p28: also a controller's wheel
     const float travel = (spring ? v - 0.5f : v) * 2.6f;
     const int ribs = 14;
     for (int i = 0; i < ribs; ++i)
