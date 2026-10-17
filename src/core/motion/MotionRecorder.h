@@ -8,6 +8,7 @@
 
 #include <array>
 #include <atomic>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -121,7 +122,9 @@ private:
     const ParamRegistry* reg = nullptr;
     ParamSnapshot* snap = nullptr;
     std::array<PartIdx, numParts> idx;
-    std::array<std::array<Lane, numLanes>, numParts> lanes;
+    using LaneArray = std::array<std::array<Lane, numLanes>, numParts>;
+    std::unique_ptr<LaneArray> laneStore = std::make_unique<LaneArray>(); ///< on the heap (32 kB; cores live on test stacks)
+    LaneArray& lanes = *laneStore;
     std::array<Audio, numParts> audio;
     double sr = 48000.0;
 };
