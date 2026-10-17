@@ -204,6 +204,40 @@ void paintStage (juce::Graphics& g, const Camera& cam, float u, bool speakers)
         drawSpeakerBox (g, cam, 30.0f, u);
     }
 }
+
+/** p30: the edit part's motion path ahead of the source - one cycle (the random paths: the next cycle from now) as a
+    faint dotted curve in the part's colour, so every path shape reads at a glance, even before a note plays. */
+void paintPathPreview (juce::Graphics& g, const Camera& cam, Core& core, int part, float u, juce::Colour c, bool live)
+{
+    const auto& reg = core.params();
+    const auto pre = partPrefix (part) + "space.";
+    if (reg.get (pre + "on") < 0.5f) return;
+    const int path = (int) std::lround (reg.get (pre + "path"));
+    if (path <= space::PathOff || path >= space::numPaths) return;
+    const float az = reg.get (pre + "azimuth"), el = reg.get (pre + "elevation"), dist = reg.get (pre + "distance");
+    const float size = reg.get (pre + "pathsize");
+    const auto& stage = core.part (part).spaceStage();
+    const double now = stage.uiPhase();
+    const double start = space::pathIsPeriodic (path) ? std::floor (now) : now;
+    constexpr int n = 120;
+    juce::Path curve;
+    for (int i = 0; i <= n; ++i)
+    {
+        const auto local = space::pathPoint (path, start + (double) i / (double) n, size, stage.getSeed());
+        const float k = std::max (0.05f, space::lengthOf (local));
+        const auto o = space::orient (local, az, el);
+        const float d = juce::jlimit (space::minDistance, space::maxDistance, dist * k);
+        const auto pt = cam.project (toScene ({ o.x / k * d, o.y / k * d, o.z / k * d })).s;
+        if (i == 0) curve.startNewSubPath (pt);
+        else curve.lineTo (pt);
+    }
+    const float dash[] = { u * 0.25f, u * 0.45f };
+    juce::Path dotted;
+    juce::PathStrokeType (juce::jmax (1.0f, u * 0.16f), juce::PathStrokeType::curved, juce::PathStrokeType::rounded)
+        .createDashedStroke (dotted, curve, dash, 2);
+    g.setColour (c.withAlpha (live ? 0.42f : 0.26f));
+    g.fillPath (dotted);
+}
 } // namespace
 
 // ------------------------------------------------------------------------------------------------- state
@@ -363,6 +397,8 @@ void Scene::paint (juce::Graphics& g, juce::Rectangle<float> area, Core& core, i
     juce::Graphics::ScopedSaveState clip (g);
     g.reduceClipRegion (area.toNearestInt()); // nothing of the scene (low sources, trails) runs into the tabs or the rows below
     paintStage (g, cam, u, speakers);
+    const int focusPart = juce::jlimit (0, Core::numParts - 1, focus);
+    paintPathPreview (g, cam, core, focusPart, u, colour::encoder (focusPart), trails[(size_t) focusPart].active);
 
     // sources behind the head first, then the head, then those in front (depth = further from the camera first)
     struct Item { int part; float depth; };
@@ -402,6 +438,25 @@ void Scene::paint (juce::Graphics& g, juce::Rectangle<float> area, Core& core, i
                     + juce::String (juce::roundToInt (space::elevationOf (pos))) + juce::String::fromUTF8 ("\xc2\xb0 ")
                     + juce::String (space::lengthOf (pos), 1) + " m",
                 area.withHeight (u * 2.0f), juce::Justification::topRight, false);
+
+    // p30: the edit part's motion path by name, bottom left
+    {
+        const auto& reg = core.params();
+        const int idx = reg.indexOf (partPrefix (focusPart) + "space.path");
+        if (idx >= 0 && reg.get (partPrefix (focusPart) + "space.on") >= 0.5f)
+        {
+            const auto& d = reg.descriptor (idx);
+            const int v = juce::jlimit (0, (int) d.choices.size() - 1, (int) std::lround (reg.get (idx)));
+            if (v > 0)
+            {
+                g.setFont (labelFont (u * 1.25f));
+                g.setColour (colour::encoder (focusPart).withAlpha (0.8f));
+                g.drawText (i18n::upper (i18n::pick (d.choices[(size_t) v], v < (int) d.choicesDe.size() ? d.choicesDe[(size_t) v] : d.choices[(size_t) v])),
+                            area.withTrimmedBottom (u * 0.2f).removeFromBottom (u * 1.8f).removeFromLeft (area.getWidth() * 0.32f),
+                            juce::Justification::bottomLeft, false);
+            }
+        }
+    }
 
     // master correlation (mono compatibility): a thin bar at the bottom, red when negative
     if (std::isfinite (correlation))
