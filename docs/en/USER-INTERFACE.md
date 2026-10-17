@@ -79,6 +79,12 @@ waits for a MIDI message.
 **RANDOM** gives the edit part's engine new sound values (its Synth pages; level, tuning, voices and the
 sample stay). **SAVE** opens the library's save panel for the edit part.
 
+**Hold RANDOM** (or right-click it) to open **[breeding](BREEDING.md)**: cross two sounds, hear six children,
+keep the best and breed further. While the breeding view is open, RANDOM rolls a new parent B and SAVE stores
+the selected child in the library as a favourite.
+
+![The breeding view](../images/ohpe-breeding.png)
+
 ## Display: drag the bars
 
 The four rows on the display show what the four encoders control. The rows are controls too:

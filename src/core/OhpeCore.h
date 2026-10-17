@@ -169,6 +169,10 @@ public:
         static constexpr const char* libOpen = "lib.open";
         static constexpr const char* libPrev = "lib.prev";
         static constexpr const char* libNext = "lib.next";
+        // p18: preset breeding (remote controls: open / close the breeding view, breed again, hear the next child)
+        static constexpr const char* libBreed = "lib.breed";
+        static constexpr const char* libBreedGo = "lib.breed.go";
+        static constexpr const char* libBreedNext = "lib.breed.next";
         static constexpr const char* editPart = "ui.part";
         static constexpr const char* tapeEditTrack = "tape.edit.track";
         static constexpr const char* tapeLift = "tape.edit.lift";

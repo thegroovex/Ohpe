@@ -759,3 +759,16 @@ Appended after the audio to wavetable block (`p4.usertable.vocal`). Guide: [Engl
 The modulation matrix gains the targets **Body Tune, Body Size, Body Material, Body Decay, Body Position, Body Mix**
 (75 – 80, `pN.reso.tune` … `pN.reso.mix`); the target choice list grows at its end. The FX slot type lists grow by
 **Resonator** (23).
+
+## Preset breeding (p18)
+
+Appended after the resonator block (`mfx4.resonator.slideamt`), 3 IDs. Remote controls for the breeding view (triggers like
+`lib.open`, group "remote", not part of presets). Guides: [English](en/BREEDING.md) · [Deutsch](de/ZUCHT.md).
+Breeding itself adds no sound parameters: a child is an ordinary part sound; the breeding session (parents,
+generations, kept children) is stored in the plug-in state (section `"breed"`).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `lib.breed` | Breeding | Zucht | trigger | off |
+| `lib.breed.go` | Breed Again | Weiterzüchten | trigger | off |
+| `lib.breed.next` | Next Child | Nächstes Kind | trigger | off |

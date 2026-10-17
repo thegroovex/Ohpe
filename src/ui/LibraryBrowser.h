@@ -32,6 +32,9 @@ public:
     bool isOpen() const noexcept { return isVisible(); }
 
     std::function<void()> onClosed;
+    /** p18: "Breed" in the details - breed the current sound with library entry `index` (the editor closes the
+        library, restoring the sound from before it was opened, and opens the breeding view). */
+    std::function<void (int index)> onBreed;
 
     void paint (juce::Graphics& g) override;
     void resized() override;
