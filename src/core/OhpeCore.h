@@ -224,6 +224,9 @@ public:
         static constexpr const char* tapeUndo = "tape.edit.undo";
         static constexpr const char* tapeRedo = "tape.edit.redo";
         static constexpr const char* tapeRtz = "tape.edit.rtz";
+        // p38: clear the edit track (one undo step) / the whole tape (asks on screen first; undoable)
+        static constexpr const char* tapeClearTrack = "tape.edit.clear";
+        static constexpr const char* tapeClearAll = "tape.edit.clearall";
         // 0.4 (package F): a sequencer can play the drum kit instead of its target part
         static constexpr const char* stepDrums = "seq.step.drums";
         static constexpr const char* euclidDrums = "seq.euclid.drums";

@@ -125,6 +125,7 @@ public:
     juce::Rectangle<float> barArea (int i) const;
     juce::Rectangle<float> stepCell (int i) const;
     juce::Rectangle<float> softKeyArea (int index) const;
+    int softKeyRows() const noexcept; ///< p38: 2 on the tape page with more than eight keys
     juce::Rectangle<float> padCell (int pad) const;
     juce::Rectangle<float> trackLane (int track) const;
     juce::Rectangle<float> seqTab (int view) const;

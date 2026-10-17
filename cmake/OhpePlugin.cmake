@@ -102,6 +102,8 @@ list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/UserTableView.cpp) # 
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/UserSettingsStore.cpp ${CMAKE_SOURCE_DIR}/src/ui/SettingsView.cpp)
 # p18: preset breeding (the breeding view; the engine-agnostic core is src/core/breed)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/BreedView.cpp)
+# p38: the confirmation over the plate (clear the whole tape, load a tape over material)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ConfirmDialog.cpp)
 # p21: pro view 2.0 - graphic tiles, the Discover strip
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ProTiles.cpp ${CMAKE_SOURCE_DIR}/src/ui/DiscoverStrip.cpp)
 
@@ -193,6 +195,7 @@ endif()
 # ---------------------------------------------------------------- p11: tape transport UI, overlays
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/TapeTransportUiTests.cpp)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/TapeEraseUiTests.cpp) # p38
 endif()
 
 # ---------------------------------------------------------------- p14: redesigned plate, wheels, glide

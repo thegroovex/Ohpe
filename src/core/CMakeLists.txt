@@ -33,6 +33,7 @@ target_sources(ohpe_core PRIVATE
 # 0.2.0 package C: tape, insert effects
 target_sources(ohpe_core PRIVATE
     tape/TapeMachine.cpp
+    tape/TapeFile.cpp
     fx/InsertEffects.cpp
     fx/InsertEffects2.cpp
     fx/Space3D.cpp

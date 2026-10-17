@@ -138,7 +138,9 @@ public:
     // ---- persistence (message thread) ----
     /** Binary tape audio: only blocks that hold audio, float32. See docs/TAPE.md. */
     void saveAudio (std::vector<uint8_t>& out) const;
-    bool loadAudio (const void* data, size_t size);
+    /** asUndoStep (p38, tape files): the loaded content becomes one undo step (refused while recording) instead of
+        replacing the history. */
+    bool loadAudio (const void* data, size_t size, bool asUndoStep = false);
     std::string settingsJson() const;               ///< {"lengthSeconds": ...}
     void loadSettingsJson (const std::string& json);
 

@@ -14,6 +14,7 @@
 #include "plugin/Localisation.h"
 #include "plugin/ParameterBridge.h"
 #include "plugin/TapeIO.h"
+#include "tape/TapeFile.h"
 #include "engines/GrainEngine.h"
 #include "engines/SamplerEngine.h"
 #include "breed/RandomSound.h"
@@ -43,8 +44,11 @@ enum SoftKeyId
     skBounce = 90,                                    // p23: bounce to engine (tape page: at once; Grain / Sampler: menu)
     skMotionRec = 100, skMotionPlay, skMotionClear,   // p22: motion recorder
     skPadFirst = 110,                                 // p25: performance pads (latching: 110 .. 113)
-    skHarmonyTake = 120, skHarmonyHold, skHarmonyClear // p24: harmony brain
+    skHarmonyTake = 120, skHarmonyHold, skHarmonyClear, // p24: harmony brain
+    skTapeClear = 130, skTapeClearAll, skTapeSave, skTapeLoad // p38: clear track / all, save / load the tape
 };
+
+juce::String tapefileExtension() { return tapefile::extension; } // p38: ".ohpetape"
 
 bool isAudioFile (const juce::String& path)
 {
@@ -409,6 +413,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
         };
         addChildComponent (settingsView);
         addChildComponent (helpOverlay);
+        addChildComponent (confirmDialog); // p38
         userSettings->addChangeListener (this);
     }
 
@@ -417,6 +422,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     proc.presets().addChangeListener (this);
     libraryRequestsSeen = proc.libraryToggleRequests();
     for (int k = 0; k < 3; ++k) breedRequestsSeen[(size_t) k] = proc.breedRequestCount (k);
+    tapeClearAllSeen = proc.tapeClearAllRequestCount(); // p38
 
     setResizable (true, true);
     setResizeLimits (designWidth * 2 / 3, designHeight * 2 / 3, designWidth * 2, designHeight * 2);
@@ -564,6 +570,7 @@ void OhpeEditor::resized()
     place (updateView, "overlay"); // p27
     place (settingsView, "overlay"); // p32
     helpOverlay.setBounds (getLocalBounds());
+    confirmDialog.setBounds (getLocalBounds()); // p38
     place (versionBadge, "versionBadge");
     place (cpuMeter, "cpuMeter"); // p35
     for (auto& k : engineKeys) k->setUiScale (s);
@@ -1503,9 +1510,15 @@ void OhpeEditor::refreshSoftKeys()
     else if (mode == Mode::Tape)
     {
         auto& tape = core.tape();
+        // p38: two rows - the edits of the edit track above; clear track / all, save / load the tape, export, bounce below
+        const bool any = tape.contentEndFrames() > 0;
         keys = { { skLift, tr ("Lift") },     { skCut, tr ("Cut") },   { skDrop, tr ("Drop"), tape.clipboardFrames() > 0 },
                  { skSplice, tr ("Splice"), tape.clipboardFrames() > 0 },
                  { skUndo, tr ("Undo"), tape.canUndo() }, { skRedo, tr ("Redo"), tape.canRedo() },
+                 { skTapeClear, tr ("Clear Track"), tape.contentEndFrames (ctx.tapeTrack) > 0 },
+                 { skTapeClearAll, tr ("Clear All"), any },
+                 { skTapeSave, tr ("Save Tape"), any },
+                 { skTapeLoad, tr ("Load Tape") },
                  { skExport, tr ("Export") },
                  { skBounce, tr ("Bounce"), true, proc.bounces().recording() } }; // p11: "to the start" is a transport button now; p23: bounce
     }
@@ -1587,6 +1600,14 @@ void OhpeEditor::onSoftKey (int id)
         case skRedo: proc.runTapeEdit (Core::Ids::tapeRedo); break;
         case skRtz: proc.runTapeEdit (Core::Ids::tapeRtz); break;
         case skExport: exportBounce(); break;
+        case skTapeClear: // p38: one undo step, no question
+            if (proc.tapeRecording()) display.flash (tr ("Not while recording"));
+            else if (proc.runTapeEdit (Core::Ids::tapeClearTrack))
+                display.flash (tr ("Track cleared") + " (" + juce::String (ctx.tapeTrack + 1) + ") - " + tr ("Undo brings it back"));
+            break;
+        case skTapeClearAll: askClearTape(); return;
+        case skTapeSave: saveTape(); return;
+        case skTapeLoad: loadTape(); return;
         case skPadLoad: chooseSampleFile(); break;
         case skPadClear: proc.sampleLoader().clearDrumPad (ctx.drumPad); break;
         case skClearLocks:
@@ -1939,7 +1960,7 @@ bool OhpeEditor::isInterestedInFileDrag (const juce::StringArray& files)
 {
     for (const auto& f : files)
         if (isAudioFile (f) || isPresetFile (f) || juce::File (f).hasFileExtension (usertable::fileExtension)
-            || juce::File (f).hasFileExtension (update::packFileExtension))
+            || juce::File (f).hasFileExtension (update::packFileExtension) || juce::File (f).hasFileExtension (tapefile::extension))
             return true;
     return false;
 }
@@ -1960,6 +1981,11 @@ void OhpeEditor::filesDropped (const juce::StringArray& files, int x, int y)
         if (f.hasFileExtension (update::packFileExtension)) // content packs: dropped on the window = Install pack
         {
             installPack (f);
+            break;
+        }
+        if (f.hasFileExtension (tapefile::extension)) // p38: a tape file dropped on the window loads the tape (asks first)
+        {
+            loadTapeFile (f);
             break;
         }
         if (isPresetFile (path))
@@ -2010,6 +2036,77 @@ void OhpeEditor::exportBounce()
                                           .withTitle ("Ohpe").withMessage (msg).withButton ("OK"),
                                       nullptr);
     });
+}
+
+// ---------------------------------------------------------------- p38: clear the whole tape, tape files
+void OhpeEditor::askClearTape()
+{
+    auto& tape = proc.core().tape();
+    if (proc.tapeRecording()) { display.flash (tr ("Not while recording")); return; }
+    if (tape.contentEndFrames() <= 0) { display.flash (tr ("The tape is empty")); return; }
+    ui::ConfirmDialog::Options o;
+    o.title = tr ("Clear the whole tape?");
+    o.message = tr ("All 8 tracks will be emptied. Undo brings them back.");
+    o.cancelText = tr ("Cancel");
+    o.confirmText = tr ("Delete");
+    juce::Component::SafePointer<OhpeEditor> safe (this);
+    o.onConfirm = [safe] {
+        if (safe == nullptr) return;
+        if (safe->proc.tapeRecording()) safe->display.flash (tr ("Not while recording"));
+        else if (safe->proc.runTapeEdit (Core::Ids::tapeClearAll)) safe->display.flash (tr ("Tape cleared") + " - " + tr ("Undo brings it back"));
+        safe->refreshSoftKeys();
+    };
+    confirmDialog.show (std::move (o));
+}
+
+void OhpeEditor::saveTape()
+{
+    if (proc.tapeRecording()) { display.flash (tr ("Not while recording")); return; }
+    if (proc.core().tape().contentEndFrames() <= 0) { display.flash (tr ("The tape is empty")); return; }
+    const auto name = "Ohpe Tape " + juce::Time::getCurrentTime().formatted ("%Y-%m-%d %H%M") + tapefileExtension();
+    chooser = std::make_unique<juce::FileChooser> (tr ("Save the whole tape"), juce::File::getSpecialLocation (juce::File::userMusicDirectory).getChildFile (name),
+                                                   juce::String ("*") + tapefileExtension());
+    juce::Component::SafePointer<OhpeEditor> safe (this);
+    chooser->launchAsync (juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::canSelectFiles | juce::FileBrowserComponent::warnAboutOverwriting,
+                          [safe] (const juce::FileChooser& fc) {
+                              if (safe == nullptr || fc.getResult() == juce::File()) return;
+                              juce::String msg;
+                              safe->proc.saveTapeFile (fc.getResult(), msg);
+                              safe->display.flash (msg);
+                          });
+}
+
+void OhpeEditor::loadTape()
+{
+    if (proc.tapeRecording()) { display.flash (tr ("Not while recording")); return; }
+    chooser = std::make_unique<juce::FileChooser> (tr ("Load a tape"), juce::File::getSpecialLocation (juce::File::userMusicDirectory),
+                                                   juce::String ("*") + tapefileExtension());
+    juce::Component::SafePointer<OhpeEditor> safe (this);
+    chooser->launchAsync (juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles, [safe] (const juce::FileChooser& fc) {
+        if (safe != nullptr && fc.getResult() != juce::File()) safe->loadTapeFile (fc.getResult());
+    });
+}
+
+void OhpeEditor::loadTapeFile (const juce::File& f)
+{
+    juce::Component::SafePointer<OhpeEditor> safe (this);
+    auto doLoad = [safe, f] {
+        if (safe == nullptr) return;
+        juce::String msg;
+        safe->proc.loadTapeFile (f, msg);
+        safe->display.flash (msg);
+        safe->rebindEncoders();
+        safe->refreshSoftKeys();
+    };
+    if (proc.tapeRecording()) { display.flash (tr ("Not while recording")); return; }
+    if (proc.core().tape().contentEndFrames() <= 0) { doLoad(); return; }
+    ui::ConfirmDialog::Options o; // material on the tape: ask before it is replaced
+    o.title = tr ("Replace the recorded tape?");
+    o.message = tr ("The loaded tape replaces all 8 tracks. Undo brings the old ones back.");
+    o.cancelText = tr ("Cancel");
+    o.confirmText = tr ("Load");
+    o.onConfirm = doLoad;
+    confirmDialog.show (std::move (o));
 }
 
 void OhpeEditor::refreshKeys()
@@ -2135,6 +2232,12 @@ void OhpeEditor::timerCallback()
             if (k == 1) { if (! breedView.isVisible()) showBreeding (true); breedView.breedAgain(); }
             if (k == 2) { if (! breedView.isVisible()) showBreeding (true); breedView.auditionNext(); }
         }
+
+    if (const int req = proc.tapeClearAllRequestCount(); req != tapeClearAllSeen) // p38: MIDI "tape.edit.clearall" asks first
+    {
+        tapeClearAllSeen = req;
+        if (! confirmDialog.isOpen()) askClearTape();
+    }
 
     const auto engine = ui::selectedEngine (core, ctx.part);
     if (engine != shownEngine)
@@ -2297,7 +2400,8 @@ void OhpeEditor::showMidiMenu()
                             // p11: tape transport
                             Core::Ids::tapeTxPlay, Core::Ids::tapeTxTapePlay, Core::Ids::tapeTxStop, Core::Ids::tapeTxRec,
                             Core::Ids::tapeRtz, Core::Ids::tapeTxLoop, Core::Ids::tapeTxArm, Core::Ids::tapeEditTrack,
-                            Core::Ids::bounceGo }) // p23
+                            Core::Ids::bounceGo, // p23
+                            Core::Ids::tapeClearTrack, Core::Ids::tapeClearAll }) // p38
     {
         const int idx = proc.core().params().indexOf (id);
         if (idx < 0) continue;
