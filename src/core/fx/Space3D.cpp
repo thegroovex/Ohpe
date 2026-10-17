@@ -41,6 +41,18 @@ Vec3 direction (float azDeg, float elDeg) noexcept
 }
 
 Vec3 scaled (Vec3 v, float k) noexcept { return { v.x * k, v.y * k, v.z * k }; }
+
+Vec3 unit (Vec3 v) noexcept
+{
+    const float l = std::sqrt (v.x * v.x + v.y * v.y + v.z * v.z);
+    return l > 1.0e-9f ? scaled (v, 1.0f / l) : Vec3 {};
+}
+
+float smoothStep (float t) noexcept
+{
+    t = std::clamp (t, 0.0f, 1.0f);
+    return t * t * (3.0f - 2.0f * t);
+}
 } // namespace
 
 double pathLengthBeats (int choice) noexcept
@@ -99,6 +111,60 @@ Vec3 pathPoint (int path, double phase, float size, uint32_t seed) noexcept
             const float t = u / 0.9f; // eased at both ends, so the speed never jumps either (no Doppler step)
             const float h = u < 0.9f ? t * t * (3.0f - 2.0f * t) : 0.5f + 0.5f * std::cos ((u - 0.9f) / 0.1f * pi);
             return scaled (direction (360.0f * turns * u, -20.0f + 105.0f * h), 1.0f - 0.3f * h);
+        }
+        case PathPingPong: // front -> back -> front, each half cycle opens with a quick move (on the beat) and then holds;
+        {                  // size = how snappy (0: a smooth swing over the whole half, 1: a short hop). Front -> back passes
+                           // up on the right, back -> front up on the left, so the two moves sound different.
+            const double halves = fr * 2.0;
+            const double h = std::floor (halves);
+            const float t = (float) (halves - h);
+            const float w = 1.0f - 0.7f * size; // share of the half spent moving (never shorter than 30 %: no clicks)
+            const float m = t < w ? smoothStep (t / w) : 1.0f;
+            const float psi = pi * ((float) h + m);
+            return unit ({ 0.5f * std::sin (psi), std::cos (psi), 0.7f * std::abs (std::sin (psi)) });
+        }
+        case PathSwarm: // a swarm around the base direction: twelve random knots per cycle (flutter) on a slow random drift
+        {
+            const double tf = phase * 12.0, ts = phase * 1.5;
+            const auto kf = (int64_t) std::floor (tf), ks = (int64_t) std::floor (ts);
+            const float ff = (float) (tf - (double) kf), fs = (float) (ts - (double) ks);
+            float az[4], el[4], d[4], saz[4], sel[4];
+            for (int i = 0; i < 4; ++i)
+            {
+                az[i] = (12.0f + 38.0f * size) * hashUnit (seed, kf + i - 1, 11);
+                el[i] = (6.0f + 22.0f * size) * hashUnit (seed, kf + i - 1, 12);
+                d[i] = 0.22f * size * hashUnit (seed, kf + i - 1, 13);
+                saz[i] = (20.0f + 70.0f * size) * hashUnit (seed, ks + i - 1, 14);
+                sel[i] = 15.0f * size * hashUnit (seed, ks + i - 1, 15);
+            }
+            const float a = catmullRom (saz[0], saz[1], saz[2], saz[3], fs) + catmullRom (az[0], az[1], az[2], az[3], ff);
+            const float e = catmullRom (sel[0], sel[1], sel[2], sel[3], fs) + catmullRom (el[0], el[1], el[2], el[3], ff);
+            return scaled (direction (a, std::clamp (e, -50.0f, 70.0f)), 1.0f + std::clamp (catmullRom (d[0], d[1], d[2], d[3], ff), -0.4f, 0.4f));
+        }
+        case PathWhisper: // close behind the head, slowest (and nearest) at the ears; size = how far round to the front
+        {
+            const float s = std::sin (th);
+            const float a = 180.0f - (60.0f + 50.0f * size) * s;
+            const float e = -4.0f + 8.0f * std::sin (2.0f * th);
+            return scaled (direction (a, e), 0.27f + 0.13f * (1.0f - std::abs (s)));
+        }
+        case PathWalk: // walks off into the distance and back, swaying a little left / right; size = how far (2x .. 16x)
+        {
+            const float c = 0.5f + 0.5f * std::cos (th); // 1 = farthest at the cycle start
+            const float kMin = 0.35f, kMax = 2.0f + 14.0f * size;
+            const float k = std::exp (std::log (kMin) + (std::log (kMax) - std::log (kMin)) * c);
+            return scaled (direction (25.0f * std::sin (th), 3.0f * std::sin (2.0f * th)), k);
+        }
+        case PathOverhead: // a vertical circle: above the head -> right ear -> underneath -> left ear; size tilts its top forward
+        {
+            const float t = size * 45.0f * degToRad;
+            const float z0 = std::cos (th);
+            return { std::sin (th), z0 * std::sin (t), z0 * std::cos (t) };
+        }
+        case PathWeave: // a full orbit weaving up and down three times per turn, nearer at the low points
+        {
+            const float e = (10.0f + 30.0f * size) * std::sin (3.0f * th);
+            return scaled (direction (360.0f * (float) fr, e), 1.0f + 0.35f * size * std::sin (3.0f * th));
         }
         default: return { 0.0f, 1.0f, 0.0f };
     }
@@ -240,8 +306,10 @@ std::vector<ParamDescriptor> SpaceEffect::getParamDescriptors() const
         continuous ("pathrate", "Motion Rate", "Bewegungstempo", -4.0f, 4.0f, 1.0f),
         continuous ("pathphase", "Motion Phase", "Bewegungsphase", 0.0f, 360.0f, 0.0f, ParamUnit::Degrees),
         choice ("path", "Motion Path", "Bewegungspfad",
-                { "Off", "Circle", "Figure-8", "Fly-By", "Random Orbit", "Pendulum", "Spiral Up" },
-                { "Aus", "Kreis", "Acht", "Vorbeiflug", "Zufallsorbit", "Pendel", "Spirale aufwärts" }, PathOff),
+                { "Off", "Circle", "Figure-8", "Fly-By", "Random Orbit", "Pendulum", "Spiral Up",
+                  "Ping-Pong F/B", "Swarm", "Whisper", "Distance Walk", "Over the Head", "Weave" }, // p30: appended
+                { "Aus", "Kreis", "Acht", "Vorbeiflug", "Zufallsorbit", "Pendel", "Spirale aufwärts",
+                  "Ping-Pong v/h", "Schwarm", "Flüstern", "Entfernungsgang", "Über den Kopf", "Wellenorbit" }, PathOff),
         choice ("pathlen", "Motion Length", "Bewegungslänge",
                 { "1/16", "1/8", "1/4", "1/2", "1 Bar", "2 Bars", "4 Bars", "8 Bars", "16 Bars", "32 Bars", "1/4." },
                 { "1/16", "1/8", "1/4", "1/2", "1 Takt", "2 Takte", "4 Takte", "8 Takte", "16 Takte", "32 Takte", "1/4." }, 5),
@@ -438,6 +506,7 @@ void SpaceEffect::control (int n) noexcept
     uiPos[1].store (pos.y, std::memory_order_relaxed);
     uiPos[2].store (pos.z, std::memory_order_relaxed);
     uiSpreadValue.store (spread, std::memory_order_relaxed);
+    uiPhaseValue.store (phase + (double) pathPhase, std::memory_order_relaxed);
     fresh = false;
 }
 
