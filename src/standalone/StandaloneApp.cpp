@@ -33,6 +33,7 @@
 #include "standalone/SyncSettingsPage.h"
 #include "ui/OhpeLookAndFeel.h"
 #include "ui/Palette.h"
+#include "ui/SettingsView.h"
 
 namespace ohpe
 {
@@ -45,6 +46,9 @@ public:
         : StandaloneFilterWindow (title, ui::colour::body, std::move (holder))
     {
         setLookAndFeel (&lnf);
+       #if JUCE_LINUX || JUCE_BSD
+        setIcon (ui::SettingsView::appIcon()); // p43: macOS / Windows take the icon from the bundle / exe resource
+       #endif
         for (auto* c : getChildren())
             if (auto* b = dynamic_cast<juce::TextButton*> (c); b != nullptr && b != &settingsButton && b->getButtonText() == "Options")
                 b->setVisible (false);

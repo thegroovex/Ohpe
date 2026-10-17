@@ -4,6 +4,7 @@
 
 #include "Palette.h"
 #include "plugin/Localisation.h"
+#include "BinaryData.h"
 
 #include <cmath>
 #include <iterator>
@@ -112,6 +113,12 @@ juce::String SettingsView::helpText (int t)
 {
     const auto& h = helpTopics[(size_t) juce::jlimit (0, numHelpTopics() - 1, t)];
     return u8 (i18n::current() == i18n::Language::German ? h.textDe : h.textEn);
+}
+
+juce::Image SettingsView::appIcon()
+{
+    // p43: the app icon (resources/icon), 128 px - the About header and the standalone window on Linux
+    return juce::ImageCache::getFromMemory (BinaryData::ohpeicon128_png, BinaryData::ohpeicon128_pngSize);
 }
 
 juce::String SettingsView::aboutLine() { return u8 ("Beat tactics \xe2\x80\x94 designed by groovex"); }
@@ -781,13 +788,17 @@ void SettingsView::paintAbout (juce::Graphics& g, juce::Rectangle<float> a)
 {
     const float u = unit(), h = u * 3.2f;
     float y = a.getY() + u * 1.0f;
+    // p43: the app icon, small, in front of the wordmark
+    const float iconSize = u * 5.6f, wx = a.getX() + iconSize + u * 1.6f;
+    if (const auto icon = appIcon(); icon.isValid())
+        g.drawImage (icon, juce::Rectangle<float> (a.getX(), y + u * 0.45f, iconSize, iconSize), juce::RectanglePlacement::centred);
     g.setColour (colour::displayText);
     g.setFont (brandFont (u * 6.0f));
-    g.drawText ("OHPE", juce::Rectangle<float> (a.getX(), y, a.getWidth(), u * 6.5f), juce::Justification::centredLeft, true);
+    g.drawText ("OHPE", juce::Rectangle<float> (wx, y, a.getRight() - wx, u * 6.5f), juce::Justification::centredLeft, true);
     {
         const float w = juce::GlyphArrangement::getStringWidth (brandFont (u * 6.0f), "OHPE");
         g.setColour (colour::signalRed);
-        g.fillEllipse (a.getX() + w + u * 0.8f, y + u * 4.2f, u * 1.0f, u * 1.0f);
+        g.fillEllipse (wx + w + u * 0.8f, y + u * 4.2f, u * 1.0f, u * 1.0f);
     }
     y += u * 7.0f;
     g.setColour (colour::displayText.withAlpha (0.86f));
