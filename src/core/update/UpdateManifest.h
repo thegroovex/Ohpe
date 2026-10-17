@@ -99,6 +99,6 @@ void applySums (Release& r, const std::string& sumsText);
     pre-releases) that is newer than `current`; -1 if there is none or it is the version the user skipped. */
 int pickUpdate (const std::vector<ReleaseRef>& list, Channel channel, const Version& current, const std::string& skipped = {});
 /** Index of the newest release older than `current` (roll back to the previous version); -1 if none.
-    A stable build rolls back to stable releases only. */
+    A stable build (1.0 and later) prefers the previous stable release. */
 int pickPrevious (const std::vector<ReleaseRef>& list, const Version& current);
 } // namespace ohpe::update

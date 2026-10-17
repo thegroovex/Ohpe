@@ -317,14 +317,20 @@ int pickUpdate (const std::vector<ReleaseRef>& list, Channel channel, const Vers
 
 int pickPrevious (const std::vector<ReleaseRef>& list, const Version& current)
 {
-    int best = -1;
-    for (int i = 0; i < (int) list.size(); ++i)
-    {
-        const auto& r = list[(size_t) i];
-        if (r.prerelease && ! current.isPreRelease() && current.major >= 1) continue;
-        if (! (r.version < current)) continue;
-        if (best < 0 || r.version > list[(size_t) best].version) best = i;
-    }
-    return best;
+    auto newestOlder = [&] (bool stableOnly) {
+        int best = -1;
+        for (int i = 0; i < (int) list.size(); ++i)
+        {
+            const auto& r = list[(size_t) i];
+            if (stableOnly && r.prerelease) continue;
+            if (! (r.version < current)) continue;
+            if (best < 0 || r.version > list[(size_t) best].version) best = i;
+        }
+        return best;
+    };
+    // a stable build goes back to the previous stable release; pre-releases only when there is none
+    if (! current.isPreRelease() && current.major >= 1)
+        if (const int s = newestOlder (true); s >= 0) return s;
+    return newestOlder (false);
 }
 } // namespace ohpe::update
