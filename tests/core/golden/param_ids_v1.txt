@@ -6819,3 +6819,10 @@ metro.accent
 metro.countin
 metro.plugin
 metro.tap
+tape.edit.loopin
+tape.edit.loopout
+tape.edit.loopundo
+tape.edit.loopredo
+tape.edit.loophalf
+tape.edit.loopdouble
+tape.loopsnap

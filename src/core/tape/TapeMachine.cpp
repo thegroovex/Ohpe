@@ -692,6 +692,8 @@ void TapeMachine::process (const TapeInputs& in, float* const* outs, int n) noex
 
     const double loopA = std::round ((double) loopIn * sr), loopB = std::min (std::round ((double) loopOut * sr), (double) lenFrames);
     const bool looping = loopOn && loopB > loopA + 64.0;
+    if (recording && ! wasRecording) loopPassCount = 1; // p42: a new take starts at pass 1
+    wasRecording = recording;
     const bool wf = wow > 0.0f || flutter > 0.0f;
     const double wowInc = 0.55 / sr, flutterInc = 6.3 / sr;
     const float noiseCoeff = (float) (1.0 - std::exp (-dsp::twoPi * 20.0 / sr));
@@ -765,8 +767,8 @@ void TapeMachine::process (const TapeInputs& in, float* const* outs, int n) noex
             pos += inc;
             if (looping)
             {
-                if (inc > 0.0 && prev < loopB && pos >= loopB) pos -= (loopB - loopA);
-                else if (inc < 0.0 && prev >= loopA && pos < loopA) pos += (loopB - loopA);
+                if (inc > 0.0 && prev < loopB && pos >= loopB) { pos -= (loopB - loopA); if (recording) ++loopPassCount; }
+                else if (inc < 0.0 && prev >= loopA && pos < loopA) { pos += (loopB - loopA); if (recording) ++loopPassCount; }
             }
             if (pos <= 0.0 && inc < 0.0) { pos = 0.0; parked = true; parkedForward = false; }
             else if (pos >= (double) lenFrames && inc > 0.0) { pos = (double) lenFrames; parked = true; parkedForward = true; }
@@ -789,6 +791,7 @@ void TapeMachine::process (const TapeInputs& in, float* const* outs, int n) noex
     }
 
     posForUi.store ((int64_t) pos, std::memory_order_relaxed);
+    loopPassForUi.store (recording && looping ? loopPassCount : 0, std::memory_order_relaxed); // p42
     speedForUi.store (play && ! parked ? speedCurrent : 0.0f, std::memory_order_relaxed);
     playingForUi.store (play, std::memory_order_relaxed);
     exclusion.exitAudio();

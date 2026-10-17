@@ -311,5 +311,16 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     }
     // ---- p39: metronome and count-in - on, level, accent, count-in, click in a plug-in, tap tempo ------------------
     Metronome::registerParams (reg);
+    // ---- p42: the tape loop by hand - set in / out at the playhead, half / double, undo / redo (triggers), snap grid --
+    {
+        auto add = [&] (ParamDescriptor d, const char* group) { d.group = group; reg.add (std::move (d)); };
+        add (toggle (Core::Ids::tapeLoopSetIn, "Tape Set Loop In", "Tape Loop-Start setzen", false), "remote");
+        add (toggle (Core::Ids::tapeLoopSetOut, "Tape Set Loop Out", "Tape Loop-Ende setzen", false), "remote");
+        add (toggle (Core::Ids::tapeLoopUndo, "Tape Loop Undo", "Tape Loop rückgängig", false), "remote");
+        add (toggle (Core::Ids::tapeLoopRedo, "Tape Loop Redo", "Tape Loop wiederherstellen", false), "remote");
+        add (toggle (Core::Ids::tapeLoopHalf, "Tape Loop Half", "Tape Loop halbieren", false), "remote");
+        add (toggle (Core::Ids::tapeLoopDouble, "Tape Loop Double", "Tape Loop verdoppeln", false), "remote");
+        add (choice (Core::Ids::tapeLoopSnap, "Tape Loop Snap", "Tape Loop-Raster", { "Off", "Beat", "Bar" }, { "Aus", "Schlag", "Takt" }, 2), "tape");
+    }
 }
 } // namespace ohpe
