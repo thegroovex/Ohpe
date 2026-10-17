@@ -826,3 +826,22 @@ part presets neither carry nor reset the motion block (a new sound keeps the par
 
 The modulation matrix gains the sources **Motion 1 … Motion 4** (23 – 26): the value of lane 1 … 4 at the play
 position (0 … 1; 0 where nothing is recorded or the transport stops). The source choice list grows at its end.
+
+## Harmony brain (p24)
+
+Appended after the motion block (`p4.motion.clear`): five global IDs, then the follow mode part by part (9 IDs).
+Guides: [English](en/HARMONY.md) · [Deutsch](de/HARMONIE.md). The memory (key, chord, the last eight chords, the
+pitch-class weights) is stored in projects and the plug-in state (section `"harmony"`); part presets neither carry
+nor reset `pN.harmony.follow` (its role in the song, not its sound).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `harmony.memory` | Harmony Memory | Harmonie-Gedächtnis | 1 … 32 bars (half-life of the key memory) | 8 |
+| `harmony.hold` | Harmony Hold | Harmonie halten | Off / On | Off |
+| `harmony.take` | Harmony Take Key | Harmonie Tonart übernehmen | trigger (not part of projects) | off |
+| `harmony.clear` | Harmony Clear | Harmonie vergessen | trigger (not part of projects) | off |
+| `harmony.kb.layout` | Grid Layout | Raster-Anordnung | Fourths, Thirds, Whole Tones, In Key | Fourths |
+| `pN.harmony.follow` | Part N Harmony Follow | Part N Harmonie folgen | Off, Scale, Chord, Root | Off |
+
+The modulation matrix gains the sources **Chord Root**, **Chord Change** and **Tension** (27 – 29), the same value in
+every part. The source choice list grows at its end. No new targets.
