@@ -90,6 +90,10 @@ beide Richtungen gleich: den Schalter (`pN.space.mode`) automatisieren oder per 
 `pN.space.on` / `space.out` ebenso – die Schalter folgen ihnen. Presets und Sessions von vor dem Schalter zeigen
 beim Laden die richtige Stellung.
 
+![Der 3D-Schalter auf Lautsprecher: Abzeichen und Beschriftung zeigen das Lautsprecher-Piktogramm](../images/ohpe-space-switch-speakers-de.png)
+
+![3D aus: der Hinweis hat die erste Zeile des Streifens für sich](../images/ohpe-space-switch-off-de.png)
+
 * **Kopfhörer** – binaural: Laufzeitunterschied zwischen den Ohren, Kopfschatten (Kugelkopf), Ohrmuschel-Kerben,
   Schulterreflexion, Nahfeld-Pegel (siehe *So funktioniert es*).
 * **Lautsprecher** – der Lautsprecher-Weg derselben Stufe: leistungsgleiches Amplituden-Panning nach Richtung,

@@ -90,6 +90,10 @@ on the head, or two speakers in front of it). The three stay in step both ways: 
 switch (`pN.space.mode`) works, and so do the older `pN.space.on` / `space.out` – the switches follow them.
 Presets and sessions made before the switch existed show the right state when they load.
 
+![The 3D switch on Speakers: the badge and the caption show the speaker pictogram](../images/ohpe-space-switch-speakers.png)
+
+![3D off: the hint has the first line of the strip to itself](../images/ohpe-space-switch-off.png)
+
 * **Headphones** – binaural: interaural time difference, spherical-head shadow, pinna notches, shoulder
   reflection, near-field level (see *How it works*).
 * **Speakers** – the speaker path of the same stage: constant-power amplitude panning by direction, **no**
