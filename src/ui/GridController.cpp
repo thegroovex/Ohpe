@@ -557,7 +557,7 @@ void GridController::refreshDisplay()
         names[(size_t) i] = g::shortName (str (compact));
         auto value = modfx::specialValueText (core, d.id, reg.get (idx));
         if (value.isEmpty()) value = formatValue (d, reg.get (idx));
-        values[(size_t) i] = g::shortName (str (value));
+        values[(size_t) i] = g::shortValue (str (value));
         if (touched == i) touchedText = str (i18n::pick (d.nameEn, d.nameDe) + ": " + value);
     }
     lines[0] = g::cellLine (names);
@@ -586,7 +586,7 @@ void GridController::refreshDisplay()
     juce::String page = tr (modeInfo (m).nameEn);
     if (pg < (int) titles.size() && titles[(size_t) pg].size() > 0) page = tr (titles[(size_t) pg].c_str());
     const juce::String count = juce::String (pg + 1) + "/" + juce::String (n);
-    page = juce::String (g::fold (str (page)).substr (0, (size_t) juce::jmax (1, g::lineLength / 4 - 1 - count.length()))) + " " + count;
+    page = juce::String (g::fold (str (page)).substr (0, (size_t) juce::jmax (1, g::lineLength / 4 - 2 - count.length()))) + " " + count;
     juce::String tx = tr ("Stop");
     if (core.countInActive()) tx = tr ("Count-in");
     else if (proc.tapeRecording()) tx = "REC";

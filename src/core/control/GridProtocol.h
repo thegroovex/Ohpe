@@ -82,6 +82,9 @@ std::string segmentLine (const std::array<std::string, 4>& segments);
     first, then vowels and last letters of the longest words until it fits ("Filter Cutoff" -> "FltrCtff"); a name
     that fits stays. */
 std::string shortName (const std::string& utf8, int width = cellWidth - 1);
+/** Short form of a value for a cell: as it is when it fits, else without spaces, else cut ("3.00 kHz" -> "3.00kHz";
+    digits, signs and points are never dropped from the middle). */
+std::string shortValue (const std::string& utf8, int width = cellWidth - 1);
 /** The SysEx message (F0 .. F7) that writes `text` (fitLine) into display line 0 .. 3. */
 std::vector<uint8_t> displayLineSysex (int line, const std::string& utf8);
 /** The SysEx that clears display line 0 .. 3. */

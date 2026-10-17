@@ -62,6 +62,10 @@ TEST_CASE ("p46 grid controller: encoder cells - eight cells over four segments,
     CHECK (g::shortName ("Filter Cutoff").front() == 'F');
     CHECK (g::shortName ("Lautst\xc3\xa4rke").size() <= 8u);
     CHECK (g::shortName ("").empty());
+    CHECK (g::shortValue ("3.00 kHz") == "3.00kHz"); // values keep their digits and points
+    CHECK (g::shortValue ("-12.5 dB") == "-12.5dB");
+    CHECK (g::shortValue ("1/16") == "1/16");
+    CHECK (g::shortValue ("Harmonic Minor").size() == 7u);
     CHECK (g::shortName ("Ch 1 Volume") == "Volume"); // the page says which channel
     CHECK (g::shortName ("Kanal 1 EQ Tiefen").rfind ("EQ", 0) == 0);
     CHECK (g::shortName ("Ch1 Send A") == "SendA");

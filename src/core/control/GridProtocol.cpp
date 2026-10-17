@@ -160,7 +160,7 @@ std::string shortName (const std::string& utf8, int width)
     std::string w;
     for (char c : s)
     {
-        if (c == ' ' || c == '-' || c == '/' || c == '.')
+        if (c == ' ' || c == '-')
         {
             if (! w.empty()) words.push_back (w);
             w.clear();
@@ -213,6 +213,16 @@ std::string shortName (const std::string& utf8, int width)
     std::string r;
     for (const auto& x : words) r += x;
     return r.substr (0, (size_t) width);
+}
+
+std::string shortValue (const std::string& utf8, int width)
+{
+    std::string s = fold (utf8);
+    while (! s.empty() && s.back() == ' ') s.pop_back();
+    while (! s.empty() && s.front() == ' ') s.erase (s.begin());
+    if ((int) s.size() <= width) return s;
+    s.erase (std::remove (s.begin(), s.end(), ' '), s.end());
+    return s.substr (0, (size_t) width);
 }
 
 std::vector<uint8_t> displayLineSysex (int line, const std::string& utf8)
