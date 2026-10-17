@@ -152,6 +152,7 @@ int main (int argc, char* argv[])
         }
         {   // p35: the CPU meter on the mode column's legend line (the chord above is playing), 2x
             e.advanceAnimation (1.0f / 30.0f);
+            e.cpuMeterComponent().setLoad (0.12f, 0.18f); // no audio thread runs here: a typical reading for the picture
             save (e, dir.getChildFile ("ohpe-cpu-meter" + suffix + ".png"), 2.0f, juce::Rectangle<int> (952, 80, 224, 40));
         }
         setPlain (p, "p1.life", 0.0f);
