@@ -381,21 +381,15 @@ Schritte jeder Anordnung.
 
 ![Das Hilfe-Overlay mit der Raster-Tastatur](../images/ohpe-grid-help-de.png)
 
-### Später: dieselben Anordnungen auf einem Grid-Controller
+### Auf einem Grid-Controller
 
-Ein geplantes Controller-Profil (**Profil 1**) lässt ein externes Pad-Raster genauso spielen wie das Raster auf dem
-Bildschirm:
-
-* **dieselben Anordnungen** – Quarten, Terzen, Ganztöne und In Tonart, mit denselben Schritten nach rechts und oben;
-  jede Form auf dieser Seite funktioniert dort genauso;
-* **Tonart- / Skalen-Sperre** – In Tonart spielt nur Tonart-Töne; die anderen Anordnungen können die Tonart auf den
-  Pads zeigen;
-* **dieselbe Belegung** – ein Pad spielt den Ton des Felds in derselben Spalte und Reihe, ab demselben tiefsten C;
-* **dieselben Farben** – Grundton, Tonart-Töne, andere Töne, Akkordtöne und gedrückte Pads leuchten wie die Felder
-  hier;
-* **Oktave / Shift** – Tasten am Controller verschieben es wie OKTAVE − / +.
-
-Bis dahin ist das Raster auf dem Bildschirm die Referenz: Was du hier lernst, gilt dort unverändert.
+**Grid-Controller (Profil 1)** (Standalone-App, Einstellungen > MIDI > Controller) bringt dieses Raster auf einen
+externen 8 × 8-Pad-Controller: **dieselben Anordnungen** (die Taste Scales schaltet sie weiter), **derselbe Ton** für
+dieselbe Spalte und Reihe ab demselben tiefsten C (die vier unteren Pad-Reihen sind die vier Reihen des
+Bildschirm-Rasters), **dieselbe Tonart** mit **Scale Lock** (andere Töne dunkel und stumm), der Grundton leuchtet
+**bernstein**, Tonart-Töne **gelb**, Akkordtöne **grün (gedimmt)**, gehaltene Pads **grün**, und **Oktave − / +**
+verschiebt Pads und Bildschirm-Raster gemeinsam. Anschlag und Druck spielen den Edit-Part (MPE: ein Mitgliedskanal je
+Pad). Details: [Grid-Controller](CONTROLLER.md).
 
 ## Modulation
 

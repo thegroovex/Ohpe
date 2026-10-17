@@ -97,6 +97,8 @@ list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/LivingView.cpp)
 # p24: the harmony brain (LFO mode, view Harmony) and the isomorphic grid keyboard
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/HarmonyView.cpp)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/GridKeyboard.cpp)
+# p46: Grid-Controller (Profil 1) - external pad grid with display (standalone app)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/GridController.cpp)
 # p27: the in-app updater (release check, verified download, content packs) and its view
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/Updater.cpp ${CMAKE_SOURCE_DIR}/src/plugin/ContentLibrary.cpp ${CMAKE_SOURCE_DIR}/src/ui/UpdateView.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/PackManagerView.cpp)
@@ -254,6 +256,7 @@ endif()
 # ---------------------------------------------------------------- p24: the harmony brain (LFO mode, view Harmony), grid keyboard
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/HarmonyUiTests.cpp)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/GridControllerUiTests.cpp) # p46
 endif()
 
 # ---------------------------------------------------------------- p20: audio to wavetable (import, library, state)

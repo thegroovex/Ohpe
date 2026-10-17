@@ -13,7 +13,7 @@ namespace ohpe::settings
 {
 namespace
 {
-const char* const knownKeys[] = { "language", "tooltips", "helpOverlay", "skin", "brightness", "animations", "windowScale" };
+const char* const knownKeys[] = { "language", "tooltips", "helpOverlay", "skin", "brightness", "animations", "windowScale", "controller" };
 
 bool known (const std::string& k)
 {
@@ -89,6 +89,11 @@ std::string UserSettings::toJson() const
     j["brightness"] = std::round (brightness * 100.0f) / 100.0f;
     j["animations"] = animationsName (animations);
     j["windowScale"] = windowScale;
+    j["controller"] = { { "profile", controllerProfile == ControllerGrid1 ? "grid1" : "off" },
+                        { "in", controllerIn },
+                        { "out", controllerOut },
+                        { "master", controllerMaster == 1 ? "tempo" : "volume" },
+                        { "strip", controllerStrip == 1 ? "mod" : "bend" } };
     return j.dump (2);
 }
 
@@ -124,6 +129,18 @@ UserSettings UserSettings::fromJson (const std::string& text)
     s.helpOverlay = flag ("helpOverlay", s.helpOverlay);
     s.brightness = std::clamp (num ("brightness", s.brightness), minBrightness, 1.0f);
     s.windowScale = snapWindowScale (num ("windowScale", s.windowScale));
+    if (const auto c = j.find ("controller"); c != j.end() && c->is_object())
+    {
+        auto sub = [&c] (const char* k) {
+            const auto it = c->find (k);
+            return it != c->end() && it->is_string() ? it->get<std::string>() : std::string();
+        };
+        s.controllerProfile = sub ("profile") == "grid1" ? ControllerGrid1 : ControllerOff;
+        s.controllerIn = sub ("in");
+        s.controllerOut = sub ("out");
+        s.controllerMaster = sub ("master") == "tempo" ? 1 : 0;
+        s.controllerStrip = sub ("strip") == "mod" ? 1 : 0;
+    }
     json extra = json::object();
     for (auto it = j.begin(); it != j.end(); ++it)
         if (! known (it.key())) extra[it.key()] = it.value();
@@ -135,6 +152,8 @@ bool UserSettings::operator== (const UserSettings& o) const
 {
     return language == o.language && tooltips == o.tooltips && helpOverlay == o.helpOverlay && skin == o.skin
            && std::abs (brightness - o.brightness) < 1.0e-4f && animations == o.animations && windowScale == o.windowScale
+           && controllerProfile == o.controllerProfile && controllerIn == o.controllerIn && controllerOut == o.controllerOut
+           && controllerMaster == o.controllerMaster && controllerStrip == o.controllerStrip
            && json::parse (extras, nullptr, false) == json::parse (o.extras, nullptr, false);
 }
 

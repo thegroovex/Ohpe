@@ -5,6 +5,7 @@
 #include "BreedView.h"
 #include "ConfirmDialog.h"
 #include "Display.h"
+#include "GridController.h"
 #include "GridKeyboard.h"
 #include "LibraryBrowser.h"
 #include "OhpeLookAndFeel.h"
@@ -205,6 +206,13 @@ public:
     ui::PictoKey& gridKeyComponent() { return gridKey; }
     void showGridKeyboard (bool show);
     bool gridKeyboardShown() const noexcept { return grid.isVisible(); }
+    /** p46: the Grid-Controller (Profil 1) of the standalone app (nullptr in plug-ins and while no profile was ever
+        chosen). gridControllerForTests() creates it in any build (tests, screenshots: a mock device). */
+    ui::GridController* gridController() noexcept { return gridCtl.get(); }
+    ui::GridController& gridControllerForTests();
+    /** p46: what the encoders of the controller and the screen show: the page of the shown mode. */
+    int shownPage() { return currentPage(); }
+    ui::PageContext pageContext() const noexcept { return ctx; }
     // p14 rev 3: the bottom panels - transport keys with light bars, the readouts, the octave keys
     ui::PictoKey& stopTransportKey() { return stopKey; }
     ui::PictoKey& toStartTransportKey() { return toStartKey; }
@@ -321,6 +329,8 @@ private:
     ui::PictoKey settingsKey { ui::Picto::Settings, "Settings" }; ///< p32: replaces the language pills
     ui::Keyboard keyboard;
     ui::GridKeyboard grid; ///< p24
+    std::unique_ptr<ui::GridController> gridCtl; ///< p46
+    void makeGridController();
     ui::ProView proView;
     ui::LibraryBrowser library;
     ui::BreedView breedView; ///< p18

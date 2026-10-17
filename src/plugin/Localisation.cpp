@@ -812,6 +812,22 @@ const std::map<juce::String, juce::String>& table()
         // p35: the CPU meter
         { "CPU load: share of the audio time the sound takes to compute", "Rechenlast: Anteil der Audiozeit, den die Klangberechnung braucht" },
         { "Peak", "Spitze" },
+        // p46: Grid-Controller (Profil 1)
+        { "Steps", "Steps" },
+        { "Controller", "Controller" },
+        { "Connected", "Verbunden" },
+        { "Waiting for the controller", "Wartet auf den Controller" },
+        { "Choose the controller's MIDI input and output", "MIDI-Eingang und -Ausgang des Controllers wählen" },
+        { "Click", "Klick" },
+        { "ready", "bereit" },
+        { "Volume", "Lautstärke" },
+        { "Bend", "Bend" },
+        { "In", "Ein" },
+        { "View", "Ansicht" },
+        { "Virtual controller", "Virtueller Controller" },
+        { "Grid controller profile 1", "Grid-Controller (Profil 1)" },
+        { "Controllers are set up in the standalone app. In a plug-in the host program sends their MIDI to Ohpe.",
+          "Controller werden in der Standalone-App eingerichtet. Im Plug-in schickt das Host-Programm ihr MIDI an Ohpe." },
         // p45: key, Scale Lock, the chord that sounds
         { "Scale Lock", "In Tonart" },
         { "Snap to the nearest note of the key", "Auf den nächsten Ton der Tonart" },

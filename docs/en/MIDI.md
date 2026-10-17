@@ -160,6 +160,12 @@ Ohpe's standalone app can join a **Link** session (Ableton Link, a third-party l
 everybody else's. Changing Ohpe's tempo changes the session tempo. Start and stop remain local.
 Link is a build option (`-DOHPE_WITH_LINK=ON`, default on); the plug-in always follows its host.
 
+### Grid controller (standalone)
+
+An 8 × 8 pad controller with a four-line display can play the grid keyboard and edit the shown page – choose
+**Grid controller profile 1** and its ports in Settings > MIDI > Controller. Its port is taken out of the plain MIDI
+inputs. See [Grid controller](CONTROLLER.md).
+
 ## Settings at a glance
 
 | ID | Range | Default |

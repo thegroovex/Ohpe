@@ -188,6 +188,11 @@ public:
         An MPE part gets it as it is (member channels 2 .. 16, per-note bend / pressure / slide); any other part gets
         the notes on its own channel (through scale / chord / follow and the arpeggiator), expression is dropped. */
     void queueGridEvent (int part, const MidiEvent& e) noexcept;
+    /** p46, one producer thread (the grid controller's MIDI input): a message of an external pad controller for one
+        part (0 .. 3) or the drum kit (drumPart), applied at the next block. An MPE part gets it as it is; any other part
+        gets it on its own channel (notes through scale / chord / follow, poly aftertouch / pressure / bend / CC as
+        expression of that part); the drum kit gets notes on the drum channel. */
+    void queueControllerEvent (int part, const MidiEvent& e) noexcept;
 
     // ---- state (message thread) ----
     std::string saveState (const std::string& uiJson = {}) const;
@@ -401,6 +406,8 @@ private:
     SpscQueue<UiNote, 256> uiNotes;
     struct GridEvent { int part; MidiEvent event; };
     SpscQueue<GridEvent, 512> gridEvents; ///< p24
+    /** p46: the grid controller's pads - on the heap: tests keep cores on the stack (Windows: 1 MB main stack). */
+    std::unique_ptr<SpscQueue<GridEvent, 512>> controllerEvents = std::make_unique<SpscQueue<GridEvent, 512>>();
     int blockRoot = 0, blockScale = 1;    ///< p24: the global key of this block
     bool blockLock = false;               ///< p45: Scale Lock in this block
     int blockLockMode = 0;

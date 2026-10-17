@@ -261,6 +261,11 @@ void Core::queueGridEvent (int part, const MidiEvent& e) noexcept
     if (part >= 0 && part < numParts) gridEvents.push ({ part, e });
 }
 
+void Core::queueControllerEvent (int part, const MidiEvent& e) noexcept
+{
+    if (part == drumPart || (part >= 0 && part < numParts)) controllerEvents->push ({ part, e });
+}
+
 void Core::refreshShapers (int p) noexcept
 {
     auto& r = routing[(size_t) p];
@@ -747,6 +752,22 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         x.status = (uint8_t) ((x.status & 0xf0) | (((r.channel > 0 ? r.channel : 1) - 1) & 0x0f));
         x.sampleOffset = 0;
         routeToPart (x, ge.part, false); // p45: the grid's notes are already in key (no white-key mapping)
+    }
+    while (controllerEvents->pop (ge)) // p46: the grid controller's pads (one part or the drum kit)
+    {
+        auto x = ge.event;
+        x.sampleOffset = 0;
+        if (ge.part == drumPart)
+        {
+            if (! x.isNoteOn() && ! x.isNoteOff()) continue;
+            x.status = (uint8_t) ((x.status & 0xf0) | ((drumChannel - 1) & 0x0f));
+            addRouted (x, drumPart);
+            continue;
+        }
+        const auto& r = routing[(size_t) ge.part];
+        if (r.mpe) { addRouted (x, ge.part); continue; }
+        x.status = (uint8_t) ((x.status & 0xf0) | (((r.channel > 0 ? r.channel : 1) - 1) & 0x0f));
+        routeToPart (x, ge.part, false); // like the on-screen grid: the pads' notes are already laid out in key
     }
 
     // 4. sequencers: their notes address parts by channel
