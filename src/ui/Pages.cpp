@@ -205,7 +205,7 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             // p11: the selected track first (arm, source); play / record live on the transport keys
             return { t + "arm", t + "src", t + "level", t + "out",
                      "tape.overdub", "tape.speed", "tape.reverse", Core::Ids::tapeTxLink,
-                     "tape.loop", "tape.loopin", "tape.loopout", "",
+                     "tape.loop", "tape.loopin", "tape.loopout", Core::Ids::tapeLoopSnap, // p42: the loop grid
                      "tape.sat", "tape.wow", "tape.flutter", "tape.hiss",
                      // p23: bounce to engine (the BOUNCE soft key uses these)
                      Core::Ids::bounceSrc, Core::Ids::bounceTo, Core::Ids::bounceLoop, Core::Ids::bounceLen };
@@ -310,7 +310,7 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
         {
             groups.push_back ({ "Transport", 0, { "tape.play", "tape.rec", "tape.speed", "tape.reverse", "tape.overdub", Core::Ids::tapeEditTrack,
                                                Core::Ids::tapeTxLink } });
-            groups.push_back ({ "Loop", 0, { "tape.loop", "tape.loopin", "tape.loopout" } });
+            groups.push_back ({ "Loop", 0, { "tape.loop", "tape.loopin", "tape.loopout", Core::Ids::tapeLoopSnap } });
             groups.push_back ({ "Tape Character", 0, { "tape.sat", "tape.wow", "tape.flutter", "tape.hiss" } });
             groups.push_back ({ "Bounce", 0, { Core::Ids::bounceSrc, Core::Ids::bounceTo, Core::Ids::bounceLoop, Core::Ids::bounceLen } }); // p23
             for (int t = 0; t < TapeMachine::numTracks; ++t)

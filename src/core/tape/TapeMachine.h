@@ -104,6 +104,10 @@ public:
     int64_t positionFrames() const noexcept { return posForUi.load (std::memory_order_relaxed); }
     int directOut (int track) const noexcept { return trackOut[(size_t) track]; } ///< 0 = mixer only, 1..8 = aux output
     uint32_t dropouts() const noexcept { return dropoutCount.load (std::memory_order_relaxed); }
+    /** p42, any thread: while recording inside the loop, the pass being recorded (1 = the first time through,
+        2 after the first wrap, ...); 0 when not recording in a loop. Every pass is laid over the one before
+        (overdub on) or replaces it (overdub off); the whole take is one undo step. */
+    int loopPass() const noexcept { return loopPassForUi.load (std::memory_order_relaxed); }
 
     // ---- editing (message thread); seconds ----
     bool lift (int track, double start, double end) override;
@@ -202,6 +206,7 @@ private:
     std::atomic<float> speedForUi { 1.0f };
     std::atomic<bool> playingForUi { false };
     std::atomic<uint32_t> dropoutCount { 0 };
+    std::atomic<int> loopPassForUi { 0 }; ///< p42
 
     // ---- message thread ----
     mutable std::mutex msgMutex;
@@ -216,6 +221,8 @@ private:
     double pos = 0.0;
     float speedCurrent = 1.0f, speedCoeff = 0.001f;
     bool wasPlaying = false;
+    bool wasRecording = false; ///< p42: loop pass count
+    int loopPassCount = 0;
     bool parked = false, parkedForward = true; ///< the playhead ran into an end of the tape
     bool play = false, rec = false, reverse = false, loopOn = false, overdub = true;
     float speed = 1.0f, loopIn = 0.0f, loopOut = 0.0f, sat = 0.0f, wow = 0.0f, flutter = 0.0f, hiss = 0.0f;
