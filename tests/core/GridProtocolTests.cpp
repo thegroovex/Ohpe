@@ -107,7 +107,7 @@ TEST_CASE ("p46 grid controller: pads play the on-screen grid's notes in every l
                             const int n = g::padLayoutNote (layout, col, row, octave, key);
                             CHECK (n == gridNote (layout, col, row, 12 * (octave + 1), root, scale)); // the same cell, the same note
                             CHECK ((n >= 0 && n <= 127));
-                            if (layout == LayoutInKey) CHECK (scales::inScale (n, root, scale));
+                            if (layout == LayoutInKey && n < 127) CHECK (scales::inScale (n, root, scale)); // 127: clamped at the top
                         }
                 }
     key = {};

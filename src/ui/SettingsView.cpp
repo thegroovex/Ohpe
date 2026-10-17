@@ -92,6 +92,24 @@ const HelpTopic helpTopics[] = {
       "Einstellungen werden für dich auf diesem Computer gespeichert - nicht in Projekten oder Presets - und gelten für jedes geöffnete Ohpe.\n\n"
       "Anzeige > Erscheinung: Hell, Dunkel (blendarm für Nachtsessions) oder Auto (folgt dem System). Helligkeit dimmt das Display.\n\n"
       "Allgemein > Hilfe-Overlay benennt jeden Bereich des Instruments; F1 schaltet es ein und aus." },
+    { "Grid controller", "Grid-Controller", // p46
+      "Grid controller profile 1 (standalone app): an 8 x 8 pad controller with a four-line display. Settings > MIDI > Controller: "
+      "choose the profile and the controller's MIDI input and output; View shows the virtual controller.\n\n"
+      "Pads (Keys mode) = the on-screen grid keyboard: the same layout (Scales steps through Fourths, Thirds, Whole Tones, In Key), "
+      "the same note for the same column and row, the same key (Shift + Scales: Scale Lock). Root amber, key notes yellow, chord tones "
+      "green dim, held pads green. Octave - / + moves pads and screen grid together. Velocity and pressure play the edit part.\n\n"
+      "Second button row: parts 1-4, pad modes Keys / Pads / Drum / Steps. First row: the mode keys. Encoders 1-8: the shown page and "
+      "the next; arrows: page and preset; Play, Record, Stop, Metronome, Tap, Undo as their names say (Shift: tape play, arm, to start, "
+      "count-in, redo). Touch strip: bend or mod.",
+      "Grid-Controller (Profil 1) (Standalone-App): ein 8 x 8-Pad-Controller mit vierzeiligem Display. Einstellungen > MIDI > "
+      "Controller: Profil und MIDI-Eingang und -Ausgang des Controllers wählen; Ansicht zeigt den virtuellen Controller.\n\n"
+      "Pads (Modus Tasten) = die Raster-Tastatur des Bildschirms: dieselbe Anordnung (Scales schaltet Quarten, Terzen, Ganztöne, "
+      "In Tonart weiter), derselbe Ton für dieselbe Spalte und Reihe, dieselbe Tonart (Shift + Scales: Scale Lock). Grundton bernstein, "
+      "Tonart-Töne gelb, Akkordtöne grün gedimmt, gehaltene Pads grün. Oktave - / + verschiebt Pads und Bildschirm-Raster gemeinsam. "
+      "Anschlag und Druck spielen den Edit-Part.\n\n"
+      "Zweite Tastenreihe: Parts 1-4, Pad-Modi Tasten / Pads / Drum / Steps. Erste Reihe: die Modus-Tasten. Regler 1-8: die gezeigte "
+      "Seite und die nächste; Pfeile: Seite und Preset; Play, Record, Stop, Metronome, Tap, Undo wie benannt (Shift: Band-Start, "
+      "scharf schalten, zum Anfang, Vorzähler, Wiederholen). Touch-Strip: Bend oder Mod." },
     { "Updates", "Updates",
       "Ohpe can look for new versions once a day (off until you switch it on) or when you press Check now. Nothing about you is sent.\n\n"
       "Downloads are verified before they open. Content packs add presets without reinstalling; the previous pack is kept for a rollback.",
