@@ -54,6 +54,9 @@ inline juce::Colour playGreenLit { 0xff3fd08e };
 /** p32: highlights on the housing (lit edges, lips of the recesses): white in the light skin, a soft warm grey in the
     dark skin (no glare). */
 inline juce::Colour sheen { 0xffffffff };
+/** p35/p32: red legend text on the housing (warnings such as the hot CPU meter): a deeper red in the light skin, a soft
+    warm red in the night skin - >= 4.5:1 on body and panel in both skins (the encoder red is for light bars, not text). */
+inline juce::Colour alertInk { 0xffb8192d };
 
 inline juce::Colour encoder (int i)
 {

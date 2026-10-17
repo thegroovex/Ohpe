@@ -87,8 +87,13 @@
     "mpe.bend": 48,
     "glide": 0.02,
     "gain": -6.1,
-    "expr.at.dst1": 12,
+    "mod.s3.src": 1,
+    "mod.s3.via": 9,
+    "mod.s3.dst": 1,
+    "mod.s3.amt": 0.03,
+    "mod.s3.curve": 0,
+    "expr.at.curve1": 3,
     "expr.at.amt1": 0.3,
-    "expr.at.curve1": 3
+    "expr.at.dst1": 12
   }
 }

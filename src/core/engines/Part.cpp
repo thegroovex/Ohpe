@@ -478,6 +478,7 @@ void Part::prepare (double sampleRate, int maxBlockSize)
     layerR.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
     xEnvCoeff = 1.0f - (float) std::exp (-1.0 / (0.004 * sampleRate));
     partSr = (float) sampleRate;
+    sleepHoldSamples = (int) std::ceil (sleepHoldSeconds * sampleRate); // p35
     monoLp1.prepare (partSr);
     monoLp2.prepare (partSr);
     monoLp1.set (monoBassHz, 0.299f); // Q 0.707 each
@@ -508,6 +509,9 @@ void Part::reset() noexcept
     portaSwitch = true;
     ccGlideSeconds = -1.0f;
     dcX[0] = dcX[1] = dcY[0] = dcY[1] = 0.0f;
+    asleep = false; // p35
+    quietSamples = 0;
+    asleepFlag.store (false, std::memory_order_relaxed);
     rack.reset();
     matrix.reset();
     xEnv = 0.0f;
@@ -909,8 +913,7 @@ void Part::render (float* l, float* r, int numSamples) noexcept
     {
         matrix.advance (numSamples);
         matrix.tickParamRoutes (numSamples); // display values
-        renderEngines (l, r, numSamples);
-        finishBlock (l, r, numSamples);
+        renderChain (l, r, numSamples);
     }
     else
     {
@@ -922,11 +925,39 @@ void Part::render (float* l, float* r, int numSamples) noexcept
             matrix.tickParamRoutes (len);
             writeModulation();
             applyParams (*liveSnapshot);
-            renderEngines (l + pos, r + pos, len);
-            finishBlock (l + pos, r + pos, len);
+            renderChain (l + pos, r + pos, len);
         }
     }
     matrix.publishUi();
+}
+
+void Part::renderChain (float* l, float* r, int n) noexcept
+{
+    const bool voices = activeVoiceCount() > 0;
+    if (asleep)
+    {
+        if (! voices && sleepAllowed)
+        {
+            std::memset (l, 0, sizeof (float) * (size_t) n);
+            std::memset (r, 0, sizeof (float) * (size_t) n);
+            lastGain = volume * gainFactor; // a volume change while asleep is no ramp when it wakes
+            return;
+        }
+        asleep = false; // a voice starts: the chain carries on where it stopped (every stage was below -120 dBFS)
+        asleepFlag.store (false, std::memory_order_relaxed);
+    }
+    renderEngines (l, r, n);
+    finishBlock (l, r, n);
+    if (voices || ! sleepAllowed) { quietSamples = 0; return; }
+    float peak = 0.0f;
+    for (int i = 0; i < n; ++i) peak = std::max (peak, std::max (std::abs (l[i]), std::abs (r[i])));
+    if (! (peak < sleepThreshold)) { quietSamples = 0; return; }
+    quietSamples += n;
+    if (quietSamples >= sleepHoldSamples)
+    {
+        asleep = true;
+        asleepFlag.store (true, std::memory_order_relaxed);
+    }
 }
 
 int Part::destParamIndex (int dest) const noexcept

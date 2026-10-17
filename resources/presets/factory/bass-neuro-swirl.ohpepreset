@@ -89,6 +89,11 @@
     "mpe.slide": 0.08,
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
-    "gain": 12.9
+    "gain": 12.9,
+    "mod.s3.src": 9,
+    "mod.s3.via": 0,
+    "mod.s3.dst": 4,
+    "mod.s3.amt": 0.075,
+    "mod.s3.curve": 0
   }
 }

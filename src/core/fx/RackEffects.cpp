@@ -1213,7 +1213,7 @@ void HallEffect::process (float* l, float* r, int n) noexcept
             float& ph = modPhase[(size_t) k];
             ph += modInc * (1.0f + 0.13f * (float) k);
             if (ph >= 1.0f) ph -= 1.0f;
-            const float len = baseLen[(size_t) k] * scaleNow + modDepth * std::sin (dsp::twoPi * ph);
+            const float len = baseLen[(size_t) k] * scaleNow + modDepth * dsp::sinTurns (ph); // p35: polynomial sine
             float y = lines[(size_t) k].read (len);
             lpState[(size_t) k] = dsp::flush (lpState[(size_t) k] + (y - lpState[(size_t) k]) * lpCoeff);
             o[(size_t) k] = lpState[(size_t) k] * gainL[(size_t) k];

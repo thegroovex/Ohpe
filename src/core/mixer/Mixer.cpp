@@ -160,6 +160,7 @@ void Mixer::prepare (double sampleRate, int maxBlockSize)
     reverb.prepare (sampleRate, maxBlockSize);
     limiter.prepare (sr);
     for (auto& line : auxDelay) line.assign ((size_t) std::max (1, limiter.latencySamples()), 0.0f);
+    auxSilent.fill (0);
     auxPos = 0;
     for (auto& c : channels)
     {
@@ -195,6 +196,7 @@ void Mixer::reset() noexcept
     reverb.reset();
     limiter.reset();
     for (auto& line : auxDelay) std::fill (line.begin(), line.end(), 0.0f);
+    auxSilent.fill (0);
     auxPos = 0;
     duckEnv = duckPeak = duckLp1 = duckLp2 = 0.0f;
     for (auto& m : meters) m.store (0.0f);
@@ -373,6 +375,7 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
         }
         reductions[(size_t) ci].store (comp ? c.comp.gainReductionDb() : 0.0f, std::memory_order_relaxed);
         const bool eqHere = eq && ! comp;
+        const bool sendOnA = c.sendA != 0.0f, sendOnB = c.sendB != 0.0f;
         float peak = 0.0f;
         for (int i = 0; i < n; ++i)
         {
@@ -392,10 +395,16 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
             }
             dl[i] += l;
             dr[i] += r;
-            sendAL[(size_t) i] += l * c.sendA;
-            sendAR[(size_t) i] += r * c.sendA;
-            sendBL[(size_t) i] += l * c.sendB;
-            sendBR[(size_t) i] += r * c.sendB;
+            if (sendOnA) // p35: a send at 0 adds exactly nothing
+            {
+                sendAL[(size_t) i] += l * c.sendA;
+                sendAR[(size_t) i] += r * c.sendA;
+            }
+            if (sendOnB)
+            {
+                sendBL[(size_t) i] += l * c.sendB;
+                sendBR[(size_t) i] += r * c.sendB;
+            }
             peak = std::max (peak, std::max (std::abs (l), std::abs (r)));
         }
         meters[(size_t) ci].store (peak, std::memory_order_relaxed);
@@ -481,7 +490,11 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
             for (int c = 0; c < 2; ++c)
             {
                 float* b = c == 0 ? out.left[(size_t) o] : out.right[(size_t) o];
-                auto& line = auxDelay[(size_t) ((o - 1) * 2 + c)];
+                const auto k = (size_t) ((o - 1) * 2 + c);
+                auto& line = auxDelay[k];
+                // p35: an output that is off keeps writing silence; once its whole line is silence there is nothing to do
+                if (b == nullptr && auxSilent[k] >= D) continue;
+                auxSilent[k] = b == nullptr ? std::min (D, auxSilent[k] + n) : 0;
                 int p = auxPos;
                 for (int i = 0; i < n; ++i)
                 {

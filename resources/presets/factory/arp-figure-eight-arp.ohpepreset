@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "wavetable",
-  "comment": "Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. Latched.",
+  "comment": "Digital arp tracing a lying eight around you - left front, across, right behind - over two bars.",
   "params": {
     "engine": 1,
     "wavetable.table": 3,
@@ -71,7 +71,12 @@
     "fx3.compressor.release": 180.0,
     "fx3.compressor.knee": 6.0,
     "fx3.compressor.makeup": 0.0,
-    "fx3.compressor.mix": 1.0
+    "fx3.compressor.mix": 1.0,
+    "mod.s1.src": 9,
+    "mod.s1.via": 0,
+    "mod.s1.dst": 44,
+    "mod.s1.amt": 0.25,
+    "mod.s1.curve": 0
   },
   "arp": {
     "on": 1,

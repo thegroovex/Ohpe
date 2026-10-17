@@ -138,8 +138,13 @@
     "mpe.bend": 48,
     "glide": 0.03,
     "gain": 6.2,
-    "expr.at.dst1": 12,
+    "mod.s9.src": 9,
+    "mod.s9.via": 0,
+    "mod.s9.dst": 4,
+    "mod.s9.amt": 0.25,
+    "mod.s9.curve": 0,
+    "expr.at.curve1": 3,
     "expr.at.amt1": 0.3,
-    "expr.at.curve1": 3
+    "expr.at.dst1": 12
   }
 }

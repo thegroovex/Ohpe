@@ -19,7 +19,7 @@ helle / dunkle Erscheinung, MIDI, Updates, Über). Jede Funktion ist mit der Mau
 | Element | Wirkung |
 |---|---|
 | **PITCH**-Rad | Pitchbend für den bearbeiteten Part (auf seinem MIDI-Kanal, wie die Bildschirm-Klaviatur); Umfang = *Pitchbend-Bereich* des Parts. Nach oben / unten ziehen; beim Loslassen federt es zur Mitte zurück. |
-| **MOD**-Rad | das Modulationsrad (CC 1): eine Quelle der [Modulationsmatrix](MODULATION.md). Bleibt stehen; Doppelklick = 0. |
+| **MOD**-Rad | das Modulationsrad (CC 1): eine Quelle der [Modulationsmatrix](MODULATION.md); jedes Werks-Preset reagiert darauf ([Werksklänge](FACTORY-SOUNDS.md#modulationsrad-p29)). Bleibt stehen; Doppelklick = 0. |
 | Klaviatur | drei Oktaven (ab Werk C3–C6); **OKTAVE −/+** verschiebt sie. **RASTER** (zwischen OKTAVE + und MIDI) tauscht sie gegen die isomorphe [Raster-Tastatur](HARMONIE.md#die-raster-tastatur) mit MPE (p24). |
 | **PORTAMENTO**: AUTO / LEGATO / IMMER | Glide-Modus des bearbeiteten Parts: *Auto* gleitet, solange die vorige Note klingt, *Legato* nur bei gehaltener Taste, *Immer* von jeder vorigen Note. |
 | **GLIDE** | Glide-Zeit des bearbeiteten Parts (0 = aus). |
@@ -548,6 +548,17 @@ Clock und Sync), **MIDI-Learn** (alle Zuweisungen: bearbeiten, löschen, alle l�
 ![Der Nachtmodus](../images/ohpe-dark-de.png)
 
 Einzelheiten: [Einstellungen](EINSTELLUNGEN.md).
+
+## CPU-Anzeige (p35)
+
+![Die CPU-Anzeige auf der Beschriftungszeile der Modus-Spalte](../images/ohpe-cpu-meter-de.png)
+
+`CPU 12 %` auf der Beschriftungszeile der Modus-Spalte (rechts, neben MODUS) zeigt, wie viel der Zeit jedes
+Audioblocks Ohpe braucht, um seinen Klang zu berechnen – gemittelt über etwa eine halbe Sekunde; 100 % wäre die ganze
+Zeit (der Ton würde aussetzen). Der Tooltip nennt zusätzlich den langsamsten Block der letzten zwei Sekunden. Die
+Beschriftung wird rot ab 80 % im Mittel oder wenn ein Block länger als seine eigene Zeit brauchte. Es ist nur eine
+Anzeige (kein Parameter, wird nicht gespeichert). Parts, die einige Sekunden still waren, schlafen und kosten fast
+nichts, bis sie wieder spielen. Einzelheiten: [Leistung](LEISTUNG.md).
 
 ## Tasten
 

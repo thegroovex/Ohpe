@@ -71,6 +71,11 @@
     "fx4.compressor.release": 180.0,
     "fx4.compressor.knee": 6.0,
     "fx4.compressor.makeup": 0.0,
-    "fx4.compressor.mix": 1.0
+    "fx4.compressor.mix": 1.0,
+    "mod.s1.src": 1,
+    "mod.s1.via": 9,
+    "mod.s1.dst": 1,
+    "mod.s1.amt": 0.03,
+    "mod.s1.curve": 0
   }
 }

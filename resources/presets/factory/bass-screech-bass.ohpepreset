@@ -132,6 +132,11 @@
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
     "tune": 12,
-    "gain": 0.0
+    "gain": 0.0,
+    "mod.s9.src": 9,
+    "mod.s9.via": 0,
+    "mod.s9.dst": 4,
+    "mod.s9.amt": 0.15,
+    "mod.s9.curve": 0
   }
 }

@@ -71,6 +71,9 @@ void checkContrast (const char* skin)
     CHECK (contrast (colour::display, colour::sunYellow) >= 4.5); // text on a lit chip
     CHECK (contrast (colour::sunYellow, colour::display) >= 4.5);
     CHECK (contrast (colour::playGreenLit, colour::display) >= 4.5);
+    // p35: the CPU meter's legend on the housing, normal (engraving) and hot (alertInk)
+    CHECK (contrast (colour::alertInk, colour::body) >= 4.5);
+    CHECK (contrast (colour::alertInk, colour::panel) >= 4.5);
     // octave labels on the natural keys (top and bottom of the key's gradient, pressed or not)
     for (auto key : { colour::keyLight, colour::keyLightPressed })
     {

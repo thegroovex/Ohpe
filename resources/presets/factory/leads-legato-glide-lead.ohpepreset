@@ -59,8 +59,13 @@
     "fx3.delay.pingpong": 1,
     "fx3.delay.mix": 0.16,
     "gain": 18.1,
-    "expr.at.dst1": 12,
+    "mod.s1.src": 1,
+    "mod.s1.via": 9,
+    "mod.s1.dst": 1,
+    "mod.s1.amt": 0.03,
+    "mod.s1.curve": 0,
+    "expr.at.curve1": 3,
     "expr.at.amt1": 0.25,
-    "expr.at.curve1": 3
+    "expr.at.dst1": 12
   }
 }

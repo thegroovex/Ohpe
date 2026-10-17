@@ -135,8 +135,13 @@
     "fx6.compressor.knee": 6.0,
     "fx6.compressor.makeup": 0.0,
     "fx6.compressor.mix": 1.0,
-    "expr.at.dst1": 12,
+    "mod.s6.src": 9,
+    "mod.s6.via": 0,
+    "mod.s6.dst": 4,
+    "mod.s6.amt": 0.25,
+    "mod.s6.curve": 0,
+    "expr.at.curve1": 3,
     "expr.at.amt1": 0.3,
-    "expr.at.curve1": 3
+    "expr.at.dst1": 12
   }
 }

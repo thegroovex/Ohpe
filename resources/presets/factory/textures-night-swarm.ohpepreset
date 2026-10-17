@@ -93,6 +93,11 @@
     "fx3.compressor.release": 180.0,
     "fx3.compressor.knee": 6.0,
     "fx3.compressor.makeup": 0.0,
-    "fx3.compressor.mix": 1.0
+    "fx3.compressor.mix": 1.0,
+    "mod.s3.src": 9,
+    "mod.s3.via": 0,
+    "mod.s3.dst": 4,
+    "mod.s3.amt": 0.3,
+    "mod.s3.curve": 0
   }
 }

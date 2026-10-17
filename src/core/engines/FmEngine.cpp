@@ -69,10 +69,34 @@ void Voice::start (int midiNote, float vel, bool legato, const VoiceCommon& c) n
     }
 }
 
+bool useLibrarySine = false;
+
 void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) noexcept
+{
+    if (useLibrarySine) renderImpl<true> (l, r, numSamples, c);
+    else renderImpl<false> (l, r, numSamples, c);
+}
+
+template <bool librarySine>
+void Voice::renderImpl (float* l, float* r, int numSamples, const VoiceCommon& c) noexcept
 {
     const Shared& p = *shared;
     const Algorithm& a = p.algo;
+    // p35: the links of the algorithm (its zero entries skipped) and the operators that matter (level above 0)
+    int numSrc[numOps] {};
+    int src[numOps][numOps] {};
+    float srcAmt[numOps][numOps] {};
+    bool used[numOps];
+    for (int o = 0; o < numOps; ++o)
+    {
+        for (int s = o + 1; s < numOps; ++s)
+            if (a.mod[o][s] != 0.0f)
+            {
+                src[o][numSrc[o]] = s;
+                srcAmt[o][numSrc[o]++] = a.mod[o][s];
+            }
+        used[o] = p.level[(size_t) o] != 0.0f;
+    }
     int done = 0;
     while (done < numSamples && isActive())
     {
@@ -102,30 +126,105 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
         lfoPan (c, panL, panR);
         const float gain = 0.35f * velocityGain (c) * lfoAmp (c);
 
-        for (int i = 0; i < n; ++i)
+        if constexpr (librarySine)
         {
-            float opOut[numOps];
+            // the reference form (tests compare the fast form below with it)
+            for (int i = 0; i < n; ++i)
+            {
+                float opOut[numOps];
+                for (int o = numOps - 1; o >= 0; --o)
+                {
+                    float pm = 0.0f;
+                    for (int s = o + 1; s < numOps; ++s)
+                        pm += a.mod[o][s] * opOut[s];
+                    pm *= depth;
+                    if (o == numOps - 1) pm += fbAmt * 0.5f * (fb1 + fb2);
+                    opOut[o] = std::sin (dsp::twoPi * phase[(size_t) o] + pm) * p.level[(size_t) o];
+                    phase[(size_t) o] += inc[(size_t) o];
+                    if (phase[(size_t) o] >= 1.0f) phase[(size_t) o] -= 1.0f;
+                }
+                fb2 = fb1;
+                fb1 = opOut[numOps - 1];
+                float sum = 0.0f;
+                for (int o = 0; o < numOps; ++o) sum += a.out[o] * opOut[o];
+                modEnv.next();
+                const float ae = ampEnv.next();
+                const float out = sum * ae * gain;
+                l[done + i] += out * panL;
+                r[done + i] += out * panR;
+                if (subOn) subAddDirect (ae, l[done + i], r[done + i]); // p31: SUB layer (no voice filter: always direct)
+            }
+        }
+        else
+        {
+            // p35: the same, with the phase modulation in turns and the polynomial sine (no library call), computed one
+            // operator at a time over the control block (modulators first): the samples of an operator do not depend on
+            // each other (only operator 6 with feedback does), so their sines overlap instead of waiting for the one
+            // before - same arithmetic in the same order per sample. Only the links the algorithm has are summed;
+            // operators at level 0 skip their sine (they add exactly nothing; their phase still runs)
+            constexpr float inv2Pi = 1.0f / dsp::twoPi;
+            const float depthTurns = depth * inv2Pi, fbTurns = fbAmt * 0.5f * inv2Pi;
+            float ops[numOps][controlRate];
             for (int o = numOps - 1; o >= 0; --o)
             {
-                float pm = 0.0f;
-                for (int s = o + 1; s < numOps; ++s)
-                    pm += a.mod[o][s] * opOut[s];
-                pm *= depth;
-                if (o == numOps - 1) pm += fbAmt * 0.5f * (fb1 + fb2);
-                opOut[o] = std::sin (dsp::twoPi * phase[(size_t) o] + pm) * p.level[(size_t) o];
-                phase[(size_t) o] += inc[(size_t) o];
-                if (phase[(size_t) o] >= 1.0f) phase[(size_t) o] -= 1.0f;
+                float* y = ops[o];
+                float ph = phase[(size_t) o];
+                const float step = inc[(size_t) o];
+                if (! used[o])
+                {
+                    for (int i = 0; i < n; ++i) y[i] = 0.0f;
+                }
+                else if (o == numOps - 1) // the feedback operator (no modulators above it)
+                {
+                    const float lvl = p.level[(size_t) o];
+                    float f1 = fb1, f2 = fb2;
+                    for (int i = 0; i < n; ++i)
+                    {
+                        const float x = ph + fbTurns * (f1 + f2);
+                        y[i] = dsp::sinTurns (x) * lvl;
+                        f2 = f1;
+                        f1 = y[i];
+                        ph += step;
+                        if (ph >= 1.0f) ph -= 1.0f;
+                    }
+                }
+                else
+                {
+                    const float lvl = p.level[(size_t) o];
+                    const int ns = numSrc[o];
+                    for (int i = 0; i < n; ++i)
+                    {
+                        float pm = 0.0f;
+                        for (int k = 0; k < ns; ++k) pm += srcAmt[o][k] * ops[src[o][k]][i];
+                        y[i] = dsp::sinTurns (ph + pm * depthTurns) * lvl;
+                        ph += step;
+                        if (ph >= 1.0f) ph -= 1.0f;
+                    }
+                }
+                if (! used[o]) // the phase runs on
+                    for (int i = 0; i < n; ++i)
+                    {
+                        ph += step;
+                        if (ph >= 1.0f) ph -= 1.0f;
+                    }
+                phase[(size_t) o] = ph;
             }
-            fb2 = fb1;
-            fb1 = opOut[numOps - 1];
-            float sum = 0.0f;
-            for (int o = 0; o < numOps; ++o) sum += a.out[o] * opOut[o];
-            modEnv.next();
-            const float ae = ampEnv.next();
-            const float out = sum * ae * gain;
-            l[done + i] += out * panL;
-            r[done + i] += out * panR;
-            if (subOn) subAddDirect (ae, l[done + i], r[done + i]); // p31: SUB layer (no voice filter: always direct)
+            if (n > 0)
+            {
+                fb2 = n > 1 ? ops[numOps - 1][n - 2] : fb1;
+                fb1 = ops[numOps - 1][n - 1];
+            }
+            for (int i = 0; i < n; ++i)
+            {
+                float sum = 0.0f;
+                for (int o = 0; o < numOps; ++o) sum += a.out[o] * ops[o][i];
+                modEnv.next();
+                const float ae = ampEnv.next();
+                const float out = sum * ae * gain;
+                l[done + i] += out * panL;
+                r[done + i] += out * panR;
+                if (subOn) subAddDirect (ae, l[done + i], r[done + i]); // p31: SUB layer (no voice filter: always direct)
+            }
         }
         done += n;
     }

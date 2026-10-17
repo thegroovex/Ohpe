@@ -93,3 +93,7 @@ target_sources(ohpe_core_tests PRIVATE SubTests.cpp)
 target_sources(ohpe_core_tests PRIVATE ExpressionTests.cpp) # p33: expressive playing
 # p32: the user's settings
 target_sources(ohpe_core_tests PRIVATE UserSettingsTests.cpp)
+# p35: CPU benchmark (percent of one core per scenario; informational, CI prints it, never gates on timing)
+add_executable(ohpe_bench ${CMAKE_SOURCE_DIR}/tools/bench/OhpeBench.cpp)
+target_link_libraries(ohpe_bench PRIVATE ohpe_core)
+target_sources(ohpe_core_tests PRIVATE PerfTests.cpp) # p35: the performance pass

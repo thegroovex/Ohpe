@@ -57,6 +57,11 @@
     "mpe.bend": 48,
     "voices": 6,
     "gain": 6.7,
-    "life": 0.3
+    "life": 0.3,
+    "mod.s1.src": 9,
+    "mod.s1.via": 0,
+    "mod.s1.dst": 4,
+    "mod.s1.amt": 0.09,
+    "mod.s1.curve": 0
   }
 }

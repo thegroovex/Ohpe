@@ -160,6 +160,7 @@ Alle Tests laufen mit `scripts/test-all.sh` – siehe [Mitwirken](docs/de/MITWIR
 * [Preset-Zucht](docs/de/ZUCHT.md) – zwei Klänge kreuzen, die besten Kinder behalten, Generationen züchten
 * [Bounce ins Instrument](docs/de/BOUNCE-INS-INSTRUMENT.md) – Tape oder Live-Eingang in Grain / Sampler, Endlosschleifen
 * [Modulationsmatrix](docs/de/MODULATION.md) – Verbindungen, Quellen, Ziele, LFO 2 / 3, Hüllkurve 3, Makros
+* [Leistung](docs/de/LEISTUNG.md) – CPU-Anzeige, schlafende stille Parts, Benchmark-Zahlen, `ohpe_bench`
 * [Parameter](docs/PARAMETERS.md) – alle Host-Parameter-IDs
 * [Architektur](docs/de/ARCHITEKTUR.md) – Kurzfassung; ausführlich auf Englisch in [ARCHITECTURE.md](docs/ARCHITECTURE.md)
 * [Gestaltung](docs/de/DESIGN.md) – Farben, Figuren, Bedienelemente

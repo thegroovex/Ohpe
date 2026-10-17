@@ -156,6 +156,11 @@
     "fx5.compressor.release": 180.0,
     "fx5.compressor.knee": 6.0,
     "fx5.compressor.makeup": 0.0,
-    "fx5.compressor.mix": 1.0
+    "fx5.compressor.mix": 1.0,
+    "mod.s8.src": 9,
+    "mod.s8.via": 0,
+    "mod.s8.dst": 4,
+    "mod.s8.amt": 0.25,
+    "mod.s8.curve": 0
   }
 }

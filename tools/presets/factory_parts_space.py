@@ -114,13 +114,13 @@ PRESETS_SPACE = [
 
     # ================================================================ ARPS (3)
     S("Orbit Arp", ["Arp", "3D"], "pluck",
-      "Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast. Latched: hold a chord.",
+      "Sixteenth-note pluck arpeggio flying round your head once a bar - close, bright and fast.",
       pl(material=0.35, damping=0.3, bright=0.6, body=0.3, excite=0.25, pickpos=0.3, bodysize=0.4),
       amp(0.001, 0.8, 0.0, 0.4), comp(1, -8.0, 6.0, 0.1, 30.0), dly(2, 0.375, 0.3, 0.5, 1, 0.24), rev(3, 0.6, 0.5, 0.02, 0.18),
       space("circle", "1 bar", size=0.15, dist=1.8, spread=20.0, room=0.36, roomsize=0.35, doppler=0.25),
       arp("up", 2, 0.8, "1/16", latch=1), voices=8),
     S("Figure Eight Arp", ["Arp", "3D"], "wavetable",
-      "Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. Latched.",
+      "Digital arp tracing a lying eight around you - left front, across, right behind - over two bars.",
       wt(table="digital", pos=0.35, tone=0.72, unison=0.2, univoices=3, uniwidth=0.6, keytrack=0.5, envpos=0.3),
       amp(0.001, 0.35, 0.2, 0.2), mod(0.001, 0.25, 0.0, 0.2, 0.4), dly(2, 0.25, 0.35, 0.45, 1, 0.2), rev(3, 0.65, 0.5, 0.02, 0.2),
       space("figure8", "2 bars", size=0.85, dist=2.2, spread=25.0, room=0.3, roomsize=0.4, doppler=0.35),

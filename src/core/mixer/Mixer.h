@@ -142,6 +142,7 @@ private:
     ReverbEffect reverb;
     Limiter limiter;
     std::array<std::vector<float>, 2 * numAuxOutputs> auxDelay; ///< 0.8: aux outputs delayed like the main output
+    std::array<int, 2 * numAuxOutputs> auxSilent {}; ///< p35: silent samples written in a row per aux line (off outputs)
     int auxPos = 0;
     std::array<int, numDynParams> dynIdx {};
     bool masterCompOn = false;

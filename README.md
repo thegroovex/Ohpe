@@ -155,6 +155,7 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 * [Preset breeding](docs/en/BREEDING.md) – cross two sounds, keep the best children, breed generations
 * [Bounce to engine](docs/en/BOUNCE.md) – tape or live input into Grain / Sampler, endless loops
 * [Modulation matrix](docs/en/MODULATION.md) – routings, sources, targets, LFO 2 / 3, envelope 3, macros
+* [Performance](docs/en/PERFORMANCE.md) – the CPU meter, sleeping silent parts, benchmark numbers, `ohpe_bench`
 * [Parameters](docs/PARAMETERS.md) – every host parameter ID
 * [Architecture](docs/ARCHITECTURE.md) – core, plug-in shell, threading, parameters, extension points
 * [Design language](docs/DESIGN.md) – colours, characters, components

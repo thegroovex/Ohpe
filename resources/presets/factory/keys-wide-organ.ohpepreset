@@ -59,6 +59,18 @@
     "lfo.dest": 3,
     "wavetable.lfopos": 0.12,
     "voices": 10,
-    "gain": 5.2
+    "gain": 5.2,
+    "lfo2.rate": 5.3,
+    "lfo2.sync": 0,
+    "lfo2.shape": 0,
+    "lfo2.phase": 0.0,
+    "lfo2.fade": 0.25,
+    "lfo2.mode": 1,
+    "lfo2.depth": 1.0,
+    "mod.s1.src": 2,
+    "mod.s1.via": 9,
+    "mod.s1.dst": 1,
+    "mod.s1.amt": 0.03,
+    "mod.s1.curve": 0
   }
 }

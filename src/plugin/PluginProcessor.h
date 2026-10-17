@@ -4,6 +4,7 @@
 
 #include "BounceToEngine.h"
 #include "OhpeCore.h"
+#include "model/CpuLoad.h"
 #include "PresetManager.h"
 #include "SampleLoader.h"
 #include "UserTables.h"
@@ -59,6 +60,8 @@ public:
 
     // ---- Ohpe ----
     Core& core() noexcept { return ohpeCore; }
+    /** p35: the CPU meter (share of each block's time the processing took; any thread). */
+    const CpuLoad& cpuLoad() const noexcept { return cpuMeter; }
     /** Sample files for the Sampler / Grain engines and drum pads (message thread). */
     SampleLoader& sampleLoader() noexcept { return samples; }
     /** p20: user wavetables / formant tracks (audio to wavetable). Message thread. */
@@ -175,6 +178,23 @@ private:
     std::vector<std::atomic<float>*> rawValues;
     std::vector<juce::RangedAudioParameter*> params;
     std::unique_ptr<std::atomic<float>[]> lastPushed; ///< plain value last copied host -> registry (audio + message thread)
+    // p35: host parameters that changed since the last block (one bit each, set by an APVTS listener after the raw
+    // value is stored); processBlock copies only those into the registry, plus one word of 64 per block as a sweep
+    struct HostParamListener final : juce::AudioProcessorValueTreeState::Listener
+    {
+        OhpeProcessor* owner = nullptr;
+        int index = 0;
+        void parameterChanged (const juce::String&, float) override { owner->markHostChanged (index); }
+    };
+    void markHostChanged (int index) noexcept
+    {
+        hostChanged[(size_t) index >> 6].fetch_or (uint64_t (1) << (index & 63), std::memory_order_release);
+    }
+    void pushHostParameter (size_t i) noexcept;
+    std::vector<std::unique_ptr<HostParamListener>> hostListeners;
+    std::unique_ptr<std::atomic<uint64_t>[]> hostChanged;
+    int hostChangedWords = 0, sweepWord = 0;
+    CpuLoad cpuMeter; ///< p35
     std::vector<MidiEvent> midiScratch;
     juce::AudioBuffer<float> scratch;
     juce::AudioBuffer<float> inputScratch; ///< 0.2: input bus copy for tape recording

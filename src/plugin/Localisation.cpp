@@ -692,6 +692,9 @@ const std::map<juce::String, juce::String>& table()
         { "Pitch bend and modulation", "Pitchbend und Modulation" },
         { "Portamento mode and time", "Portamento-Modus und -Zeit" },
         { "Language, help, skin, MIDI", "Sprache, Hilfe, Erscheinung, MIDI" },
+        // p35: the CPU meter
+        { "CPU load: share of the audio time the sound takes to compute", "Rechenlast: Anteil der Audiozeit, den die Klangberechnung braucht" },
+        { "Peak", "Spitze" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;

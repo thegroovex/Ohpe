@@ -17,7 +17,7 @@ and the **settings** key (gear: language EN / DE, help, light / dark skin, MIDI,
 | Control | What it does |
 |---|---|
 | **PITCH** wheel | pitch bend for the edit part (its MIDI channel, like the on-screen keyboard); range = the part's *Bend Range*. Drag up / down; it springs back to the centre when you let go. |
-| **MOD** wheel | the mod wheel (CC 1): a source in the [modulation matrix](MODULATION.md). Stays where you leave it; double-click = 0. |
+| **MOD** wheel | the mod wheel (CC 1): a source in the [modulation matrix](MODULATION.md); every factory preset answers it ([factory sounds](FACTORY-SOUNDS.md#mod-wheel-p29)). Stays where you leave it; double-click = 0. |
 | Keyboard | three octaves (C3–C6 by default); **OCTAVE −/+** moves it. **GRID** (between OCTAVE + and MIDI) swaps it for the isomorphic [grid keyboard](HARMONY.md#the-grid-keyboard) with MPE (p24). |
 | **PORTAMENTO**: AUTO / LEGATO / ALWAYS | glide mode of the edit part: *Auto* glides while the previous note still sounds, *Legato* only while another key is held, *Always* from every previous note. |
 | **GLIDE** | glide time of the edit part (0 = off). |
@@ -523,6 +523,16 @@ clear, clear all, map files), **Updates**, **Help** and **About**. **F1** switch
 ![The night skin](../images/ohpe-dark.png)
 
 Details: [Settings](SETTINGS.md).
+
+## CPU meter (p35)
+
+![The CPU meter on the mode column's legend line](../images/ohpe-cpu-meter.png)
+
+`CPU 12 %` on the legend line of the mode column (right, next to MODE) shows how much of each audio block's time Ohpe
+needs to compute its sound – averaged over about half a second; 100 % would be the whole time (the audio would break
+up). The tooltip adds the slowest block of the last two seconds. The legend turns red from 80 % on average or when a
+block took longer than its own time. It is a display only (no parameter, not saved). Parts that have been silent for a
+few seconds sleep and cost almost nothing until they play again. Details: [Performance](PERFORMANCE.md).
 
 ## Keys and shortcuts
 

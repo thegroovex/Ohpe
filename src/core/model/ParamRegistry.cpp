@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "ParamRegistry.h"
 
+#include <algorithm>
 #include <stdexcept>
 
 namespace ohpe
@@ -32,6 +33,9 @@ void ParamRegistry::freeze()
     if (frozen)
         return;
     values.reset (new std::atomic<float>[descriptors.size()]);
+    dirtyWords = (int) ((descriptors.size() + 63) / 64);
+    dirty.reset (new std::atomic<uint64_t>[(size_t) std::max (1, dirtyWords)]);
+    for (int w = 0; w < dirtyWords; ++w) dirty[(size_t) w].store (0);
     frozen = true;
     resetToDefaults();
 }
@@ -47,6 +51,7 @@ void ParamRegistry::set (int index, float plain) noexcept
     if (index < 0 || index >= size())
         return;
     values[(size_t) index].store (descriptors[(size_t) index].clamp (plain), std::memory_order_relaxed);
+    dirty[(size_t) index >> 6].fetch_or (uint64_t (1) << (index & 63), std::memory_order_release); // p35: after the value
     counter.fetch_add (1, std::memory_order_relaxed);
 }
 
@@ -69,6 +74,7 @@ void ParamRegistry::resetToDefaults() noexcept
 {
     for (size_t i = 0; i < descriptors.size(); ++i)
         values[i].store (descriptors[i].defaultValue, std::memory_order_relaxed);
+    for (int w = 0; w < dirtyWords; ++w) dirty[(size_t) w].store (~uint64_t (0), std::memory_order_release); // p35
     counter.fetch_add (1, std::memory_order_relaxed);
 }
 } // namespace ohpe

@@ -55,7 +55,12 @@
     "lfo.shape": 1,
     "lfo.dest": 1,
     "voices": 8,
-    "gain": 18.1
+    "gain": 18.1,
+    "mod.s1.src": 9,
+    "mod.s1.via": 0,
+    "mod.s1.dst": 48,
+    "mod.s1.amt": 0.25,
+    "mod.s1.curve": 0
   },
   "arp": {
     "on": 1,

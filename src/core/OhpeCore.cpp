@@ -375,7 +375,7 @@ void Core::applyLocks (const std::vector<ParamLockEvent>& locks, size_t& next, i
     }
     if (changed)
     {
-        snapshot.pull (registry);
+        snapshot.pullChanged (registry); // p35: only what changed (same values as a full pull)
         morphSpace.afterPull(); // p16
         for (auto& p : parts) p->pullParams (snapshot);
         drums.pullParams (snapshot);
@@ -458,7 +458,7 @@ Transport Core::makeTransport (const Transport& host, const MidiEvent* midi, int
 void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEvent* midi, int numMidi, const Transport& host) noexcept
 {
     // 1. parameters for this block, the transport (p22: the motion lanes need its position before the parts read them)
-    snapshot.pull (registry);
+    snapshot.pullChanged (registry); // p35: only what changed (same values as a full pull)
     const Transport tr = makeTransport (host, midi, numMidi, numSamples);
     motionRec.process (tr, numSamples); // p22: recorded knob movements over the snapshot
     morphSpace.afterPull(); // p16: the morph values over the parts' own
