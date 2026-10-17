@@ -294,6 +294,7 @@ private:
     juce::String lastFlashText;
     int transportMessagesSeen = 0;
     float blinkClock = 0.0f;
+    double gridHintUntil = 0.0; ///< p47: the grid's first-use hint in the keyboard readout shows until then (ms counter)
     std::array<unsigned, numEngineTypes> engineTipParts {}; ///< p14: part sets the engine tooltips were written for
     bool engineTipsValid = false;
     ui::PictoKey octDownKey { ui::Picto::OctaveDown, "Octave" };

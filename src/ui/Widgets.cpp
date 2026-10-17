@@ -282,15 +282,27 @@ void drawFittedLegend (juce::Graphics& g, const juce::String& text, juce::Rectan
     g.drawText (text, area, j, true);
 }
 
-void drawBaselineLegend (juce::Graphics& g, const juce::String& text, juce::Rectangle<float> area, float height, juce::Justification j)
+void drawBaselineLegend (juce::Graphics& g, const juce::String& text, juce::Rectangle<float> area, float height, juce::Justification j, bool optical)
 {
     auto f = labelFont (height);
     const float baseline = area.getY() + (area.getHeight() + f.getAscent() - f.getDescent()) * 0.5f;
     const float w = juce::GlyphArrangement::getStringWidth (f, text);
     if (w > area.getWidth() && w > 0.0f) f = f.withHorizontalScale (juce::jmax (0.7f, area.getWidth() / w));
+    const bool left = j.testFlags (juce::Justification::left), right = j.testFlags (juce::Justification::right);
+    if (optical && (left || right) && text.isNotEmpty())
+    {
+        // p47: place by the ink - lay the line out at 0, measure its outline, move it so the ink meets the edge
+        juce::GlyphArrangement ga;
+        ga.addLineOfText (f, text, 0.0f, juce::roundToInt (baseline));
+        juce::Path ink;
+        ga.createPath (ink);
+        const auto inkBox = ink.getBounds();
+        ga.moveRangeOfGlyphs (0, -1, left ? area.getX() - inkBox.getX() : area.getRight() - inkBox.getRight(), 0.0f);
+        ga.draw (g);
+        return;
+    }
     g.setFont (f);
-    const int x = j.testFlags (juce::Justification::left) ? (int) area.getX()
-                : j.testFlags (juce::Justification::right) ? (int) area.getRight() : (int) area.getCentreX();
+    const int x = left ? (int) area.getX() : right ? (int) area.getRight() : (int) area.getCentreX();
     g.drawSingleLineText (text, x, juce::roundToInt (baseline), j.getOnlyHorizontalFlags());
 }
 
@@ -410,7 +422,8 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
     if (style == Style::Round)
     {
         const float d = juce::jmin (body.getWidth(), body.getHeight()) - 2.0f;
-        const auto ringBox = juce::Rectangle<float> (d, d).withCentre (body.getCentre());
+        auto ringBox = juce::Rectangle<float> (d, d).withCentre (body.getCentre());
+        if (flushRight) ringBox = ringBox.withX (body.getRight() - d); // p47: the ring's outer edge on the area's right edge
         const float ringW = juce::jmax (1.5f, d * 0.07f);
         fourColourRing (g, ringBox.getCentre(), d * 0.5f - ringW * 0.5f, ringW);
         auto cap = ringBox.reduced (ringW * 1.9f);
@@ -517,7 +530,8 @@ void PictoKey::paintButton (juce::Graphics& g, bool over, bool down)
     }
     if (! showLegend && ! legendOnTop) return;
     g.setColour (available ? colour::engraving : colour::engraving.withAlpha (0.45f));
-    if (legendOnTop) drawBaselineLegend (g, i18n::upper (tr (legend)), legendArea, 11.0f * uiScale);
+    if (legendOnTop) drawBaselineLegend (g, i18n::upper (tr (legend)), legendArea, 11.0f * uiScale,
+                                         flushRight ? juce::Justification::centredRight : juce::Justification::centred, flushRight);
     else drawFittedLegend (g, i18n::upper (tr (legend)), legendArea, 10.5f * uiScale);
 }
 
@@ -1088,6 +1102,12 @@ void Readout::paint (juce::Graphics& g)
     g.setColour (juce::Colours::black.withAlpha (0.5f));
     g.drawRoundedRectangle (glass.reduced (0.5f), r, 1.0f);
     auto in = glass.reduced (8.0f * u, 4.0f * u);
+    if (hint.isNotEmpty()) // p47: a short hint in place of the readout
+    {
+        g.setColour (colour::displayText);
+        drawFittedLegend (g, hint, in, juce::jmin (in.getHeight() * 0.62f, 11.0f * u), juce::Justification::centredLeft);
+        return;
+    }
     const bool oneRow = glass.getWidth() > glass.getHeight() * 3.0f;
     if (oneRow)
     {

@@ -107,7 +107,7 @@ oder tut.
 ## App-Symbol (p43)
 
 Eine dunkle, matte Kachel in den Gehäusefarben des Nachtmodus; darauf ein Ring aus warmweißem Licht
-(#efe9de) mit weichem ultraviolettem Schein, oben eine kleine Lücke mit dem grünen PLAY-Punkt (#3fd08e)
+(#efe9de) mit weichem ultraviolettem Schein, oben eine kleine Lücke mit dem roten Punkt (#e5243b, mit weichem rotem Schein: der Punkt des Schriftzugs, REC-Rot)
 und darin zwei Perioden einer Sinuswelle, die den Ring links und rechts berühren – Klang, Schleife und
 „spielt“ in einem Zeichen. Eigene Gestaltung, handgeschriebene SVG-Dateien in `resources/icon/`:
 `ohpe-icon.svg` (macOS-Raster mit Rand und Schatten), `ohpe-icon-square.svg` (Windows / Linux / Doku),
@@ -120,6 +120,25 @@ zeichnet. `python3 tools/app-icon/make_icons.py` rendert sie (rsvg-convert oder 
 macOS-Bundles (App, VST3, AU), in die Windows-Exe und das VST3 (Icon-Ressource) und auf das DMG-Volume;
 die CI prüft jedes davon. Die Seite **Über** zeigt es klein vor dem Schriftzug; unter Linux ist es das
 Fenstersymbol der Standalone-App.
+
+## Schriftzug und Bildzeichen (p47)
+
+**OHPE** in der Hausschrift (Space Grotesk fett) mit dem roten Punkt dahinter, gesetzt wie ein Schlusspunkt:
+kurzer Abstand nach dem E, seine Unterkante auf der Grundlinie der Schrift. Auf dem Gehäuse steht das
+**Bildzeichen** vor dem Schriftzug – das Zeichen des App-Symbols ohne Kachel (Ring mit der Lücke oben, darin der
+rote Punkt, innen zwei Perioden einer Sinuswelle), als Vektorpfade gezeichnet (`src/ui/Brand.h`, Geometrie der
+SVG-Vorlage) in der Druckfarbe des Gehäuses: Graphit im hellen Modus, warmes Hellgrau im Nachtmodus, der Punkt im
+Encoder-Rot des jeweiligen Modus. Der Ring sitzt auf der Mitte der Versalien; Zeichen, Schriftzug und
+„designed by groovex“ stehen auf einer Grundlinie. Die Seite **Über** behält das App-Symbol (Kachel) vor dem
+Schriftzug.
+
+**Kanten der Kopfzeile (p47):** Der linke Block – Versionsbeschriftung, Bildzeichen, Engine-Beschriftung
+(„ENGINE / P1“) – beginnt auf einer Kante, x 40 (8 Einheiten innerhalb der Engine-Spalte), gemessen an der
+sichtbaren Form, nicht am Glyphenkasten: die Vorbreite der Buchstaben wird abgezogen, das runde Zeichen ragt um
+ein Haar darüber wie ein O gegenüber einem Stamm. Gespiegelt rechts steht die Taste EINSTELLUNGEN bündig (die Ringe der
+drei runden Tasten 80 Einheiten auseinander): Ring und Beschriftung enden auf x 1160, darunter die CPU-Anzeige (8 Einheiten innerhalb der
+Modus-Spalte). Alle Beschriftungen der Reihe bleiben auf einer Grundlinie (y 20 – 32), alle Bedienelemente auf
+der Mittellinie y 56.
 
 Texte gibt es überall auf Englisch und Deutsch; lange Texte werden gekürzt oder eingepasst, nie
 mitten im Zeichen abgeschnitten.

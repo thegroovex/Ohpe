@@ -124,6 +124,9 @@ public:
     void setLegendOnTop (bool t) { if (t != legendOnTop) { legendOnTop = t; repaint(); } }
     /** p14 rev 3: no legend under the key (small icon-only keys); the cap takes the whole height. */
     void setShowLegend (bool show) { if (show != showLegend) { showLegend = show; repaint(); } }
+    /** p47: the key flush with the right edge of its area (round key and its legend on top), for the outermost key of a
+        row: its ring and the legend's ink end on the edge the column panels and the CPU meter end on. */
+    void setFlushRight (bool f) { if (f != flushRight) { flushRight = f; repaint(); } }
     /** p14 rev 3: the key carries a light bar - a short lit window at the bottom edge of its cap, under the
         pictogram (unlit: a faint dark slot). One segment by default; see setBarSegments. */
     void setHasLed (bool h) { if (h != hasLed) { hasLed = h; repaint(); } }
@@ -154,7 +157,7 @@ public:
 private:
     Picto picto;
     juce::String legend;
-    bool hasLed = false, legendOnTop = false, showLegend = true, segmented = false, joinLeft = false, joinRight = false;
+    bool hasLed = false, legendOnTop = false, showLegend = true, segmented = false, joinLeft = false, joinRight = false, flushRight = false;
     float ledLevel = 0.0f;
     juce::Colour ledColour;
     std::array<juce::Colour, 4> segColour {};
@@ -169,8 +172,11 @@ private:
 /** Draws a legend in engraved small caps, shrinking the font (down to 70 %) until it fits the width. */
 void drawFittedLegend (juce::Graphics& g, const juce::String& text, juce::Rectangle<float> area, float height, juce::Justification j = juce::Justification::centred);
 /** p14: a header legend on a fixed baseline (the area's height and the font size set it, not the text):
-    too long a text is narrowed, never lowered, so every legend of the header row shares one baseline. */
-void drawBaselineLegend (juce::Graphics& g, const juce::String& text, juce::Rectangle<float> area, float height, juce::Justification j = juce::Justification::centred);
+    too long a text is narrowed, never lowered, so every legend of the header row shares one baseline.
+    p47: `optical` (left / right only) places the text by its ink, not its advance box: the first glyph's left side
+    bearing (or the last one's right) is taken out, so the legend's visible edge sits exactly on the area's edge. */
+void drawBaselineLegend (juce::Graphics& g, const juce::String& text, juce::Rectangle<float> area, float height, juce::Justification j = juce::Justification::centred,
+                         bool optical = false);
 
 /** p14: three-octave keyboard with matte keys. */
 class Keyboard : public juce::MidiKeyboardComponent
@@ -345,10 +351,13 @@ public:
     const juce::String& badgeText() const noexcept { return badge; }
     const juce::String& mainText() const noexcept { return main; }
     const juce::String& asideText() const noexcept { return aside; }
+    /** p47: a one-line hint over the whole glass instead of badge / value / aside (empty: the normal readout). */
+    void setHint (const juce::String& h) { if (h != hint) { hint = h; repaint(); } }
+    const juce::String& hintText() const noexcept { return hint; }
     void paint (juce::Graphics& g) override;
 
 private:
-    juce::String badge, main, aside;
+    juce::String badge, main, aside, hint;
     juce::Colour badgeColour;
     float uiScale = 1.0f;
 };
