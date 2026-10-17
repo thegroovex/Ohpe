@@ -2411,7 +2411,8 @@ void OhpeEditor::showMidiMenu()
                             // p11: tape transport
                             Core::Ids::tapeTxPlay, Core::Ids::tapeTxTapePlay, Core::Ids::tapeTxStop, Core::Ids::tapeTxRec,
                             Core::Ids::tapeRtz, Core::Ids::tapeTxLoop, Core::Ids::tapeTxArm, Core::Ids::tapeEditTrack,
-                            Core::Ids::bounceGo }) // p23
+                            Core::Ids::bounceGo, // p23
+                            Core::Ids::tapeClearTrack, Core::Ids::tapeClearAll }) // p38
     {
         const int idx = proc.core().params().indexOf (id);
         if (idx < 0) continue;

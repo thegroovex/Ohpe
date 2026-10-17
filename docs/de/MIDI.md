@@ -108,7 +108,9 @@ laufen sie, solange der Host spielt *und* `seq.run` an ist.
 (`tape.tx.loop`), *Tape Start/Stopp* (`tape.tx.tplay`), *Bearbeitungsspur aufnahmebereit*
 (`tape.tx.arm`) oder *Tape zum Anfang* (`tape.edit.rtz`) legen: Rechtsklick auf die Taste in Ohpe oder
 MIDI → *Fernsteuerung*. Sie lösen beim Drücken aus (CC ≥ 64), wie die Tasten am Gehäuse; siehe
-[Band-Transport](BAND-MISCHER-FX.md#transport).
+[Band-Transport](BAND-MISCHER-FX.md#transport). p38: *Tape Spur löschen* (`tape.edit.clear`) leert die
+Bearbeitungsspur sofort (rückgängig machbar); *Tape alles löschen* (`tape.edit.clearall`) öffnet die Rückfrage
+auf dem Bildschirm und löscht erst nach der Bestätigung.
 
 **Räder auf dem Bildschirm (p14).** PITCH- und MOD-Rad links der Klaviatur senden Pitchbend und das
 Modulationsrad (CC 1) auf dem Kanal des bearbeiteten Parts, wie die Bildschirm-Klaviatur. Pitchbend und

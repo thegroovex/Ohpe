@@ -327,7 +327,7 @@ Encoder-Seiten:
 | Bandcharakter | Sättigung, Wow, Flutter, Rauschen |
 | Bounce | Bounce-Quelle, Bounce-Ziel (Grain / Sampler), Endlosschleife, Eingangslänge (p23) |
 
-Soft-Tasten im Display:
+Soft-Tasten im Display – zwei Reihen: oben die Schnitte der gewählten Spur, unten das ganze Band:
 
 | Taste | Aktion |
 |---|---|
@@ -336,12 +336,21 @@ Soft-Tasten im Display:
 | **Einsetzen** | legt die Zwischenablage an die Abspielposition (überschreibt) |
 | **Einfügen** | fügt die Zwischenablage an der Abspielposition ein (späteres rückt nach hinten) |
 | **Rückgängig / Wiederholen** | unbegrenztes Rückgängig für Aufnahmen und Schnitte |
+| **Spur löschen** | leert die gewählte Spur sofort – ein Rückgängig-Schritt, **Rückgängig** holt sie zurück |
+| **Alles löschen** | leert alle acht Spuren nach einer Rückfrage (*Gesamte Bandaufnahme löschen?* – **Abbrechen** ist vorgewählt, Eingabe und Esc brechen ab; **Löschen** in Rot leert). Ebenfalls rückgängig machbar |
+| **Band speichern** | speichert den ganzen Recorder – alle acht Spuren, die Bandlänge, den Schleifenbereich und die Bearbeitungsspur – als eine **`.ohpetape`**-Datei, die sich später in jedem Projekt wieder laden lässt |
+| **Band laden** | lädt eine `.ohpetape`-Datei (oder sie aufs Fenster ziehen). Enthält das Band schon Material, fragt Ohpe vorher (*Aufgenommenes Band ersetzen?*); das Laden ist ein Rückgängig-Schritt, **Rückgängig** holt das alte Band zurück. Ein Band mit anderer Abtastrate wird umgerechnet und behält seine Tonhöhe |
 | **Export** | rendert Master + die acht Spuren als **24-Bit-WAV** in einen wählbaren Ordner (offline, schneller als Echtzeit; das laufende Audio wird nicht unterbrochen) |
 | **Bounce** | bringt die Bearbeitungsspur (oder die Quelle der Bounce-Seite; bei eingeschalteter Schleife den Schleifenbereich) in die Grain- oder Sampler-Engine des bearbeiteten Parts, standardmäßig als Endlosschleife – [Bounce ins Instrument](BOUNCE-INS-INSTRUMENT.md) |
 
-Die Zeile links der Soft-Tasten zeigt den Schleifenbereich, mit dem Heben und Schneiden arbeiten. Jede
-Bandbearbeitung ist per MIDI steuerbar: *Tape-Bearbeitungsspur* (`tape.edit.track`), *Tape Heben /
-Schneiden / Einsetzen / Einfügen / Rückgängig / Wiederholen / zum Anfang* (`tape.edit.*`). Kurzanleitung:
+![Alles löschen fragt vorher](../images/ohpe-tape-clear-de.png)
+
+Die Zeile links der Soft-Tasten zeigt den Schleifenbereich, mit dem Heben und Schneiden arbeiten. Die vier
+Band-Tasten sind während der Aufnahme gesperrt. Jede Bandbearbeitung ist per MIDI steuerbar:
+*Tape-Bearbeitungsspur* (`tape.edit.track`), *Tape Heben / Schneiden / Einsetzen / Einfügen / Rückgängig /
+Wiederholen / zum Anfang / Spur löschen / alles löschen* (`tape.edit.*`); *Tape alles löschen* vom Controller
+öffnet dieselbe Rückfrage auf dem Bildschirm. Speichern und Laden laufen über den Dateidialog und haben keinen
+MIDI-Trigger. Kurzanleitung:
 [erste Aufnahme in 30 Sekunden](BAND-MISCHER-FX.md#erste-aufnahme-in-30-sekunden).
 
 ## Drum-Kit-Seite

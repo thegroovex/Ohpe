@@ -935,3 +935,15 @@ are per user (`Settings/settings.json`: language, tooltips, help overlay, skin, 
 size) and not automatable. Their MIDI page shows existing parameters – `pN.midich`, `pN.mpe`, `pN.bend`, `pN.mpe.bend`,
 `sync.src`, `sync.clockout`, `sync.smooth` – unchanged and still automatable / MIDI-mappable / Die MIDI-Seite zeigt
 bestehende Parameter, unverändert und weiterhin automatisierbar und MIDI-zuweisbar.
+
+## p38: tape – clear track, clear all
+
+Appended at the end (after the p33 expression block). Triggers, not part of presets.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `tape.edit.clear` | Tape Clear Track | Tape Spur löschen | trigger | off |
+| `tape.edit.clearall` | Tape Clear All | Tape alles löschen | trigger | off |
+
+*Tape Clear Track* empties the edit track (`tape.edit.track`) at once (one undo step). *Tape Clear All* opens the
+confirmation on the screen (*Clear the whole tape?*); the tape is cleared only when it is confirmed (undoable).

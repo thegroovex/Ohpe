@@ -80,7 +80,7 @@ All edits work on one track, take times in seconds (or frames), and are one undo
 | **cut** (start, end) | copies the range to the clipboard and closes the gap (later audio moves earlier) |
 | **drop** (at) | puts the clipboard at `at`, over what is there |
 | **splice** (at) | inserts the clipboard at `at`, later audio moves later (the tape end cuts it off) |
-| clear track / clear all | silence (undoable) |
+| clear track / clear all | silence (undoable; on the tape page *Clear Track* at once, *Clear All* after a confirmation) |
 
 **Undo / redo are unlimited.** One recording pass (from pressing record to releasing it) is one
 step. A new edit after undo drops the redo steps. Edits are refused (return `false`) while
@@ -263,6 +263,18 @@ faster than real time, while the live audio keeps running:
   before the mixer, all the same length so they line up in any editor;
 * 24-bit stereo WAV at the current sample rate. Errors come back localised (`BounceResult`).
 
+## Tape files (.ohpetape)
+
+**Save Tape** / **Load Tape** on the tape page keep the whole recorder in one file, independent of the
+project: all eight tracks, the tape length, the loop range (in, out, on) and the edit track
+(`src/core/tape/TapeFile.h`). Layout: the magic `OHPETPF1`, the length of a small UTF-8 JSON header
+(`{"format":"ohpe-tape","version":1,"sampleRate":…,"lengthSeconds":…,"loopIn":…,"loopOut":…,"loop":…,"editTrack":…}`),
+then the tape audio exactly as in a session (below: float32 blocks that hold audio, lossless). Loading sets the
+tape length and installs the content as **one undo step** – Undo brings the previous tape back; it asks first
+when the tape holds material, and it is refused while recording. A tape saved at another sample rate is
+resampled on load (linear), so pitch and timing stay; the loop points are stored in seconds. **Export** (24-bit
+WAV stems, below) stays the way to take the audio into other software.
+
 ## Tape audio in sessions
 
 The plug-in state stays the 0.1 JSON document; when the tape holds audio, the state continues
@@ -280,7 +292,11 @@ contain tape audio.
 `tests/core/TapeTests.cpp` (sample-exact record / playback across blocks, part sources,
 overdub / replace, varispeed pitch ratio, reverse, loop, lift / cut / drop / splice against a
 reference with undo / redo, edits refused while recording, tape character, persistence, shared
-content, direct outs and multi-out fallback through the core, state section),
+content, direct outs and multi-out fallback through the core, state section; p38: clear track / clear all
+as undo steps, tape file round trip, load as one undo step, refused while recording, another sample
+rate keeps the pitch), `tests/plugin/TapeEraseUiTests.cpp` (p38: the twelve keys in two rows, the
+confirmation – cancel, Esc, Return, confirm, alert ink in both skins –, MIDI triggers, save / load through
+the processor and the editor),
 `tests/core/FxTests.cpp` (effects finite at extremes, tails decay, mix 0 / Off bypass, compressor
 gain reduction, mixer dynamics and ceiling, bit-identical defaults, FX slot in the core),
 `tests/core/AllocationTests.cpp` (no heap allocation in `Core::process()` with tape recording,
