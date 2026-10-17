@@ -27,6 +27,15 @@ void process (OhpeProcessor& p, int blocks)
 
 float plain (OhpeProcessor& p, const char* id) { return p.core().params().get (id); }
 
+/** Sets a host parameter (the processor copies host values into the core: a value set on the core alone is undone). */
+void setHost (OhpeProcessor& p, const char* id, float v)
+{
+    auto* q = p.parameter (juce::String (id));
+    REQUIRE (q != nullptr);
+    q->setValueNotifyingHost (q->convertTo0to1 (v));
+    p.core().params().set (id, v);
+}
+
 juce::MouseEvent mouseEvent (juce::Component& c, juce::Point<float> pos, juce::Point<float> downPos, juce::ModifierKeys mods = {})
 {
     auto src = juce::Desktop::getInstance().getMainMouseSource();
@@ -139,7 +148,7 @@ TEST_CASE ("count-in: REC waits for the count-in, REC again cancels it")
 {
     OhpeProcessor p;
     p.prepareToPlay (48000.0, 256);
-    p.core().params().set (Metronome::Ids::countIn, 1.0f);
+    setHost (p, Metronome::Ids::countIn, 1.0f);
     const auto msg = p.runTransport (T::Record);
     CHECK (msg.isNotEmpty());
     p.core().tape().housekeeping();
