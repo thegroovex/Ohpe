@@ -46,7 +46,10 @@ enum SoftKeyId
     skMotionRec = 100, skMotionPlay, skMotionClear,   // p22: motion recorder
     skPadFirst = 110,                                 // p25: performance pads (latching: 110 .. 113)
     skHarmonyTake = 120, skHarmonyHold, skHarmonyClear, // p24: harmony brain
-    skTapeClear = 130, skTapeClearAll, skTapeSave, skTapeLoad // p38: clear track / all, save / load the tape
+    skTapeClear = 130, skTapeClearAll, skTapeSave, skTapeLoad, // p38: clear track / all, save / load the tape
+    // p42: the loop keys of the tape page (the loop readout left of the keys opens / closes them)
+    skLoopSetIn = 140, skLoopSetOut, skLoopOnOff, skLoopSnap, skLoopToIn, skLoopBack, skLoopUndo, skLoopRedo, skLoopHalf,
+    skLoopDouble, skLoopFit
 };
 
 juce::String tapefileExtension() { return tapefile::extension; } // p38: ".ohpetape"
@@ -349,6 +352,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
         selectView (modfx::FxViewSpace);
     };
     display.onTrackClicked = [this] (int t) { selectTapeTrack (t); };
+    display.onLoopReadoutClicked = [this] { showTapeLoopKeys (! tapeLoopKeys); }; // p42
     display.onPadClicked = [this] (int pad) { selectDrumPad (pad, true); };
     display.onSoftKey = [this] (int id) { onSoftKey (id); };
     // p11: tape page transport and arm dots
@@ -1176,6 +1180,13 @@ bool OhpeEditor::handleShortcut (const juce::KeyPress& key)
         return true;
     }
     if (c == 'l') { transport (T::Loop); return true; }
+    if (c == 'i' || c == 'o') // p42: loop in / out at the playhead (Shift: off the grid)
+    {
+        display.flash (proc.tapeLoopAction (c == 'i' ? Core::Ids::tapeLoopSetIn : Core::Ids::tapeLoopSetOut, key.getModifiers().isShiftDown()));
+        refreshTransportKeys();
+        if (mode == Mode::Tape) refreshSoftKeys();
+        return true;
+    }
     if (c == 't') { proc.tapTempo(); return true; }  // p39: tap tempo
     if (c == 'k') { ui::setParamFromScreen (proc, Metronome::Ids::on, proc.core().params().get (Metronome::Ids::on) >= 0.5f ? 0.0f : 1.0f); return true; } // p39: click
     return false;
@@ -1541,6 +1552,23 @@ void OhpeEditor::refreshSoftKeys()
         keys = { { skTableImport, tr ("Import") }, { skTableUser, tr ("User"), has, on && has }, { skTableClear, tr ("Clear"), has } };
         status = usertableview::statusLine (proc, ctx.part, shownEngine);
     }
+    else if (mode == Mode::Tape && tapeLoopKeys)
+    {
+        // p42: the loop keys - set in / out at the playhead (Shift: off the grid), loop on, the grid, to loop in, back;
+        //      below: undo / redo of the loop range, half / double, fit (the loop around the recorded material)
+        const auto& reg = core.params();
+        const auto range = proc.tapeLoopRange();
+        const int snap = (int) std::lround (reg.get (Core::Ids::tapeLoopSnap));
+        static const char* snapNames[] = { "Snap Off", "Snap Beat", "Snap Bar" };
+        keys = { { skLoopSetIn, tr ("Set In") }, { skLoopSetOut, tr ("Set Out") },
+                 { skLoopOnOff, tr ("Loop"), true, reg.get ("tape.loop") >= 0.5f },
+                 { skLoopSnap, tr (snapNames[juce::jlimit (0, 2, snap)]) },
+                 { skLoopToIn, tr ("To In"), range.valid() }, { skLoopBack, tr ("Back") },
+                 { skLoopUndo, tr ("Undo Loop"), proc.canUndoTapeLoop() }, { skLoopRedo, tr ("Redo Loop"), proc.canRedoTapeLoop() },
+                 { skLoopHalf, tr ("Half"), range.valid() }, { skLoopDouble, tr ("Double"), range.valid() },
+                 { skLoopFit, tr ("Fit"), core.tape().contentEndFrames() > 0 } };
+        tapeLoopSignature = loopKeySignature();
+    }
     else if (mode == Mode::Tape)
     {
         auto& tape = core.tape();
@@ -1642,6 +1670,50 @@ void OhpeEditor::onSoftKey (int id)
         case skTapeClearAll: askClearTape(); return;
         case skTapeSave: saveTape(); return;
         case skTapeLoad: loadTape(); return;
+        // p42: the loop keys
+        case skLoopSetIn:
+        case skLoopSetOut:
+        case skLoopHalf:
+        case skLoopDouble:
+        case skLoopUndo:
+        case skLoopRedo:
+        {
+            const bool free = juce::ModifierKeys::currentModifiers.isShiftDown() || loopFreeForTests;
+            const char* trig = id == skLoopSetIn ? Core::Ids::tapeLoopSetIn : id == skLoopSetOut ? Core::Ids::tapeLoopSetOut
+                             : id == skLoopHalf ? Core::Ids::tapeLoopHalf : id == skLoopDouble ? Core::Ids::tapeLoopDouble
+                             : id == skLoopUndo ? Core::Ids::tapeLoopUndo : Core::Ids::tapeLoopRedo;
+            display.flash (proc.tapeLoopAction (trig, free));
+            refreshTransportKeys();
+            break;
+        }
+        case skLoopOnOff: transport (OhpeProcessor::TransportKey::Loop); break;
+        case skLoopSnap:
+        {
+            const int next = ((int) std::lround (core.params().get (Core::Ids::tapeLoopSnap)) + 2) % 3; // Bar -> Beat -> Off -> Bar
+            ui::setParamFromScreen (proc, Core::Ids::tapeLoopSnap, (float) next);
+            static const char* names[] = { "Snap Off", "Snap Beat", "Snap Bar" };
+            display.flash (tr (names[next]));
+            break;
+        }
+        case skLoopToIn: core.tape().locate (proc.tapeLoopRange().in); display.flash (tr ("To loop in")); break;
+        case skLoopBack: showTapeLoopKeys (false); return;
+        case skLoopFit:
+        {
+            const double sr = juce::jmax (1.0, core.tape().sampleRate());
+            const double end = (double) core.tape().contentEndFrames() / sr;
+            const auto snap = juce::ModifierKeys::currentModifiers.isShiftDown() || loopFreeForTests ? tapeloop::Snap::Off : proc.tapeLoopSnap();
+            const double bpm = juce::jmax (20.0, (double) core.params().get (Core::Ids::tempo));
+            // the loop from the start around the recorded material: out on the next line of the grid after its end
+            double out = end;
+            if (const double g = tapeloop::gridSeconds (snap, bpm); g > 0.0) out = std::ceil (end / g - 1.0e-6) * g;
+            proc.dragTapeLoopEdge (true, 0.0, true);
+            proc.dragTapeLoopEdge (false, out, true);
+            proc.endTapeLoopDrag();
+            ui::setParamFromScreen (proc, "tape.loop", 1.0f);
+            refreshTransportKeys();
+            display.flash (tr ("Loop fits the recording") + ": " + proc.tapeTimeText (proc.tapeLoopRange().out));
+            break;
+        }
         case skPadLoad: chooseSampleFile(); break;
         case skPadClear: proc.sampleLoader().clearDrumPad (ctx.drumPad); break;
         case skClearLocks:
@@ -2072,6 +2144,30 @@ void OhpeEditor::exportBounce()
     });
 }
 
+// ---------------------------------------------------------------- p42: the loop keys of the tape page
+void OhpeEditor::showTapeLoopKeys (bool show)
+{
+    tapeLoopKeys = show;
+    display.setTapeLoopKeys (show);
+    if (show && mode == Mode::Tape)
+    {
+        // the encoders show the loop page (on / in / out / grid: fine adjustment, Shift = finer)
+        const auto titles = ui::pageTitles (mode, proc.core(), ctx);
+        for (size_t k = 0; k < titles.size(); ++k)
+            if (juce::String (titles[k]) == "Loop") { currentPage() = (int) k; break; }
+    }
+    rebindEncoders();
+}
+
+int OhpeEditor::loopKeySignature() const
+{
+    const auto& reg = proc.core().params();
+    const auto r = proc.tapeLoopRange();
+    return (reg.get ("tape.loop") >= 0.5f ? 1 : 0) | (proc.canUndoTapeLoop() ? 2 : 0) | (proc.canRedoTapeLoop() ? 4 : 0)
+           | ((int) std::lround (reg.get (Core::Ids::tapeLoopSnap)) << 3) | (r.valid() ? 32 : 0)
+           | (proc.core().tape().contentEndFrames() > 0 ? 64 : 0);
+}
+
 // ---------------------------------------------------------------- p38: clear the whole tape, tape files
 void OhpeEditor::askClearTape()
 {
@@ -2329,6 +2425,7 @@ void OhpeEditor::timerCallback()
     refreshLeds();
     tempoPanel.refresh(); // p39
     clickStrip.refresh();
+    if (mode == Mode::Tape && tapeLoopKeys && loopKeySignature() != tapeLoopSignature) refreshSoftKeys(); // p42: loop on, undo, grid
     if (const int n = proc.transportMessageCount(); n != transportMessagesSeen)
     {
         transportMessagesSeen = n;

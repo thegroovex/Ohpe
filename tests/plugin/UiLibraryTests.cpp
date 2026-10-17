@@ -305,7 +305,7 @@ TEST_CASE ("editor 0.3: part selector, pages of every mode and sequencer view, p
     e.selectMode (ui::Mode::Drum);
     CHECK (e.proViewComponent().numBars() == 2 + 24 * 8);
     e.selectMode (ui::Mode::Tape);
-    CHECK (e.proViewComponent().numBars() == 7 + 3 + 4 + 4 + 8 * 4); // p11: + "Play starts tape", p23: + the Bounce group
+    CHECK (e.proViewComponent().numBars() == 7 + 4 + 4 + 4 + 8 * 4); // p11: + "Play starts tape", p23: + the Bounce group, p42: + loop snap
     e.setSize (1800, 1200);
     CHECK (e.proViewComponent().numColumns() >= 4);
     auto img = e.createComponentSnapshot (e.getLocalBounds());

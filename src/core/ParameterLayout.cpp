@@ -11,6 +11,7 @@
 
 #include "OhpeCore.h"
 #include "bounce/Bounce.h"
+#include "tape/TapeLoop.h"
 
 namespace ohpe
 {
@@ -311,5 +312,8 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     }
     // ---- p39: metronome and count-in - on, level, accent, count-in, click in a plug-in, tap tempo ------------------
     Metronome::registerParams (reg);
+    // ---- p42: the tape loop by hand - set in / out at the playhead, half / double, undo / redo (triggers), snap grid
+    //      (own function in its own file: a big stack frame here overflows the Windows test threads' stack) -----------
+    tapeloop::registerParams (reg);
 }
 } // namespace ohpe
