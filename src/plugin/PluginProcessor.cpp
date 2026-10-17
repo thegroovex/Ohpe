@@ -92,6 +92,7 @@ OhpeProcessor::OhpeProcessor()
     };
     // p23: a bounce switches the part's engine and its sample settings like the UI (host automation follows)
     bounceManager.setParam = [this] (const std::string& id, float plain) { setPlainFromUi (id.c_str(), plain); };
+    syncSpaceModes(); // p41: the 3D switches start from the current values (the link remembers them)
     startTimerHz (20);
 }
 
@@ -302,9 +303,24 @@ void OhpeProcessor::timerCallback()
     ohpeCore.updateTapeGrain(); // p28: Grain "Source = Tape" granulates the edit track / the tape mix
 }
 
+void OhpeProcessor::syncSpaceModes()
+{
+    const auto& reg = ohpeCore.params();
+    // p41: the 3D switch (pN.space.mode) and the values it stands for (pN.space.on, space.out) in step - read from the
+    // host side (a host / MIDI / encoder move is there at once), written with a gesture so automation follows
+    spaceModeLink.update (
+        Core::numParts,
+        [this, &reg] (const std::string& id) {
+            const int i = reg.indexOf (id);
+            return i >= 0 && i < (int) rawValues.size() ? rawValues[(size_t) i]->load (std::memory_order_relaxed) : 0.0f;
+        },
+        [this] (const std::string& id, float plain) { setPlainFromUi (id.c_str(), plain); });
+}
+
 void OhpeProcessor::pollRemoteControls()
 {
     const auto& reg = ohpeCore.params();
+    syncSpaceModes(); // p41
     // p39: "metro.tap" - a rising edge (MIDI button, host, UI) is one tap
     if (metroTapParam < 0) metroTapParam = reg.indexOf (Metronome::Ids::tap);
     if (metroTapParam >= 0)

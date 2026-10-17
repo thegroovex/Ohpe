@@ -10,6 +10,7 @@
 //     (test "parameter IDs are append-only"); extend the golden file when you append.
 
 #include "OhpeCore.h"
+#include "fx/SpaceMode.h"
 #include "bounce/Bounce.h"
 
 namespace ohpe
@@ -311,5 +312,15 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     }
     // ---- p39: metronome and count-in - on, level, accent, count-in, click in a plug-in, tap tempo ------------------
     Metronome::registerParams (reg);
+    // ---- p41: the 3D switch per part - Off / Headphones / Speakers, a front for "pN.space.on" + "space.out" (see
+    //      fx/SpaceMode.h: the older two stay the stored truth, the plug-in keeps the three in step) ---------------
+    for (int i = 0; i < Core::numParts; ++i)
+    {
+        const auto n = std::to_string (i + 1);
+        auto d = choice (spacemode::modeId (i), "Part " + n + " 3D Space Mode", "Part " + n + " 3D-Raum Modus",
+                         { "Off", "Headphones", "Speakers" }, { "Aus", "Kopfhörer", "Lautsprecher" }, 0);
+        d.group = "part" + n + "/space";
+        reg.add (std::move (d));
+    }
 }
 } // namespace ohpe

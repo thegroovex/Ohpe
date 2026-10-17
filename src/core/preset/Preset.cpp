@@ -3,6 +3,7 @@
 #include "Preset.h"
 
 #include "../OhpeCore.h"
+#include "../fx/SpaceMode.h"
 
 #include <algorithm>
 #include <cmath>
@@ -280,6 +281,7 @@ ApplyResult applyPart (const Preset& p, ParamRegistry& reg, int partIndex, const
         reg.set (arpId ("on"), 0.0f);
         r.arpReleased = true;
     }
+    spacemode::deriveAll (reg, Core::numParts, partIndex); // p41: the 3D switch shows what the preset set
     r.ok = true;
     return r;
 }
@@ -313,6 +315,7 @@ ApplyResult applyProject (const Preset& p, Core& core)
     else core.motion().clearAll();
     if (auto it = p.sections.find ("harmony"); it != p.sections.end()) core.harmony().fromJson (it->second); // p24
     else core.harmony().requestClear();
+    spacemode::deriveAll (reg, Core::numParts); // p41: the 3D switches show what the project set
     r.ok = true;
     return r;
 }
