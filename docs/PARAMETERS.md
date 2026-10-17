@@ -980,3 +980,19 @@ Seven parameters appended after `metro.tap` (p39). The six triggers (group `remo
 | `tape.edit.loophalf` | Tape Loop Half | Tape Loop halbieren | trigger: half as long from loop in | off |
 | `tape.edit.loopdouble` | Tape Loop Double | Tape Loop verdoppeln | trigger: twice as long from loop in | off |
 | `tape.loopsnap` | Tape Loop Snap | Tape Loop-Raster | Off, Beat, Bar / Aus, Schlag, Takt | Bar |
+
+## p41 – The 3D switch
+
+Guides: [English](en/SPACE.md#the-3d-switch-p41) · [Deutsch](de/RAUM.md#der-3d-schalter-p41).
+Four parameters appended after `tape.loopsnap` (p42), group `partN/space`. Host parameters – automatable,
+MIDI-mappable, saved with the session and in presets – that are a **front** for the existing `pN.space.on` and
+`space.out`: those two stay the stored truth, no existing ID changed. The plug-in keeps the three in step on the
+message thread: a moved switch writes `pN.space.on` (and `space.out` for Headphones / Speakers); a changed
+`pN.space.on` / `space.out` (preset, session, the Monitoring page, automation of the older IDs) moves the
+switches; after every preset / session load the switches are set from the stored values (older presets and
+sessions without the switch load correctly). The monitoring is global, so choosing Headphones or Speakers on one
+part switches it for every part with 3D on. No new modulation sources or targets.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `p1.space.mode` … `p4.space.mode` | Part N 3D Space Mode | Part N 3D-Raum Modus | Off, Headphones, Speakers / Aus, Kopfhörer, Lautsprecher (Off = `space.on` off; Headphones = on + `space.out` Headphones; Speakers = on + `space.out` Speakers) | Off |

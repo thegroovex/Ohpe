@@ -259,12 +259,23 @@ State partState (Core& core, int part)
     return speakerMonitoring (core) ? State::Speakers : State::Binaural;
 }
 
+int partMode (Core& core, int part)
+{
+    const auto& reg = core.params();
+    return reg.get (partPrefix (part) + "space.on") >= 0.5f ? (speakerMonitoring (core) ? 2 : 1) : 0;
+}
+
+bool isSegmentedSwitch (const std::string& id)
+{
+    return id.size() == 13 && id[0] == 'p' && id.compare (2, 11, ".space.mode") == 0;
+}
+
 juce::String badgeTooltip (State s)
 {
     switch (s)
     {
         case State::Binaural: return tr ("Binaural 3D \xe2\x80\x93 best with headphones");
-        case State::Speakers: return tr ("3D for speakers \xe2\x80\x93 switch 3D Monitoring to Headphones for binaural sound");
+        case State::Speakers: return tr ("3D for speakers \xe2\x80\x93 choose Headphones on the 3D switch for binaural sound");
         case State::Off: break;
     }
     return tr ("3D Space is off for this part");
@@ -305,20 +316,30 @@ void drawHeadphones (juce::Graphics& g, juce::Rectangle<float> area, juce::Colou
 
 void drawSpeakers (juce::Graphics& g, juce::Rectangle<float> area, juce::Colour ink)
 {
+    // p41: a loudspeaker in the line style of the headphones - the driver's box, its flared cone, two sound arcs
     const float s = juce::jmin (area.getWidth(), area.getHeight());
     auto b = area.withSizeKeepingCentre (s, s);
-    const float w = juce::jmax (1.0f, s * 0.08f);
+    const float w = juce::jmax (1.0f, s * 0.09f);
+    const float x0 = b.getX(), y0 = b.getY();
     g.setColour (ink);
-    for (float side : { -1.0f, 1.0f })
+    g.fillRoundedRectangle (juce::Rectangle<float> (x0 + s * 0.08f, y0 + s * 0.37f, s * 0.2f, s * 0.26f), s * 0.04f);
+    juce::Path cone;
+    cone.startNewSubPath (x0 + s * 0.28f, y0 + s * 0.37f);
+    cone.lineTo (x0 + s * 0.52f, y0 + s * 0.16f);
+    cone.lineTo (x0 + s * 0.52f, y0 + s * 0.84f);
+    cone.lineTo (x0 + s * 0.28f, y0 + s * 0.63f);
+    cone.closeSubPath();
+    g.fillPath (cone);
+    for (int k = 0; k < 2; ++k)
     {
-        auto box = juce::Rectangle<float> (s * 0.34f, s * 0.6f).withCentre ({ b.getCentreX() + side * s * 0.24f, b.getCentreY() + s * 0.04f });
-        g.drawRoundedRectangle (box, s * 0.05f, w);
-        g.fillEllipse (juce::Rectangle<float> (s * 0.18f, s * 0.18f).withCentre (box.getCentre().translated (0, s * 0.08f)));
-        g.fillEllipse (juce::Rectangle<float> (s * 0.08f, s * 0.08f).withCentre (box.getCentre().translated (0, -s * 0.15f)));
+        juce::Path arc;
+        const float r = s * (0.14f + 0.16f * (float) k);
+        arc.addCentredArc (x0 + s * 0.56f, y0 + s * 0.5f, r, r, 0.0f, pi * 0.5f - 0.8f, pi * 0.5f + 0.8f, true);
+        g.strokePath (arc, juce::PathStrokeType (w, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
     }
 }
 
-void drawBadge (juce::Graphics& g, juce::Rectangle<float> area, State st, float time)
+void drawBadge (juce::Graphics& g, juce::Rectangle<float> area, State st, float time, bool speakersWhenOff)
 {
     const float h = area.getHeight();
     const auto label = juce::String ("3D");
@@ -341,11 +362,14 @@ void drawBadge (juce::Graphics& g, juce::Rectangle<float> area, State st, float 
         g.drawRoundedRectangle (area.reduced (0.5f), h * 0.3f, juce::jmax (1.0f, h * 0.07f));
         drawSpeakers (g, area.withWidth (h).reduced (h * 0.16f).translated (h * 0.12f, 0), colour::sunYellow);
     }
-    else
+    else // off: dim, with the pictogram of the monitoring a switch-on would use (p41)
     {
         g.setColour (colour::displayGrid.brighter (0.35f));
         g.drawRoundedRectangle (area.reduced (0.5f), h * 0.3f, juce::jmax (1.0f, h * 0.06f));
-        drawHeadphones (g, area.withWidth (h).reduced (h * 0.16f).translated (h * 0.12f, 0), colour::displayGrid.brighter (0.5f), 0.0f);
+        if (speakersWhenOff)
+            drawSpeakers (g, area.withWidth (h).reduced (h * 0.16f).translated (h * 0.12f, 0), colour::displayGrid.brighter (0.5f));
+        else
+            drawHeadphones (g, area.withWidth (h).reduced (h * 0.16f).translated (h * 0.12f, 0), colour::displayGrid.brighter (0.5f), 0.0f);
         g.setColour (colour::displayGrid.brighter (0.6f));
     }
     g.setFont (brandFont (h * 0.62f));
@@ -356,7 +380,7 @@ void drawBadge (juce::Graphics& g, juce::Rectangle<float> area, State st, float 
 std::vector<std::string> spaceParams (int part)
 {
     const auto p = partPrefix (part) + "space.";
-    return { p + "on", p + "path", p + "pathlen", p + "pathrate",                      // motion
+    return { p + "mode", p + "path", p + "pathlen", p + "pathrate",                    // p41: the 3D switch (Off / Headphones / Speakers), motion
              p + "azimuth", p + "elevation", p + "distance", p + "spread",              // position
              p + "pathsize", p + "pathphase", p + "glide", p + "doppler",              // motion shape
              p + "room", p + "roomsize", p + "air", p + "rolloff",                     // room and distance
@@ -426,10 +450,17 @@ void Scene::paint (juce::Graphics& g, juce::Rectangle<float> area, Core& core, i
     if (! headDrawn) drawHead (g, cam, ! speakers, u);
 
     // caption: what the view shows, monitoring mode, the edit part's position
-    g.setFont (labelFont (u * 1.45f));
-    g.setColour (colour::displayDim);
-    g.drawText (i18n::upper (tr ("3D Space")) + "  " + i18n::upper (speakers ? tr ("Speakers") : tr ("Headphones")),
-                area.withHeight (u * 2.0f), juce::Justification::topLeft, false);
+    {   // p41: the monitoring's own pictogram in front (headphones / speakers), so a switch is visible at once
+        auto cap = area.withHeight (u * 2.0f).withWidth (area.getWidth() * 0.6f);
+        const auto icon = cap.removeFromLeft (u * 1.9f).withHeight (u * 1.7f);
+        if (speakers) drawSpeakers (g, icon, colour::displayDim);
+        else drawHeadphones (g, icon, colour::displayDim, 0.0f);
+        cap.removeFromLeft (u * 0.5f);
+        g.setFont (labelFont (u * 1.45f));
+        g.setColour (colour::displayDim);
+        g.drawText (i18n::upper (tr ("3D Space")) + "  " + i18n::upper (speakers ? tr ("Speakers") : tr ("Headphones")),
+                    cap, juce::Justification::topLeft, true);
+    }
     const auto& stage = core.part (juce::jlimit (0, Core::numParts - 1, focus)).spaceStage();
     const auto pos = stage.uiPosition();
     g.setFont (monoFont (u * 1.3f));

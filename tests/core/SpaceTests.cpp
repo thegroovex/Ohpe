@@ -5,11 +5,16 @@
 #include "TestHelpers.h"
 #include "fx/InsertSlot.h"
 #include "fx/Space3D.h"
+#include "fx/SpaceMode.h"
+#include "model/StateSerializer.h"
+#include "preset/Preset.h"
 #include "mod/ModMatrix.h"
 
 #include <doctest/doctest.h>
+#include <nlohmann/json.hpp>
 
 #include <chrono>
+#include <memory>
 #include <cmath>
 
 using namespace ohpe;
@@ -690,4 +695,152 @@ TEST_CASE ("p30 space: new paths - no NaN, bounded output, click-free distance w
         fx.run (s);
         CHECK (fx.e.uiPhase() == doctest::Approx (2.0).epsilon (0.02)); // 1 s at 120 BPM, a cycle of one beat
     }
+}
+
+// ------------------------------------------------------------------------------------------------- p41: the 3D switch
+TEST_CASE ("p41 space: the 3D switch IDs - one per part, appended after the metronome, Off / Headphones / Speakers")
+{
+    Core core;
+    const auto& reg = core.params();
+    for (int p = 0; p < Core::numParts; ++p)
+    {
+        const int idx = reg.indexOf (spacemode::modeId (p));
+        REQUIRE (idx >= 0);
+        const auto& d = reg.descriptor (idx);
+        CHECK (d.kind == ParamKind::Choice);
+        REQUIRE (d.choices.size() == 3);
+        CHECK (d.choices[0] == "Off");
+        CHECK (d.choices[1] == "Headphones");
+        CHECK (d.choices[2] == "Speakers");
+        CHECK (d.choicesDe[1] == "Kopfhörer");
+        CHECK (d.choicesDe[2] == "Lautsprecher");
+        CHECK (d.defaultValue == 0.0f); // off: as space.on
+        CHECK (idx > reg.indexOf ("tape.loopsnap")); // p41 block follows p42
+        if (p > 0) CHECK (idx == reg.indexOf (spacemode::modeId (p - 1)) + 1);
+    }
+    CHECK (spacemode::derive (false, 0) == spacemode::Off);
+    CHECK (spacemode::derive (false, 1) == spacemode::Off);
+    CHECK (spacemode::derive (true, 0) == spacemode::Headphones);
+    CHECK (spacemode::derive (true, 1) == spacemode::Speakers);
+}
+
+TEST_CASE ("p41 space: the link - a moved switch sets space.on / space.out, changed values move the switches")
+{
+    Core core;
+    auto& reg = core.params();
+    spacemode::Link<Core::numParts> link;
+    int writes = 0;
+    auto get = [&] (const std::string& id) { return reg.get (id); };
+    auto set = [&] (const std::string& id, float v) { ++writes; reg.set (id, v); };
+    link.update (Core::numParts, get, set);
+    CHECK (writes == 0); // a fresh instrument is consistent (all off)
+
+    // encoder 1 / host / MIDI: part 1 -> Headphones
+    reg.set ("p1.space.mode", 1.0f);
+    link.update (Core::numParts, get, set);
+    CHECK (reg.get ("p1.space.on") == 1.0f);
+    CHECK (reg.get ("space.out") == 0.0f);
+    // part 2 -> Speakers: the monitoring is global, part 1's switch follows
+    reg.set ("p2.space.mode", 2.0f);
+    link.update (Core::numParts, get, set);
+    CHECK (reg.get ("p2.space.on") == 1.0f);
+    CHECK (reg.get ("space.out") == 1.0f);
+    CHECK (reg.get ("p1.space.mode") == 2.0f);
+    CHECK (reg.get ("p3.space.mode") == 0.0f); // off stays off
+    // part 1 -> Off: only part 1's stage switches off
+    reg.set ("p1.space.mode", 0.0f);
+    link.update (Core::numParts, get, set);
+    CHECK (reg.get ("p1.space.on") == 0.0f);
+    CHECK (reg.get ("p2.space.on") == 1.0f);
+    CHECK (reg.get ("space.out") == 1.0f);
+    // the monitoring page / automation of the older IDs: the switches follow
+    reg.set ("space.out", 0.0f);
+    reg.set ("p3.space.on", 1.0f);
+    link.update (Core::numParts, get, set);
+    CHECK (reg.get ("p2.space.mode") == 1.0f);
+    CHECK (reg.get ("p3.space.mode") == 1.0f);
+    CHECK (reg.get ("p1.space.mode") == 0.0f);
+    // the stored values win when both move in one tick (a preset): the switch never undoes a load
+    reg.set ("p3.space.on", 0.0f);
+    reg.set ("p3.space.mode", 2.0f);
+    link.update (Core::numParts, get, set);
+    CHECK (reg.get ("p3.space.on") == 0.0f);
+    CHECK (reg.get ("p3.space.mode") == 0.0f);
+    CHECK (reg.get ("space.out") == 0.0f);
+    // nothing moved: nothing is written
+    writes = 0;
+    link.update (Core::numParts, get, set);
+    link.update (Core::numParts, get, set);
+    CHECK (writes == 0);
+}
+
+TEST_CASE ("p41 space: presets and sessions set the switches from space.on / space.out (also when older ones lack them)")
+{
+    auto core = std::make_unique<Core>();
+    auto& reg = core->params();
+    // an older part preset: space on, no "space.mode" in it
+    preset::Preset old;
+    old.meta.kind = preset::Kind::Part;
+    old.params["engine"] = (float) EngineType::Analog;
+    old.params["space.on"] = 1.0f;
+    reg.set ("space.out", 1.0f);
+    reg.set ("p2.space.on", 1.0f);
+    reg.set ("p2.space.mode", 2.0f);
+    REQUIRE (preset::applyPart (old, reg, 1).ok);
+    CHECK (reg.get ("p2.space.on") == 1.0f);
+    CHECK (reg.get ("p2.space.mode") == 2.0f); // speakers monitoring stays (it belongs to the listener)
+    reg.set ("space.out", 0.0f);
+    REQUIRE (preset::applyPart (old, reg, 2).ok);
+    CHECK (reg.get ("p3.space.mode") == 1.0f);
+
+    // a session older than the switch: space.on of part 4 on, monitoring speakers, no mode values
+    // (the cores live on the heap: Windows test threads have small stacks)
+    auto b = std::make_unique<Core>();
+    b->params().set ("p4.space.on", 1.0f);
+    b->params().set ("space.out", 1.0f);
+    auto j = nlohmann::json::parse (b->saveState());
+    b.reset();
+    for (int p = 0; p < Core::numParts; ++p) j["params"].erase (spacemode::modeId (p));
+    const auto json = j.dump();
+    auto c = std::make_unique<Core>();
+    REQUIRE (c->loadState (json));
+    CHECK (c->params().get ("p4.space.on") == 1.0f);
+    CHECK (c->params().get ("p4.space.mode") == 2.0f);
+    CHECK (c->params().get ("p1.space.mode") == 0.0f);
+    // round trip with the switch: unchanged
+    const auto saved = c->saveState();
+    auto d = std::make_unique<Core>();
+    REQUIRE (d->loadState (saved));
+    for (int p = 0; p < Core::numParts; ++p) CHECK (d->params().get (spacemode::modeId (p)) == c->params().get (spacemode::modeId (p)));
+}
+
+TEST_CASE ("p41 space: Speakers renders the speaker path (no interaural delay), Headphones the binaural one, Off is a bypass")
+{
+    auto render = [] (int mode) {
+        CoreRig rig;
+        rig.set ("p1.engine", (float) EngineType::Analog);
+        rig.set ("p1.space.azimuth", 90.0f);
+        rig.set ("p1.space.room", 0.0f);
+        rig.set ("p1.space.mode", (float) mode);
+        rig.set ("p1.space.on", mode > 0 ? 1.0f : 0.0f); // what the plug-in's link writes for the switch
+        rig.set ("space.out", mode == 2 ? 1.0f : 0.0f);
+        rig.run (80, { MidiEvent::noteOn (1, 52, 110) });
+        return rig.rec;
+    };
+    const auto off = render (0), phones = render (1), speakers = render (2);
+    for (const auto* r : { &off, &phones, &speakers })
+    {
+        CHECK (allFinite (r->l));
+        CHECK (allFinite (r->r));
+        CHECK (noDenormals (r->l));
+        CHECK (peak (r->l) < 4.0f);
+    }
+    // a source hard right: speakers pan it (left almost silent), headphones keep the far ear's shadowed, delayed sound
+    const double lp = rms (phones.l), ls = rms (speakers.l), rs = rms (speakers.r);
+    CHECK (rs > 0.0);
+    CHECK (ls < 0.5 * rs);
+    CHECK (lp > ls);
+    double diff = 0.0;
+    for (size_t i = 0; i < phones.size(); ++i) diff += std::abs (phones.l[i] - speakers.l[i]);
+    CHECK (diff > 1.0);
 }
