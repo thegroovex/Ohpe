@@ -1201,7 +1201,8 @@ void OhpeEditor::refreshTransportKeys()
         const juce::String barBeat = juce::String ((int) (beats / 4.0) + 1) + "." + juce::String ((int) std::fmod (beats, 4.0) + 1);
         juce::String badge = i18n::upper (tr ("Tape"));
         auto badgeColour = colour::displayDim;
-        if (recording) { badge = "REC"; badgeColour = colour::signalRed.withAlpha (0.4f + 0.6f * pulse); }
+        if (proc.core().countInActive()) { badge = i18n::upper (tr ("Count-in")); badgeColour = colour::signalRed; } // p39
+        else if (recording) { badge = "REC"; badgeColour = colour::signalRed.withAlpha (0.4f + 0.6f * pulse); }
         else if (ready) { badge = "REC"; badgeColour = colour::signalRed; }
         else if (proc.tapeRolling()) { badge = i18n::upper (tr ("Play")); badgeColour = colour::playGreenLit.withAlpha (0.4f + 0.6f * pulse); }
         tapeReadout.setContent (badge, badgeColour, time, barBeat);

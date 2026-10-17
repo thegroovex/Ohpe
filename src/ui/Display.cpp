@@ -220,7 +220,8 @@ void Display::paintTapeTransport (juce::Graphics& g, juce::Rectangle<float> a)
     const auto& reg = core.params();
     const double sr = juce::jmax (1.0, tape.sampleRate());
     const double secs = (double) tape.positionFrames() / sr;
-    const bool rolling = proc.tapeRolling(), ready = proc.tapeRecordReady(), recording = proc.tapeRecording();
+    const bool counting = core.countInActive(); // p39: the tape waits for the count-in
+    const bool rolling = proc.tapeRolling() && ! counting, ready = proc.tapeRecordReady(), recording = proc.tapeRecording() && ! counting;
     const float pulse = breath (time); // p14: recording breathes (no hard blink)
     const int mask = proc.armedTrackMask();
 
@@ -398,7 +399,9 @@ void Display::placeTempo()
     // p39: the tempo where it always was (right of the header, before the page arrows), the TAP key left of it
     const auto h = headerArea();
     const auto bpmArea = h.withTrimmedRight (h.getHeight() * 4.0f);
-    const float w = h.getHeight() * (proc.tempoFollowsHost() ? 7.6f : 5.2f);
+    // as wide as its longest text (the play sign, three digits, the HOST / CLOCK tag when it follows), TAP right before it
+    const juce::String widest = juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xb6 ")) + "300.0 BPM" + (proc.tempoFollowsHost() ? "  CLOCK" : "");
+    const float w = juce::GlyphArrangement::getStringWidth (monoFont (h.getHeight() * 0.5f), widest) + h.getHeight() * 0.6f;
     tempoHeader.setBounds (bpmArea.withLeft (bpmArea.getRight() - w).toNearestInt());
     tapHeader.setBounds (juce::Rectangle<float> (h.getHeight() * 1.5f, h.getHeight()).withPosition (bpmArea.getRight() - w - h.getHeight() * 1.6f, h.getY()).toNearestInt());
     tapHeader.setVisible (! proc.tempoFollowsHost());
