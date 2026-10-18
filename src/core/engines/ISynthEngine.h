@@ -55,6 +55,16 @@ struct VoiceCommon
     const mod::VoiceProgram* modProgram = nullptr; ///< 0.7: per-voice routings of the modulation matrix (owned by the part)
     float exprSmooth = 0.0f;    ///< 0.8: seconds the per-note expression (pressure, timbre) glides to new values (0 = at once)
     float exprSlide = 0.0f;     ///< 0.8: seconds per-note pitch bends glide (at least 2 ms: no zipper steps)
+    /** p50 MPE HD: low-pass cutoffs (Hz) of the per-note X (pitch, note bend), Y (slide and what the timbre target
+        moves) and Z (pressure and what the pressure target moves; the level with the pressure onset). All 0 = the
+        classic exprSmooth / exprSlide above. Targets: MpeInput::Target of "pN.mpe.press" / "pN.mpe.timbre". */
+    float exprHzX = 0.0f, exprHzY = 0.0f, exprHzZ = 0.0f;
+    int exprZTarget = -1, exprYTarget = -1;
+    bool exprAmpZ = false;
+    /** p50 pitch rounding of per-note bends: 0 = off, 1 = the note starts on the nearest semitone (the slide after
+        it is free), 2 = also pulled to the nearest semitone continuously, over pitchRoundTime seconds. */
+    int pitchRound = 0;
+    float pitchRoundTime = 0.15f;
     /** p15 "Life": 0 = static (the voices sound exactly as without it) .. 1 = most alive. Every voice drifts on its
         own: pitch, filter / brightness breathing, engine colour (wavetable position, FM index, formant), grain
         scatter, a little pan and level. Followed by every voice over ~60 ms, so turning it never steps. */

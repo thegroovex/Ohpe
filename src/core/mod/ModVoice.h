@@ -24,6 +24,7 @@ enum Source
     SrcPadSweep, SrcPadHeld, // p25: the performance pads (Part scope, fed by the core)
     SrcChordRoot, SrcChordChange, SrcTension, // p24: the harmony brain (Part scope, the same value for every part)
     SrcVibrato, // p33: a 5.5 Hz sine per voice (Voice scope; the Expression page's Vibrato target uses it)
+    SrcKeyBend, // p50: key track including the note's own bend (continuous slide position, Voice scope)
     numSources
 };
 /** Sources of the 0.7 list; sources appended later (from here on) are Part-scope values fed by other modules. */
@@ -62,7 +63,7 @@ enum Curve { CurveLinear = 0, CurveExp, CurveLog, CurveS, CurveSteps, numCurves 
 inline bool isBipolar (int src) noexcept
 {
     return src == SrcLfo1 || src == SrcLfo2 || src == SrcLfo3 || src == SrcKeyTrack || src == SrcPitchBend || src == SrcSlide
-        || src == SrcNoteBend || src == SrcRandom || src == SrcVibrato;
+        || src == SrcNoteBend || src == SrcRandom || src == SrcVibrato || src == SrcKeyBend;
 }
 inline bool isVoiceDest (int dst) noexcept { return dst >= DstPitch && dst <= DstTimbre; }
 
@@ -316,10 +317,11 @@ public:
     /**
         One control block of n samples: advances LFO 2 / 3 and envelope 3, evaluates the per-voice routings.
         amp / mod: the voice's envelope levels; lfo1: the voice's LFO 1 (-1..+1, before its depth);
-        pressure / slide / bend: the note's expression (0..1, -1..+1, -1..+1).
+        pressure / slide / bend: the note's expression (0..1, -1..+1, -1..+1); p50 notePitch: the note's bend in
+        semitones (Key + Bend source).
     */
     const VoiceOut& tick (const VoiceProgram& p, int n, float sr, float amp, float modEnv, float lfo1, float pressure, float slide,
-                          float noteBend) noexcept
+                          float noteBend, float notePitch = 0.0f) noexcept
     {
         age += (float) n / sr;
         std::array<float, numSources> s = p.mono;
@@ -341,6 +343,7 @@ public:
         s[SrcNoteBend] = noteBend;
         s[SrcRandom] = random;
         s[SrcVibrato] = std::sin (vibPhase); // p33
+        s[SrcKeyBend] = std::isfinite (notePitch) ? std::clamp (key + notePitch / 60.0f, -1.0f, 1.0f) : key; // p50
         vibPhase += 6.2831853f * vibratoHz * (float) n / sr;
         if (vibPhase > 6.2831853f) vibPhase -= 6.2831853f;
 

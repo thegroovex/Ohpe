@@ -58,6 +58,9 @@ Core::Core()
         r.idxMpeTimbre = registry.indexOf (p.id ("mpe.timbre"));
         r.idxPressAmt = registry.indexOf (p.id ("mpe.pressamt"));
         r.idxTimbreAmt = registry.indexOf (p.id ("mpe.timbreamt"));
+        r.idxMpeHd = registry.indexOf (p.id ("mpe.hd"));         // p50
+        r.idxMpeOnset = registry.indexOf (p.id ("mpe.onset"));
+        r.idxMpePCurve = registry.indexOf (p.id ("mpe.pcurve"));
     }
     syncSourceIndex = registry.indexOf (Ids::syncSource);
     syncSmoothIndex = registry.indexOf (Ids::syncSmoothing);
@@ -688,6 +691,10 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         r.mpe = snapshot.getBool (r.idxMpe);
         mpeIn[(size_t) i].set (r.mpe, snapshot.getInt (r.idxMpeBend), snapshot.getInt (r.idxMpePress), snapshot.getInt (r.idxMpeTimbre),
                                r.idxPressAmt >= 0 ? snapshot[r.idxPressAmt] : 1.0f, r.idxTimbreAmt >= 0 ? snapshot[r.idxTimbreAmt] : 1.0f);
+        auto& m = mpeIn[(size_t) i]; // p50: Fingerboard mode / MPE HD
+        m.setHd (r.idxMpeHd >= 0 ? snapshot.getInt (r.idxMpeHd) : MpeInput::HdAuto, r.idxMpeOnset >= 0 ? snapshot.getInt (r.idxMpeOnset) : 0,
+                 r.idxMpePCurve >= 0 ? snapshot[r.idxMpePCurve] : 0.0f);
+        parts[(size_t) i]->setExpressionCutoffs (m.cutoffHz (0), m.cutoffHz (1), m.cutoffHz (2));
         refreshShapers (i); // scale / chord, p24: or the harmony brain's set
     }
     clockOutOn = snapshot.getBool (clockOutIndex);

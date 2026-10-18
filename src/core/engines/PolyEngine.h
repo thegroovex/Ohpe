@@ -100,6 +100,8 @@ public:
         lfo.reset();
         expr = exprIn = exprGlide = NoteExpression {};
         exprFresh = true;
+        roundFresh = true; // p50
+        roundCorr = 0.0f;
         lfoFresh = true;
         exprVibPhase = 0.0f;
         pitchEnvPhase = 0.0f;
@@ -156,8 +158,10 @@ protected:
         }
         else
             currentNote = (float) note;
+        exprHd = c.exprHzX > 0.0f || c.exprHzY > 0.0f || c.exprHzZ > 0.0f; // p50: MPE HD per-dimension low-pass
         if (! exprFresh) glideExpression (c, n); // 0.8: smooth per-note bend / pressure / timbre
         exprFresh = false;
+        roundTick (c, n); // p50: pitch rounding (nothing while it is off and was off)
         lifeTick (c, n); // p15: nothing at all while life is (and was) 0
         lfo.setRate (c.lfoRate);
         lfo.setShape (c.lfoShape);
@@ -171,8 +175,9 @@ protected:
         float pitch = currentNote + c.pitchOffset + expr.pitch;
         if (c.modProgram != nullptr && (c.modProgram->numRoutes > 0 || modActive)) // 0.7: per-voice routings of the modulation matrix
         {
-            const auto& o = vmod.tick (*c.modProgram, n, sr, ampEnv.getLevel(), modEnv.getLevel(), lfoRaw, exprIn.pressure, exprIn.slide,
-                                       exprIn.noteBend);
+            const auto& src = exprHd ? exprGlide : exprIn; // p50: with MPE HD the matrix reads the smoothed 14-bit values
+            const auto& o = vmod.tick (*c.modProgram, n, sr, ampEnv.getLevel(), modEnv.getLevel(), lfoRaw, src.pressure, src.slide,
+                                       src.noteBend, exprGlide.pitch + roundCorr);
             modActive = c.modProgram->numRoutes > 0;
             ampEnv.rampGain (modActive ? o.level : 1.0f, n);
             pitch += modActive ? o.pitch : 0.0f;
@@ -221,6 +226,7 @@ protected:
     void applyVoiceMod() noexcept
     {
         expr = exprGlide;
+        expr.pitch += roundCorr; // p50: pitch rounding (0 while it is off)
         if (modActive)
         {
             const auto& o = vmod.output();
@@ -362,6 +368,9 @@ protected:
     NoteExpression exprIn;    ///< 0.7: the note's own expression (MPE input; 0.8: the value the glide moves to)
     NoteExpression exprGlide; ///< 0.8: the note's expression as it glides (exprSmooth / exprSlide)
     bool exprFresh = true;    ///< 0.8: the voice just started: the first expression applies at once
+    bool exprHd = false;      ///< p50: the MPE HD per-dimension low-pass runs (VoiceCommon::exprHzX/Y/Z)
+    bool roundFresh = true;   ///< p50: the note's first block (initial rounding)
+    float roundCorr = 0.0f;   ///< p50: semitones the rounding adds to the per-note bend
     float exprVibPhase = 0.0f;
     mod::VoiceMod vmod;       ///< 0.7: per-voice modulation matrix state
     bool modActive = false;
@@ -382,9 +391,55 @@ protected:
           lifePan = 0.0f, lifeGain = 1.0f;
     float lifeScatter = 0.0f; ///< p15: 0..1, extra random grain start positions (grain engine)
 
+    /** p50: pitch rounding. Initial: the note starts on the nearest semitone (the correction stays for the note, so
+        the slide after it is free); continuous: the correction follows the nearest semitone over pitchRoundTime. */
+    void roundTick (const VoiceCommon& c, int n) noexcept
+    {
+        if (c.pitchRound <= 0)
+        {
+            roundFresh = false;
+            if (roundCorr != 0.0f) { roundCorr = 0.0f; applyVoiceMod(); }
+            return;
+        }
+        const float p = (float) note + exprGlide.pitch;
+        const float target = std::round (p) - p;
+        const float before = roundCorr;
+        if (roundFresh) roundCorr = target;
+        else if (c.pitchRound >= 2)
+        {
+            roundCorr += (target - roundCorr) * (1.0f - std::exp (-(float) n / (std::max (0.01f, c.pitchRoundTime) * sr)));
+            if (std::abs (target - roundCorr) < 1.0e-5f) roundCorr = target;
+        }
+        roundFresh = false;
+        if (! std::isfinite (roundCorr)) roundCorr = 0.0f;
+        if (roundCorr != before) applyVoiceMod();
+    }
+
+    /** p50: one control block of the MPE HD low-pass: X = pitch / note bend, Y = slide and the timbre target's
+        field, Z = pressure and the pressure target's field (and the level with the pressure onset). */
+    void glideExpressionHd (const VoiceCommon& c, int n) noexcept
+    {
+        auto coeff = [this, n] (float hz) noexcept { return hz > 0.0f ? 1.0f - std::exp (-dsp::twoPi * std::min (hz, 0.4f * sr) * (float) n / sr) : 1.0f; };
+        const float aX = coeff (c.exprHzX), aY = coeff (c.exprHzY), aZ = coeff (c.exprHzZ);
+        auto& e = exprGlide;
+        const auto& tg = exprIn;
+        auto g = [] (float& v, float t, float a) noexcept { v += (t - v) * a; if (std::abs (t - v) < 1.0e-6f) v = t; };
+        auto af = [&c, aY, aZ] (int target) noexcept { return target == c.exprZTarget && target != c.exprYTarget ? aZ : aY; };
+        g (e.pitch, tg.pitch, aX); g (e.noteBend, tg.noteBend, aX);
+        g (e.slide, tg.slide, aY); g (e.pressure, tg.pressure, aZ);
+        // fields by MpeInput::Target: 1 timbre, 2 amp, 3 lfo, 4 pan, 5 cutoff, 6 position, 7 index, 8 density,
+        // 9 drive, 10 vibrato, 11 formant, 12 blend
+        g (e.timbre, tg.timbre, af (1)); g (e.amp, tg.amp, c.exprAmpZ ? aZ : af (2)); g (e.lfo, tg.lfo, af (3));
+        g (e.pan, tg.pan, af (4)); g (e.cutoff, tg.cutoff, af (5)); g (e.position, tg.position, af (6));
+        g (e.index, tg.index, af (7)); g (e.density, tg.density, af (8)); g (e.drive, tg.drive, af (9));
+        g (e.vibrato, tg.vibrato, af (10)); g (e.formant, tg.formant, af (11)); g (e.blend, tg.blend, af (12));
+        applyVoiceMod();
+    }
+
     /** 0.8: one control block of expression glide: pitch over exprSlide (at least 2 ms), the rest over exprSmooth. */
     void glideExpression (const VoiceCommon& c, int n) noexcept
     {
+        if (exprHd) { glideExpressionHd (c, n); return; } // p50
         auto& e = exprGlide;
         const auto& tg = exprIn;
         const float aPitch = 1.0f - std::exp (-(float) n / (std::max (0.002f, c.exprSlide) * sr));

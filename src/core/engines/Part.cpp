@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Part.h"
 #include "PartSub.h"
+#include "../midi/MpeInput.h"
 
 #include <algorithm>
 #include <cmath>
@@ -250,6 +251,21 @@ void Part::registerLate32GlidePressParams (ParamRegistry& reg) const
     reg.add (std::move (d));
 }
 
+void Part::registerLate50FingerboardParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const std::string P = "Part " + n + " ";
+    auto add = [&] (ParamDescriptor d) { d.group = "part" + n; reg.add (std::move (d)); };
+    add (choice (id ("mpe.hd"), P + "MPE HD", P + "MPE HD", MpeInput::hdNamesEn(), MpeInput::hdNamesDe(), MpeInput::HdAuto));
+    add (choice (id ("mpe.onset"), P + "Note Onset", P + "Noten-Einsatz", MpeInput::onsetNamesEn(), MpeInput::onsetNamesDe(),
+                 MpeInput::OnsetVelocity));
+    add (choice (id ("mpe.round"), P + "Pitch Rounding", P + "Tonhöhen-Rundung", { "Off", "Initial", "Continuous" },
+                 { "Aus", "Anfang", "Fortlaufend" }, 0));
+    add (continuous (id ("mpe.round.time"), P + "Rounding Time", P + "Rundungszeit", 0.01f, 1.0f, 0.15f, ParamUnit::Seconds, 0.4f));
+    add (continuous (id ("mpe.pcurve"), P + "Pressure Curve", P + "Druckkurve", -1.0f, 1.0f, 0.0f));
+}
+
 void Part::registerLate31SubParams (ParamRegistry& reg) const
 {
     using namespace pd;
@@ -381,6 +397,11 @@ void Part::bind (const ParamRegistry& reg)
     monoBassIndex = reg.indexOf (id ("monobass"));
     lifeIndex = reg.indexOf (id ("life")); // p15
     glidePressIndex = reg.indexOf (id ("glide.press")); // p32
+    mpeRoundIndex = reg.indexOf (id ("mpe.round"));     // p50
+    mpeRoundTimeIndex = reg.indexOf (id ("mpe.round.time"));
+    mpePressIndex = reg.indexOf (id ("mpe.press"));
+    mpeTimbreIndex = reg.indexOf (id ("mpe.timbre"));
+    mpeOnsetIndex = reg.indexOf (id ("mpe.onset"));
     {
         static const char* subKeys[4] = { "sub.level", "sub.oct", "sub.shape", "sub.direct" }; // p31
         for (size_t k = 0; k < subIndex.size(); ++k) subIndex[k] = reg.indexOf (id (subKeys[k]));
@@ -595,6 +616,15 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
     rack.pullParams (s);
     common.exprSmooth = exprSmoothIndex >= 0 ? s[exprSmoothIndex] : 0.0f;
     common.exprSlide = exprSlideIndex >= 0 ? s[exprSlideIndex] : 0.0f;
+    // p50: per-dimension low-pass of the MPE HD controller (X pitch, Y timbre, Z pressure), pitch rounding
+    common.exprHzX = hdCutoff[0];
+    common.exprHzY = hdCutoff[1];
+    common.exprHzZ = hdCutoff[2];
+    common.exprZTarget = mpePressIndex >= 0 ? s.getInt (mpePressIndex) : -1;
+    common.exprYTarget = mpeTimbreIndex >= 0 ? s.getInt (mpeTimbreIndex) : -1;
+    common.exprAmpZ = mpeOnsetIndex >= 0 && s.getInt (mpeOnsetIndex) != 0;
+    common.pitchRound = mpeRoundIndex >= 0 ? std::clamp (s.getInt (mpeRoundIndex), 0, 2) : 0;
+    common.pitchRoundTime = mpeRoundTimeIndex >= 0 && std::isfinite (s[mpeRoundTimeIndex]) ? std::clamp (s[mpeRoundTimeIndex], 0.01f, 1.0f) : 0.15f;
     common.life = lifeIndex >= 0 ? dsp::clamp01 (s[lifeIndex]) : 0.0f; // p15 (the matrix may move it: "life" target)
     if (charActive) common.life = dsp::clamp01 (common.life + character::lifeAlive * charAmount[character::Alive]); // p21 ALIVE
     common.lifeSeed = 0x51ED27u * (uint32_t) number;
@@ -728,6 +758,7 @@ void Part::noteOff (int note) noexcept
     for (auto* f : followers)
         if (f != nullptr) f->noteOff (note);
     if (sustain) { sustained[(size_t) note] = true; updateHeldKeys(); return; }
+    if (sostenuto && sostLatched[(size_t) note]) { sostPending[(size_t) note] = true; updateHeldKeys(); return; } // p50
     updateHeldKeys(); // p19
     matrix.noteOff (note);
     for (auto& e : engines)
@@ -737,6 +768,8 @@ void Part::noteOff (int note) noexcept
 void Part::allNotesOff (bool hard) noexcept
 {
     sustained.fill (false);
+    sostLatched.fill (false); // p50
+    sostPending.fill (false);
     held.fill (0.0f); // p16
     keys.numHeld = 0;  // p19
     for (auto* f : followers)
@@ -750,7 +783,7 @@ void Part::noteExpression (int note, const NoteExpression& x) noexcept
 {
     for (auto* f : followers) // p16
         if (f != nullptr) f->noteExpression (note, x);
-    matrix.setNoteExpression (note, x.pressure, x.slide, x.noteBend);
+    matrix.setNoteExpression (note, x.pressure, x.slide, x.noteBend, x.pitch); // p50: pitch for Key + Bend
     if (note < 0 || note == keys.lastNote) // p19: the body follows the newest note's expression
     {
         keys.pressure = std::isfinite (x.pressure) ? std::clamp (x.pressure, 0.0f, 1.0f) : 0.0f;
@@ -792,6 +825,22 @@ void Part::handleMidi (const MidiEvent& m) noexcept
             if (! sustain)
                 for (int n = 0; n < 128; ++n)
                     if (sustained[(size_t) n]) { sustained[(size_t) n] = false; noteOff (n); }
+        }
+        else if (m.data1 == 66) // p50: sostenuto - holds the keys that are down now until the pedal comes up
+        {
+            const bool on = m.data2 >= 64;
+            if (on && ! sostenuto)
+                for (int n = 0; n < 128; ++n) { sostLatched[(size_t) n] = held[(size_t) n] > 0.0f; sostPending[(size_t) n] = false; }
+            sostenuto = on;
+            if (! on)
+            {
+                for (int n = 0; n < 128; ++n)
+                {
+                    const bool pending = sostPending[(size_t) n];
+                    sostLatched[(size_t) n] = sostPending[(size_t) n] = false;
+                    if (pending) noteOff (n);
+                }
+            }
         }
         else if (m.data1 == 65 || m.data1 == 5) // 0.6: portamento on / off, portamento time
         {

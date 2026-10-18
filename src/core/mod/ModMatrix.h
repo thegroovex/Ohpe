@@ -130,7 +130,7 @@ public:
     void setModWheel (float v) noexcept { mono[SrcModWheel] = v; }
     void setPitchBend (float v) noexcept { mono[SrcPitchBend] = v; }
     void setChannelPressure (float v) noexcept { mono[SrcChannelPressure] = v; }
-    void setNoteExpression (int note, float pressure, float slide, float noteBend) noexcept;
+    void setNoteExpression (int note, float pressure, float slide, float noteBend, float notePitch = 0.0f) noexcept;
     /** Value of a Part-scope source supplied by another module (audio thread, before render). Only sources appended
         after the 0.7 list (from numBuiltinSources on) take values this way. */
     void setSourceValue (int src, float v) noexcept
