@@ -107,7 +107,7 @@ struct Rig
             rec.r.insert (rec.r.end(), r[0].begin(), r[0].end());
         }
     }
-    float source (int src) const { return core.part (0).modMatrix().sourceValue (src); }
+    float source (int src) { return core.part (0).modMatrix().sourceValue (src); }
     const MpeInput& mpe() const { return core.mpeInput (0); }
 };
 } // namespace
@@ -142,7 +142,7 @@ TEST_CASE ("p50: CC 87 gives 14-bit pressure / timbre and 21-bit bend; 7-bit and
     press14 (ev, 2, 0x2040);
     rig.run (1, ev);
     CHECK (rig.source (mod::SrcNotePressure) == doctest::Approx ((double) 0x2040 / (double) 0x3F80).epsilon (1.0e-6));
-    CHECK (rig.mpe().statusBits() & MpeInput::StatusHdData);
+    CHECK ((rig.mpe().statusBits() & MpeInput::StatusHdData) != 0);
     // the next plain message is 7-bit again (the prefix was used up)
     rig.run (1, { press (2, 0x40) });
     CHECK (rig.source (mod::SrcNotePressure) == doctest::Approx (64.0 / 127.0).epsilon (1.0e-6));
@@ -181,7 +181,7 @@ TEST_CASE ("p50: CC 87 gives 14-bit pressure / timbre and 21-bit bend; 7-bit and
     bend21 (ev, 2, (8192 << 7) + 64);
     rig.run (1, ev);
     CHECK (rig.source (mod::SrcNoteBend) == doctest::Approx (0.5 / 8191.0).epsilon (1.0e-3));
-    CHECK ((rig.source (mod::SrcKeyBend) - 0.0f) * 60.0f == doctest::Approx (0.5 / 8192.0 * 96.0).epsilon (2.0e-2));
+    CHECK (rig.source (mod::SrcKeyBend) * 60.0f == doctest::Approx (0.5 / 8192.0 * 96.0).epsilon (2.0e-2));
     rig.run (1, { bend (2, 8192) });
     CHECK (rig.source (mod::SrcNoteBend) == 0.0f);
 
@@ -209,7 +209,7 @@ TEST_CASE ("p50: NRPN 100..102 set the X / Y / Z cutoffs (2 Hz units); null NRPN
         CHECK (rig.mpe().cutoffHz (0) == 120.0f);
         CHECK (rig.mpe().cutoffHz (1) == 60.0f);
         CHECK (rig.mpe().cutoffHz (2) == 250.0f);
-        CHECK (rig.mpe().statusBits() & MpeInput::StatusCutoffs);
+        CHECK ((rig.mpe().statusBits() & MpeInput::StatusCutoffs) != 0);
         CHECK (rig.mpe().receivedCutoff (2) == 250.0f);
         rig.set ("p1.mpe.hd", (float) MpeInput::HdOff);
         rig.run (1);
@@ -267,7 +267,7 @@ TEST_CASE ("p50: RPN 0 sets the member bend range (96 semitones); RPN 6 selects 
     ev.clear();
     rpn (ev, 16, 6, 15);
     rig.run (1, ev);
-    CHECK (rig.mpe().statusBits() & MpeInput::StatusUpperZone);
+    CHECK ((rig.mpe().statusBits() & MpeInput::StatusUpperZone) != 0);
     CHECK (rig.mpe().memberBendRange() == 48.0f); // a new zone starts at the configured range
     ev.clear();
     rpn (ev, 1, 6, 15); // back to the lower zone
