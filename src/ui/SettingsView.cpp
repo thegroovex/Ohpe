@@ -185,10 +185,12 @@ SettingsView::SettingsView (OhpeProcessor& p, Updater& u, UserSettingsStore& s) 
     store.addChangeListener (this);
     proc.addChangeListener (this);
     setWantsKeyboardFocus (true);
+    startTimer (500); // p50: fingerboard status on the MIDI page
 }
 
 SettingsView::~SettingsView()
 {
+    stopTimer();
     proc.removeChangeListener (this);
     store.removeChangeListener (this);
     updater.removeChangeListener (this);
@@ -561,6 +563,8 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
                  [this, pre] { step (pre + "mpe.bend", -1); }, [this, pre] { step (pre + "mpe.bend", 1); });
         y += row;
     }
+    paintFingerboard (g, { a.getX(), y, a.getWidth(), u * 2.0f + row }, xCh); // p50
+    y += u * 2.0f + row;
     }
     y += u * 1.0f;
     const float half = (a.getWidth() - u * 3.0f) * 0.5f;
@@ -622,6 +626,52 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
         yy += row + u * 1.0f;
         paintController (g, { x, yy, half, u * 2.0f + row * 2.0f }); // p46
     }
+}
+
+// ---------------------------------------------------------------- p50: Fingerboard mode
+void SettingsView::paintFingerboard (juce::Graphics& g, juce::Rectangle<float> a, float xParts)
+{
+    const float u = unit(), h = u * 3.0f;
+    legend (g, tr ("Fingerboard mode") + juce::String::fromUTF8 ("  \xc2\xb7  ") + "MPE HD (14/21-bit)", { a.getX(), a.getY(), a.getWidth(), u * 1.6f });
+    const float y = a.getY() + u * 2.0f;
+    label (g, tr ("One tap"), { a.getX(), y, xParts - a.getX() - u, h });
+    int first = -1;
+    const float cw = u * 8.4f;
+    for (int p = 0; p < Core::numParts; ++p)
+    {
+        const juce::String pre = "p" + juce::String (p + 1) + ".";
+        const bool on = plain (pre + "mpe") >= 0.5f && std::lround (plain (pre + "mpe.onset")) != 0 && std::lround (plain (pre + "mpe.bend")) == 96;
+        if (on && first < 0) first = p;
+        // one tap: MPE on, bend range 96, level from pressure, HD auto - again: back to velocity and 48
+        chip (g, { xParts + (cw + u * 0.6f) * (float) p, y, cw, h }, i18n::upper (tr ("Part")) + " " + juce::String (p + 1), on, colour::sunYellow,
+              [this, pre, on] {
+                  if (on)
+                  {
+                      setPlain (pre + "mpe.onset", 0.0f);
+                      setPlain (pre + "mpe.bend", 48.0f);
+                      return;
+                  }
+                  setPlain (pre + "mpe", 1.0f);
+                  setPlain (pre + "mpe.bend", 96.0f);
+                  setPlain (pre + "mpe.onset", 1.0f);
+                  setPlain (pre + "mpe.hd", 1.0f);
+              });
+    }
+    const float xs = xParts + (cw + u * 0.6f) * (float) Core::numParts + u * 0.6f;
+    const juce::Rectangle<float> status { xs, y, a.getRight() - xs, h };
+    if (first < 0) { label (g, tr ("Tap a part for a fingerboard controller set to MPE HD"), status, true); return; }
+    const auto& m = proc.core().mpeInput (first);
+    const int bits = m.statusBits();
+    juce::String text = tr ("Part") + " " + juce::String (first + 1) + ": ";
+    if ((bits & MpeInput::StatusHdData) != 0) text << tr ("HD data received");
+    else text << tr ("waiting for HD data");
+    if ((bits & MpeInput::StatusCutoffs) != 0)
+    {
+        auto hz = [&m] (int d) { return juce::String (juce::roundToInt (m.receivedCutoff (d) > 0.0f ? m.receivedCutoff (d) : MpeInput::defaultCutoffHz[d])); };
+        text << juce::String::fromUTF8 (" \xc2\xb7 ") << tr ("smoothing") << " X " << hz (0) << " / Y " << hz (1) << " / Z " << hz (2) << " Hz";
+    }
+    if (m.receivedBendRange() >= 0) text << juce::String::fromUTF8 (" \xc2\xb7 ") << tr ("bend") << " " << juce::String (m.receivedBendRange()) << " " << tr ("st");
+    label (g, text, status, (bits & MpeInput::StatusHdData) == 0);
 }
 
 // ---------------------------------------------------------------- p46: Grid-Controller (Profil 1)
