@@ -7,6 +7,15 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+## 0.6.1 Preview – 2026-10-18
+
+[Notes / Hinweise](docs/release-notes/0.6.1.md)
+
+- EN: Fingerboard mode (MPE HD 14/21-bit, controller smoothing, bend 96, pressure onset, pitch rounding, sostenuto,
+  5 Fingerboard presets).
+- DE: Fingerboard-Modus (MPE HD 14/21 Bit, Controller-Glättung, Bend 96, Druck-Einsatz, Tonhöhen-Rundung, Sostenuto,
+  5 Fingerboard-Presets).
+
 - EN: Fingerboard mode (p50) for continuous-surface fingerboard MPE controllers: MPE HD (14-bit pressure / Y, 21-bit
   bend via CC 87), the controller's smoothing cutoffs (NRPN 100–102), RPN 0 bend range and RPN 6 zone, note level from
   pressure, optional pitch rounding, the matrix source Key + Bend, sostenuto (CC 66), a one-tap button per part on
