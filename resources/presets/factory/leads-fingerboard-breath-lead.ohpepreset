@@ -58,7 +58,7 @@
     "fx.reverb.mix": 0.15,
     "voices": 4,
     "glide": 0.0,
-    "gain": 24.0,
+    "gain": 22.5,
     "mod.s1.src": 1,
     "mod.s1.via": 9,
     "mod.s1.dst": 1,

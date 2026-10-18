@@ -953,6 +953,30 @@ int main (int argc, char* argv[])
                     setPlain (p, "p2.mpe", 0.0f);
                 }
                 if (! dark)
+                {   // p50: part 1 in Fingerboard mode, a controller sending MPE HD data, its smoothing cutoffs and bend range
+                    setPlain (p, "p1.mpe", 1.0f);
+                    setPlain (p, "p1.mpe.bend", 96.0f);
+                    setPlain (p, "p1.mpe.onset", 1.0f);
+                    setPlain (p, "p1.mpe.hd", 1.0f);
+                    run (p, 2);
+                    juce::AudioBuffer<float> buffer (p.getTotalNumOutputChannels(), 512);
+                    juce::MidiBuffer midi;
+                    auto cc = [&midi] (int ch, int n, int v) { midi.addEvent (juce::MidiMessage::controllerEvent (ch, n, v), 0); };
+                    for (int d = 0; d < 3; ++d) { cc (2, 99, 0); cc (2, 98, 100 + d); cc (2, 6, d == 0 ? 60 : d == 1 ? 30 : 125); }
+                    cc (2, 99, 127); cc (2, 98, 127);
+                    cc (2, 101, 0); cc (2, 100, 0); cc (2, 6, 96); cc (2, 101, 127); cc (2, 100, 127);
+                    cc (2, 87, 64);
+                    midi.addEvent (juce::MidiMessage::channelPressureChange (2, 0), 0);
+                    p.processBlock (buffer, midi);
+                    run (p, 2);
+                    e.showSettings (true, ui::SettingsView::Midi);
+                    shot ("ohpe-settings-fingerboard");
+                    setPlain (p, "p1.mpe.onset", 0.0f);
+                    setPlain (p, "p1.mpe.bend", 48.0f);
+                    setPlain (p, "p1.mpe", 0.0f);
+                    run (p, 2);
+                }
+                if (! dark)
                 {   // p46: the controller section with the virtual controller view (a mock device: no MIDI port needed);
                     // the four display lines of three pages as text next to the shots
                     auto& view = e.settingsComponent();
