@@ -680,3 +680,18 @@ Presets marked *Arp:* switch the arpeggiator on for the part they load into; it 
 
 **Engines:** FM 42, Wavetable 79, Analog 68, Pluck 17, Grain 27, Vocal 20, Cluster 23, Sampler 26
 <!-- presets:end -->
+
+## Fingerboard (p50)
+
+Five sounds tuned for continuous-surface fingerboard controllers in [Fingerboard mode](MIDI.md#fingerboard-mode-mpe-hd-1421-bit)
+(tags **Fingerboard** and **MPE**): polyphonic, no portamento (the slide is the finger's), pressure and forward / back on
+musical targets. They do not switch MPE on – the Fingerboard mode button on the MIDI settings page does, and a part in
+Fingerboard mode keeps that setup when a sound loads. With an aftertouch keyboard they play as normal sounds.
+
+| Name | Category | Engine | Description |
+|---|---|---|---|
+| Fingerboard Bowed String | Leads | Analog | A bowed string for continuous fingerboards: pressure is the bow (level and brightness), sliding forward and back moves the bowing position, the slide is free. Vibrato comes from your finger. The mod wheel slides the bowing position too. |
+| Fingerboard Breath Lead | Leads | Analog | A breathy reed lead for continuous fingerboards: pressure is the breath (level, air and a brighter bore), forward / back opens the tone. Glide-free slides, quick response. |
+| Fingerboard Cello | Bass | Analog | A dark, woody cello for continuous fingerboards in the low register: pressure bows harder (level, rosin and body), forward / back darkens or opens the tone. Slide into notes and lean in for vibrato. |
+| Fingerboard Expressive Bass | Bass | Analog | A warm analog bass for continuous fingerboards: pressure opens the filter as it raises the level, forward / back adds drive. Slides glide exactly with your finger over the whole range. |
+| Fingerboard Opening Pad | Pads | Wavetable | A wide wavetable pad for continuous fingerboards that opens as you slide your finger forward (Y opens the filter and the table position); pressure swells it. Hold chords and move single fingers. |

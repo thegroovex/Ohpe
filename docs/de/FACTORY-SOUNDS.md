@@ -682,3 +682,19 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 
 **Engines:** FM 42, Wavetable 79, Analog 68, Zupfen 17, Grain 27, Vocal 20, Cluster 23, Sampler 26
 <!-- presets:end -->
+
+## Fingerboard (p50)
+
+Fünf Klänge für Fingerboard-Controller mit durchgehender Fläche im [Fingerboard-Modus](MIDI.md#fingerboard-modus-mpe-hd-1421-bit)
+(Tags **Fingerboard** und **MPE**): polyphon, ohne Portamento (das Gleiten macht der Finger), Druck und vor / zurück auf
+musikalischen Zielen. Sie schalten MPE nicht ein – das macht der Fingerboard-Modus-Knopf auf der MIDI-Einstellungsseite,
+und ein Part im Fingerboard-Modus behält diese Einstellung, wenn ein Klang geladen wird. Mit einer Aftertouch-Tastatur
+spielen sie wie normale Klänge.
+
+| Name | Kategorie | Engine | Beschreibung |
+|---|---|---|---|
+| Fingerboard Bowed String | Leads | Analog | Eine gestrichene Saite für Fingerboard-Controller: Druck ist der Bogen (Pegel und Helligkeit), vor / zurück verschiebt die Strichstelle, das Gleiten ist frei. Das Vibrato kommt vom Finger. Das Modrad verschiebt die Strichstelle ebenfalls. |
+| Fingerboard Breath Lead | Leads | Analog | Ein hauchiger Rohrblatt-Lead für Fingerboard-Controller: Druck ist der Atem (Pegel, Luft und eine hellere Bohrung), vor / zurück öffnet den Ton. Gleiten ohne Glide, schnelle Ansprache. |
+| Fingerboard Cello | Bass | Analog | Ein dunkles, holziges Cello für Fingerboard-Controller in der Tiefe: Druck streicht fester (Pegel, Kolophonium und Korpus), vor / zurück dunkelt den Ton ab oder öffnet ihn. In Töne hineingleiten und für Vibrato hineindrücken. |
+| Fingerboard Expressive Bass | Bass | Analog | Ein warmer Analog-Bass für Fingerboard-Controller: Druck öffnet das Filter, während er den Pegel hebt, vor / zurück gibt Drive dazu. Gleiten folgt dem Finger exakt über den ganzen Bereich. |
+| Fingerboard Opening Pad | Flächen | Wavetable | Eine breite Wavetable-Fläche für Fingerboard-Controller, die sich öffnet, wenn der Finger nach vorn gleitet (Y öffnet Filter und Tabellenposition); Druck lässt sie anschwellen. Akkorde halten und einzelne Finger bewegen. |

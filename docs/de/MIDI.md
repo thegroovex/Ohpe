@@ -91,6 +91,70 @@ Bässen das Filter oder gibt Drive dazu, Timbre fährt bei Flächen durch die Wa
 die Grain-Wolke). Sie schalten MPE nicht ein – das geschieht pro Part (`pN.mpe`), wenn ein
 MPE-Controller spielt; mit einer Aftertouch-Tastatur wirkt die Druck-Zuordnung sofort.
 
+## Fingerboard-Modus (MPE HD 14/21 Bit)
+
+Für **Fingerboard-Controller mit durchgehender Spielfläche** – eine Fläche ohne Tasten, auf der der
+Finger frei entlanggleitet (X = Tonhöhe), sich nach vorn und hinten bewegt (Y) und drückt (Z), meist
+mit Pedal-Eingängen. Diese Controller senden MPE mit zusätzlicher Auflösung (**MPE HD**: 14 Bit Druck
+und Y, 21 Bit Pitchbend) und immer Anschlagstärke 127. Ohpe empfängt all das; normales MPE
+funktioniert genau wie bisher.
+
+**Einrichtung**
+
+1. Am Controller die Ausgabe **MPE HD** wählen (der hochauflösende MPE-Modus; normales MPE geht
+   auch, mit 7 Bit Druck / Y und 14 Bit Bend).
+2. In Ohpe **Einstellungen → MIDI** öffnen. Unter **Fingerboard-Modus · MPE HD (14/21-bit)** den
+   gespielten Part antippen (*Part 1* … *Part 4*). Ein Tipp setzt: MPE ein, MPE-Bend-Bereich 96
+   Halbtöne, Noten-Einsatz aus dem Druck, MPE HD Auto. Noch ein Tipp: zurück zu Anschlag und 48
+   Halbtönen.
+3. Spielen. Der Status neben den Knöpfen zeigt *HD-Daten empfangen*, sobald der Controller
+   hochauflösende Werte sendet, dazu die gesendeten Glättungs-Grenzfrequenzen (X / Y / Z in Hz) und
+   den Bend-Bereich.
+4. Einen Klang wählen – die Presets mit dem Tag **Fingerboard** (in der Bibliothek nach
+   "Fingerboard" suchen) sind dafür abgestimmt. Ein Part im Fingerboard-Modus behält seine
+   Controller-Einstellung (MPE, Bend-Bereich, MPE HD, Einsatz), wenn ein anderer Klang geladen wird.
+
+**Was der Controller in Ohpe macht**
+
+| Controller | Ohpe |
+|---|---|
+| X – nach links / rechts gleiten | Tonhöhe pro Note, stufenlos über den ganzen Bereich (21 Bit Bend, 96 Halbtöne); eine Note beginnt genau auf der Tonhöhe, auf der der Finger aufsetzt |
+| Y – vor / zurück | das **Timbre-Ziel** (`pN.mpe.timbre`) und die Matrix-Quelle *Slide (Klangfarbe)*, 14 Bit |
+| Z – Druck | der **Pegel** der Note (Fingerboard-Modus: kein Druck = still, der Finger formt Einsatz und Anschwellen), das **Druck-Ziel** (`pN.mpe.press`) und die Matrix-Quelle *Notendruck*, 14 Bit |
+| Pedale auf dem Master-Kanal | Sustain (CC 64) und Sostenuto (CC 66) halten alle Noten des Parts; andere Pedale / CCs (z. B. CC 4, CC 11) über MIDI-Learn, sie wirken auf den ganzen Part |
+
+Die Matrix-Quelle **Taste + Bend** (p50) folgt der stufenlosen Position des Fingers (Tastatur-
+Verfolgung inklusive des eigenen Bends der Note), z. B. um einen Klang weiter oben dunkler zu machen.
+
+**Was empfangen wird**
+
+* **CC 87 (LSB-Präfix).** Ein CC 87 auf einem Member-Kanal gibt dem *nächsten* Kanaldruck, CC 74
+  oder Pitchbend auf diesem Kanal 7 untere Bits dazu: Druck und Y laufen 0x0000 … 0x3F80 (0x3F80 =
+  voll), der Bend hat 21 Bit. Nachrichten ohne Präfix gelten als normale 7-/14-Bit-Werte – der
+  Controller darf beides jederzeit mischen.
+* **NRPN 100 / 101 / 102** (CC 99 = 0, CC 98 = 100 / 101 / 102, CC 6 = Wert): die Glättungs-
+  Grenzfrequenz des Controllers für X / Y / Z in 2-Hz-Schritten (z. B. 60 = 120 Hz). Ohpe glättet
+  damit jede Dimension jeder Note, statt mit *Ausdrucks-Glättung* / *Pro-Noten-Slide*. Solange noch
+  nichts angekommen ist (MPE HD *Ein*, oder *Auto*, sobald HD-Daten kamen), nimmt Ohpe X 120 Hz,
+  Y 60 Hz, Z 250 Hz.
+* **RPN 0** (Bend-Bereich) auf einem Member-Kanal setzt den Bend-Bereich aller Member-Kanäle (diese
+  Controller senden 96). **RPN 6** (MPE-Konfiguration) auf Kanal 1 oder 16 wählt die untere oder obere
+  Zone.
+
+**Einstellungen** (Part-Parameter, MIDI-zuweisbar; auf der MPE-Seite der Pro-Ansicht):
+
+| Parameter | Wirkung |
+|---|---|
+| *MPE HD* (`pN.mpe.hd`) | *Auto* (Standard): feine Werte und Glättung werden genutzt, sobald sie ankommen – normales MPE klingt genau wie bisher. *Ein*: die Glättung läuft auch, bevor der Controller seine Grenzfrequenzen gesendet hat. *Aus*: CC 87 und die (N)RPNs werden ignoriert. |
+| *Noten-Einsatz* (`pN.mpe.onset`) | *Anschlag* (Standard, wie bisher), *Druck* (Anschlag ignoriert; der Pegel folgt dem Druck, 0 = still), *Anschlag x Druck* (beides). |
+| *Tonhöhen-Rundung* (`pN.mpe.round`) | *Aus* (Standard) = freies Gleiten. *Anfang*: eine Note beginnt auf dem nächsten Halbton (das Gleiten danach ist frei). *Fortlaufend*: die Tonhöhe wird zusätzlich zum nächsten Halbton gezogen, solange der Finger stillhält. |
+| *Rundungszeit* (`pN.mpe.round.time`) | wie schnell die fortlaufende Rundung zieht (0,01 … 1 s, Standard 0,15 s). |
+| *Druckkurve* (`pN.mpe.pcurve`) | −1 … +1, 0 = linear. Rechts: leichte Berührung bleibt leise; links: spricht früh an. |
+
+Mit *Anschlag* als Einsatz spielt ein Fingerboard-Controller jede Note mit voller Stärke – *Druck*
+wählen (das macht der Fingerboard-Modus-Knopf). Portamento und Part-Glide addieren sich zum Gleiten
+und arbeiten nie dagegen; für freies Gleiten *Glide* auf 0 lassen (wie in den Fingerboard-Presets).
+
 ## Tonart und In Tonart
 
 Die Tonart (`key.root`, `key.scale`) und In Tonart (`key.lock`, `key.lock.mode`) sind Host-Parameter: MIDI-Learn über

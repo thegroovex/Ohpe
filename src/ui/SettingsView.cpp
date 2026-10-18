@@ -77,9 +77,15 @@ const HelpTopic helpTopics[] = {
     { "MIDI, MPE and sync", "MIDI, MPE und Sync",
       "Each part listens on its own MIDI channel (Omni = every channel). Settings > MIDI sets the channel, MPE and the bend ranges of every part.\n\n"
       "With MPE on, each note gets its own pitch bend, pressure and timbre (lower zone: channel 1 is the master channel).\n\n"
+      "Fingerboard mode (p50): for continuous fingerboard controllers set to MPE HD (14/21-bit). Tap the part under Settings > MIDI > "
+      "Fingerboard mode: MPE on, bend range 96, the level follows the pressure. Slide = pitch, forward / back = timbre target, "
+      "pressure = level and pressure target; pedals on channel 1 act on every note.\n\n"
       "Sync: internal tempo, MIDI clock from outside, or network sync (standalone). Clock out sends MIDI clock to other devices.",
       "Jeder Part hört auf seinem MIDI-Kanal (Omni = alle Kanäle). Einstellungen > MIDI setzt Kanal, MPE und Bend-Bereiche jedes Parts.\n\n"
       "Mit MPE bekommt jede Note eigenes Pitchbend, Druck und Klangfarbe (untere Zone: Kanal 1 ist der Master-Kanal).\n\n"
+      "Fingerboard-Modus (p50): für Fingerboard-Controller mit durchgehender Fläche im Modus MPE HD (14/21 Bit). Unter Einstellungen > MIDI > "
+      "Fingerboard-Modus den Part antippen: MPE ein, Bend-Bereich 96, der Pegel folgt dem Druck. Gleiten = Tonhöhe, vor / zurück = "
+      "Timbre-Ziel, Druck = Pegel und Druck-Ziel; Pedale auf Kanal 1 wirken auf alle Noten.\n\n"
       "Sync: internes Tempo, MIDI-Clock von außen oder Netzwerk-Sync (Standalone). Clock senden schickt MIDI-Clock an andere Geräte." },
     { "Grid keyboard", "Raster-Tastatur", // p48
       "GRID (between OCTAVE + and MIDI) swaps the piano keys for 4 rows of 24 cells. It is isomorphic: every interval, chord and "
