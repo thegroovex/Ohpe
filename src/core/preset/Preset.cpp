@@ -6,6 +6,7 @@
 #include "../fx/SpaceMode.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <nlohmann/json.hpp>
 
@@ -248,6 +249,14 @@ ApplyResult applyPart (const Preset& p, ParamRegistry& reg, int partIndex, const
     ApplyResult r;
     if (p.meta.kind != Kind::Part || partIndex < 0 || partIndex >= Core::numParts) return r;
     const auto prefix = partPrefix (partIndex);
+    // p50: a part in Fingerboard mode (MPE on, onset from pressure) keeps its controller setup across sounds: the
+    // controller always sends velocity 127 and its own bend range, so a sound must not turn that off
+    static const char* fingerboardKeys[] = { "mpe", "mpe.bend", "mpe.hd", "mpe.onset" };
+    std::array<float, 4> keep {};
+    const bool fingerboard = reg.get (prefix + "mpe") >= 0.5f && reg.indexOf (prefix + "mpe.onset") >= 0
+                             && std::lround (reg.get (prefix + "mpe.onset")) != 0;
+    if (fingerboard)
+        for (size_t k = 0; k < keep.size(); ++k) keep[k] = reg.get (prefix + fingerboardKeys[k]);
     // parameters the preset does not list return to their defaults; the part's MIDI channel is
     // a setup value and stays
     for (int i = 0; i < reg.size(); ++i)
@@ -262,6 +271,8 @@ ApplyResult applyPart (const Preset& p, ParamRegistry& reg, int partIndex, const
         if (reg.set (prefix + id, v)) ++r.applied;
         else ++r.unknown;
     }
+    if (fingerboard)
+        for (size_t k = 0; k < keep.size(); ++k) reg.set (prefix + fingerboardKeys[k], keep[k]);
     if (options.arp && p.arp)
     {
         // the arp block describes the arpeggiator: unlisted keys return to their defaults,

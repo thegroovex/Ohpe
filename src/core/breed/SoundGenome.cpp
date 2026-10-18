@@ -122,6 +122,15 @@ float Gene::fromNorm (float norm) const noexcept
     return clamp (minValue + (maxValue - minValue) * norm);
 }
 
+namespace
+{
+/** p50: the fingerboard-mode genes (appended later: they never draw a random number). */
+bool isFingerboardGene (const std::string& id)
+{
+    return id == "mpe.hd" || id == "mpe.onset" || id == "mpe.round" || id == "mpe.round.time" || id == "mpe.pcurve";
+}
+} // namespace
+
 // ------------------------------------------------------------------------------------------------ Schema
 Schema Schema::forPart (const ParamRegistry& reg, int partIndex)
 {
@@ -162,11 +171,12 @@ Schema Schema::forPart (const ParamRegistry& reg, int partIndex)
             || g.id == "chord" || g.id == "mpe" || g.id == "mpe.bend" || g.id == "mpe.press" || g.id == "mpe.timbre"
             || g.id == "seqlane" || head == "morph" || head == "motion" || head == "usertable" // usertable: follows its table, never bred
             || g.id == "glide.press" // p32: how the player's pressure shapes the glide (an expression setting, like mpe.press)
-            || g.id == "space.mode") // p41: the 3D switch follows space.on / space.out (set again after a child loads)
+            || g.id == "space.mode" // p41: the 3D switch follows space.on / space.out (set again after a child loads)
+            || isFingerboardGene (g.id)) // p50: the MPE / fingerboard setup belongs to the player's controller, not to the sound's genes
         {
             g.group = Fixed;
             g.mutable_ = false;
-            g.drawsRandom = g.id != "glide.press" && g.id != "space.mode"; // p32 / p41: appended later - keeps the broods of a seed unchanged
+            g.drawsRandom = g.id != "glide.press" && g.id != "space.mode" && ! isFingerboardGene (g.id); // p32 / p41 / p50: appended later - keeps the broods of a seed unchanged
         }
         else if (g.id == "vol" || g.id == "gain" || g.id == "layer.level")
         {

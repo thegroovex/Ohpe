@@ -30,7 +30,7 @@ class GridController;
 
     Hook: addExtraPage() adds a tab whose content is a component of another feature (shown in the content area).
 */
-class SettingsView : public juce::Component, private juce::ChangeListener
+class SettingsView : public juce::Component, private juce::ChangeListener, private juce::Timer
 {
 public:
     enum Page { General = 0, Display, Midi, MidiLearn, Updates, Help, About, numPages };
@@ -100,6 +100,12 @@ private:
         juce::Component* content = nullptr;
     };
     void changeListenerCallback (juce::ChangeBroadcaster*) override { repaint(); }
+    /** p50: the MIDI page shows what a fingerboard controller sends (HD data, smoothing): refreshed twice a second. */
+    void timerCallback() override
+    {
+        if (current == Midi && isShowing()) repaint();
+    }
+    void paintFingerboard (juce::Graphics& g, juce::Rectangle<float> a, float xParts); ///< p50
     float unit() const;
     juce::Rectangle<float> contentArea() const;
     void chip (juce::Graphics& g, juce::Rectangle<float> r, const juce::String& text, bool on, juce::Colour accent, std::function<void()> action,

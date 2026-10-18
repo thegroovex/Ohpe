@@ -90,6 +90,69 @@ drive on basses, timbre scans the wavetable on pads, pressure thickens the grain
 switch MPE on – do that for the part (`pN.mpe`) when you play from an MPE controller; with an
 aftertouch keyboard the pressure mapping works right away.
 
+## Fingerboard mode (MPE HD 14/21-bit)
+
+For **continuous-surface fingerboard controllers** – a playing surface without keys where the finger
+slides freely along it (X = pitch), moves forward and back (Y) and presses (Z), usually with pedal
+inputs. These controllers send MPE with extra resolution (**MPE HD**: 14-bit pressure and Y, 21-bit
+pitch bend) and always send note velocity 127. Ohpe receives all of it; plain MPE keeps working
+exactly as before.
+
+**Setup**
+
+1. On the controller, choose its **MPE HD** output (the high-resolution MPE mode; plain MPE works
+   too, with 7-bit pressure / Y and 14-bit bend).
+2. In Ohpe open **Settings → MIDI**. Under **Fingerboard mode · MPE HD (14/21-bit)** tap the part
+   you play (*Part 1* … *Part 4*). One tap sets: MPE on, MPE bend range 96 semitones, note onset
+   from pressure, MPE HD Auto. Tap again to go back to velocity onset and 48 semitones.
+3. Play. The status next to the buttons shows *HD data received* as soon as the controller sends
+   high-resolution values, and the smoothing cutoffs (X / Y / Z in Hz) and bend range it sent.
+4. Pick a sound – the presets tagged **Fingerboard** (search "Fingerboard" in the library) are tuned
+   for it. A part in Fingerboard mode keeps its controller setup (MPE, bend range, MPE HD, onset)
+   when you load another sound.
+
+![Fingerboard mode on the MIDI settings page: part 1 active, HD data received, the controller's smoothing cutoffs and bend range](../images/ohpe-settings-fingerboard.png)
+
+**What the controller does in Ohpe**
+
+| Controller | Ohpe |
+|---|---|
+| X – slide left / right | per-note pitch, continuous over the whole range (21-bit bend, 96 semitones); a note starts exactly at the pitch where the finger lands |
+| Y – forward / back | the **timbre target** (`pN.mpe.timbre`) and the matrix source *Slide (Timbre)*, 14-bit |
+| Z – pressure | the note's **level** (Fingerboard mode: no pressure = silent, the finger shapes the attack and the swell), the **pressure target** (`pN.mpe.press`) and the matrix source *Note Pressure*, 14-bit |
+| Pedals on the master channel | sustain (CC 64) and sostenuto (CC 66) hold every note of the part; other pedals / CCs (e.g. CC 4, CC 11) work through MIDI Learn and act on the whole part |
+
+The matrix source **Key + Bend** (p50) follows the continuous position of the finger (key track
+including the note's own bend), e.g. to darken a sound further up the surface.
+
+**What is received**
+
+* **CC 87 (LSB prefix).** A CC 87 on a member channel adds 7 low bits to the *next* channel
+  pressure, CC 74 or pitch bend on that channel: pressure and Y run 0x0000 … 0x3F80 (0x3F80 =
+  full), the bend has 21 bits. Messages without the prefix are read as plain 7-bit / 14-bit values –
+  the controller may mix both at any time.
+* **NRPN 100 / 101 / 102** (CC 99 = 0, CC 98 = 100 / 101 / 102, CC 6 = value): the controller's
+  smoothing cutoff for X / Y / Z in 2 Hz steps (e.g. 60 = 120 Hz). Ohpe smooths each dimension of
+  every note with it, instead of *Expression Smoothing* / *Per-Note Slide*. Before anything arrives
+  (MPE HD *On*, or *Auto* once HD data came in) Ohpe uses X 120 Hz, Y 60 Hz, Z 250 Hz.
+* **RPN 0** (bend range) on a member channel sets the bend range of all member channels (these
+  controllers send 96). **RPN 6** (MPE configuration message) on channel 1 or 16 selects the lower
+  or upper zone.
+
+**Settings** (part parameters, MIDI-mappable; on the MPE page of the pro view):
+
+| Parameter | What it does |
+|---|---|
+| *MPE HD* (`pN.mpe.hd`) | *Auto* (default): fine values and smoothing are used as soon as they arrive – plain MPE sounds exactly as before. *On*: the smoothing also runs before the controller sent its cutoffs. *Off*: CC 87 and the (N)RPNs are ignored. |
+| *Note Onset* (`pN.mpe.onset`) | *Velocity* (default, as before), *Pressure* (velocity ignored; the level follows the pressure, 0 = silent), *Velocity x Pressure* (both). |
+| *Pitch Rounding* (`pN.mpe.round`) | *Off* (default) = free slides. *Initial*: a note starts on the nearest semitone (the slide after it is free). *Continuous*: the pitch is also pulled to the nearest semitone while the finger holds still. |
+| *Rounding Time* (`pN.mpe.round.time`) | how fast continuous rounding pulls (0.01 … 1 s, default 0.15 s). |
+| *Pressure Curve* (`pN.mpe.pcurve`) | −1 … +1, 0 = linear. Right: a light touch stays soft; left: it speaks early. |
+
+*Velocity* onset with a fingerboard controller plays every note at full velocity – choose
+*Pressure* (the Fingerboard mode button does). Portamento and the part glide add to the slide and
+never fight it; for free slides keep *Glide* at 0 (the Fingerboard presets do).
+
 ## Key and Scale Lock
 
 The key (`key.root`, `key.scale`) and Scale Lock (`key.lock`, `key.lock.mode`) are host parameters: MIDI learn them

@@ -224,7 +224,7 @@ TEST_CASE ("factory presets: every preset loads and renders finite, unclipped au
         CHECK (p.meta.author == "groovex");
         CHECK (! p.meta.comment.empty());
         REQUIRE (! p.meta.tags.empty());
-        for (const auto& t : p.meta.tags) CHECK ((preset::isCategory (t) || t == "MPE" || t == "Morph")); // 0.8: the free tag MPE marks MPE-ready presets (p16: Morph = morph presets)
+        for (const auto& t : p.meta.tags) CHECK ((preset::isCategory (t) || t == "MPE" || t == "Morph" || t == "Fingerboard")); // 0.8: the free tag MPE marks MPE-ready presets (p16: Morph = morph presets, p50: Fingerboard)
 
         if (! slice.has (item++))
         {

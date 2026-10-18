@@ -6834,3 +6834,24 @@ p4.space.mode
 # p45: Scale Lock
 key.lock
 key.lock.mode
+# p50: Fingerboard mode / MPE HD (14/21-bit) per part
+p1.mpe.hd
+p1.mpe.onset
+p1.mpe.round
+p1.mpe.round.time
+p1.mpe.pcurve
+p2.mpe.hd
+p2.mpe.onset
+p2.mpe.round
+p2.mpe.round.time
+p2.mpe.pcurve
+p3.mpe.hd
+p3.mpe.onset
+p3.mpe.round
+p3.mpe.round.time
+p3.mpe.pcurve
+p4.mpe.hd
+p4.mpe.onset
+p4.mpe.round
+p4.mpe.round.time
+p4.mpe.pcurve

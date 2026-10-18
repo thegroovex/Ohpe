@@ -694,7 +694,7 @@ Wiedergabe –, Kanal Stabil / Vorschau), Inhaltspakete und **VORIGE VERSION**. 
 Die **Zahnrad-Taste** rechts in der Kopfzeile öffnet die Einstellungen (die Sprachumschaltung ist hierher umgezogen). Sie
 werden für dich auf diesem Computer gespeichert – nicht in Projekten oder Presets – und gelten für jedes geöffnete Ohpe:
 **Allgemein** (Sprache, Tooltips, Hilfe-Overlay, Hilfeseiten), **Anzeige** (Erscheinung hell / dunkel / auto,
-Display-Helligkeit, Animationen, Fenstergröße), **MIDI** (Kanal, MPE und Bend-Bereiche der vier Parts, MIDI-Eingänge,
+Display-Helligkeit, Animationen, Fenstergröße), **MIDI** (Kanal, MPE und Bend-Bereiche der vier Parts, der [Fingerboard-Modus](MIDI.md#fingerboard-modus-mpe-hd-1421-bit) pro Part mit einem Tipp samt MPE-HD-Status, MIDI-Eingänge,
 Clock und Sync), **MIDI-Learn** (alle Zuweisungen: bearbeiten, löschen, alle löschen, Map-Dateien), **Updates**,
 **Hilfe** und **Über**. **F1** schaltet das Hilfe-Overlay ein und aus.
 

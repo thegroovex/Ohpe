@@ -1014,3 +1014,32 @@ key. *White Keys*: live notes – the white keys play the key's degrees from the
 are silent (the grid keyboard is not remapped). While on, the transpose of the step sequencer and of the Orbit lanes
 (`seq.step.transpose`, `seq.orbit.lN.transpose`) counts scale degrees instead of semitones (not when they play the
 drum kit).
+
+## p50 – Fingerboard mode (MPE HD 14/21-bit)
+
+Guides: [English](en/MIDI.md#fingerboard-mode-mpe-hd-1421-bit) · [Deutsch](de/MIDI.md#fingerboard-modus-mpe-hd-1421-bit).
+Twenty parameters appended after `key.lock.mode` (p45), five per part in the order below (`p1.*` … `p4.*`), group
+`partN`. Host parameters – saved with the session, automatable, MIDI-mappable; on the MPE page of the pro view. Part
+presets carry them under their local keys (`mpe.hd` …). The defaults leave Ohpe exactly as before: with *Auto*, plain
+MPE without CC 87 / NRPN 100–102 / RPN 0 renders sample-identical to *Off*. A part in Fingerboard mode (MPE on and onset
+not *Velocity*) keeps `mpe`, `mpe.bend`, `mpe.hd` and `mpe.onset` when a part preset loads.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.mpe.hd` | Part N MPE HD | Part N MPE HD | Off, Auto, On / Aus, Auto, Ein | Auto |
+| `pN.mpe.onset` | Part N Note Onset | Part N Noten-Einsatz | Velocity, Pressure, Velocity x Pressure / Anschlag, Druck, Anschlag x Druck | Velocity |
+| `pN.mpe.round` | Part N Pitch Rounding | Part N Tonhöhen-Rundung | Off, Initial, Continuous / Aus, Anfang, Fortlaufend | Off |
+| `pN.mpe.round.time` | Part N Rounding Time | Part N Rundungszeit | 0.01 … 1 s | 0.15 s |
+| `pN.mpe.pcurve` | Part N Pressure Curve | Part N Druckkurve | −1 … +1 (exponent 3^curve on the pressure) | 0 |
+
+Received with *MPE HD* Auto / On: CC 87 as LSB prefix of the next channel pressure / CC 74 / pitch bend on its channel
+(14-bit 0x0000 … 0x3F80 = 0 … 1, 21-bit bend), NRPN 0/100, 0/101, 0/102 = low-pass cutoff of X / Y / Z in 2 Hz units
+(0 = no filter; the voices smooth pitch / note bend, slide and the timbre target, pressure and the pressure target – and
+the level with the pressure onset – each with its own one-pole low-pass per control block, replacing `pN.mpe.smooth` /
+`pN.mpe.slide`; defaults 120 / 60 / 250 Hz), null NRPN 127/127, RPN 0 on a member channel = member bend range of the zone
+(overrides `pN.mpe.bend` until reset or *Off*), RPN 6 on channel 1 / 16 = lower / upper zone. CC 66 (sostenuto) now holds
+the keys that were down when it was pressed (all parts, with or without MPE).
+
+The modulation matrix gains the source **Key + Bend** (`keybend`, index 33, bipolar, per voice): key track
+((note − 60) / 60) plus the note's own per-note bend in semitones / 60, clamped to −1 … +1 – the continuous position on
+a fingerboard. No new targets.

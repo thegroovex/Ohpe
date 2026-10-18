@@ -109,7 +109,7 @@ std::array<float, MorphSpace::numCorners> MorphSpace::weights (float x, float y)
 bool MorphSpace::isExcluded (const std::string& id) noexcept
 {
     return startsWith (id, "morph.") || startsWith (id, "motion.") || id == "midich" || id == "quant" || id == "chord" || id == "mpe" || id == "mpe.bend"
-        || id == "mpe.press" || id == "mpe.timbre";
+        || id == "mpe.press" || id == "mpe.timbre" || id == "mpe.hd" || id == "mpe.onset" || id == "mpe.round"; // p50: discrete MPE setup
 }
 
 const char* MorphSpace::cornerName (int corner) noexcept

@@ -359,5 +359,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     // ---- p45: Scale Lock - every incoming note snaps to the key (nearest note, or the white keys play its degrees) --
     //      (own function: a big stack frame in this one overflows the Windows test stack)
     registerScaleLockParams (reg);
+    // ---- p50: Fingerboard mode / MPE HD (14/21-bit) per part - HD decoding, note onset, pitch rounding, pressure curve
+    for (auto& p : parts) p->registerLate50FingerboardParams (reg);
 }
 } // namespace ohpe

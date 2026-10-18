@@ -13,8 +13,10 @@
 #include "../model/ParamSnapshot.h"
 #include "EngineFactory.h"
 
+#include <algorithm>
 #include <array>
 #include <atomic>
+#include <cmath>
 #include <memory>
 #include <string>
 #include <vector>
@@ -114,6 +116,17 @@ public:
     void registerLate31SubParams (ParamRegistry& reg) const;
     /** p33: the Expression page "pN.expr.vel.*" / "pN.expr.at.*" (velocity / aftertouch -> two functions each; matrix routings). */
     void registerLate33ExpressionParams (ParamRegistry& reg) const;
+    /** p50 Fingerboard mode / MPE HD (14/21-bit): "pN.mpe.hd" (Off / Auto / On), "pN.mpe.onset" (Velocity /
+        Pressure / Velocity x Pressure), "pN.mpe.round" (pitch rounding Off / Initial / Continuous),
+        "pN.mpe.round.time" (seconds the continuous rounding takes), "pN.mpe.pcurve" (pressure curve -1..+1). */
+    void registerLate50FingerboardParams (ParamRegistry& reg) const;
+    /** p50: low-pass cutoffs (Hz, 0 = classic mpe.smooth / mpe.slide) of the per-note X / Y / Z expression (MpeInput). */
+    void setExpressionCutoffs (float x, float y, float z) noexcept
+    {
+        hdCutoff[0] = std::isfinite (x) ? std::clamp (x, 0.0f, 20000.0f) : 0.0f;
+        hdCutoff[1] = std::isfinite (y) ? std::clamp (y, 0.0f, 20000.0f) : 0.0f;
+        hdCutoff[2] = std::isfinite (z) ? std::clamp (z, 0.0f, 20000.0f) : 0.0f;
+    }
     /** p33: the matrix target an Expression page function (mod::expr::Target) drives on engine `type` (-1 = none there). */
     int expressionTarget (EngineType type, int function) const noexcept
     {
@@ -190,6 +203,7 @@ public:
         (-1..+1) - to start a woken morph lane with the notes being played. Audio thread. */
     float heldVelocity (int note) const noexcept { return note >= 0 && note < 128 ? held[(size_t) note] : 0.0f; }
     bool sustainPedal() const noexcept { return sustain; }
+    bool sostenutoPedal() const noexcept { return sostenuto; } ///< p50
     float pitchBend() const noexcept { return bend; }
 
     EngineType currentEngineType() const noexcept { return current; }
@@ -251,6 +265,8 @@ private:
     float ccGlideSeconds = -1.0f, lastGlideParam = -1.0f;
     void updateGlide() noexcept;
     int glidePressIndex = -1;  ///< p32: "pN.glide.press"
+    int mpeRoundIndex = -1, mpeRoundTimeIndex = -1, mpePressIndex = -1, mpeTimbreIndex = -1, mpeOnsetIndex = -1; ///< p50
+    std::array<float, 3> hdCutoff { 0.0f, 0.0f, 0.0f }; ///< p50: X / Y / Z (Hz)
     float glidePressAmt = 0.0f; ///< p32: -1..+1 (0 = the glide time ignores the pressure)
     VoiceCommon common;
     // ---- 0.8 layer
@@ -278,6 +294,8 @@ private:
     float volume = 0.8f, gainFactor = 1.0f, bendRange = 2.0f, tune = 0.0f, bend = 0.0f;
     bool sustain = false;
     std::array<bool, 128> sustained {};
+    bool sostenuto = false;                           ///< p50: CC 66 (holds the keys that were down when it was pressed)
+    std::array<bool, 128> sostLatched {}, sostPending {};
     std::array<float, 128> held {};            ///< p16: velocities of the keys that are down
     std::array<Part*, maxFollowers> followers {}; ///< p16: morph lanes
     int polyphony = 8;

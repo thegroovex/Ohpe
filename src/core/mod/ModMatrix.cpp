@@ -44,6 +44,7 @@ const std::vector<SourceInfo>& sourceTable()
         { "chordchange", "Chord Change", "Akkordwechsel", false, S::Part },
         { "tension", "Tension", "Spannung", false, S::Part },
         { "vibrato", "Vibrato (5.5 Hz)", "Vibrato (5,5 Hz)", true, S::Voice }, // p33
+        { "keybend", "Key + Bend", "Taste + Bend", true, S::Voice }, // p50: continuous slide position (fingerboard)
     };
     return t;
 }
@@ -288,7 +289,7 @@ void PartMatrix::reset() noexcept
     lastNote = -1;
     fresh.fill (true);
     value.fill (0.0f);
-    for (auto s : { SrcLfo1, SrcLfo2, SrcLfo3, SrcAmpEnv, SrcModEnv, SrcEnv3, SrcRandom, SrcNotePressure, SrcSlide, SrcNoteBend, SrcVibrato })
+    for (auto s : { SrcLfo1, SrcLfo2, SrcLfo3, SrcAmpEnv, SrcModEnv, SrcEnv3, SrcRandom, SrcNotePressure, SrcSlide, SrcNoteBend, SrcVibrato, SrcKeyBend })
         mono[(size_t) s] = 0.0f;
     vibPhase = 0.0f;
 }
@@ -363,6 +364,7 @@ void PartMatrix::noteOn (int note, float velocity) noexcept
     lastNote = note;
     mono[SrcVelocity] = velocity;
     mono[SrcKeyTrack] = std::clamp (((float) note - 60.0f) / 60.0f, -1.0f, 1.0f);
+    mono[SrcKeyBend] = mono[SrcKeyTrack]; // p50
     mono[SrcRandom] = rng.nextBipolar();
     mono[SrcNotePressure] = mono[SrcChannelPressure]; // p33: held channel pressure applies to the new note too
     mono[SrcSlide] = 0.0f;
@@ -402,7 +404,7 @@ void PartMatrix::allNotesOff() noexcept
     env3.noteOff();
 }
 
-void PartMatrix::setNoteExpression (int note, float pressure, float slide, float noteBend) noexcept
+void PartMatrix::setNoteExpression (int note, float pressure, float slide, float noteBend, float notePitch) noexcept
 {
     if (note < 0) mono[SrcChannelPressure] = pressure;
     if (note < 0 || note == lastNote)
@@ -410,6 +412,8 @@ void PartMatrix::setNoteExpression (int note, float pressure, float slide, float
         mono[SrcNotePressure] = pressure;
         mono[SrcSlide] = slide;
         mono[SrcNoteBend] = noteBend;
+        const float key = lastNote >= 0 ? ((float) lastNote - 60.0f) / 60.0f : 0.0f; // p50: Key + Bend
+        mono[SrcKeyBend] = std::isfinite (notePitch) ? std::clamp (key + notePitch / 60.0f, -1.0f, 1.0f) : key;
     }
 }
 

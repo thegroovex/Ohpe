@@ -138,6 +138,8 @@ public:
         the edit part's channel, and a counter that moves with every such message - the on-screen wheels follow it.
     */
     float midiWheelBend() const noexcept { return wheelMidiBend.load (std::memory_order_relaxed); }
+    /** p50 (UI, any thread): what the part's MPE input has received from an MPE HD controller (MpeInput::Status). */
+    const MpeInput& mpeInput (int part) const noexcept { return mpeIn[(size_t) std::clamp (part, 0, numParts - 1)]; }
     float midiWheelMod() const noexcept { return wheelMidiMod.load (std::memory_order_relaxed); }
     uint32_t midiWheelBendCount() const noexcept { return wheelMidiBendSeq.load (std::memory_order_acquire); }
     uint32_t midiWheelModCount() const noexcept { return wheelMidiModSeq.load (std::memory_order_acquire); }
@@ -326,6 +328,7 @@ private:
     {
         int idxChannel = -1, idxQuant = -1, idxChord = -1, idxMpe = -1, idxMpeBend = -1, idxMpePress = -1, idxMpeTimbre = -1;
         int idxPressAmt = -1, idxTimbreAmt = -1; ///< 0.8: target amounts
+        int idxMpeHd = -1, idxMpeOnset = -1, idxMpePCurve = -1; ///< p50: Fingerboard mode / MPE HD
         int channel = 1;
         bool mpe = false;
     };

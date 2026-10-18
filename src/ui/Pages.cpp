@@ -145,7 +145,8 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             if (ctx.lfoView == modfx::LfoViewHarmony) return harmonyview::harmonyParams (partIndex); // p24
             return { p + "lfo.rate", p + "lfo.depth", p + "lfo.shape", p + "lfo.dest", p + "tune", p + "fine", p + "bend", p + "vol",
                      p + "midich", p + "quant", p + "chord", "key.root", "key.scale", p + "mpe", p + "mpe.bend", p + "mpe.press",
-                     p + "mpe.timbre", p + "mpe.pressamt", p + "mpe.timbreamt", p + "mpe.smooth", p + "mpe.slide", "", "", "" }; // 0.8
+                     p + "mpe.timbre", p + "mpe.pressamt", p + "mpe.timbreamt", p + "mpe.smooth", p + "mpe.slide", p + "mpe.hd", p + "mpe.onset",
+                     p + "mpe.round", p + "mpe.round.time", p + "mpe.pcurve", "", "" }; // 0.8, p50: Fingerboard mode
         case Mode::Mixer:
         {
             const std::string c = mixCh (ctx.mixerChannel);

@@ -768,6 +768,13 @@ const std::map<juce::String, juce::String>& table()
         { "MIDI Clock Out", "MIDI-Clock senden" },
         { "MIDI channel", "MIDI-Kanal" },
         { "MPE bend range", "MPE-Bend-Bereich" },
+        { "Fingerboard mode", "Fingerboard-Modus" }, // p50
+        { "One tap", "Ein Tipp" },
+        { "Tap a part for a fingerboard controller set to MPE HD", "Für einen Fingerboard-Controller mit MPE HD einen Part antippen" },
+        { "HD data received", "HD-Daten empfangen" },
+        { "waiting for HD data", "warte auf HD-Daten" },
+        { "smoothing", "Glättung" },
+        { "bend", "Bend" },
         { "No MIDI input found", "Kein MIDI-Eingang gefunden" },
         { "No MIDI mappings yet. Right-click an encoder, key or wheel and choose MIDI Learn, then move a control on your MIDI device.", "Noch keine MIDI-Zuweisungen. Rechtsklick auf Encoder, Taste oder Rad, MIDI-Learn wählen und einen Regler am MIDI-Gerät bewegen." },
         { "Open help", "Hilfe öffnen" },

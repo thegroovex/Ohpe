@@ -112,3 +112,5 @@ target_sources(ohpe_core_tests PRIVATE MetronomeTests.cpp)
 # p46: Grid-Controller (Profil 1) - display SysEx, text folding, pad layout and colours, settings
 target_sources(ohpe_core_tests PRIVATE GridProtocolTests.cpp)
 target_sources(ohpe_core_tests PRIVATE ShowcasePresetTests.cpp) # p44: the showcase factory presets
+# p50: Fingerboard mode / MPE HD (14/21-bit)
+target_sources(ohpe_core_tests PRIVATE FingerboardTests.cpp)
