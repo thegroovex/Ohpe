@@ -7,6 +7,24 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+## 0.6.0 Preview – 2026-10-18
+
+[Notes / Hinweise](docs/release-notes/0.6.0.md)
+
+- EN: RANDOM rolls usable sounds (musical ranges, no glide, little noise, loudness-matched); tape: clear track / clear
+  all, save / load the whole tape (`.ohpetape`); tempo editable on screen, TAP, metronome and count-in; first start
+  loads the first factory preset (Aah Choir); own app icon; the 3D switch per part; tape loop by hand; live chord
+  names, key / scale on the header and Scale Lock; wordmark and header redesign; 52 new factory presets; grid keyboard
+  guide and help; Grid-Controller (Profile 1) in the standalone app (experimental, not yet tested on a real device);
+  fix: wavetable packs install from the file dialog.
+- DE: ZUFALL würfelt brauchbare Klänge (musikalische Bereiche, kein Glide, wenig Rauschen, lautheitsangeglichen); Band:
+  Spur löschen / alles löschen, ganzes Band speichern / laden (`.ohpetape`); Tempo am Display einstellbar, TAP,
+  Metronom und Einzähler; der erste Start lädt das erste Werks-Preset (Aah Choir); eigenes App-Symbol; der
+  3D-Schalter pro Part; Schleife von Hand; Akkordnamen live, Tonart / Skala im Kopf und Scale Lock („In Tonart“);
+  Schriftzug und Kopfzeile neu; 52 neue Werks-Presets; Anleitung und Hilfe zur Raster-Tastatur; Grid-Controller
+  (Profil 1) in der Standalone-App (experimentell, noch nicht am echten Gerät getestet); Korrektur:
+  Wavetable-Pakete lassen sich über den Dateidialog installieren.
+
 - EN: The 3D switch – per part Off / Headphones / Speakers (`p1.space.mode` … `p4.space.mode`, automatable and
   MIDI-mappable) as a segmented switch on the Space page; a front for `pN.space.on` and `space.out`, older presets and
   sessions load unchanged; speakers icon on the 3D badge when monitoring on speakers – see
@@ -27,11 +45,6 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   das Folgen des Harmonie-Gehirns, aufgenommene Bewegungsspuren, die Performance-Pads und vier 3D-Parts gleichzeitig.
   Auf den Werks-Median eingepegelt, jedes mit musikalischem Modrad; an die Bank angehängt (das erste Preset bleibt der
   Startklang) – siehe [Werksklänge](docs/de/FACTORY-SOUNDS.md#showcase-presets-p44).
-
-## 0.5.0 Preview – 2026-10-17
-
-[Notes / Hinweise](docs/release-notes/0.5.0.md)
-
 - EN: Tape loop by hand – the loop readout on the tape page opens the loop keys: Set In / Set Out at the playhead (also
   while playing; snapped to bar / beat, Shift free; Set Out loops at once), Snap, To In, Half, Double, Fit, Undo / Redo
   of the loop range; drag the loop edges on the lanes; shortcuts I / O; MIDI triggers `tape.edit.loop*`,
@@ -41,6 +54,10 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   Start, Halb, Doppelt, Anpassen, Rückgängig / Wiederherstellen des Bereichs; Kanten auf den Spuren ziehen;
   Kurzbefehle I / O; MIDI-Trigger `tape.edit.loop*`, `tape.loopsnap` – siehe
   [Schleife setzen](docs/de/BAND-MISCHER-FX.md#schleife-setzen-p42).
+
+## 0.5.0 Preview – 2026-10-17
+
+[Notes / Hinweise](docs/release-notes/0.5.0.md)
 
 - EN: pressure glide, SUB layer per part, Expression page (velocity / aftertouch freely assignable, aftertouch → glide
   time on gliding factory parts), mod wheel on all 320 factory presets, six new binaural motion paths, performance pass

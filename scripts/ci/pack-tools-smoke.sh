@@ -72,6 +72,12 @@ cp "$ROOT/$PRESET" "$T/content/smoke/files/"
 cat > "$T/content/smoke/pack.json" <<'J'
 {"id": "smoke", "version": "1.0.0", "kind": "presets", "name": {"en": "Smoke", "de": "Test"}, "minApp": "0.5.0"}
 J
+mkdir -p "$T/content/zpaid/files"
+cp "$ROOT/$PRESET" "$T/content/zpaid/files/"
+cat > "$T/content/zpaid/pack.json" <<'J'
+{"id": "zpaid", "version": "1.0.0", "kind": "presets", "name": {"en": "Paid", "de": "Bezahlt"}, "minApp": "0.5.0",
+ "license": {"type": "paid", "productId": "ci-paid"}}
+J
 printf '## English\nCI smoke\n## Deutsch\nCI-Test\n' > "$T/notes.md"
 python3 "$ROOT/tools/update/make_manifest.py" --tag v0.0.0 --repo thegroovex/Ohpe --dir "$T/rel" \
   --body-file "$T/notes.md" --content-dir "$T/content" --date 2026-01-01
@@ -88,6 +94,7 @@ for a in m["assets"]:
     if os.path.exists(p):
         assert hashlib.sha256(open(p, "rb").read()).hexdigest() == a["sha256"], a["name"]
 assert [c["id"] for c in m["content"]] == ["smoke"], m["content"]
+assert not any("zpaid" in f for f in os.listdir(d)), "a paid pack was zipped for the public release"
 assert m["notes"]["en"].strip() and m["notes"]["de"].strip(), m["notes"]
 print("manifest ok: %d assets, %d content" % (len(m["assets"]), len(m["content"])))
 P

@@ -839,8 +839,8 @@ int main (int argc, char* argv[])
         // p27: the update view - a newer version on offer with its notes in the UI language, a content pack (no network)
         {
             update::Release r;
-            r.version = update::Version::of ("0.6.0");
-            r.tag = "v0.6.0";
+            r.version = update::Version::of ("0.7.0");
+            r.tag = "v0.7.0";
             r.channel = update::Channel::Preview;
             r.date = "2026-11-02";
             r.notesEn = "**Preview release** - for testing and feedback.\n\n### In-app updates\n- Check for new versions from inside Ohpe, "
@@ -855,8 +855,8 @@ int main (int argc, char* argv[])
             a.platform = update::currentPlatform();
             a.kind = "installer";
             a.part = "all";
-            a.name = "Ohpe-0.6.0-Installer";
-            a.url = "https://example.invalid/Ohpe-0.6.0";
+            a.name = "Ohpe-0.7.0-Installer";
+            a.url = "https://example.invalid/Ohpe-0.7.0";
             a.size = 48u * 1024u * 1024u;
             a.sha256 = std::string (64, 'a');
             r.assets.push_back (a);

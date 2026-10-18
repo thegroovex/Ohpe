@@ -8,7 +8,7 @@
 
 * every file in --dir becomes an asset (platform / kind / part from its name), with size and SHA-256;
 * --content-dir: each sub folder with a pack.json ({"id", "version", "kind", "name": {"en", "de"}, "minApp"}) and a
-  files/ folder is zipped to <dir>/Ohpe-content-<id>-<version>.zip and listed under "content". The zip has the
+  files/ folder (free packs only; a "license" of type "paid" is skipped) is zipped to <dir>/Ohpe-content-<id>-<version>.zip and listed under "content". The zip has the
   content pack layout (packaging/content/README.md): pack.json with a SHA-256 for every file, the content in the
   kind's folder (kind "presets": presets/*.ohpepreset, kind "wavetables": wavetables/*.wav, frames of 2048 samples) -
   built by tools/pack/make_ohpepack.py, so both tools give the same pack;
@@ -87,6 +87,10 @@ def build_packs(content_dir, out_dir):
         if not os.path.isfile(meta_path) or not os.path.isdir(os.path.join(folder, "files")):
             continue
         meta, data = make_ohpepack.pack_meta(folder, "")
+        # p49: the public release lists only free Ohpe content; paid packs are never zipped or listed here
+        if (meta.get("license") or {}).get("type", "free") != "free":
+            print("skipped (not free): %s" % sub)
+            continue
         pid, ver = meta["id"], meta["version"]
         if not SAFE_ID.match(pid):
             sys.exit("unsafe pack id: %s" % pid)
