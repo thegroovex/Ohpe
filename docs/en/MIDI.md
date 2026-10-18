@@ -111,6 +111,8 @@ exactly as before.
    for it. A part in Fingerboard mode keeps its controller setup (MPE, bend range, MPE HD, onset)
    when you load another sound.
 
+![Fingerboard mode on the MIDI settings page: part 1 active, HD data received, the controller's smoothing cutoffs and bend range](../images/ohpe-settings-fingerboard.png)
+
 **What the controller does in Ohpe**
 
 | Controller | Ohpe |

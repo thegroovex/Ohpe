@@ -114,6 +114,8 @@ funktioniert genau wie bisher.
    "Fingerboard" suchen) sind dafür abgestimmt. Ein Part im Fingerboard-Modus behält seine
    Controller-Einstellung (MPE, Bend-Bereich, MPE HD, Einsatz), wenn ein anderer Klang geladen wird.
 
+![Fingerboard-Modus auf der MIDI-Einstellungsseite: Part 1 aktiv, HD-Daten empfangen, Glättungs-Grenzfrequenzen und Bend-Bereich des Controllers](../images/ohpe-settings-fingerboard-de.png)
+
 **Was der Controller in Ohpe macht**
 
 | Controller | Ohpe |
