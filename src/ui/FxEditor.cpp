@@ -290,10 +290,11 @@ using fxgraph::Special;
 FxGraphTile::FxGraphTile (OhpeProcessor& p, int prt, int view, int slot, std::string slotPrefix)
     : Tile (p, prt, {}), fxView (view), slotIndex (slot), prefix (std::move (slotPrefix))
 {
-    block = fxgraph::effectBlock (p.core(), prefix);
+    // the effect as the host parameter has it now (the registry follows only with the next audio block)
     const int t = typeOf (p, prefix);
-    const auto info = InsertSlot::typeInfo (t);
-    type = t > InsertSlot::Off && info.id != nullptr ? info.id : "";
+    const auto info = t > InsertSlot::Off && t < InsertSlot::numTypes ? InsertSlot::typeInfo (t) : InsertSlot::typeInfo (InsertSlot::Off);
+    type = t > InsertSlot::Off && t < InsertSlot::numTypes && info.id != nullptr ? info.id : "";
+    block = type.empty() ? std::string() : prefix + type + ".";
     lay = fxgraph::layoutFor (p, prefix);
     // the tile's parameters: the slot's mix and bypass, then every parameter of its effect (hash, modulation ranges)
     ids = { prefix + "mix", prefix + "bypass" };

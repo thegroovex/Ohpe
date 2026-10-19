@@ -28,6 +28,15 @@ void setPlain (OhpeProcessor& p, const std::string& id, float plain)
     prm->setValueNotifyingHost (prm->convertTo0to1 (plain));
 }
 
+/** One audio block: the registry takes over the host values (as in the running app). */
+void runBlock (OhpeProcessor& p)
+{
+    juce::AudioBuffer<float> buffer (p.getTotalNumOutputChannels(), 256);
+    juce::MidiBuffer midi;
+    buffer.clear();
+    p.processBlock (buffer, midi);
+}
+
 float plainOf (OhpeProcessor& p, const std::string& id)
 {
     auto* prm = p.parameter (juce::String (id));
@@ -191,6 +200,7 @@ TEST_CASE ("FX editor p55: a selected point is the encoders' focus page; closing
     std::unique_ptr<juce::AudioProcessorEditor> ed;
     setPlain (p, "p1.fx.type", (float) InsertSlot::Eq);
     p.core().prepareEffects();
+    runBlock (p);
     ed.reset (p.createEditor());
     auto& e = *dynamic_cast<OhpeEditor*> (ed.get());
     e.setSize (OhpeEditor::designWidth, OhpeEditor::designHeight);
