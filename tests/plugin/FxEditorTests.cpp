@@ -255,3 +255,52 @@ TEST_CASE ("FX editor p55: a selected point is the encoders' focus page; closing
     CHECK (e.fxEditorComponent().numSlots() == FxRack::numMasterSlots);
     CHECK (e.fxEditorComponent().shownView() == ui::modfx::FxViewMaster);
 }
+
+TEST_CASE ("FX editor p57: the picture follows an outside parameter change at the editor's 30 Hz; curves are cached")
+{
+    OhpeProcessor p;
+    p.prepareToPlay (48000.0, 256);
+    std::unique_ptr<juce::AudioProcessorEditor> ed;
+    auto& e = openRack (p, ed, InsertSlot::Eq);
+    auto& fx = e.fxEditorComponent();
+    auto* g = fx.graph();
+    REQUIRE (g != nullptr);
+    REQUIRE (g->getWidth() > 0);
+    int band2 = -1;
+    for (int h = 0; h < g->numHandles(); ++h)
+        if (g->layout().handles[(size_t) h].y == "p1.fx.eq.p2gain") band2 = h;
+    REQUIRE (band2 >= 0);
+
+    (void) g->createComponentSnapshot (g->getLocalBounds());
+    const int built = g->curveBuilds();
+    CHECK (built >= 1);
+    (void) g->createComponentSnapshot (g->getLocalBounds()); // same values: no rebuild
+    CHECK (g->curveBuilds() == built);
+
+    // an encoder / MIDI / host change (no mouse): one editor refresh lets the picture see it
+    const float y0 = g->handlePosition (band2).y;
+    const int ticks = fx.graphTicks();
+    setPlain (p, "p1.fx.eq.p2gain", 12.0f);
+    fx.refresh();
+    CHECK (fx.graphTicks() == ticks + 1);
+    CHECK (g->handlePosition (band2).y < y0 - 5.0f); // the point moved up
+    (void) g->createComponentSnapshot (g->getLocalBounds());
+    CHECK (g->curveBuilds() == built + 1); // the curve was rebuilt once for the new value
+}
+
+TEST_CASE ("FX editor p57: German EQ names use the studio terms (Low / High Shelf, Q, Low / High Cut)")
+{
+    OhpeProcessor p;
+    std::map<std::string, std::string> de;
+    for (const auto& d : p.core().params().all()) de[d.id] = d.nameDe;
+    auto endsWith = [] (const std::string& s, const std::string& t) { return s.size() >= t.size() && s.compare (s.size() - t.size(), t.size(), t) == 0; };
+    CHECK (endsWith (de["p1.fx.eq.lowfreq"], "EQ Low Shelf Frequenz"));
+    CHECK (endsWith (de["p1.fx.eq.highgain"], "EQ High Shelf Gain"));
+    CHECK (endsWith (de["p1.fx.eq.p2q"], "EQ Band 2 Q"));
+    CHECK (ui::modfx::compactName ("p1.fx.eq.highfreq", "EQ High Shelf Freq", de["p1.fx.eq.highfreq"]).length() <= 19);
+    for (const auto& [id, name] : de)
+    {
+        CHECK_MESSAGE (name.find ("Kuhschwanz") == std::string::npos, id);
+        CHECK_MESSAGE (name.find ("G\xc3\xbcte") == std::string::npos, id);
+    }
+}

@@ -7,6 +7,9 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: FX editor: the picture now follows encoder, MIDI and host changes smoothly (it redrew only by chance before); curves are cached; long parameter names fit the bar list; German EQ terms use the studio words (Low Shelf, High Shelf, Q, Low Cut, High Cut).
+- DE: FX-Editor: das Bild folgt Encoder-, MIDI- und Host-Änderungen jetzt flüssig (vorher nur zufällig neu gezeichnet); Kurven zwischengespeichert; lange Parameternamen passen in die Balkenliste; deutsche EQ-Begriffe wie im Studio (Low Shelf, High Shelf, Q, Low Cut, High Cut).
+
 ## 0.6.3 Preview – 2026-10-19
 
 [Notes / Hinweise](docs/release-notes/0.6.3.md)
