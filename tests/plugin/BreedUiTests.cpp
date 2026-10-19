@@ -1,12 +1,14 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 //
-// p18: the breeding view - opening it (RANDOM, library, MIDI remote), breeding a brood with thumbnails and level
+// p18: the breeding view - opening it (p51: BREED key, library, MIDI remote), breeding a brood with thumbnails and level
 // matching, auditioning, keeping, saving a child as a favourite, Cancel restoring the sound, the session in the state.
 
 #include <doctest/doctest.h>
 
+#include "plugin/Localisation.h"
 #include "plugin/PluginProcessor.h"
+#include "ui/Palette.h"
 #include "ui/PluginEditor.h"
 
 using namespace ohpe;
@@ -163,4 +165,74 @@ TEST_CASE ("editor p18: breeding remote controls are MIDI-mappable triggers")
     p.parameter ("lib.breed.next")->setValueNotifyingHost (1.0f);
     p.pollRemoteControls();
     CHECK (p.breedRequestCount (2) == 1);
+}
+
+TEST_CASE ("editor p51: BREED is its own header key next to RANDOM; RANDOM only randomises")
+{
+    OhpeProcessor p;
+    p.prepareToPlay (48000.0, 256);
+    std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
+    auto& e = *dynamic_cast<OhpeEditor*> (ed.get());
+    e.setSize (OhpeEditor::designWidth, OhpeEditor::designHeight);
+    auto& breedKey = e.breedingKey();
+    auto& randomKey = e.randomSoundKey();
+    REQUIRE (breedKey.isVisible());
+    CHECK (breedKey.getStyle() == ui::PictoKey::Style::Pill);
+
+    // the header row: LIBRARY PRO BREED (pills, 8 apart, one row) right of the preset strip, left of RANDOM
+    const auto lib = OhpeEditor::designArea ("libraryKey"), pro = OhpeEditor::designArea ("proKey"),
+               brd = OhpeEditor::designArea ("breedKey"), rnd = OhpeEditor::designArea ("randomKey"),
+               strip = OhpeEditor::designArea ("presetStrip");
+    CHECK (brd.getY() == doctest::Approx (pro.getY()));
+    CHECK (brd.getHeight() == doctest::Approx (pro.getHeight()));
+    CHECK (brd.getWidth() == doctest::Approx (pro.getWidth()));
+    CHECK (pro.getWidth() == doctest::Approx (lib.getWidth()));
+    CHECK (pro.getX() - lib.getRight() == doctest::Approx (8.0f));
+    CHECK (brd.getX() - pro.getRight() == doctest::Approx (8.0f));
+    CHECK (brd.getRight() < rnd.getX());
+    CHECK (strip.getRight() + 16.0f <= lib.getX());
+    for (const auto* a : { &lib, &pro, &brd })
+        CHECK_FALSE (a->intersects (rnd));
+
+    // no truncated legend (EN / DE): the legend fits the key at the legend size the header uses (11 units)
+    for (auto lang : { i18n::Language::English, i18n::Language::German })
+    {
+        e.setLanguage (lang);
+        for (auto* k : { &e.breedingKey(), &e.randomSoundKey() })
+        {
+            const auto text = i18n::upper (i18n::tr (k->getButtonText()));
+            CAPTURE (text);
+            CHECK (juce::GlyphArrangement::getStringWidth (ui::labelFont (11.0f), text) <= (float) k->getWidth() - 2.0f);
+        }
+        CHECK (i18n::upper (i18n::tr (breedKey.getButtonText())) == (lang == i18n::Language::German ? juce::String ("ZUCHT") : juce::String ("BREED")));
+        CHECK (breedKey.getTooltip().isNotEmpty());
+        CHECK_FALSE (randomKey.getTooltip().containsIgnoreCase ("right"));
+        CHECK_FALSE (randomKey.getTooltip().containsIgnoreCase ("rechts"));
+    }
+    e.setLanguage (i18n::Language::English);
+
+    // BREED toggles the breeding view, its light bar follows the view
+    CHECK_FALSE (e.breedingVisible());
+    CHECK_FALSE (breedKey.isActive());
+    REQUIRE (breedKey.onClick != nullptr);
+    breedKey.onClick();
+    CHECK (e.breedingVisible());
+    CHECK (breedKey.isActive());
+    CHECK_FALSE (randomKey.isActive());
+    breedKey.onClick();
+    CHECK_FALSE (e.breedingVisible());
+    CHECK_FALSE (breedKey.isActive());
+    // closing the view another way (library) clears the bar too
+    breedKey.onClick();
+    REQUIRE (e.breedingVisible());
+    e.showLibrary (true);
+    CHECK_FALSE (e.breedingVisible());
+    CHECK_FALSE (breedKey.isActive());
+    e.showLibrary (false);
+
+    // RANDOM has no hidden shortcut any more: no secondary click, no hold detection
+    CHECK (randomKey.onSecondaryClick == nullptr);
+    CHECK (randomKey.onStateChange == nullptr);
+    // BREED's right-click is the MIDI learn menu of "lib.breed" (no new parameter)
+    CHECK (breedKey.onSecondaryClick != nullptr);
 }

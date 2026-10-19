@@ -6,7 +6,7 @@ Die Oberfläche von Ohpe (p14): Engine-Tasten mit dem **LEBEN**-Balken (links), 
 Encoder unter dem Display, die **TRANSPORT**-Tasten mit der Tape-Anzeige (unten links), die **OKTAVE**-Tasten,
 **MIDI** und die Tastatur-Anzeige (unten rechts) und die Klaviaturzeile – **PITCH**- und **MOD**-Rad, drei Oktaven Klaviatur, **Glide**-Modus
 und -Zeit. In der Kopfzeile liegen die **Part-Auswahl**, der **Preset-Streifen**, die Tasten
-**BIBLIOTHEK** und **PRO**, **ZUFALL** und **SPEICHERN** sowie die **Einstellungen**-Taste (Zahnrad: Sprache DE / EN, Hilfe,
+**BIBLIOTHEK**, **PRO** und **ZUCHT**, **ZUFALL** und **SPEICHERN** sowie die **Einstellungen**-Taste (Zahnrad: Sprache DE / EN, Hilfe,
 helle / dunkle Erscheinung, MIDI, Updates, Über). Jede Funktion ist mit der Maus und –
 über MIDI Learn – vom Controller aus erreichbar.
 
@@ -105,9 +105,11 @@ Jeder gewürfelte Klang soll sofort spielbar sein:
   unverändert. Halten die Effekte des Parts den Pegel unten (etwa ein Kompressor vorn im Rack), spielt der
   neue Klang ungefähr so laut wie der Klang, von dem aus gewürfelt wurde.
 
-**ZUFALL halten** (oder rechts anklicken) öffnet die **[Zucht](ZUCHT.md)**: zwei Klänge kreuzen, sechs Kinder hören,
-die besten behalten und weiterzüchten. Solange die Zucht-Ansicht offen ist, würfelt ZUFALL einen neuen
-Elternteil B, und SPEICHERN legt das gewählte Kind als Favorit in der Bibliothek ab.
+Die Taste **ZUCHT** (neben ZUFALL, ein Klick öffnet / schließt die Ansicht, ihr Lichtbalken leuchtet, solange sie
+offen ist) öffnet die **[Zucht](ZUCHT.md)**: zwei Klänge kreuzen, sechs Kinder hören, die besten behalten und
+weiterzüchten. ZUFALL würfelt nur – Halten oder ein Rechtsklick öffnen die Zucht nicht mehr. Solange die
+Zucht-Ansicht offen ist, würfelt ZUFALL einen neuen Elternteil B, und SPEICHERN legt das gewählte Kind als Favorit in
+der Bibliothek ab. Ein Rechtsklick auf ZUCHT öffnet MIDI-Lernen für `lib.breed`.
 
 ![Die Zucht-Ansicht](../images/ohpe-breeding-de.png)
 

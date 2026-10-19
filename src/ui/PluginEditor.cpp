@@ -276,31 +276,30 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     libraryKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::libOpen, &libraryKey); };
     proKey.setAccent (colour::ultraviolet);
     proKey.onClick = [this] { showProView (! proView.isVisible()); };
-    for (auto* k : { &playKey, &octDownKey, &octUpKey, &midiKey, &libraryKey, &proKey }) addAndMakeVisible (*k);
+    // p51: BREED opens / closes the breeding view (its own key; MIDI remote "lib.breed" does the same)
+    breedKey.setAccent (colour::ultraviolet);
+    breedKey.onClick = [this] { showBreeding (! breedView.isVisible()); };
+    breedKey.onSecondaryClick = [this] { showControlMenu (proc, Core::Ids::libBreed, &breedKey); };
+    for (auto* k : { &playKey, &octDownKey, &octUpKey, &midiKey, &libraryKey, &proKey, &breedKey }) addAndMakeVisible (*k);
     // p14: header pills and round keys, the keyboard row's wheels and glide controls
-    for (auto* k : { &libraryKey, &proKey, &randomKey, &saveKey }) k->setLegendOnTop (true);
+    for (auto* k : { &libraryKey, &proKey, &breedKey, &randomKey, &saveKey }) k->setLegendOnTop (true);
     libraryKey.setStyle (PictoKey::Style::Pill);
     proKey.setStyle (PictoKey::Style::Pill);
+    breedKey.setStyle (PictoKey::Style::Pill);
     randomKey.setStyle (PictoKey::Style::Round);
     saveKey.setStyle (PictoKey::Style::Round);
     octDownKey.setLegend ("Octave -");
     octUpKey.setLegend ("Octave +");
-    // p18: RANDOM rolls a sound; held (or right-clicked) it opens the breeding view, where it rolls a new parent B
-    randomKey.onStateChange = [this] {
-        if (randomKey.isDown() && randomPressedAt == 0) randomPressedAt = juce::Time::getMillisecondCounter();
-    };
+    // p18: RANDOM rolls a sound; in the breeding view it rolls a new parent B and breeds
+    // p51: only that - breeding has its own key (BREED), the hidden hold / right-click shortcut is gone
     randomKey.onClick = [this] {
-        const bool held = randomPressedAt != 0 && juce::Time::getMillisecondCounter() - randomPressedAt >= 450;
-        randomPressedAt = 0;
         if (breedView.isVisible())
         {
             breedView.randomParent (1);
             breedView.breedNew();
         }
-        else if (held) showBreeding (true);
         else randomiseSound();
     };
-    randomKey.onSecondaryClick = [this] { showBreeding (! breedView.isVisible()); };
     saveKey.onClick = [this] {
         if (breedView.isVisible() && breedView.selectedChild() >= 0) breedView.saveChild (breedView.selectedChild()); // p18: heart + library
         else openSave();
@@ -387,7 +386,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
         library.close (false);
         showBreeding (true, entry);
     };
-    breedView.onClosed = [this] { randomKey.setActive (false); updateOverlayVisibility(); rebindEncoders(); };
+    breedView.onClosed = [this] { breedKey.setActive (false); updateOverlayVisibility(); rebindEncoders(); };
     addChildComponent (breedView);
     // p27: the update view, opened from the version legend / wordmark
     {
@@ -498,11 +497,14 @@ juce::Rectangle<float> OhpeEditor::designArea (const char* name)
     static const Item items[] = {
         { "housing", 8, 8, 1184, 784 },
         { "partLegend", 304, 20, 152, 12 },     { "partSelector", 304, 40, 152, 32 },
-        { "presetLegend", 472, 20, 272, 12 },   { "presetStrip", 472, 40, 272, 32 },
+        // p51: the preset strip 232 wide (was 272), so the three pills LIBRARY PRO BREED fit left of the round keys
+        { "presetLegend", 472, 20, 232, 12 },   { "presetStrip", 472, 40, 232, 32 },
         // p14: the header row - every legend on one baseline (y 20 - 32), every control centred on y 56 (the
         // strips' centre line); 8 units between the keys, the last one ends 32 units from the housing's right
         // edge, as the wordmark starts 32 units from its left edge
-        { "libraryKey", 760, 20, 80, 56 },      { "proKey", 848, 20, 80, 56 },
+        // p51: three pills 64 wide, 8 apart: LIBRARY PRO BREED (BREED ends where PRO ended, x 928)
+        { "libraryKey", 720, 20, 64, 56 },      { "proKey", 792, 20, 64, 56 },
+        { "breedKey", 864, 20, 64, 56 },
         // p47: the three round keys' rings 80 units apart, the last one flush right (ring centres 981, 1061, 1141)
         { "randomKey", 949, 20, 64, 56 },       { "saveKey", 1029, 20, 64, 56 },
         // p32: the gear key ends 32 units from the housing's right edge (the language pills moved into the settings)
@@ -591,6 +593,7 @@ void OhpeEditor::resized()
     place (presetStrip, "presetStrip");
     place (libraryKey, "libraryKey");
     place (proKey, "proKey");
+    place (breedKey, "breedKey"); // p51
     place (randomKey, "randomKey");
     place (saveKey, "saveKey");
     place (settingsKey, "settingsKey");
@@ -612,7 +615,7 @@ void OhpeEditor::resized()
     place (cpuMeter, "cpuMeter"); // p35
     for (auto& k : engineKeys) k->setUiScale (s);
     for (auto& k : modeKeys) k->setUiScale (s);
-    for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey, &gridKey, &libraryKey, &proKey, &randomKey, &saveKey, &settingsKey })
+    for (auto* k : { &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &octDownKey, &octUpKey, &midiKey, &gridKey, &libraryKey, &proKey, &breedKey, &randomKey, &saveKey, &settingsKey })
         k->setUiScale (s);
     glideSwitch.setUiScale (s);
     glideKnob.setUiScale (s);
@@ -1107,6 +1110,7 @@ void OhpeEditor::applyAccents()
     loopKey.setAccent (colour::sunYellow);
     libraryKey.setAccent (colour::sunYellow);
     proKey.setAccent (colour::ultraviolet);
+    breedKey.setAccent (colour::ultraviolet); // p51
     settingsKey.setAccent (colour::sunYellow);
     for (auto& e : encoders) e->refreshColours();
 }
@@ -1159,7 +1163,7 @@ void OhpeEditor::showBreeding (bool show, int libraryEntry)
     }
     else
         breedView.close (true);
-    randomKey.setActive (show);
+    breedKey.setActive (breedView.isVisible()); // p51: BREED's light bar while the view is open
     updateOverlayVisibility();
 }
 
@@ -2315,7 +2319,8 @@ void OhpeEditor::refreshKeys()
     keysReadout.setTooltip (tr ("Range of the on-screen keyboard and its octave shift; red during MIDI learn"));
     libraryKey.setTooltip (tr ("Preset library"));
     proKey.setTooltip (tr ("All parameters of the mode"));
-    randomKey.setTooltip (tr ("Random: new values for the sound of the edit part's engine. Hold (or right-click) for breeding"));
+    breedKey.setTooltip (tr ("Breeding: cross two sounds, hear six children, keep the best (opens / closes the breeding view)")); // p51
+    randomKey.setTooltip (tr ("Random: new values for the sound of the edit part's engine (in the breeding view: a new parent B)"));
     saveKey.setTooltip (tr ("Save the edit part as a user preset"));
     settingsKey.setTooltip (tr ("Settings: language, help, skin, display, MIDI, updates, about")); // p32
     pitchWheel.setTooltip (tr ("Pitch bend - springs back to the centre; right-click: MIDI learn"));
@@ -2338,6 +2343,7 @@ void OhpeEditor::refreshKeys()
     }
     libraryKey.setActive (library.isVisible());
     proKey.setActive (proView.isVisible());
+    breedKey.setActive (breedView.isVisible()); // p51
     settingsKey.setActive (settingsView.isVisible());
     for (auto& e : encoders) e->repaint();
 }

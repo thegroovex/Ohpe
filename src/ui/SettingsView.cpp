@@ -35,13 +35,13 @@ const HelpTopic helpTopics[] = {
       "The four coloured encoders under the display change the four values in the same colours on the display. "
       "Hold Shift for fine steps. The arrows on the display turn the pages.\n\n"
       "The keys on the right switch the mode: Synth, Envelope, LFO, Mixer, Effects, Sequencer, Tape and Drum.\n\n"
-      "LIBRARY opens the presets, PRO shows every parameter of the mode, RANDOM rolls a new sound (hold it for breeding), "
+      "LIBRARY opens the presets, PRO shows every parameter of the mode, BREED crosses two sounds into new ones, RANDOM rolls a new sound, "
       "SAVE keeps the edit part as a user preset.",
       "Ohpe hat vier Parts. Jeder Part spielt eine Klangerzeugung; den Part oben wählen, die Engine links.\n\n"
       "Die vier farbigen Encoder unter dem Display ändern die vier Werte in denselben Farben im Display. "
       "Mit Shift in feinen Schritten. Die Pfeile im Display blättern die Seiten.\n\n"
       "Die Tasten rechts wählen den Modus: Synth, Hüllkurve, LFO, Mixer, Effekte, Sequencer, Tape und Drum.\n\n"
-      "BIBLIOTHEK öffnet die Presets, PRO zeigt alle Parameter des Modus, ZUFALL würfelt einen neuen Klang (gehalten: Zucht), "
+      "BIBLIOTHEK öffnet die Presets, PRO zeigt alle Parameter des Modus, ZUCHT kreuzt zwei Klänge zu neuen, ZUFALL würfelt einen neuen Klang, "
       "SPEICHERN legt den Edit-Part als eigenes Preset ab." },
     { "Light bars", "Leuchtbalken",
       "Every key carries a light bar at its lower edge.\n\n"

@@ -14,7 +14,7 @@ history with undo / redo, and **SAVE** stores a child in the library as a favour
 
 | How | Result |
 |---|---|
-| Hold **RANDOM** (half a second) or right-click it | opens the breeding view; parent A = the current sound |
+| **BREED** in the header (next to RANDOM) | opens / closes the breeding view; parent A = the current sound; the key's light bar is lit while the view is open |
 | **BREED** in the library's details (part presets) | closes the library (your sound comes back), opens the breeding view with A = the current sound and B = that preset and breeds at once |
 | MIDI: `lib.breed` | opens / closes the view (MIDI learn in the MIDI menu, *Remote controls*) |
 | MIDI: `lib.breed.go` / `lib.breed.next` | breed again / hear the next child |
