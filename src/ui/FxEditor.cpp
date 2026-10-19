@@ -1262,6 +1262,7 @@ void FxEditor::setEncoderIds (const std::vector<juce::String>& ids)
 void FxEditor::refresh()
 {
     if (! isVisible() || prefixes.empty()) return;
+    if (juce::ModifierKeys::currentModifiers.isAnyMouseButtonDown()) { for (auto& b : bars) b->refresh(); return; } // never rebuild under a drag
     // the slot's type changed (a bar, the host, a preset): new picture and bars
     if (typeOf (proc, prefixes[(size_t) slot]) != type) show (fxView, part, slot);
     else if (tile != nullptr) tile->refreshLayout(); // rate <-> tempo sync swaps a point's parameter
