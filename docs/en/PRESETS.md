@@ -4,6 +4,8 @@
 
 ![Preset library](../images/ohpe-library.png)
 
+![Search "MPE" with the Pads category](../images/ohpe-library-search.png)
+
 ## Using the library
 
 Press **LIBRARY** (top of the instrument) to open the library. It covers the keys and the display;
@@ -13,7 +15,8 @@ the keyboard stays playable, so you can audition sounds while you browse.
 |---|---|
 | **Categories** (left) | Bass, Keys, Pads, Leads, Plucks, Drums, FX, Arp, Textures, Vocal, Boom (0.6: deep tuned kicks and sub basses), Hybrid (0.8: two engines in one sound), Piano (0.8: acoustic and electric pianos). Select one or several: the list shows presets that carry **any** of the selected tags. |
 | **Engine** (left) | Only presets for one engine (or *All*). |
-| **Search** (top) | Words are matched against name, author, tags, engine and comment (case does not matter; German category and engine names work too). All words must match. |
+| **Quick chips** (left, under the categories) | **MPE**, **Fingerboard**, **Morph** (p54): presets that carry **all** of the selected chips. Combined with the categories, *Pads* + *MPE* shows the MPE pads. Only chips that some preset uses are shown. |
+| **Search** (top) | p54: every word must match (AND) one of: name, author, comment, category and tags (English and German, also singular and other spellings: *Pad*, *Fläche*, *Flaeche*, *Flache*), the tags **MPE**, **Fingerboard** (also *MPE-HD*) and **Morph**, engine (id, English and German name), content pack (id and name, or *pack*), bank (*factory* / *werk*, *user* / *eigene*), kind (*part*, *project* / *projekt*), *favourite* / *favorit* and the rating (`***` = at least three stars, `5star`). Case and umlauts do not matter. Examples: `MPE`, `bass mpe`, `fläche fm`, `favorit ***`. The search works together with all chips. |
 | **All / Factory / User** | Which bank: the built-in factory presets, your own presets, or both. |
 | **Parts / Projects** | Only part presets (one sound) or only project presets (the whole instrument). |
 | **★ Favourites** | Only presets you marked as favourite. |
