@@ -340,10 +340,11 @@ TEST_CASE ("p46 grid controller: disconnect / reconnect resends everything; sett
     e.showSettings (true, ui::SettingsView::Controller);
     auto chips = view.chipTexts();
     CHECK (chips.contains ("GRID CONTROLLER PROFILE 1"));
-    CHECK (chips.contains ("CHOOSE PORTS AUTOMATICALLY"));
+    CHECK_FALSE (chips.contains ("CHOOSE PORTS AUTOMATICALLY")); // profile off: the port chips are disabled
     CHECK (view.clickChip ("GRID CONTROLLER PROFILE 1"));
     CHECK (e.userSettingsStore().get().controllerProfile == settings::ControllerGrid1);
     CHECK (e.userSettingsStore().get().controllerChosen);
+    CHECK (view.chipTexts().contains ("CHOOSE PORTS AUTOMATICALLY"));
     CHECK (view.clickChip ("MOD"));
     CHECK (e.userSettingsStore().get().controllerStrip == 1);
     CHECK (view.clickChip ("TEMPO"));
@@ -451,6 +452,11 @@ TEST_CASE ("p53 grid controller: the virtual controller follows pads without a c
     auto& view = e.settingsComponent();
     view.setStandalone (true);
     e.setLanguage (i18n::Language::German);
+    {
+        auto s = e.userSettingsStore().get();
+        s.controllerProfile = settings::ControllerGrid1; // the chips are enabled only with the profile on
+        e.userSettingsStore().set (s);
+    }
     e.showSettings (true, ui::SettingsView::Controller);
     CHECK (view.tabName (ui::SettingsView::Controller) == "Controller");
     auto chips = view.chipTexts();
