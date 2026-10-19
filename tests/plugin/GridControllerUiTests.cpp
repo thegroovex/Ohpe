@@ -43,6 +43,15 @@ struct Mock
     }
 };
 
+/** p53: the controller is on by default now; the rig drives a mock device with the profile off (as before). */
+settings::UserSettings offSettings()
+{
+    settings::UserSettings s;
+    s.controllerProfile = settings::ControllerOff;
+    s.controllerChosen = true;
+    return s;
+}
+
 struct Rig
 {
     juce::TemporaryFile tmp;
@@ -58,7 +67,7 @@ struct Rig
         ed.reset (p.createEditor());
         e = dynamic_cast<OhpeEditor*> (ed.get());
         e->userSettingsStore().setFolderForTests (tmp.getFile());
-        e->userSettingsStore().set ({});
+        e->userSettingsStore().set (offSettings());
         e->applyUserSettings();
         e->setLanguage (i18n::Language::English);
         c = &e->gridControllerForTests();
@@ -68,7 +77,7 @@ struct Rig
     ~Rig()
     {
         c->attachForTests (nullptr); // the mock goes before the editor
-        e->userSettingsStore().set ({});
+        e->userSettingsStore().set (offSettings());
         i18n::setCurrent (i18n::Language::English);
     }
     void in (const juce::MidiMessage& m)
@@ -102,14 +111,17 @@ struct Rig
 };
 } // namespace
 
-TEST_CASE ("p46 grid controller: off by default (p49: plug-in editors create it too)")
+TEST_CASE ("p46 grid controller: (p53: on by default, automatic ports) plug-in editors create it too")
 {
     OhpeProcessor p;
     std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
     auto& e = *dynamic_cast<OhpeEditor*> (ed.get());
     REQUIRE (e.gridController() != nullptr); // p49: tests run as a plug-in wrapper - the plug-in has one now
     CHECK (e.gridController()->pluginMode());
-    CHECK (settings::UserSettings {}.controllerProfile == settings::ControllerOff);
+    CHECK (settings::UserSettings {}.controllerProfile == settings::ControllerGrid1);
+    CHECK (settings::UserSettings {}.controllerAuto);
+    // no matching port (CI has none): not found, nothing opened, nothing connected
+    CHECK_FALSE (e.gridController()->connected());
 }
 
 TEST_CASE ("p46 grid controller: display lines follow the page; encoders edit the page's parameters")
@@ -117,7 +129,7 @@ TEST_CASE ("p46 grid controller: display lines follow the page; encoders edit th
     Rig r;
     auto& e = *r.e;
     CHECK (r.c->connected());
-    CHECK (r.mock.sysexCount() >= 5); // aftertouch mode + four display lines
+    CHECK (r.mock.sysexCount() >= 6); // user mode, aftertouch mode + four display lines
     const auto ids = ui::modeParams (e.currentMode(), r.p.core(), e.pageContext());
     const auto enc = r.c->encoderIds();
     for (int i = 0; i < 8; ++i) CHECK (enc[(size_t) i] == (i < (int) ids.size() ? ids[(size_t) i] : std::string()));
@@ -312,7 +324,7 @@ TEST_CASE ("p46 grid controller: disconnect / reconnect resends everything; sett
     r.c->attachForTests ([&r] (const juce::MidiMessage& m) { r.mock.sent.push_back (m); });
     r.c->update();
     CHECK (r.c->connected());
-    CHECK (r.mock.sysexCount() == 5); // aftertouch mode + all four lines again
+    CHECK (r.mock.sysexCount() == 6); // p53: user mode, aftertouch mode + all four lines again
     int pads = 0;
     for (const auto& m : r.mock.sent) pads += m.isNoteOn (true) && g::padOfNote (m.getNoteNumber()) >= 0 ? 1 : 0;
     CHECK (pads == g::numPads); // every pad light again
@@ -321,19 +333,26 @@ TEST_CASE ("p46 grid controller: disconnect / reconnect resends everything; sett
     r.c->update();
     CHECK (r.mock.sent.size() == n);
 
-    // the settings: MIDI page with the controller section and the virtual controller view
+    // the settings (p53: the Controller page) with the virtual controller view
     auto& view = e.settingsComponent();
     view.setStandalone (true);
-    e.showSettings (true, ui::SettingsView::Midi);
+    e.showSettings (true, ui::SettingsView::Controller);
     auto chips = view.chipTexts();
     CHECK (chips.contains ("GRID CONTROLLER PROFILE 1"));
+    CHECK (chips.contains ("CHOOSE PORTS AUTOMATICALLY"));
     CHECK (view.clickChip ("GRID CONTROLLER PROFILE 1"));
     CHECK (e.userSettingsStore().get().controllerProfile == settings::ControllerGrid1);
+    CHECK (e.userSettingsStore().get().controllerChosen);
     CHECK (view.clickChip ("MOD"));
     CHECK (e.userSettingsStore().get().controllerStrip == 1);
-    CHECK (view.clickChip ("VIEW"));
+    CHECK (view.clickChip ("TEMPO"));
+    CHECK (e.userSettingsStore().get().controllerMaster == 1);
     CHECK (view.controllerPreviewShown());
     CHECK (e.createComponentSnapshot (e.getLocalBounds()).isValid());
+    view.chooseControllerPort (true, "Pad Grid User Port");
+    CHECK (e.userSettingsStore().get().controllerIn == "Pad Grid User Port");
+    CHECK_FALSE (e.userSettingsStore().get().controllerAuto);
+    r.c->attachForTests ([&r] (const juce::MidiMessage& m) { r.mock.sent.push_back (m); });
 
     // German: the display speaks German (folded to the display's characters)
     e.setLanguage (i18n::Language::German);
@@ -342,6 +361,106 @@ TEST_CASE ("p46 grid controller: disconnect / reconnect resends everything; sett
     const auto lines = r.c->displayLines();
     MESSAGE ("German:\n" << lines[0] << "\n" << lines[1] << "\n" << lines[2] << "\n" << lines[3]);
     CHECK (lines[3].find ("Tasten Quarten O3") != std::string::npos);
-    view.showControllerPreview (false);
+    e.showSettings (false);
+}
+
+TEST_CASE ("p53 grid controller: user mode and splash on connect, live mode on release, touches never play, identity")
+{
+    Rig r;
+    r.c->attachForTests (nullptr);
+    r.mock.sent.clear();
+    r.c->setSplashForTests (true);
+    r.c->attachForTests ([&r] (const juce::MidiMessage& m) { r.mock.sent.push_back (m); });
+    REQUIRE (! r.mock.sent.empty());
+    const auto first = r.mock.sent.front();
+    REQUIRE (first.isSysEx());
+    const auto userMode = g::userModeSysex (g::Generation::First, true);
+    CHECK (first.getRawDataSize() == (int) userMode.size());
+    CHECK (std::equal (userMode.begin(), userMode.end(), first.getRawData())); // into its User mode first
+    CHECK (r.c->splashShown());
+    CHECK (r.c->displayLines()[2].find ("connecting") != std::string::npos);
+    for (int i = 0; i < 25; ++i) r.c->poll();
+    CHECK (r.c->displayLines()[2].find ("connected") != std::string::npos);
+    for (int i = 0; i < 20; ++i) r.c->poll();
+    CHECK_FALSE (r.c->splashShown());
+    CHECK (r.c->displayLines()[2].find ("connect") == std::string::npos); // the normal Ohpe display
+
+    // encoder and strip touches are consumed: no note reaches the synth
+    auto& core = r.p.core();
+    const int before = core.lastNote();
+    for (int n = 0; n <= 10; ++n) r.in (juce::MidiMessage::noteOn (1, n, (juce::uint8) 127));
+    r.in (juce::MidiMessage::noteOn (1, g::touchNoteStrip, (juce::uint8) 127));
+    juce::AudioBuffer<float> buffer (r.p.getTotalNumOutputChannels(), 256);
+    juce::MidiBuffer none;
+    r.p.processBlock (buffer, none);
+    CHECK (core.lastNote() == before);
+    for (int n = 0; n <= 10; ++n) r.in (juce::MidiMessage::noteOff (1, n));
+    // an encoder turn (relative, two's complement) moves the encoder's parameter
+    const auto ids = r.c->encoderIds();
+    REQUIRE (! ids[0].empty());
+    const float v0 = core.params().get (ids[0]);
+    r.in (juce::MidiMessage::controllerEvent (1, g::cc::firstEncoder, 5));
+    const float v1 = core.params().get (ids[0]);
+    r.in (juce::MidiMessage::controllerEvent (1, g::cc::firstEncoder, 128 - 5));
+    const float v2 = core.params().get (ids[0]);
+    CHECK (v1 != v0);
+    CHECK (v2 == doctest::Approx (v0).epsilon (0.02));
+
+    // a later-generation identity reply: its own user mode, no text display written any more
+    r.mock.sent.clear();
+    const uint8_t later[] = { 0xf0, 0x7e, 0x01, 0x06, 0x02, 0x00, 0x21, 0x1d, 0x67, 0x32, 0x02, 0x00, 0x01, 0x00, 0xf7 };
+    r.in (juce::MidiMessage (later, (int) sizeof (later)));
+    CHECK (r.c->generation() == g::Generation::Later);
+    bool laterMode = false, text = false;
+    for (const auto& m : r.mock.sent)
+        if (m.isSysEx())
+        {
+            laterMode |= m.getRawDataSize() == 9 && m.getRawData()[1] == 0x00 && m.getRawData()[6] == 0x0a;
+            text |= m.getRawDataSize() > 9 && m.getRawData()[1] == 0x47;
+        }
+    CHECK (laterMode);
+    CHECK_FALSE (text);
+
+    // release: lights off, then back to its live mode
+    r.mock.sent.clear();
+    r.c->attachForTests (nullptr);
+    bool live = false;
+    for (const auto& m : r.mock.sent)
+        live |= m.isSysEx() && m.getRawDataSize() == 9 && m.getRawData()[7] == 0x00 && (m.getRawData()[4] == 0x62 || m.getRawData()[6] == 0x0a);
+    CHECK (live);
+}
+
+TEST_CASE ("p53 grid controller: the virtual controller follows pads without a connected device; Controller page in German")
+{
+    Rig r;
+    auto& e = *r.e;
+    r.c->attachForTests (nullptr); // no device at all
+    r.c->setPadMode (ui::GridController::PadMode::Keys);
+    r.c->update();
+    const auto before = r.c->padCodes();
+    const int pad = g::padNote (3, 2) - g::firstPadNote;
+    r.c->receive (juce::MidiMessage::noteOn (1, g::padNote (3, 2), (juce::uint8) 100));
+    r.c->update();
+    CHECK (r.c->padCodes()[(size_t) pad] == g::padColourCode (g::Colour::Green)); // held = green, also without output
+    r.c->receive (juce::MidiMessage::noteOff (1, g::padNote (3, 2)));
+    r.c->update();
+    CHECK (r.c->padCodes()[(size_t) pad] == before[(size_t) pad]);
+
+    // the page: big pads, clickable with the mouse; German texts
+    auto& view = e.settingsComponent();
+    view.setStandalone (true);
+    e.setLanguage (i18n::Language::German);
+    e.showSettings (true, ui::SettingsView::Controller);
+    CHECK (view.tabName (ui::SettingsView::Controller) == "Controller");
+    auto chips = view.chipTexts();
+    CHECK (chips.contains (i18n::upper (juce::String::fromUTF8 ("Ports automatisch wählen"))));
+    CHECK (chips.contains ("BEND"));
+    CHECK (view.virtualPadBounds().getWidth() > (float) view.getWidth() * 0.18f); // large, not a corner thumbnail
+    CHECK (view.virtualPadBounds().getRight() <= (float) view.getWidth());
+    CHECK (view.virtualPadBounds().getBottom() <= (float) view.getHeight());
+    CHECK (i18n::tr ("No controller found") == "Nicht gefunden");
+    CHECK (i18n::tr ("Connected") == "Verbunden");
+    CHECK (i18n::tr ("Port in use by another program") == "Port belegt (anderes Programm)");
+    e.setLanguage (i18n::Language::English);
     e.showSettings (false);
 }
