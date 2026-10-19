@@ -37,6 +37,8 @@ juce::String tagLabel (const std::string& tag)
 {
     for (const auto& c : preset::categories())
         if (tag == c.key) return categoryLabel (c);
+    for (const auto& c : preset::quickTags())
+        if (tag == c.key) return categoryLabel (c);
     return str (tag);
 }
 
@@ -87,7 +89,7 @@ LibraryBrowser::~LibraryBrowser() { presets.removeChangeListener (this); }
 
 void LibraryBrowser::languageChanged()
 {
-    search.setTextToShowWhenEmpty (tr ("Search"), colour::displayDim);
+    search.setTextToShowWhenEmpty (tr ("Search: name, category, MPE, engine ..."), colour::displayDim);
     saveName.setTextToShowWhenEmpty (tr ("Name"), colour::displayDim);
     saveAuthor.setTextToShowWhenEmpty (tr ("Author"), colour::displayDim);
     saveFreeTags.setTextToShowWhenEmpty (tr ("More tags, comma separated"), colour::displayDim);
@@ -184,6 +186,15 @@ void LibraryBrowser::setSearchText (const juce::String& text)
 void LibraryBrowser::toggleTag (const juce::String& tag)
 {
     auto& t = presets.filter.tags;
+    const auto s = tag.toStdString();
+    if (auto it = std::find (t.begin(), t.end(), s); it != t.end()) t.erase (it);
+    else t.push_back (s);
+    rebuild();
+}
+
+void LibraryBrowser::toggleQuickTag (const juce::String& tag)
+{
+    auto& t = presets.filter.required;
     const auto s = tag.toStdString();
     if (auto it = std::find (t.begin(), t.end(), s); it != t.end()) t.erase (it);
     else t.push_back (s);
@@ -398,7 +409,10 @@ void LibraryBrowser::paint (juce::Graphics& g)
     g.drawText (i18n::upper (tr ("Categories")), left.withHeight (u * 2.2f), juce::Justification::centredLeft, true);
     const auto& cats = preset::categories();
     // 0.6: the chips share the column with the engine chips; they shrink when the categories need more rows
-    const float catRows = (float) ((cats.size() + 1) / 2), engineRows = (float) ((numEngineTypes + 2) / 2);
+    // p54: the quick chips (MPE, Fingerboard, Morph: "all of") follow the categories in the same grid
+    const auto quick = preset::usedQuickTags (presets.entries());
+    const size_t numChips = cats.size() + quick.size();
+    const float catRows = (float) ((numChips + 1) / 2), engineRows = (float) ((numEngineTypes + 2) / 2);
     const float cw = (left.getWidth() - u * 0.6f) / 2.0f,
                 ch = juce::jmin (u * 2.8f, (left.getHeight() - u * 5.8f) / (catRows + engineRows) - u * 0.5f);
     for (size_t i = 0; i < cats.size(); ++i)
@@ -407,6 +421,14 @@ void LibraryBrowser::paint (juce::Graphics& g)
         const bool on = std::find (f.tags.begin(), f.tags.end(), key) != f.tags.end();
         chip (g, { left.getX() + (cw + u * 0.6f) * (float) (i % 2), left.getY() + u * 2.4f + (ch + u * 0.5f) * (float) (i / 2), cw, ch },
               categoryLabel (cats[i]), on, colour::encoder ((int) i), [this, key] { toggleTag (str (key)); });
+    }
+    for (size_t q = 0; q < quick.size(); ++q)
+    {
+        const auto key = quick[q];
+        const size_t i = cats.size() + q;
+        const bool on = std::find (f.required.begin(), f.required.end(), key) != f.required.end();
+        chip (g, { left.getX() + (cw + u * 0.6f) * (float) (i % 2), left.getY() + u * 2.4f + (ch + u * 0.5f) * (float) (i / 2), cw, ch },
+              tagLabel (key), on, colour::ultraviolet, [this, key] { toggleQuickTag (str (key)); });
     }
     const float ey = left.getY() + u * 2.4f + (ch + u * 0.5f) * catRows + u * 1.0f;
     g.setColour (colour::displayDim);

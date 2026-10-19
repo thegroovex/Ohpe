@@ -4,6 +4,8 @@
 
 ![Preset-Bibliothek](../images/ohpe-library-de.png)
 
+![Suche „MPE“ mit der Kategorie Flächen](../images/ohpe-library-search-de.png)
+
 ## Die Bibliothek benutzen
 
 **BIBLIOTHEK** (oben am Instrument) öffnet die Bibliothek. Sie liegt über den Tasten und dem
@@ -13,7 +15,8 @@ Display; die Klaviatur bleibt spielbar, so kannst du Klänge beim Stöbern anspi
 |---|---|
 | **Kategorien** (links) | Bass, Tasten, Flächen, Leads, Zupfer, Drums, FX, Arp, Texturen, Vokal, Boom (0.6: tiefe gestimmte Kicks und Sub-Bässe), Hybrid (0.8: zwei Engines in einem Klang), Klavier (0.8: akustische und elektrische Pianos). Eine oder mehrere wählen: die Liste zeigt Presets, die **einen** der gewählten Tags tragen. |
 | **Engine** (links) | Nur Presets einer Engine (oder *Alle*). |
-| **Suchen** (oben) | Wörter werden in Name, Autor, Tags, Engine und Kommentar gesucht (Groß-/Kleinschreibung egal; deutsche und englische Kategorie- und Engine-Namen gehen). Alle Wörter müssen passen. |
+| **Schnell-Chips** (links, unter den Kategorien) | **MPE**, **Fingerboard**, **Morph** (p54): Presets, die **alle** gewählten Chips tragen. Zusammen mit den Kategorien zeigt *Flächen* + *MPE* die MPE-Flächen. Es erscheinen nur Chips, die ein Preset benutzt. |
+| **Suchen** (oben) | p54: Jedes Wort muss passen (UND) zu einem von: Name, Autor, Kommentar, Kategorie und Tags (deutsch und englisch, auch Einzahl und andere Schreibweisen: *Fläche*, *Flaeche*, *Flache*, *Pad*), den Tags **MPE**, **Fingerboard** (auch *MPE-HD*) und **Morph**, Engine (Kennung, deutscher und englischer Name), Inhaltspaket (Kennung und Name, oder *Paket*), Bank (*Werk* / *factory*, *Eigene* / *user*), Art (*Part*, *Projekt* / *project*), *Favorit* / *favourite* und Bewertung (`***` = mindestens drei Sterne, `5stern`). Groß-/Kleinschreibung und Umlaute sind egal. Beispiele: `MPE`, `bass mpe`, `fläche fm`, `favorit ***`. Die Suche wirkt zusammen mit allen Chips. |
 | **Alle / Werk / Eigene** | Welche Bank: die eingebauten Werks-Presets, deine eigenen oder beide. |
 | **Parts / Projekte** | Nur Part-Presets (ein Klang) oder nur Projekt-Presets (das ganze Instrument). |
 | **★ Favoriten** | Nur Presets, die du als Favorit markiert hast. |
