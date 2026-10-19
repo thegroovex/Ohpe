@@ -1015,6 +1015,7 @@ void OhpeEditor::makeGridController()
         saveUiState();
         repaint();
     };
+    h.screenPressed = [this] (int n) { return grid.isVisible() && grid.isPressed (n); }; // p53: pads <-> screen pressed
     h.setOctave = [this] (int o) {
         keyboard.setBaseOctave (o);
         grid.setBaseOctave (keyboard.getBaseOctave());
@@ -1029,6 +1030,7 @@ void OhpeEditor::makeGridController()
     }
     else gridCtl = std::make_shared<ui::GridController> (proc, std::move (h));
     settingsView.setGridController (gridCtl.get());
+    grid.alsoPressed = [this] (int n) { return gridCtl != nullptr && gridCtl->padNoteDown (n); }; // p53
 }
 
 ui::GridController& OhpeEditor::gridControllerForTests()

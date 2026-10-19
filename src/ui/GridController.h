@@ -74,6 +74,7 @@ public:
         std::function<void (int)> setOctave;
         std::function<bool()> gridShown;       ///< p53: the on-screen grid keyboard is shown (else the piano keys)
         std::function<void (bool)> showGrid;   ///< p53: shows the grid keyboard (the controller's Scales button)
+        std::function<bool (int)> screenPressed; ///< p53: the note is held on the on-screen keyboard (lit on the pads too)
     };
     using Sender = std::function<void (const juce::MidiMessage&)>;
 
@@ -136,6 +137,8 @@ public:
     int buttonCode (int cc) const noexcept { return cc >= 0 && cc < 128 ? ccLight[(size_t) cc] : -1; }
     /** The note pad 0 .. 63 plays in Keys mode now (-1 = none). */
     int padNoteNow (int pad) const noexcept;
+    /** p53: the note is held on a pad (Keys mode) - the on-screen grid keyboard shows it pressed. */
+    bool padNoteDown (int note) const noexcept;
     /** The parameter IDs on the eight encoders (empty = free). */
     std::array<std::string, gridctl::numCells> encoderIds() const { return encIds; }
     PadMode padMode() const noexcept { return (PadMode) padModeNow.load(); }

@@ -118,6 +118,8 @@ Die zweite Tastenreihe, Tasten 5 – 8 (oder **Note** / **Session**), wählt den
   **Raster-Tastatur** gezeigt wird (Taste RASTER), übernehmen sie ihre Anordnung, Grundton, Skala und Farben; bei den
   **Klaviertasten** gilt die Standard-Anordnung (Quarten). Scales bei gezeigten Klaviertasten schaltet zuerst den
   Bildschirm auf die Raster-Tastatur, dann ihre Anordnung weiter – Bildschirm und Pads zeigen immer dasselbe.
+  Gehaltene Töne in beide Richtungen: ein gehaltenes Pad drückt sein Feld auf dem Bildschirm, ein auf dem Bildschirm
+  geklicktes Feld lässt seine Pads grün leuchten.
 * **Dieselbe Zuordnung**: Pad (Spalte, Reihe) spielt den Ton des Bildschirm-Felds in derselben Spalte und Reihe, ab
   demselben tiefsten C. Die vier unteren Pad-Reihen sind genau die vier Reihen des Bildschirm-Rasters; die oberen vier
   setzen es fort.

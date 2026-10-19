@@ -490,3 +490,26 @@ TEST_CASE ("p53 grid controller: piano keys shown = the default pad layout; grid
     r.setHost ("harmony.kb.layout", (float) harmony::LayoutFourths);
     e.showGridKeyboard (false);
 }
+
+TEST_CASE ("p53 grid controller: a note held on a pad shows pressed on the on-screen grid keyboard")
+{
+    Rig r;
+    auto& e = *r.e;
+    e.showGridKeyboard (true);
+    r.c->setPadMode (ui::GridController::PadMode::Keys);
+    r.c->update();
+    const int pad = g::padNote (2, 1) - g::firstPadNote;
+    const int note = r.c->padNoteNow (pad);
+    REQUIRE (note >= 0);
+    REQUIRE (e.gridKeyboard().alsoPressed != nullptr);
+    CHECK_FALSE (e.gridKeyboard().alsoPressed (note));
+    r.c->receive (juce::MidiMessage::noteOn (1, g::padNote (2, 1), (juce::uint8) 100));
+    r.c->update();
+    CHECK (r.c->padNoteDown (note));
+    CHECK (e.gridKeyboard().alsoPressed (note));
+    e.gridKeyboard().refresh(); // repaints for it (no crash without a window)
+    r.c->receive (juce::MidiMessage::noteOff (1, g::padNote (2, 1)));
+    r.c->update();
+    CHECK_FALSE (e.gridKeyboard().alsoPressed (note));
+    e.showGridKeyboard (false);
+}

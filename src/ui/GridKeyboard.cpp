@@ -102,9 +102,15 @@ void GridKeyboard::refresh()
     const auto& h = proc.core().harmony();
     const auto c = h.chord();
     const int sig = ((((h.keyRoot() * 16 + h.keyScale()) * 200 + (c.root + 1) * 16 + c.type) * 8 + layout()) * 8 + octave) * 2 + (partMpe() ? 1 : 0);
-    if (sig != lastSignature)
+    // p53: the notes held on the controller's pads (shown pressed)
+    uint64_t held = 0;
+    if (alsoPressed)
+        for (int n = lowestNote(); n <= highestNote(); ++n)
+            if (alsoPressed (n)) held ^= (uint64_t) (n + 1) * 0x9E3779B97F4A7C15ull;
+    if (sig != lastSignature || held != lastHeld)
     {
         lastSignature = sig;
+        lastHeld = held;
         repaint();
     }
 }
@@ -233,7 +239,7 @@ void GridKeyboard::paint (juce::Graphics& g)
             const int note = noteAt (col, row);
             const int pc = note % 12;
             const bool inKey = scales::inScale (note, kr, ks), isRoot = pc == kr, isChord = ((chordPcs >> pc) & 1u) != 0;
-            const bool down = isPressed (note);
+            const bool down = isPressed (note) || (alsoPressed && alsoPressed (note)); // p53: pads too
             auto cell = cellArea (col, row).reduced (juce::jmax (1.0f, 1.6f * s));
             const float r = juce::jmin (5.0f * s, cell.getHeight() * 0.18f);
             g.setColour (juce::Colours::black.withAlpha (inKey ? 0.12f : 0.22f));

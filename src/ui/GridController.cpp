@@ -836,6 +836,14 @@ int GridController::padNoteNow (int pad) const noexcept
     return pad >= 0 && pad < g::numPads ? padMap[(size_t) pad].load() : -1;
 }
 
+bool GridController::padNoteDown (int note) const noexcept
+{
+    if (note < 0 || padMode() != PadMode::Keys) return false;
+    for (int pad = 0; pad < g::numPads; ++pad)
+        if (held[(size_t) pad].load() && padMap[(size_t) pad].load() == note) return true;
+    return false;
+}
+
 void GridController::refreshMap()
 {
     auto& core = proc.core();
@@ -984,7 +992,9 @@ void GridController::refreshLights()
         else
         {
             const int note = padMap[(size_t) pad].load();
-            if (note >= 0) c = g::roleColour (g::padRole (note, key, chordMask, down));
+            // p53: a note held on the on-screen keyboard lights its pads too
+            const bool screen = note >= 0 && mode == PadMode::Keys && hooks.screenPressed && hooks.screenPressed (note);
+            if (note >= 0) c = g::roleColour (g::padRole (note, key, chordMask, down || screen));
         }
         padLight[(size_t) pad] = g::padColourCode (c);
     }

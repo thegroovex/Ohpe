@@ -114,7 +114,8 @@ The second button row, keys 5 – 8 (or **Note** / **Session**), chooses the pad
   The **Scales** button steps through the layouts. Since p53 the pads follow the on-screen keyboard: while the
   **grid keyboard** is shown (GRID key) they take its layout, root, scale and colours; with the **piano keys** shown
   they use the default layout (Fourths). Scales with the piano keys shown first switches the screen to the grid
-  keyboard, then steps its layout – screen and pads always show the same.
+  keyboard, then steps its layout – screen and pads always show the same. Held notes show both ways: a pad held
+  sinks its cell on the screen, a cell clicked on the screen lights its pads green.
 * **Same mapping**: pad (column, row) plays the note of the screen grid's cell at the same column and row, from the
   same lowest C. The four lower pad rows are exactly the screen grid's four rows; the upper four continue it.
 * **Same key**: the key the grid shows (the remembered key – the set key until anything was heard). With **Scale
