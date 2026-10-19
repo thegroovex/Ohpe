@@ -22,9 +22,13 @@ Display; die Klaviatur bleibt spielbar, so kannst du Klänge beim Stöbern anspi
 | **Details** (rechts) | Name, Bank, Art, Engine, Autor, Tags, Kommentar, Favorit und Bewertung. Eigene Presets können gelöscht werden (in den Papierkorb). |
 | **Behalten / Abbrechen** | *Behalten* (oder Enter, oder Doppelklick auf ein Preset) schließt die Bibliothek mit dem geladenen Preset. *Abbrechen* (oder Esc) stellt den Klang wieder her, der vor dem Öffnen da war. |
 
-Der **Preset-Streifen** neben der Part-Auswahl zeigt das zuletzt geladene Preset; seine Pfeile
-laden das vorige / nächste Preset der aktuellen Liste der Bibliothek (mit ihren Filtern und ihrer
-Sortierung), ein Klick auf den Namen öffnet die Bibliothek.
+Der **Preset-Streifen** neben der Part-Auswahl zeigt das zuletzt in den **Edit-Part** geladene
+Preset: Jeder Part merkt sich sein eigenes Preset, ein Wechsel des Parts (Part-Auswahl, MIDI,
+Part-Tasten des Grid-Controllers) wechselt also auch den Namen – im Streifen, in der Bibliothek und
+im Controller-Display. Ein Projekt-Preset benennt alle vier Parts; ein Part ohne geladenes Preset
+zeigt „Init“. Seine Pfeile laden das vorige / nächste Preset der aktuellen Liste der Bibliothek (mit
+ihren Filtern und ihrer Sortierung) in den Edit-Part, ausgehend von dessen Preset; ein Klick auf den
+Namen öffnet die Bibliothek.
 
 ### Erster Start
 
@@ -34,7 +38,8 @@ Bibliothek, nach Name), nicht mit einem leeren „Init“-Klang: Ein Part-Preset
 Parts geladen (jeder behält seinen MIDI-Kanal), ein Projekt-Preset würde alles ersetzen. Der
 Preset-Streifen zeigt seinen Namen; Band und Sequenzer sind leer. Eine gespeicherte Sitzung – der
 Song im Host, die letzte Sitzung der Standalone-App oder eine geladene Zustandsdatei – stellt sich
-stattdessen selbst wieder her, mit dem Namen des Presets, das geladen war. In der Standalone-App
+stattdessen selbst wieder her, mit den Namen der Presets, die geladen waren (einer je Part; eine
+Sitzung aus Version 0.6.1 oder älter gibt ihren einen Namen allen Parts). In der Standalone-App
 führt *Audio-Einstellungen … › Auf Grundzustand zurücksetzen* zu diesem Start zurück.
 
 ### Speichern
