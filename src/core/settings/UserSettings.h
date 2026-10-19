@@ -14,6 +14,10 @@ enum class Skin { Light = 0, Dark, Auto };
 /** p32: how much the UI moves (light bars breathing, 3D pulse, display visuals). */
 enum class Animations { Full = 0, Reduced, Off };
 
+/** p49: the default name pattern of "Choose ports automatically": parts separated by ';', any part found in a port
+    name (case does not matter) picks it - the controller's user port by its usual names on macOS / Linux and Windows. */
+inline constexpr const char* defaultControllerPattern = "User; MIDIIN2; MIDIOUT2";
+
 /**
     p32: the user's settings - per user (this computer), never per project or preset:
     <user data>/groovex/Ohpe/Settings/settings.json (next to update.json, which keeps the updater's own settings).
@@ -37,6 +41,10 @@ struct UserSettings
     std::string controllerIn, controllerOut;
     int controllerMaster = 0;      ///< 0 = the master encoder sets the volume, 1 = the tempo
     int controllerStrip = 0;       ///< 0 = the touch strip bends, 1 = it is the mod wheel
+    /** p49: in a plug-in, pick the controller's ports by name (controllerPattern) instead of controllerIn / Out.
+        JSON "controller": { "auto": true, "pattern": "User; MIDIIN2; MIDIOUT2" } (the pattern is edited in the file). */
+    bool controllerAuto = true;
+    std::string controllerPattern = defaultControllerPattern;
     std::string extras = "{}";     ///< unknown keys (a JSON object)
 
     std::string toJson() const;
