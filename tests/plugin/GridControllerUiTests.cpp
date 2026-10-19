@@ -724,10 +724,21 @@ TEST_CASE ("p59 grid controller: browse mode - the preset list on the display, f
     const auto lines = r.c->displayLines();
     MESSAGE ("Browse:\n" << lines[0] << "\n" << lines[1] << "\n" << lines[2] << "\n" << lines[3]);
     CHECK (lines[2].rfind (">", 0) == 0); // the cursor row is marked
+    // the name starts at column 1 on every row and a space always ends the first segment (16-character segments)
+    REQUIRE (lines[2].size() == (size_t) g::lineLength);
+    CHECK (lines[2][1] != ' ');
+    CHECK (lines[2][16] == ' ');
     REQUIRE (r.c->browseCursor() >= 0);
     // ▲ / ▼ step and load at once
     const int first = r.c->browseCursor();
     r.press (g::cc::down);
+    {
+        const auto after = r.c->displayLines(); // the row above the cursor: unmarked, its name aligned with the cursor row's
+        REQUIRE (after[1].size() == (size_t) g::lineLength);
+        CHECK (after[1][0] == ' ');
+        CHECK (after[1][1] != ' ');
+        CHECK (after[2][0] == '>');
+    }
     CHECK (r.c->browseCursor() != first);
     CHECK (pm.current() == r.c->browseCursor());
     // encoder 1 scrolls without loading; Select loads

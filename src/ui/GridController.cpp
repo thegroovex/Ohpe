@@ -1280,11 +1280,14 @@ void GridController::refreshBrowseDisplay()
         juce::String marks;
         if (e.favourite) marks << "+";
         if (e.rating > 0) marks << juce::String (e.rating) << "*";
-        const auto pre = r == 1 ? juce::String (">") : juce::String (" ");
-        const auto name = juce::String::fromUTF8 (e.meta.name.c_str());
+        const auto name = juce::String::fromUTF8 (e.meta.name.c_str()).trim();
         const int whoRoom = juce::jmax (1, 16 - marks.length() - 1);
-        lines[(size_t) (r + 1)] = g::segmentLine ({ str (pre + name), str (" " + cat), str (" " + LibraryBrowser::engineText (e.meta.engine)),
-                                                   str (" " + who.substring (0, whoRoom) + (marks.isEmpty() ? juce::String() : " " + marks)) });
+        // segmentLine trims leading spaces and keeps 16 characters per segment: a placeholder in column 0, replaced by
+        // the cursor mark afterwards, keeps every row's name at column 1 (15 characters, one space before the category)
+        auto row = g::segmentLine ({ str ("#" + name), str (cat), str (LibraryBrowser::engineText (e.meta.engine)),
+                                     str (who.substring (0, whoRoom) + (marks.isEmpty() ? juce::String() : " " + marks)) });
+        if (! row.empty()) row[0] = r == 1 ? '>' : ' ';
+        lines[(size_t) (r + 1)] = row;
     }
 }
 
