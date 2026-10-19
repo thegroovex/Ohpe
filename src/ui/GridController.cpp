@@ -158,11 +158,11 @@ void GridController::checkOwnership()
 {
     if (! inPlugin || ! enabled()) return;
     const bool own = g::Ownership::shared().owns (this);
-    if (own == wasOwner) return;
-    wasOwner = own;
     if (! own)
     {
-        // another instance took it: let go (lights and display off, ports closed so it can open them)
+        wasOwner = false;
+        if (! isConnected && input == nullptr && output == nullptr) return;
+        // another instance holds it: let go (lights and display off, ports closed so that one can open them)
         if (testSender)
         {
             for (int pad = 0; pad < g::numPads; ++pad) padUp (pad);
@@ -173,6 +173,8 @@ void GridController::checkOwnership()
         else closePorts();
         return;
     }
+    if (wasOwner) return;
+    wasOwner = true;
     if (testSender)
     {
         isConnected = true;
