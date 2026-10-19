@@ -1207,7 +1207,7 @@ void OhpeEditor::refreshFxEditor()
     if (! fxEditor.isVisible()) return;
     if (mode != Mode::Effects || ! modfx::isRackView (ctx.fxView) || overlayOpen())
     {
-        juce::MessageManager::callAsync ([safe = juce::Component::SafePointer<OhpeEditor> (this)] { if (safe != nullptr) safe->showFxEditor (false); });
+        showFxEditor (false); // re-enters rebindEncoders once; the hidden editor returns at once
         return;
     }
     fxEditor.show (ctx.fxView, ctx.part, ctx.fxSlot);

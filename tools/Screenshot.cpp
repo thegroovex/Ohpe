@@ -412,6 +412,23 @@ int main (int argc, char* argv[])
             e.selectFxSlot (2);
             animate (p, e, 20);
             save (e, dir.getChildFile ("ohpe-rack-view" + suffix + ".png"));
+            // p55: the FX editor - the EQ with band 2 selected (its frequency, gain and Q on the encoders)
+            e.showFxEditor (true);
+            auto selectPoint = [&e] (const std::string& paramId) {
+                if (auto* g = e.fxEditorComponent().graph())
+                    for (int h = 0; h < g->numHandles(); ++h)
+                        if (g->layout().handles[(size_t) h].x == paramId) { g->selectHandle (h); return; }
+            };
+            selectPoint ("p1.fx3.eq.p2freq");
+            animate (p, e, 10);
+            save (e, dir.getChildFile ("ohpe-fx-editor-eq" + suffix + ".png"));
+            // a modulation effect: the Hyper slot, rate / depth on its wave
+            e.selectFxSlot (1);
+            selectPoint ("p1.fx2.hyper.rate");
+            animate (p, e, 10);
+            save (e, dir.getChildFile ("ohpe-fx-editor-mod" + suffix + ".png"));
+            e.showFxEditor (false);
+            e.selectFxSlot (2);
         }
 
         // 0.7: master rack - compressor and multiband working on the chord, the compressor selected
@@ -427,6 +444,12 @@ int main (int argc, char* argv[])
             e.selectFxSlot (0);
             animate (p, e, 20);
             save (e, dir.getChildFile ("ohpe-master-rack" + suffix + ".png"));
+            // p55: the compressor in the FX editor - threshold on its transfer curve, the gain reduction working
+            e.showFxEditor (true);
+            if (auto* g = e.fxEditorComponent().graph()) g->selectHandle (0);
+            animate (p, e, 20);
+            save (e, dir.getChildFile ("ohpe-fx-editor-comp" + suffix + ".png"));
+            e.showFxEditor (false);
             release (p, { 60, 64, 67 });
         }
 
