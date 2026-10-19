@@ -310,7 +310,10 @@ const std::map<juce::String, juce::String>& table()
         { "listening", "hört zu" },
         { "Choose parent B first (or roll the die).", "Wähle zuerst Elternteil B (oder würfle)." },
         { "Breed with the current sound", "Mit dem aktuellen Klang züchten" },
-        { "Random: new values for the sound of the edit part's engine. Hold (or right-click) for breeding", "Zufall: neue Werte für den Klang der Engine des bearbeiteten Parts. Halten (oder Rechtsklick) für die Zucht" },
+        { "Random: new values for the sound of the edit part's engine (in the breeding view: a new parent B)", "Zufall: neue Werte für den Klang der Engine des bearbeiteten Parts (in der Zucht-Ansicht: ein neuer Elternteil B)" },
+        // p51: the breeding key in the header (legend BREED / ZUCHT)
+        { "BREED", "Zucht" },
+        { "Breeding: cross two sounds, hear six children, keep the best (opens / closes the breeding view)", "Zucht: zwei Klänge kreuzen, sechs Kinder hören, die besten behalten (öffnet / schließt die Zucht-Ansicht)" },
         { "Bred", "Gezüchtet" },
         { "Other", "Weitere" },
         { "3D space", "3D-Raum" },

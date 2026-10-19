@@ -608,6 +608,21 @@ void glyph (juce::Graphics& g, juce::Rectangle<float> r, Picto id, juce::Colour 
             g.drawLine (pc.x, pc.y - a, pc.x, pc.y + a, lw * 0.8f);
             break;
         }
+        // p51: BREED - two parents (rings) joined into one child (a filled dot) below them
+        case Picto::Breed:
+        {
+            const float pr = s * 0.42f;
+            const juce::Point<float> a (c.x - s * 0.62f, c.y - s * 0.52f), b (c.x + s * 0.62f, c.y - s * 0.52f), k (c.x, c.y + s * 0.62f);
+            g.drawEllipse (juce::Rectangle<float> (pr * 2.0f, pr * 2.0f).withCentre (a), lw * 0.8f);
+            g.drawEllipse (juce::Rectangle<float> (pr * 2.0f, pr * 2.0f).withCentre (b), lw * 0.8f);
+            p.startNewSubPath (a.x, a.y + pr);
+            p.quadraticTo (a.x, k.y - pr * 0.4f, k.x - pr * 0.9f, k.y - pr * 0.2f);
+            p.startNewSubPath (b.x, b.y + pr);
+            p.quadraticTo (b.x, k.y - pr * 0.4f, k.x + pr * 0.9f, k.y - pr * 0.2f);
+            g.strokePath (p, juce::PathStrokeType (lw * 0.8f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+            g.fillEllipse (juce::Rectangle<float> (pr * 1.9f, pr * 1.9f).withCentre (k));
+            break;
+        }
         default: break;
     }
 }

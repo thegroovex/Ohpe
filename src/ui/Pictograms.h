@@ -28,7 +28,9 @@ enum class Picto
     // p24: the isomorphic grid keyboard
     Grid,
     // p32: the settings key (header)
-    Settings
+    Settings,
+    // p51: the breeding key (header)
+    Breed
 };
 
 struct PictoState

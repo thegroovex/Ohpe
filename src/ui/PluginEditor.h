@@ -140,7 +140,7 @@ public:
     void setLanguage (i18n::Language lang);
     void showLibrary (bool show);
     void showProView (bool show);
-    /** p18: the breeding view (RANDOM held / right-clicked, the library's Breed button, MIDI "lib.breed").
+    /** p18: the breeding view (p51: the BREED key, the library's Breed button, MIDI "lib.breed").
         `libraryEntry` >= 0: that preset becomes parent B (A = the current sound) and a brood is bred at once. */
     void showBreeding (bool show, int libraryEntry = -1);
     bool breedingVisible() const { return breedView.isVisible(); }
@@ -218,6 +218,8 @@ public:
     ui::PictoKey& toStartTransportKey() { return toStartKey; }
     ui::PictoKey& loopTransportKey() { return loopKey; }
     ui::PictoKey& octaveDownKey() { return octDownKey; }
+    ui::PictoKey& breedingKey() { return breedKey; }   ///< p51
+    ui::PictoKey& randomSoundKey() { return randomKey; } ///< p51
     ui::PictoKey& octaveUpKey() { return octUpKey; }
     ui::PictoKey& engineKey (EngineType t) { return *engineKeys[(size_t) t]; }
     ui::PictoKey& modeKey (ui::Mode m) { return *modeKeys[(size_t) m]; }
@@ -311,6 +313,7 @@ private:
     ui::PictoKey gridKey { ui::Picto::Grid, "Grid" }; ///< p24
     ui::PictoKey libraryKey { ui::Picto::Library, "Library" };
     ui::PictoKey proKey { ui::Picto::Pro, "Pro" };
+    ui::PictoKey breedKey { ui::Picto::Breed, "BREED" }; ///< p51: opens / closes the breeding view (DE legend "ZUCHT")
     // p14: header round keys, performance wheels (left of the keyboard), glide (right of it)
     ui::PictoKey randomKey { ui::Picto::Random, "Random" };
     ui::PictoKey saveKey { ui::Picto::Save, "Save" };
@@ -352,7 +355,6 @@ private:
     ui::CpuMeter cpuMeter; ///< p35
     void refreshCpuMeter();
     int contentGenerationSeen = 0;
-    juce::uint32 randomPressedAt = 0; ///< p18: RANDOM held >= 450 ms opens the breeding view
     std::unique_ptr<breed::Audition> randomAudition; ///< p37: offline check / level of RANDOM sounds (created on first use)
     std::array<int, 3> breedRequestsSeen {};
     int tapeClearAllSeen = 0; ///< p38: MIDI / host presses of "tape.edit.clearall"

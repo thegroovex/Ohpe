@@ -5,7 +5,7 @@
 Ohpe's surface (p14): engine keys with the **LIFE** bar (left), the display (centre), mode keys (right), four encoders below the
 display, the **TRANSPORT** keys with the tape readout, the tempo, the metronome and the count-in (bottom left), the **OCTAVE** keys, **MIDI** and the keyboard readout (bottom right) and the
 keyboard row – **PITCH** and **MOD** wheels, a three-octave keyboard, **glide** mode and time. The header
-holds the **part selector**, the **preset strip**, the **LIBRARY** and **PRO** keys, **RANDOM** and **SAVE**,
+holds the **part selector**, the **preset strip**, the **LIBRARY**, **PRO** and **BREED** keys, **RANDOM** and **SAVE**,
 and the **settings** key (gear: language EN / DE, help, light / dark skin, MIDI, updates, about). Every function can be reached with the mouse and – through MIDI learn – from a controller.
 
 ![The plate](../images/ohpe-analog.png)
@@ -99,9 +99,11 @@ Every rolled sound is meant to be playable straight away:
   level down (a compressor first in its rack, say), the new sound plays about as loud as the sound it was
   rolled from.
 
-**Hold RANDOM** (or right-click it) to open **[breeding](BREEDING.md)**: cross two sounds, hear six children,
-keep the best and breed further. While the breeding view is open, RANDOM rolls a new parent B and SAVE stores
-the selected child in the library as a favourite.
+The **BREED** key (next to RANDOM; a click opens / closes the view, its light bar is lit while it is open) opens
+**[breeding](BREEDING.md)**: cross two sounds, hear six children, keep the best and breed further. RANDOM only
+rolls – holding or right-clicking it no longer opens breeding. While the breeding view is open, RANDOM rolls a new
+parent B and SAVE stores the selected child in the library as a favourite. Right-click BREED for MIDI learn of
+`lib.breed`.
 
 ![The breeding view](../images/ohpe-breeding.png)
 

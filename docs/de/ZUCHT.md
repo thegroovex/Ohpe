@@ -15,7 +15,7 @@ Favorit in der Bibliothek ab.
 
 | Wie | Ergebnis |
 |---|---|
-| **ZUFALL** halten (eine halbe Sekunde) oder rechts anklicken | öffnet die Zucht-Ansicht; Elternteil A = der aktuelle Klang |
+| **ZUCHT** in der Kopfzeile (neben ZUFALL) | öffnet / schließt die Zucht-Ansicht; Elternteil A = der aktuelle Klang; der Lichtbalken der Taste leuchtet, solange die Ansicht offen ist |
 | **ZÜCHTEN** in den Details der Bibliothek (Part-Presets) | schließt die Bibliothek (dein Klang kommt zurück), öffnet die Zucht mit A = aktueller Klang und B = diesem Preset und züchtet sofort |
 | MIDI: `lib.breed` | öffnet / schließt die Ansicht (MIDI-Lernen im MIDI-Menü, *Fernsteuerung*) |
 | MIDI: `lib.breed.go` / `lib.breed.next` | weiterzüchten / das nächste Kind hören |

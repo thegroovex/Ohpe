@@ -7,6 +7,16 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Breeding has its own header key, **BREED** (next to RANDOM, with LIBRARY and PRO): a click opens / closes the
+  breeding view, its light bar is lit while the view is open, right-click = MIDI learn of `lib.breed`. RANDOM only
+  rolls now – the hidden hold / right-click shortcut to breeding is gone (in the breeding view RANDOM still rolls a
+  new parent B). The preset strip is a little narrower to make room.
+- DE: Die Zucht hat eine eigene Taste in der Kopfzeile, **ZUCHT** (neben ZUFALL, bei BIBLIOTHEK und PRO): ein Klick
+  öffnet / schließt die Zucht-Ansicht, ihr Lichtbalken leuchtet, solange die Ansicht offen ist, Rechtsklick =
+  MIDI-Lernen von `lib.breed`. ZUFALL würfelt jetzt nur noch – das versteckte Halten / der Rechtsklick zur Zucht
+  entfällt (in der Zucht-Ansicht würfelt ZUFALL weiterhin einen neuen Elternteil B). Der Preset-Streifen ist dafür
+  etwas schmaler.
+
 ## 0.6.1 Preview – 2026-10-18
 
 [Notes / Hinweise](docs/release-notes/0.6.1.md)
