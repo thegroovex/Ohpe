@@ -817,8 +817,8 @@ const std::map<juce::String, juce::String>& table()
         { "Keyboard", "Tastatur" },
         { "Octave, grid keyboard, MIDI", "Oktave, Raster-Tastatur, MIDI" },
         { "Grid keyboard", "Raster-Tastatur" }, // p48
-        { "Same shape in every key; Fourths right +1 / up +5, Thirds +1 / +4, Whole Tones +2 / +5, In Key scale steps +1 / +3; MPE: slide = bend",
-          "Gleiche Form in jeder Tonart; Quarten rechts +1 / hoch +5, Terzen +1 / +4, Ganztöne +2 / +5, In Tonart Stufen +1 / +3; MPE: schieben = Bend" },
+        { "Same shape in every key; Fourths right +1 / up +5, Thirds +1 / +4, Whole Tones +2 / +5, Sequential +1 / +8; In Key = scale steps; MPE: slide = bend",
+          "Gleiche Form in jeder Tonart; Quarten rechts +1 / hoch +5, Terzen +1 / +4, Ganztöne +2 / +5, Sequenziell +1 / +8; Nur Tonart = Skalenstufen; MPE: schieben = Bend" },
         { "Wheels", "Räder" },
         { "Pitch bend and modulation", "Pitchbend und Modulation" },
         { "Portamento mode and time", "Portamento-Modus und -Zeit" },

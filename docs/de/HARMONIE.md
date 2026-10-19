@@ -38,7 +38,7 @@ Jeder Part hat **Folgen** (`harmony.pN.follow`):
 
 Gerastet wird auf den nächsten Ton (bei Gleichstand nach unten) – Live-Tasten, Host-MIDI und alle Sequenzer gleich.
 Der Ein-Finger-**Akkord** des Parts funktioniert weiter und baut seinen Akkord in der gemerkten Tonart. Noten eines
-Parts mit **MPE** behalten ihre Tonhöhe (Ausdruck je Note); dort hilft das Raster-Layout *In Tonart*.
+Parts mit **MPE** behalten ihre Tonhöhe (Ausdruck je Note); dort hilft das Raster mit *Nur Tonart*.
 
 ## Bedienelemente
 
@@ -49,7 +49,9 @@ Parts mit **MPE** behalten ihre Tonhöhe (Ausdruck je Note); dort hilft das Rast
 | **Halten** | `harmony.hold` | friert das Gedächtnis ein: Neue Noten ändern weder Akkord noch Tonart |
 | **Tonart übernehmen** | `harmony.take` | Auslöser: schreibt die gemerkte Tonart in die globale Tonart / Skala |
 | **Vergessen** | `harmony.clear` | Auslöser: vergisst Tonart, Akkord und Verlauf |
-| **Raster-Anordnung** | `harmony.kb.layout` | Quarten / Terzen / Ganztöne / In Tonart |
+| **Raster-Anordnung** | `harmony.kb.layout` | Quarten / Terzen / Ganztöne / Sequenziell |
+| **Raster nur Tonart** | `harmony.kb.inkey` | aus = Chromatisch (alle Töne; Töne außerhalb der Tonart dunkel, aber spielbar), an = Nur Tonart |
+| **Raster C fest** | `harmony.kb.fixed` | aus (ab Werk) = das Feld unten links ist der Grundton der Tonart, an = es ist C |
 
 Alle sind Host-Parameter: automatisierbar und per MIDI-Learn zuweisbar (Rechtsklick). Das Gedächtnis (Tonart,
 Akkord, Verlauf, Tonklassen-Gewichte) wird in Projekten und im Plug-in-Zustand gespeichert; Part-Presets tragen
@@ -61,7 +63,8 @@ LFO-Modus, fünfter Reiter **Harmonie**: die gemerkte **Tonart** und der **Akkor
 zwölf Balken für das Tonklassen-Gedächtnis ab dem Grundton der Tonart (Tonart-Töne hell, andere gedämpft,
 **Akkordtöne violett**, **gehaltene Töne grün**, der Grundton **gelb** markiert) und die **Verlaufs**-Chips. Die
 Leiste sagt, was das Hirn tut und ob der Edit-Part folgt. Softkeys: **Tonart übernehmen**, **Halten**,
-**Vergessen**. Regler: Folgen (Edit-Part), Gedächtnis, Halten, Raster-Anordnung.
+**Vergessen**. Regler: Seite *Harmonie* = Folgen (Edit-Part), Gedächtnis, Halten, Raster-Anordnung; Seite *Raster* =
+Raster-Anordnung, Nur Tonart / Chromatisch, C fest.
 
 ## Akkordnamen und die Tonart (p45)
 
@@ -99,11 +102,13 @@ Zwei Begriffe für unten: Ein **Halbton** ist der kleinste Schritt (C → Cis, d
 * **RASTER** zeigt das Raster an Stelle der Klaviertasten; noch einmal drücken zeigt wieder das Klavier. Ohpe merkt
   sich, was zu sehen war.
 * Es spielt den **Edit-Part** (den mit den Part-Tasten gewählten) und wechselt mit, wenn du einen anderen Part wählst.
-* **OKTAVE − / +** verschieben es wie die Klaviatur: Das Feld unten links ist das C der untersten Klavier-Oktave (ab
-  Werk C3; C0 … C7). Die Anzeige zeigt `RASTER` und den tiefsten und höchsten Ton des Rasters.
-* Die Anordnung ist der Parameter **Raster-Anordnung** (`harmony.kb.layout`): LFO-Modus, Ansicht **Harmonie**,
-  Regler-Seite *Harmonie*. Wie jeder Parameter ist er automatisierbar und per MIDI steuerbar. Er gilt global (für
-  alle Parts gleich).
+* **OKTAVE − / +** verschieben es wie die Klaviatur: Das Feld unten links ist der **Grundton der Tonart** in der
+  untersten Klavier-Oktave (ab Werk C3; C0 … C7) – mit **C fest** das C dieser Oktave. Die Anzeige zeigt `RASTER` und
+  den tiefsten und höchsten Ton des Rasters.
+* Drei Parameter stellen es ein, alle global (für alle Parts gleich), automatisierbar und per MIDI steuerbar:
+  **Raster-Anordnung** (`harmony.kb.layout`), **Raster nur Tonart** (`harmony.kb.inkey`) und **Raster C fest**
+  (`harmony.kb.fixed`). Am Bildschirm: LFO-Modus, Ansicht **Harmonie**, Regler-Seite *Raster* (die Anordnung neben den
+  beiden Schaltern).
 * Raster ausblenden, Part oder Oktave wechseln lässt alle gehaltenen Felder los (keine hängenden Noten).
 
 ### Die Felder lesen
@@ -121,14 +126,76 @@ Anschlagstärke: der untere Rand spielt leise (Velocity 56), der obere Rand voll
 
 ### Die vier Anordnungen
 
-Die Schritte, genau wie der Code sie rechnet (Reihe 1 = unterste Reihe, Spalte 1 = links):
+Die Schritte, genau wie der Code sie rechnet (Reihe 1 = unterste Reihe, Spalte 1 = links). **Chromatisch** zählt
+Halbtöne, **Nur Tonart** zählt Stufen der Skala der Tonart (siehe unten):
 
-| Anordnung | Ein Feld nach rechts | Eine Reihe nach oben | Umfang in der Werks-Oktave |
+| Anordnung | Chromatisch: rechts / hoch | Nur Tonart: rechts / hoch | Umfang (chromatisch, Werks-Oktave, Tonart C) |
 |---|---|---|---|
-| **Quarten** (ab Werk) | +1 Halbton | +5 Halbtöne (eine Quarte) | C3 – D6 |
-| **Terzen** | +1 Halbton | +4 Halbtöne (eine große Terz) | C3 – H5 |
-| **Ganztöne** | +2 Halbtöne (ein Ganzton) | +5 Halbtöne (eine Quarte) | C3 – Cis8 |
-| **In Tonart** | +1 Stufe der Skala der Tonart | +3 Stufen der Skala | C3 – G7 (C-Dur) |
+| **Quarten** (ab Werk) | +1 / +5 Halbtöne (eine Quarte) | +1 / +3 Skalenstufen | C3 – D6 |
+| **Terzen** | +1 / +4 Halbtöne (eine große Terz) | +1 / +2 Skalenstufen (eine Terz) | C3 – H5 |
+| **Ganztöne** | +2 / +5 Halbtöne | +1 / +3 Skalenstufen (jede Skalenstufe ist etwa ein Ganzton, Nur Tonart spielt also wie Quarten) | C3 – Cis8 |
+| **Sequenziell** | +1 / +8 Halbtöne: fortlaufende Reihen zu acht | +1 / +8 Skalenstufen | C3 – H6 |
+
+**Sequenziell** – die acht Pads einer Reihe gehen in der Reihe darüber weiter, wie beim Lesen einer Seite: das letzte
+Feld einer Reihe + 1 ist das erste Feld der nächsten. Jeder Ton ist leicht zu finden, Akkordformen ändern sich aber von
+Reihe zu Reihe.
+
+### Nur Tonart oder Chromatisch (jede Anordnung)
+
+**Raster nur Tonart** (`harmony.kb.inkey`) wirkt in jeder Anordnung:
+
+* **Chromatisch** (aus, ab Werk): alle Töne. Töne außerhalb der Tonart sind **dunkel, aber spielbar**; mit **Scale
+  Lock** sind sie auf den Pads auch stumm (auf dem Bildschirm rasten sie wie jeder Ton ein).
+* **Nur Tonart** (an): nur die Töne der Tonart, ein „falscher" Ton ist nicht möglich. Ein Feld nach rechts ist der
+  nächste Ton der Skala, eine Reihe nach oben überall gleich viele **Skalenstufen** (Quarten 3, Terzen 2, Sequenziell
+  8). In einer siebentönigen Tonart sind drei Stufen eine Quarte, nur von der vierten Stufe aus ein Tritonus (in C-Dur
+  F → H).
+* Eine chromatische Skala spielt Nur Tonart wie Chromatisch. Wechselt das Hirn die Tonart, beschriftet sich das Raster
+  sofort neu.
+* Die frühere Anordnung *In Tonart* ist jetzt **Quarten + Nur Tonart**; Projekte und Presets damit öffnen so.
+
+### Grundton fest oder C fest
+
+**Raster C fest** (`harmony.kb.fixed`):
+
+* **Aus (ab Werk)**: Das Feld unten links ist der **Grundton der aktuellen Tonart**, alle Reihen liegen relativ dazu.
+  Eine Akkordform spielt darum in **jeder Tonart** dieselbe Akkordstufe – einmal in C lernen, in Fis spielen, ohne die
+  Hand zu bewegen.
+* **An**: Das Feld unten links ist **C** (Nur Tonart: der erste Tonart-Ton auf oder über C) – wie in früheren Versionen.
+* **OKTAVE − / +** verschiebt das Raster in beiden Fällen um eine Oktave.
+
+Quarten + Nur Tonart in C-Dur (unten links ist C, mit und ohne C fest):
+
+```
+4 | E4     F4     G4     A4     H4     C5     D5     E5
+3 | H3     C4     D4     E4     F4     G4     A4     H4
+2 | F3     G3     A3     H3     C4     D4     E4     F4
+1 | C3     D3     E3     F3     G3     A3     H3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+Terzen + Nur Tonart und Sequenziell (chromatisch), C-Dur:
+
+```
+4 | H3     C4     D4     E4     F4     G4     A4     H4
+3 | G3     A3     H3     C4     D4     E4     F4     G4
+2 | E3     F3     G3     A3     H3     C4     D4     E4
+1 | C3     D3     E3     F3     G3     A3     H3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+```
+4 | C5     Cis5   D5     Dis5   E5     F5     Fis5   G5
+3 | E4     F4     Fis4   G4     Gis4   A4     Ais4   H4
+2 | Gis3   A3     Ais3   H3     C4     Cis4   D4     Dis4
+1 | C3     Cis3   D3     Dis3   E3     F3     Fis3   G3
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+Die chromatischen Bilder unten zeigen die Anordnungen in der Tonart C (Grundton C, C fest ändert dort nichts).
 
 **Quarten** – wie die tiefen Saiten von Bass oder Gitarre: Jede Reihe beginnt eine Quarte über der darunter.
 
@@ -160,27 +227,6 @@ höher) hält die anderen sechs Töne. Großer Umfang auf wenig Platz.
 3 | Ais3    C4     D4     E4    Fis4   Gis4   Ais4    C5
 2 |  F3     G3     A3     H3    Cis4   Dis4    F4     G4
 1 |  C3     D3     E3    Fis3   Gis3   Ais3    C4     D4
-  +--------------------------------------------------------
-      1      2      3      4      5      6      7      8   
-```
-
-**In Tonart** – nur die Töne der gemerkten Tonart, ein „falscher" Ton ist also nicht möglich. Ein Feld nach rechts ist
-der nächste Ton der Skala, eine Reihe nach oben sind drei Skalenstufen. Was daraus im Code folgt:
-
-* Das Feld unten links ist der **erste Tonart-Ton auf oder über dem C** der Oktave (in D-Dur: Cis3); der Grundton
-  liegt also nicht immer in der Ecke – such das fette Feld.
-* In einer siebentönigen Tonart sind drei Stufen überall eine **Quarte**, nur von der vierten Stufe aus ein Tritonus
-  (in C-Dur F → H). In einer fünftönigen Tonart (Pentatonik) sind drei Stufen mehr als eine Quarte.
-* Ist die Skala der Tonart *Chromatisch*, fällt In Tonart auf Halbtöne zurück: +1 nach rechts, +3 nach oben (eine
-  kleine Terz).
-* Wechselt das Hirn die Tonart, beschriftet sich das Raster sofort neu; In-Tonart-Felder spielen dann die Töne der
-  neuen Tonart.
-
-```
-4 |  E4     F4     G4     A4     H4     C5     D5     E5
-3 |  H3     C4     D4     E4     F4     G4     A4     H4
-2 |  F3     G3     A3     H3     C4     D4     E4     F4
-1 |  C3     D3     E3     F3     G3     A3     H3     C4
   +--------------------------------------------------------
       1      2      3      4      5      6      7      8   
 ```
@@ -278,7 +324,7 @@ Eine Reihe höher transponiert um das Intervall der Reihe (in Quarten eine Quart
 **Dieselben Akkorde in den anderen Anordnungen** (Abstand als *Felder rechts, Reihen hoch* vom Grundton; negativ =
 links):
 
-| Form | Quarten | Terzen | Ganztöne | In Tonart |
+| Form | Quarten | Terzen | Ganztöne | Quarten + Nur Tonart |
 |---|---|---|---|---|
 | Dur-Dreiklang | Terz (4, 0) oder (−1, 1), Quinte (2, 1) | Terz (0, 1), Quinte (3, 1) | Terz (2, 0), Quinte (1, 1) | Terz (2, 0), Quinte (1, 1) – Dur oder Moll, wie die Tonart es will |
 | Moll-Dreiklang | Terz (3, 0) oder (−2, 1), Quinte (2, 1) | Terz (3, 0) oder (−1, 1), Quinte (3, 1) | Terz (−1, 1), Quinte (1, 1) | dieselbe Form wie oben |
@@ -325,7 +371,7 @@ Ganztöne, Dur-Dreiklang (C – E – G) und Moll-Dreiklang (D – F – A):
       1      2      3      4      5      6      7      8   
 ```
 
-In Tonart ist die Tonleiter einfach eine Reihe von links nach rechts, und **eine** Dreiklang-Form spielt jeden Akkord
+Quarten + Nur Tonart: Die Tonleiter ist einfach eine Reihe von links nach rechts, und **eine** Dreiklang-Form spielt jeden Akkord
 der Tonart: ab C ist es C-Dur, ein Feld nach rechts D-Moll (D – F – A) – Dur oder Moll entscheidet die Tonart.
 
 ```
@@ -346,6 +392,155 @@ der Tonart: ab C ist es C-Dur, ein Feld nach rechts D-Moll (D – F – A) – D
       1      2      3      4      5      6      7      8   
 ```
 
+## Akkord-Leitfaden: Akkorde auf dem Raster spielen
+
+Dieser Leitfaden nutzt die einfachste Spielweise: **Quarten + Nur Tonart, C fest aus** (Nur Tonart einschalten;
+Quarten und C fest aus sind ab Werk eingestellt). Das Feld unten links ist immer der Grundton der Tonart, darum spielt
+jede Form unten in jeder Tonart dieselbe Akkordstufe. Versätze sind *Felder nach rechts, Reihen nach oben* ab dem
+Grundton-Feld des Akkords; die Bilder zeigen C-Dur (und a-Moll) in der Werks-Oktave, Felder in `[ ]` werden gedrückt.
+Dieselben Formen gelten auf dem Bildschirm-Raster und auf den Pads des Grid-Controllers (seine vier unteren Reihen sind
+die Reihen des Bildschirms).
+
+**Dreiklang – Grundton, 2 rechts, 1 rechts + 1 hoch.** Dur oder Moll entscheidet die Tonart: auf dem Grundton einer
+Dur-Tonart ein Dur-Dreiklang, auf dem Grundton einer Moll-Tonart ein Moll-Dreiklang.
+
+```
+4 | E4     F4     G4     A4     H4     C5     D5     E5
+3 | H3     C4     D4     E4     F4     G4     A4     H4
+2 | F3    [G3]    A3     H3     C4     D4     E4     F4
+1 |[C3]    D3    [E3]    F3     G3     A3     H3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+```
+4 | C5     D5     E5     F5     G5     A5     H5     C6
+3 | G4     A4     H4     C5     D5     E5     F5     G5
+2 | D4    [E4]    F4     G4     A4     H4     C5     D5
+1 |[A3]    H3    [C4]    D4     E4     F4     G4     A4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Jeder Akkord der Tonart mit einer Form.** Ein Feld nach rechts spielt die Form den nächsten Akkord der Tonart – in
+C-Dur: C, Dm, Em, F, G, Am, Hdim. Hier Dm:
+
+```
+4 | E4     F4     G4     A4     H4     C5     D5     E5
+3 | H3     C4     D4     E4     F4     G4     A4     H4
+2 | F3     G3    [A3]    H3     C4     D4     E4     F4
+1 | C3    [D3]    E3    [F3]    G3     A3     H3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Septakkord – Dreiklang + 3 rechts + 1 hoch.** Maj7 auf der 1. und 4. Stufe, Dominant-7 auf der 5., m7 auf der 2., 3.
+und 6., m7b5 auf der 7. – wieder entscheidet die Tonart.
+
+```
+4 | E4     F4     G4     A4     H4     C5     D5     E5
+3 | H3     C4     D4     E4     F4     G4     A4     H4
+2 | F3    [G3]    A3    [H3]    C4     D4     E4     F4
+1 |[C3]    D3    [E3]    F3     G3     A3     H3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Umkehrungen** – ein anderer Ton im Bass, derselbe Akkord. Erste Umkehrung (Terz im Bass): 2 rechts, 1 rechts + 1 hoch,
+4 rechts + 1 hoch. Zweite Umkehrung (Quinte im Bass): 1 rechts + 1 hoch, 4 rechts + 1 hoch, 3 rechts + 2 hoch.
+
+```
+4 | E4     F4     G4     A4     H4     C5     D5     E5
+3 | H3     C4     D4     E4     F4     G4     A4     H4
+2 | F3    [G3]    A3     H3    [C4]    D4     E4     F4
+1 | C3     D3    [E3]    F3     G3     A3     H3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+```
+4 | E4     F4     G4     A4     H4     C5     D5     E5
+3 | H3     C4     D4    [E4]    F4     G4     A4     H4
+2 | F3    [G3]    A3     H3    [C4]    D4     E4     F4
+1 | C3     D3     E3     F3     G3     A3     H3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Powerchord – Grundton, 1 rechts + 1 hoch (Quinte), das Feld darüber (Oktave).** In Nur Tonart ist die Quinte von
+der 7. Stufe vermindert (H – F in C-Dur); chromatisch gespielt ist sie überall rein.
+
+```
+4 | E4     F4     G4     A4     H4     C5     D5     E5
+3 | H3    [C4]    D4     E4     F4     G4     A4     H4
+2 | F3    [G3]    A3     H3     C4     D4     E4     F4
+1 |[C3]    D3     E3     F3     G3     A3     H3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Oktave – 1 rechts + 2 hoch** (auch 4 rechts + 1 hoch oder 7 rechts).
+
+```
+4 | E4     F4     G4     A4     H4     C5     D5     E5
+3 | H3    [C4]    D4     E4     F4     G4     A4     H4
+2 | F3     G3     A3     H3     C4     D4     E4     F4
+1 |[C3]    D3     E3     F3     G3     A3     H3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Chromatische Formen (Quarten, Nur Tonart aus).** Jeder Akkordtyp hat seine feste Form; die Tonart ändert sie nicht:
+
+| Akkord | Versätze ab dem Grundton |
+|---|---|
+| Dur | (4, 0), (2, 1) |
+| Moll | (3, 0), (2, 1) |
+| Dominant-7 | (4, 0), (2, 1), (0, 2) |
+| Maj7 | (4, 0), (2, 1), (1, 2) |
+
+```
+4 | Dis4   E4     F4     Fis4   G4     Gis4   A4     Ais4
+3 | Ais3   H3     C4     Cis4   D4     Dis4   E4     F4
+2 | F3     Fis3  [G3]    Gis3   A3     Ais3   H3     C4
+1 |[C3]    Cis3   D3     Dis3  [E3]    F3     Fis3   G3
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+```
+4 | Dis4   E4     F4     Fis4   G4     Gis4   A4     Ais4
+3 | Ais3   H3     C4     Cis4   D4     Dis4   E4     F4
+2 | F3     Fis3  [G3]    Gis3   A3     Ais3   H3     C4
+1 |[C3]    Cis3   D3    [Dis3]  E3     F3     Fis3   G3
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+```
+4 | Dis4   E4     F4     Fis4   G4     Gis4   A4     Ais4
+3 |[Ais3]  H3     C4     Cis4   D4     Dis4   E4     F4
+2 | F3     Fis3  [G3]    Gis3   A3     Ais3   H3     C4
+1 |[C3]    Cis3   D3     Dis3  [E3]    F3     Fis3   G3
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+```
+4 | Dis4   E4     F4     Fis4   G4     Gis4   A4     Ais4
+3 | Ais3  [H3]    C4     Cis4   D4     Dis4   E4     F4
+2 | F3     Fis3  [G3]    Gis3   A3     Ais3   H3     C4
+1 |[C3]    Cis3   D3     Dis3  [E3]    F3     Fis3   G3
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Hören, was du spielst.** Solange Töne klingen, benennen die Harmonie-Ansicht und die Stimmen-Zeile des Displays den
+Akkord live (Septakkorde, Umkehrungen als Slash-Akkorde, siehe [Akkordnamen und die Tonart](#akkordnamen-und-die-tonart-p45));
+das **Akkord-Gedächtnis** des Hirns markiert die Töne des gemerkten Akkords mit einem violetten Balken auf dem
+Bildschirm und gedimmt grün auf den Pads – so findest du die Töne des nächsten Akkords leicht. Die Bilder werden aus
+dem Code der Anordnungen erzeugt (`tools/docs/grid_diagrams.py`).
+
 ### Spielen mit MPE
 
 Was das Raster sendet, hängt davon ab, ob für den Edit-Part **MPE** an ist (`pN.mpe`, siehe [MIDI](MIDI.md#mpe-midi-polyphonic-expression)).
@@ -355,7 +550,7 @@ Was das Raster sendet, hängt davon ab, ob für den Edit-Part **MPE** an ist (`p
 * Jede Berührung bekommt einen freien **Mitgliedskanal** (2 – 16, reihum). Sie beginnt mit Bend in der Mitte und
   Slide auf 64.
 * **Seitlich schieben = Pitchbend** nur dieser Note. Der Bend folgt den Feldern: eine Feldbreite biegt um den Schritt
-  der Anordnung nach rechts – 1 Halbton in Quarten und Terzen, 2 in Ganztönen, etwa 1,7 (12 / 7) in In Tonart. Er
+  der Anordnung nach rechts – 1 Halbton in Quarten und Terzen, 2 in Ganztönen, etwa 1,7 (12 / 7) mit Nur Tonart. Er
   geht als 14-Bit-Pitchbend hinaus, skaliert mit dem **MPE-Bend-Bereich** des Parts (`pN.mpe.bend`, ab Werk 48
   Halbtöne), und endet am Ende dieses Bereichs. Die Note bleibt die angeschlagene; Loslassen beendet sie.
 * **Hoch / runter = Slide** (CC 74, Mitte 64): anderthalb Feldhöhen nach oben erreichen 127, nach unten 0. Der Part
@@ -373,7 +568,7 @@ Klaviertasten geht das Raster nicht an den MIDI-Ausgang.
 
 ### Hilfe in der App
 
-**Einstellungen > Hilfe > Raster-Tastatur** fasst diese Seite zusammen (Anordnungen, Formen, Felder, MPE). Mit dem
+**Einstellungen > Hilfe > Raster-Tastatur** fasst diese Seite zusammen (Anordnungen, Nur Tonart / Chromatisch, C fest, Akkordformen, Felder, MPE). Mit dem
 **Hilfe-Overlay** (Einstellungen > Allgemein oder **F1**) und sichtbarem Raster nennt eine Zeile über der Tastatur die
 Schritte jeder Anordnung.
 
@@ -384,8 +579,9 @@ Schritte jeder Anordnung.
 ### Auf einem Grid-Controller
 
 **Grid-Controller (Profil 1)** (Standalone-App und Plug-in, Einstellungen > Controller) bringt dieses Raster auf einen
-externen 8 × 8-Pad-Controller: **dieselben Anordnungen** (die Taste Scales schaltet sie weiter), **derselbe Ton** für
-dieselbe Spalte und Reihe ab demselben tiefsten C (die vier unteren Pad-Reihen sind die vier Reihen des
+externen 8 × 8-Pad-Controller: **dieselben Anordnungen** (Scales kurz drücken schaltet sie weiter; Scales halten zeigt
+Anordnung, Nur Tonart / Chromatisch, C fest, Grundton und Skala im Display, die oberen Tasten wählen), **derselbe Ton**
+für dieselbe Spalte und Reihe ab demselben Feld unten links (die vier unteren Pad-Reihen sind die vier Reihen des
 Bildschirm-Rasters), **dieselbe Tonart** mit **Scale Lock** (andere Töne dunkel und stumm), der Grundton leuchtet
 **bernstein**, Tonart-Töne **gelb**, Akkordtöne **grün (gedimmt)**, gehaltene Pads **grün**, und **Oktave − / +**
 verschiebt Pads und Bildschirm-Raster gemeinsam. Anschlag und Druck spielen den Edit-Part (MPE: ein Mitgliedskanal je

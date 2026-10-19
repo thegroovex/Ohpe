@@ -1168,7 +1168,7 @@ void OhpeEditor::refreshHelpOverlay()
     add (designArea ("settingsKey").expanded (2.0f), "Settings", "Language, help, skin, MIDI");
     if (grid.isVisible()) // p48: the grid keyboard's steps in one line (docs: HARMONY.md / HARMONIE.md)
         add (designArea ("keyboard"), "Grid keyboard",
-             "Same shape in every key; Fourths right +1 / up +5, Thirds +1 / +4, Whole Tones +2 / +5, In Key scale steps +1 / +3; MPE: slide = bend");
+             "Same shape in every key; Fourths right +1 / up +5, Thirds +1 / +4, Whole Tones +2 / +5, Sequential +1 / +8; In Key = scale steps; MPE: slide = bend");
     helpOverlay.setItems (std::move (items));
     const bool show = userSettings->get().helpOverlay && ! overlayOpen();
     if (helpOverlay.isVisible() != show) helpOverlay.setVisible (show);
