@@ -610,7 +610,9 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
             g.setColour (colour::displayDim);
             g.setFont (labelFont (u * 1.3f));
             g.drawFittedText (tr ("In a plug-in the host program chooses the MIDI inputs and sends them to Ohpe. Each part plays the channel set above."),
-                              juce::Rectangle<float> (x, yy, half, u * 7.0f).toNearestInt(), juce::Justification::topLeft, 3, 0.9f);
+                              juce::Rectangle<float> (x, yy, half, u * 3.6f).toNearestInt(), juce::Justification::topLeft, 2, 0.9f);
+            // p49: the plug-in's controller section (three rows) sits here, below the host's MIDI inputs
+            if (! standalone && gridCtl != nullptr) paintController (g, { x, yy + u * 4.2f, half, u * 2.0f + row * 3.0f });
         }
     }
     // right: clock and sync
@@ -637,7 +639,7 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
                  [this, sm] { setPlain (Core::Ids::syncSmoothing, juce::jlimit (0.0f, 1.0f, std::round (sm * 10.0f - 1.0f) / 10.0f)); },
                  [this, sm] { setPlain (Core::Ids::syncSmoothing, juce::jlimit (0.0f, 1.0f, std::round (sm * 10.0f + 1.0f) / 10.0f)); });
         yy += row + u * 1.0f;
-        paintController (g, { x, yy, half, u * 2.0f + row * (standalone ? 2.0f : 3.0f) }); // p46 (p49: plug-in: a third row)
+        if (standalone || gridCtl == nullptr) paintController (g, { x, yy, half, u * 2.0f + row * 2.0f }); // p46 (p49: plug-in: left)
     }
 }
 
