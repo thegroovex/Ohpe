@@ -7,6 +7,13 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+## 0.6.4 Preview – 2026-10-20
+
+[Notes / Hinweise](docs/release-notes/0.6.4.md)
+
+- EN: Grid keyboard layouts Sequential, In Key / Chromatic and Fixed C with a chord guide; Grid-Controller grid options on Scales, many more buttons and a browse mode on its display, sustain pedal in its pedal jack; arpeggiator held by sustain / sostenuto; smoother FX editor.
+- DE: Raster-Anordnungen Sequenziell, Nur Tonart / Chromatisch und C fest mit Akkord-Leitfaden; Grid-Controller mit Raster-Optionen auf Scales, vielen weiteren Tasten und Bibliotheks-Modus im Display, Haltepedal an seiner Pedalbuchse; Arpeggiator von Sustain / Sostenuto gehalten; flüssigerer FX-Editor.
+
 - EN: Arpeggiator (p60): the sustain pedal (CC 64, from MIDI, host, grid controller or an MPE master channel) now
   holds the arpeggio's notes – released keys stay in the pattern until pedal up, keys pressed meanwhile are added;
   sostenuto (CC 66) holds only the keys down when pressed; pedal up with no key held stops the arpeggio cleanly.

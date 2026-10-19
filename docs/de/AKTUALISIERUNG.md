@@ -7,7 +7,7 @@ Ohpe kann eine neue Version selbst finden, laden und öffnen – in der Standalo
 
 ## Die Update-Ansicht öffnen
 
-Ein Klick auf die **Versionsbeschriftung** über dem Schriftzug (z. B. `V0.6.3`) oder auf den Schriftzug selbst. Gibt es
+Ein Klick auf die **Versionsbeschriftung** über dem Schriftzug (z. B. `V0.6.4`) oder auf den Schriftzug selbst. Gibt es
 eine neuere Version, zeigt die Beschriftung einen kleinen **gelben Leuchtbalken** und `UPDATE 0.7.0`. **Esc** oder
 **SCHLIESSEN** schließt die Ansicht; die Bibliothek, die Pro-Ansicht oder die Zucht schließen sie ebenfalls.
 
