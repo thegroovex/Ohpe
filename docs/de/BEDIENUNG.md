@@ -705,6 +705,13 @@ Clock und Sync), **MIDI-Learn** (alle Zuweisungen: bearbeiten, löschen, alle l�
 
 Einzelheiten: [Einstellungen](EINSTELLUNGEN.md).
 
+## Bibliotheks-Suche (p54)
+
+Das Suchfeld der Bibliothek prüft jedes Wort (UND) gegen Name, Kategorie, Tags (**MPE**, **Fingerboard**, **Morph**),
+Engine, Autor, Paket, Bank, Art, Favorit und Bewertung, deutsch und englisch, unabhängig von Groß-/Kleinschreibung und
+Umlauten (`MPE`, `bass mpe`, `fläche`). Die Schnell-Chips **MPE / Fingerboard / Morph** unter den Kategorien zeigen
+Presets, die alle gewählten tragen. Einzelheiten: [Preset-Bibliothek](PRESETS.md).
+
 ## Inhaltspakete
 
 `.ohpepack`-Dateien bringen Preset-Pakete: **PAKET INSTALLIEREN …** (Einstellungen › Aktualisierung, Einstellungen ›

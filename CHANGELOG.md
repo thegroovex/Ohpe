@@ -26,6 +26,14 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   die MIDI-Seite der Standalone-App zeigte den Plug-in-Text und der Controller spielte zusätzlich als normaler
   MIDI-Eingang (Berührungs-Noten von Reglern / Strip erreichten den Klang und lösten gehaltene Töne neu aus);
   ausgeschaltete Chips sahen gewählt aus; der Controller-Bereich war abgeschnitten.
+- EN: Library search (p54): every word of the search must match (AND) – name, category and tags in English and German
+  (singular, umlauts and "ae" spellings work: Pad, Fläche, Flaeche), MPE, Fingerboard / MPE-HD, Morph, engine, author,
+  comment, content pack, bank, kind, favourite and rating (`***`). New quick chips MPE / Fingerboard / Morph (all
+  selected must match, combine with the categories). No new host parameters.
+- DE: Bibliotheks-Suche (p54): Jedes Wort der Suche muss passen (UND) – Name, Kategorie und Tags deutsch und englisch
+  (Einzahl, Umlaute und „ae"-Schreibweisen gehen: Pad, Fläche, Flaeche), MPE, Fingerboard / MPE-HD, Morph, Engine, Autor,
+  Kommentar, Inhaltspaket, Bank, Art, Favorit und Bewertung (`***`). Neue Schnell-Chips MPE / Fingerboard / Morph (alle
+  gewählten müssen passen, kombinierbar mit den Kategorien). Keine neuen Host-Parameter.
 
 ## 0.6.2 Preview – 2026-10-19
 

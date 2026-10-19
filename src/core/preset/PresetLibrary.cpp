@@ -5,6 +5,7 @@
 #include "../engines/EngineFactory.h"
 
 #include <algorithm>
+#include <map>
 #include <nlohmann/json.hpp>
 #include <set>
 #include <sstream>
@@ -47,14 +48,101 @@ std::string engineName (const std::string& id)
 }
 } // namespace
 
-bool matchesText (const Entry& e, const std::string& text)
+std::string foldForSearch (const std::string& s)
 {
-    std::istringstream words (fold (text));
+    std::string r;
+    r.reserve (s.size());
+    for (size_t i = 0; i < s.size(); ++i)
+    {
+        const auto c = (unsigned char) s[i];
+        if (c == 0xc3 && i + 1 < s.size())
+        {
+            const auto n = (unsigned char) s[i + 1];
+            switch (n)
+            {
+                case 0x84: case 0xa4: r += 'a'; ++i; continue; // Ä ä
+                case 0x96: case 0xb6: r += 'o'; ++i; continue; // Ö ö
+                case 0x9c: case 0xbc: r += 'u'; ++i; continue; // Ü ü
+                case 0x9f: r += "ss"; ++i; continue;           // ß
+                default: break;
+            }
+        }
+        const char lc = (char) ((c >= 'A' && c <= 'Z') ? c + 32 : c);
+        // "ae" / "oe" / "ue" spell the umlauts too ("Flaeche" = "Fläche"); folded the same way on both sides
+        if (lc == 'e' && ! r.empty() && (r.back() == 'a' || r.back() == 'o' || r.back() == 'u')) continue;
+        r += lc;
+    }
+    return r;
+}
+
+const std::vector<Category>& quickTags()
+{
+    // append-only: free tags of the factory presets with their own chip
+    static const std::vector<Category> list = {
+        { "MPE", "MPE" },
+        { "Fingerboard", "Fingerboard" },
+        { "Morph", "Morph" },
+    };
+    return list;
+}
+
+std::vector<std::string> usedQuickTags (const std::vector<Entry>& entries)
+{
+    std::vector<std::string> r;
+    for (const auto& q : quickTags())
+        for (const auto& e : entries)
+            if (std::find (e.meta.tags.begin(), e.meta.tags.end(), q.key) != e.meta.tags.end())
+            {
+                r.push_back (q.key);
+                break;
+            }
+    return r;
+}
+
+namespace
+{
+/** p54: extra search words for tags (English / German / spellings), so "pad", "fläche", "expressive" find them. */
+const char* tagAliases (const std::string& tag)
+{
+    static const std::map<std::string, const char*> aliases = {
+        { "Pads", "pad fläche flaechen area" },   { "Keys", "key taste tasteninstrument" }, { "Plucks", "pluck gezupft zupf" },
+        { "Leads", "lead solo" },                 { "Textures", "texture textur atmo" },    { "Vocal", "voice vox stimme vokal" },
+        { "Drums", "drum perc percussion schlagzeug trommel" }, { "FX", "effect effekt sfx" }, { "Arp", "arpeggio arpeggiator" },
+        { "Piano", "klavier e-piano epiano" },    { "3D", "binaural spatial raum" },        { "Boom", "kick sub" },
+        { "MPE", "mpe expressive expression ausdruck polyphonic aftertouch" },
+        { "Fingerboard", "fingerboard mpe-hd mpe hd griffbrett" },
+        { "Morph", "morph morphing" },
+    };
+    const auto it = aliases.find (tag);
+    return it != aliases.end() ? it->second : "";
+}
+} // namespace
+
+std::string searchText (const Entry& e)
+{
     std::string hay = e.meta.name + " " + e.meta.author + " " + e.meta.comment + " " + e.meta.engine + " " + engineName (e.meta.engine);
-    for (const auto& t : e.meta.tags) hay += " " + t;
+    for (const auto& t : e.meta.tags) hay += " " + t + " " + tagAliases (t);
     for (const auto& c : categories())
         if (std::find (e.meta.tags.begin(), e.meta.tags.end(), c.key) != e.meta.tags.end()) hay += std::string (" ") + c.nameDe;
-    hay = fold (hay);
+    for (const auto& c : quickTags())
+        if (std::find (e.meta.tags.begin(), e.meta.tags.end(), c.key) != e.meta.tags.end()) hay += std::string (" ") + c.nameDe;
+    if (! e.pack.empty()) hay += " pack paket " + e.pack + " " + e.packName;
+    hay += e.factory ? (e.pack.empty() ? " factory werk" : "") : " user eigene benutzer";
+    hay += e.meta.kind == Kind::Project ? " project projekt" : " part";
+    if (e.favourite) hay += " favourite favorite favorit fav \xe2\x98\x85";
+    if (e.rating > 0)
+    {
+        hay += " ";
+        for (int s = 0; s < e.rating; ++s) hay += "*";
+        hay += " " + std::to_string (e.rating) + "star " + std::to_string (e.rating) + "stern";
+    }
+    return foldForSearch (hay);
+}
+
+bool matchesText (const Entry& e, const std::string& text)
+{
+    std::istringstream words (foldForSearch (text));
+    const auto hay = searchText (e);
     std::string w;
     while (words >> w)
         if (hay.find (w) == std::string::npos) return false;
@@ -77,6 +165,8 @@ bool matches (const Entry& e, const Filter& f)
             any = any || std::find (e.meta.tags.begin(), e.meta.tags.end(), t) != e.meta.tags.end();
         if (! any) return false;
     }
+    for (const auto& t : f.required)
+        if (std::find (e.meta.tags.begin(), e.meta.tags.end(), t) == e.meta.tags.end()) return false;
     return f.text.empty() || matchesText (e, f.text);
 }
 

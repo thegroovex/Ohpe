@@ -1318,6 +1318,14 @@ int main (int argc, char* argv[])
         lib.showSavePanel (false);
         lib.toggleTag ("Pads");
         lib.toggleTag ("Keys");
+        // p54: the search across categories and tags - "MPE" with the Pads category (German: Flächen)
+        lib.setSearchText ("MPE");
+        lib.toggleTag ("Pads");
+        if (lib.numRows() > 0) lib.selectRow (0);
+        e.advanceAnimation (0.2f);
+        save (e, dir.getChildFile ("ohpe-library-search" + suffix + ".png"));
+        lib.toggleTag ("Pads");
+        lib.setSearchText ({});
         e.showLibrary (false);
     }
     return 0;

@@ -672,6 +672,13 @@ clear, clear all, map files), **Controller** (the [grid controller](CONTROLLER.m
 
 Details: [Settings](SETTINGS.md).
 
+## Library search (p54)
+
+The library's search field matches every word (AND) against name, category, tags (**MPE**, **Fingerboard**, **Morph**),
+engine, author, pack, bank, kind, favourite and rating, in English and German, regardless of case and umlauts
+(`MPE`, `bass mpe`, `fläche`). The quick chips **MPE / Fingerboard / Morph** under the categories show presets that carry
+all selected ones. Details: [Preset library](PRESETS.md).
+
 ## Content packs
 
 `.ohpepack` files add preset packs: **INSTALL PACK …** (Settings › Updates, Settings › Content packs, the library's

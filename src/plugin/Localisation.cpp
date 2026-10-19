@@ -383,6 +383,7 @@ const std::map<juce::String, juce::String>& table()
         { "Save preset", "Preset speichern" },
         { "Scale & MPE", "Skala & MPE" },
         { "Search", "Suchen" },
+        { "Search: name, category, MPE, engine ...", "Suchen: Name, Kategorie, MPE, Engine ..." }, // p54
         { "Select a preset to hear it. Keep closes the library with it, Cancel goes back.", "Preset auswählen, um es zu hören. Behalten schließt die Bibliothek damit, Abbrechen geht zurück." },
         { "Shift-tap: edit and lock parameters", "Shift-Tippen: bearbeiten und Parameter locken" },
         { "Sort", "Sortieren" },

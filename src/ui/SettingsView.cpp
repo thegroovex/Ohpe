@@ -123,8 +123,10 @@ const HelpTopic helpTopics[] = {
       "Die ganze Anleitung mit Bildern: Harmonie in der Dokumentation." },
     { "Presets and library", "Presets und Bibliothek",
       "The library sorts the presets by category (Bass, Keys, Pads, Drums, Plucks, FX ...). Click a tag to filter, double-click a preset to load it into the edit part.\n\n"
+      "Search: every word must match - name, category, tags like MPE or Fingerboard, engine, author, pack, favourite (e.g. \"bass mpe\"). The chips MPE, Fingerboard and Morph show presets that carry all selected ones.\n\n"
       "Your own presets are kept in your user folder and never overwritten by updates.",
       "Die Bibliothek sortiert die Presets nach Kategorien (Bass, Keys, Pads, Drums, Plucks, FX ...). Ein Tag filtert, Doppelklick lädt ein Preset in den Edit-Part.\n\n"
+      "Suchen: Jedes Wort muss passen - Name, Kategorie, Tags wie MPE oder Fingerboard, Engine, Autor, Paket, Favorit (z. B. \"fläche mpe\"). Die Chips MPE, Fingerboard und Morph zeigen Presets, die alle gewählten tragen.\n\n"
       "Eigene Presets liegen in deinem Benutzerordner und werden von Updates nie überschrieben." },
     { "Settings and night skin", "Einstellungen und Nachtmodus",
       "Settings are saved for you on this computer - not in projects or presets - and apply to every Ohpe you open.\n\n"
