@@ -7,6 +7,16 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Arpeggiator (p60): the sustain pedal (CC 64, from MIDI, host, grid controller or an MPE master channel) now
+  holds the arpeggio's notes – released keys stay in the pattern until pedal up, keys pressed meanwhile are added;
+  sostenuto (CC 66) holds only the keys down when pressed; pedal up with no key held stops the arpeggio cleanly.
+  The pedal used to reach only the part's voices, so the arpeggio stopped with the keys while its notes smeared.
+  With Latch on, keys under the pedal add to the latched set.
+- DE: Arpeggiator (p60): das Haltepedal (CC 64, von MIDI, Host, Grid-Controller oder einem MPE-Master-Kanal) hält
+  jetzt die Noten des Arpeggios – losgelassene Tasten bleiben bis Pedal hoch im Muster, in der Zeit gedrückte kommen
+  dazu; Sostenuto (CC 66) hält nur die beim Treten gedrückten Tasten; Pedal hoch ohne gehaltene Taste stoppt das
+  Arpeggio sauber. Das Pedal erreichte vorher nur die Stimmen des Parts: das Arpeggio stoppte mit den Tasten, seine
+  Noten verschmierten. Mit Halten ergänzen Tasten unter dem Pedal den gehaltenen Satz.
 - EN: FX editor: the picture now follows encoder, MIDI and host changes smoothly (it redrew only by chance before); curves are cached; long parameter names fit the bar list; German EQ terms use the studio words (Low Shelf, High Shelf, Q, Low Cut, High Cut).
 - DE: FX-Editor: das Bild folgt Encoder-, MIDI- und Host-Änderungen jetzt flüssig (vorher nur zufällig neu gezeichnet); Kurven zwischengespeichert; lange Parameternamen passen in die Balkenliste; deutsche EQ-Begriffe wie im Studio (Low Shelf, High Shelf, Q, Low Cut, High Cut).
 - EN: Grid controller (p58): a sustain pedal in the controller's pedal jack now holds notes (CC 64 sustain, CC 66

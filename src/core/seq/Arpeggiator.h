@@ -18,6 +18,14 @@ namespace ohpe
     a host); while it is stopped the arpeggiator runs free at the current tempo, starting
     exactly on the first key. Latch keeps the notes after the keys are released; the next key
     pressed with no key held starts a new set.
+
+    p60 pedals (CC 64 / CC 66 given with noteInput, from every input that plays the target part):
+    sustain keeps released keys in the pattern until the pedal comes up, keys pressed meanwhile are
+    added; sostenuto keeps only the keys that were down when it went down. Pedal up removes every
+    key no longer physically held; with none left the arpeggio ends (its last note-off still goes
+    out). With Latch on the set is kept anyway; while sustain is down a new key adds to the
+    latched set instead of starting a new one. The pedals reach the arpeggiator, not the part's
+    voices (they would smear the arpeggio's own notes).
 */
 class Arpeggiator final : public ISequencer
 {
@@ -47,12 +55,19 @@ public:
     bool enabled() const noexcept { return on; }
     int targetPart() const noexcept { return part; }
     int heldCount() const noexcept { return numHeld; }
+    bool sustainDown() const noexcept { return sustain; }     ///< p60
+    bool sostenutoDown() const noexcept { return sostenuto; } ///< p60
+    /** p60: true for the pedal controllers the arpeggiator takes (CC 64 sustain, CC 66 sostenuto). */
+    static bool isPedal (const MidiEvent& e) noexcept { return e.isController() && (e.data1 == 64 || e.data1 == 66); }
 
 private:
     struct Held { int note; int velocity; };
     void applyInput (const MidiEvent& e) noexcept;
     void playStep (int64_t time, double samplesPerStep) noexcept;
     int buildSorted (std::array<Held, maxHeld>& out) const noexcept;
+    bool keeps (int note) const noexcept; ///< p60: a released key stays in the set (latch / pedal)
+    void dropReleased() noexcept;         ///< p60: removes the keys no longer held by a finger or a pedal
+    void clearPedals() noexcept;
 
     bool on = false, latch = false;
     int part = 3, mode = Up, octaves = 1, rate = seq::R1_16;
@@ -63,6 +78,8 @@ private:
     int numHeld = 0;
     std::array<bool, 128> physical {};  ///< keys physically down
     int numPhysical = 0;
+    bool sustain = false, sostenuto = false; ///< p60: CC 64 / CC 66 down
+    std::array<bool, 128> sostLatched {};    ///< p60: keys that were down when sostenuto went down
 
     std::array<MidiEvent, 256> inputs {};
     int numInputs = 0;

@@ -32,6 +32,7 @@ void Arpeggiator::reset() noexcept
     numHeld = 0;
     physical.fill (false);
     numPhysical = 0;
+    clearPedals();
     numInputs = 0;
     sampleClock = 0;
     stepCount = 0;
@@ -54,8 +55,9 @@ void Arpeggiator::setParam (int i, float v) noexcept
         case Latch:
         {
             const bool l = v >= 0.5f;
-            if (latch && ! l && numPhysical == 0) numHeld = 0; // unlatch with no key down: the set ends
+            const bool unlatch = latch && ! l && numPhysical == 0;
             latch = l;
+            if (unlatch) dropReleased(); // unlatch with no key down: the set ends (p60: pedal-held keys stay)
             break;
         }
         default: break;
@@ -73,17 +75,58 @@ void Arpeggiator::releaseAll() noexcept
     numHeld = 0;
     physical.fill (false);
     numPhysical = 0;
+    clearPedals(); // p60: a pedal still down holds nothing of the old set
     numInputs = 0;
     freeRunning = false;
     position.store (-1, std::memory_order_relaxed);
 }
 
+void Arpeggiator::clearPedals() noexcept
+{
+    sustain = sostenuto = false;
+    sostLatched.fill (false);
+}
+
+bool Arpeggiator::keeps (int note) const noexcept
+{
+    return latch || sustain || (sostenuto && sostLatched[(size_t) (note & 0x7f)]);
+}
+
+void Arpeggiator::dropReleased() noexcept
+{
+    int k = 0;
+    for (int i = 0; i < numHeld; ++i)
+    {
+        const int n = held[(size_t) i].note;
+        if (physical[(size_t) (n & 0x7f)] || keeps (n)) held[(size_t) k++] = held[(size_t) i];
+    }
+    numHeld = k; // none left: process() ends the arpeggio, the queued note-offs still go out
+}
+
 void Arpeggiator::applyInput (const MidiEvent& e) noexcept
 {
-    const int note = e.data1;
+    if (isPedal (e)) // p60
+    {
+        const bool down = e.data2 >= 64;
+        if (e.data1 == 64)
+        {
+            if (sustain == down) return;
+            sustain = down;
+        }
+        else
+        {
+            if (sostenuto == down) return;
+            sostenuto = down;
+            if (down) sostLatched = physical; // only the keys down now
+            else sostLatched.fill (false);
+        }
+        if (! down) dropReleased();
+        return;
+    }
+    const int note = e.data1 & 0x7f;
     if (e.isNoteOn())
     {
-        if (numPhysical == 0 && latch) numHeld = 0; // new set after a latched one
+        if (numPhysical == 0 && latch && ! sustain) numHeld = 0; // new set after a latched one (p60: sustain adds)
         if (! physical[(size_t) note]) { physical[(size_t) note] = true; ++numPhysical; }
         for (int i = 0; i < numHeld; ++i)
             if (held[(size_t) i].note == note) { held[(size_t) i].velocity = e.data2; return; }
@@ -93,7 +136,7 @@ void Arpeggiator::applyInput (const MidiEvent& e) noexcept
     else if (e.isNoteOff())
     {
         if (physical[(size_t) note]) { physical[(size_t) note] = false; --numPhysical; }
-        if (latch) return;
+        if (keeps (note)) return; // latch, p60: sustain / sostenuto
         for (int i = 0; i < numHeld; ++i)
             if (held[(size_t) i].note == note)
             {
