@@ -1245,6 +1245,7 @@ void FxEditor::rebuild()
     {
         if (proc.parameter (juce::String (id)) == nullptr) continue;
         auto b = std::make_unique<ParamBar> (proc, juce::String (id), id == pre + "type" ? colour::displayText : edit());
+        if (const auto* d = descOf (proc.core(), id)) b->setLabel (modfx::compactName (id, d->nameEn, d->nameDe)); // "Band 2 Freq"
         addAndMakeVisible (*b);
         bars.push_back (std::move (b));
     }
