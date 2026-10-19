@@ -558,6 +558,7 @@ TEST_CASE ("p58 grid controller: the pedal jack's sustain (CC 64) holds pad note
         CHECK (g::decode (0xb0, 64, 127).kind == g::Input::Pedal);
         CHECK (g::decode (0xb0, 66, 127).kind == g::Input::Pedal);
     }
+}
 
 // ---------------------------------------------------------------------------------------------------- p59
 TEST_CASE ("p59 grid controller: Scales tap / hold - the grid options on the display, the upper row selects them")
