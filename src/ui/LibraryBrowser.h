@@ -11,7 +11,9 @@ namespace ohpe::ui
 /**
     The preset library (0.3), opened with the LIBRARY key (MIDI: "lib.open").
 
-    Left: category tags (any of the selected ones) and the engine filter. Top: text search,
+    Left: category tags (any of the selected ones), the quick chips MPE / Fingerboard / Morph (p54: all of the selected
+    ones) and the engine filter. Top: text search (p54: every word must match name, category, tags, engine, author, pack,
+    bank, kind, favourite or rating; English and German),
     bank (all / factory / user), kind (part / project), favourites only, sort order, PACKS (filter by an installed
     content pack, install pack, manage packs). Centre:
     the presets; selecting one loads it at once (preview, into the edit part). Right: details,
@@ -58,6 +60,8 @@ public:
     /** Re-reads the translated placeholder texts (after the UI language changed). */
     void languageChanged();
     void toggleTag (const juce::String& tag);
+    /** p54: the quick chips (MPE, Fingerboard, Morph): all selected ones must be tags of a preset. */
+    void toggleQuickTag (const juce::String& tag);
     void showSavePanel (bool show);
     void setSaveFields (const juce::String& name, const juce::String& author, const juce::StringArray& tags, bool project);
     /** What to do when a user preset of that name exists already. */

@@ -22,6 +22,7 @@ struct Entry
     bool favourite = false;
     int rating = 0;           ///< 0 (none) .. 5 stars
     std::string pack;         ///< id of the content pack the preset comes from (read-only, factory = true); empty otherwise
+    std::string packName;     ///< p54: the pack's display names (English and German), searched by the text filter
 };
 
 enum class Bank { All = 0, Factory, User };
@@ -29,8 +30,11 @@ enum class Sort { Name = 0, Rating, Engine, Newest };
 
 struct Filter
 {
-    std::string text;                 ///< words, all must match name / author / tags / engine / comment (case-insensitive)
+    /** words, all must match (AND) name / author / comment / category and tags (English and German) / engine / pack /
+        bank / kind / favourite / rating (case- and umlaut-insensitive: "flache", "flaeche" and "Fläche" are the same) */
+    std::string text;
     std::vector<std::string> tags;    ///< any of these tags (empty = all)
+    std::vector<std::string> required; ///< p54: all of these tags (the quick chips MPE / Fingerboard / Morph); empty = all
     std::string engine;               ///< engine id, empty = all
     Bank bank = Bank::All;
     int kind = -1;                    ///< -1 all, 0 part, 1 project
@@ -40,7 +44,19 @@ struct Filter
     std::string pack;                 ///< content pack id: only that pack's presets (empty = no pack filter)
 };
 
-/** Case-insensitive (ASCII + German umlauts) text search over an entry. */
+/** p54: the quick filter tags (append-only; free tags of the factory bank that get their own chips), English key +
+    German label. They filter with "all of" (Filter::required), so "Pads" + "MPE" shows the MPE pads. */
+const std::vector<Category>& quickTags();
+/** The quick tags that are used by the entries (for the quick chips), in quickTags() order. */
+std::vector<std::string> usedQuickTags (const std::vector<Entry>& entries);
+
+/** p54: folds text for the search: lower case (ASCII, German umlauts), umlauts to their base letter (ä/ae -> a,
+    ö/oe -> o, ü/ue -> u, ß -> ss). */
+std::string foldForSearch (const std::string& s);
+/** p54: everything the text search looks at for an entry (folded): name, author, comment, engine (id, English and
+    German name), tags (with German category names and aliases), pack, bank, kind, favourite and rating words. */
+std::string searchText (const Entry& e);
+/** Text search over an entry: every whitespace separated word of `text` must occur in searchText(e). */
 bool matchesText (const Entry& e, const std::string& text);
 /** True if the entry passes every criterion of the filter. */
 bool matches (const Entry& e, const Filter& f);

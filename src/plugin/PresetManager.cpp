@@ -106,6 +106,7 @@ void PresetManager::rescan()
                 preset::Entry e;
                 e.factory = true;
                 e.pack = pack.id;
+                e.packName = pack.nameEn + " " + pack.nameDe; // p54: searched by the library's text filter
                 e.location = std8 (f.getFullPathName());
                 e.uid = "content:" + update::contentUidPath (pack.id, item + preset::fileExtension);
                 e.meta = std::move (p.meta);

@@ -486,3 +486,98 @@ TEST_CASE ("preset arp: the arp block round-trips through JSON and through captu
     REQUIRE (preset::fromJson (R"({"format":"ohpe-preset","version":2,"kind":"project","params":{},"arp":{"on":1}})", proj));
     CHECK_FALSE (proj.arp.has_value());
 }
+
+TEST_CASE ("preset library (p54): the search finds presets by category, MPE and every other attribute (EN / DE, AND)")
+{
+    std::vector<preset::Entry> e;
+    e.push_back (entry ("Deep Bass", { "Bass" }, "analog", true, 3));
+    e.push_back (entry ("Glass Keys", { "Keys", "Plucks" }, "fm", true, 5, true));
+    e.push_back (entry ("Slow Pad", { "Pads", "Textures", "MPE" }, "wavetable", false, 0, false, 200));
+    e.push_back (entry ("Cello", { "Bass", "MPE", "Fingerboard" }, "analog", true));
+    e.push_back (entry ("Night Song", { "Pads" }, "vocal", true));
+    e[4].pack = "night-pack";
+    e[4].packName = "Night Pack Nachtpaket";
+    e[4].meta.kind = preset::Kind::Project;
+    e.push_back (entry ("Shift", { "Leads", "Morph" }, "fm", false, 2));
+
+    auto names = [&] (const preset::Filter& f) {
+        std::vector<std::string> r;
+        for (int i : preset::filterAndSort (e, f)) r.push_back (e[(size_t) i].meta.name);
+        return r;
+    };
+    auto find = [&] (const std::string& text) {
+        preset::Filter f;
+        f.text = text;
+        return names (f);
+    };
+    using V = std::vector<std::string>;
+    // tags beyond the categories, any case
+    CHECK (find ("MPE") == V { "Cello", "Slow Pad" });
+    CHECK (find ("mpe") == V { "Cello", "Slow Pad" });
+    CHECK (find ("mpe-hd") == V { "Cello" });
+    CHECK (find ("fingerboard") == V { "Cello" });
+    CHECK (find ("morph") == V { "Shift" });
+    // categories: English, singular, German, umlaut spellings
+    CHECK (find ("Pad") == V { "Night Song", "Slow Pad" });
+    CHECK (find ("Fläche") == V { "Night Song", "Slow Pad" });
+    CHECK (find ("FLÄCHEN") == V { "Night Song", "Slow Pad" });
+    CHECK (find ("flaeche") == V { "Night Song", "Slow Pad" });
+    CHECK (find ("flache") == V { "Night Song", "Slow Pad" });
+    CHECK (find ("bass") == V { "Cello", "Deep Bass" });
+    CHECK (find ("tasten") == V { "Glass Keys" });
+    CHECK (find ("zupfer") == V { "Glass Keys" });
+    // several words: all must match
+    CHECK (find ("bass mpe") == V { "Cello" });
+    CHECK (find ("MPE  Fläche") == V { "Slow Pad" });
+    CHECK (find ("pad mpe analog").empty());
+    // engine (id, English and German name)
+    CHECK (find ("fm") == V { "Glass Keys", "Shift" });
+    // pack (id and names), bank, kind
+    CHECK (find ("nachtpaket") == V { "Night Song" });
+    CHECK (find ("night-pack") == V { "Night Song" });
+    CHECK (find ("projekt") == V { "Night Song" });
+    CHECK (find ("eigene") == V { "Shift", "Slow Pad" });
+    CHECK (find ("user") == V { "Shift", "Slow Pad" });
+    // favourites and ratings
+    CHECK (find ("favorit") == V { "Glass Keys" });
+    CHECK (find ("favourite keys") == V { "Glass Keys" });
+    CHECK (find ("***") == V { "Deep Bass", "Glass Keys" });
+    CHECK (find ("5stern") == V { "Glass Keys" });
+    // empty / whitespace = everything
+    CHECK (find ("   ").size() == e.size());
+    CHECK (find ("nothing-like-this").empty());
+
+    // quick chips: "all of", combined with the category chips ("any of")
+    CHECK (preset::usedQuickTags (e) == V { "MPE", "Fingerboard", "Morph" });
+    preset::Filter f;
+    f.required = { "MPE" };
+    CHECK (names (f) == V { "Cello", "Slow Pad" });
+    f.tags = { "Pads" };
+    CHECK (names (f) == V { "Slow Pad" });
+    f.tags.clear();
+    f.required = { "MPE", "Fingerboard" };
+    CHECK (names (f) == V { "Cello" });
+    f.required = { "MPE" };
+    f.text = "flächen";
+    CHECK (names (f) == V { "Slow Pad" });
+    CHECK (preset::usedQuickTags ({ entry ("Plain", { "Bass" }, "analog", true) }).empty());
+}
+
+TEST_CASE ("preset library (p54): search folding")
+{
+    CHECK (preset::foldForSearch ("ÄÖÜäöüß") == "aouaouss");
+    CHECK (preset::foldForSearch ("Flaeche") == preset::foldForSearch ("Fläche"));
+    CHECK (preset::foldForSearch ("MPE Pad") == "mpe pad");
+    CHECK (preset::foldForSearch ("") .empty());
+}
+
+TEST_CASE ("preset library (p54): the factory bank's MPE presets are found by the search")
+{
+    // factory presets tagged MPE carry the tag in their files; the search must reach every one of them
+    preset::Entry a = entry ("A", { "Pads", "MPE" }, "wavetable", true);
+    preset::Entry b = entry ("B", { "Pads" }, "wavetable", true);
+    CHECK (preset::matchesText (a, "mpe"));
+    CHECK (preset::matchesText (a, "MPE Flächen"));
+    CHECK_FALSE (preset::matchesText (b, "mpe"));
+    CHECK (preset::matchesText (b, "werk")); // factory bank, German
+}
