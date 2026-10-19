@@ -62,6 +62,8 @@ for the pitch-class memory starting at the key's root (key notes light, other no
 whether the edit part follows. Soft keys: **Take Key**, **Hold**, **Forget**. Encoders: page *Harmony* = Follow (edit
 part), Memory, Hold, Grid Layout; page *Grid* = Grid Layout, In Key / Chromatic, Fixed C.
 
+![Encoder page Grid: layout, In Key / Chromatic, Fixed C](../images/ohpe-harmony-grid.png)
+
 ## Chord names and the key (p45)
 
 While notes sound, the view's **Chord** shows the chord they make – every part together, with the notes following parts

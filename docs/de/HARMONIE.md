@@ -66,6 +66,8 @@ Leiste sagt, was das Hirn tut und ob der Edit-Part folgt. Softkeys: **Tonart üb
 **Vergessen**. Regler: Seite *Harmonie* = Folgen (Edit-Part), Gedächtnis, Halten, Raster-Anordnung; Seite *Raster* =
 Raster-Anordnung, Nur Tonart / Chromatisch, C fest.
 
+![Regler-Seite Raster: Anordnung, Nur Tonart / Chromatisch, C fest](../images/ohpe-harmony-grid-de.png)
+
 ## Akkordnamen und die Tonart (p45)
 
 Solange Töne klingen, zeigt **Akkord** in der Ansicht den Akkord, den sie bilden – alle Parts zusammen, mit den Tönen,
