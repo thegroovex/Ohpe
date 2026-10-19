@@ -154,6 +154,14 @@ The second button row, keys 5 – 8 (or **Note** / **Session**), chooses the pad
 **Bend**: pitch bend of the edit part (the screen's pitch wheel follows), back to the middle when you let go.
 **Mod**: the mod wheel.
 
+## Foot pedal
+
+A sustain pedal in the controller's pedal jack works like one on a MIDI keyboard: **sustain** (CC 64) holds the
+notes of the part the pads play after you let go of the pads, **sostenuto** (CC 66) holds the notes that were down
+when it was pressed; both let go when the pedal comes up. In an MPE / Fingerboard part the pedal holds the notes of
+all member channels. The pedal goes up on the part it went down on, also after a part change, and when the
+controller is unplugged.
+
 ## Notes
 
 * No new host parameters: the controller only changes existing parameters (host notified, automatable as before).

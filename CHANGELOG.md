@@ -7,6 +7,10 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Grid controller (p58): a sustain pedal in the controller's pedal jack now holds notes (CC 64 sustain, CC 66
+  sostenuto, CC 67 passed on) like from any MIDI keyboard, also in MPE / Fingerboard parts; it was taken as a button
+  press and dropped. Display line 3: a long preset name is cut to its column with a space before "Part 1".
+
 ## 0.6.3 Preview – 2026-10-19
 
 [Notes / Hinweise](docs/release-notes/0.6.3.md)
