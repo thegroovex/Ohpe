@@ -388,7 +388,8 @@ void Core::routeToPart (const MidiEvent& e, int p, bool mapWhiteKeys) noexcept
     const auto& r = routing[(size_t) p];
     const bool toArp = arp.enabled() && arp.targetPart() == p + 1 && ! r.mpe;
     auto emit = [&] (const MidiEvent& x) {
-        if (toArp && (x.isNoteOn() || x.isNoteOff())) arp.noteInput (x);
+        // p60: the sustain / sostenuto pedal holds the arpeggiator's keys, not the part's voices
+        if (toArp && (x.isNoteOn() || x.isNoteOff() || Arpeggiator::isPedal (x))) arp.noteInput (x);
         else addRouted (x, p);
     };
     if (r.mpe) { emit (e); return; } // MPE notes keep their channel and pitch (per-note expression)
@@ -669,6 +670,12 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     pullSequencerParams (arpBinding);
     pullSequencerParams (orbitBinding);
     if (arpWasOn && (! arp.enabled() || arp.targetPart() != arpLastPart)) arp.releaseAll();
+    if (arp.enabled() && (! arpWasOn || arp.targetPart() != arpLastPart)) // p60: from now on the pedals go to the arp
+    {
+        const int ap = std::clamp (arp.targetPart(), 1, numParts) - 1; // a pedal down on the part would never come up
+        if (! routing[(size_t) ap].mpe)
+            for (const int pedalCc : { 64, 66 }) parts[(size_t) ap]->handleMidi (MidiEvent::controller (1, pedalCc, 0, 0));
+    }
     arpWasOn = arp.enabled();
     arpLastPart = arp.targetPart();
 

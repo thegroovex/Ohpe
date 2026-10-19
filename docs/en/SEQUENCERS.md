@@ -71,6 +71,14 @@ are held and played one after another.
   no key held starts a new set. Latch is your playing choice: loading a part preset never switches it on or off.
 * While the transport runs the steps sit on its grid. When it is stopped the arpeggiator runs
   free at the current tempo and starts exactly on the first key.
+* **Pedals**: the sustain pedal (CC 64, from any input that plays the part: MIDI keyboard, host, grid
+  controller, an MPE controller's master channel) holds the arpeggio's notes: keys you let go stay in the pattern
+  until the pedal comes up, keys pressed meanwhile are added. Sostenuto (CC 66) holds only the keys that were down
+  when it went down. Pedal up removes every key you no longer hold; with none left the arpeggio stops cleanly.
+  The pedal holds the arpeggio's key set, not its sounding notes, so each step stays as short as Gate. With
+  **Latch** on the set stays after pedal up anyway; while the pedal is down a new key adds to the latched set
+  instead of starting a new one. Switching the arpeggiator off or to another part releases everything it held.
+  (An MPE part is played directly, without the arpeggiator.)
 
 ## Orbit (polymeter)
 
