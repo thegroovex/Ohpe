@@ -7,6 +7,13 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+## 0.6.3 Preview – 2026-10-19
+
+[Notes / Hinweise](docs/release-notes/0.6.3.md)
+
+- EN: Library search across all categories and tags with MPE / Fingerboard / Morph chips, Grid-Controller connected automatically with a Controller settings page, graphical FX editor.
+- DE: Bibliotheks-Suche über alle Kategorien und Tags mit Chips MPE / Fingerboard / Morph, Grid-Controller automatisch verbunden mit Einstellungsseite Controller, grafischer FX-Editor.
+
 - EN: Grid controller (p53): on by default and connected automatically in the standalone app and the plug-in
   (user port in and out of the same device, identity request tells the generation, hot-plug); switched into its User
   mode on connect with a short "connecting ... / connected" splash on its display, back to its own mode on release.
