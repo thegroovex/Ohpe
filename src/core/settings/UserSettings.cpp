@@ -93,7 +93,9 @@ std::string UserSettings::toJson() const
                         { "in", controllerIn },
                         { "out", controllerOut },
                         { "master", controllerMaster == 1 ? "tempo" : "volume" },
-                        { "strip", controllerStrip == 1 ? "mod" : "bend" } };
+                        { "strip", controllerStrip == 1 ? "mod" : "bend" },
+                        { "auto", controllerAuto },
+                        { "pattern", controllerPattern } };
     return j.dump (2);
 }
 
@@ -140,6 +142,8 @@ UserSettings UserSettings::fromJson (const std::string& text)
         s.controllerOut = sub ("out");
         s.controllerMaster = sub ("master") == "tempo" ? 1 : 0;
         s.controllerStrip = sub ("strip") == "mod" ? 1 : 0;
+        if (const auto a = c->find ("auto"); a != c->end() && a->is_boolean()) s.controllerAuto = a->get<bool>(); // p49
+        if (const auto pat = sub ("pattern"); ! pat.empty()) s.controllerPattern = pat;
     }
     json extra = json::object();
     for (auto it = j.begin(); it != j.end(); ++it)
@@ -154,6 +158,7 @@ bool UserSettings::operator== (const UserSettings& o) const
            && std::abs (brightness - o.brightness) < 1.0e-4f && animations == o.animations && windowScale == o.windowScale
            && controllerProfile == o.controllerProfile && controllerIn == o.controllerIn && controllerOut == o.controllerOut
            && controllerMaster == o.controllerMaster && controllerStrip == o.controllerStrip
+           && controllerAuto == o.controllerAuto && controllerPattern == o.controllerPattern
            && json::parse (extras, nullptr, false) == json::parse (o.extras, nullptr, false);
 }
 

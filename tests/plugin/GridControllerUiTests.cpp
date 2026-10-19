@@ -3,7 +3,7 @@
 //
 // p46: Grid-Controller (Profil 1) against a mock device - display lines (SysEx) per page, encoders -> parameters,
 // the pads = the on-screen grid keyboard (every layout, octave, key), pad / button lights, buttons, disconnect /
-// reconnect, the settings section and the virtual controller view, both languages. Plug-ins never create it.
+// reconnect, the settings section and the virtual controller view, both languages. (p49: plug-ins: GridPluginUiTests.cpp.)
 #include <doctest/doctest.h>
 
 #include "control/GridProtocol.h"
@@ -102,12 +102,13 @@ struct Rig
 };
 } // namespace
 
-TEST_CASE ("p46 grid controller: plug-in editors never create it; off by default")
+TEST_CASE ("p46 grid controller: off by default (p49: plug-in editors create it too)")
 {
     OhpeProcessor p;
     std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
     auto& e = *dynamic_cast<OhpeEditor*> (ed.get());
-    CHECK (e.gridController() == nullptr); // tests run as a plug-in wrapper (not the standalone app)
+    REQUIRE (e.gridController() != nullptr); // p49: tests run as a plug-in wrapper - the plug-in has one now
+    CHECK (e.gridController()->pluginMode());
     CHECK (settings::UserSettings {}.controllerProfile == settings::ControllerOff);
 }
 

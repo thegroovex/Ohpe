@@ -114,4 +114,4 @@ target_sources(ohpe_core PRIVATE
 target_sources(ohpe_core PRIVATE bounce/Bounce.cpp)
 
 # p46: Grid-Controller (Profil 1) - wire protocol, display text, pad layout
-target_sources(ohpe_core PRIVATE control/GridProtocol.cpp)
+target_sources(ohpe_core PRIVATE control/GridProtocol.cpp control/ControllerPorts.cpp) # p46, p49

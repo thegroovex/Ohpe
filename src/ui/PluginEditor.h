@@ -206,8 +206,8 @@ public:
     ui::PictoKey& gridKeyComponent() { return gridKey; }
     void showGridKeyboard (bool show);
     bool gridKeyboardShown() const noexcept { return grid.isVisible(); }
-    /** p46: the Grid-Controller (Profil 1) of the standalone app (nullptr in plug-ins and while no profile was ever
-        chosen). gridControllerForTests() creates it in any build (tests, screenshots: a mock device). */
+    /** p46: the Grid-Controller (Profil 1). p49: the standalone app and plug-ins create it (a plug-in takes back the one
+        its processor parked while the window was closed). gridControllerForTests() creates it in any case. */
     ui::GridController* gridController() noexcept { return gridCtl.get(); }
     ui::GridController& gridControllerForTests();
     /** p46: what the encoders of the controller and the screen show: the page of the shown mode. */
@@ -329,8 +329,13 @@ private:
     ui::PictoKey settingsKey { ui::Picto::Settings, "Settings" }; ///< p32: replaces the language pills
     ui::Keyboard keyboard;
     ui::GridKeyboard grid; ///< p24
-    std::unique_ptr<ui::GridController> gridCtl; ///< p46
+    std::shared_ptr<ui::GridController> gridCtl; ///< p46 (p49: parked in the processor while the window is closed)
     void makeGridController();
+    struct ClaimOnClick final : juce::MouseListener ///< p49: a click in the window takes the controller to this instance
+    {
+        std::function<void()> onDown;
+        void mouseDown (const juce::MouseEvent&) override { if (onDown) onDown(); }
+    } claimOnClick;
     ui::ProView proView;
     ui::LibraryBrowser library;
     ui::BreedView breedView; ///< p18

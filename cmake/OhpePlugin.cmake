@@ -257,6 +257,7 @@ endif()
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/HarmonyUiTests.cpp)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/GridControllerUiTests.cpp) # p46
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/GridPluginUiTests.cpp) # p49
 endif()
 
 # ---------------------------------------------------------------- p20: audio to wavetable (import, library, state)
