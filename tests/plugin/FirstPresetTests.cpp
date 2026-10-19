@@ -149,7 +149,7 @@ TEST_CASE ("first start: a restored session / host state wins over the start sou
         REQUIRE (other >= 0);
         REQUIRE (pm.load (other, 1));
         a.parameter ("mix.ch3.pan")->setValueNotifyingHost (0.9f);
-        savedUid = pm.currentUid();
+        savedUid = pm.currentUid (1); // p50: the name belongs to part 2
         CHECK (savedUid == pm.entries()[(size_t) other].uid);
         a.getStateInformation (session);
         for (int i = 0; i < a.core().params().size(); ++i) savedValues.push_back (a.core().params().get (i));
@@ -157,7 +157,7 @@ TEST_CASE ("first start: a restored session / host state wins over the start sou
     auto bPtr = std::make_unique<OhpeProcessor>(); // on the heap: a processor is large (Windows stack)
     auto& b = *bPtr; // a new instance starts with the start sound, then the host restores its state
     b.setStateInformation (session.getData(), (int) session.getSize());
-    CHECK (b.presets().currentUid() == savedUid);
+    CHECK (b.presets().currentUid (1) == savedUid);
     REQUIRE ((int) savedValues.size() == b.core().params().size());
     int differing = 0;
     for (int i = 0; i < b.core().params().size(); ++i)
@@ -192,5 +192,5 @@ TEST_CASE ("first start: a restored session / host state wins over the start sou
     auto dPtr = std::make_unique<OhpeProcessor>(); // on the heap: a processor is large (Windows stack)
     auto& d = *dPtr;
     d.setStateInformation (again.getData(), (int) again.getSize());
-    CHECK (d.presets().currentUid() == savedUid);
+    CHECK (d.presets().currentUid (1) == savedUid);
 }

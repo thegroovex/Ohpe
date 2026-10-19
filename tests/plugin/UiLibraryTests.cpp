@@ -108,7 +108,7 @@ TEST_CASE ("library: save / load round-trip in the user folder, favourites, rati
     CHECK (file.getParentDirectory().getFileName() == "Parts");
     CHECK ((int) pm.entries().size() == factory + 1);
     CHECK (pm.author() == "Tester");
-    const int idx = pm.current();
+    const int idx = pm.current (1); // p50: saved from part 2 - that part's preset
     REQUIRE (idx >= 0);
     CHECK_FALSE (pm.entries()[(size_t) idx].factory);
     CHECK (pm.entries()[(size_t) idx].meta.engine == "cluster");
