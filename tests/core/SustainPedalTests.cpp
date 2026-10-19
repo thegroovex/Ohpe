@@ -88,14 +88,16 @@ TEST_CASE ("p58 sustain: CC 64 from the controller queue holds the note after no
     CHECK (peak (rig.all) < 4.0f);
 }
 
-TEST_CASE ("p58 sustain: the same from host / device MIDI (any channel of an omni part)")
+TEST_CASE ("p58 sustain: the same from host / device MIDI (the part's channel)")
 {
     PedalRig rig;
-    rig.run (2, { MidiEvent::noteOn (3, 62, 100), cc (3, 64, 127) });
-    rig.run (1, { MidiEvent::noteOff (3, 62) });
+    rig.run (2, { MidiEvent::noteOn (1, 62, 100), cc (1, 64, 127) });
+    REQUIRE (rig.voices() >= 1);
+    CHECK (rig.core.part (0).sustainPedal());
+    rig.run (1, { MidiEvent::noteOff (1, 62) });
     rig.run (40);
     CHECK (rig.voices() >= 1);
-    rig.run (40, { cc (3, 64, 0) });
+    rig.run (40, { cc (1, 64, 0) });
     CHECK (rig.voices() == 0);
 }
 
