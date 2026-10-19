@@ -99,7 +99,7 @@ TEST_CASE ("p49 grid controller in a plug-in: settings - automatic ports on by d
     UserSettings s;
     CHECK (s.controllerAuto);
     CHECK (s.controllerPattern == settings::defaultControllerPattern);
-    CHECK (s.controllerProfile == settings::ControllerOff);
+    CHECK (s.controllerProfile == settings::ControllerGrid1); // p53
     CHECK (UserSettings::fromJson (s.toJson()) == s);
     s.controllerAuto = false;
     s.controllerPattern = "Grid; Port 2";
@@ -114,4 +114,72 @@ TEST_CASE ("p49 grid controller in a plug-in: settings - automatic ports on by d
     const auto junk = UserSettings::fromJson (R"({"controller":{"auto":"yes","pattern":7}})");
     CHECK (junk.controllerAuto);
     CHECK (junk.controllerPattern == settings::defaultControllerPattern);
+}
+
+TEST_CASE ("p53 grid controller: automatic ports with realistic port lists pick the matching output too")
+{
+    const std::string pat = settings::defaultControllerPattern;
+    // macOS: the device has a live and a user port in both directions (the user's report: input found, output "-")
+    {
+        const std::vector<std::string> ins { "IAC Driver Bus 1", "Pad Grid Live Port", "Pad Grid User Port", "Keys 49 MIDI 1" };
+        const std::vector<std::string> outs { "IAC Driver Bus 1", "Pad Grid Live Port", "Pad Grid User Port", "Keys 49 MIDI 1" };
+        const auto pick = g::autoPorts (ins, outs, pat);
+        REQUIRE (pick.found());
+        CHECK (ins[(size_t) pick.in] == "Pad Grid User Port");
+        CHECK (outs[(size_t) pick.out] == "Pad Grid User Port");
+        CHECK (g::siblingPort (ins, "Pad Grid User Port") == 1); // its live port
+        CHECK (g::siblingPort (ins, "Keys 49 MIDI 1") == -1);
+    }
+    // outputs listed in another order than the inputs
+    {
+        const std::vector<std::string> ins { "Pad Grid Live Port", "Pad Grid User Port" };
+        const std::vector<std::string> outs { "Pad Grid User Port", "Network Session 1", "Pad Grid Live Port" };
+        const auto pick = g::autoPorts (ins, outs, pat);
+        REQUIRE (pick.found());
+        CHECK (pick.in == 1);
+        CHECK (pick.out == 0);
+    }
+    // Windows: MIDIIN2 / MIDIOUT2 of the device, other devices with second ports too
+    {
+        const std::vector<std::string> ins { "Keys 49", "MIDIIN2 (Keys 49)", "Pad Grid", "MIDIIN2 (Pad Grid)" };
+        const std::vector<std::string> outs { "Microsoft GS Wavetable Synth", "Keys 49", "MIDIOUT2 (Keys 49)", "Pad Grid", "MIDIOUT2 (Pad Grid)" };
+        const auto pick = g::autoPorts (ins, outs, pat);
+        REQUIRE (pick.found());
+        // the first matching pair is a valid pair of one device (the identity reply tells which one is the controller)
+        CHECK (g::portKey (ins[(size_t) pick.in]) == g::portKey (outs[(size_t) pick.out]));
+        CHECK (g::siblingPort (ins, "MIDIIN2 (Pad Grid)") == 2);
+        const auto all = g::autoPortCandidates (ins, outs, pat);
+        REQUIRE (all.size() == 2u);
+        CHECK (ins[(size_t) all[1].in] == "MIDIIN2 (Pad Grid)");
+        CHECK (outs[(size_t) all[1].out] == "MIDIOUT2 (Pad Grid)");
+    }
+    // Linux (ALSA): "client:port" style names
+    {
+        const std::vector<std::string> ins { "Midi Through Port-0", "Pad Grid MIDI 1", "Pad Grid MIDI 2 User" };
+        const std::vector<std::string> outs { "Midi Through Port-0", "Pad Grid MIDI 1", "Pad Grid MIDI 2 User" };
+        const auto pick = g::autoPorts (ins, outs, pat);
+        REQUIRE (pick.found());
+        CHECK (pick.in == 2);
+        CHECK (pick.out == 2);
+    }
+}
+
+TEST_CASE ("p53 grid controller: settings of 0.6.2 files start with the Grid-Controller and automatic ports")
+{
+    using settings::UserSettings;
+    // 0.6.2 always wrote the profile; without "chosen" the new defaults apply (the user's ports stepped by hand
+    // with automatic off and no output are replaced by the automatic choice)
+    const auto old = UserSettings::fromJson (R"({"controller":{"profile":"off","in":"Pad Grid User Port","out":"","auto":false}})");
+    CHECK (old.controllerProfile == settings::ControllerGrid1);
+    CHECK (old.controllerAuto);
+    CHECK_FALSE (old.controllerChosen);
+    // set up by the user: kept as it is
+    auto s = UserSettings {};
+    s.controllerChosen = true;
+    s.controllerProfile = settings::ControllerOff;
+    s.controllerAuto = false;
+    const auto back = UserSettings::fromJson (s.toJson());
+    CHECK (back == s);
+    CHECK (back.controllerProfile == settings::ControllerOff);
+    CHECK_FALSE (back.controllerAuto);
 }
