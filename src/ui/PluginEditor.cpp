@@ -1008,6 +1008,13 @@ void OhpeEditor::makeGridController()
     h.selectPart = [this] (int p) { selectPart (p); };
     h.transport = [this] (OhpeProcessor::TransportKey k) { transport (k); };
     h.octave = [this] { return keyboard.getBaseOctave(); };
+    // p53: the pads follow the on-screen keyboard: the grid keyboard's layout while it is shown, else the default
+    h.gridShown = [this] { return grid.isVisible(); };
+    h.showGrid = [this] (bool show) {
+        showGridKeyboard (show);
+        saveUiState();
+        repaint();
+    };
     h.setOctave = [this] (int o) {
         keyboard.setBaseOctave (o);
         grid.setBaseOctave (keyboard.getBaseOctave());

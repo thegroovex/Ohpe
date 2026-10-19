@@ -192,6 +192,7 @@ TEST_CASE ("p46 grid controller: the pads are the on-screen grid keyboard - layo
     Rig r;
     auto& e = *r.e;
     auto& grid = e.gridKeyboard();
+    e.showGridKeyboard (true); // p53: the pads take the grid's layout while the grid keyboard is shown
     for (int layout = 0; layout < harmony::numLayouts; ++layout)
     {
         r.setHost ("harmony.kb.layout", (float) layout);
@@ -463,4 +464,29 @@ TEST_CASE ("p53 grid controller: the virtual controller follows pads without a c
     CHECK (i18n::tr ("Port in use by another program") == "Port belegt (anderes Programm)");
     e.setLanguage (i18n::Language::English);
     e.showSettings (false);
+}
+
+TEST_CASE ("p53 grid controller: piano keys shown = the default pad layout; grid shown = its layout; Scales shows the grid")
+{
+    Rig r;
+    auto& e = *r.e;
+    e.showGridKeyboard (false);
+    r.setHost ("harmony.kb.layout", (float) harmony::LayoutThirds);
+    r.c->update();
+    CHECK (r.c->padNoteNow (8) == r.c->padNoteNow (0) + 5); // Fourths: one row up = +5 (the default)
+    e.showGridKeyboard (true);
+    r.c->update();
+    CHECK (r.c->padNoteNow (8) == r.c->padNoteNow (0) + 4); // the grid's Thirds
+    for (int col = 0; col < g::cols; ++col) CHECK (r.c->padNoteNow (col) == e.gridKeyboard().noteAt (col, 0));
+    e.showGridKeyboard (false);
+    r.c->update();
+    CHECK (r.c->padNoteNow (8) == r.c->padNoteNow (0) + 5);
+    // the controller's Scales button: first shows the grid keyboard on the screen, then steps its layout
+    r.press (g::cc::scales);
+    CHECK (e.gridKeyboardShown());
+    CHECK ((int) std::lround (r.p.core().params().get ("harmony.kb.layout")) == harmony::LayoutThirds);
+    r.press (g::cc::scales);
+    CHECK ((int) std::lround (r.p.core().params().get ("harmony.kb.layout")) == harmony::LayoutWhole);
+    r.setHost ("harmony.kb.layout", (float) harmony::LayoutFourths);
+    e.showGridKeyboard (false);
 }

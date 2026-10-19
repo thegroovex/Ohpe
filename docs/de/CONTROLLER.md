@@ -8,23 +8,49 @@ In Ohpe heißt er **Grid-Controller (Profil 1)**.
 Die Pads spielen genau wie die [Raster-Tastatur](HARMONIE.md#die-raster-tastatur) auf dem Bildschirm: dieselben
 Anordnungen, dieselben Töne, dieselben Farben für Grundton und Tonart-Töne – was du am einen lernst, gilt am anderen.
 
-![Einstellungen – MIDI mit dem Controller-Bereich und dem virtuellen Controller](../images/ohpe-settings-controller-de.png)
+![Einstellungen – Controller: Ports, Verbindung, Bedienung und der virtuelle Controller](../images/ohpe-settings-controller-de.png)
 
 ## Einrichten
 
-1. Controller anschließen und die **Standalone-App** von Ohpe starten (für das Plug-in siehe [Im Plug-in](#im-plug-in)).
-2. **Einstellungen > MIDI > Controller**: **Grid-Controller (Profil 1)** wählen.
-3. **Ein** / **Ausgang**: zu den MIDI-Ports des Controllers schalten (meist für beide sein erster Port; bleibt das
-   Display leer, den anderen Port probieren). Die Überschrift zeigt **Verbunden**, sobald beide Ports offen sind.
-4. **Bend / Mod**: was der Touch-Strip tut.
-5. **Ansicht** zeigt den *virtuellen Controller*: die vier Displayzeilen, die 64 Pad-Lichter und die letzten
-   MIDI-Nachrichten – praktisch, um zu prüfen, was der Controller zeigen soll.
+**Meist nichts zu tun.** Seit 0.6.3 ist das Profil **ab Werk an, mit automatischen Ports**: Controller anstecken und
+Ohpe starten (Standalone-App, oder das Fenster des Plug-ins öffnen). Ohpe findet den *User-Port* des Controllers
+(Eingang **und** Ausgang desselben Geräts), schaltet den Controller selbst in seinen **User-Modus** (die *User*-Taste
+muss nicht gedrückt werden), zeigt kurz **OHPE · verbindet ...** und dann **verbunden** auf seinem Display (englische
+Oberfläche: *connecting ...* / *connected*) und danach das normale Ohpe-Display. Später angesteckt? Ohpe verbindet
+sich innerhalb einer Sekunde. Beendet sich Ohpe, wird das Profil ausgeschaltet oder die Instanz entfernt, löscht es
+Display und Lichter und gibt den Controller an seinen eigenen Modus zurück.
 
-In der Standalone-App wird nichts automatisch erkannt; die Wahl wird je Benutzer in `settings.json` gespeichert (nie in Projekten oder
-Presets) und der Controller beim nächsten Start wieder geöffnet. Wird er abgezogen, stehen Lichter und Display;
-kommt er zurück, verbindet sich Ohpe innerhalb einer Sekunde neu und schickt alles noch einmal. Ohpe schaltet den
-Port des Controllers in der normalen Liste der MIDI-Eingänge aus, damit seine Pads nicht doppelt spielen. Das Profil
-ist **ab Werk aus**.
+**Einstellungen > Controller** (eigene Seite):
+
+- **Aus** / **Grid-Controller (Profil 1)**.
+- **Ports**: **Ports automatisch wählen** (ab Werk an), dann je ein Menü für **Eingang** und **Ausgang** mit den
+  vollen Portnamen. Ein Port im Menü schaltet die Automatik aus (die andere Seite behält den Port, der gerade benutzt
+  wird); die Automatik im Menü schaltet sie wieder ein.
+- Die **Statuszeile**: **Verbunden · 1. Generation, Textdisplay** (oder *neuere Generation, ohne Textdisplay*),
+  **Gerät wird geprüft …**, **Nicht gefunden**, **Port belegt (anderes Programm)** (Standalone) /
+  **Port belegt – in der DAW freigeben** (Plug-in), **Wartet auf den Controller**.
+- **Bedienung**: **Touch-Strip** Bend / Mod; **Master**-Regler Lautstärke / Tempo.
+- Der **virtuelle Controller**, groß rechts: die vier Displayzeilen, die zwei Tastenreihen unter dem Display und die
+  64 Pads in den Farben des Controllers, live – gedrückte Pads leuchten grün, Modus- und Part-Tasten leuchten wie am
+  Gerät. Er geht auch mit der Maus: Pad anklicken spielt es, Taste anklicken, Mausrad über einem Achtel des Displays
+  dreht den Regler darunter. Er folgt den Pads auch, wenn kein Ausgang verbunden ist.
+
+**Wie der Controller gefunden wird.** Portnamen, die zum Muster `User; MIDIIN2; MIDIOUT2` passen (irgendein Teil,
+Groß-/Kleinschreibung egal; änderbar als `"pattern"` unter `"controller"` in `settings.json`), sind Kandidaten;
+Eingang und Ausgang desselben Geräts werden gepaart (unter macOS / Linux sein *… User Port*, unter Windows
+*MIDIIN2 (…)* / *MIDIOUT2 (…)*). Ohpe schickt eine Standard-Identitätsanfrage: die Antwort nennt die **Generation**
+des Controllers. Ein Gerät, das neben dem User-Port auch seinen *Live-Port* hat, verbindet sich sofort; ein anderes
+passendes Gerät muss sich innerhalb von zwei Sekunden als Controller melden, sonst lässt Ohpe es in Ruhe und
+probiert den nächsten Kandidaten.
+
+**Generationen.** Die erste Generation hat das vierzeilige Zeichendisplay, das über MIDI beschrieben wird – Ohpe
+nutzt es ganz. Eine neuere Generation (Pixel-Display über USB) bekommt Pads, Tasten, Regler, Berührung und Lichter,
+aber keinen Text auf ihrem Display (ihre Pad-Farben können abweichen).
+
+Die Einstellungen werden je Benutzer in `settings.json` gespeichert (nie in Projekten oder Presets). Ohpe schaltet
+die Ports des Controllers (User- und Live-Port) in der normalen Liste der MIDI-Eingänge aus, solange es sie hält –
+so spielen die Pads nicht doppelt und die Berührungs-Noten von Reglern und Strip erreichen den Klang nie als Noten –
+und schaltet sie wieder ein, wenn es loslässt.
 
 ## Im Plug-in
 
@@ -33,18 +59,15 @@ Seit p49 arbeitet der Controller auch im **Plug-in** (VST3 / AU in einer DAW). D
 Display und Lichter dem Programm, das seinen *User-Port* öffnet. Ohpe öffnet diesen Port selbst – am Host vorbei –
 mit vollem Display, Pad-Farben, Druck, Reglern (mit Berührung), Touch-Strip und Tasten, genau wie in der Standalone-App.
 
-![Einstellungen – MIDI mit dem Controller-Bereich im Plug-in](../images/ohpe-settings-controller-plugin-de.png)
+![Einstellungen – Controller im Plug-in](../images/ohpe-settings-controller-plugin-de.png)
 
 1. **In der DAW**: in den MIDI-Einstellungen den *User-Port* des Controllers (oft *… User Port*, unter Windows
    *MIDIIN2 (…)* / *MIDIOUT2 (…)*) für **Spuren und Fernsteuerung ausschalten** (Eingang und Ausgang), damit die DAW
    ihn freigibt und die Pads nicht doppelt spielen. Den Haupt-Port des Controllers so lassen.
-2. **In Ohpe**: **Einstellungen > MIDI > Controller**: **Grid-Controller (Profil 1)** wählen.
-3. **Ports automatisch wählen** (ab Werk an) nimmt den Eingang und Ausgang, deren Namen zum Muster passen
-   (`User; MIDIIN2; MIDIOUT2` – irgendein Teil im Portnamen; änderbar als `"pattern"` unter `"controller"` in
-   `settings.json`). Ausschalten und **Ein** / **Ausgang** schalten, um die Ports selbst zu wählen (das Schalten eines
-   Ports schaltet die Automatik aus).
-4. Den Controller in seinen **User-Modus** schalten. Die Überschrift zeigt **Aktiv in dieser Instanz**, sobald beide
-   Ports offen sind.
+2. **In Ohpe**: nichts (**Einstellungen > Controller**: Profil und automatische Ports sind ab Werk an; Ports in den
+   Menüs wählen, um sie selbst zu bestimmen).
+3. Ohpe schaltet den Controller selbst in seinen **User-Modus**. Die Seite zeigt **Aktiv in dieser Instanz**, sobald
+   beide Ports offen sind.
 
 **Eine Instanz zur Zeit.** Nur ein Ohpe der DAW kann den Controller halten: das, dessen Fenster du **zuletzt geöffnet
 oder angeklickt** hast. Die anderen zeigen **In anderer Instanz aktiv** und einen Knopf **Hierher holen**; wird die
@@ -91,7 +114,10 @@ Die zweite Tastenreihe, Tasten 5 – 8 (oder **Note** / **Session**), wählt den
 
 * **Dieselbe Anordnung** wie *Raster-Anordnung* (`harmony.kb.layout`): **Quarten** (rechts +1, hoch +5), **Terzen**
   (+1 / +4), **Ganztöne** (+2 / +5) oder **In Tonart** (Stufen der Tonart, drei Stufen je Reihe – nur Tonart-Töne).
-  Die Taste **Scales** schaltet die Anordnungen weiter.
+  Die Taste **Scales** schaltet die Anordnungen weiter. Seit p53 folgen die Pads der Bildschirm-Tastatur: solange die
+  **Raster-Tastatur** gezeigt wird (Taste RASTER), übernehmen sie ihre Anordnung, Grundton, Skala und Farben; bei den
+  **Klaviertasten** gilt die Standard-Anordnung (Quarten). Scales bei gezeigten Klaviertasten schaltet zuerst den
+  Bildschirm auf die Raster-Tastatur, dann ihre Anordnung weiter – Bildschirm und Pads zeigen immer dasselbe.
 * **Dieselbe Zuordnung**: Pad (Spalte, Reihe) spielt den Ton des Bildschirm-Felds in derselben Spalte und Reihe, ab
   demselben tiefsten C. Die vier unteren Pad-Reihen sind genau die vier Reihen des Bildschirm-Rasters; die oberen vier
   setzen es fort.

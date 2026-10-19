@@ -666,7 +666,7 @@ The **gear key** at the right of the header opens the settings (the language pil
 you on this computer – not in projects or presets – and apply to every Ohpe you open: **General** (language, tooltips,
 help overlay, help pages), **Display** (light / dark / auto skin, display brightness, animations, window size), **MIDI**
 (channel, MPE and bend ranges of the four parts, the one-tap [Fingerboard mode](MIDI.md#fingerboard-mode-mpe-hd-1421-bit) per part with its MPE HD status, MIDI inputs, clock and sync), **MIDI learn** (every mapping: edit,
-clear, clear all, map files), **Updates**, **Help** and **About**. **F1** switches the help overlay on and off.
+clear, clear all, map files), **Controller** (the [grid controller](CONTROLLER.md): on by default and connected automatically, ports, status, controls, the live virtual controller), **Updates**, **Help** and **About**. **F1** switches the help overlay on and off.
 
 ![The night skin](../images/ohpe-dark.png)
 

@@ -7,6 +7,26 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Grid controller (p53): on by default and connected automatically in the standalone app and the plug-in
+  (user port in and out of the same device, identity request tells the generation, hot-plug); switched into its User
+  mode on connect with a short "connecting ... / connected" splash on its display, back to its own mode on release.
+  New Settings > Controller page: port menus with full names, status line (Connected / Checking / Not found / Port in
+  use), strip and master encoder, a large live virtual controller usable with the mouse. The pads follow the on-screen
+  keyboard (grid layout while the grid keyboard is shown, Fourths with the piano keys; Scales shows the grid).
+  Fixes: output port stayed "-" (standalone used no automatic matching); the standalone MIDI page showed the
+  plug-in text and the controller also played as a plain MIDI input (encoder / strip touch notes reached the sound
+  and retriggered held notes); disabled chips looked selected; the controller section was clipped.
+- DE: Grid-Controller (p53): ab Werk an und automatisch verbunden in Standalone-App und Plug-in (User-Port Eingang
+  und Ausgang desselben Geräts, Identitätsanfrage nennt die Generation, Anstecken im Betrieb); beim Verbinden in
+  seinen User-Modus geschaltet, mit kurzem „verbindet ... / verbunden" auf seinem Display, beim Loslassen zurück in
+  seinen eigenen Modus. Neue Seite Einstellungen > Controller: Port-Menüs mit vollen Namen, Statuszeile (Verbunden /
+  Wird geprüft / Nicht gefunden / Port belegt), Strip und Master-Regler, großer virtueller Controller live, mit der
+  Maus bedienbar. Die Pads folgen der Bildschirm-Tastatur (Raster-Anordnung bei gezeigter Raster-Tastatur, Quarten
+  bei den Klaviertasten; Scales zeigt das Raster). Behoben: Ausgang blieb „-" (Standalone ohne automatische Zuordnung);
+  die MIDI-Seite der Standalone-App zeigte den Plug-in-Text und der Controller spielte zusätzlich als normaler
+  MIDI-Eingang (Berührungs-Noten von Reglern / Strip erreichten den Klang und lösten gehaltene Töne neu aus);
+  ausgeschaltete Chips sahen gewählt aus; der Controller-Bereich war abgeschnitten.
+
 ## 0.6.2 Preview – 2026-10-19
 
 [Notes / Hinweise](docs/release-notes/0.6.2.md)

@@ -110,6 +110,7 @@ void GridController::detachFromEditor()
     if (hooks.context) detached.ctx = hooks.context();
     if (hooks.page) detached.page = hooks.page();
     if (hooks.octave) detached.octave = hooks.octave();
+    if (hooks.gridShown) detached.grid = hooks.gridShown();
     isHeadless = true;
     auto remember = [this] (const char* key, int v) { // the window opens with it again
         if (auto* obj = proc.uiState.getDynamicObject()) obj->setProperty (key, v);
@@ -138,6 +139,11 @@ void GridController::detachFromEditor()
     };
     h.transport = [this] (OhpeProcessor::TransportKey k) { proc.runTransport (k); };
     h.octave = [this] { return detached.octave; };
+    h.gridShown = [this] { return detached.grid; };
+    h.showGrid = [this, remember] (bool show) {
+        detached.grid = show;
+        remember ("grid", show ? 1 : 0);
+    };
     h.setOctave = [this, remember] (int o) {
         detached.octave = juce::jlimit (0, 7, o);
         remember ("octave", detached.octave);
@@ -748,6 +754,8 @@ void GridController::button (int cc, bool)
             {
                 setParam (Core::Ids::keyLock, proc.core().keyScale().lock ? 0.0f : 1.0f);
             }
+            else if (hooks.gridShown && hooks.showGrid && ! hooks.gridShown())
+                hooks.showGrid (true); // p53: first the grid keyboard on the screen (its layout on the pads), then the next layout
             else
                 setParam ("harmony.kb.layout", (float) (((int) std::lround (proc.core().params().get ("harmony.kb.layout")) + 1) % harmony::numLayouts));
             break;
@@ -805,6 +813,13 @@ void GridController::turn (int encoder, int delta)
 }
 
 // ---------------------------------------------------------------- state -> pads, display, lights
+int GridController::padLayout() const
+{
+    const bool grid = hooks.gridShown ? hooks.gridShown() : false;
+    if (! grid) return harmony::LayoutFourths;
+    return juce::jlimit (0, (int) harmony::numLayouts - 1, (int) std::lround (proc.core().params().get ("harmony.kb.layout")));
+}
+
 g::PadKey GridController::padKey() const
 {
     auto& core = proc.core();
@@ -827,7 +842,7 @@ void GridController::refreshMap()
     partNow.store (juce::jlimit (0, Core::numParts - 1, ctx.part));
     mpeNow.store (core.params().get ("p" + std::to_string (ctx.part + 1) + ".mpe") >= 0.5f);
     drumBase.store ((int) std::lround (core.params().get ("drum.base")));
-    const int layout = juce::jlimit (0, (int) harmony::numLayouts - 1, (int) std::lround (core.params().get ("harmony.kb.layout")));
+    const int layout = padLayout();
     const int octave = hooks.octave ? hooks.octave() : 3;
     const auto key = padKey();
     const auto mode = padMode();
@@ -915,7 +930,7 @@ void GridController::refreshDisplay()
     juce::String padText = modeName (padMode());
     if (padMode() == PadMode::Keys || padMode() == PadMode::Steps)
     {
-        const int layout = juce::jlimit (0, (int) harmony::numLayouts - 1, (int) std::lround (reg.get ("harmony.kb.layout")));
+        const int layout = padLayout();
         const auto ln = i18n::current() == i18n::Language::German ? harmony::layoutNamesDe() : harmony::layoutNamesEn();
         padText << " " << juce::String (ln[(size_t) layout]) << " O" << juce::String (hooks.octave ? hooks.octave() : 3);
     }

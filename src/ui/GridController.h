@@ -72,6 +72,8 @@ public:
         std::function<void (OhpeProcessor::TransportKey)> transport;
         std::function<int()> octave;
         std::function<void (int)> setOctave;
+        std::function<bool()> gridShown;       ///< p53: the on-screen grid keyboard is shown (else the piano keys)
+        std::function<void (bool)> showGrid;   ///< p53: shows the grid keyboard (the controller's Scales button)
     };
     using Sender = std::function<void (const juce::MidiMessage&)>;
 
@@ -170,6 +172,8 @@ private:
     void rejectProbe();             ///< p53: no identity reply - not the controller, try the next candidate
     void addLog (const juce::String& s);
     gridctl::PadKey padKey() const;
+    /** p53: the pads' layout: the grid keyboard's ("harmony.kb.layout") while it is shown on the screen, else Fourths. */
+    int padLayout() const;
 
     // pads (MIDI thread)
     void padDown (int pad, int velocity);
@@ -183,7 +187,7 @@ private:
     juce::String inName, outName;            ///< the ports used (p49: found by name when automatic)
     juce::String wantIn, wantOut, pattern;   ///< p49: the settings' ports and name pattern
     bool autoPorts = false, inPlugin = false, wasOwner = false, portBusy = false, isHeadless = false;
-    struct Detached { Mode mode = Mode::Synth; PageContext ctx; int page = 0; int octave = 3; } detached; ///< p49
+    struct Detached { Mode mode = Mode::Synth; PageContext ctx; int page = 0; int octave = 3; bool grid = false; } detached; ///< p49 (p53: grid)
     juce::SharedResourcePointer<UserSettingsStore> store; ///< p49
     int strip = 0;
     bool masterTempo = false;
