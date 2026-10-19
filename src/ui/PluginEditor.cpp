@@ -1030,6 +1030,19 @@ void OhpeEditor::makeGridController()
         repaint();
     };
     h.screenPressed = [this] (int n) { return grid.isVisible() && grid.isPressed (n); }; // p53: pads <-> screen pressed
+    // p59: Device = FX editor, Browse = the library (follows the controller's browse mode), User = ZUCHT
+    h.fxEditorShown = [this] { return fxEditor.isVisible(); };
+    h.showFxEditor = [this] (bool show) {
+        if (show && overlayOpen()) return;
+        if (show && mode != Mode::Effects) selectMode (Mode::Effects); // the FX editor lives on the effects racks
+        if (show && ! modfx::isRackView (ctx.fxView)) selectView (modfx::FxViewRack);
+        showFxEditor (show);
+    };
+    h.libraryShown = [this] { return library.isVisible(); };
+    h.showLibrary = [this] (bool show) { showLibrary (show); };
+    h.libraryFollow = [this] (int entry) { library.followController (entry); };
+    h.breedingShown = [this] { return breedView.isVisible(); };
+    h.showBreeding = [this] (bool show) { showBreeding (show); };
     h.setOctave = [this] (int o) {
         keyboard.setBaseOctave (o);
         grid.setBaseOctave (keyboard.getBaseOctave());
@@ -1155,7 +1168,7 @@ void OhpeEditor::refreshHelpOverlay()
     add (designArea ("settingsKey").expanded (2.0f), "Settings", "Language, help, skin, MIDI");
     if (grid.isVisible()) // p48: the grid keyboard's steps in one line (docs: HARMONY.md / HARMONIE.md)
         add (designArea ("keyboard"), "Grid keyboard",
-             "Same shape in every key; Fourths right +1 / up +5, Thirds +1 / +4, Whole Tones +2 / +5, In Key scale steps +1 / +3; MPE: slide = bend");
+             "Same shape in every key; Fourths right +1 / up +5, Thirds +1 / +4, Whole Tones +2 / +5, Sequential +1 / +8; In Key = scale steps; MPE: slide = bend");
     helpOverlay.setItems (std::move (items));
     const bool show = userSettings->get().helpOverlay && ! overlayOpen();
     if (helpOverlay.isVisible() != show) helpOverlay.setVisible (show);
@@ -2386,7 +2399,7 @@ void OhpeEditor::refreshKeys()
     toStartKey.setTooltip (tip ("To the start of the tape", "Enter"));
     loopKey.setTooltip (tip ("Loop between loop in and out", "L") + "\n" + tr ("Bar: yellow = loop on"));
     midiKey.setTooltip (tr ("MIDI maps and remote controls") + "\n" + tr ("Bar: red = MIDI learn"));
-    gridKey.setTooltip (tr ("Grid keyboard: 4 x 24 pads with MPE - every chord has the same shape in every key (fourths, thirds, whole tones or key notes only); swaps the piano keys")
+    gridKey.setTooltip (tr ("Grid keyboard: 4 x 24 pads with MPE - every chord has the same shape in every key (fourths, thirds, whole tones or sequential - in key or chromatic); swaps the piano keys")
                         + "\n" + tr ("Bar: yellow = grid shown")); // p24, p47
     grid.setTooltip (tr ("Every chord has the same shape everywhere. With MPE on: slide sideways = bend, up / down = slide"));
     tapeReadout.setTooltip (tr ("Tape position (minutes:seconds) and bar.beat; REC = recording, PLAY = tape rolling"));

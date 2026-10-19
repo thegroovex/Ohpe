@@ -136,6 +136,23 @@ void LibraryBrowser::open()
     grabKeyboardFocus();
 }
 
+juce::String LibraryBrowser::tagText (const std::string& tag) { return tagLabel (tag); }
+juce::String LibraryBrowser::engineText (const std::string& id) { return engineLabel (id); }
+
+void LibraryBrowser::followController (int entry)
+{
+    if (! isVisible()) return;
+    rebuild();
+    const juce::ScopedValueSetter<bool> svs (ignoreSelection, true);
+    const int r = rowOfEntry (entry);
+    if (r >= 0)
+    {
+        list.selectRow (r);
+        list.scrollToEnsureRowIsOnscreen (r);
+    }
+    else list.deselectAllRows();
+}
+
 void LibraryBrowser::close (bool keep)
 {
     if (! isVisible()) return;

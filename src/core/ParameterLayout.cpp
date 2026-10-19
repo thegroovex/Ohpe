@@ -361,5 +361,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     registerScaleLockParams (reg);
     // ---- p50: Fingerboard mode / MPE HD (14/21-bit) per part - HD decoding, note onset, pitch rounding, pressure curve
     for (auto& p : parts) p->registerLate50FingerboardParams (reg);
+    // ---- p59: grid keyboard - In Key / Chromatic and the fixed bottom-left C (screen grid and controller pads) -------
+    HarmonyBrain::registerLate59GridParams (reg);
 }
 } // namespace ohpe

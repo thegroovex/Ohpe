@@ -7,6 +7,7 @@
 #include "../model/ParamSnapshot.h"
 
 #include <array>
+#include <map>
 #include <atomic>
 #include <cstdint>
 #include <string>
@@ -41,8 +42,10 @@ namespace harmony
 {
 enum ChordType { Major = 0, Minor, Dim, Aug, Sus2, Sus4, Maj7, Min7, Dom7, Fifth, numChordTypes };
 enum Follow { FollowOff = 0, FollowScale, FollowChord, FollowRoot, numFollow };
-/** Layouts of the isomorphic on-screen keyboard ("harmony.kb.layout", append-only). */
-enum Layout { LayoutFourths = 0, LayoutThirds, LayoutWhole, LayoutInKey, numLayouts };
+/** Layouts of the isomorphic on-screen keyboard ("harmony.kb.layout", append-only). p59: index 3 was "In Key" (now
+    Fourths + "harmony.kb.inkey", migrated by migrateLayout) and is Sequential (+1 right, +8 up: continuous rows). */
+enum Layout { LayoutFourths = 0, LayoutThirds, LayoutWhole, LayoutSequential, numLayouts };
+constexpr int legacyLayoutInKey = 3; ///< p59: the old "In Key" layout value (sessions / presets before p59)
 
 /** Pitch classes of a chord shape relative to its root (bit 0 = root). */
 uint16_t chordShape (int type) noexcept;
@@ -70,9 +73,26 @@ void detectKey (const std::array<float, 12>& weights, int prevRoot, int prevScal
 
 /** Columns / rows of the on-screen keyboard. */
 struct GridStep { int col; int row; };
-GridStep layoutSteps (int layout) noexcept; ///< semitones (In Key: scale steps)
-/** Note of a cell (col from the left, row from the bottom) on a grid whose bottom-left cell is `base`. */
-int gridNote (int layout, int col, int row, int base, int keyRoot, int keyScale) noexcept;
+GridStep layoutSteps (int layout) noexcept; ///< semitones (Chromatic)
+/** p59: steps of a layout in scale degrees (In Key): Fourths 1 / 3, Thirds 1 / 2, Whole Tones 1 / 3, Sequential 1 / 8. */
+GridStep layoutDegrees (int layout) noexcept;
+/**
+    Note of a cell (col from the left, row from the bottom); `base` = the lowest C (12 * (octave + 1)).
+    p59: inKey = only notes of the key, every step a scale step (layoutDegrees); else every note (layoutSteps).
+    fixed = the bottom-left cell is C (In Key: the first key note at or above C, the behaviour before p59); not fixed =
+    the bottom-left cell is the key's root above `base`, so every chord shape is the same in every key.
+    A chromatic scale plays In Key like Chromatic. originRoot (-1 = keyRoot): the root the bottom-left cell starts on
+    when not fixed - the grid passes the set key (Core::keyScale, the display header), so the cells stay put while the
+    harmony brain's remembered key (keyRoot / keyScale: which notes are In Key, the colours) moves under the fingers.
+*/
+int gridNote (int layout, int col, int row, int base, int keyRoot, int keyScale, bool inKey = false, bool fixed = true,
+              int originRoot = -1) noexcept;
+/** p59: the cell's note as gridNote, for the grid's own parameters ("harmony.kb.layout / inkey / fixed"). */
+struct GridOptions { int layout = LayoutFourths; bool inKey = false; bool fixed = false; };
+GridOptions gridOptions (const ParamRegistry& reg) noexcept;
+/** p59: sessions / presets from before p59: "harmony.kb.layout" = 3 (the old In Key) without "harmony.kb.inkey" in the
+    document becomes Fourths + In Key. `params` = the document's parameter values; true if it changed anything. */
+bool migrateLayout (std::map<std::string, float>& params);
 } // namespace harmony
 
 class HarmonyBrain
@@ -88,6 +108,9 @@ public:
 
     /** Registers "harmony.memory / hold / take / clear / kb.layout" and "harmony.pN.follow" (append-only block). */
     static void registerParams (ParamRegistry& reg, int numParts);
+    /** p59: "harmony.kb.inkey" (In Key / Chromatic, off) and "harmony.kb.fixed" (bottom-left = C, off = the key's
+        root), appended at the very end of the parameter list. */
+    static void registerLate59GridParams (ParamRegistry& reg);
 
     void bind (const ParamRegistry& reg);
     void prepare (double sampleRate) noexcept { sr = sampleRate > 0.0 ? sampleRate : 48000.0; }

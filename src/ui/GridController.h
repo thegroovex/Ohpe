@@ -57,6 +57,10 @@ class GridController : private juce::Timer, private juce::MidiInputCallback, pri
 {
 public:
     enum class PadMode { Keys = 0, Pads, Drum, Steps, numModes };
+    /** p59: Volume / Pan & Send put the four parts' mixer channels on the eight encoders. */
+    enum class EncoderPage { Normal = 0, Volume, PanSend };
+    /** p59: the browse mode's eight encoder columns. */
+    enum BrowseColumn { BrowseScroll = 0, BrowseCategory, BrowseEngine, BrowseSource, BrowseFavourites, BrowseTag, BrowseRating, BrowseSort, numBrowseColumns };
     /** p49: what the settings section shows. */
     enum class State { Off = 0, ChoosePorts, Waiting, PortBusy, Connected, OtherInstance, Probing, NotFound }; ///< p53: + Probing, NotFound
 
@@ -75,6 +79,14 @@ public:
         std::function<bool()> gridShown;       ///< p53: the on-screen grid keyboard is shown (else the piano keys)
         std::function<void (bool)> showGrid;   ///< p53: shows the grid keyboard (the controller's Scales button)
         std::function<bool (int)> screenPressed; ///< p53: the note is held on the on-screen keyboard (lit on the pads too)
+        // p59: the further function buttons
+        std::function<bool()> fxEditorShown;        ///< Device: the FX editor
+        std::function<void (bool)> showFxEditor;
+        std::function<bool()> libraryShown;         ///< Browse: the library (BIBLIOTHEK) on the screen
+        std::function<void (bool)> showLibrary;
+        std::function<void (int)> libraryFollow;    ///< the screen list follows the controller's filter / cursor (entry)
+        std::function<bool()> breedingShown;        ///< User: ZUCHT (breeding)
+        std::function<void (bool)> showBreeding;
     };
     using Sender = std::function<void (const juce::MidiMessage&)>;
 
@@ -145,6 +157,20 @@ public:
     void setPadMode (PadMode m);
     bool masterIsTempo() const noexcept { return masterTempo; }
     int stripMode() const noexcept { return strip; }
+    // ---- p59
+    EncoderPage encoderPage() const noexcept { return encPage; }
+    bool accentOn() const noexcept { return accentNow.load(); }
+    /** Scales held: the grid options on the display, the upper row selects them. */
+    bool scalesMenuShown() const noexcept { return scalesHeld; }
+    /** Browse mode: the preset list on the display (Browse toggles it). */
+    bool browsing() const noexcept { return browse; }
+    /** The entry (index into the library) under the browse cursor, -1 = none. */
+    int browseCursor() const noexcept { return cursor; }
+    /** Text of a browse column's current value ("All", "Pads", ">= 3", ...). */
+    juce::String browseValue (int column) const;
+    /** The browse column's filter is set (its upper-row button is lit). */
+    bool browseFilterActive (int column) const;
+
     /** The last messages in and out ("> ..." in, "< ..." out), newest last (virtual controller view). */
     juce::StringArray log() const;
 
@@ -160,6 +186,19 @@ private:
     void sendSysex (const std::vector<uint8_t>& bytes);
     void handleQueued (const juce::MidiMessage& m);
     void button (int cc, bool down);
+    void buttonUp (int cc); ///< p59: releases (Scales tap, Mute / Solo / Delete / timing buttons held)
+    void scalesMenuButton (int k);
+    void partButtonHeld (int part); ///< p59: Mute / Solo held + part button
+    void sceneDown (int scene);
+    void sceneUp (int scene);
+    void addEffect();
+    // p59: browse mode
+    void setBrowse (bool on);
+    void browseTurn (int column, int steps);
+    void browseStep (int delta, bool load);
+    void browseLoad (int part);
+    void browseFollow ();
+    void refreshBrowseDisplay();
     void turn (int encoder, int delta);
     void setParam (const juce::String& id, float plain);
     void refreshMap();
@@ -224,6 +263,15 @@ private:
 
     // state (message thread)
     bool shiftHeld = false, selectHeld = false;
+    // p59
+    bool shiftUsed = false, scalesHeld = false, scalesUsed = false, muteHeld = false, muteUsed = false, soloHeld = false,
+         soloUsed = false, deleteHeld = false, browse = false;
+    EncoderPage encPage = EncoderPage::Normal;
+    std::atomic<bool> accentNow { false };
+    int cursor = -1;
+    int scenesHeld = 0;   ///< bits of the timing buttons held
+    bool sceneLatch = false;
+    float arpBefore[3] {}; ///< seq.arp.on / part / rate before a timing button was held
     int touched = -1;
     std::array<std::string, gridctl::numCells> encIds {};
     std::array<int, gridctl::numCells> encAccum {};

@@ -52,8 +52,8 @@ const char* chordSuffix (int type) noexcept
 
 std::vector<std::string> followNamesEn() { return { "Off", "Scale", "Chord", "Root" }; }
 std::vector<std::string> followNamesDe() { return { "Aus", "Skala", "Akkord", "Grundton" }; }
-std::vector<std::string> layoutNamesEn() { return { "Fourths", "Thirds", "Whole Tones", "In Key" }; }
-std::vector<std::string> layoutNamesDe() { return { "Quarten", "Terzen", "Ganztöne", "In Tonart" }; }
+std::vector<std::string> layoutNamesEn() { return { "Fourths", "Thirds", "Whole Tones", "Sequential" }; }
+std::vector<std::string> layoutNamesDe() { return { "Quarten", "Terzen", "Ganztöne", "Sequenziell" }; }
 
 bool detectChord (uint16_t pcs, int bassPc, Chord& out) noexcept
 {
@@ -119,20 +119,56 @@ GridStep layoutSteps (int layout) noexcept
     {
         case LayoutThirds: return { 1, 4 };
         case LayoutWhole: return { 2, 5 };
-        case LayoutInKey: return { 1, 3 }; // scale steps: a row is a fourth in a seven-note key
+        case LayoutSequential: return { 1, 8 }; // p59: continuous rows of eight (the pads' width)
         default: return { 1, 5 };
     }
 }
 
-int gridNote (int layout, int col, int row, int base, int keyRoot, int keyScale) noexcept
+GridStep layoutDegrees (int layout) noexcept
 {
-    const auto st = layoutSteps (layout);
-    if (layout != LayoutInKey || keyScale == scales::Chromatic)
-        return std::clamp (base + col * st.col + row * st.row, 0, 127);
-    // In Key: the bottom-left cell is the first key note at or above base, every step is a scale step
-    int n = std::clamp (base, 0, 127);
+    switch (layout)
+    {
+        case LayoutThirds: return { 1, 2 };     // a row up = a third (two scale steps)
+        case LayoutSequential: return { 1, 8 }; // continuous rows: eight scale steps per row
+        default: return { 1, 3 };               // Fourths (and Whole Tones: every scale step is about a whole tone)
+    }
+}
+
+int gridNote (int layout, int col, int row, int base, int keyRoot, int keyScale, bool inKey, bool fixed, int originRoot) noexcept
+{
+    layout = std::clamp (layout, 0, (int) numLayouts - 1);
+    const int from = originRoot >= 0 ? originRoot : keyRoot;
+    const int root = ((from % 12) + 12) % 12;
+    if (! inKey || keyScale == scales::Chromatic)
+    {
+        const auto st = layoutSteps (layout);
+        const int origin = base + (fixed ? 0 : root); // not fixed: the bottom-left cell is the key's root
+        return std::clamp (origin + col * st.col + row * st.row, 0, 127);
+    }
+    // In Key: every step is a scale step; the bottom-left cell is the root (not fixed) or the first key note from C
+    int n = std::clamp (base + (fixed ? 0 : root), 0, 127);
     while (n < 127 && ! scales::inScale (n, keyRoot, keyScale)) ++n;
+    const auto st = layoutDegrees (layout);
     return std::clamp (scales::degreeAbove (n, col * st.col + row * st.row, keyRoot, keyScale), 0, 127);
+}
+
+GridOptions gridOptions (const ParamRegistry& reg) noexcept
+{
+    GridOptions o;
+    o.layout = std::clamp ((int) std::lround (reg.get ("harmony.kb.layout")), 0, (int) numLayouts - 1);
+    o.inKey = reg.get ("harmony.kb.inkey") >= 0.5f;
+    o.fixed = reg.get ("harmony.kb.fixed") >= 0.5f;
+    return o;
+}
+
+bool migrateLayout (std::map<std::string, float>& params)
+{
+    if (params.count ("harmony.kb.inkey") != 0) return false; // written by p59 or later
+    const auto it = params.find ("harmony.kb.layout");
+    if (it == params.end() || (int) std::lround (it->second) != legacyLayoutInKey) return false;
+    it->second = (float) LayoutFourths;
+    params["harmony.kb.inkey"] = 1.0f;
+    return true;
 }
 } // namespace harmony
 
@@ -162,6 +198,17 @@ void HarmonyBrain::registerParams (ParamRegistry& r, int parts)
         d.group = "global/harmony";
         r.add (std::move (d));
     }
+}
+
+void HarmonyBrain::registerLate59GridParams (ParamRegistry& r)
+{
+    using namespace pd;
+    auto inKey = toggle ("harmony.kb.inkey", "Grid In Key", "Raster nur Tonart", false);
+    inKey.group = "global/harmony";
+    r.add (std::move (inKey));
+    auto fixed = toggle ("harmony.kb.fixed", "Grid Fixed C", "Raster C fest", false);
+    fixed.group = "global/harmony";
+    r.add (std::move (fixed));
 }
 
 void HarmonyBrain::bind (const ParamRegistry& r)

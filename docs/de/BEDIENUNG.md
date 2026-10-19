@@ -724,9 +724,10 @@ Edit-Part folgt.
 | **Halten** (Softkey) | das Gedächtnis einfrieren |
 | **Vergessen** (Softkey) | Tonart, Akkord und Verlauf vergessen |
 | Regler, Seite *Harmonie* | Folgen (Edit-Part: Aus / Skala / Akkord / Grundton), Gedächtnis (Takte), Halten, Raster-Anordnung |
+| Regler, Seite *Raster* | Raster-Anordnung (Quarten / Terzen / Ganztöne / Sequenziell), Nur Tonart / Chromatisch, C fest (aus = Grundton unten links) |
 
 Die Taste **RASTER** (zwischen OKTAVE + und MIDI) tauscht die Klaviertasten gegen die isomorphe Raster-Tastatur:
-4 × 24 Felder in Quarten, Terzen, Ganztönen oder nur den Tönen der Tonart; Akkordtöne tragen einen violetten Balken.
+4 × 24 Felder in Quarten, Terzen, Ganztönen oder sequenziellen Reihen, nur Tonart oder chromatisch, unten links der Grundton (oder C); Akkordtöne tragen einen violetten Balken.
 Mit MPE für den Edit-Part hat jede Berührung ihren eigenen Kanal – seitlich schieben biegt, hoch / runter für Slide,
 Druck von Touch oder Stift. Jeder Akkord hat in jeder Tonart dieselbe Form; das sagt auch der Tooltip der Taste,
 und beim ersten Einschalten in einem Projekt zeigt die Tastatur-Anzeige ein paar Sekunden lang „Gleiche

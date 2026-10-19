@@ -87,7 +87,7 @@ MIDI vom Host wirkt weiter parallel. Instanz schließen oder Profil ausschalten 
 | 1 | Namen der Parameter auf den 8 Reglern (je zwei über einem Display-Segment) |
 | 2 | ihre Werte |
 | 3 | Preset · Part und Engine · Tempo · Tonart (mit **Lock** bei Scale Lock) – solange ein Regler berührt wird: sein voller Name und Wert |
-| 4 | Seite (z. B. *Filter 2/5*) · Transport (Start / Stopp / REC / Vorzähler, *Klick* mit Metronom) · Bandposition · Pad-Modus, Raster-Anordnung und Oktave |
+| 4 | Seite (z. B. *Filter 2/5*; *Volume*, *Pan & Send*, *Bibliothek*) · Transport (Start / Stopp / REC / Vorzähler, *Klick* mit Metronom) · Bandposition · Tasten / Steps: Raster-Anordnung, Nur Tonart / Chromatisch, C fest und Oktave (z. B. `Qua Ton Fest O3`: Quarten, Nur Tonart, C fest, Oktave 3; `Seq Chr O3`), andere Pad-Modi: ihr Name |
 
 Umlaute stehen als ae / oe / ue da (das Display kennt keine Umlaute).
 
@@ -113,8 +113,11 @@ Die zweite Tastenreihe, Tasten 5 – 8 (oder **Note** / **Session**), wählt den
 ### Tasten – die Raster-Tastatur auf den Pads
 
 * **Dieselbe Anordnung** wie *Raster-Anordnung* (`harmony.kb.layout`): **Quarten** (rechts +1, hoch +5), **Terzen**
-  (+1 / +4), **Ganztöne** (+2 / +5) oder **In Tonart** (Stufen der Tonart, drei Stufen je Reihe – nur Tonart-Töne).
-  Die Taste **Scales** schaltet die Anordnungen weiter. Seit p53 folgen die Pads der Bildschirm-Tastatur: solange die
+  (+1 / +4), **Ganztöne** (+2 / +5) oder **Sequenziell** (+1 / +8, fortlaufende Reihen), jeweils **Nur Tonart**
+  (Skalenstufen, nur Tonart-Töne) oder **Chromatisch** (`harmony.kb.inkey`), das Pad unten links auf dem Grundton der
+  Tonart oder auf C (**C fest**, `harmony.kb.fixed`) – siehe [Harmonie](HARMONIE.md#die-vier-anordnungen). **Scales
+  kurz drücken** schaltet die Anordnungen weiter; **Scales halten** zeigt die Raster-Optionen im Display, die obere
+  Tastenreihe wählt sie (unten). Seit p53 folgen die Pads der Bildschirm-Tastatur: solange die
   **Raster-Tastatur** gezeigt wird (Taste RASTER), übernehmen sie ihre Anordnung, Grundton, Skala und Farben; bei den
   **Klaviertasten** gilt die Standard-Anordnung (Quarten). Scales bei gezeigten Klaviertasten schaltet zuerst den
   Bildschirm auf die Raster-Tastatur, dann ihre Anordnung weiter – Bildschirm und Pads zeigen immer dasselbe.
@@ -124,14 +127,37 @@ Die zweite Tastenreihe, Tasten 5 – 8 (oder **Note** / **Session**), wählt den
   demselben tiefsten C. Die vier unteren Pad-Reihen sind genau die vier Reihen des Bildschirm-Rasters; die oberen vier
   setzen es fort.
 * **Dieselbe Tonart**: die Tonart, die das Raster zeigt (die gemerkte Tonart – bis etwas gehört wurde die eingestellte).
-  Mit **Scale Lock** (Shift + Scales) bleiben die anderen Töne dunkel und stumm; In Tonart hat ohnehin nur Tonart-Töne.
+  Mit **Scale Lock** (Shift + Scales) bleiben die anderen Töne bei Chromatisch dunkel und stumm; Nur Tonart hat ohnehin
+  nur Tonart-Töne.
 * **Farben**: Grundton der Tonart **bernstein**, Tonart-Töne **gelb (gedimmt)**, Töne des gemerkten Akkords **grün
   (gedimmt)**, gehaltene Pads **grün**, andere Töne dunkel (auf dem Bildschirm graphit).
-* **Oktave − / +** verschiebt Pads, Bildschirm-Klaviatur und Bildschirm-Raster gemeinsam (das Pad unten links ist das
-  C dieser Oktave; In Tonart: der erste Tonart-Ton ab dort).
+* **Oktave − / +** verschiebt Pads, Bildschirm-Klaviatur und Bildschirm-Raster gemeinsam (das Pad unten links ist der
+  Grundton der Tonart in dieser Oktave, mit C fest ihr C).
 * **Anschlag und Druck** spielen den **Edit-Part**. Ist für ihn MPE an, bekommt jedes Pad seinen eigenen
   Mitgliedskanal und der Druck gehört zu dieser Note; ohne MPE laufen die Noten durch Skala, Akkord und Folgen, der
   Druck geht als polyphoner Aftertouch an den Part.
+
+### Scales gehalten – die Raster-Optionen
+
+Solange **Scales** gehalten wird, zeigt das Display die Optionen über der oberen Tastenreihe, und die acht oberen
+Tasten wählen:
+
+| Obere Taste | Wählt | Licht |
+|---|---|---|
+| 1 – 4 | Anordnung Quarten / Terzen / Ganztöne / Sequenziell | die gewählte gelb, die anderen gelb gedimmt |
+| 5 | Nur Tonart ↔ Chromatisch | grün = Nur Tonart |
+| 6 | C fest ↔ Grundton unten links | grün = C fest |
+| 7 | Grundton der Tonart + 1 Halbton (Shift: − 1) | bernstein |
+| 8 | nächste Skala (Shift: vorige) | bernstein |
+
+```
+  Quarten  Terzen  Ganzton  Sequenz   Toene    Unten   Grundt.   Skala
+    [x]                              Tonart   Grundt.    C       Dur
+Raster: Quarten - nur Tonart - unten links Grundton
+Scales halten + obere Tasten waehlen (Shift: Grundton / Skala zurueck)
+```
+
+Scales loslassen, ohne etwas zu wählen, schaltet zur nächsten Anordnung (kurz drücken).
 
 ## Tasten
 
@@ -141,7 +167,7 @@ Die zweite Tastenreihe, Tasten 5 – 8 (oder **Note** / **Session**), wählt den
 | zweite Reihe 1 – 4 | Parts 1 – 4 |
 | zweite Reihe 5 – 8 | Pad-Modus Tasten / Pads / Drum / Steps |
 | ◀ / ▶ | Seite − / + |
-| ▲ / ▼ | voriges / nächstes Preset |
+| ▲ / ▼ | voriges / nächstes Preset (im Bibliotheks-Modus: voriges / nächstes der Liste, sofort geladen) |
 | Oktave − / + | Oktave von Klaviatur, Raster und Pads |
 | Play | Start / Stopp (Shift: Band Start / Stopp) |
 | Record | Aufnahme (Shift: Edit-Spur scharf schalten) |
@@ -150,9 +176,65 @@ Die zweite Tastenreihe, Tasten 5 – 8 (oder **Note** / **Session**), wählt den
 | Metronome | Metronom an / aus (Shift: Vorzähler Aus / 1 Takt / 2 Takte) |
 | Tap Tempo | Tempo tippen |
 | Undo | Band-Rückgängig (Shift: Wiederholen) |
-| Scales | nächste Raster-Anordnung (Shift: Scale Lock) |
+| Scales | kurz: nächste Raster-Anordnung; halten: Raster-Optionen auf der oberen Reihe (oben); Shift: Scale Lock – leuchtet bei Scale Lock, blinkt, solange gehalten |
 | Master | Master-Regler: Lautstärke ↔ Tempo |
 | Shift / Select | Umschalter (Select: feine Regler-Schritte) |
+| Mute | allein: Mischerkanal des Edit-Parts stumm; gehalten + Part-Taste 1 – 4: dieser Part – leuchtet, wenn ein Part stumm ist; die Part-Tasten zeigen beim Halten Stumm rot |
+| Solo | dasselbe für Solo (Part-Tasten beim Halten bernstein) |
+| Volume | Regler 1 – 4 = Lautstärke der Parts 1 – 4, 5 – 8 = ihr Panorama (noch einmal: zurück zur Seite) – leuchtet, solange an |
+| Pan & Send | Regler 1 – 4 = Send A der Parts 1 – 4, 5 – 8 = Send B – leuchtet, solange an |
+| Device | öffnet / schließt den FX-Editor (wechselt dafür zu den Effekt-Racks; im Bibliotheks-Modus: verlässt ihn) – leuchtet, solange offen |
+| Browse | Bibliotheks-Modus an / aus – die Preset-Bibliothek im Display (unten) – leuchtet, solange an |
+| Track | Modus Mischer – leuchtet dort |
+| Clip | Modus Band – leuchtet dort |
+| Accent | feste volle Anschlagstärke (127) für alle Pads an / aus – leuchtet, solange an |
+| Quantize | Skala-Quantisierung des Edit-Parts an / aus (`pN.quant`) – leuchtet, solange an |
+| Duplicate | kopiert das Step-Pattern ins nächste Pattern, das dann bearbeitet wird und spielt |
+| Double | verdoppelt die Länge des Step-Patterns, die Schritte werden in die neue Hälfte kopiert (bis 64) |
+| Delete | gehalten + ein Schritt-Pad (Modus Steps) = diesen Schritt löschen – leuchtet, solange gehalten |
+| New | lädt den Startklang (das erste Preset der Bibliothek, in alle Parts) |
+| Fixed Length | Schrittanzahl 4 → 8 → 16 → 32 → 64 → 4 – leuchtet, wenn nicht 16 |
+| Automation | Bewegungsaufnahme des Edit-Parts an / aus (`pN.motion.rec`) – leuchtet, solange scharf, blinkt, während das Band läuft |
+| Add Effect | der gewählte FX-Slot (Part-Rack, wenn die Effekt-Seite kein Rack zeigt) bekommt den nächsten Effekttyp |
+| User | öffnet / schließt ZUCHT – leuchtet, solange offen |
+| 1/4 … 1/32t (rechts) | gehalten beim Spielen der Pads = Notenwiederholung: der Arpeggiator auf dem Edit-Part in diesem Raster (1/4, 1/4T, 1/8, 1/8T, 1/16, 1/16T, 1/32, 1/32T), beim Loslassen wie vorher; Shift = Arp-Raster setzen und behalten – grün, solange gehalten, gelb = Raster des Arps |
+
+Nicht belegt (keine passende Ohpe-Funktion): Add Track, In, Out.
+
+### Browse – die Bibliothek im Display
+
+**Browse** macht den Controller zum Preset-Browser, den du ohne Blick auf den Bildschirm bedienst; die Bibliothek des
+Bildschirms öffnet sich und folgt jedem Schritt (Filter, Cursor, Laden). Das Display:
+
+* **Zeile 1** – die Werte der acht Spalten, je einer über einem Regler: **1** Position in der Liste, **2** Kategorie,
+  **3** Engine, **4** Quelle (Alle / Werk / Eigene / ein Inhaltspaket), **5** nur Favoriten, **6** Merkmal (MPE /
+  Fingerboard / Morph – die Schnellfilter der Bibliothek), **7** Mindestbewertung, **8** Sortierung. Ein berührter Regler
+  zeigt Name und Wert seiner Spalte ausgeschrieben.
+* **Zeilen 2 – 4** – das Preset davor, das unter dem Cursor (markiert mit `>`), das nächste: Name · Kategorie · Engine ·
+  Autor oder Paket, `+` = Favorit, `4*` = Bewertung.
+
+```
+ 12/240  Flaechen   Alle     Alle     Aus      MPE      Alle     Name
+ Warmes Glas       Flaechen         Analog            groovex
+>Samtschichten     Flaechen         Wavetable         groovex  + 4*
+ Weite Luft        Flaechen         Grain             Werk
+```
+
+| Bedienelement | Im Bibliotheks-Modus |
+|---|---|
+| Regler 1 | bewegt den Cursor durch die Liste (nichts wird geladen) |
+| Regler 2 – 8 | ändern den Filter dieser Spalte (Liste und Bildschirm folgen) |
+| obere Taste 1 | lädt das Preset unter dem Cursor (leuchtet grün) |
+| obere Tasten 2 – 8 | setzen den Filter dieser Spalte zurück – leuchten gelb, solange der Filter gesetzt ist |
+| ▲ / ▼ | voriges / nächstes Preset der Liste, **sofort geladen** (Vorhören) |
+| ◀ / ▶ | Cursor 4 hoch / runter |
+| Select | lädt das Preset unter dem Cursor in den Edit-Part |
+| Part-Tasten 1 – 4 | laden es in diesen Part (der Edit-Part leuchtet grün) |
+| Shift (allein gedrückt) | Favorit an / aus für das Preset unter dem Cursor |
+| Browse oder Device | Bibliotheks-Modus verlassen (das geladene Preset bleibt) |
+
+Transport, Oktave und die übrigen Tasten wirken weiter. Außerhalb des Bibliotheks-Modus schalten ▲ / ▼ die Presets wie
+bisher.
 
 ## Touch-Strip
 
@@ -169,7 +251,7 @@ und wenn der Controller abgezogen wird.
 
 ## Hinweise
 
-* Keine neuen Host-Parameter: Der Controller ändert nur bestehende Parameter (Host wird informiert, automatisierbar wie
+* Keine eigenen Host-Parameter: Der Controller ändert nur bestehende Parameter (Host wird informiert, automatisierbar wie
   bisher).
 * Eigene Umsetzung des öffentlich dokumentierten MIDI- / Display-Protokolls des Controllers; Ohpe enthält keinen
   fremden Code.

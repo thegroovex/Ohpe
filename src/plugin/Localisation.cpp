@@ -630,6 +630,9 @@ const std::map<juce::String, juce::String>& table()
         { "Key", "Tonart" },
         { "Root", "Grundton" },
         { "Grid", "Raster" },
+        { "Browse", "Bibliothek" },            // p59: the controller's browse mode (line 4)
+        { "Pan & Send", "Pan & Send" },
+        { "No presets - turn the filters back", "Keine Presets - Filter zurückdrehen" },
         { "Take Key", "Tonart übernehmen" },
         { "Forget", "Vergessen" },
         { "Hold", "Halten" },
@@ -637,8 +640,8 @@ const std::map<juce::String, juce::String>& table()
         { "chords in memory", "Akkorde im Gedächtnis" },
         { "Listening - play chords on a part that does not follow", "Hört zu – Akkorde auf einem Part spielen, der nicht folgt" },
         { "Held - the memory does not change", "Gehalten – das Gedächtnis ändert sich nicht" },
-        { "Grid keyboard: 4 x 24 pads with MPE - every chord has the same shape in every key (fourths, thirds, whole tones or key notes only); swaps the piano keys",
-          "Raster-Tastatur: 4 × 24 Felder mit MPE – jeder Akkord hat in jeder Tonart dieselbe Form (Quarten, Terzen, Ganztöne oder nur Tonart-Töne); ersetzt die Klaviertasten" },
+        { "Grid keyboard: 4 x 24 pads with MPE - every chord has the same shape in every key (fourths, thirds, whole tones or sequential - in key or chromatic); swaps the piano keys",
+          "Raster-Tastatur: 4 × 24 Felder mit MPE – jeder Akkord hat in jeder Tonart dieselbe Form (Quarten, Terzen, Ganztöne oder sequenziell – nur Tonart oder chromatisch); ersetzt die Klaviertasten" },
         { "Same chord shape in every key", "Gleiche Akkordform in jeder Tonart" }, // p47: the grid's first-use hint
         { "Bar: yellow = grid shown", "Balken: gelb = Raster sichtbar" },
         { "Every chord has the same shape everywhere. With MPE on: slide sideways = bend, up / down = slide",
@@ -814,8 +817,8 @@ const std::map<juce::String, juce::String>& table()
         { "Keyboard", "Tastatur" },
         { "Octave, grid keyboard, MIDI", "Oktave, Raster-Tastatur, MIDI" },
         { "Grid keyboard", "Raster-Tastatur" }, // p48
-        { "Same shape in every key; Fourths right +1 / up +5, Thirds +1 / +4, Whole Tones +2 / +5, In Key scale steps +1 / +3; MPE: slide = bend",
-          "Gleiche Form in jeder Tonart; Quarten rechts +1 / hoch +5, Terzen +1 / +4, Ganztöne +2 / +5, In Tonart Stufen +1 / +3; MPE: schieben = Bend" },
+        { "Same shape in every key; Fourths right +1 / up +5, Thirds +1 / +4, Whole Tones +2 / +5, Sequential +1 / +8; In Key = scale steps; MPE: slide = bend",
+          "Gleiche Form in jeder Tonart; Quarten rechts +1 / hoch +5, Terzen +1 / +4, Ganztöne +2 / +5, Sequenziell +1 / +8; Nur Tonart = Skalenstufen; MPE: schieben = Bend" },
         { "Wheels", "Räder" },
         { "Pitch bend and modulation", "Pitchbend und Modulation" },
         { "Portamento mode and time", "Portamento-Modus und -Zeit" },

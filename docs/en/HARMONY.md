@@ -36,7 +36,7 @@ Each part has **Follow** (`harmony.pN.follow`):
 
 Snapping uses the nearest note (a tie goes down) – live keys, host MIDI and all sequencers alike. The part's
 one-finger **Chord** still works and builds its chord in the remembered key. Notes of a part with **MPE** on keep
-their pitch (per-note expression); use the grid's *In Key* layout there.
+their pitch (per-note expression); play the grid with *In Key* on there.
 
 ## Controls
 
@@ -47,7 +47,9 @@ their pitch (per-note expression); use the grid's *In Key* layout there.
 | **Hold** | `harmony.hold` | freezes the memory: new notes change neither chord nor key |
 | **Take Key** | `harmony.take` | trigger: writes the remembered key into the global Key / Scale |
 | **Forget** | `harmony.clear` | trigger: forgets key, chord, history |
-| **Grid Layout** | `harmony.kb.layout` | Fourths / Thirds / Whole Tones / In Key |
+| **Grid Layout** | `harmony.kb.layout` | Fourths / Thirds / Whole Tones / Sequential |
+| **Grid In Key** | `harmony.kb.inkey` | off = Chromatic (every note; notes outside the key dark but playable), on = In Key (only key notes) |
+| **Grid Fixed C** | `harmony.kb.fixed` | off (default) = the bottom-left cell is the key's root, on = it is C |
 
 All are host parameters: automatable and MIDI-learnable (right-click). The memory (key, chord, history, pitch-class
 weights) is stored in projects and the plug-in state; part presets neither carry nor change *Follow*.
@@ -57,8 +59,10 @@ weights) is stored in projects and the plug-in state; part presets neither carry
 LFO mode, fifth tab **Harmony**: the remembered **key** and **chord** (the chord glows when it changes), twelve bars
 for the pitch-class memory starting at the key's root (key notes light, other notes dim, **chord tones violet**,
 **held notes green**, the root marked **yellow**) and the **history** chips. The strip says what the brain does and
-whether the edit part follows. Soft keys: **Take Key**, **Hold**, **Forget**. Encoders: Follow (edit part), Memory,
-Hold, Grid Layout.
+whether the edit part follows. Soft keys: **Take Key**, **Hold**, **Forget**. Encoders: page *Harmony* = Follow (edit
+part), Memory, Hold, Grid Layout; page *Grid* = Grid Layout, In Key / Chromatic, Fixed C.
+
+![Encoder page Grid: layout, In Key / Chromatic, Fixed C](../images/ohpe-harmony-grid.png)
 
 ## Chord names and the key (p45)
 
@@ -96,10 +100,12 @@ distance between two notes in semitones (a major third = 4, a fifth = 7, an octa
 * **GRID** shows the grid in place of the piano keys; press it again for the piano. Ohpe remembers which one was
   shown.
 * It plays the **edit part** (the part selected with the part keys) and follows when you choose another part.
-* **OCTAVE − / +** shift it like the piano: the bottom-left cell is the C of the piano's lowest octave (C3 by default;
-  C0 … C7). The readout shows `GRID` and the grid's lowest and highest note.
-* The layout is the parameter **Grid Layout** (`harmony.kb.layout`): LFO mode, view **Harmony**, encoder page
-  *Harmony*. Like every parameter it can be automated and MIDI-mapped. It is global (the same for all parts).
+* **OCTAVE − / +** shift it like the piano: the bottom-left cell is the **root of the key** in the piano's lowest octave
+  (C3 by default; C0 … C7) – or the C of that octave with **Fixed C** on. The readout shows `GRID` and the grid's
+  lowest and highest note.
+* Three parameters set it up, all global (the same for all parts), automatable and MIDI-mappable: **Grid Layout**
+  (`harmony.kb.layout`), **Grid In Key** (`harmony.kb.inkey`) and **Grid Fixed C** (`harmony.kb.fixed`). On screen:
+  LFO mode, view **Harmony**, encoder page *Grid* (the layout next to the two switches).
 * Hiding the grid, switching part or octave releases every held cell (no hanging notes).
 
 ### Reading the cells
@@ -117,14 +123,75 @@ the lower edge plays softly (velocity 56), the upper edge at full strength (127)
 
 ### The four layouts
 
-The steps, exactly as the code computes them (row 1 = bottom row, column 1 = left):
+The steps, exactly as the code computes them (row 1 = bottom row, column 1 = left). **Chromatic** counts semitones,
+**In Key** counts steps of the key's scale (see below):
 
-| Layout | One cell right | One row up | Range at the default octave |
+| Layout | Chromatic: right / up | In Key: right / up | Range (Chromatic, default octave, key C) |
 |---|---|---|---|
-| **Fourths** (default) | +1 semitone | +5 semitones (a fourth) | C3 – D6 |
-| **Thirds** | +1 semitone | +4 semitones (a major third) | C3 – B5 |
-| **Whole Tones** | +2 semitones (a whole tone) | +5 semitones (a fourth) | C3 – C#8 |
-| **In Key** | +1 step of the key's scale | +3 steps of the scale | C3 – G7 (C major) |
+| **Fourths** (default) | +1 / +5 semitones (a fourth) | +1 / +3 scale steps | C3 – D6 |
+| **Thirds** | +1 / +4 semitones (a major third) | +1 / +2 scale steps (a third) | C3 – B5 |
+| **Whole Tones** | +2 / +5 semitones | +1 / +3 scale steps (every scale step is about a whole tone, so In Key plays like Fourths) | C3 – C#8 |
+| **Sequential** | +1 / +8 semitones: continuous rows of eight | +1 / +8 scale steps | C3 – B6 |
+
+**Sequential** – the eight pads of a row continue in the row above, like reading a page: the last cell of a row + 1
+is the first cell of the next row. Easy to find any note, but chord shapes change from row to row.
+
+### In Key or Chromatic (every layout)
+
+**Grid In Key** (`harmony.kb.inkey`) works with every layout:
+
+* **Chromatic** (off, the default): every note. Notes outside the key are **dark but playable**; with **Scale Lock**
+  on they are also silent on the pads (on the screen they snap like every note).
+* **In Key** (on): only the notes of the key, so you cannot play a "wrong" note. One cell right is the next note of the
+  scale, one row up is the same number of **scale steps** everywhere (Fourths 3, Thirds 2, Sequential 8). In a
+  seven-note key three steps are a fourth except from the fourth degree (a tritone, in C major F → B).
+* A chromatic key scale plays In Key like Chromatic. When the brain moves to a new key the grid relabels at once.
+* The old layout *In Key* of earlier versions is now **Fourths + In Key**; projects and presets that used it open that way.
+
+### Fixed C or the key's root
+
+**Grid Fixed C** (`harmony.kb.fixed`):
+
+* **Off (the default)**: the bottom-left cell is the **root of the key set on the display header** (Key, or the
+  host's key), and every row is relative to it. It stays put while you play, even when the harmony brain's remembered
+  key moves (that key still decides which notes are In Key and how the cells are lit). A
+  chord shape therefore plays the same chord degree in **every key** – learn it once in C, play it in F# without
+  moving your hand.
+* **On**: the bottom-left cell is **C** (In Key: the first key note at or above C) – the behaviour of earlier versions.
+* **OCTAVE − / +** shift the grid by an octave in both cases.
+
+Fourths + In Key in C major (the bottom-left cell is C with Fixed C on or off):
+
+```
+4 | E4     F4     G4     A4     B4     C5     D5     E5
+3 | B3     C4     D4     E4     F4     G4     A4     B4
+2 | F3     G3     A3     B3     C4     D4     E4     F4
+1 | C3     D3     E3     F3     G3     A3     B3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+Thirds + In Key, and Sequential (Chromatic), C major:
+
+```
+4 | B3     C4     D4     E4     F4     G4     A4     B4
+3 | G3     A3     B3     C4     D4     E4     F4     G4
+2 | E3     F3     G3     A3     B3     C4     D4     E4
+1 | C3     D3     E3     F3     G3     A3     B3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+```
+4 | C5     C#5    D5     D#5    E5     F5     F#5    G5
+3 | E4     F4     F#4    G4     G#4    A4     A#4    B4
+2 | G#3    A3     A#3    B3     C4     C#4    D4     D#4
+1 | C3     C#3    D3     D#3    E3     F3     F#3    G3
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+The Chromatic diagrams below show the layouts with the key C (the root is C, so Fixed C makes no difference there).
 
 **Fourths** – like the lower strings of a bass or guitar: each row starts a fourth above the one below.
 
@@ -156,25 +223,6 @@ other six notes. Wide range in little space.
 3 |  A#3    C4     D4     E4     F#4    G#4    A#4    C5
 2 |  F3     G3     A3     B3     C#4    D#4    F4     G4
 1 |  C3     D3     E3     F#3    G#3    A#3    C4     D4
-  +--------------------------------------------------------
-      1      2      3      4      5      6      7      8   
-```
-
-**In Key** – only the notes of the remembered key, so you cannot play a "wrong" note. One cell right is the next
-note of the scale, one row up is three scale steps. Details that follow from the code:
-
-* The bottom-left cell is the **first key note at or above the C** of the octave (in D major: C#3), so the root is
-  not always in the corner – look for the bold cell.
-* In a seven-note key three steps are a **fourth** everywhere except from the fourth degree, where it is a tritone
-  (in C major F → B). In a five-note key (pentatonic) three steps span more than a fourth.
-* If the key's scale is *Chromatic*, In Key falls back to semitones: +1 right, +3 up (a minor third).
-* When the brain moves to a new key the grid relabels at once; In Key cells then play the new key's notes.
-
-```
-4 |  E4     F4     G4     A4     B4     C5     D5     E5
-3 |  B3     C4     D4     E4     F4     G4     A4     B4
-2 |  F3     G3     A3     B3     C4     D4     E4     F4
-1 |  C3     D3     E3     F3     G3     A3     B3     C4
   +--------------------------------------------------------
       1      2      3      4      5      6      7      8   
 ```
@@ -267,7 +315,7 @@ One row up transposes by the row's interval (a fourth in Fourths: C major → F 
 
 **The same chords in the other layouts** (offsets as *cells right, rows up* from the root; negative = left):
 
-| Shape | Fourths | Thirds | Whole Tones | In Key |
+| Shape | Fourths | Thirds | Whole Tones | Fourths + In Key |
 |---|---|---|---|---|
 | major triad | 3rd (4, 0) or (−1, 1), 5th (2, 1) | 3rd (0, 1), 5th (3, 1) | 3rd (2, 0), 5th (1, 1) | 3rd (2, 0), 5th (1, 1) – major or minor as the key decides |
 | minor triad | 3rd (3, 0) or (−2, 1), 5th (2, 1) | 3rd (3, 0) or (−1, 1), 5th (3, 1) | 3rd (−1, 1), 5th (1, 1) | same shape as above |
@@ -314,7 +362,7 @@ Whole Tones, major triad (C – E – G) and minor triad (D – F – A):
       1      2      3      4      5      6      7      8   
 ```
 
-In Key, the scale is simply a row from left to right, and **one** triad shape plays every chord of the key: from C
+Fourths + In Key: the scale is simply a row from left to right, and **one** triad shape plays every chord of the key: from C
 it is C major, moved one cell right it is D minor (D – F – A) – the key decides major or minor.
 
 ```
@@ -335,6 +383,152 @@ it is C major, moved one cell right it is D minor (D – F – A) – the key de
       1      2      3      4      5      6      7      8   
 ```
 
+## Chord guide: playing chords on the grid
+
+This guide uses the easiest way to play: **Fourths + In Key, Fixed C off** (switch In Key on; Fourths and Fixed C off are the defaults). The bottom-left cell is always the key's
+root, so every shape below plays the same chord degree in every key. Offsets are *cells right, rows up* from the
+chord's root cell; the diagrams show C major (and A minor) at the default octave, cells in `[ ]` are pressed. The same
+shapes work on the screen grid and on the Grid-Controller pads (its four lower rows are the screen's rows).
+
+**Triad – root, 2 right, 1 right + 1 up.** The key decides major or minor: on the root of a major key it is a major
+triad, on the root of a minor key a minor triad.
+
+```
+4 | E4     F4     G4     A4     B4     C5     D5     E5
+3 | B3     C4     D4     E4     F4     G4     A4     B4
+2 | F3    [G3]    A3     B3     C4     D4     E4     F4
+1 |[C3]    D3    [E3]    F3     G3     A3     B3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+```
+4 | C5     D5     E5     F5     G5     A5     B5     C6
+3 | G4     A4     B4     C5     D5     E5     F5     G5
+2 | D4    [E4]    F4     G4     A4     B4     C5     D5
+1 |[A3]    B3    [C4]    D4     E4     F4     G4     A4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Every chord of the key with one shape.** Move the shape one cell right and it plays the next chord of the key – in C
+major: C, Dm, Em, F, G, Am, Bdim. Here Dm:
+
+```
+4 | E4     F4     G4     A4     B4     C5     D5     E5
+3 | B3     C4     D4     E4     F4     G4     A4     B4
+2 | F3     G3    [A3]    B3     C4     D4     E4     F4
+1 | C3    [D3]    E3    [F3]    G3     A3     B3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Seventh chord – the triad + 3 right + 1 up.** Major 7 on the 1st and 4th degree, dominant 7 on the 5th, minor 7 on
+the 2nd, 3rd and 6th, m7b5 on the 7th – again the key decides.
+
+```
+4 | E4     F4     G4     A4     B4     C5     D5     E5
+3 | B3     C4     D4     E4     F4     G4     A4     B4
+2 | F3    [G3]    A3    [B3]    C4     D4     E4     F4
+1 |[C3]    D3    [E3]    F3     G3     A3     B3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Inversions** – another note in the bass, the same chord. First inversion (third in the bass): 2 right, 1 right +
+1 up, 4 right + 1 up. Second inversion (fifth in the bass): 1 right + 1 up, 4 right + 1 up, 3 right + 2 up.
+
+```
+4 | E4     F4     G4     A4     B4     C5     D5     E5
+3 | B3     C4     D4     E4     F4     G4     A4     B4
+2 | F3    [G3]    A3     B3    [C4]    D4     E4     F4
+1 | C3     D3    [E3]    F3     G3     A3     B3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+```
+4 | E4     F4     G4     A4     B4     C5     D5     E5
+3 | B3     C4     D4    [E4]    F4     G4     A4     B4
+2 | F3    [G3]    A3     B3    [C4]    D4     E4     F4
+1 | C3     D3     E3     F3     G3     A3     B3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Power chord – root, 1 right + 1 up (fifth), the cell above that (octave).** In Key the fifth from the 7th degree is
+diminished (B – F in C major); play it Chromatic for a pure fifth everywhere.
+
+```
+4 | E4     F4     G4     A4     B4     C5     D5     E5
+3 | B3    [C4]    D4     E4     F4     G4     A4     B4
+2 | F3    [G3]    A3     B3     C4     D4     E4     F4
+1 |[C3]    D3     E3     F3     G3     A3     B3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Octave – 1 right + 2 up** (also 4 right + 1 up, or 7 right).
+
+```
+4 | E4     F4     G4     A4     B4     C5     D5     E5
+3 | B3    [C4]    D4     E4     F4     G4     A4     B4
+2 | F3     G3     A3     B3     C4     D4     E4     F4
+1 |[C3]    D3     E3     F3     G3     A3     B3     C4
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Chromatic shapes (Fourths, In Key off).** Every chord type has its own fixed shape; the key does not change it:
+
+| Chord | Offsets from the root |
+|---|---|
+| major | (4, 0), (2, 1) |
+| minor | (3, 0), (2, 1) |
+| dominant 7 | (4, 0), (2, 1), (0, 2) |
+| major 7 | (4, 0), (2, 1), (1, 2) |
+
+```
+4 | D#4    E4     F4     F#4    G4     G#4    A4     A#4
+3 | A#3    B3     C4     C#4    D4     D#4    E4     F4
+2 | F3     F#3   [G3]    G#3    A3     A#3    B3     C4
+1 |[C3]    C#3    D3     D#3   [E3]    F3     F#3    G3
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+```
+4 | D#4    E4     F4     F#4    G4     G#4    A4     A#4
+3 | A#3    B3     C4     C#4    D4     D#4    E4     F4
+2 | F3     F#3   [G3]    G#3    A3     A#3    B3     C4
+1 |[C3]    C#3    D3    [D#3]   E3     F3     F#3    G3
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+```
+4 | D#4    E4     F4     F#4    G4     G#4    A4     A#4
+3 |[A#3]   B3     C4     C#4    D4     D#4    E4     F4
+2 | F3     F#3   [G3]    G#3    A3     A#3    B3     C4
+1 |[C3]    C#3    D3     D#3   [E3]    F3     F#3    G3
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+```
+4 | D#4    E4     F4     F#4    G4     G#4    A4     A#4
+3 | A#3   [B3]    C4     C#4    D4     D#4    E4     F4
+2 | F3     F#3   [G3]    G#3    A3     A#3    B3     C4
+1 |[C3]    C#3    D3     D#3   [E3]    F3     F#3    G3
+  +--------------------------------------------------------
+    1      2      3      4      5      6      7      8
+```
+
+**Hearing what you play.** While notes sound the Harmony view and the display's voice strip name the chord live
+(sevenths, inversions as slash chords, see [Chord names and the key](#chord-names-and-the-key-p45)); the brain's
+**chord memory** marks the remembered chord's tones with a violet bar on the screen and dim green on the pads, so the
+next chord's notes are easy to find. The diagrams are generated from the layout code (`tools/docs/grid_diagrams.py`).
+
 ### Playing with MPE
 
 What the grid sends depends on whether the edit part has **MPE** on (`pN.mpe`, see [MIDI](MIDI.md#mpe-midi-polyphonic-expression)).
@@ -343,7 +537,7 @@ What the grid sends depends on whether the edit part has **MPE** on (`pN.mpe`, s
 
 * Each touch gets a free **member channel** (2 – 16, in turn). It starts with the bend centred and slide at 64.
 * **Slide sideways = pitch bend** of that note only. The bend follows the cells: one cell's width bends by the
-  layout's step to the right – 1 semitone in Fourths and Thirds, 2 in Whole Tones, about 1.7 (12 / 7) in In Key. It
+  layout's step to the right – 1 semitone in Fourths and Thirds, 2 in Whole Tones, about 1.7 (12 / 7) with In Key. It
   is sent as 14-bit pitch bend scaled to the part's **MPE bend range** (`pN.mpe.bend`, default 48 semitones) and
   stops at the end of that range. The note stays the note you struck; letting go ends it.
 * **Up / down = slide** (CC 74, centre 64): one and a half cell heights up reach 127, down reach 0. The part sends it to
@@ -360,7 +554,7 @@ keys, the grid is not sent to the MIDI output.
 
 ### Help in the app
 
-**Settings > Help > Grid keyboard** sums this page up (layouts, shapes, cells, MPE). With the **help overlay** on
+**Settings > Help > Grid keyboard** sums this page up (layouts, In Key / Chromatic, Fixed C, chord shapes, cells, MPE). With the **help overlay** on
 (Settings > General, or **F1**) and the grid shown, a line over the keyboard names the steps of every layout.
 
 ![Settings – Help – Grid keyboard](../images/ohpe-settings-help-grid.png)
@@ -370,8 +564,9 @@ keys, the grid is not sent to the MIDI output.
 ### On a grid controller
 
 **Grid controller profile 1** (standalone app and plug-in, Settings > Controller) puts this grid on an external 8 × 8 pad
-controller: the **same layouts** (the Scales button steps through them), the **same note** for the same column and row
-from the same lowest C (the pads' four lower rows are the screen grid's four rows), the **same key** with **Scale Lock**
+controller: the **same layouts** (a tap on Scales steps through them; holding Scales shows the layout, In Key / Chromatic,
+Fixed C, root and scale on the display, the upper buttons choose), the **same note** for the same column and row from
+the same bottom-left cell (the pads' four lower rows are the screen grid's four rows), the **same key** with **Scale Lock**
 (other notes dark and silent), the root lit **amber**, key notes **yellow**, chord tones **green (dim)**, held pads
 **green**, and **Octave − / +** moving pads and screen grid together. Velocity and pressure play the edit part (MPE: a
 member channel per pad). Details: [Grid controller](CONTROLLER.md).

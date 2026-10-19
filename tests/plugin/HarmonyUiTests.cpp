@@ -151,7 +151,7 @@ TEST_CASE ("editor p24: the grid keyboard - GRID key swaps it in, cells play the
     play (p, 4);
 
     // In Key layout: only key notes
-    setHost (p, "harmony.kb.layout", (float) harmony::LayoutInKey);
+    setHost (p, "harmony.kb.inkey", 1.0f); // p59: In Key (every layout)
     play (p, 2);
     const auto& h = p.core().harmony();
     for (int c = 0; c < ui::GridKeyboard::cols; ++c) CHECK (scales::inScale (g.noteAt (c, 0), h.keyRoot(), h.keyScale()));

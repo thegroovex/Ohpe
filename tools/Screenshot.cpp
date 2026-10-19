@@ -851,6 +851,13 @@ int main (int argc, char* argv[])
             playAnimated (p, e, 12, { 57, 60, 64, 67 });
             playAnimated (p, e, 20);
             save (e, dir.getChildFile ("ohpe-harmony" + suffix + ".png"));
+            // p59: encoder page "Grid" - Grid Layout, In Key / Chromatic, Fixed C (In Key on for the picture)
+            setPlain (p, "harmony.kb.inkey", 1.0f);
+            e.displayComponent().onPageChange (1);
+            playAnimated (p, e, 12);
+            save (e, dir.getChildFile ("ohpe-harmony-grid" + suffix + ".png"));
+            e.displayComponent().onPageChange (-1);
+            setPlain (p, "harmony.kb.inkey", 0.0f);
             release (p, { 57, 60, 64, 67 });
             e.showGridKeyboard (false);
             setPlain (p, "harmony.p2.follow", 0.0f);
