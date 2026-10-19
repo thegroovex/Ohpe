@@ -1021,12 +1021,24 @@ int main (int argc, char* argv[])
                     dir.getChildFile ("ohpe-controller-display" + suffix + ".txt").replaceWithText (text);
                     e.selectMode (ui::Mode::Synth);
                     ctl.update();
-                    view.showControllerPreview (true);
-                    e.showSettings (true, ui::SettingsView::Midi);
+                    // p53: the Controller page - automatic ports found (user port in and out), connected, two pads held
+                    set ([] (settings::UserSettings& v) { v.controllerProfile = settings::ControllerGrid1; v.controllerAuto = true; v.controllerChosen = true; });
+                    ctl.attachForTests ([] (const juce::MidiMessage&) {});
+                    ctl.setPortNamesForTests ("Pad Grid User Port", "Pad Grid User Port");
+                    ctl.receive (juce::MidiMessage::noteOn (1, ohpe::gridctl::padNote (2, 1), (juce::uint8) 100));
+                    ctl.receive (juce::MidiMessage::noteOn (1, ohpe::gridctl::padNote (4, 2), (juce::uint8) 100));
+                    ctl.receive (juce::MidiMessage::noteOn (1, 3, (juce::uint8) 127)); // encoder 4 touched: its full name on line 3
+                    ctl.update();
+                    e.showSettings (true, ui::SettingsView::Controller);
                     shot ("ohpe-settings-controller");
-                    view.showControllerPreview (false);
+                    ctl.receive (juce::MidiMessage::noteOff (1, ohpe::gridctl::padNote (2, 1)));
+                    ctl.receive (juce::MidiMessage::noteOff (1, ohpe::gridctl::padNote (4, 2)));
+                    ctl.receive (juce::MidiMessage::noteOff (1, 3));
+                    ctl.update();
+                    e.showSettings (true, ui::SettingsView::Midi);
+                    shot ("ohpe-settings-midi-controller-on");
                     ctl.attachForTests (nullptr);
-                    set ([] (settings::UserSettings& v) { v.controllerProfile = settings::ControllerOff; v.controllerIn.clear(); v.controllerOut.clear(); });
+                    set ([] (settings::UserSettings& v) { v.controllerProfile = settings::ControllerOff; v.controllerChosen = true; v.controllerIn.clear(); v.controllerOut.clear(); });
                     view.setStandalone (false);
                 }
                 if (! dark)
@@ -1040,10 +1052,10 @@ int main (int argc, char* argv[])
                     ctl.setPortNamesForTests ("Pad Grid User Port", "Pad Grid User Port");
                     ctl.claim();
                     ctl.update();
-                    e.showSettings (true, ui::SettingsView::Midi);
+                    e.showSettings (true, ui::SettingsView::Controller);
                     shot ("ohpe-settings-controller-plugin");
                     ctl.attachForTests (nullptr);
-                    set ([] (settings::UserSettings& v) { v.controllerProfile = settings::ControllerOff; });
+                    set ([] (settings::UserSettings& v) { v.controllerProfile = settings::ControllerOff; v.controllerChosen = true; });
                 }
                 e.settingsComponent().setHelpTopic (1);
                 e.showSettings (true, ui::SettingsView::Help);

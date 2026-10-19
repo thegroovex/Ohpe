@@ -95,7 +95,8 @@ std::string UserSettings::toJson() const
                         { "master", controllerMaster == 1 ? "tempo" : "volume" },
                         { "strip", controllerStrip == 1 ? "mod" : "bend" },
                         { "auto", controllerAuto },
-                        { "pattern", controllerPattern } };
+                        { "pattern", controllerPattern },
+                        { "chosen", controllerChosen } };
     return j.dump (2);
 }
 
@@ -144,6 +145,13 @@ UserSettings UserSettings::fromJson (const std::string& text)
         s.controllerStrip = sub ("strip") == "mod" ? 1 : 0;
         if (const auto a = c->find ("auto"); a != c->end() && a->is_boolean()) s.controllerAuto = a->get<bool>(); // p49
         if (const auto pat = sub ("pattern"); ! pat.empty()) s.controllerPattern = pat;
+        // p53: set up by the user (else the defaults: the Grid-Controller profile, automatic ports, found when plugged in)
+        if (const auto ch = c->find ("chosen"); ch != c->end() && ch->is_boolean()) s.controllerChosen = ch->get<bool>();
+        if (! s.controllerChosen)
+        {
+            s.controllerProfile = ControllerGrid1;
+            s.controllerAuto = true;
+        }
     }
     json extra = json::object();
     for (auto it = j.begin(); it != j.end(); ++it)
@@ -158,7 +166,7 @@ bool UserSettings::operator== (const UserSettings& o) const
            && std::abs (brightness - o.brightness) < 1.0e-4f && animations == o.animations && windowScale == o.windowScale
            && controllerProfile == o.controllerProfile && controllerIn == o.controllerIn && controllerOut == o.controllerOut
            && controllerMaster == o.controllerMaster && controllerStrip == o.controllerStrip
-           && controllerAuto == o.controllerAuto && controllerPattern == o.controllerPattern
+           && controllerAuto == o.controllerAuto && controllerPattern == o.controllerPattern && controllerChosen == o.controllerChosen
            && json::parse (extras, nullptr, false) == json::parse (o.extras, nullptr, false);
 }
 

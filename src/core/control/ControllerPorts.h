@@ -62,4 +62,11 @@ struct PortPick
 /** The automatic choice: the first matching input with a matching output of the same key; else the first matching input
     and the first matching output; else none. */
 PortPick autoPorts (const std::vector<std::string>& inputs, const std::vector<std::string>& outputs, const std::string& pattern);
+/** p53: every matching input with a matching output of the same key, in list order (the automatic choice tries them
+    one after the other until one answers as the controller). */
+std::vector<PortPick> autoPortCandidates (const std::vector<std::string>& inputs, const std::vector<std::string>& outputs,
+                                         const std::string& pattern);
+/** p53: another port of the same device (gridctl::deviceKey) as `name` in `ports` - the live port next to the user
+    port; -1 = none. */
+int siblingPort (const std::vector<std::string>& ports, const std::string& name);
 } // namespace ohpe::gridctl

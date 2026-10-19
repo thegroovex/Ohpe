@@ -47,6 +47,8 @@ public:
     int lowestNote() const;
     int highestNote() const;
     bool isPressed (int note) const noexcept;
+    /** p53: notes held on the controller's pads - shown pressed here too (the pads and the screen in sync). */
+    std::function<bool (int)> alsoPressed;
     /** Releases every touch (hidden, part change). */
     void releaseAll();
 
@@ -74,6 +76,7 @@ private:
     int partIndex = 0, octave = 3, nextChannel = 2;
     std::array<Touch, maxTouches> touches {};
     int lastSignature = 0;
+    uint64_t lastHeld = 0; ///< p53
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GridKeyboard)
 };

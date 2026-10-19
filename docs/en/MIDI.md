@@ -225,9 +225,9 @@ Link is a build option (`-DOHPE_WITH_LINK=ON`, default on); the plug-in always f
 
 ### Grid controller (standalone and plug-in)
 
-An 8 × 8 pad controller with a four-line display can play the grid keyboard and edit the shown page – choose
-**Grid controller profile 1** and its ports in Settings > MIDI > Controller. Its port is taken out of the plain MIDI
-inputs. In a plug-in Ohpe opens the controller's user port itself (one instance at a time) – switch that port off
+An 8 × 8 pad controller with a four-line display can play the grid keyboard and edit the shown page – it is
+on by default and connects by itself when plugged in (Settings > Controller: profile, ports, status, virtual
+controller). Its ports are taken out of the plain MIDI inputs while Ohpe holds them. In a plug-in Ohpe opens the controller's user port itself (one instance at a time) – switch that port off
 for tracks and remote in the DAW. See [Grid controller](CONTROLLER.md).
 
 ## Settings at a glance

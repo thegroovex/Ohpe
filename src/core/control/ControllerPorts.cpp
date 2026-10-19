@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "ControllerPorts.h"
+#include "GridProtocol.h"
 
 #include <algorithm>
 #include <cctype>
@@ -159,5 +160,27 @@ PortPick autoPorts (const std::vector<std::string>& inputs, const std::vector<st
     for (int o = 0; o < (int) outputs.size() && first.out < 0; ++o)
         if (portMatches (outputs[(size_t) o], pattern)) first.out = o;
     return first.found() ? first : PortPick {};
+}
+std::vector<PortPick> autoPortCandidates (const std::vector<std::string>& inputs, const std::vector<std::string>& outputs,
+                                         const std::string& pattern)
+{
+    std::vector<PortPick> c;
+    for (int i = 0; i < (int) inputs.size(); ++i)
+    {
+        if (! portMatches (inputs[(size_t) i], pattern)) continue;
+        const auto key = portKey (inputs[(size_t) i]);
+        for (int o = 0; o < (int) outputs.size(); ++o)
+            if (portMatches (outputs[(size_t) o], pattern) && portKey (outputs[(size_t) o]) == key) { c.push_back ({ i, o }); break; }
+    }
+    return c;
+}
+
+int siblingPort (const std::vector<std::string>& ports, const std::string& name)
+{
+    const auto key = deviceKey (name);
+    if (key.empty()) return -1;
+    for (int i = 0; i < (int) ports.size(); ++i)
+        if (ports[(size_t) i] != name && deviceKey (ports[(size_t) i]) == key) return i;
+    return -1;
 }
 } // namespace ohpe::gridctl

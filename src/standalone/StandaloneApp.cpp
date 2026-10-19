@@ -59,7 +59,12 @@ public:
         juce::Component::addAndMakeVisible (settingsButton);
         resized();
         if (auto* p = dynamic_cast<OhpeProcessor*> (getAudioProcessor()))
+        {
             p->externalTransport.store (&link, std::memory_order_release);
+            // p53: the settings' MIDI inputs and the Grid-Controller (its ports must not reach the parts as plain inputs)
+            p->standaloneDevices = &getDeviceManager();
+            p->openStandaloneAudioSettings = [this] { showAudioSettings(); };
+        }
         startTimer (500);
     }
 
@@ -67,7 +72,11 @@ public:
     {
         stopTimer();
         if (auto* p = dynamic_cast<OhpeProcessor*> (getAudioProcessor()))
+        {
             p->externalTransport.store (nullptr, std::memory_order_release);
+            p->standaloneDevices = nullptr; // p53
+            p->openStandaloneAudioSettings = nullptr;
+        }
         if (pluginHolder != nullptr) pluginHolder->stopPlaying(); // no audio callback may still use the Link session
         link.setEnabled (false);
         syncWindow = nullptr;

@@ -58,7 +58,7 @@ class GridController : private juce::Timer, private juce::MidiInputCallback, pri
 public:
     enum class PadMode { Keys = 0, Pads, Drum, Steps, numModes };
     /** p49: what the settings section shows. */
-    enum class State { Off = 0, ChoosePorts, Waiting, PortBusy, Connected, OtherInstance };
+    enum class State { Off = 0, ChoosePorts, Waiting, PortBusy, Connected, OtherInstance, Probing, NotFound }; ///< p53: + Probing, NotFound
 
     /** The editor's side: what the screen shows and how to change it. */
     struct Hooks
@@ -72,6 +72,9 @@ public:
         std::function<void (OhpeProcessor::TransportKey)> transport;
         std::function<int()> octave;
         std::function<void (int)> setOctave;
+        std::function<bool()> gridShown;       ///< p53: the on-screen grid keyboard is shown (else the piano keys)
+        std::function<void (bool)> showGrid;   ///< p53: shows the grid keyboard (the controller's Scales button)
+        std::function<bool (int)> screenPressed; ///< p53: the note is held on the on-screen keyboard (lit on the pads too)
     };
     using Sender = std::function<void (const juce::MidiMessage&)>;
 
@@ -105,6 +108,16 @@ public:
     /** Opens / closes the ports the settings name (profile off = closed). Standalone app only. */
     void configure (const settings::UserSettings& s);
     bool connected() const noexcept { return isConnected; }
+    /** p53: the generation the controller answered with (First until it answers; Unknown while not connected). */
+    gridctl::Generation generation() const noexcept { return gen; }
+    /** p53: the connect splash is on the display now. */
+    bool splashShown() const noexcept { return splashTicks > 0; }
+    /** p53: the ports are open and wait for the identity reply (tests: a reply through receive()). */
+    bool probing() const noexcept { return isProbing; }
+    /** p53 (tests): the next connect of attachForTests shows the splash (as a real port does). */
+    void setSplashForTests (bool on) { testSplash = on; }
+    /** p53: the settings' line under the ports: "Connected - first generation", "No controller found", ... */
+    juce::String statusLine() const;
     bool enabled() const noexcept { return profile != settings::ControllerOff; }
     /** "Connected" / "Waiting for ..." / p49 "Active in this instance", "Port in use - free it in the host" ... (translated). */
     juce::String status() const;
@@ -124,6 +137,8 @@ public:
     int buttonCode (int cc) const noexcept { return cc >= 0 && cc < 128 ? ccLight[(size_t) cc] : -1; }
     /** The note pad 0 .. 63 plays in Keys mode now (-1 = none). */
     int padNoteNow (int pad) const noexcept;
+    /** p53: the note is held on a pad (Keys mode) - the on-screen grid keyboard shows it pressed. */
+    bool padNoteDown (int note) const noexcept;
     /** The parameter IDs on the eight encoders (empty = free). */
     std::array<std::string, gridctl::numCells> encoderIds() const { return encIds; }
     PadMode padMode() const noexcept { return (PadMode) padModeNow.load(); }
@@ -154,8 +169,14 @@ private:
     void lightsOff();
     void openPorts();
     void closePorts();
+    void onConnected (bool splash); ///< p53: user mode, aftertouch mode, splash, everything sent again
+    void claimDeviceInputs();       ///< p53: the controller's ports (and its live port) off as plain MIDI inputs
+    void releaseDeviceInputs();
+    void rejectProbe();             ///< p53: no identity reply - not the controller, try the next candidate
     void addLog (const juce::String& s);
     gridctl::PadKey padKey() const;
+    /** p53: the pads' layout: the grid keyboard's ("harmony.kb.layout") while it is shown on the screen, else Fourths. */
+    int padLayout() const;
 
     // pads (MIDI thread)
     void padDown (int pad, int velocity);
@@ -169,7 +190,7 @@ private:
     juce::String inName, outName;            ///< the ports used (p49: found by name when automatic)
     juce::String wantIn, wantOut, pattern;   ///< p49: the settings' ports and name pattern
     bool autoPorts = false, inPlugin = false, wasOwner = false, portBusy = false, isHeadless = false;
-    struct Detached { Mode mode = Mode::Synth; PageContext ctx; int page = 0; int octave = 3; } detached; ///< p49
+    struct Detached { Mode mode = Mode::Synth; PageContext ctx; int page = 0; int octave = 3; bool grid = false; } detached; ///< p49 (p53: grid)
     juce::SharedResourcePointer<UserSettingsStore> store; ///< p49
     int strip = 0;
     bool masterTempo = false;
@@ -178,6 +199,12 @@ private:
     Sender testSender;
     bool isConnected = false;
     int watchTicks = 0;
+    // p53: generation, identity probe, splash, the device manager's inputs taken over, candidates that did not answer
+    gridctl::Generation gen = gridctl::Generation::Unknown;
+    bool isProbing = false, chosenByUser = false, testSplash = false, notFound = false;
+    int probeTicks = 0, splashTicks = 0, idleTicks = 0;
+    juce::StringArray rejected, disabledInputs;
+    juce::String portListSig;
 
     // input queue (MIDI thread -> message thread)
     std::mutex queueLock;

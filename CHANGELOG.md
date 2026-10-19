@@ -7,6 +7,27 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Grid controller (p53): on by default and connected automatically in the standalone app and the plug-in
+  (user port in and out of the same device, identity request tells the generation, hot-plug); switched into its User
+  mode on connect with a short "connecting ... / connected" splash on its display, back to its own mode on release.
+  New Settings > Controller page: port menus with full names, status line (Connected / Checking / Not found / Port in
+  use), strip and master encoder, a large live virtual controller usable with the mouse. The pads follow the on-screen
+  keyboard (grid layout while the grid keyboard is shown, Fourths with the piano keys; Scales shows the grid); held
+  notes show on both (pad held = cell pressed on the screen, cell clicked = its pads lit).
+  Fixes: output port stayed "-" (standalone used no automatic matching); the standalone MIDI page showed the
+  plug-in text and the controller also played as a plain MIDI input (encoder / strip touch notes reached the sound
+  and retriggered held notes); disabled chips looked selected; the controller section was clipped.
+- DE: Grid-Controller (p53): ab Werk an und automatisch verbunden in Standalone-App und Plug-in (User-Port Eingang
+  und Ausgang desselben Geräts, Identitätsanfrage nennt die Generation, Anstecken im Betrieb); beim Verbinden in
+  seinen User-Modus geschaltet, mit kurzem „verbindet ... / verbunden" auf seinem Display, beim Loslassen zurück in
+  seinen eigenen Modus. Neue Seite Einstellungen > Controller: Port-Menüs mit vollen Namen, Statuszeile (Verbunden /
+  Wird geprüft / Nicht gefunden / Port belegt), Strip und Master-Regler, großer virtueller Controller live, mit der
+  Maus bedienbar. Die Pads folgen der Bildschirm-Tastatur (Raster-Anordnung bei gezeigter Raster-Tastatur, Quarten
+  bei den Klaviertasten; Scales zeigt das Raster); gehaltene Töne auf beiden (Pad gehalten = Feld gedrückt, Feld
+  geklickt = seine Pads leuchten). Behoben: Ausgang blieb „-" (Standalone ohne automatische Zuordnung);
+  die MIDI-Seite der Standalone-App zeigte den Plug-in-Text und der Controller spielte zusätzlich als normaler
+  MIDI-Eingang (Berührungs-Noten von Reglern / Strip erreichten den Klang und lösten gehaltene Töne neu aus);
+  ausgeschaltete Chips sahen gewählt aus; der Controller-Bereich war abgeschnitten.
 - EN: FX editor (p55): the selected slot of the Rack / Master view large, with every parameter at once (picture +
   labelled bars) instead of four per encoder page. Edit directly in the picture: EQ band points on the response curve
   (drag = frequency / gain, Alt-drag or wheel = Q, double-click resets), shelves and output; compressor threshold and
@@ -27,7 +48,6 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   bleiben unter dem Editor bedienbar. Öffnen mit dem Softkey FX-Editor oder einem Klick auf das Slot-Bild. Jede
   Änderung ist eine normale Parameteränderung (Automation, MIDI-Learn, Rückgängig des Hosts). Keine neuen
   Host-Parameter.
-
 - EN: Library search (p54): every word of the search must match (AND) – name, category and tags in English and German
   (singular, umlauts and "ae" spellings work: Pad, Fläche, Flaeche), MPE, Fingerboard / MPE-HD, Morph, engine, author,
   comment, content pack, bank, kind, favourite and rating (`***`). New quick chips MPE / Fingerboard / Morph (all

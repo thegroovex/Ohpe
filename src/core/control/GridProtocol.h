@@ -51,6 +51,43 @@ constexpr int undo = 119;
 
 constexpr int touchNoteMaster = 8, touchNoteStrip = 12;
 
+/** p53: touch notes of the encoders: 0 .. 7 = encoders 1 .. 8, 8 = master, 9 = swing, 10 = tempo; 12 = touch strip. */
+constexpr int touchNoteSwing = 9, touchNoteTempo = 10;
+
+/** p53: what one message from the controller (user port, channel 1) is - the controller layer consumes every one
+    of them; only pads play notes (encoder / strip touches are never notes for the synth). */
+enum class Input { Other = 0, Pad, EncoderTouch, StripTouch, EncoderTurn, Button, Strip, Pressure };
+struct Decoded
+{
+    Input kind = Input::Other;
+    int index = -1;  ///< pad 0 .. 63; encoder 0 .. 7, 8 = master, 9 = swing, 10 = tempo; button CC
+    int value = 0;   ///< touch: 1 / 0; turn: signed steps; button: 127 / 0; strip: 0 .. 16383; pressure 0 .. 127
+};
+/** Decodes one short MIDI message (status, data1, data2). */
+Decoded decode (int status, int data1, int data2) noexcept;
+/** Encoder 0 .. 10 of a CC (71 .. 78 -> 0 .. 7, 79 master -> 8, 15 swing -> 9, 14 tempo -> 10), -1 = none. */
+int encoderOfCc (int cc) noexcept;
+/** Encoder 0 .. 10 of a touch note (0 .. 10), -1 = none. */
+inline int encoderOfTouchNote (int note) noexcept { return note >= 0 && note <= touchNoteTempo ? note : -1; }
+
+// ---------------------------------------------------------------- p53: device generation, mode, identity
+/** The controller generation: the first one has the four-line character display written over MIDI; a later one
+    (pixel display over USB, its own SysEx header) gets pads, buttons, encoders and lights but no text display. */
+enum class Generation { Unknown = 0, First, Later };
+/** Universal identity request (F0 7E 7F 06 01 F7). */
+std::vector<uint8_t> identityRequestSysex();
+/** The generation an identity reply (F0 7E dev 06 02 ...) names; Unknown for any other message or maker. */
+Generation identityGeneration (const uint8_t* data, size_t size) noexcept;
+/** The SysEx that switches the controller into its User mode (true; Ohpe gets the user port) or back to its Live
+    mode (false, when Ohpe lets go). Empty for Unknown. */
+std::vector<uint8_t> userModeSysex (Generation g, bool user);
+/** p53: the connect splash on the four display lines: "Ohpe" and "connecting..." (stage 0) / "connected" (stage 1),
+    in the UI language (German: "verbindet..." / "verbunden"). */
+std::array<std::string, numLines> splashLines (int stage, bool german);
+/** p53: the device part of a port name (case, direction, "user" / "live" / "port" and the Windows "MIDIIN2 (...)"
+    prefix dropped): the live and the user port of one device get the same key. */
+std::string deviceKey (const std::string& portName);
+
 /** Relative encoder value -> steps (+1 .. +63 / -1 .. -64). */
 inline int relativeDelta (int value) noexcept { return value >= 64 ? value - 128 : value; }
 

@@ -142,10 +142,13 @@ const HelpTopic helpTopics[] = {
       "Anzeige > Erscheinung: Hell, Dunkel (blendarm für Nachtsessions) oder Auto (folgt dem System). Helligkeit dimmt das Display.\n\n"
       "Allgemein > Hilfe-Overlay benennt jeden Bereich des Instruments; F1 schaltet es ein und aus." },
     { "Grid controller", "Grid-Controller", // p46
-      "Grid controller profile 1: an 8 x 8 pad controller with a four-line display. Settings > MIDI > Controller: "
-      "choose the profile and the controller's MIDI input and output; View shows the virtual controller.\n\n"
-      "In a plug-in: switch the controller to its User mode and turn its user port off for tracks and remote in the DAW; Ohpe "
-      "opens the port itself (Choose ports automatically, or pick In / Out). One instance holds the controller: the window "
+      "Grid controller profile 1: an 8 x 8 pad controller with a four-line display. On by default: plug it in and Ohpe finds its "
+      "user port (input and output), switches it to its User mode, shows connecting ... / connected on its display, then the Ohpe "
+      "display; plugged in later, it connects within a second. Settings > Controller: profile, automatic ports or a menu for input "
+      "and output, the connection status, touch strip and master encoder, and the virtual controller (click pads and buttons, "
+      "mouse wheel over the display turns an encoder).\n\n"
+      "In a plug-in: turn the controller's user port off for tracks and remote in the DAW; Ohpe "
+      "opens the port itself. One instance holds the controller: the window "
       "opened or clicked last, or Take over here. Port in use: free it in the DAW, Ohpe tries again every second.\n\n"
       "Pads (Keys mode) = the on-screen grid keyboard: the same layout (Scales steps through Fourths, Thirds, Whole Tones, In Key), "
       "the same note for the same column and row, the same key (Shift + Scales: Scale Lock). Root amber, key notes yellow, chord tones "
@@ -153,10 +156,13 @@ const HelpTopic helpTopics[] = {
       "Second button row: parts 1-4, pad modes Keys / Pads / Drum / Steps. First row: the mode keys. Encoders 1-8: the shown page and "
       "the next; arrows: page and preset; Play, Record, Stop, Metronome, Tap, Undo as their names say (Shift: tape play, arm, to start, "
       "count-in, redo). Touch strip: bend or mod.",
-      "Grid-Controller (Profil 1): ein 8 x 8-Pad-Controller mit vierzeiligem Display. Einstellungen > MIDI > "
-      "Controller: Profil und MIDI-Eingang und -Ausgang des Controllers wählen; Ansicht zeigt den virtuellen Controller.\n\n"
-      "Im Plug-in: den Controller in seinen User-Modus schalten und seinen User-Port in der DAW für Spuren und Fernsteuerung "
-      "ausschalten; Ohpe öffnet den Port selbst (Ports automatisch wählen, oder Ein / Ausgang wählen). Eine Instanz hält den "
+      "Grid-Controller (Profil 1): ein 8 x 8-Pad-Controller mit vierzeiligem Display. Ab Werk an: anstecken, Ohpe findet seinen "
+      "User-Port (Eingang und Ausgang), schaltet ihn in den User-Modus, zeigt verbindet ... / verbunden auf seinem Display, dann das "
+      "Ohpe-Display; später angesteckt, verbindet er sich innerhalb einer Sekunde. Einstellungen > Controller: Profil, automatische "
+      "Ports oder je ein Menü für Eingang und Ausgang, der Verbindungsstatus, Touch-Strip und Master-Regler und der virtuelle "
+      "Controller (Pads und Tasten anklicken, Mausrad über dem Display dreht einen Regler).\n\n"
+      "Im Plug-in: den User-Port des Controllers in der DAW für Spuren und Fernsteuerung "
+      "ausschalten; Ohpe öffnet den Port selbst. Eine Instanz hält den "
       "Controller: das zuletzt geöffnete oder angeklickte Fenster, oder Hierher holen. Port belegt: in der DAW freigeben, Ohpe "
       "versucht es jede Sekunde erneut.\n\n"
       "Pads (Modus Tasten) = die Raster-Tastatur des Bildschirms: dieselbe Anordnung (Scales schaltet Quarten, Terzen, Ganztöne, "
@@ -206,7 +212,7 @@ SettingsView::SettingsView (OhpeProcessor& p, Updater& u, UserSettingsStore& s) 
     store.addChangeListener (this);
     proc.addChangeListener (this);
     setWantsKeyboardFocus (true);
-    startTimer (500); // p50: fingerboard status on the MIDI page
+    startTimer (100); // p50: fingerboard status on the MIDI page (p53: the virtual controller on the Controller page)
 }
 
 SettingsView::~SettingsView()
@@ -250,6 +256,7 @@ juce::String SettingsView::tabName (int tab) const
         case Display: return tr ("Display");
         case Midi: return "MIDI";
         case MidiLearn: return tr ("MIDI Learn");
+        case Controller: return tr ("Controller"); // p53
         case Updates: return tr ("Updates");
         case Help: return tr ("Help");
         case About: return tr ("About");
@@ -308,9 +315,24 @@ void SettingsView::chip (juce::Graphics& g, juce::Rectangle<float> r, const juce
                          std::function<void()> action, bool enabled)
 {
     const float u = unit();
+    // p53: a disabled chip is clearly off - outlined, no fill, dim text (also when it is the chosen one)
+    if (! enabled)
+    {
+        g.setColour (colour::displayGrid.brighter (0.15f));
+        g.drawRoundedRectangle (r.reduced (u * 0.05f), u * 0.6f, juce::jmax (1.0f, u * 0.1f));
+        if (on)
+        {
+            g.setColour (accent.withAlpha (0.35f));
+            g.fillRoundedRectangle (r.getX() + u * 0.6f, r.getBottom() - u * 0.55f, r.getWidth() - u * 1.2f, u * 0.25f, u * 0.12f);
+        }
+        g.setColour (colour::displayText.withAlpha (0.32f));
+        g.setFont (labelFont (juce::jmin (r.getHeight() * 0.52f, u * 1.4f)));
+        g.drawFittedText (text, r.reduced (u * 0.4f, 0).toNearestInt(), juce::Justification::centred, 1, 0.7f);
+        return;
+    }
     g.setColour (on ? accent : colour::displayGrid.brighter (0.15f));
     g.fillRoundedRectangle (r, u * 0.6f);
-    g.setColour ((on ? colour::display : colour::displayText).withAlpha (enabled ? 1.0f : 0.35f));
+    g.setColour (on ? colour::display : colour::displayText);
     g.setFont (labelFont (juce::jmin (r.getHeight() * 0.52f, u * 1.4f)));
     g.drawFittedText (text, r.reduced (u * 0.4f, 0).toNearestInt(), juce::Justification::centred, 1, 0.7f);
     if (enabled && action) hits.push_back ({ r, text, std::move (action) });
@@ -441,6 +463,7 @@ void SettingsView::paint (juce::Graphics& g)
         case Display: paintDisplay (g, a); break;
         case Midi: paintMidi (g, a); break;
         case MidiLearn: paintLearn (g, a); break;
+        case Controller: paintController (g, a); break; // p53
         case Updates: paintUpdates (g, a); break;
         case Help: paintHelp (g, a); break;
         case About: paintAbout (g, a); break;
@@ -553,12 +576,6 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
 {
     const float u = unit(), h = u * 3.0f, row = u * 3.6f;
     float y = a.getY();
-    if (controllerPreview) // p46: the virtual controller view takes the place of the parts table
-    {
-        paintControllerPreview (g, { a.getX(), y, a.getWidth(), u * 2.0f + row * 4.0f });
-        y += u * 2.0f + row * (float) Core::numParts;
-    }
-    else
     {
     // the four parts: channel, MPE, bend range, MPE bend range
     legend (g, tr ("Parts"), { a.getX(), y, u * 12.0f, u * 1.6f });
@@ -599,10 +616,21 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
         {
             const auto devices = juce::MidiInput::getAvailableDevices();
             if (devices.isEmpty()) { label (g, tr ("No MIDI input found"), { x, yy, half, h }, true); yy += row; }
-            for (int i = 0; i < devices.size() && i < 3; ++i)
+            // p53: as many as fit above the audio settings key; the Grid-Controller's own ports are its (Controller page)
+            const int fit = juce::jmax (1, (int) ((a.getBottom() - yy - h) / row));
+            const juce::String ctlKey = gridCtl != nullptr && gridCtl->connected() ? juce::String (gridctl::deviceKey (gridCtl->inputPort().toStdString())) : juce::String();
+            for (int i = 0; i < devices.size() && i < fit; ++i)
             {
                 const auto& d = devices.getReference (i);
                 const bool on = dm->isMidiInputDeviceEnabled (d.identifier);
+                if (ctlKey.isNotEmpty() && juce::String (gridctl::deviceKey (d.name.toStdString())) == ctlKey)
+                {
+                    label (g, d.name, { x, yy, half - u * 14.0f, h });
+                    chip (g, { x + half - u * 13.0f, yy, u * 13.0f, h }, i18n::upper (tr ("Controller")), true, colour::ultraviolet,
+                          [this] { showPage (Controller); });
+                    yy += row;
+                    continue;
+                }
                 label (g, d.name, { x, yy, half - u * 14.0f, h });
                 chip (g, { x + half - u * 13.0f, yy, u * 6.2f, h }, i18n::upper (tr ("Off")), ! on, colour::sunYellow,
                       [this, id = d.identifier] { if (auto* m = proc.standaloneDevices) m->setMidiInputDeviceEnabled (id, false); repaint(); });
@@ -619,8 +647,7 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
             g.setFont (labelFont (u * 1.3f));
             g.drawFittedText (tr ("In a plug-in the host program chooses the MIDI inputs and sends them to Ohpe. Each part plays the channel set above."),
                               juce::Rectangle<float> (x, yy, half, u * 3.6f).toNearestInt(), juce::Justification::topLeft, 2, 0.9f);
-            // p49: the plug-in's controller section (three rows) sits here, below the host's MIDI inputs
-            if (! standalone && gridCtl != nullptr) paintController (g, { x, yy + u * 4.2f, half, u * 2.0f + row * 3.0f });
+            // p53: the Grid-Controller has its own page (Settings > Controller)
         }
     }
     // right: clock and sync
@@ -647,7 +674,13 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
                  [this, sm] { setPlain (Core::Ids::syncSmoothing, juce::jlimit (0.0f, 1.0f, std::round (sm * 10.0f - 1.0f) / 10.0f)); },
                  [this, sm] { setPlain (Core::Ids::syncSmoothing, juce::jlimit (0.0f, 1.0f, std::round (sm * 10.0f + 1.0f) / 10.0f)); });
         yy += row + u * 1.0f;
-        if (standalone || gridCtl == nullptr) paintController (g, { x, yy, half, u * 2.0f + row * 2.0f }); // p46 (p49: plug-in: left)
+        // p53: the Grid-Controller: a pointer to its own page
+        legend (g, tr ("Controller"), { x, yy, half, u * 1.6f });
+        yy += u * 2.0f;
+        const juce::String st = gridCtl != nullptr ? gridCtl->status() : tr ("Off");
+        label (g, st, { x, yy, half - u * 14.0f, h }, gridCtl == nullptr || ! gridCtl->connected());
+        chip (g, { x + half - u * 13.0f, yy, u * 13.0f, h }, i18n::upper (tr ("Controller")), false,
+              colour::displayText, [this] { showPage (Controller); });
     }
 }
 
@@ -697,78 +730,152 @@ void SettingsView::paintFingerboard (juce::Graphics& g, juce::Rectangle<float> a
     label (g, text, status, (bits & MpeInput::StatusHdData) == 0);
 }
 
-// ---------------------------------------------------------------- p46: Grid-Controller (Profil 1)
+// ---------------------------------------------------------------- p46: Grid-Controller (Profil 1) - p53: its own page
+void SettingsView::dropdown (juce::Graphics& g, juce::Rectangle<float> r, const juce::String& text, std::function<void()> action, bool enabled)
+{
+    const float u = unit();
+    g.setColour (colour::displayGrid.brighter (enabled ? 0.15f : 0.05f));
+    g.fillRoundedRectangle (r, u * 0.6f);
+    g.setColour (colour::displayText.withAlpha (enabled ? 1.0f : 0.4f));
+    g.setFont (labelFont (u * 1.35f));
+    const auto textArea = r.reduced (u * 0.9f, 0).withTrimmedRight (u * 2.2f);
+    g.drawFittedText (text, textArea.toNearestInt(), juce::Justification::centredLeft, 1, 0.85f);
+    // the arrow of a menu
+    juce::Path tri;
+    const float cx = r.getRight() - u * 1.6f, cy = r.getCentreY(), w = u * 0.55f;
+    tri.addTriangle (cx - w, cy - w * 0.5f, cx + w, cy - w * 0.5f, cx, cy + w * 0.6f);
+    g.fillPath (tri);
+    if (enabled && action) hits.push_back ({ r, text, std::move (action) });
+}
+
+void SettingsView::chooseControllerPort (bool input, const juce::String& name)
+{
+    const auto chosen = name.toStdString();
+    const auto cur = store.get();
+    // the ports in use now become the fixed choice (automatic off); the other side keeps what automatic found
+    const auto otherNow = gridCtl != nullptr ? (input ? gridCtl->outputPort() : gridCtl->inputPort()).toStdString()
+                                             : (input ? cur.controllerOut : cur.controllerIn);
+    changeSettings ([chosen, input, otherNow] (settings::UserSettings& s) {
+        (input ? s.controllerIn : s.controllerOut) = chosen;
+        if (s.controllerAuto) (input ? s.controllerOut : s.controllerIn) = otherNow;
+        s.controllerAuto = false;
+        s.controllerChosen = true;
+    });
+}
+
+void SettingsView::portMenu (bool input, juce::Rectangle<float> near)
+{
+    const auto names = input ? GridController::inputNames() : GridController::outputNames();
+    const auto& us = store.get();
+    const juce::String cur = gridCtl != nullptr ? (input ? gridCtl->inputPort() : gridCtl->outputPort()) : juce::String (input ? us.controllerIn : us.controllerOut);
+    juce::PopupMenu m;
+    m.addItem (1, tr ("Choose ports automatically"), true, us.controllerAuto);
+    m.addSeparator();
+    if (names.isEmpty()) m.addItem (2, input ? tr ("No MIDI input found") : tr ("No MIDI output found"), false, false);
+    for (int i = 0; i < names.size(); ++i) m.addItem (10 + i, names[i], true, ! us.controllerAuto && names[i] == cur);
+    m.addSeparator();
+    m.addItem (3, "-", true, ! us.controllerAuto && cur.isEmpty());
+    juce::Component::SafePointer<SettingsView> safe (this);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (this).withTargetScreenArea (localAreaToGlobal (near.toNearestInt())),
+                     [safe, names, input] (int r) {
+                         if (safe == nullptr || r == 0) return;
+                         if (r == 1)
+                             safe->changeSettings ([] (settings::UserSettings& s) { s.controllerAuto = true; s.controllerChosen = true; });
+                         else if (r == 3) safe->chooseControllerPort (input, {});
+                         else if (r >= 10 && r - 10 < names.size()) safe->chooseControllerPort (input, names[r - 10]);
+                     });
+}
+
 void SettingsView::paintController (juce::Graphics& g, juce::Rectangle<float> a)
 {
     const float u = unit(), h = u * 3.0f, row = u * 3.6f, gap = u * 0.6f;
     const auto& us = store.get();
-    juce::String title = tr ("Controller");
-    if (gridCtl != nullptr && us.controllerProfile != settings::ControllerOff) title << juce::String::fromUTF8 ("  \xc2\xb7  ") << gridCtl->status();
-    legend (g, title, { a.getX(), a.getY(), a.getWidth(), u * 1.6f });
-    float y = a.getY() + u * 2.0f;
+    // left column: setup; right column: the virtual controller, as large as the page allows
+    const float leftW = juce::jmin (u * 40.0f, a.getWidth() * 0.44f);
+    const float x = a.getX();
+    float y = a.getY();
+    paintControllerPreview (g, { x + leftW + u * 3.0f, a.getY(), a.getWidth() - leftW - u * 3.0f, a.getHeight() });
+
+    legend (g, tr ("Controller"), { x, y, leftW, u * 1.6f });
+    y += u * 2.0f;
     if (gridCtl == nullptr)
     {
         g.setColour (colour::displayDim);
         g.setFont (labelFont (u * 1.3f));
         g.drawFittedText (tr ("Controllers are set up in the standalone app. In a plug-in the host program sends their MIDI to Ohpe."),
-                          juce::Rectangle<float> (a.getX(), y, a.getWidth(), u * 6.0f).toNearestInt(), juce::Justification::topLeft, 3, 0.9f);
+                          juce::Rectangle<float> (x, y, leftW, u * 6.0f).toNearestInt(), juce::Justification::topLeft, 3, 0.9f);
         return;
     }
-    const bool plugin = ! standalone; // p49: the plug-in opens the controller's ports itself
+    const bool plugin = ! standalone;
     const bool on = us.controllerProfile != settings::ControllerOff;
-    const bool autoOn = plugin && us.controllerAuto;
-    float x = a.getX();
-    const float wOff = u * 6.2f, wProfile = juce::jmax (u * 14.0f, a.getWidth() - wOff - u * 14.0f - gap * 3.0f), wStrip = u * 7.0f;
-    chip (g, { x, y, wOff, h }, i18n::upper (tr ("Off")), ! on, colour::sunYellow,
-          [this] { changeSettings ([] (settings::UserSettings& s) { s.controllerProfile = settings::ControllerOff; }); });
-    x += wOff + gap;
-    chip (g, { x, y, wProfile, h }, i18n::upper (tr ("Grid controller profile 1")), on, colour::sunYellow,
-          [this] { changeSettings ([] (settings::UserSettings& s) { s.controllerProfile = settings::ControllerGrid1; }); });
-    x += wProfile + gap;
-    // touch strip: pitch bend or mod wheel
-    chip (g, { x, y, wStrip, h }, i18n::upper (tr ("Bend")), us.controllerStrip == 0, colour::sunYellow,
-          [this] { changeSettings ([] (settings::UserSettings& s) { s.controllerStrip = 0; }); }, on);
-    x += wStrip + gap;
-    chip (g, { x, y, wStrip, h }, i18n::upper (tr ("Mod")), us.controllerStrip == 1, colour::sunYellow,
-          [this] { changeSettings ([] (settings::UserSettings& s) { s.controllerStrip = 1; }); }, on);
-    y += row;
-    // ports: a stepper each (cycles through the system's MIDI ports), the preview toggle
-    // p49: automatic ports show the ports found; stepping picks a port and switches automatic off
-    const float wPreview = u * 9.0f, wPort = (a.getWidth() - wPreview - gap * 2.0f) * 0.5f;
-    auto portStepper = [&] (float px, bool isInput) {
-        const auto names = isInput ? GridController::inputNames() : GridController::outputNames();
-        const juce::String cur = autoOn ? (isInput ? gridCtl->inputPort() : gridCtl->outputPort())
-                                        : juce::String (isInput ? us.controllerIn : us.controllerOut);
-        const juce::String shown = (isInput ? tr ("In") : tr ("Out")) + ": " + (cur.isEmpty() ? juce::String ("-") : cur);
-        auto pick = [this, names, cur, isInput] (int d) {
-            if (names.isEmpty()) return;
-            int i = names.indexOf (cur);
-            i = i < 0 ? (d > 0 ? 0 : names.size() - 1) : (i + d + names.size()) % names.size();
-            const auto chosen = names[i].toStdString();
-            changeSettings ([chosen, isInput] (settings::UserSettings& s) {
-                (isInput ? s.controllerIn : s.controllerOut) = chosen;
-                s.controllerAuto = false;
-            });
-        };
-        stepper (g, { px, y, wPort, h }, shown, [pick] { pick (-1); }, [pick] { pick (1); });
+    auto set = [this] (std::function<void (settings::UserSettings&)> fn) {
+        changeSettings ([fn] (settings::UserSettings& s) { fn (s); s.controllerChosen = true; });
     };
-    portStepper (a.getX(), true);
-    portStepper (a.getX() + wPort + gap, false);
-    chip (g, { a.getX() + (wPort + gap) * 2.0f, y, wPreview, h }, i18n::upper (tr ("View")), controllerPreview, colour::sunYellow,
-          [this] { showControllerPreview (! controllerPreview); });
-    if (! plugin) return;
-    // p49: automatic ports (on / off), which instance holds the controller, take it over
+    const float wOff = u * 7.0f;
+    chip (g, { x, y, wOff, h }, i18n::upper (tr ("Off")), ! on, colour::sunYellow,
+          [set] { set ([] (settings::UserSettings& s) { s.controllerProfile = settings::ControllerOff; }); });
+    chip (g, { x + wOff + gap, y, leftW - wOff - gap, h }, i18n::upper (tr ("Grid controller profile 1")), on, colour::sunYellow,
+          [set] { set ([] (settings::UserSettings& s) { s.controllerProfile = settings::ControllerGrid1; }); });
+    y += row + u * 0.6f;
+
+    // ports: automatic, then a menu each with the full port names
+    legend (g, tr ("Ports"), { x, y, leftW, u * 1.6f });
+    y += u * 2.0f;
+    chip (g, { x, y, leftW, h }, i18n::upper (tr ("Choose ports automatically")), us.controllerAuto, colour::sunYellow,
+          [set, autoOn = us.controllerAuto] { set ([autoOn] (settings::UserSettings& s) { s.controllerAuto = ! autoOn; }); }, on);
     y += row;
-    const float wAuto = juce::jmin (u * 22.0f, a.getWidth() * 0.45f), wTake = u * 13.0f;
-    chip (g, { a.getX(), y, wAuto, h }, i18n::upper (tr ("Choose ports automatically")), us.controllerAuto, colour::sunYellow,
-          [this, autoOn] { changeSettings ([autoOn] (settings::UserSettings& s) { s.controllerAuto = ! autoOn; }); });
-    const float xs = a.getX() + wAuto + gap;
+    const float wLabel = u * 9.0f;
+    for (const bool input : { true, false })
+    {
+        label (g, input ? tr ("Input") : tr ("Output"), { x, y, wLabel - gap, h }, ! on);
+        const juce::String cur = gridCtl->inputPort().isNotEmpty() || gridCtl->outputPort().isNotEmpty() || us.controllerAuto
+                                     ? (input ? gridCtl->inputPort() : gridCtl->outputPort())
+                                     : juce::String (input ? us.controllerIn : us.controllerOut);
+        juce::String shown = cur.isEmpty() ? (us.controllerAuto ? tr ("not found") : tr ("choose ...")) : cur;
+        if (us.controllerAuto && cur.isNotEmpty()) shown << "  (" << tr ("auto") << ")";
+        const juce::Rectangle<float> r { x + wLabel, y, leftW - wLabel, h };
+        dropdown (g, r, shown, [this, input, r] { portMenu (input, r); }, on);
+        y += row;
+    }
+    // the connection: connected (generation) / checking / not found / port in use / waiting
+    {
+        const auto st = gridCtl->state();
+        const bool ok = st == GridController::State::Connected;
+        const bool bad = st == GridController::State::PortBusy || st == GridController::State::NotFound || st == GridController::State::ChoosePorts;
+        const juce::Colour dot = ! on ? colour::displayDim : ok ? colour::playGreen : bad ? colour::signalRed : colour::sunYellow;
+        g.setColour (dot);
+        g.fillEllipse (x + u * 0.3f, y + h * 0.5f - u * 0.5f, u, u);
+        label (g, on ? gridCtl->statusLine() : tr ("Off"), { x + u * 2.0f, y, leftW - u * 2.0f, h }, ! ok);
+        y += row + u * 0.6f;
+    }
+
+    // how the controller plays: touch strip, master encoder
+    legend (g, tr ("Controls"), { x, y, leftW, u * 1.6f });
+    y += u * 2.0f;
+    const float wPair = (leftW - wLabel - gap) * 0.5f;
+    label (g, tr ("Touch strip"), { x, y, wLabel + u * 3.0f, h }, ! on);
+    chip (g, { x + wLabel, y, wPair, h }, i18n::upper (tr ("Bend")), us.controllerStrip == 0, colour::sunYellow,
+          [set] { set ([] (settings::UserSettings& s) { s.controllerStrip = 0; }); }, on);
+    chip (g, { x + wLabel + wPair + gap, y, wPair, h }, i18n::upper (tr ("Mod")), us.controllerStrip == 1, colour::sunYellow,
+          [set] { set ([] (settings::UserSettings& s) { s.controllerStrip = 1; }); }, on);
+    y += row;
+    label (g, tr ("Master"), { x, y, wLabel, h }, ! on);
+    chip (g, { x + wLabel, y, wPair, h }, i18n::upper (tr ("Volume")), us.controllerMaster == 0, colour::sunYellow,
+          [set] { set ([] (settings::UserSettings& s) { s.controllerMaster = 0; }); }, on);
+    chip (g, { x + wLabel + wPair + gap, y, wPair, h }, i18n::upper (tr ("Tempo")), us.controllerMaster == 1, colour::sunYellow,
+          [set] { set ([] (settings::UserSettings& s) { s.controllerMaster = 1; }); }, on);
+    y += row;
+
+    if (! plugin) return;
+    // p49: which instance holds the controller, take it over
+    y += u * 0.6f;
     const bool elsewhere = on && gridCtl->ownedElsewhere();
+    const float wTake = u * 13.0f;
     juce::String where;
     if (on) where = elsewhere ? tr ("Active in another instance") : tr ("Active in this instance");
-    label (g, where, { xs, y, a.getRight() - xs - (elsewhere ? wTake + gap : 0.0f), h }, ! on);
+    label (g, where, { x, y, leftW - (elsewhere ? wTake + gap : 0.0f), h }, ! on);
     if (elsewhere)
-        chip (g, { a.getRight() - wTake, y, wTake, h }, i18n::upper (tr ("Take over here")), false, colour::ultraviolet,
+        chip (g, { x + leftW - wTake, y, wTake, h }, i18n::upper (tr ("Take over here")), false, colour::ultraviolet,
               [this] { if (gridCtl != nullptr) gridCtl->claim(); repaint(); });
 }
 
@@ -776,47 +883,85 @@ void SettingsView::paintControllerPreview (juce::Graphics& g, juce::Rectangle<fl
 {
     const float u = unit();
     legend (g, tr ("Virtual controller"), { a.getX(), a.getY(), a.getWidth(), u * 1.6f });
-    auto body = a.withTrimmedTop (u * 2.0f);
+    padGrid = lcdArea = {};
     if (gridCtl == nullptr) return;
-    // the 8 x 8 pads (right), in the controller's colours
-    const float cell = juce::jmin (body.getHeight() / 8.0f, u * 1.75f);
-    const auto padArea = body.removeFromRight (cell * 8.0f);
+    auto body = a.withTrimmedTop (u * 2.0f);
+    // the device from top to bottom: the four display lines, the two button rows under it, the 8 x 8 pads
+    const float lineH = juce::jmin (u * 1.6f, body.getWidth() / 68.0f * 1.75f);
+    const auto lines = gridCtl->displayLines();
+    const auto panel = body.removeFromTop (lineH * 4.0f + u * 1.2f);
+    lcdArea = panel;
+    g.setColour (juce::Colour (0xff0b0d0c));
+    g.fillRoundedRectangle (panel, u * 0.5f);
+    g.setColour (colour::displayGrid);
+    g.drawRoundedRectangle (panel, u * 0.5f, 1.0f);
+    g.setFont (monoFont (lineH * 0.82f));
+    for (int l = 0; l < gridctl::numLines; ++l)
+    {
+        g.setColour (juce::Colour (0xfff2b54a)); // amber text, like the device's character display
+        g.drawFittedText (juce::String (lines[(size_t) l]),
+                          panel.reduced (u * 0.6f, u * 0.6f).withHeight (lineH).translated (0.0f, lineH * (float) l).toNearestInt(),
+                          juce::Justification::centredLeft, 1, 0.6f);
+    }
+    body.removeFromTop (u * 0.6f);
+    // button rows: upper (the eight modes), lower (parts 1-4, pad modes) - lit as on the device, clickable
+    auto buttonRow = [&] (int firstCc) {
+        const auto r = body.removeFromTop (u * 2.2f);
+        const float w = r.getWidth() / 8.0f;
+        for (int k = 0; k < 8; ++k)
+        {
+            const int cc = firstCc + k;
+            const auto c = juce::Rectangle<float> (r.getX() + w * (float) k, r.getY(), w, r.getHeight()).reduced (u * 0.2f);
+            const int code = gridCtl->buttonCode (cc);
+            // colour codes: red 1-6, amber 7-12, yellow 13-18, green 19-24 (dim / full / blink)
+            juce::Colour col = colour::displayGrid.brighter (0.1f);
+            if (code > 0)
+            {
+                const juce::Colour hues[] = { colour::signalRed, juce::Colour (0xfff08a24), colour::sunYellow, colour::playGreen };
+                const int hue = juce::jlimit (0, 3, (code - 1) / 6);
+                const bool full = ((code - 1) % 6) >= 3;
+                col = hues[hue].withAlpha (full ? 1.0f : 0.4f);
+            }
+            g.setColour (col);
+            g.fillRoundedRectangle (c, u * 0.3f);
+            hits.push_back ({ c, "BTN " + juce::String (cc), [this, cc] {
+                                 if (gridCtl == nullptr) return;
+                                 gridCtl->receive (juce::MidiMessage::controllerEvent (1, cc, 127));
+                                 gridCtl->receive (juce::MidiMessage::controllerEvent (1, cc, 0));
+                                 gridCtl->update();
+                             } });
+        }
+        body.removeFromTop (u * 0.3f);
+    };
+    buttonRow (gridctl::cc::upperRow);
+    buttonRow (gridctl::cc::lowerRow);
+    body.removeFromTop (u * 0.5f);
+    // the 8 x 8 pads, square, centred in what is left; pressed with the mouse they play like the device's pads
+    const float side = juce::jmin (body.getWidth(), body.getHeight() - u * 1.6f);
+    const float cell = side / 8.0f;
+    padGrid = { body.getCentreX() - side * 0.5f, body.getY(), side, side };
     const auto codes = gridCtl->padCodes();
     for (int pad = 0; pad < gridctl::numPads; ++pad)
     {
         const int col = pad % gridctl::cols, r = pad / gridctl::cols;
-        const auto c = juce::Rectangle<float> (padArea.getX() + cell * (float) col, padArea.getY() + cell * (float) (7 - r), cell, cell).reduced (cell * 0.08f);
-        const int v = codes[(size_t) pad];
+        const auto c = juce::Rectangle<float> (padGrid.getX() + cell * (float) col, padGrid.getY() + cell * (float) (7 - r), cell, cell).reduced (cell * 0.07f);
         juce::Colour col2 = colour::displayGrid;
-        if (const auto pc = gridctl::padColourOf (v); pc != gridctl::Colour::Off)
+        if (const auto pc = gridctl::padColourOf (codes[(size_t) pad]); pc != gridctl::Colour::Off)
         {
             const int k = (int) pc - 1; // red dim, red, amber dim, amber, yellow dim, yellow, green dim, green
             const juce::Colour hues[] = { colour::signalRed, juce::Colour (0xfff08a24), colour::sunYellow, colour::playGreenLit };
             col2 = hues[juce::jlimit (0, 3, k / 2)].withAlpha (k % 2 == 1 ? 1.0f : 0.42f);
         }
         g.setColour (col2);
-        g.fillRoundedRectangle (c, cell * 0.15f);
+        g.fillRoundedRectangle (c, cell * 0.12f);
     }
-    body.removeFromRight (u * 1.5f);
-    // the four display lines (68 characters each) and the last messages
-    auto text = body;
-    const auto lines = gridCtl->displayLines();
-    g.setColour (colour::display);
-    const auto panel = text.removeFromTop (u * 7.4f);
-    g.fillRoundedRectangle (panel, u * 0.5f);
-    g.setFont (monoFont (juce::jmin (u * 1.3f, panel.getWidth() / 68.0f * 1.62f)));
-    for (int l = 0; l < gridctl::numLines; ++l)
-    {
-        g.setColour (colour::displayText);
-        g.drawText (juce::String (lines[(size_t) l]), panel.reduced (u * 0.6f, u * 0.4f).withHeight (u * 1.65f).translated (0.0f, u * 1.65f * (float) l),
-                    juce::Justification::centredLeft, false);
-    }
-    text.removeFromTop (u * 0.6f);
+    // the last message in / out
     g.setColour (colour::displayDim);
-    g.setFont (monoFont (u * 1.1f));
+    g.setFont (monoFont (u * 1.05f));
     const auto log = gridCtl->log();
-    for (int i = juce::jmax (0, log.size() - 4), k = 0; i < log.size(); ++i, ++k)
-        g.drawText (log[i], text.withHeight (u * 1.4f).translated (0.0f, u * 1.4f * (float) k), juce::Justification::centredLeft, true);
+    if (! log.isEmpty())
+        g.drawText (log[log.size() - 1], juce::Rectangle<float> (a.getX(), padGrid.getBottom() + u * 0.3f, a.getWidth(), u * 1.3f),
+                    juce::Justification::centred, true);
 }
 
 juce::String SettingsView::mappingRow (const MidiMapping& m) const
@@ -1101,6 +1246,18 @@ void SettingsView::paintAbout (juce::Graphics& g, juce::Rectangle<float> a)
 // ---------------------------------------------------------------- input
 void SettingsView::mouseDown (const juce::MouseEvent& e)
 {
+    // p53: a virtual pad pressed with the mouse plays like the device's pad (velocity from the height in the pad)
+    if (current == Controller && gridCtl != nullptr && padGrid.contains (e.position))
+    {
+        const float cell = padGrid.getWidth() / 8.0f;
+        const int col = juce::jlimit (0, 7, (int) ((e.position.x - padGrid.getX()) / cell));
+        const int r = juce::jlimit (0, 7, 7 - (int) ((e.position.y - padGrid.getY()) / cell));
+        pressedPad = r * gridctl::cols + col;
+        gridCtl->receive (juce::MidiMessage::noteOn (1, gridctl::padNote (col, r), (juce::uint8) 100));
+        gridCtl->update();
+        repaint();
+        return;
+    }
     for (auto it = hits.rbegin(); it != hits.rend(); ++it)
         if (it->area.contains (e.position))
         {
@@ -1109,6 +1266,18 @@ void SettingsView::mouseDown (const juce::MouseEvent& e)
             repaint();
             return;
         }
+}
+
+void SettingsView::mouseUp (const juce::MouseEvent&)
+{
+    if (pressedPad < 0) return;
+    if (gridCtl != nullptr)
+    {
+        gridCtl->receive (juce::MidiMessage::noteOff (1, gridctl::firstPadNote + pressedPad));
+        gridCtl->update();
+    }
+    pressedPad = -1;
+    repaint();
 }
 
 void SettingsView::paintOffscreen()
@@ -1140,8 +1309,29 @@ juce::StringArray SettingsView::chipTexts()
     return t;
 }
 
-void SettingsView::mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails& w)
+std::vector<juce::Rectangle<float>> SettingsView::clickableAreas()
 {
+    paintOffscreen();
+    std::vector<juce::Rectangle<float>> a;
+    for (const auto& h : hits) a.push_back (h.area);
+    return a;
+}
+
+void SettingsView::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w)
+{
+    // p53: the wheel over the virtual display turns the encoder of that eighth (as the device's relative encoders)
+    if (current == Controller && gridCtl != nullptr && lcdArea.contains (e.position))
+    {
+        const int enc = juce::jlimit (0, 7, (int) ((e.position.x - lcdArea.getX()) / (lcdArea.getWidth() / 8.0f)));
+        const int d = w.deltaY > 0.0f ? 1 : w.deltaY < 0.0f ? 127 : 0;
+        if (d != 0)
+        {
+            gridCtl->receive (juce::MidiMessage::controllerEvent (1, gridctl::cc::firstEncoder + enc, d));
+            gridCtl->update();
+            repaint();
+        }
+        return;
+    }
     if (current == Help) helpScroll = juce::jlimit (0.0f, helpMax, helpScroll - w.deltaY * unit() * 12.0f);
     if (current == MidiLearn) learnScroll = juce::jlimit (0.0f, learnMax, learnScroll - w.deltaY * unit() * 12.0f);
     repaint();

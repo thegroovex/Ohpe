@@ -37,7 +37,7 @@ struct UserSettings
     /** p46: the external controller of the standalone app (Settings > MIDI > Controller). JSON "controller":
         { "profile": "off" | "grid1", "in": port name, "out": port name, "master": "volume" | "tempo",
           "strip": "bend" | "mod" }. */
-    int controllerProfile = 0;     ///< ControllerProfile
+    int controllerProfile = 1;     ///< ControllerProfile (p53: the Grid-Controller by default - it connects when found)
     std::string controllerIn, controllerOut;
     int controllerMaster = 0;      ///< 0 = the master encoder sets the volume, 1 = the tempo
     int controllerStrip = 0;       ///< 0 = the touch strip bends, 1 = it is the mod wheel
@@ -45,6 +45,9 @@ struct UserSettings
         JSON "controller": { "auto": true, "pattern": "User; MIDIIN2; MIDIOUT2" } (the pattern is edited in the file). */
     bool controllerAuto = true;
     std::string controllerPattern = defaultControllerPattern;
+    /** p53: the user has set the controller up in the settings (JSON "controller": { "chosen": true }). Files without
+        it (0.6.2 and older) start with the defaults of 0.6.3: the Grid-Controller profile and automatic ports. */
+    bool controllerChosen = false;
     std::string extras = "{}";     ///< unknown keys (a JSON object)
 
     std::string toJson() const;

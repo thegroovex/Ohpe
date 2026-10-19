@@ -8,22 +8,47 @@ of 8 buttons under the display, transport and navigation buttons and a touch str
 The pads play exactly like the on-screen [grid keyboard](HARMONY.md#the-grid-keyboard): same layouts, same notes,
 same colours for root and key notes – what you learn on one works on the other.
 
-![Settings – MIDI with the controller section and the virtual controller](../images/ohpe-settings-controller.png)
+![Settings – Controller: ports, connection, controls and the virtual controller](../images/ohpe-settings-controller.png)
 
 ## Setting it up
 
-1. Connect the controller and start the Ohpe **standalone app** (for the plug-in see [In a plug-in](#in-a-plug-in)).
-2. **Settings > MIDI > Controller**: choose **Grid controller profile 1**.
-3. **In** / **Out**: step to the controller's MIDI ports (usually its first port for both; if the display stays
-   empty, try its other port). The legend shows **Connected** once both ports are open.
-4. **Bend / Mod**: what the touch strip does.
-5. **View** shows the *virtual controller*: the four display lines, the 64 pad lights and the last MIDI messages –
-   handy to check what the controller should show.
+**Nothing to do in most cases.** Since 0.6.3 the profile is **on by default with automatic ports**: plug the
+controller in and start Ohpe (standalone app, or open the plug-in's window). Ohpe finds the controller's *user port*
+(input **and** output of the same device), switches the controller into its **User mode** by itself (no need to
+press its *User* button), shows **OHPE · connecting ...** and then **connected** on its display for a moment
+(German UI: *verbindet ...* / *verbunden*), and then the normal Ohpe display. Plugged in later? Ohpe connects within
+a second. When Ohpe quits, the profile is switched off or the instance goes, it clears the display and lights and
+hands the controller back to its own mode.
 
-In the standalone app nothing is detected automatically; the choice is saved per user in `settings.json` (never in projects or presets)
-and the controller is reopened at the next start. When it is unplugged the lights and display stop; when it comes
-back, Ohpe reconnects within a second and sends everything again. Ohpe switches the controller's port off in the
-plain MIDI input list so its pads don't play twice. The profile is **off by default**.
+**Settings > Controller** (its own page):
+
+- **Off** / **Grid controller profile 1**.
+- **Ports**: **Choose ports automatically** (on by default), then a menu for **Input** and **Output** with the full
+  port names. Picking a port in a menu switches automatic off (the other side keeps the port in use); choosing
+  automatic in the menu switches it back on.
+- The **status line**: **Connected · first generation, text display** (or *later generation, no text display*),
+  **Checking the device ...**, **No controller found**, **Port in use by another program** (standalone) /
+  **Port in use - free it in the host** (plug-in), **Waiting for the controller**.
+- **Controls**: **Touch strip** Bend / Mod; **Master** encoder Volume / Tempo.
+- The **virtual controller**, large on the right: the four display lines, the two button rows under the display and
+  the 64 pads in the controller's colours, live – pressed pads light green, the mode / part buttons light as on the
+  device. It works with the mouse too: click a pad to play it, click a button, turn the mouse wheel over an eighth of
+  the display to turn that encoder. It also follows the pads when no output is connected.
+
+**How the controller is found.** Port names that match the pattern `User; MIDIIN2; MIDIOUT2` (any part, case does
+not matter; editable as `"pattern"` under `"controller"` in `settings.json`) are candidates; the input and output of
+the same device are paired (on macOS / Linux its *… User Port*, on Windows *MIDIIN2 (…)* / *MIDIOUT2 (…)*). Ohpe
+sends a standard identity request: the answer tells the controller's **generation**. A device that also has its
+*live port* next to the user port connects at once; another matching device must answer as the controller within
+two seconds, otherwise Ohpe leaves it alone and tries the next candidate.
+
+**Generations.** The first generation has the four-line character display written over MIDI – Ohpe uses all of it.
+A later generation (pixel display over USB) gets pads, buttons, encoders, touch and lights, but no text on its
+display (its pad colours may differ).
+
+The settings are saved per user in `settings.json` (never in projects or presets). Ohpe switches the controller's
+ports (user and live port) off in the plain MIDI input list while it holds them, so pads don't play twice and the
+encoder / strip touch notes never reach the sound as notes, and switches them back on when it lets go.
 
 ## In a plug-in
 
@@ -32,17 +57,15 @@ its usual mode it talks to the DAW; in its **User mode** (the controller's *User
 and lights to whatever program opens its *user port*. Ohpe opens that port itself – past the host – with the full
 display, pad colours, pressure, encoders (with touch), touch strip and buttons, exactly as in the standalone app.
 
-![Settings – MIDI with the controller section in a plug-in](../images/ohpe-settings-controller-plugin.png)
+![Settings – Controller in a plug-in](../images/ohpe-settings-controller-plugin.png)
 
 1. **In the DAW**: in its MIDI preferences, switch the controller's *user port* (often called *… User Port*, on
    Windows *MIDIIN2 (…)* / *MIDIOUT2 (…)*) **off for tracks and remote** (input and output), so the DAW releases it
    and the pads don't play twice. Leave the controller's main port as it is.
-2. **In Ohpe**: **Settings > MIDI > Controller**: choose **Grid controller profile 1**.
-3. **Choose ports automatically** (on by default) picks the input and output whose names match the pattern
-   (`User; MIDIIN2; MIDIOUT2` – any part found in a port name; editable as `"pattern"` under `"controller"` in
-   `settings.json`). Switch it off and step **In** / **Out** to choose the ports yourself (stepping a port switches
-   it off).
-4. Switch the controller to its **User mode**. The legend shows **Active in this instance** once both ports are open.
+2. **In Ohpe**: nothing (**Settings > Controller**: the profile and automatic ports are on by default; pick the ports
+   in the menus to choose them yourself).
+3. Ohpe switches the controller to its **User mode** itself. The page shows **Active in this instance** once both
+   ports are open.
 
 **One instance at a time.** Only one Ohpe of the DAW can hold the controller: the one whose window you **opened or
 clicked last**. The others show **Active in another instance** and a **Take over here** button; when the holding
@@ -88,7 +111,11 @@ The second button row, keys 5 – 8 (or **Note** / **Session**), chooses the pad
 
 * **Same layout** as *Grid Layout* (`harmony.kb.layout`): **Fourths** (right +1, up +5), **Thirds** (+1 / +4),
   **Whole Tones** (+2 / +5) or **In Key** (scale steps of the key, three steps per row – only key notes).
-  The **Scales** button steps through the layouts.
+  The **Scales** button steps through the layouts. Since p53 the pads follow the on-screen keyboard: while the
+  **grid keyboard** is shown (GRID key) they take its layout, root, scale and colours; with the **piano keys** shown
+  they use the default layout (Fourths). Scales with the piano keys shown first switches the screen to the grid
+  keyboard, then steps its layout – screen and pads always show the same. Held notes show both ways: a pad held
+  sinks its cell on the screen, a cell clicked on the screen lights its pads green.
 * **Same mapping**: pad (column, row) plays the note of the screen grid's cell at the same column and row, from the
   same lowest C. The four lower pad rows are exactly the screen grid's four rows; the upper four continue it.
 * **Same key**: the key the grid shows (the remembered key – the set key until anything was heard). With **Scale
