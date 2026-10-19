@@ -144,14 +144,14 @@ std::string cellLine (const std::array<std::string, numCells>& cells)
 std::string segmentLine (const std::array<std::string, 4>& segments)
 {
     std::string line;
-    // p58: at most 16 characters per 17-character segment, so a long preset name never runs into the next one
+    // p58: at most 16 characters per 17-character segment (the last one 17), so a long preset name never runs into the next one
     // ("Pressure Reed Ke Part 1 ...", not "Pressure Reed KeyPart 1 ...")
     constexpr int seg = lineLength / 4;
-    for (const auto& s : segments)
+    for (size_t k = 0; k < segments.size(); ++k)
     {
-        auto f = fold (s);
+        auto f = fold (segments[k]);
         while (! f.empty() && f.front() == ' ') f.erase (f.begin());
-        f = f.substr (0, (size_t) (seg - 1));
+        f = f.substr (0, (size_t) (k + 1 < segments.size() ? seg - 1 : seg)); // the last one ends the line: all 17
         while (! f.empty() && f.back() == ' ') f.pop_back();
         line += fitCell (f, seg, false);
     }

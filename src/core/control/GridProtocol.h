@@ -117,7 +117,7 @@ std::string fitLine (const std::string& utf8);
     per segment, cells cut to 7 characters so that neighbours never touch, centred). */
 std::string cellLine (const std::array<std::string, numCells>& cells);
 /** One display line of 4 segments of 17 characters (left aligned; p58: cut to 16 so that at least one space
-    always separates two segments). */
+    always separates two segments; the last one, at the end of the line, keeps 17). */
 std::string segmentLine (const std::array<std::string, 4>& segments);
 /** Short form of a name for a cell: a leading channel / track / pad number ("Ch 1", "Kanal 1", "Track 3") is dropped
     first, then vowels and last letters of the longest words until it fits ("Filter Cutoff" -> "FltrCtff"); a name
