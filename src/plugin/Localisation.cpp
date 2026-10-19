@@ -630,6 +630,9 @@ const std::map<juce::String, juce::String>& table()
         { "Key", "Tonart" },
         { "Root", "Grundton" },
         { "Grid", "Raster" },
+        { "Browse", "Bibliothek" },            // p59: the controller's browse mode (line 4)
+        { "Pan & Send", "Pan & Send" },
+        { "No presets - turn the filters back", "Keine Presets - Filter zurückdrehen" },
         { "Take Key", "Tonart übernehmen" },
         { "Forget", "Vergessen" },
         { "Hold", "Halten" },
