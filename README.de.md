@@ -157,7 +157,7 @@ Alle Tests laufen mit `scripts/test-all.sh` – siehe [Mitwirken](docs/de/MITWIR
 * [SUB-Ebene](docs/de/SUB-EBENE.md) – ein Suboszillator pro Part, eine oder zwei Oktaven unter jeder Stimme (Sinus / Rund / Rechteck, ins Filter oder direkt)
 * [Ausdrucksstark spielen](docs/de/AUSDRUCK.md) – Anschlag und Aftertouch auf je zwei Funktionen, Kurven, Aftertouch → Glide-Zeit
 * [Aktualisierung](docs/de/AKTUALISIERUNG.md) – Update-Prüfung in der App, geprüfter Download, Kanäle, Inhaltspakete, Zurücksetzen
-* [Grid-Controller](docs/de/CONTROLLER.md) – Grid-Controller (Profil 1): ein 8 × 8-Pad-Controller mit Display spielt die Raster-Tastatur und bedient die gezeigte Seite (Standalone)
+* [Grid-Controller](docs/de/CONTROLLER.md) – Grid-Controller (Profil 1): ein 8 × 8-Pad-Controller mit Display spielt die Raster-Tastatur und bedient die gezeigte Seite (Standalone-App und Plug-in)
 * [Einstellungen](docs/de/EINSTELLUNGEN.md) – Sprache, Hilfe, helle / dunkle Erscheinung, Anzeige, MIDI-Einrichtung und Learn-Liste, Über
 * [Inhaltspakete](docs/de/INHALTSPAKETE.md) – `.ohpepack`-Dateien installieren (Dialog oder Drag & Drop), Prüfsummen, Paketverwaltung, Bibliotheksfilter; [Format](packaging/content/README.de.md)
 * [Preset-Zucht](docs/de/ZUCHT.md) – zwei Klänge kreuzen, die besten Kinder behalten, Generationen züchten

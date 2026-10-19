@@ -98,6 +98,8 @@ public:
     juce::String outputPort() const { return outName; }
     /** One tick of the watch (the timer; tests): ownership hand-over, ports. */
     void poll();
+    /** Screenshots: the port names shown (no port is opened). */
+    void setPortNamesForTests (const juce::String& in, const juce::String& out) { inName = in; outName = out; }
 
     // ---- ports (message thread)
     /** Opens / closes the ports the settings name (profile off = closed). Standalone app only. */

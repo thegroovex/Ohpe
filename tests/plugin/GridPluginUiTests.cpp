@@ -124,7 +124,7 @@ TEST_CASE ("p49 grid controller in a plug-in: one instance holds it - the other 
     CHECK (a.c().ownedElsewhere());
     CHECK_FALSE (a.c().connected());
     CHECK (a.c().state() == ui::GridController::State::OtherInstance);
-    CHECK (b.c().status() == "Connected"); // a mock device
+    CHECK (b.c().status() == "Active in this instance");
     CHECK (a.c().status() == "Active in another instance");
 
     // a's settings section: which instance, take it over here

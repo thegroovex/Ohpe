@@ -7,6 +7,15 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Grid controller in the plug-in (p49): in VST3 / AU the plug-in opens the controller's user port itself (full
+  display, pad colours, pressure, encoders, strip, buttons); ports chosen or found automatically by name (on by
+  default), one instance of the DAW holds the controller (window opened or clicked last, Take over here), it keeps
+  working with the window closed; "port in use" status with a retry every second. Standalone unchanged.
+- DE: Grid-Controller im Plug-in (p49): in VST3 / AU öffnet das Plug-in den User-Port des Controllers selbst (volles
+  Display, Pad-Farben, Druck, Regler, Strip, Tasten); Ports gewählt oder automatisch per Name gefunden (ab Werk an),
+  eine Instanz der DAW hält den Controller (zuletzt geöffnetes oder angeklicktes Fenster, Hierher holen), er arbeitet
+  bei geschlossenem Fenster weiter; Status „Port belegt" mit neuem Versuch jede Sekunde. Standalone unverändert.
+
 ## 0.6.1 Preview – 2026-10-18
 
 [Notes / Hinweise](docs/release-notes/0.6.1.md)

@@ -306,7 +306,7 @@ juce::String GridController::status() const
     {
         case State::Off: return tr ("Off");
         case State::OtherInstance: return tr ("Active in another instance");
-        case State::Connected: return inPlugin && ! testSender ? tr ("Active in this instance") : tr ("Connected");
+        case State::Connected: return inPlugin ? tr ("Active in this instance") : tr ("Connected");
         case State::PortBusy: return tr ("Port in use - free it in the host");
         case State::ChoosePorts:
             return inPlugin && autoPorts ? tr ("No port matches - choose the ports") : tr ("Choose the controller's MIDI input and output");

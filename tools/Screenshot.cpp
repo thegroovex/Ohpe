@@ -1006,6 +1006,22 @@ int main (int argc, char* argv[])
                     set ([] (settings::UserSettings& v) { v.controllerProfile = settings::ControllerOff; v.controllerIn.clear(); v.controllerOut.clear(); });
                     view.setStandalone (false);
                 }
+                if (! dark)
+                {   // p49: the controller section in a plug-in - automatic ports (the names found), the instance holding it
+                    auto& view = e.settingsComponent();
+                    view.setStandalone (false);
+                    auto& ctl = e.gridControllerForTests();
+                    ctl.attachForTests ([] (const juce::MidiMessage&) {});
+                    set ([] (settings::UserSettings& v) { v.controllerProfile = settings::ControllerGrid1; v.controllerAuto = true; });
+                    ctl.attachForTests ([] (const juce::MidiMessage&) {});
+                    ctl.setPortNamesForTests ("Pad Grid User Port", "Pad Grid User Port");
+                    ctl.claim();
+                    ctl.update();
+                    e.showSettings (true, ui::SettingsView::Midi);
+                    shot ("ohpe-settings-controller-plugin");
+                    ctl.attachForTests (nullptr);
+                    set ([] (settings::UserSettings& v) { v.controllerProfile = settings::ControllerOff; });
+                }
                 e.settingsComponent().setHelpTopic (1);
                 e.showSettings (true, ui::SettingsView::Help);
                 shot (dark ? "ohpe-settings-help-dark" : "ohpe-settings-help");
