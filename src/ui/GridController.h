@@ -58,7 +58,7 @@ class GridController : private juce::Timer, private juce::MidiInputCallback, pri
 public:
     enum class PadMode { Keys = 0, Pads, Drum, Steps, numModes };
     /** p49: what the settings section shows. */
-    enum class State { Off = 0, ChoosePorts, Waiting, PortBusy, Connected, OtherInstance };
+    enum class State { Off = 0, ChoosePorts, Waiting, PortBusy, Connected, OtherInstance, Probing, NotFound }; ///< p53: + Probing, NotFound
 
     /** The editor's side: what the screen shows and how to change it. */
     struct Hooks
@@ -105,6 +105,16 @@ public:
     /** Opens / closes the ports the settings name (profile off = closed). Standalone app only. */
     void configure (const settings::UserSettings& s);
     bool connected() const noexcept { return isConnected; }
+    /** p53: the generation the controller answered with (First until it answers; Unknown while not connected). */
+    gridctl::Generation generation() const noexcept { return gen; }
+    /** p53: the connect splash is on the display now. */
+    bool splashShown() const noexcept { return splashTicks > 0; }
+    /** p53: the ports are open and wait for the identity reply (tests: a reply through receive()). */
+    bool probing() const noexcept { return isProbing; }
+    /** p53 (tests): the next connect of attachForTests shows the splash (as a real port does). */
+    void setSplashForTests (bool on) { testSplash = on; }
+    /** p53: the settings' line under the ports: "Connected - first generation", "No controller found", ... */
+    juce::String statusLine() const;
     bool enabled() const noexcept { return profile != settings::ControllerOff; }
     /** "Connected" / "Waiting for ..." / p49 "Active in this instance", "Port in use - free it in the host" ... (translated). */
     juce::String status() const;
@@ -154,6 +164,10 @@ private:
     void lightsOff();
     void openPorts();
     void closePorts();
+    void onConnected (bool splash); ///< p53: user mode, aftertouch mode, splash, everything sent again
+    void claimDeviceInputs();       ///< p53: the controller's ports (and its live port) off as plain MIDI inputs
+    void releaseDeviceInputs();
+    void rejectProbe();             ///< p53: no identity reply - not the controller, try the next candidate
     void addLog (const juce::String& s);
     gridctl::PadKey padKey() const;
 
@@ -178,6 +192,12 @@ private:
     Sender testSender;
     bool isConnected = false;
     int watchTicks = 0;
+    // p53: generation, identity probe, splash, the device manager's inputs taken over, candidates that did not answer
+    gridctl::Generation gen = gridctl::Generation::Unknown;
+    bool isProbing = false, chosenByUser = false, testSplash = false, notFound = false;
+    int probeTicks = 0, splashTicks = 0, idleTicks = 0;
+    juce::StringArray rejected, disabledInputs;
+    juce::String portListSig;
 
     // input queue (MIDI thread -> message thread)
     std::mutex queueLock;
