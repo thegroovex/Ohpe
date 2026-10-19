@@ -56,6 +56,28 @@ TEST_CASE ("p46 grid controller: encoder cells - eight cells over four segments,
     REQUIRE (seg.size() == 68u);
     CHECK (seg.substr (17, 6) == "Part 1");
     CHECK (seg.substr (51, 7) == "C Major");
+    // p58: a long preset name is cut to 16 characters - at least one space before the next segment
+    const auto longSeg = g::segmentLine ({ "Pressure Reed Keys Deluxe", "Part 1 Wavetable", "120.0 BPM", "C Major" });
+    REQUIRE (longSeg.size() == 68u);
+    CHECK (longSeg.substr (0, 17) == "Pressure Reed Ke ");
+    CHECK (longSeg.substr (17, 17) == "Part 1 Wavetable ");
+    CHECK (longSeg.find ("KeyPart") == std::string::npos);
+    CHECK (g::segmentLine ({ "Pressure Reed Ke ", "x", "", "" }).substr (0, 18) == "Pressure Reed Ke x");
+    // p58: short names are generic - any EQ wording (English or German, old or new) shortens readably and stays apart
+    for (const char* n : { "Low Shelf Freq", "High Shelf Freq", "Low Shelf Gain", "High Shelf Gain", "Tiefen-Kuhschwanz Frequenz",
+                           "H\xc3\xb6hen-Kuhschwanz Gain", "Tiefen-Shelf Frequenz", "H\xc3\xb6hen-Shelf Frequenz", "Low Shelf Frequenz",
+                           "Mitten 1 G\xc3\xbcte", "Band 2 Freq" })
+    {
+        CAPTURE (n);
+        const auto s = g::shortName (n);
+        CHECK (s.size() <= 7u);
+        CHECK_FALSE (s.empty());
+        CHECK (s.front() == n[0]);
+        CHECK (s.find ('?') == std::string::npos);
+    }
+    CHECK (g::shortName ("Low Shelf Freq") != g::shortName ("High Shelf Freq"));
+    CHECK (g::shortName ("Low Shelf Freq") != g::shortName ("Low Shelf Gain"));
+    CHECK (g::shortName ("Tiefen-Shelf Frequenz") != g::shortName ("H\xc3\xb6hen-Shelf Frequenz"));
     CHECK (g::shortName ("Cutoff") == "Cutoff");
     CHECK (g::shortName ("Filter Cutoff").size() <= 8u);
     CHECK (g::shortName ("Filter Envelope Amount").size() <= 8u);

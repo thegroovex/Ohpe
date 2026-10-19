@@ -70,11 +70,14 @@ constexpr int touchNoteSwing = 9, touchNoteTempo = 10;
 
 /** p53: what one message from the controller (user port, channel 1) is - the controller layer consumes every one
     of them; only pads play notes (encoder / strip touches are never notes for the synth). */
-enum class Input { Other = 0, Pad, EncoderTouch, StripTouch, EncoderTurn, Button, Strip, Pressure };
+enum class Input { Other = 0, Pad, EncoderTouch, StripTouch, EncoderTurn, Button, Strip, Pressure, Pedal };
+/** p58: the foot pedal CCs of the controller's pedal jack (64 sustain, 66 sostenuto, 67 soft): never buttons - they
+    reach the synth like the same CC from any MIDI keyboard. */
+constexpr bool isPedalCc (int cc) noexcept { return cc == 64 || cc == 66 || cc == 67; }
 struct Decoded
 {
     Input kind = Input::Other;
-    int index = -1;  ///< pad 0 .. 63; encoder 0 .. 7, 8 = master, 9 = swing, 10 = tempo; button CC
+    int index = -1;  ///< pad 0 .. 63; encoder 0 .. 7, 8 = master, 9 = swing, 10 = tempo; button / pedal CC
     int value = 0;   ///< touch: 1 / 0; turn: signed steps; button: 127 / 0; strip: 0 .. 16383; pressure 0 .. 127
 };
 /** Decodes one short MIDI message (status, data1, data2). */
@@ -127,7 +130,8 @@ std::string fitLine (const std::string& utf8);
 /** One display line of 8 cells, two over each of the four display segments: "cell0... cell1..." (8 + 1 + 8 chars
     per segment, cells cut to 7 characters so that neighbours never touch, centred). */
 std::string cellLine (const std::array<std::string, numCells>& cells);
-/** One display line of 4 segments of 17 characters (left aligned, cut). */
+/** One display line of 4 segments of 17 characters (left aligned; p58: cut to 16 so that at least one space
+    always separates two segments; the last one, at the end of the line, keeps 17). */
 std::string segmentLine (const std::array<std::string, 4>& segments);
 /** Short form of a name for a cell: a leading channel / track / pad number ("Ch 1", "Kanal 1", "Track 3") is dropped
     first, then vowels and last letters of the longest words until it fits ("Filter Cutoff" -> "FltrCtff"); a name

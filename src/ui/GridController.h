@@ -220,6 +220,8 @@ private:
     // pads (MIDI thread)
     void padDown (int pad, int velocity);
     void padUp (int pad);
+    void pedal (int cc, int value); ///< p58: sustain / sostenuto / soft from the pedal jack -> the part
+    void releasePedals();
     void padPressure (int pad, int value);
     void channelPressure (int value);
 
@@ -256,6 +258,7 @@ private:
     std::array<std::atomic<bool>, gridctl::numPads> held {};
     std::atomic<int> padModeNow { 0 }, partNow { 0 }, drumBase { 36 };
     std::atomic<bool> mpeNow { false };
+    std::array<std::atomic<int>, 3> pedalPart { { -1, -1, -1 } }; ///< p58: part a pedal (64 / 66 / 67) is down on, -1 = up
     int nextChannel = 2;
 
     // state (message thread)

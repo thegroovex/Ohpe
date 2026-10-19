@@ -241,6 +241,14 @@ bisher.
 **Bend**: Pitchbend des Edit-Parts (das Pitch-Rad auf dem Bildschirm folgt), beim Loslassen zurück zur Mitte.
 **Mod**: das Mod-Rad.
 
+## Fußpedal
+
+Ein Haltepedal an der Pedalbuchse des Controllers wirkt wie an einem MIDI-Keyboard: **Sustain** (CC 64) hält die
+Noten des Parts, den die Pads spielen, nach dem Loslassen der Pads, **Sostenuto** (CC 66) hält die Noten, die beim
+Treten gedrückt waren; beide lassen los, wenn das Pedal hochkommt. In einem MPE-/Fingerboard-Part hält das Pedal die
+Noten aller Member-Kanäle. Das Pedal geht auf dem Part hoch, auf dem es getreten wurde, auch nach einem Partwechsel
+und wenn der Controller abgezogen wird.
+
 ## Hinweise
 
 * Keine eigenen Host-Parameter: Der Controller ändert nur bestehende Parameter (Host wird informiert, automatisierbar wie

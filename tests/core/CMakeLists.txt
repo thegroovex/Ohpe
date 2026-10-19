@@ -117,4 +117,5 @@ target_sources(ohpe_core_tests PRIVATE FingerboardTests.cpp)
 # p49: Grid-Controller in a plug-in - ownership, automatic ports, settings
 target_sources(ohpe_core_tests PRIVATE ControllerPortsTests.cpp)
 target_sources(ohpe_core_tests PRIVATE BendRetriggerTests.cpp) # p53
+target_sources(ohpe_core_tests PRIVATE SustainPedalTests.cpp) # p58: sustain / sostenuto from every input
 target_sources(ohpe_core_tests PRIVATE GridLayoutTests.cpp) # p59: grid keyboard layouts

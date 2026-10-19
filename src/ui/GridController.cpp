@@ -195,6 +195,7 @@ void GridController::checkOwnership()
         if (testSender)
         {
             for (int pad = 0; pad < g::numPads; ++pad) padUp (pad);
+            releasePedals(); // p58
             if (isConnected) lightsOff();
             isConnected = false;
             addLog ("released");
@@ -383,6 +384,7 @@ void GridController::rejectProbe()
 void GridController::closePorts()
 {
     for (int pad = 0; pad < g::numPads; ++pad) padUp (pad);
+    releasePedals(); // p58
     if (isConnected)
     {
         lightsOff();
@@ -468,6 +470,7 @@ void GridController::watchPorts()
         {
             // the device is gone: drop the ports without writing to them
             for (int pad = 0; pad < g::numPads; ++pad) padUp (pad);
+            releasePedals(); // p58: no pedal stays down on a part when the device is unplugged
             if (input != nullptr) input->stop();
             input = nullptr;
             output = nullptr;
@@ -538,6 +541,8 @@ void GridController::receive (const juce::MidiMessage& m)
         channelPressure (m.getChannelPressureValue());
         return;
     }
+    else if (m.isController() && g::isPedalCc (m.getControllerNumber()))
+        pedal (m.getControllerNumber(), m.getControllerValue()); // p58: at once, like a pad (still logged below)
     const std::lock_guard<std::mutex> l (queueLock);
     if (queue.size() < 512) queue.push_back (m);
 }
@@ -562,6 +567,15 @@ void GridController::padDown (int pad, int velocity)
     const int note = padMap[(size_t) pad].load();
     if (note < 0) return;
     const int part = partNow.load();
+    for (int k = 0; k < (int) pedalPart.size(); ++k) // p58: a pedal held while the part changed moves to the new part
+    {
+        const int was = pedalPart[(size_t) k].load();
+        if (was < 0 || was == part) continue;
+        const int cc = k == 0 ? 64 : (k == 1 ? 66 : 67);
+        proc.core().queueControllerEvent (was, MidiEvent::controller (1, cc, 0, 0));
+        proc.core().queueControllerEvent (part, MidiEvent::controller (1, cc, 127, 0));
+        pedalPart[(size_t) k].store (part);
+    }
     int ch = 1;
     if (mpeNow.load()) // a free member channel, round robin over 2 .. 16 (like the on-screen grid)
     {
@@ -595,6 +609,35 @@ void GridController::padUp (int pad)
         proc.core().queueControllerEvent (Core::drumPart, MidiEvent::noteOff (Core::drumChannel, note));
     else
         proc.core().queueControllerEvent (partNow.load(), MidiEvent::noteOff (ch, note));
+}
+
+void GridController::pedal (int cc, int value)
+{
+    // p58: the pedal jack's sustain (64), sostenuto (66) and soft (67) reach the part like the same CC from a MIDI
+    // keyboard. Channel 1 = the master channel of an MPE part (lower zone), so the pedal holds every member channel's
+    // notes; a plain part gets it on its own channel (the core re-channels it). The pedal goes up on the part it went
+    // down on, even when the part changed in between.
+    const int k = cc == 64 ? 0 : (cc == 66 ? 1 : (cc == 67 ? 2 : -1));
+    if (k < 0) return;
+    const int v = juce::jlimit (0, 127, value);
+    if (v >= 64)
+    {
+        const int part = partNow.load();
+        const int was = pedalPart[(size_t) k].exchange (part);
+        if (was >= 0 && was != part) proc.core().queueControllerEvent (was, MidiEvent::controller (1, cc, 0, 0));
+        proc.core().queueControllerEvent (part, MidiEvent::controller (1, cc, v, 0));
+    }
+    else
+    {
+        const int was = pedalPart[(size_t) k].exchange (-1);
+        proc.core().queueControllerEvent (was >= 0 ? was : partNow.load(), MidiEvent::controller (1, cc, v, 0));
+    }
+}
+
+void GridController::releasePedals()
+{
+    for (int cc : { 64, 66, 67 })
+        if (pedalPart[(size_t) (cc == 64 ? 0 : (cc == 66 ? 1 : 2))].load() >= 0) pedal (cc, 0);
 }
 
 void GridController::padPressure (int pad, int value)
@@ -702,6 +745,7 @@ void GridController::handleQueued (const juce::MidiMessage& m)
     }
     if (! m.isController()) return;
     const int cc = m.getControllerNumber(), v = m.getControllerValue();
+    if (g::isPedalCc (cc)) return; // p58: played at once in receive() (never a button)
     if (cc >= g::cc::firstEncoder && cc < g::cc::firstEncoder + g::numCells) { turn (cc - g::cc::firstEncoder, g::relativeDelta (v)); return; }
     if (cc == g::cc::masterEncoder || cc == g::cc::tempoEncoder)
     {
