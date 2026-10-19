@@ -7,6 +7,15 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Fix (p50): the preset name follows the edit part. Every part remembers the preset loaded into it (a project
+  preset names all four); switching parts – part selector, MIDI, grid controller part buttons – updates the preset
+  strip, the library highlight, the controller display and where ▲ / ▼ step from. Sessions keep the four names;
+  older sessions give their one name to every part. No new host parameters.
+- DE: Fehlerbehebung (p50): Der Preset-Name folgt dem Edit-Part. Jeder Part merkt sich das in ihn geladene Preset
+  (ein Projekt-Preset benennt alle vier); ein Part-Wechsel – Part-Auswahl, MIDI, Part-Tasten des Grid-Controllers –
+  aktualisiert Preset-Streifen, Markierung in der Bibliothek, Controller-Display und den Ausgangspunkt von ▲ / ▼.
+  Sitzungen behalten die vier Namen; ältere Sitzungen geben ihren einen Namen allen Parts. Keine neuen Host-Parameter.
+
 ## 0.6.1 Preview – 2026-10-18
 
 [Notes / Hinweise](docs/release-notes/0.6.1.md)

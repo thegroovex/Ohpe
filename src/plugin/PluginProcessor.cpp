@@ -89,7 +89,7 @@ OhpeProcessor::OhpeProcessor()
     presetManager = std::make_unique<PresetManager> (*this);
     // p40: start with the first factory preset, not with the plain defaults ("Init"); host state / a stored session replace it
     if (startWithFactorySound.load()) presetManager->loadStartSound();
-    presetUidCache = presetManager->currentUid();
+    presetUidCache = presetManager->currentUids();
     // p20: a finished import switches the part's user wavetable / user formants on (host automation follows)
     userTableManager.onPublished = [this] (int part, UserTableManager::Target target) {
         const auto id = "p" + juce::String (part + 1) + (target == UserTableManager::Target::Vocal ? ".usertable.vocal" : ".usertable.wt");
@@ -307,9 +307,9 @@ void OhpeProcessor::timerCallback()
     watchTapeLoop (juce::Time::getMillisecondCounterHiRes() * 0.001); // p42: loop range rules, loop undo steps
     applyPendingPresetUid(); // p40
     {
-        auto uid = presetManager->currentUid();
+        auto uids = presetManager->currentUids();
         const juce::SpinLock::ScopedLockType sl (presetUidLock);
-        presetUidCache = std::move (uid);
+        presetUidCache = std::move (uids);
     }
     if (ohpeCore.effectsWaiting()) ohpeCore.prepareEffects(); // 0.7: FX rack slot types chosen by the host / a preset
     ohpeCore.updateMorph(); // p16: morph plans follow the part's own sound under empty corners
@@ -865,19 +865,24 @@ void OhpeProcessor::getStateInformation (juce::MemoryBlock& dest)
     samples.storeInState();
     userTableManager.storeInState(); // p20
     // p40: the loaded preset's uid travels with the session (a copy: the editor owns uiState)
-    std::string uid;
-    if (juce::MessageManager::existsAndIsCurrentThread()) uid = presetManager->currentUid();
+    // p50: one uid per part ("presets"); "preset" keeps the edit part's for older versions
+    std::array<std::string, 4> uids;
+    if (juce::MessageManager::existsAndIsCurrentThread()) uids = presetManager->currentUids();
     else
     {
         const juce::SpinLock::ScopedLockType sl (presetUidLock);
-        uid = presetUidRestore.load() ? presetUidPending : presetUidCache;
+        uids = presetUidRestore.load() ? presetUidPending : presetUidCache;
     }
+    const auto& uid = uids[(size_t) presetManager->editPart()];
     auto uiCopy = uiState.clone();
     if (! uiCopy.isObject()) uiCopy = juce::var (new juce::DynamicObject());
     if (auto* o = uiCopy.getDynamicObject())
     {
         if (uid.empty()) o->removeProperty ("preset");
         else o->setProperty ("preset", juce::String::fromUTF8 (uid.c_str()));
+        juce::Array<juce::var> all;
+        for (const auto& u : uids) all.add (juce::String::fromUTF8 (u.c_str()));
+        o->setProperty ("presets", all);
     }
     const auto ui = juce::JSON::toString (uiCopy, true);
     const auto json = ohpeCore.saveState (ui.toStdString());
@@ -900,7 +905,7 @@ void OhpeProcessor::setStateInformation (const void* data, int size)
     uiState = parsed.isObject() ? parsed : juce::var (new juce::DynamicObject());
     {   // p40: the preset that was loaded when the session was saved (none = "Init"); replaces the start sound's name
         const juce::SpinLock::ScopedLockType sl (presetUidLock);
-        presetUidPending = parsed.isObject() ? parsed["preset"].toString().toStdString() : std::string();
+        presetUidPending = sessionPresetUids (parsed);
         presetUidCache = presetUidPending;
         presetUidRestore.store (true);
     }
@@ -909,10 +914,24 @@ void OhpeProcessor::setStateInformation (const void* data, int size)
     sendChangeMessage();
 }
 
+std::array<std::string, 4> OhpeProcessor::sessionPresetUids (const juce::var& ui)
+{
+    // p50: "presets" = one uid per part; a session from before (only "preset") gives that one to every part
+    std::array<std::string, 4> uids;
+    if (! ui.isObject()) return uids;
+    if (const auto* all = ui["presets"].getArray(); all != nullptr && all->size() == (int) uids.size())
+    {
+        for (int part = 0; part < (int) uids.size(); ++part) uids[(size_t) part] = (*all)[part].toString().toStdString();
+        return uids;
+    }
+    uids.fill (ui["preset"].toString().toStdString());
+    return uids;
+}
+
 void OhpeProcessor::applyPendingPresetUid()
 {
     if (! presetUidRestore.load()) return;
-    std::string uid;
+    std::array<std::string, 4> uid;
     {
         const juce::SpinLock::ScopedLockType sl (presetUidLock);
         uid = presetUidPending;

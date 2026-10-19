@@ -22,9 +22,12 @@ the keyboard stays playable, so you can audition sounds while you browse.
 | **Details** (right) | Name, bank, kind, engine, author, tags, comment, favourite and rating. User presets can be deleted (moved to the trash). |
 | **Keep / Cancel** | *Keep* (or Enter, or a double-click on a preset) closes the library with the preset loaded. *Cancel* (or Esc) restores the sound you had before the library was opened. |
 
-The **preset strip** next to the part selector shows the preset loaded last; its arrows load the
-previous / next preset of the library's current list (with its filters and sort order), a click on
-the name opens the library.
+The **preset strip** next to the part selector shows the preset loaded last into the **edit part**:
+every part remembers its own preset, so switching parts (part selector, MIDI, grid controller part
+buttons) switches the name too – on the strip, in the library and on the controller display. A
+project preset names all four parts; a part with nothing loaded shows "Init". Its arrows load the
+previous / next preset of the library's current list (with its filters and sort order) into the edit
+part, starting from that part's preset; a click on the name opens the library.
 
 ### First start
 
@@ -33,8 +36,8 @@ A new Ohpe – the first start of the app, or a new plug-in instance in a song �
 name), not with a blank "Init" sound: a part preset is loaded into all four parts (each keeps its
 MIDI channel), a project preset would replace everything. The preset strip shows its name; tape
 and sequencers are empty. A saved session – the host's song, the standalone app's last session or
-a loaded state file – restores itself instead, together with the name of the preset that was
-loaded. In the standalone app, *Audio Settings … › Reset to default state* returns to this start.
+a loaded state file – restores itself instead, together with the names of the presets that were
+loaded (one per part; a session from version 0.6.1 or older gives its one name to every part). In the standalone app, *Audio Settings … › Reset to default state* returns to this start.
 
 ### Saving
 

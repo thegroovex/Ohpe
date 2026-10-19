@@ -49,6 +49,8 @@ void PresetManager::setUserFolder (const juce::File& f)
     rescan();
 }
 
+static_assert (PresetManager::numParts == Core::numParts, "one remembered preset per part");
+
 int PresetManager::editPart() const
 {
     return juce::jlimit (0, Core::numParts - 1, (int) std::lround (proc.core().params().get (Core::Ids::editPart)) - 1);
@@ -69,7 +71,7 @@ void PresetManager::saveUserData()
 
 void PresetManager::rescan()
 {
-    const auto currentUid = currentIndex >= 0 && currentIndex < (int) list.size() ? list[(size_t) currentIndex].uid : std::string();
+    const auto uids = currentUids();
     list.clear();
     for (int i = 0; i < OhpePresets::namedResourceListSize; ++i)
     {
@@ -128,9 +130,13 @@ void PresetManager::rescan()
         }
     loadUserData();
     userData.applyTo (list);
-    currentIndex = -1;
-    for (int i = 0; i < (int) list.size(); ++i)
-        if (list[(size_t) i].uid == currentUid) currentIndex = i;
+    for (int part = 0; part < numParts; ++part)
+    {
+        currentIndex[(size_t) part] = -1;
+        if (! uids[(size_t) part].empty())
+            for (int i = 0; i < (int) list.size(); ++i)
+                if (list[(size_t) i].uid == uids[(size_t) part]) currentIndex[(size_t) part] = i;
+    }
     sendChangeMessage();
 }
 
@@ -189,17 +195,47 @@ bool PresetManager::apply (const preset::Preset& p, int part)
     return ok;
 }
 
-std::string PresetManager::currentUid() const
+int PresetManager::current (int part) const
 {
-    return currentIndex >= 0 && currentIndex < (int) list.size() ? list[(size_t) currentIndex].uid : std::string();
+    const int i = currentIndex[(size_t) partOf (part)];
+    return i >= 0 && i < (int) list.size() ? i : -1;
+}
+
+std::string PresetManager::currentUid (int part) const
+{
+    const int i = current (part);
+    return i >= 0 ? list[(size_t) i].uid : std::string();
+}
+
+std::array<std::string, PresetManager::numParts> PresetManager::currentUids() const
+{
+    std::array<std::string, numParts> uids;
+    for (int part = 0; part < numParts; ++part) uids[(size_t) part] = currentUid (part);
+    return uids;
+}
+
+void PresetManager::setCurrent (int index, bool project, int part)
+{
+    if (project) currentIndex.fill (index);
+    else currentIndex[(size_t) partOf (part)] = index;
 }
 
 void PresetManager::restoreCurrent (const std::string& uid)
 {
-    currentIndex = -1;
-    if (! uid.empty())
-        for (int i = 0; i < (int) list.size(); ++i)
-            if (list[(size_t) i].uid == uid) currentIndex = i;
+    std::array<std::string, numParts> uids;
+    uids.fill (uid);
+    restoreCurrent (uids);
+}
+
+void PresetManager::restoreCurrent (const std::array<std::string, numParts>& uids)
+{
+    for (int part = 0; part < numParts; ++part)
+    {
+        currentIndex[(size_t) part] = -1;
+        if (! uids[(size_t) part].empty())
+            for (int i = 0; i < (int) list.size(); ++i)
+                if (list[(size_t) i].uid == uids[(size_t) part]) currentIndex[(size_t) part] = i;
+    }
     arpOwner = -1; // a restored session brings its own arp setup
     previewBackup.reset();
     sendChangeMessage();
@@ -226,7 +262,7 @@ bool PresetManager::loadStartSound()
         for (int part = 0; part < Core::numParts; ++part)
             ok = apply (p, part) && ok;
     if (! ok) return false;
-    currentIndex = index;
+    currentIndex.fill (index); // every part plays the start sound
     sendChangeMessage();
     return true;
 }
@@ -237,7 +273,7 @@ bool PresetManager::load (int index, int part)
     preset::Preset p;
     if (! preset::fromJson (read (list[(size_t) index]), p)) return false;
     if (! apply (p, part)) return false;
-    currentIndex = index;
+    setCurrent (index, p.meta.kind == preset::Kind::Project, part);
     sendChangeMessage();
     return true;
 }
@@ -247,16 +283,17 @@ bool PresetManager::step (int delta, int part)
     const auto v = view();
     if (v.empty()) return false;
     int pos = -1;
+    const int cur = current (part); // p50: steps from the preset of the part it loads into
     for (int i = 0; i < (int) v.size(); ++i)
-        if (v[(size_t) i] == currentIndex) pos = i;
+        if (v[(size_t) i] == cur) pos = i;
     const int n = (int) v.size();
     pos = pos < 0 ? (delta >= 0 ? 0 : n - 1) : ((pos + delta) % n + n) % n;
     return load (v[(size_t) pos], part);
 }
 
-juce::String PresetManager::currentName() const
+juce::String PresetManager::currentName (int part) const
 {
-    if (currentIndex >= 0 && currentIndex < (int) list.size()) return str (list[(size_t) currentIndex].meta.name);
+    if (const int i = current (part); i >= 0) return str (list[(size_t) i].meta.name);
     return "Init";
 }
 
@@ -313,7 +350,7 @@ juce::File PresetManager::save (const preset::Meta& metaIn, bool project, int pa
         saveUserData();
     }
     rescan();
-    if (const int i = indexOfFile (file); i >= 0) currentIndex = i;
+    if (const int i = indexOfFile (file); i >= 0) setCurrent (i, project, part);
     sendChangeMessage();
     return file;
 }
@@ -340,7 +377,8 @@ bool PresetManager::remove (int index)
     if (! ok) return false;
     userData.items.erase (uid);
     saveUserData();
-    if (currentIndex == index) currentIndex = -1;
+    for (auto& i : currentIndex)
+        if (i == index) i = -1;
     rescan();
     return true;
 }

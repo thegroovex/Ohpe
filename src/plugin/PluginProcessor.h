@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
+#include <array>
+
 #include "BounceToEngine.h"
 #include "OhpeCore.h"
 #include "fx/SpaceMode.h"
@@ -282,9 +284,13 @@ private:
     std::unique_ptr<PresetManager> presetManager;
     // p40: the loaded preset's uid for the session (getStateInformation may run off the message thread)
     juce::SpinLock presetUidLock;
-    std::string presetUidCache, presetUidPending;
+    std::array<std::string, 4> presetUidCache, presetUidPending; // p50: one per part
     std::atomic<bool> presetUidRestore { false };
     void applyPendingPresetUid();
+public:
+    /** p50: the per-part preset uids stored in a session's ui block (legacy: one "preset" for all parts). */
+    static std::array<std::string, 4> sessionPresetUids (const juce::var& ui);
+private:
     // p39: tap tempo (own edge detector for "metro.tap": the trigger list stays as it is)
     TapTempo tapper;
     juce::SpinLock tapLock;

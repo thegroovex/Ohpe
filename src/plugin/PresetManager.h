@@ -9,6 +9,7 @@
 #include <juce_core/juce_core.h>
 #include <juce_events/juce_events.h>
 
+#include <array>
 #include <functional>
 #include <optional>
 
@@ -57,14 +58,22 @@ public:
     /** Loads the next / previous entry of the current view (wraps). */
     bool step (int delta, int part = -1);
 
-    /** Index of the entry loaded last (-1 none) and its name ("Init" if none). */
-    int current() const noexcept { return currentIndex; }
-    juce::String currentName() const;
-    /** p40: uid of the entry loaded last (empty if none) - stored in the session so the name comes back. */
-    std::string currentUid() const;
-    /** p40: after a session / host state was restored: the entry with this uid counts as loaded
-        (nothing is loaded; an unknown or empty uid = none, the display shows "Init"). */
+    /** p50: every part remembers the entry loaded into it last. A part preset sets its part, a project
+        preset (and the start sound) sets all four. `part` -1 = the edit part "ui.part", so the name,
+        the library highlight and the prev / next keys follow the part being edited. */
+    static constexpr int numParts = 4;
+    /** Index of the entry loaded last into `part` (-1 none) and its name ("Init" if none). */
+    int current (int part = -1) const;
+    juce::String currentName (int part = -1) const;
+    /** p40: uid of the entry loaded last into `part` (empty if none) - stored in the session so the name comes back. */
+    std::string currentUid (int part = -1) const;
+    /** p50: the uids of all four parts (empty = none). */
+    std::array<std::string, numParts> currentUids() const;
+    /** p40: after a session / host state was restored: the entry with this uid counts as loaded in every part
+        (nothing is loaded; an unknown or empty uid = none, the display shows "Init"). Old sessions (one name). */
     void restoreCurrent (const std::string& uid);
+    /** p50: the same per part. */
+    void restoreCurrent (const std::array<std::string, numParts>& uids);
 
     /** p40: the start sound of a new instance - the first preset of the built-in factory bank in the
         library's default order (by name, all kinds). Index into entries(), -1 if the bank is empty. */
@@ -109,9 +118,12 @@ private:
     std::vector<preset::Entry> list;
     std::vector<update::ContentIndex::Pack> packs;
     preset::UserData userData;
-    int currentIndex = -1;
+    std::array<int, numParts> currentIndex { -1, -1, -1, -1 }; ///< p50: per part
+    int partOf (int part) const { return part < 0 ? editPart() : juce::jlimit (0, numParts - 1, part); }
+    void setCurrent (int index, bool project, int part);
     std::optional<preset::Preset> previewBackup;
-    int previewPart = 0, previewIndex = -1;
+    int previewPart = 0;
+    std::array<int, numParts> previewIndex { -1, -1, -1, -1 };
     int arpOwner = -1;              ///< part whose arp a preset switched on (-1 none)
     std::vector<float> arpByPreset; ///< arp values right after that preset loaded
     int previewArpOwner = -1;
