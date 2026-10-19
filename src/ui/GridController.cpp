@@ -474,6 +474,7 @@ void GridController::send (const juce::MidiMessage& m)
 
 void GridController::sendSysex (const std::vector<uint8_t>& bytes)
 {
+    if (bytes.size() < 2) return; // p53: nothing for an unknown generation
     send (juce::MidiMessage (bytes.data(), (int) bytes.size()));
 }
 

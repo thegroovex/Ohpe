@@ -102,6 +102,7 @@ TEST_CASE ("p49 grid controller in a plug-in: settings - automatic ports on by d
     CHECK (s.controllerProfile == settings::ControllerGrid1); // p53
     CHECK (UserSettings::fromJson (s.toJson()) == s);
     s.controllerAuto = false;
+    s.controllerChosen = true; // p53: set up by the user (else a file starts with the defaults)
     s.controllerPattern = "Grid; Port 2";
     const auto back = UserSettings::fromJson (s.toJson());
     CHECK (back == s);

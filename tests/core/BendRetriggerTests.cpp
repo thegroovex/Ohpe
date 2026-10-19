@@ -73,14 +73,15 @@ void patch (Core& core, bool mpe, bool fingerboard, int glideMode)
     }
 }
 
-/** After the attack (1 s): no block may fall back towards silence (a restarted attack starts at 0). */
+/** After the attack (1 s): no block may fall back towards silence - a restarted 0.4 s attack starts at 0, so its
+    first blocks are a few percent of the held level; pitch and MPE expression move the level far less. */
 void checkNoRestart (const std::vector<double>& rms, int from)
 {
     double steady = 0.0;
     for (int b = from - 8; b < from; ++b) steady += rms[(size_t) b] / 8.0;
     REQUIRE (steady > 1.0e-3);
     for (size_t b = (size_t) from; b < rms.size(); ++b)
-        CHECK_MESSAGE (rms[b] > 0.6 * steady, "block " << b << " rms " << rms[b] << " steady " << steady);
+        CHECK_MESSAGE (rms[b] > 0.3 * steady, "block " << b << " rms " << rms[b] << " steady " << steady);
 }
 } // namespace
 
