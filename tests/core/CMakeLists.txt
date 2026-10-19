@@ -118,3 +118,4 @@ target_sources(ohpe_core_tests PRIVATE FingerboardTests.cpp)
 target_sources(ohpe_core_tests PRIVATE ControllerPortsTests.cpp)
 target_sources(ohpe_core_tests PRIVATE BendRetriggerTests.cpp) # p53
 target_sources(ohpe_core_tests PRIVATE SustainPedalTests.cpp) # p58: sustain / sostenuto from every input
+target_sources(ohpe_core_tests PRIVATE ArpSustainTests.cpp) # p60: sustain / sostenuto hold the arpeggiator

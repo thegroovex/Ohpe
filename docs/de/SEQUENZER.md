@@ -74,6 +74,14 @@ werden gehalten und nacheinander gespielt.
   weder ein noch aus.
 * Läuft der Transport, liegen die Schritte auf seinem Raster. Steht er, läuft der Arpeggiator
   frei im aktuellen Tempo und beginnt genau mit der ersten Taste.
+* **Pedale**: das Haltepedal (CC 64, von jedem Eingang, der den Part spielt: MIDI-Keyboard, Host,
+  Grid-Controller, Master-Kanal eines MPE-Controllers) hält die Noten des Arpeggios: losgelassene Tasten bleiben bis
+  zum Loslassen des Pedals im Muster, in der Zeit gedrückte Tasten kommen dazu. Sostenuto (CC 66) hält nur die
+  Tasten, die beim Treten gedrückt waren. Pedal hoch entfernt alle nicht mehr gehaltenen Tasten; bleibt keine,
+  stoppt das Arpeggio sauber. Das Pedal hält den Tastensatz des Arpeggios, nicht seine klingenden Noten – jeder
+  Schritt bleibt so kurz wie Gate. Mit **Halten** bleibt der Satz nach Pedal hoch ohnehin; solange das Pedal
+  getreten ist, ergänzt eine neue Taste den gehaltenen Satz, statt einen neuen zu beginnen. Arpeggiator aus oder
+  auf einen anderen Part: alles Gehaltene wird losgelassen. (Ein MPE-Part wird direkt gespielt, ohne Arpeggiator.)
 
 ## Orbit (Polymetrum)
 
