@@ -162,7 +162,7 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             if (ctx.fxView == modfx::FxViewBody) return resoview::resoParams (partIndex);  // p19: the resonator body
             if (ctx.fxView == modfx::FxViewPads) return padsview::padsParams();            // p25: the performance pads
             if (modfx::isRackView (ctx.fxView)) // 0.7: the part's FX rack / the master rack
-                return modfx::rackParams (core, modfx::rackPrefixes (ctx.fxView, partIndex), ctx.fxSlot);
+                return modfx::rackParams (core, modfx::rackPrefixes (ctx.fxView, partIndex), ctx.fxSlot, ctx.fxFocus); // p55: + focus page
             Ids ids { "fxa.delay.time", "fxa.delay.sync", "fxa.delay.feedback", "fxa.delay.tone",
                       "fxb.reverb.size", "fxb.reverb.damping", "fxb.reverb.predelay", "mix.returnb",
                       "fxa.delay.pingpong", "", "", "" };
@@ -277,7 +277,7 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
     else if (m == Mode::Effects && ctx.fxView == modfx::FxViewPads)
         t = padsview::padsTitles(); // p25
     else if (m == Mode::Effects && modfx::isRackView (ctx.fxView))
-        t = modfx::rackTitles (core, modfx::rackPrefixes (ctx.fxView, ctx.part), ctx.fxSlot);
+        t = modfx::rackTitles (core, modfx::rackPrefixes (ctx.fxView, ctx.part), ctx.fxSlot, ctx.fxFocus, ctx.fxFocusTitle);
     else if (m == Mode::Effects)
         for (size_t i = 4; i < t.size(); ++i) t[i] = "FX Slot";
     while (t.size() < (size_t) pages) t.push_back (t.empty() ? std::string() : t.back());

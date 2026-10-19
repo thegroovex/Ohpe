@@ -29,8 +29,12 @@ const char* fxViewName (int v) noexcept;
 std::vector<std::string> modParams (const Core& core, int part, int routing);
 std::vector<std::string> modTitles (const Core& core, int part, int routing);
 /** Rack views: the selected slot's type / mix / bypass, then the parameters of its effect. */
-std::vector<std::string> rackParams (const Core& core, const std::vector<std::string>& slotPrefixes, int slot);
-std::vector<std::string> rackTitles (const Core& core, const std::vector<std::string>& slotPrefixes, int slot);
+std::vector<std::string> rackParams (const Core& core, const std::vector<std::string>& slotPrefixes, int slot,
+                                     const std::vector<std::string>& focus = {});
+std::vector<std::string> rackTitles (const Core& core, const std::vector<std::string>& slotPrefixes, int slot,
+                                     const std::vector<std::string>& focus = {}, const std::string& focusTitle = {});
+/** p55: the focus parameters that belong to the slot's current effect (at most four; empty = no focus page). */
+std::vector<std::string> rackFocus (const Core& core, const std::string& slotPrefix, const std::vector<std::string>& focus);
 /** Slot prefixes of the rack a view shows (part rack of `part`, or the master rack). */
 std::vector<std::string> rackPrefixes (int fxView, int part);
 /** Parameter IDs of a slot's selected effect ("p1.fx3.delay.time" ...). */

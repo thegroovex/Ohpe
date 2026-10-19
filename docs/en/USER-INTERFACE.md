@@ -528,12 +528,67 @@ of the multiband, the motion of the modulated effects.
 | Drag a block onto another one | moves the slot there (the others close up); undoable, part of the preset |
 | **◀ Move** / **Move ▶** (soft keys) | moves the selected slot one place earlier / later |
 | **Clear** (soft key) | empties the slot (type Off) |
+| **FX editor** (soft key) or click on the slot's picture | opens the [FX editor](#fx-editor-p55): the slot large, every parameter at once, points to drag |
 
 Encoder pages of a slot: **type, mix, bypass** · then the parameters of its effect, four per page.
 While an effect chosen for the first time is being prepared, the display says *Preparing effect…*
-(a moment; the slot passes the sound dry meanwhile).
+(a moment; the slot passes the sound dry meanwhile). The arrows in the display header turn the pages – or open the
+**FX editor** to see every parameter of the slot at once.
 
 ![Master rack](../images/ohpe-master-rack.png)
+
+### FX editor (p55)
+
+![FX editor: the EQ with band 2 selected](../images/ohpe-fx-editor-eq.png)
+
+The **FX editor** shows the selected slot large, with **every parameter at once**: on the left a picture of what the
+effect does, edited directly with the mouse, on the right every parameter of the slot as a labelled bar (type, mix,
+bypass, then all of the effect's values). Open it with the **FX editor** soft key or a click on the slot's picture
+at the bottom of the display; **Close**, Esc or the soft key close it, and it closes by itself when you leave the Rack
+/ Master view. It lies over the display and the two key columns – the **four encoders stay live below it**. The tabs at
+the top pick the slot (right-click: MIDI learn of its type).
+
+| In the picture | Result |
+|---|---|
+| Drag a point | moves its values (across / up), e.g. frequency and gain of an EQ band |
+| **Alt**-drag or mouse wheel on a point | its second value: the band's Q, the compressor's knee, the LFO shape, the damping … |
+| **Shift** (or Cmd / Ctrl) while dragging | fine |
+| Double-click a point | resets it (Alt + double-click: its second value) |
+| Click a point | selects it: its values go to the encoders (an extra encoder page right after *Slot*, named after the point) |
+| Right-click a point | MIDI learn / automation menu of its parameter |
+| Bars on the right | as in the pro view: drag, click to jump, double-click resets, right-click MIDI learn; a coloured dot marks the parameters on the encoders now |
+
+Every edit is a normal parameter change – the host records it as automation, MIDI learn and the host's undo work as
+everywhere, the modulation matrix shows its range as a violet bar on the point.
+
+What the pictures show (yellow = what you edit):
+
+* **EQ** – the response curve (20 Hz – 20 kHz, ±18 dB) with five points: low shelf, bands 1–3, high shelf; the
+  selected band also alone (faint); the output level on its own track.
+* **Compressor** – the transfer curve (input across, output up, -60 – 0 dB): the threshold point on the 1:1 line, the
+  ratio point at the curve's end (lower = stronger), the knee as a light band (Alt / wheel); makeup on its own track,
+  the live gain reduction (red); attack and release as an envelope with two points.
+* **Multiband** – the three bands between their split frequencies: drag a band's level up / down, drag the split
+  points across; the live gain of each band in violet; the output level on its own track.
+* **Filter / Drive** – the response with one point: cutoff across, resonance up, drive on the wheel.
+* **Distortion** – the transfer curve; the point moves bias (across) and drive (up), tone on the wheel; output level,
+  pre-filter frequency (wheel: filter type). **Bitcrush** – a sine through the crusher: bits up, downsampling across.
+* **Chorus, phaser, flanger, hyper, tremolo** – the modulation as a wave: rate (or the tempo division when synced)
+  across, depth up; the voices of chorus / hyper as several lines; extra values (spread, feedback, delay, voices,
+  dimension, low cut) as slider rows below. **Wobble** – the filter sweep between its low and high frequency (two
+  points), rate and drive below. **Formant** – the vowel (A E I O U across) and shift (up) with the two formant peaks,
+  LFO rate and depth below. **Comb** – the comb response: frequency across, feedback up, damping on the wheel.
+* **Delay / Echo** – the echo taps: time across, feedback up (the following taps decay with it); in ping-pong / tap
+  mode the right channel's taps in pink (ratio below); the band between low cut and high cut below.
+* **Reverb / Hall** – the dry hit, the pre-delay (point across) and the decaying tail: its length (size / decay) across,
+  its brightness (damping) up; size and width below.
+* **Mid/Side / Width** – the stereo picture (L / R axes, the image as wide as the width), balance; mid and side levels
+  (Mid/Side) or the output (Width) on their own tracks.
+* **Space 3D / Resonator** – their own pictures (the 3D position, the body); the bars edit them.
+
+![FX editor: the compressor of the master rack](../images/ohpe-fx-editor-comp.png)
+
+![FX editor: a modulation effect (Hyper)](../images/ohpe-fx-editor-mod.png)
 
 ## 3D Space view (1.0)
 

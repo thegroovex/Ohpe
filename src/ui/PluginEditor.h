@@ -5,6 +5,7 @@
 #include "BreedView.h"
 #include "ConfirmDialog.h"
 #include "Display.h"
+#include "FxEditor.h"
 #include "GridController.h"
 #include "GridKeyboard.h"
 #include "LibraryBrowser.h"
@@ -140,6 +141,11 @@ public:
     void setLanguage (i18n::Language lang);
     void showLibrary (bool show);
     void showProView (bool show);
+    /** p55: the graphical FX slot editor (Effects mode, views Rack / Master): over the display and the columns, the
+        encoders stay live below it. Closes by itself when the mode or view changes. */
+    void showFxEditor (bool show);
+    bool fxEditorVisible() const { return fxEditor.isVisible(); }
+    ui::FxEditor& fxEditorComponent() { return fxEditor; }
     /** p18: the breeding view (p51: the BREED key, the library's Breed button, MIDI "lib.breed").
         `libraryEntry` >= 0: that preset becomes parent B (A = the current sound) and a brood is bred at once. */
     void showBreeding (bool show, int libraryEntry = -1);
@@ -261,6 +267,8 @@ private:
     std::vector<juce::Component*> plateComponents();
     void refreshSoftKeys();
     void refreshProView();
+    void refreshFxEditor(); ///< p55
+    bool upperPlate (const juce::Component* c) const; ///< p55: under the FX editor (display, engine / mode columns)
     void showMidiMenu();
     void showCornerMenu (int corner); ///< p16
     void saveUiState();
@@ -340,6 +348,7 @@ private:
         void mouseDown (const juce::MouseEvent&) override { if (onDown) onDown(); }
     } claimOnClick;
     ui::ProView proView;
+    ui::FxEditor fxEditor; ///< p55
     ui::LibraryBrowser library;
     ui::BreedView breedView; ///< p18
     juce::SharedResourcePointer<Updater> updater; ///< p27: one per process

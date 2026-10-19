@@ -98,6 +98,9 @@ public:
     std::function<void (int routing)> onModRoutingClicked; ///< 0.7: a line of the routing list
     std::function<void (int slot)> onFxSlotClicked;      ///< 0.7: a block of the FX chain
     std::function<void (int from, int to)> onFxSlotMoved; ///< 0.7: a block dropped on another one
+    std::function<void()> onFxVisualClicked;              ///< p55: the selected slot's picture (opens the FX editor)
+    /** p55: the selected slot's picture on the strip of the Rack / Master views (empty in other views). */
+    juce::Rectangle<float> fxVisualArea() const;
     std::function<void()> onSpaceBadgeClicked;           ///< 1.0: the 3D badge in the header (opens the Space view)
     std::function<void (int corner)> onMorphCornerClicked; ///< p16: a corner chip of the morph pad (assign a sound)
     /** p16: the morph pad and a corner chip (tests / screenshots). */

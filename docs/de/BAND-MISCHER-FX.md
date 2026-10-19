@@ -241,7 +241,10 @@ Jeder Part hat ein **FX-Rack mit sechs Slots in Reihe**, der Master eines mit vi
   bewegen – bei den 0.2-Typen die ersten vier, bei den Rack-Typen die unten als *Mod 1–4*
   genannten ([MODULATION.md](MODULATION.md)).
 * Auf dem Bildschirm: die Ansichten **Rack** und **Master** im Effekte-Modus
-  ([BEDIENUNG.md](BEDIENUNG.md#fx-rack-ansichten-07)).
+  ([BEDIENUNG.md](BEDIENUNG.md#fx-rack-ansichten-07)) und der grafische **FX-Editor** (p55) – der gewählte Slot groß mit
+  allen Parametern auf einmal und Punkten zum Ziehen in seinem Bild: EQ-Bänder auf dem Frequenzgang, Schwelle und Ratio
+  auf der Kennlinie des Kompressors, Tempo und Tiefe auf einer Modulationswelle, Zeit und Feedback als Echos …
+  ([BEDIENUNG.md](BEDIENUNG.md#fx-editor-p55)).
 
 ### Effekttypen des Racks
 

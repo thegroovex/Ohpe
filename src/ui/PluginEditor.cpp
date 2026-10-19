@@ -49,7 +49,8 @@ enum SoftKeyId
     skTapeClear = 130, skTapeClearAll, skTapeSave, skTapeLoad, // p38: clear track / all, save / load the tape
     // p42: the loop keys of the tape page (the loop readout left of the keys opens / closes them)
     skLoopSetIn = 140, skLoopSetOut, skLoopOnOff, skLoopSnap, skLoopToIn, skLoopBack, skLoopUndo, skLoopRedo, skLoopHalf,
-    skLoopDouble, skLoopFit
+    skLoopDouble, skLoopFit,
+    skFxEditor = 160 // p55: opens / closes the FX editor (Rack / Master views)
 };
 
 juce::String tapefileExtension() { return tapefile::extension; } // p38: ".ohpetape"
@@ -195,7 +196,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     : AudioProcessorEditor (p), proc (p), display (p),
       pitchWheel (p, Core::Ids::perfBend, "Pitch", true), modWheel (p, Core::Ids::perfMod, "Mod", false),
       glideSwitch (p), glideKnob (p, "Glide"), lifeBar (p),
-      keyboard (p.keyboardState), grid (p), proView (p), library (p), breedView (p), updateView (*updater),
+      keyboard (p.keyboardState), grid (p), proView (p), fxEditor (p), library (p), breedView (p), updateView (*updater),
       settingsView (p, *updater, *userSettings), packView (*updater)
 {
     setLookAndFeel (&lnf);
@@ -378,6 +379,17 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     proView.onModeSelected = [this] (Mode m) { selectMode (m); };
     proView.onSettingsChanged = [this] { saveUiState(); }; // p21: Simple / All
     addChildComponent (proView);
+    // p55: the FX editor
+    fxEditor.onClose = [this] { showFxEditor (false); };
+    fxEditor.onSlotSelected = [this] (int s) { selectFxSlot (s); };
+    fxEditor.onFocus = [this] (const std::vector<std::string>& ids, const juce::String& title) {
+        ctx.fxFocus = ids;
+        ctx.fxFocusTitle = title.toStdString();
+        if (! ids.empty()) rackPage = 1; // the focus page right after "Slot"
+        rebindEncoders();
+    };
+    addChildComponent (fxEditor);
+    display.onFxVisualClicked = [this] { showFxEditor (true); };
     library.onClosed = [this] { libraryKey.setActive (false); updateOverlayVisibility(); rebindEncoders(); };
     library.onInstallPack = [this] { packDropPending = true; packView.chooseAndInstall(); };
     library.onManagePacks = [this] { showSettings (true, packPage()); };
@@ -517,6 +529,7 @@ juce::Rectangle<float> OhpeEditor::designArea (const char* name)
         { "cpuMeter", 1064, 88, 96, 12 },
         { "engineLegend", 40, 88, 200, 12 },    { "modeLegend", 968, 88, 192, 12 },
         { "overlay", 24, 104, 1152, 512 },
+        { "fxEditor", 24, 104, 1152, 352 }, // p55: over the display and the columns, above the encoders
         { "engineColumn", 32, 112, 208, 336 },  { "modeColumn", 960, 112, 208, 336 },
         { "display", 256, 112, 688, 336 },
         { "transportPanel", 32, 464, 208, 144 }, { "octavePanel", 960, 464, 208, 144 },
@@ -605,6 +618,7 @@ void OhpeEditor::resized()
     place (glideSwitch, "glideSwitch");
     place (glideKnob, "glideKnob");
     place (proView, "overlay");
+    place (fxEditor, "fxEditor"); // p55
     place (library, "overlay");
     place (breedView, "overlay"); // p18
     place (updateView, "overlay"); // p27
@@ -1176,6 +1190,49 @@ void OhpeEditor::showBreeding (bool show, int libraryEntry)
     updateOverlayVisibility();
 }
 
+// ---------------------------------------------------------------- p55: FX editor
+void OhpeEditor::showFxEditor (bool show)
+{
+    show = show && mode == Mode::Effects && modfx::isRackView (ctx.fxView) && ! overlayOpen();
+    if (show == fxEditor.isVisible()) { if (show) refreshFxEditor(); return; }
+    fxEditor.setVisible (show);
+    if (show)
+    {
+        refreshFxEditor();
+        fxEditor.toFront (false);
+    }
+    else if (! ctx.fxFocus.empty()) // the focus page belongs to the editor
+    {
+        ctx.fxFocus.clear();
+        ctx.fxFocusTitle.clear();
+        rackPage = 0;
+    }
+    updateOverlayVisibility();
+    rebindEncoders();
+}
+
+void OhpeEditor::refreshFxEditor()
+{
+    if (! fxEditor.isVisible()) return;
+    if (mode != Mode::Effects || ! modfx::isRackView (ctx.fxView) || overlayOpen())
+    {
+        showFxEditor (false); // re-enters rebindEncoders once; the hidden editor returns at once
+        return;
+    }
+    fxEditor.show (ctx.fxView, ctx.part, ctx.fxSlot);
+    std::vector<juce::String> ids;
+    for (auto& e : encoders) ids.push_back (e->boundId());
+    fxEditor.setEncoderIds (ids);
+}
+
+bool OhpeEditor::upperPlate (const juce::Component* c) const
+{
+    if (c == &display || c == &lifeBar) return true;
+    for (auto& k : engineKeys) if (k.get() == c) return true;
+    for (auto& k : modeKeys) if (k.get() == c) return true;
+    return false;
+}
+
 void OhpeEditor::showProView (bool show)
 {
     if (show && breedView.isVisible()) showBreeding (false);
@@ -1213,8 +1270,12 @@ void OhpeEditor::updateOverlayVisibility()
     // (display animation, tooltips, hit-testing at the lid's edges). Now every plate control is hidden
     // while an overlay is open and the editor paints no plate legends.
     const bool plate = ! overlayOpen();
+    if (! plate && fxEditor.isVisible()) fxEditor.setVisible (false); // p55: an overlay replaces the FX editor
     for (auto* c : plateComponents())
-        if (c->isVisible() != plate) c->setVisible (plate);
+    {
+        const bool show = plate && ! (fxEditor.isVisible() && upperPlate (c)); // p55: the encoders stay under the FX editor
+        if (c->isVisible() != show) c->setVisible (show);
+    }
     refreshHelpOverlay(); // p32
     repaint();
 }
@@ -1550,6 +1611,7 @@ void OhpeEditor::rebindEncoders()
     updateVirtualFlags();
     refreshSoftKeys();
     refreshProView();
+    refreshFxEditor(); // p55
     partSelector.setPart (ctx.part);
     presetStrip.setName (proc.presets().currentName());
     refreshVersionBadge(); // p27
@@ -1579,6 +1641,7 @@ void OhpeEditor::advanceAnimation (float seconds)
         spatialTime += seconds;
         partSelector.setSpatial (st, spatialTime);
     }
+    if (fxEditor.isVisible()) fxEditor.tick (seconds); // p55
     if (proView.isVisible()) proView.tick (seconds); // p21: the pro view's pictures (headless renders too)
     // headless renders call this instead of the timer: keep the preset name current after a load
     presetStrip.setName (proc.presets().currentName());
@@ -1699,7 +1762,8 @@ void OhpeEditor::refreshSoftKeys()
         const int n = (int) prefixes.size();
         keys = { { skSlotLeft, juce::String::fromUTF8 ("\xe2\x97\x80 ") + tr ("Move"), ctx.fxSlot > 0 },
                  { skSlotRight, tr ("Move") + juce::String::fromUTF8 (" \xe2\x96\xb6"), ctx.fxSlot < n - 1 },
-                 { skSlotClear, tr ("Clear"), std::lround (core.params().get (prefixes[(size_t) juce::jlimit (0, n - 1, ctx.fxSlot)] + "type")) != 0 } };
+                 { skSlotClear, tr ("Clear"), std::lround (core.params().get (prefixes[(size_t) juce::jlimit (0, n - 1, ctx.fxSlot)] + "type")) != 0 },
+                 { skFxEditor, i18n::pick ("FX editor", "FX-Editor"), true, fxEditor.isVisible() } }; // p55
         if (core.effectsWaiting()) status = tr ("Preparing effect...");
     }
     else if (mode == Mode::Sequencer && ctx.seqView == SeqView::Step && lockStepIndex >= 0)
@@ -1858,6 +1922,7 @@ void OhpeEditor::onSoftKey (int id)
             setParamPlain (userTableParam (ctx.part, shownEngine), 0.0f);
             break;
         case skSlotLeft: moveFxSlot (ctx.fxSlot, ctx.fxSlot - 1); return;
+        case skFxEditor: showFxEditor (! fxEditor.isVisible()); return; // p55
         case skSlotRight: moveFxSlot (ctx.fxSlot, ctx.fxSlot + 1); return;
         case skSlotClear:
         {
@@ -2375,6 +2440,7 @@ bool OhpeEditor::keyPressed (const juce::KeyPress& key)
         if (updateView.isVisible()) { showUpdates (false); return true; } // p27
         if (settingsView.isVisible()) { showSettings (false); return true; } // p32
         if (proView.isVisible()) { showProView (false); return true; }
+        if (fxEditor.isVisible()) { showFxEditor (false); return true; } // p55
         if (lockStepIndex >= 0) { selectLockStep (-1); return true; }
     }
     return false;
@@ -2550,6 +2616,7 @@ void OhpeEditor::timerCallback()
         lifeBar.tick (1.0f / 30.0f, pt.activeVoiceCount() > 0, pt.modulationOf (core.params().indexOf (lifeBar.boundId().toStdString())));
     }
     if (proView.isVisible()) proView.refresh();
+    if (fxEditor.isVisible()) fxEditor.refresh(); // p55
     if (mode == Mode::Tape) refreshSoftKeys(); // undo / redo / clipboard state
 
     // p24: the grid keyboard plays the edit part, shifted by the octave keys; it shows the brain's key and chord

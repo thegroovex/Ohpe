@@ -37,10 +37,13 @@ public:
 
     juce::Rectangle<float> barBounds() const;
     std::function<void()> onEdited; ///< p21: after a gesture (undo state)
+    /** p55: a shorter name than the parameter's own (the FX editor drops the slot and effect prefix); empty = own name. */
+    void setLabel (const juce::String& text) { label = text; repaint(); }
 
 private:
     OhpeProcessor& proc;
     juce::String id;
+    juce::String label; ///< p55
     juce::Colour accent;
     juce::RangedAudioParameter* param = nullptr;
     int index = -1;

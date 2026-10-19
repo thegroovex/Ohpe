@@ -28,6 +28,26 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   die MIDI-Seite der Standalone-App zeigte den Plug-in-Text und der Controller spielte zusätzlich als normaler
   MIDI-Eingang (Berührungs-Noten von Reglern / Strip erreichten den Klang und lösten gehaltene Töne neu aus);
   ausgeschaltete Chips sahen gewählt aus; der Controller-Bereich war abgeschnitten.
+- EN: FX editor (p55): the selected slot of the Rack / Master view large, with every parameter at once (picture +
+  labelled bars) instead of four per encoder page. Edit directly in the picture: EQ band points on the response curve
+  (drag = frequency / gain, Alt-drag or wheel = Q, double-click resets), shelves and output; compressor threshold and
+  ratio on the transfer curve, knee, makeup, attack / release, live gain reduction; multiband band levels and splits;
+  filter cutoff / resonance; distortion drive / bias / tone, pre-filter; rate / depth waves of chorus, phaser, flanger,
+  hyper, tremolo, wobble, formant, comb; echo time / feedback taps, cuts, ratio; reverb / hall pre-delay, decay, damping;
+  mid/side and width stereo pictures. A clicked point goes onto the encoders (extra page after *Slot*); the encoders
+  stay live below the editor. Opens with the FX editor soft key or a click on the slot picture. Every edit is a normal
+  parameter change (automation, MIDI learn, host undo). No new host parameters.
+- DE: FX-Editor (p55): der gewählte Slot der Ansicht Rack / Master groß, mit allen Parametern auf einmal (Bild +
+  beschriftete Balken) statt vier pro Encoder-Seite. Direkt im Bild bearbeiten: EQ-Bandpunkte auf dem Frequenzgang
+  (Ziehen = Frequenz / Verstärkung, Alt-Ziehen oder Rad = Güte, Doppelklick setzt zurück), Kuhschwänze und Ausgang;
+  Schwelle und Ratio des Kompressors auf der Kennlinie, Knie, Aufholverstärkung, Attack / Release, aktuelle
+  Pegelreduktion; Pegel und Trennungen des Multiband; Cutoff / Resonanz des Filters; Drive / Bias / Klang der
+  Verzerrung, Vorfilter; Tempo-/Tiefe-Wellen von Chorus, Phaser, Flanger, Hyper, Tremolo, Wobble, Formant, Kamm;
+  Echos mit Zeit / Feedback, Sperren, Verhältnis; Pre-Delay, Nachhall, Dämpfung von Reverb / Raum; Stereobilder von
+  Mitte/Seite und Breite. Ein angeklickter Punkt liegt auf den Encodern (zusätzliche Seite nach *Slot*); die Encoder
+  bleiben unter dem Editor bedienbar. Öffnen mit dem Softkey FX-Editor oder einem Klick auf das Slot-Bild. Jede
+  Änderung ist eine normale Parameteränderung (Automation, MIDI-Learn, Rückgängig des Hosts). Keine neuen
+  Host-Parameter.
 - EN: Library search (p54): every word of the search must match (AND) – name, category and tags in English and German
   (singular, umlauts and "ae" spellings work: Pad, Fläche, Flaeche), MPE, Fingerboard / MPE-HD, Morph, engine, author,
   comment, content pack, bank, kind, favourite and rating (`***`). New quick chips MPE / Fingerboard / Morph (all

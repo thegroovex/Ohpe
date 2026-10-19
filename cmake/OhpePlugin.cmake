@@ -73,6 +73,8 @@ list(APPEND OHPE_PLUGIN_SOURCES
     ${CMAKE_SOURCE_DIR}/src/plugin/PresetManager.cpp)
 # 0.7: display views of the modulation matrix and the FX racks
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ModFxViews.cpp)
+# p55: the graphical FX slot editor (Effects mode, Rack / Master)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/FxEditor.cpp)
 file(GLOB OHPE_FACTORY_PRESETS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/resources/presets/factory/*.ohpepreset)
 juce_add_binary_data(ohpe_presets
     HEADER_NAME OhpePresets.h
@@ -173,6 +175,7 @@ if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/PluginTests.cpp ${OHPE_PLUGIN_SOURCES})
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/FirstPresetTests.cpp) # p40
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/PartPresetNameTests.cpp) # p50
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/FxEditorTests.cpp) # p55
     target_include_directories(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/src)
     if(MSVC) # tests keep cores / processors on the stack: 8 MB main thread on Windows (default 1 MB)
         target_link_options(ohpe_plugin_tests PRIVATE /STACK:8388608)

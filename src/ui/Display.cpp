@@ -193,6 +193,9 @@ juce::String Display::getTooltip()
     auto key = [this] (const char* k) { return shortcuts ? "  (" + juce::String (k) + ")" : juce::String(); };
     if (spaceBadgeArea().contains (p)) // 1.0: the 3D badge in the header
         return space3d::badgeTooltip (space3d::partState (proc.core(), ctx.part));
+    if (fxVisualArea().contains (p)) // p55
+        return i18n::pick ("Click to edit the slot in the FX editor - every parameter at once, points to drag",
+                           "Klicken: den Slot im FX-Editor bearbeiten - alle Parameter auf einmal, Punkte zum Ziehen");
     if (mode == Mode::Tape)
     {
         for (int b = 0; b < numTransportButtons; ++b)
@@ -757,6 +760,13 @@ juce::Rectangle<float> Display::visualArea() const
     return mid.withWidth (mid.getWidth() * 0.42f).reduced (u * 0.3f, 0.0f);
 }
 
+juce::Rectangle<float> Display::fxVisualArea() const
+{
+    if (! showsRackView()) return {};
+    const auto s = stripArea();
+    return hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s;
+}
+
 FxRack& Display::shownRack() const
 {
     auto& core = proc.core();
@@ -1095,6 +1105,11 @@ void Display::mouseDown (const juce::MouseEvent& e)
                 if (onFxSlotClicked) onFxSlotClicked (s);
                 return;
             }
+        if (showsRackView() && fxVisualArea().contains (p)) // p55: the slot's picture opens the FX editor
+        {
+            if (onFxVisualClicked) onFxVisualClicked();
+            return;
+        }
     }
 
     // 0.7: the visual area - click cycles character / scope / terrain, right-click opens the view menu
