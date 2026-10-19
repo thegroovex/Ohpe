@@ -52,7 +52,8 @@ void ParamBar::paint (juce::Graphics& g)
     g.drawText (value, text, juce::Justification::centredRight, true);
     g.setColour (colour::displayText);
     g.setFont (labelFont (text.getHeight() * 0.7f));
-    g.drawText (label.isNotEmpty() ? label : i18n::pick (d.nameEn, d.nameDe), text.withTrimmedRight (valueW + 4.0f), juce::Justification::centredLeft, true);
+    // p57: a long name narrows its letters (down to 80 %) before it is cut with "..."
+    g.drawFittedText (label.isNotEmpty() ? label : i18n::pick (d.nameEn, d.nameDe), text.withTrimmedRight (valueW + 4.0f).toNearestInt(), juce::Justification::centredLeft, 1, 0.8f);
     auto bar = barBounds();
     g.setColour (colour::displayGrid.brighter (0.25f));
     g.fillRoundedRectangle (bar, bar.getHeight() * 0.5f);

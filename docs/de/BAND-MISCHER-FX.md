@@ -204,7 +204,7 @@ Slot 1 im FX-Rack des Parts (unten).
 *Stimmen* (1 … 4; 1 = der klassische Chorus mit zwei Abgriffen, 2 … 4 = Ensemble: gestaffelte Abgriffe mit
 gleichmäßig verteilten LFO-Phasen, über das Stereofeld verteilt), *Drift* (ein langsames zufälliges Wandern
 jedes Abgriffs – weniger statisch, eher wie analoge Ensembles), *Breite* (Stereobreite der Ensemble-Stimmen) und
-*Tiefensperre* (20 Hz … 1 kHz, 12 dB/Oktave nur auf dem Chorus-Anteil: darunter bleibt der Klang trocken und
+*Low Cut* (20 Hz … 1 kHz, 12 dB/Oktave nur auf dem Chorus-Anteil: darunter bleibt der Klang trocken und
 mono, ein Bass mit Chorus behält einen festen Sub). Die Standardwerte (1 Stimme, kein Drift, 20 Hz) ergeben den
 Chorus von 0.2. Seit dem Punch-Durchgang von 0.8 ist jeder Werks-Chorus ein Ensemble, und E-Pianos, Orgeln,
 Flächen, Plucks, Leads, Arps, Stimmen und die Mitten von Reese- / Neuro-Bässen tragen eines.
@@ -258,10 +258,10 @@ die nichtlinearen Stufen laufen mit Oversampling.
 | **Verzerrung** | acht Modi – Röhre, Soft Clip, Hard Clip, Diode, lineare Faltung, Sinus-Faltung, asymmetrisch, Downsample – mit Bias, Vorfilter (Tief-, Band-, Hochpass) und Klangregelung danach | Modus, Drive, Bias, Vorfilter, Vorfilter-Frequenz, Klang, Ausgang, Mischung | Drive, Bias, Vorfilter-Frequenz, Klang |
 | **Flanger** | Stereo-Flanger, frei oder zum Tempo synchron, positives oder negatives Feedback | Tempo, Sync, Tiefe, Verzögerung, Feedback, Stereo, Mischung | Tempo, Tiefe, Verzögerung, Feedback |
 | **Kompressor** | Stereo-gekoppelter Kompressor mit weichem Knie und Aufholverstärkung; *Mischung* ergibt Parallelkompression | Schwelle, Ratio, Attack, Release, Knie, Aufholverstärkung, Mischung | Schwelle, Ratio, Attack, Aufholverstärkung |
-| **Multiband** | drei Bänder mit Aufwärts- und Abwärtskompression; bei Tiefe 0 summieren die Weichen linear | Tiefe, aufwärts, abwärts, Zeit, Tiefen / Mitten / Höhen, Trennung tief / hoch, Ausgang, Mischung | Tiefe, Tiefen, Mitten, Höhen |
-| **EQ** | Tiefen-Kuhschwanz, drei Glocken, Höhen-Kuhschwanz | Frequenzen, Gains, Güte, Ausgang | Band 1 Frequenz / Gain, Band 2 Frequenz / Gain |
+| **Multiband** | drei Bänder mit Aufwärts- und Abwärtskompression; bei Tiefe 0 summieren die Weichen linear | Tiefe, aufwärts, abwärts, Zeit, Low / Mid / High, Trennung tief / hoch, Ausgang, Mischung | Tiefe, Low, Mid, High |
+| **EQ** | Low Shelf, drei Peak-Bänder, High Shelf | Frequenzen, Gains, Q, Ausgang | Band 1 Frequenz / Gain, Band 2 Frequenz / Gain |
 | **Filter** | Tief- / Hochpass 12 oder 24 dB, Bandpass, Notch, Kamm + / −, Vokal-Formant; Drive davor; der Cutoff gleitet in Oktaven | Typ, Cutoff, Resonanz, Drive, Mischung | Cutoff, Resonanz, Drive, Mischung |
-| **Echo** | Stereo-, Ping-Pong- oder Tap-Delay (rechter Tap im Verhältnis zum linken), frei oder synchron, gefiltertes Feedback | Modus, Sync, Zeit, Verhältnis, Feedback, Tiefensperre, Höhensperre, Breite, Mischung | Feedback, Zeit (frei), Höhensperre, Breite |
+| **Echo** | Stereo-, Ping-Pong- oder Tap-Delay (rechter Tap im Verhältnis zum linken), frei oder synchron, gefiltertes Feedback | Modus, Sync, Zeit, Verhältnis, Feedback, Low Cut, High Cut, Breite, Mischung | Feedback, Zeit (frei), High Cut, Breite |
 | **Raum** | Platten- oder Hallraum: Eingangsdiffusion und ein Feedback-Netz aus acht Leitungen mit sanfter Modulation | Modus, Größe, Nachhall, Dämpfung, Pre-Delay, Breite, Mischung | Größe, Nachhall, Dämpfung, Pre-Delay |
 
 IDs, Bereiche und Vorgaben: [PARAMETERS.md](../PARAMETERS.md#07--rack-effect-types--effekttypen-des-racks).

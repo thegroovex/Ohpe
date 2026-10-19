@@ -427,16 +427,16 @@ The table shows the block with the prefix `p1.fx2`; host names carry the slot ("
 | `p1.fx2.multiband.depth` | Multiband Depth | Multiband Tiefe | 0 … 1 | 0.5 |
 | `p1.fx2.multiband.upward` / `.downward` | Multiband Upward / Downward | Multiband aufwärts / abwärts | 0 … 1 | 1 |
 | `p1.fx2.multiband.time` | Multiband Time | Multiband Zeit | 0 … 1 | 0.5 |
-| `p1.fx2.multiband.low` / `.mid` / `.high` | Multiband Low / Mid / High | Multiband Tiefen / Mitten / Höhen | −12 … +12 dB | 0 dB |
+| `p1.fx2.multiband.low` / `.mid` / `.high` | Multiband Low / Mid / High | Multiband Low / Mid / High | −12 … +12 dB | 0 dB |
 | `p1.fx2.multiband.lowsplit` | Multiband Low Split | Multiband Trennung tief | 40 … 500 Hz | 120 Hz |
 | `p1.fx2.multiband.highsplit` | Multiband High Split | Multiband Trennung hoch | 800 … 8000 Hz | 2500 Hz |
 | `p1.fx2.multiband.output` | Multiband Output | Multiband Ausgang | −12 … +12 dB | 0 dB |
 | `p1.fx2.multiband.mix` | Multiband Mix | Multiband Mischung | 0 … 1 | 1 |
-| `p1.fx2.eq.lowfreq` / `.lowgain` | EQ Low Shelf Freq / Gain | EQ Tiefen-Kuhschwanz Frequenz / Gain | 20 … 1000 Hz / ±18 dB | 100 Hz / 0 dB |
-| `p1.fx2.eq.p1freq` / `.p1gain` / `.p1q` | EQ Band 1 Freq / Gain / Q | EQ Band 1 Frequenz / Gain / Güte | 30 … 18000 Hz / ±18 dB / 0.3 … 12 | 300 Hz / 0 dB / 1 |
+| `p1.fx2.eq.lowfreq` / `.lowgain` | EQ Low Shelf Freq / Gain | EQ Low Shelf Frequenz / Gain | 20 … 1000 Hz / ±18 dB | 100 Hz / 0 dB |
+| `p1.fx2.eq.p1freq` / `.p1gain` / `.p1q` | EQ Band 1 Freq / Gain / Q | EQ Band 1 Frequenz / Gain / Q | 30 … 18000 Hz / ±18 dB / 0.3 … 12 | 300 Hz / 0 dB / 1 |
 | `p1.fx2.eq.p2freq` / `.p2gain` / `.p2q` | EQ Band 2 … | EQ Band 2 … | as band 1 | 1200 Hz / 0 dB / 1 |
 | `p1.fx2.eq.p3freq` / `.p3gain` / `.p3q` | EQ Band 3 … | EQ Band 3 … | as band 1 | 4500 Hz / 0 dB / 1 |
-| `p1.fx2.eq.highfreq` / `.highgain` | EQ High Shelf Freq / Gain | EQ Höhen-Kuhschwanz Frequenz / Gain | 1000 … 20000 Hz / ±18 dB | 8000 Hz / 0 dB |
+| `p1.fx2.eq.highfreq` / `.highgain` | EQ High Shelf Freq / Gain | EQ High Shelf Frequenz / Gain | 1000 … 20000 Hz / ±18 dB | 8000 Hz / 0 dB |
 | `p1.fx2.eq.output` | EQ Output | EQ Ausgang | −18 … +18 dB | 0 dB |
 | `p1.fx2.filter.type` | Filter Type | Filtertyp | Low-pass 12, Low-pass 24, High-pass 12, High-pass 24, Band-pass, Notch, Comb +, Comb −, Formant | Low-pass 24 |
 | `p1.fx2.filter.cutoff` | Filter Cutoff | Filter-Cutoff | 20 … 20000 Hz | 2000 Hz |
@@ -448,7 +448,7 @@ The table shows the block with the prefix `p1.fx2`; host names carry the slot ("
 | `p1.fx2.echo.time` | Echo Time | Echo-Zeit | 1 … 2000 ms (Free) | 375 ms |
 | `p1.fx2.echo.ratio` | Echo Right Ratio | Echo Verhältnis rechts | 0.25 … 1 (Tap) | 0.75 |
 | `p1.fx2.echo.feedback` | Echo Feedback | Echo-Feedback | 0 … 1.05 | 0.4 |
-| `p1.fx2.echo.lowcut` / `.highcut` | Echo Low Cut / High Cut | Echo Tiefensperre / Höhensperre | 20 … 2000 Hz / 1000 … 20000 Hz | 120 Hz / 8000 Hz |
+| `p1.fx2.echo.lowcut` / `.highcut` | Echo Low Cut / High Cut | Echo Low Cut / High Cut | 20 … 2000 Hz / 1000 … 20000 Hz | 120 Hz / 8000 Hz |
 | `p1.fx2.echo.width` | Echo Width | Echo-Breite | 0 … 1 | 1 |
 | `p1.fx2.echo.mix` | Echo Mix | Echo-Mischung | 0 … 1 | 0.3 |
 | `p1.fx2.hall.mode` | Hall Mode | Raum-Modus | Plate, Hall | Hall |
@@ -653,7 +653,7 @@ Appended after the 3D block (`mfx4.space3d.glide`). Guides: [English](en/TAPE-MI
 | `pN.fxK.chorus.voices`, `mfxK.chorus.voices` | Chorus Voices | Chorus-Stimmen | 1 … 4 | 1 |
 | `pN.fxK.chorus.drift`, `mfxK.chorus.drift` | Chorus Drift | Chorus-Drift | 0 … 1 | 0 |
 | `pN.fxK.chorus.spread`, `mfxK.chorus.spread` | Chorus Spread | Chorus-Breite | 0 … 1 | 0.8 |
-| `pN.fxK.chorus.lowcut`, `mfxK.chorus.lowcut` | Chorus Low Cut | Chorus-Tiefensperre | 20 … 1000 Hz | 20 |
+| `pN.fxK.chorus.lowcut`, `mfxK.chorus.lowcut` | Chorus Low Cut | Chorus Low Cut | 20 … 1000 Hz | 20 |
 
 The chorus IDs exist for every slot of every rack (`p1.fx.` … `p4.fx6.`, `mfx1.` … `mfx4.`), registered in that
 order after the ducking parameters. Their defaults give the 0.2 chorus.

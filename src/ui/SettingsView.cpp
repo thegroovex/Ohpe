@@ -69,7 +69,7 @@ const HelpTopic helpTopics[] = {
       "Einstellungen > MIDI-Learn zeigt alle Zuweisungen.\n\n"
       "Das Display zeigt Stereo-Scope, Spektrum-Landschaft, 3D-Raum oder das lebende Objekt - Klick auf die Grafik wechselt.\n\n"
       "FX-Editor (Effekte-Modus, Rack / Master): die Taste FX-Editor oder ein Klick auf das Slot-Bild zeigt alle Parameter des Slots auf einmal. "
-      "Die Punkte im Bild ziehen (EQ-Bänder, Schwelle, Tempo / Tiefe ...); Alt-Ziehen oder das Rad ändert den zweiten Wert (Güte, Knie, Form); "
+      "Die Punkte im Bild ziehen (EQ-Bänder, Schwelle, Tempo / Tiefe ...); Alt-Ziehen oder das Rad ändert den zweiten Wert (Q, Knie, Form); "
       "ein angeklickter Punkt liegt auf den Encodern." },
     { "Sequencer and tape", "Sequencer und Tape",
       "PLAY starts the sequencer (and the tape, when they are linked). REC records the armed tape track; without an armed track "

@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstring>
 
 namespace ohpe::ui
 {
@@ -149,11 +150,11 @@ Layout layoutFor (OhpeProcessor& proc, const std::string& pre)
     {
         L.regions = { { 0.0f, 0.0f, 0.92f, 1.0f }, { 0.945f, 0.0f, 0.055f, 1.0f } };
         const auto X = lg (20.0f, 20000.0f), Y = lin (-18.0f, 18.0f, 0.05f, 0.95f);
-        add ("lowfreq", X, "lowgain", Y, "Low shelf", "Tiefen");
+        add ("lowfreq", X, "lowgain", Y, "Low Shelf", "Low Shelf");
         add ("p1freq", X, "p1gain", Y, "Band 1", "Band 1", "p1q");
         add ("p2freq", X, "p2gain", Y, "Band 2", "Band 2", "p2q");
         add ("p3freq", X, "p3gain", Y, "Band 3", "Band 3", "p3q");
-        add ("highfreq", X, "highgain", Y, "High shelf", "H\xc3\xb6hen");
+        add ("highfreq", X, "highgain", Y, "High Shelf", "High Shelf");
         add ("", fix (0.5f), "output", Y, "Output", "Ausgang", "", 1);
     }
     else if (id == "compressor")
@@ -172,7 +173,7 @@ Layout layoutFor (OhpeProcessor& proc, const std::string& pre)
     {
         L.regions = { { 0.0f, 0.0f, 0.92f, 1.0f }, { 0.945f, 0.0f, 0.055f, 1.0f } };
         const auto X = lg (20.0f, 20000.0f), Y = lin (-12.0f, 12.0f, 0.1f, 0.9f);
-        const char* bands[3][3] = { { "low", "Low", "Tiefen" }, { "mid", "Mid", "Mitten" }, { "high", "High", "H\xc3\xb6hen" } };
+        const char* bands[3][3] = { { "low", "Low", "Low" }, { "mid", "Mid", "Mid" }, { "high", "High", "High" } };
         for (int k = 0; k < 3; ++k)
         {
             auto& h = add ("", fix (0.5f), bands[k][0], Y, bands[k][1], bands[k][2], "depth");
@@ -205,7 +206,7 @@ Layout layoutFor (OhpeProcessor& proc, const std::string& pre)
         const char* depth = id == "hyper" ? "detune" : "depth";
         const char* alt = id == "chorus" ? "drift" : id == "phaser" ? "feedback" : id == "flange" ? "feedback" : id == "hyper" ? "spread" : "shape";
         add (rateKey(), rateAxis(), depth, norm (0.1f, 0.95f), "Rate / Depth", "Tempo / Tiefe", alt);
-        if (id == "chorus") { add ("spread", norm (0.02f, 0.98f), "", fix (0.5f), "Spread", "Breite", "", 1); add ("lowcut", lg (0.0f, 0.0f, 0.02f, 0.98f), "", fix (0.5f), "Low cut", "Tiefensperre", "", 2); }
+        if (id == "chorus") { add ("spread", norm (0.02f, 0.98f), "", fix (0.5f), "Spread", "Breite", "", 1); add ("lowcut", lg (0.0f, 0.0f, 0.02f, 0.98f), "", fix (0.5f), "Low Cut", "Low Cut", "", 2); }
         if (id == "phaser") add ("feedback", lin (0.0f, 0.0f, 0.02f, 0.98f), "", fix (0.5f), "Feedback", "Feedback", "", 1);
         if (id == "flange") { add ("delay", lg (0.0f, 0.0f, 0.02f, 0.98f), "", fix (0.5f), "Delay", "Verz\xc3\xb6gerung", "", 1); add ("feedback", lin (0.0f, 0.0f, 0.02f, 0.98f), "", fix (0.5f), "Feedback", "Feedback", "", 2); }
         if (id == "hyper") { add ("voices", norm (0.02f, 0.98f), "", fix (0.5f), "Voices", "Stimmen", "", 1); add ("dimension", norm (0.02f, 0.98f), "", fix (0.5f), "Dimension", "Dimension", "", 2); }
@@ -244,8 +245,8 @@ Layout layoutFor (OhpeProcessor& proc, const std::string& pre)
              "Time / Feedback", "Zeit / Feedback", echo ? "width" : "tone");
         if (echo)
         {
-            add ("lowcut", lg (20.0f, 20000.0f, 0.02f, 0.98f), "", fix (0.5f), "Low cut", "Tiefensperre", "", 1);
-            add ("highcut", lg (20.0f, 20000.0f, 0.02f, 0.98f), "", fix (0.5f), "High cut", "H\xc3\xb6hensperre", "", 1);
+            add ("lowcut", lg (20.0f, 20000.0f, 0.02f, 0.98f), "", fix (0.5f), "Low Cut", "Low Cut", "", 1);
+            add ("highcut", lg (20.0f, 20000.0f, 0.02f, 0.98f), "", fix (0.5f), "High Cut", "High Cut", "", 1);
             add ("ratio", lin (0.0f, 0.0f, 0.02f, 0.98f), "", fix (0.5f), "Right ratio", "Verh\xc3\xa4ltnis rechts", "", 2);
         }
     }
@@ -459,6 +460,32 @@ bool FxGraphTile::animating() const
 {
     return type == "compressor" || type == "multiband" || type == "chorus" || type == "phaser" || type == "flange" || type == "hyper"
            || type == "tremolo" || type == "wobble" || type == "space3d" || type == "resonator";
+}
+
+uint64_t FxGraphTile::keyOf (const float* v, size_t n, juce::Rectangle<float> r, float extra) noexcept
+{
+    uint64_t h = 1469598103934665603ull;
+    auto fold = [&h] (float f) {
+        uint32_t bits = 0;
+        std::memcpy (&bits, &f, sizeof bits);
+        h = (h ^ bits) * 1099511628211ull;
+    };
+    for (size_t i = 0; i < n; ++i) fold (v[i]);
+    for (float f : { r.getX(), r.getY(), r.getWidth(), r.getHeight(), extra }) fold (f);
+    return h;
+}
+
+const juce::Path& FxGraphTile::cachedCurve (int slot, uint64_t key, const std::function<juce::Path()>& build)
+{
+    auto& c = curves[(size_t) juce::jlimit (0, (int) curves.size() - 1, slot)];
+    if (! c.valid || c.key != key)
+    {
+        c.path = build();
+        c.key = key;
+        c.valid = true;
+        ++builds;
+    }
+    return c.path;
 }
 
 uint64_t FxGraphTile::stateHash() const
@@ -729,11 +756,16 @@ void FxGraphTile::paintBackground (juce::Graphics& g, juce::Rectangle<float> plo
             for (int b = 0; b < 5; ++b)
                 if (b != selected) solo[(size_t) (b == 0 ? 1 : b == 4 ? 12 : 3 * b)] = 0.0f;
             solo[13] = 0.0f;
-            const auto p = plotCurve (r, 140, [&] (float x) { return 0.05f + 0.9f * (EqEffect::responseDb (solo.data(), 20.0f * std::pow (1000.0f, x), 48000.0f) + 18.0f) / 36.0f; });
+            const auto& p = cachedCurve (1, keyOf (solo.data(), solo.size(), r, (float) selected), [&] {
+                return plotCurve (r, 140, [&] (float x) { return 0.05f + 0.9f * (EqEffect::responseDb (solo.data(), 20.0f * std::pow (1000.0f, x), 48000.0f) + 18.0f) / 36.0f; });
+            });
             g.setColour (ink.withAlpha (0.35f));
             g.strokePath (p, juce::PathStrokeType (k * 0.14f));
         }
-        const auto p = plotCurve (r, 180, [&] (float x) { return 0.05f + 0.9f * (EqEffect::responseDb (vals.data(), 20.0f * std::pow (1000.0f, x), 48000.0f) + 18.0f) / 36.0f; });
+        // p57: the response (180 points x 5 biquad designs) is rebuilt only when a value of this slot or the size changed
+        const auto& p = cachedCurve (0, keyOf (vals.data(), vals.size(), r, 0.0f), [&] {
+            return plotCurve (r, 180, [&] (float x) { return 0.05f + 0.9f * (EqEffect::responseDb (vals.data(), 20.0f * std::pow (1000.0f, x), 48000.0f) + 18.0f) / 36.0f; });
+        });
         strokeCurve (g, p, ink, k, r, zero);
         track (g, R (1), k, "OUT");
         return;
@@ -746,16 +778,21 @@ void FxGraphTile::paintBackground (juce::Graphics& g, juce::Rectangle<float> plo
         g.setColour (colour::displayGrid.brighter (0.3f));
         g.drawLine ({ r.getBottomLeft(), r.getTopRight() }, 1.0f); // 1:1
         const float th = v ("thresh"), ratio = v ("ratio"), knee = v ("knee"), makeup = v ("makeup");
-        const auto p = plotCurve (r, 120, [&] (float x) {
-            const float in = -60.0f + 60.0f * x;
-            return (in + CompressorEffect::staticGainDb (in, th, ratio, knee) + 60.0f) / 60.0f;
+        const float cv[] = { th, ratio, knee, makeup };
+        const auto& p = cachedCurve (0, keyOf (cv, 4, r, 0.0f), [&] {
+            return plotCurve (r, 120, [&] (float x) {
+                const float in = -60.0f + 60.0f * x;
+                return (in + CompressorEffect::staticGainDb (in, th, ratio, knee) + 60.0f) / 60.0f;
+            });
         });
         strokeCurve (g, p, ink, k);
         if (makeup > 0.05f) // the curve after makeup (faint)
         {
-            const auto pm = plotCurve (r, 120, [&] (float x) {
-                const float in = -60.0f + 60.0f * x;
-                return (in + CompressorEffect::staticGainDb (in, th, ratio, knee) + makeup + 60.0f) / 60.0f;
+            const auto& pm = cachedCurve (1, keyOf (cv, 4, r, 1.0f), [&] {
+                return plotCurve (r, 120, [&] (float x) {
+                    const float in = -60.0f + 60.0f * x;
+                    return (in + CompressorEffect::staticGainDb (in, th, ratio, knee) + makeup + 60.0f) / 60.0f;
+                });
             });
             g.setColour (ink.withAlpha (0.3f));
             g.strokePath (pm, juce::PathStrokeType (k * 0.12f));
@@ -889,7 +926,10 @@ void FxGraphTile::paintBackground (juce::Graphics& g, juce::Rectangle<float> plo
         {
             const int mode = (int) std::lround (v ("mode"));
             const float drive = v ("drive"), bias = v ("bias");
-            p = plotCurve (r, 160, [&] (float x) { return 0.5f + 0.45f * DistortionEffect::transfer (mode, drive, bias, x * 2.0f - 1.0f); });
+            const float dv[] = { (float) mode, drive, bias };
+            p = cachedCurve (0, keyOf (dv, 3, r, 0.0f), [&] {
+                return plotCurve (r, 160, [&] (float x) { return 0.5f + 0.45f * DistortionEffect::transfer (mode, drive, bias, x * 2.0f - 1.0f); });
+            });
             // the pre-filter
             const auto pr = R (2);
             frame (g, pr, k);
@@ -1264,11 +1304,16 @@ void FxEditor::setEncoderIds (const std::vector<juce::String>& ids)
 void FxEditor::refresh()
 {
     if (! isVisible() || prefixes.empty()) return;
-    if (juce::ModifierKeys::currentModifiers.isAnyMouseButtonDown()) { for (auto& b : bars) b->refresh(); return; } // never rebuild under a drag
+    // p57: the picture follows every parameter change at the editor's 30 Hz, as the bars do (encoders, MIDI, host,
+    // automation): its hash of the slot's values decides whether it repaints. Before, only the headless renders ticked it,
+    // so on screen the picture redrew only when something else happened to repaint it.
+    auto tickGraph = [this] { if (tile != nullptr) { tile->tick (1.0f / 30.0f); ++graphTickCount; } };
+    if (juce::ModifierKeys::currentModifiers.isAnyMouseButtonDown()) { for (auto& b : bars) b->refresh(); tickGraph(); return; } // never rebuild under a drag
     // the slot's type changed (a bar, the host, a preset): new picture and bars
     if (typeOf (proc, prefixes[(size_t) slot]) != type) show (fxView, part, slot);
     else if (tile != nullptr) tile->refreshLayout(); // rate <-> tempo sync swaps a point's parameter
     for (auto& b : bars) b->refresh();
+    tickGraph();
     repaint (closeArea().getUnion (slotTabArea (0)).toNearestInt().withLeft (0)); // the tabs (bypass, types)
 }
 

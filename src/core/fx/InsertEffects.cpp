@@ -16,7 +16,7 @@ std::vector<ParamDescriptor> ChorusEffect::getParamDescriptors() const
         integer ("voices", "Chorus Voices", "Chorus-Stimmen", 1, maxVoices, 1),
         continuous ("drift", "Chorus Drift", "Chorus-Drift", 0.0f, 1.0f, 0.0f),
         continuous ("spread", "Chorus Spread", "Chorus-Breite", 0.0f, 1.0f, 0.8f),
-        continuous ("lowcut", "Chorus Low Cut", "Chorus-Tiefensperre", 20.0f, 1000.0f, 20.0f, ParamUnit::Hertz, 0.3f),
+        continuous ("lowcut", "Chorus Low Cut", "Chorus Low Cut", 20.0f, 1000.0f, 20.0f, ParamUnit::Hertz, 0.3f),
     };
 }
 
