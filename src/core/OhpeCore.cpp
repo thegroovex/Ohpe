@@ -910,6 +910,12 @@ bool Core::loadState (const std::string& json, std::string* uiJsonOut)
     if (! r.ok) return false;
     // p28: a pad held or latched while the host saved is a performance gesture, not part of the song
     for (int p = 0; p < PerformancePads::numPads; ++p) registry.set (PerformancePads::padId (p), 0.0f);
+    if (json.find ("\"harmony.kb.inkey\"") == std::string::npos) // p59: a session from before - the old In Key layout
+    {
+        std::map<std::string, float> grid { { "harmony.kb.layout", registry.get ("harmony.kb.layout") } };
+        if (harmony::migrateLayout (grid))
+            for (const auto& [id, v] : grid) registry.set (id, v);
+    }
     spacemode::deriveAll (registry, numParts); // p41: the 3D switches follow space.on / space.out (older sessions too)
     map.clear();
     if (auto it = r.sections.find ("midimap"); it != r.sections.end()) map.fromJson (it->second);

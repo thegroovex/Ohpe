@@ -338,10 +338,10 @@ std::string deviceKey (const std::string& portName)
 }
 
 // ---------------------------------------------------------------- pad layout
-int padLayoutNote (int layout, int col, int row, int octave, const PadKey& key) noexcept
+int padLayoutNote (int layout, int col, int row, int octave, const PadKey& key, bool inKey, bool fixed) noexcept
 {
     const int base = 12 * (std::clamp (octave, 0, 7) + 1);
-    return harmony::gridNote (std::clamp (layout, 0, (int) harmony::numLayouts - 1), col, row, base, key.root, key.scale);
+    return harmony::gridNote (std::clamp (layout, 0, (int) harmony::numLayouts - 1), col, row, base, key.root, key.scale, inKey, fixed);
 }
 
 PadRole padRole (int note, const PadKey& key, uint16_t chordMask, bool pressed) noexcept

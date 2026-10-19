@@ -139,17 +139,18 @@ TEST_CASE ("p24 harmony: grid layouts and mask quantising")
     CHECK (gridNote (LayoutFourths, 0, 1, 48, 0, scales::Major) == 53);
     CHECK (gridNote (LayoutThirds, 0, 1, 48, 0, scales::Major) == 52);
     CHECK (gridNote (LayoutWhole, 3, 2, 48, 0, scales::Major) == 64);
-    // In Key: scale steps (C major from C3: D, F one row up)
-    CHECK (gridNote (LayoutInKey, 1, 0, 48, 0, scales::Major) == 50);
-    CHECK (gridNote (LayoutInKey, 0, 1, 48, 0, scales::Major) == 53);
-    CHECK (gridNote (LayoutInKey, 2, 0, 49, 0, scales::Major) == 53); // C# is not in the key: the grid starts on D (D E F)
+    // In Key (p59: Fourths + In Key, fixed C): scale steps (C major from C3: D, F one row up)
+    CHECK (gridNote (LayoutFourths, 1, 0, 48, 0, scales::Major, true) == 50);
+    CHECK (gridNote (LayoutFourths, 0, 1, 48, 0, scales::Major, true) == 53);
+    CHECK (gridNote (LayoutFourths, 2, 0, 49, 0, scales::Major, true) == 53); // C# is not in the key: the grid starts on D (D E F)
     for (int layout = 0; layout < numLayouts; ++layout)
         for (int row = 0; row < 4; ++row) // the on-screen grid: 4 x 24
             for (int col = 0; col < 24; ++col)
             {
                 const int n = gridNote (layout, col, row, 36, 9, scales::Minor);
                 CHECK ((n >= 0 && n <= 127));
-                if (layout == LayoutInKey) CHECK (scales::inScale (n, 9, scales::Minor));
+                for (int fixed = 0; fixed < 2; ++fixed)
+                    CHECK (scales::inScale (gridNote (layout, col, row, 36, 9, scales::Minor, true, fixed != 0), 9, scales::Minor));
             }
     // quantising to a chord (A minor: A C E)
     const uint16_t am = chordShape (Minor);

@@ -141,7 +141,7 @@ TEST_CASE ("p46 grid controller: display lines follow the page; encoders edit th
     CHECK (lines[2].find ("Part 1") != std::string::npos);
     CHECK (lines[2].find ("BPM") != std::string::npos);
     CHECK (lines[3].find ("1/") != std::string::npos);
-    CHECK (lines[3].find ("Keys Fourths O3") != std::string::npos);
+    CHECK (lines[3].find ("4th Chr O3") != std::string::npos); // p59: layout, In Key / Chromatic, fixed, octave
 
     // encoder 1 up: the parameter of encoder 1 changes (host notified)
     const juce::String id0 (enc[0]);
@@ -223,7 +223,7 @@ TEST_CASE ("p46 grid controller: the pads are the on-screen grid keyboard - layo
     r.setHost ("key.root", 2.0f);
     r.setHost ("key.scale", (float) scales::Minor);
     r.play (2);
-    r.setHost ("harmony.kb.layout", (float) harmony::LayoutInKey);
+    r.setHost ("harmony.kb.inkey", 1.0f); // p59: In Key (the old In Key layout = Fourths + In Key)
     r.c->update();
     for (int pad = 0; pad < g::numPads; ++pad)
     {
@@ -234,6 +234,7 @@ TEST_CASE ("p46 grid controller: the pads are the on-screen grid keyboard - layo
     CHECK (r.c->padNoteNow (0) == grid.noteAt (0, 0));
 
     // playing a pad: velocity to the edit part, the pad lights green while held
+    r.setHost ("harmony.kb.inkey", 0.0f);
     r.setHost ("harmony.kb.layout", (float) harmony::LayoutFourths);
     r.c->update();
     r.in (juce::MidiMessage::noteOn (1, g::padNote (2, 1), (juce::uint8) 100));
@@ -362,7 +363,7 @@ TEST_CASE ("p46 grid controller: disconnect / reconnect resends everything; sett
     r.c->update();
     const auto lines = r.c->displayLines();
     MESSAGE ("German:\n" << lines[0] << "\n" << lines[1] << "\n" << lines[2] << "\n" << lines[3]);
-    CHECK (lines[3].find ("Tasten Quarten O3") != std::string::npos);
+    CHECK (lines[3].find ("Qua Chr O3") != std::string::npos);
     e.showSettings (false);
 }
 

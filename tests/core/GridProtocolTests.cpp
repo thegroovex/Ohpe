@@ -125,7 +125,13 @@ TEST_CASE ("p46 grid controller: pads play the on-screen grid's notes in every l
                             const int n = g::padLayoutNote (layout, col, row, octave, key);
                             CHECK (n == gridNote (layout, col, row, 12 * (octave + 1), root, scale)); // the same cell, the same note
                             CHECK ((n >= 0 && n <= 127));
-                            if (layout == LayoutInKey && n < 127) CHECK (scales::inScale (n, root, scale)); // 127: clamped at the top
+                            for (int inKey = 0; inKey < 2; ++inKey) // p59: In Key / Chromatic, fixed C or the key's root
+                                for (int fixed = 0; fixed < 2; ++fixed)
+                                {
+                                    const int m = g::padLayoutNote (layout, col, row, octave, key, inKey != 0, fixed != 0);
+                                    CHECK (m == gridNote (layout, col, row, 12 * (octave + 1), root, scale, inKey != 0, fixed != 0));
+                                    if (inKey != 0 && m < 127) CHECK (scales::inScale (m, root, scale)); // 127: clamped at the top
+                                }
                         }
                 }
     key = {};
@@ -136,8 +142,9 @@ TEST_CASE ("p46 grid controller: pads play the on-screen grid's notes in every l
     CHECK (g::padLayoutNote (LayoutFourths, 7, 7, 3, key) == 48 + 7 + 35);
     CHECK (g::padLayoutNote (LayoutThirds, 0, 1, 3, key) == 52);
     CHECK (g::padLayoutNote (LayoutWhole, 1, 1, 3, key) == 55);
-    CHECK (g::padLayoutNote (LayoutInKey, 1, 0, 3, key) == 50);
-    CHECK (g::padLayoutNote (LayoutInKey, 0, 1, 3, key) == 53);
+    CHECK (g::padLayoutNote (LayoutFourths, 1, 0, 3, key, true) == 50); // p59: Fourths + In Key (the old In Key)
+    CHECK (g::padLayoutNote (LayoutFourths, 0, 1, 3, key, true) == 53);
+    CHECK (g::padLayoutNote (LayoutSequential, 0, 1, 3, key) == 56);
     // octave: one octave up = +12
     CHECK (g::padLayoutNote (LayoutFourths, 2, 3, 4, key) == g::padLayoutNote (LayoutFourths, 2, 3, 3, key) + 12);
 }

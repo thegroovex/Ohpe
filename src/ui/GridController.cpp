@@ -38,6 +38,19 @@ juce::String modeName (GridController::PadMode m)
         default: return tr ("Keys");
     }
 }
+
+/** p59: line 4 - the grid in a few letters: layout, In Key / Chromatic, fixed C ("4th Key Fix", "Qua Chr"). */
+juce::String layoutSummary (int layout, const harmony::GridOptions& o)
+{
+    const bool de = i18n::current() == i18n::Language::German;
+    static const char* en[] = { "4th", "3rd", "Whl", "Seq" };
+    static const char* deN[] = { "Qua", "Ter", "Gnz", "Seq" };
+    const int l = juce::jlimit (0, (int) harmony::numLayouts - 1, layout);
+    juce::String t = de ? deN[l] : en[l];
+    t << " " << (o.inKey ? (de ? "Ton" : "Key") : "Chr");
+    if (o.fixed) t << " " << (de ? "Fest" : "Fix");
+    return t;
+}
 } // namespace
 
 GridController::GridController (OhpeProcessor& p, Hooks h) : proc (p), hooks (std::move (h))
@@ -852,6 +865,7 @@ void GridController::refreshMap()
     mpeNow.store (core.params().get ("p" + std::to_string (ctx.part + 1) + ".mpe") >= 0.5f);
     drumBase.store ((int) std::lround (core.params().get ("drum.base")));
     const int layout = padLayout();
+    const auto opts = harmony::gridOptions (core.params()); // p59: In Key / Chromatic, fixed C (every layout)
     const int octave = hooks.octave ? hooks.octave() : 3;
     const auto key = padKey();
     const auto mode = padMode();
@@ -861,9 +875,9 @@ void GridController::refreshMap()
         int note = -1;
         if (mode == PadMode::Keys || (mode == PadMode::Steps && row < g::rows - stepRows))
         {
-            note = g::padLayoutNote (layout, col, row, octave, key);
-            // Scale Lock on a chromatic layout: other notes are dark and silent (In Key has only key notes anyway)
-            if (key.lock && layout != harmony::LayoutInKey && ! scales::inScale (note, key.root, key.scale)) note = -1;
+            note = g::padLayoutNote (layout, col, row, octave, key, opts.inKey, opts.fixed);
+            // Scale Lock on Chromatic: other notes are dark and silent (In Key has only key notes anyway)
+            if (key.lock && ! opts.inKey && ! scales::inScale (note, key.root, key.scale)) note = -1;
         }
         padMap[(size_t) pad].store (note);
     }
@@ -938,10 +952,8 @@ void GridController::refreshDisplay()
     const double secs = juce::jmax (0.0, (double) tape.positionFrames() / juce::jmax (1.0, tape.sampleRate()));
     juce::String padText = modeName (padMode());
     if (padMode() == PadMode::Keys || padMode() == PadMode::Steps)
-    {
-        const int layout = padLayout();
-        const auto ln = i18n::current() == i18n::Language::German ? harmony::layoutNamesDe() : harmony::layoutNamesEn();
-        padText << " " << juce::String (ln[(size_t) layout]) << " O" << juce::String (hooks.octave ? hooks.octave() : 3);
+    {   // p59: layout, In Key / Chromatic, fixed C and the octave (the pad mode shows on its lit button)
+        padText = layoutSummary (padLayout(), harmony::gridOptions (reg)) + " O" + juce::String (hooks.octave ? hooks.octave() : 3);
     }
     lines[3] = g::segmentLine ({ str (page), str (tx), str (proc.tapeTimeText (secs).replace (juce::String::fromUTF8 (" \xc2\xb7 "), "  ")), str (padText) });
     if (splashTicks > 0) lines = g::splashLines (splashTicks > 20 ? 0 : 1, i18n::current() == i18n::Language::German); // p53

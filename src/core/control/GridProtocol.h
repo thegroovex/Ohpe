@@ -142,8 +142,9 @@ struct PadKey
 };
 
 /** The note of pad (col, row) - exactly the on-screen grid keyboard's cell at the same column and row
-    (harmony::gridNote with the grid's layout and the lowest C of `octave`, 12 * (octave + 1)). */
-int padLayoutNote (int layout, int col, int row, int octave, const PadKey& key) noexcept;
+    (harmony::gridNote with the grid's layout and the lowest C of `octave`, 12 * (octave + 1)). p59: inKey / fixed as
+    "harmony.kb.inkey" / "harmony.kb.fixed". */
+int padLayoutNote (int layout, int col, int row, int octave, const PadKey& key, bool inKey = false, bool fixed = true) noexcept;
 
 /** What a pad shows in the keyboard mode. */
 enum class PadRole { Outside = 0, InKey, Root, ChordTone, Pressed };

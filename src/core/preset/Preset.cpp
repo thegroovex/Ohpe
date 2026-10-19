@@ -214,6 +214,7 @@ bool fromJson (const std::string& text, Preset& out, std::string* error)
             if (v.is_number()) p.params[id] = v.get<float>();
     p.meta.modSchema = j.value ("modSchema", 0);
     if (p.meta.modSchema < mod::schemaVersion) mod::migrate (p.meta.modSchema, p.params); // 0.7
+    harmony::migrateLayout (p.params); // p59: the old In Key grid layout -> Fourths + In Key
     if (p.meta.kind == Kind::Part && j.contains ("arp") && j["arp"].is_object())
     {
         std::map<std::string, float> arp;

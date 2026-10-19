@@ -51,7 +51,8 @@ int GridKeyboard::bendRange() const
 int GridKeyboard::noteAt (int col, int row) const
 {
     const auto& h = proc.core().harmony();
-    return harmony::gridNote (layout(), col, row, 12 * (octave + 1), h.keyRoot(), h.keyScale());
+    const auto o = harmony::gridOptions (proc.core().params()); // p59: In Key / Chromatic, fixed C
+    return harmony::gridNote (o.layout, col, row, 12 * (octave + 1), h.keyRoot(), h.keyScale(), o.inKey, o.fixed);
 }
 
 int GridKeyboard::lowestNote() const { return noteAt (0, 0); }
@@ -101,7 +102,9 @@ void GridKeyboard::refresh()
 {
     const auto& h = proc.core().harmony();
     const auto c = h.chord();
-    const int sig = ((((h.keyRoot() * 16 + h.keyScale()) * 200 + (c.root + 1) * 16 + c.type) * 8 + layout()) * 8 + octave) * 2 + (partMpe() ? 1 : 0);
+    const auto o = harmony::gridOptions (proc.core().params());
+    const int sig = (((((h.keyRoot() * 16 + h.keyScale()) * 200 + (c.root + 1) * 16 + c.type) * 8 + layout()) * 8 + octave) * 2 + (partMpe() ? 1 : 0)) * 4
+                    + (o.inKey ? 2 : 0) + (o.fixed ? 1 : 0);
     // p53: the notes held on the controller's pads (shown pressed)
     uint64_t held = 0;
     if (alsoPressed)
@@ -170,7 +173,8 @@ void GridKeyboard::express (Touch& t, const juce::MouseEvent& e)
 {
     const auto cell = cellArea (t.col, t.row);
     const auto steps = harmony::layoutSteps (layout());
-    const float semisPerCell = layout() == harmony::LayoutInKey ? 12.0f / 7.0f : (float) steps.col;
+    const bool inKey = proc.core().params().get ("harmony.kb.inkey") >= 0.5f && proc.core().harmony().keyScale() != scales::Chromatic;
+    const float semisPerCell = inKey ? 12.0f / 7.0f : (float) steps.col;
     const float semis = (e.position.x - t.start.x) / juce::jmax (1.0f, cell.getWidth()) * semisPerCell;
     const int bend = juce::jlimit (0, 16383, (int) std::lround (8192.0f + semis / (float) bendRange() * 8192.0f));
     if (bend != t.lastBend)
