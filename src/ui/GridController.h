@@ -5,6 +5,7 @@
 #include "Pages.h"
 #include "control/GridProtocol.h"
 #include "plugin/PluginProcessor.h"
+#include "plugin/UserSettingsStore.h"
 #include "settings/UserSettings.h"
 
 #include <juce_audio_devices/juce_audio_devices.h>
@@ -18,8 +19,15 @@
 namespace ohpe::ui
 {
 /**
-    p46: Grid-Controller (Profil 1) - an external 8 x 8 pad grid controller with a four-line display, standalone app only
-    (Settings > MIDI > Controller: profile, MIDI input and output). Off by default; plug-in builds never create it.
+    p46: Grid-Controller (Profil 1) - an external 8 x 8 pad grid controller with a four-line display (Settings > MIDI >
+    Controller: profile, MIDI input and output). Off by default.
+
+    p49: in a plug-in it opens the controller's (user) ports itself, bypassing the host: the ports chosen, or found by
+    name ("Choose ports automatically", settings "auto" / "pattern"). Only one instance of the process holds them
+    (gridctl::Ownership: the window opened or clicked last, or "Take over here"); the others leave the ports closed.
+    The object belongs to the editor while it is open; when the window closes it is parked in the processor with
+    hooks of its own (mode, page, part, octave, transport), so the controller keeps working until the instance goes.
+    A port that cannot be opened (held by the host) is tried again every second.
 
     * Display: line 1 / 2 = names / values of the eight encoders (the shown Ohpe page and the next one, as Pages.cpp puts
       them on the four screen encoders), line 3 = preset, part + engine, tempo, key (a touched encoder shows its full
@@ -45,10 +53,12 @@ namespace ohpe::ui
     Threads: receive() may run on the MIDI input thread (pads go straight to the core's controller queue, everything
     else is queued); update() runs on the message thread (the timer, or tests).
 */
-class GridController : private juce::Timer, private juce::MidiInputCallback
+class GridController : private juce::Timer, private juce::MidiInputCallback, private juce::ChangeListener
 {
 public:
     enum class PadMode { Keys = 0, Pads, Drum, Steps, numModes };
+    /** p49: what the settings section shows. */
+    enum class State { Off = 0, ChoosePorts, Waiting, PortBusy, Connected, OtherInstance };
 
     /** The editor's side: what the screen shows and how to change it. */
     struct Hooks
@@ -68,12 +78,35 @@ public:
     GridController (OhpeProcessor& p, Hooks hooks);
     ~GridController() override;
 
+    /** p49: the editor's hooks again (window reopened). */
+    void setHooks (Hooks h) { hooks = std::move (h); isHeadless = false; }
+    /** p49: the window closes - from now on its own hooks (the last mode, page, part and octave; transport and part
+        through the processor). */
+    void detachFromEditor();
+    bool headless() const noexcept { return isHeadless; }
+
+    // ---- p49: plug-in (one instance of the process holds the ports)
+    bool pluginMode() const noexcept { return inPlugin; }
+    void setPluginModeForTests (bool on);
+    /** This instance takes the controller (window opened / clicked, "Take over here"). */
+    void claim();
+    bool ownedHere() const;
+    bool ownedElsewhere() const;
+    State state() const;
+    /** The ports used now (chosen, or found by name). */
+    juce::String inputPort() const { return inName; }
+    juce::String outputPort() const { return outName; }
+    /** One tick of the watch (the timer; tests): ownership hand-over, ports. */
+    void poll();
+    /** Screenshots: the port names shown (no port is opened). */
+    void setPortNamesForTests (const juce::String& in, const juce::String& out) { inName = in; outName = out; }
+
     // ---- ports (message thread)
     /** Opens / closes the ports the settings name (profile off = closed). Standalone app only. */
     void configure (const settings::UserSettings& s);
     bool connected() const noexcept { return isConnected; }
     bool enabled() const noexcept { return profile != settings::ControllerOff; }
-    /** "Connected" / "Waiting for ..." (translated). */
+    /** "Connected" / "Waiting for ..." / p49 "Active in this instance", "Port in use - free it in the host" ... (translated). */
     juce::String status() const;
     /** Port names of the system (inputs / outputs). */
     static juce::StringArray inputNames();
@@ -102,6 +135,10 @@ public:
 
 private:
     void timerCallback() override;
+    void changeListenerCallback (juce::ChangeBroadcaster*) override; ///< p49: the settings changed (any window)
+    void checkOwnership();
+    void watchPorts();
+    void resolvePorts();
     void handleIncomingMidiMessage (juce::MidiInput*, const juce::MidiMessage& m) override { receive (m); }
 
     void send (const juce::MidiMessage& m);
@@ -129,7 +166,11 @@ private:
     OhpeProcessor& proc;
     Hooks hooks;
     int profile = settings::ControllerOff;
-    juce::String inName, outName;
+    juce::String inName, outName;            ///< the ports used (p49: found by name when automatic)
+    juce::String wantIn, wantOut, pattern;   ///< p49: the settings' ports and name pattern
+    bool autoPorts = false, inPlugin = false, wasOwner = false, portBusy = false, isHeadless = false;
+    struct Detached { Mode mode = Mode::Synth; PageContext ctx; int page = 0; int octave = 3; } detached; ///< p49
+    juce::SharedResourcePointer<UserSettingsStore> store; ///< p49
     int strip = 0;
     bool masterTempo = false;
     std::unique_ptr<juce::MidiInput> input;

@@ -104,6 +104,7 @@ OhpeProcessor::OhpeProcessor()
 
 OhpeProcessor::~OhpeProcessor()
 {
+    parkedGridController.reset(); // p49: before anything it refers to
     stopTimer();
     for (const auto& l : hostListeners) apvts.removeParameterListener (juce::String (ohpeCore.params().descriptor (l->index).id), l.get());
 }

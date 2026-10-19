@@ -152,7 +152,7 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 * [SUB layer](docs/en/SUB.md) – a sub oscillator per part, one or two octaves under every voice (Sine / Round / Square, into the filter or direct)
 * [Expressive playing](docs/en/EXPRESSION.md) – velocity and aftertouch to two functions each, curves, aftertouch → glide time
 * [Updates](docs/en/UPDATES.md) – in-app update check, verified download, channels, content packs, rollback
-* [Grid controller](docs/en/CONTROLLER.md) – Grid controller profile 1: an 8 × 8 pad controller with display plays the grid keyboard and edits the shown page (standalone)
+* [Grid controller](docs/en/CONTROLLER.md) – Grid controller profile 1: an 8 × 8 pad controller with display plays the grid keyboard and edits the shown page (standalone app and plug-in)
 * [Settings](docs/en/SETTINGS.md) – language, help, light / dark skin, display, MIDI setup and learn list, about
 * [Content packs](docs/en/CONTENT-PACKS.md) – install `.ohpepack` files (dialog or drag & drop), checksums, pack manager, library filter; [format](packaging/content/README.md)
 * [Preset breeding](docs/en/BREEDING.md) – cross two sounds, keep the best children, breed generations

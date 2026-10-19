@@ -1,6 +1,6 @@
 # Grid controller (profile 1)
 
-Ohpe's standalone app can be played and edited from an external **8 × 8 pad grid controller with a four-line
+Ohpe (the standalone app and, since p49, the plug-in) can be played and edited from an external **8 × 8 pad grid controller with a four-line
 character display**: 64 pads with velocity and pressure, 8 touch-sensitive encoders and a master encoder, two rows
 of 8 buttons under the display, transport and navigation buttons and a touch strip. In Ohpe this is
 **Grid-Controller (Profil 1)** / **Grid controller profile 1**.
@@ -12,7 +12,7 @@ same colours for root and key notes – what you learn on one works on the other
 
 ## Setting it up
 
-1. Connect the controller and start the Ohpe **standalone app** (plug-ins leave controllers to the host).
+1. Connect the controller and start the Ohpe **standalone app** (for the plug-in see [In a plug-in](#in-a-plug-in)).
 2. **Settings > MIDI > Controller**: choose **Grid controller profile 1**.
 3. **In** / **Out**: step to the controller's MIDI ports (usually its first port for both; if the display stays
    empty, try its other port). The legend shows **Connected** once both ports are open.
@@ -20,10 +20,40 @@ same colours for root and key notes – what you learn on one works on the other
 5. **View** shows the *virtual controller*: the four display lines, the 64 pad lights and the last MIDI messages –
    handy to check what the controller should show.
 
-Nothing is detected automatically; the choice is saved per user in `settings.json` (never in projects or presets)
+In the standalone app nothing is detected automatically; the choice is saved per user in `settings.json` (never in projects or presets)
 and the controller is reopened at the next start. When it is unplugged the lights and display stop; when it comes
 back, Ohpe reconnects within a second and sends everything again. Ohpe switches the controller's port off in the
 plain MIDI input list so its pads don't play twice. The profile is **off by default**.
+
+## In a plug-in
+
+Since p49 the controller also works inside the **plug-in** (VST3 / AU in a DAW). The controller has two modes: in
+its usual mode it talks to the DAW; in its **User mode** (the controller's *User* button) it hands its pads, display
+and lights to whatever program opens its *user port*. Ohpe opens that port itself – past the host – with the full
+display, pad colours, pressure, encoders (with touch), touch strip and buttons, exactly as in the standalone app.
+
+![Settings – MIDI with the controller section in a plug-in](../images/ohpe-settings-controller-plugin.png)
+
+1. **In the DAW**: in its MIDI preferences, switch the controller's *user port* (often called *… User Port*, on
+   Windows *MIDIIN2 (…)* / *MIDIOUT2 (…)*) **off for tracks and remote** (input and output), so the DAW releases it
+   and the pads don't play twice. Leave the controller's main port as it is.
+2. **In Ohpe**: **Settings > MIDI > Controller**: choose **Grid controller profile 1**.
+3. **Choose ports automatically** (on by default) picks the input and output whose names match the pattern
+   (`User; MIDIIN2; MIDIOUT2` – any part found in a port name; editable as `"pattern"` under `"controller"` in
+   `settings.json`). Switch it off and step **In** / **Out** to choose the ports yourself (stepping a port switches
+   it off).
+4. Switch the controller to its **User mode**. The legend shows **Active in this instance** once both ports are open.
+
+**One instance at a time.** Only one Ohpe of the DAW can hold the controller: the one whose window you **opened or
+clicked last**. The others show **Active in another instance** and a **Take over here** button; when the holding
+instance is removed, the next one takes over. The holding instance keeps the controller while its window is
+**closed** (the encoders keep the last page, the part, mode and transport buttons work). After loading a project,
+open the window of the instance you want to play once – until then no instance holds the controller.
+
+**Port in use.** On Windows a MIDI port can be open in only one program. If the DAW still holds the user port, the
+legend shows **Port in use - free it in the host**; free the port in the DAW's MIDI preferences – Ohpe tries again
+every second, and also reconnects when the controller is unplugged and plugged in again. MIDI from the host keeps
+working in parallel. Closing the instance or switching the profile off clears the display and the lights.
 
 ## Display
 
