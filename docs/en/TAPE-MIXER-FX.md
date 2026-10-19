@@ -222,7 +222,10 @@ Every part has an **FX rack of six serial slots**, the master a rack of four:
   0.2 types the first four, for the rack types the four listed below as *Mod 1–4*
   ([MODULATION.md](MODULATION.md)).
 * On screen: the **Rack** and **Master** views of the Effects mode
-  ([USER-INTERFACE.md](USER-INTERFACE.md#fx-rack-views-07)).
+  ([USER-INTERFACE.md](USER-INTERFACE.md#fx-rack-views-07)), and the graphical **FX editor** (p55) – the selected slot
+  large with every parameter at once and points to drag in its picture: EQ bands on the response curve, threshold and
+  ratio on the compressor's curve, rate and depth on a modulation wave, time and feedback as echo taps …
+  ([USER-INTERFACE.md](USER-INTERFACE.md#fx-editor-p55)).
 
 ### Rack effect types
 

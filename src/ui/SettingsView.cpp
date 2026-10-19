@@ -60,11 +60,17 @@ const HelpTopic helpTopics[] = {
       "Drag the bars on the display like the encoders. Double-click a value to reset it.\n\n"
       "Right-click any encoder, key or wheel for MIDI learn: move a control on your MIDI device and it is mapped. "
       "Settings > MIDI learn lists every mapping.\n\n"
-      "The display can show the stereo scope, the spectrum terrain, the 3D space or the living object - click the visual area to switch.",
+      "The display can show the stereo scope, the spectrum terrain, the 3D space or the living object - click the visual area to switch.\n\n"
+      "FX editor (Effects mode, Rack / Master): the FX editor key or a click on the slot picture shows every parameter of the slot at once. "
+      "Drag the points in the picture (EQ bands, threshold, rate / depth ...); Alt-drag or the wheel changes the second value (Q, knee, shape); "
+      "a clicked point goes onto the encoders.",
       "Die Balken im Display lassen sich ziehen wie die Encoder. Doppelklick setzt einen Wert zurück.\n\n"
       "Rechtsklick auf Encoder, Taste oder Rad öffnet MIDI-Learn: einen Regler am MIDI-Gerät bewegen, schon ist er zugewiesen. "
       "Einstellungen > MIDI-Learn zeigt alle Zuweisungen.\n\n"
-      "Das Display zeigt Stereo-Scope, Spektrum-Landschaft, 3D-Raum oder das lebende Objekt - Klick auf die Grafik wechselt." },
+      "Das Display zeigt Stereo-Scope, Spektrum-Landschaft, 3D-Raum oder das lebende Objekt - Klick auf die Grafik wechselt.\n\n"
+      "FX-Editor (Effekte-Modus, Rack / Master): die Taste FX-Editor oder ein Klick auf das Slot-Bild zeigt alle Parameter des Slots auf einmal. "
+      "Die Punkte im Bild ziehen (EQ-Bänder, Schwelle, Tempo / Tiefe ...); Alt-Ziehen oder das Rad ändert den zweiten Wert (Güte, Knie, Form); "
+      "ein angeklickter Punkt liegt auf den Encodern." },
     { "Sequencer and tape", "Sequencer und Tape",
       "PLAY starts the sequencer (and the tape, when they are linked). REC records the armed tape track; without an armed track "
       "it arms the selected one.\n\n"
