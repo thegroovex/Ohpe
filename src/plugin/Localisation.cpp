@@ -836,6 +836,13 @@ const std::map<juce::String, juce::String>& table()
         { "View", "Ansicht" },
         { "Virtual controller", "Virtueller Controller" },
         { "Grid controller profile 1", "Grid-Controller (Profil 1)" },
+        // p49: Grid-Controller in a plug-in
+        { "Choose ports automatically", "Ports automatisch wählen" },
+        { "Active in this instance", "Aktiv in dieser Instanz" },
+        { "Active in another instance", "In anderer Instanz aktiv" },
+        { "Take over here", "Hierher holen" },
+        { "Port in use - free it in the host", "Port belegt – in der DAW freigeben" },
+        { "No port matches - choose the ports", "Kein Port passt – Ports wählen" },
         { "Controllers are set up in the standalone app. In a plug-in the host program sends their MIDI to Ohpe.",
           "Controller werden in der Standalone-App eingerichtet. Im Plug-in schickt das Host-Programm ihr MIDI an Ohpe." },
         // p45: key, Scale Lock, the chord that sounds

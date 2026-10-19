@@ -455,8 +455,14 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     refreshKeys();
     refreshLeds();
     updateOverlayVisibility();
-    if (proc.wrapperType == juce::AudioProcessor::wrapperType_Standalone) makeGridController(); // p46 (standalone only)
+    makeGridController(); // p46; p49: plug-ins too (the processor's parked one when there is one)
     applyUserSettings(); // p32: language, skin, tooltips, help overlay
+    if (gridCtl != nullptr && gridCtl->pluginMode())
+    {   // p49: the window opened last (or clicked last) holds the controller
+        gridCtl->claim();
+        claimOnClick.onDown = [this] { if (gridCtl != nullptr) gridCtl->claim(); };
+        addMouseListener (&claimOnClick, true);
+    }
     transportMessagesSeen = proc.transportMessageCount();
     startTimerHz (30);
 }
@@ -464,8 +470,14 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
 OhpeEditor::~OhpeEditor()
 {
     stopTimer();
+    removeMouseListener (&claimOnClick);
     if (gridCtl != nullptr) settingsView.setGridController (nullptr);
-    gridCtl = nullptr; // p46: lights off, ports closed
+    if (gridCtl != nullptr && gridCtl->pluginMode())
+    {   // p49: the controller keeps working while the window is closed (parked in the processor, own hooks)
+        gridCtl->detachFromEditor();
+        proc.parkedGridController = std::move (gridCtl);
+    }
+    gridCtl = nullptr; // p46: lights off, ports closed (standalone)
     userSettings->removeChangeListener (this);
     proc.presets().removeChangeListener (this);
     proc.removeChangeListener (this);
@@ -1002,7 +1014,13 @@ void OhpeEditor::makeGridController()
         saveUiState();
         repaint();
     };
-    gridCtl = std::make_unique<ui::GridController> (proc, std::move (h));
+    if (proc.parkedGridController != nullptr) // p49: the window opens again - the same controller, the window's hooks
+    {
+        gridCtl = std::static_pointer_cast<ui::GridController> (std::move (proc.parkedGridController));
+        proc.parkedGridController = nullptr;
+        gridCtl->setHooks (std::move (h));
+    }
+    else gridCtl = std::make_shared<ui::GridController> (proc, std::move (h));
     settingsView.setGridController (gridCtl.get());
 }
 

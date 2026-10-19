@@ -3,6 +3,7 @@
 #include "GridController.h"
 
 #include "ModFxViews.h"
+#include "control/ControllerPorts.h"
 #include "harmony/HarmonyBrain.h"
 #include "perform/PerformancePads.h"
 #include "plugin/Localisation.h"
@@ -46,12 +47,143 @@ GridController::GridController (OhpeProcessor& p, Hooks h) : proc (p), hooks (st
     for (auto& x : playingCh) x.store (1);
     for (auto& x : held) x.store (false);
     resetOutputCache();
+    // p49: a plug-in opens the controller's ports itself - one instance of the process at a time
+    inPlugin = proc.wrapperType != juce::AudioProcessor::wrapperType_Standalone;
+    if (inPlugin) g::Ownership::shared().enrol (this);
+    store->addChangeListener (this);
 }
 
 GridController::~GridController()
 {
     stopTimer();
+    store->removeChangeListener (this);
+    closePorts(); // lights and display off, ports closed
+    g::Ownership::shared().remove (this);
+}
+
+// ---------------------------------------------------------------- p49: plug-in, ownership, without the editor
+void GridController::setPluginModeForTests (bool on)
+{
+    if (on == inPlugin) return;
     closePorts();
+    inPlugin = on;
+    if (on)
+    {
+        g::Ownership::shared().enrol (this);
+        g::Ownership::shared().setEnabled (this, enabled());
+    }
+    else g::Ownership::shared().remove (this);
+    wasOwner = false;
+}
+
+void GridController::claim()
+{
+    if (! inPlugin) return;
+    g::Ownership::shared().claim (this);
+    poll(); // the old owner lets go on its own next tick; this one tries at once
+}
+
+bool GridController::ownedHere() const { return ! inPlugin || g::Ownership::shared().owns (this); }
+bool GridController::ownedElsewhere() const { return inPlugin && g::Ownership::shared().ownedElsewhere (this); }
+
+GridController::State GridController::state() const
+{
+    if (! enabled() && ! testSender) return State::Off;
+    if (inPlugin && enabled() && ! ownedHere()) return State::OtherInstance;
+    if (isConnected) return State::Connected;
+    if (portBusy) return State::PortBusy;
+    if (inName.isEmpty() || outName.isEmpty()) return State::ChoosePorts;
+    return State::Waiting;
+}
+
+void GridController::changeListenerCallback (juce::ChangeBroadcaster*)
+{
+    configure (store->get()); // the same settings in every window; only changes act
+}
+
+void GridController::detachFromEditor()
+{
+    // the last state the window showed
+    if (hooks.mode) detached.mode = hooks.mode();
+    if (hooks.context) detached.ctx = hooks.context();
+    if (hooks.page) detached.page = hooks.page();
+    if (hooks.octave) detached.octave = hooks.octave();
+    isHeadless = true;
+    auto remember = [this] (const char* key, int v) { // the window opens with it again
+        if (auto* obj = proc.uiState.getDynamicObject()) obj->setProperty (key, v);
+    };
+    Hooks h;
+    h.mode = [this] { return detached.mode; };
+    h.context = [this] {
+        detached.ctx.part = juce::jlimit (0, Core::numParts - 1, (int) std::lround (proc.core().params().get (Core::Ids::editPart)) - 1);
+        return detached.ctx;
+    };
+    h.page = [this] { return detached.page; };
+    h.stepPage = [this] (int d) {
+        const int pages = juce::jmax (1, ((int) modeParams (detached.mode, proc.core(), detached.ctx).size() + 3) / 4);
+        detached.page = juce::jlimit (0, pages - 1, detached.page + d);
+    };
+    h.selectMode = [this, remember] (Mode m) {
+        if (! modeInfo (m).available) return;
+        detached.mode = m;
+        detached.page = 0;
+        remember ("mode", (int) m);
+    };
+    h.selectPart = [this] (int k) {
+        k = juce::jlimit (0, Core::numParts - 1, k);
+        setParam (Core::Ids::editPart, (float) (k + 1));
+        detached.ctx.part = k;
+    };
+    h.transport = [this] (OhpeProcessor::TransportKey k) { proc.runTransport (k); };
+    h.octave = [this] { return detached.octave; };
+    h.setOctave = [this, remember] (int o) {
+        detached.octave = juce::jlimit (0, 7, o);
+        remember ("octave", detached.octave);
+    };
+    hooks = std::move (h);
+}
+
+void GridController::poll()
+{
+    checkOwnership();
+    if (! testSender && enabled() && ++watchTicks >= 25) // once a second: has a port vanished, come back or come free?
+    {
+        watchTicks = 0;
+        watchPorts();
+    }
+    if (isConnected) update();
+}
+
+void GridController::checkOwnership()
+{
+    if (! inPlugin || ! enabled()) return;
+    const bool own = g::Ownership::shared().owns (this);
+    if (! own)
+    {
+        wasOwner = false;
+        if (! isConnected && input == nullptr && output == nullptr) return;
+        // another instance holds it: let go (lights and display off, ports closed so that one can open them)
+        if (testSender)
+        {
+            for (int pad = 0; pad < g::numPads; ++pad) padUp (pad);
+            if (isConnected) lightsOff();
+            isConnected = false;
+            addLog ("released");
+        }
+        else closePorts();
+        return;
+    }
+    if (wasOwner) return;
+    wasOwner = true;
+    if (testSender)
+    {
+        isConnected = true;
+        addLog ("virtual device");
+        resetOutputCache();
+        sendSysex (g::aftertouchModeSysex (true));
+        return;
+    }
+    watchTicks = 25; // ours now: try the ports at once
 }
 
 // ---------------------------------------------------------------- ports
@@ -72,21 +204,49 @@ juce::StringArray GridController::outputNames()
 void GridController::configure (const settings::UserSettings& s)
 {
     strip = s.controllerStrip;
-    const bool changed = s.controllerProfile != profile || juce::String (s.controllerIn) != inName || juce::String (s.controllerOut) != outName;
+    const bool changed = s.controllerProfile != profile || juce::String (s.controllerIn) != wantIn || juce::String (s.controllerOut) != wantOut
+                         || s.controllerAuto != autoPorts || juce::String (s.controllerPattern) != pattern;
     if (s.controllerMaster != (masterTempo ? 1 : 0) || changed) masterTempo = s.controllerMaster == 1;
     if (! changed) return;
     closePorts();
     profile = s.controllerProfile;
-    inName = juce::String (s.controllerIn);
-    outName = juce::String (s.controllerOut);
+    wantIn = juce::String (s.controllerIn);
+    wantOut = juce::String (s.controllerOut);
+    autoPorts = s.controllerAuto;
+    pattern = juce::String (s.controllerPattern);
+    resolvePorts();
+    if (inPlugin)
+    {
+        g::Ownership::shared().setEnabled (this, enabled());
+        wasOwner = false;
+        checkOwnership();
+    }
     if (enabled()) openPorts();
     if (enabled() || testSender) startTimerHz (25);
     else stopTimer();
 }
 
+void GridController::resolvePorts()
+{
+    // p49: automatic (plug-in only) = the ports whose names match the pattern; else the ones chosen
+    if (! inPlugin || ! autoPorts)
+    {
+        inName = wantIn;
+        outName = wantOut;
+        return;
+    }
+    std::vector<std::string> ins, outs;
+    for (const auto& n : inputNames()) ins.push_back (n.toStdString());
+    for (const auto& n : outputNames()) outs.push_back (n.toStdString());
+    const auto pick = g::autoPorts (ins, outs, pattern.toStdString());
+    inName = pick.found() ? juce::String (ins[(size_t) pick.in]) : juce::String();
+    outName = pick.found() ? juce::String (outs[(size_t) pick.out]) : juce::String();
+}
+
 void GridController::openPorts()
 {
-    if (testSender || ! enabled()) return;
+    if (testSender || ! enabled() || ! ownedHere()) return;
+    portBusy = false;
     if (input == nullptr && inName.isNotEmpty())
         for (const auto& d : juce::MidiInput::getAvailableDevices())
             if (d.name == inName)
@@ -96,11 +256,17 @@ void GridController::openPorts()
                     dm->setMidiInputDeviceEnabled (d.identifier, false);
                 input = juce::MidiInput::openDevice (d.identifier, this);
                 if (input != nullptr) input->start();
+                else portBusy = true; // p49: there but not to be opened - held by another program (the host)
                 break;
             }
     if (output == nullptr && outName.isNotEmpty())
         for (const auto& d : juce::MidiOutput::getAvailableDevices())
-            if (d.name == outName) { output = juce::MidiOutput::openDevice (d.identifier); break; }
+            if (d.name == outName)
+            {
+                output = juce::MidiOutput::openDevice (d.identifier);
+                if (output == nullptr) portBusy = true;
+                break;
+            }
     const bool now = input != nullptr && output != nullptr;
     if (now && ! isConnected)
     {
@@ -121,6 +287,7 @@ void GridController::closePorts()
     output = nullptr;
     if (isConnected && ! testSender) addLog ("disconnected");
     isConnected = testSender != nullptr;
+    portBusy = false;
 }
 
 void GridController::attachForTests (Sender out)
@@ -135,17 +302,29 @@ void GridController::attachForTests (Sender out)
 
 juce::String GridController::status() const
 {
-    if (! enabled() && ! testSender) return tr ("Off");
-    if (isConnected) return tr ("Connected");
-    if (inName.isEmpty() || outName.isEmpty()) return tr ("Choose the controller's MIDI input and output");
+    switch (state())
+    {
+        case State::Off: return tr ("Off");
+        case State::OtherInstance: return tr ("Active in another instance");
+        case State::Connected: return inPlugin ? tr ("Active in this instance") : tr ("Connected");
+        case State::PortBusy: return tr ("Port in use - free it in the host");
+        case State::ChoosePorts:
+            return inPlugin && autoPorts ? tr ("No port matches - choose the ports") : tr ("Choose the controller's MIDI input and output");
+        case State::Waiting: break;
+    }
     return tr ("Waiting for the controller");
 }
 
 void GridController::timerCallback()
 {
-    if (! testSender && enabled() && ++watchTicks >= 25) // once a second: has a port vanished or come back?
+    poll();
+}
+
+void GridController::watchPorts()
+{
+    if (inPlugin && ! ownedHere()) return;
     {
-        watchTicks = 0;
+        if (! isConnected && input == nullptr && output == nullptr) resolvePorts(); // p49: automatic: plugged in later
         const bool inThere = inputNames().contains (inName), outThere = outputNames().contains (outName);
         if (isConnected && (! inThere || ! outThere))
         {
@@ -160,7 +339,6 @@ void GridController::timerCallback()
         else if (! isConnected && inThere && outThere)
             openPorts();
     }
-    if (isConnected) update();
 }
 
 void GridController::send (const juce::MidiMessage& m)

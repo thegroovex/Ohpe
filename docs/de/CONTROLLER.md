@@ -1,6 +1,6 @@
 # Grid-Controller (Profil 1)
 
-Die Standalone-App von Ohpe lässt sich mit einem externen **8 × 8-Pad-Raster-Controller mit vierzeiligem
+Ohpe (die Standalone-App und seit p49 das Plug-in) lässt sich mit einem externen **8 × 8-Pad-Raster-Controller mit vierzeiligem
 Zeichendisplay** spielen und bedienen: 64 Pads mit Anschlag und Druck, 8 berührungsempfindliche Drehregler und ein
 Master-Regler, zwei Reihen mit je 8 Tasten unter dem Display, Transport- und Navigationstasten und ein Touch-Strip.
 In Ohpe heißt er **Grid-Controller (Profil 1)**.
@@ -12,7 +12,7 @@ Anordnungen, dieselben Töne, dieselben Farben für Grundton und Tonart-Töne �
 
 ## Einrichten
 
-1. Controller anschließen und die **Standalone-App** von Ohpe starten (im Plug-in kümmert sich der Host um Controller).
+1. Controller anschließen und die **Standalone-App** von Ohpe starten (für das Plug-in siehe [Im Plug-in](#im-plug-in)).
 2. **Einstellungen > MIDI > Controller**: **Grid-Controller (Profil 1)** wählen.
 3. **Ein** / **Ausgang**: zu den MIDI-Ports des Controllers schalten (meist für beide sein erster Port; bleibt das
    Display leer, den anderen Port probieren). Die Überschrift zeigt **Verbunden**, sobald beide Ports offen sind.
@@ -20,11 +20,42 @@ Anordnungen, dieselben Töne, dieselben Farben für Grundton und Tonart-Töne �
 5. **Ansicht** zeigt den *virtuellen Controller*: die vier Displayzeilen, die 64 Pad-Lichter und die letzten
    MIDI-Nachrichten – praktisch, um zu prüfen, was der Controller zeigen soll.
 
-Nichts wird automatisch erkannt; die Wahl wird je Benutzer in `settings.json` gespeichert (nie in Projekten oder
+In der Standalone-App wird nichts automatisch erkannt; die Wahl wird je Benutzer in `settings.json` gespeichert (nie in Projekten oder
 Presets) und der Controller beim nächsten Start wieder geöffnet. Wird er abgezogen, stehen Lichter und Display;
 kommt er zurück, verbindet sich Ohpe innerhalb einer Sekunde neu und schickt alles noch einmal. Ohpe schaltet den
 Port des Controllers in der normalen Liste der MIDI-Eingänge aus, damit seine Pads nicht doppelt spielen. Das Profil
 ist **ab Werk aus**.
+
+## Im Plug-in
+
+Seit p49 arbeitet der Controller auch im **Plug-in** (VST3 / AU in einer DAW). Der Controller hat zwei Modi: im
+üblichen Modus spricht er mit der DAW; im **User-Modus** (die *User*-Taste des Controllers) überlässt er Pads,
+Display und Lichter dem Programm, das seinen *User-Port* öffnet. Ohpe öffnet diesen Port selbst – am Host vorbei –
+mit vollem Display, Pad-Farben, Druck, Reglern (mit Berührung), Touch-Strip und Tasten, genau wie in der Standalone-App.
+
+![Einstellungen – MIDI mit dem Controller-Bereich im Plug-in](../images/ohpe-settings-controller-plugin-de.png)
+
+1. **In der DAW**: in den MIDI-Einstellungen den *User-Port* des Controllers (oft *… User Port*, unter Windows
+   *MIDIIN2 (…)* / *MIDIOUT2 (…)*) für **Spuren und Fernsteuerung ausschalten** (Eingang und Ausgang), damit die DAW
+   ihn freigibt und die Pads nicht doppelt spielen. Den Haupt-Port des Controllers so lassen.
+2. **In Ohpe**: **Einstellungen > MIDI > Controller**: **Grid-Controller (Profil 1)** wählen.
+3. **Ports automatisch wählen** (ab Werk an) nimmt den Eingang und Ausgang, deren Namen zum Muster passen
+   (`User; MIDIIN2; MIDIOUT2` – irgendein Teil im Portnamen; änderbar als `"pattern"` unter `"controller"` in
+   `settings.json`). Ausschalten und **Ein** / **Ausgang** schalten, um die Ports selbst zu wählen (das Schalten eines
+   Ports schaltet die Automatik aus).
+4. Den Controller in seinen **User-Modus** schalten. Die Überschrift zeigt **Aktiv in dieser Instanz**, sobald beide
+   Ports offen sind.
+
+**Eine Instanz zur Zeit.** Nur ein Ohpe der DAW kann den Controller halten: das, dessen Fenster du **zuletzt geöffnet
+oder angeklickt** hast. Die anderen zeigen **In anderer Instanz aktiv** und einen Knopf **Hierher holen**; wird die
+haltende Instanz entfernt, übernimmt die nächste. Die haltende Instanz behält den Controller, während ihr Fenster
+**geschlossen** ist (die Regler behalten die letzte Seite, Part-, Modus- und Transport-Tasten wirken). Nach dem Laden
+eines Projekts das Fenster der gewünschten Instanz einmal öffnen – bis dahin hält keine Instanz den Controller.
+
+**Port belegt.** Unter Windows kann ein MIDI-Port nur in einem Programm offen sein. Hält die DAW den User-Port noch,
+zeigt die Überschrift **Port belegt – in der DAW freigeben**; den Port in den MIDI-Einstellungen der DAW freigeben –
+Ohpe versucht es jede Sekunde erneut und verbindet sich auch neu, wenn der Controller ab- und wieder angesteckt wird.
+MIDI vom Host wirkt weiter parallel. Instanz schließen oder Profil ausschalten löscht Display und Lichter.
 
 ## Display
 

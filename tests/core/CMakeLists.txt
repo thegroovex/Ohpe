@@ -114,3 +114,5 @@ target_sources(ohpe_core_tests PRIVATE GridProtocolTests.cpp)
 target_sources(ohpe_core_tests PRIVATE ShowcasePresetTests.cpp) # p44: the showcase factory presets
 # p50: Fingerboard mode / MPE HD (14/21-bit)
 target_sources(ohpe_core_tests PRIVATE FingerboardTests.cpp)
+# p49: Grid-Controller in a plug-in - ownership, automatic ports, settings
+target_sources(ohpe_core_tests PRIVATE ControllerPortsTests.cpp)

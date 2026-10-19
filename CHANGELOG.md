@@ -7,6 +7,14 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Grid controller in the plug-in (p49): in VST3 / AU the plug-in opens the controller's user port itself (full
+  display, pad colours, pressure, encoders, strip, buttons); ports chosen or found automatically by name (on by
+  default), one instance of the DAW holds the controller (window opened or clicked last, Take over here), it keeps
+  working with the window closed; "port in use" status with a retry every second. Standalone unchanged.
+- DE: Grid-Controller im Plug-in (p49): in VST3 / AU öffnet das Plug-in den User-Port des Controllers selbst (volles
+  Display, Pad-Farben, Druck, Regler, Strip, Tasten); Ports gewählt oder automatisch per Name gefunden (ab Werk an),
+  eine Instanz der DAW hält den Controller (zuletzt geöffnetes oder angeklicktes Fenster, Hierher holen), er arbeitet
+  bei geschlossenem Fenster weiter; Status „Port belegt" mit neuem Versuch jede Sekunde. Standalone unverändert.
 - EN: Breeding has its own header key, **BREED** (next to RANDOM, with LIBRARY and PRO): a click opens / closes the
   breeding view, its light bar is lit while the view is open, right-click = MIDI learn of `lib.breed`. RANDOM only
   rolls now – the hidden hold / right-click shortcut to breeding is gone (in the breeding view RANDOM still rolls a
