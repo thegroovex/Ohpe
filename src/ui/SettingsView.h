@@ -83,6 +83,8 @@ public:
     /** Clicks the chip whose text is `text` (upper case as drawn) on the shown page; false if there is none (tests). */
     bool clickChip (const juce::String& text);
     juce::StringArray chipTexts();
+    /** p53: every clickable area of the shown page (tests: nothing is cut off by the panel edge). */
+    std::vector<juce::Rectangle<float>> clickableAreas();
     /** MIDI learn list: the mapping row texts as shown (tests). */
     juce::StringArray learnRows() const;
 

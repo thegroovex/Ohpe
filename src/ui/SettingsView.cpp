@@ -1295,6 +1295,14 @@ juce::StringArray SettingsView::chipTexts()
     return t;
 }
 
+std::vector<juce::Rectangle<float>> SettingsView::clickableAreas()
+{
+    paintOffscreen();
+    std::vector<juce::Rectangle<float>> a;
+    for (const auto& h : hits) a.push_back (h.area);
+    return a;
+}
+
 void SettingsView::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w)
 {
     // p53: the wheel over the virtual display turns the encoder of that eighth (as the device's relative encoders)

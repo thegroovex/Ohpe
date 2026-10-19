@@ -119,6 +119,33 @@ TEST_CASE ("settings: gear key opens the view, overlays exclude each other, Esc 
     }
 }
 
+TEST_CASE ("p53 settings: nothing on any page is cut off by the panel edge (German, the longest texts; plug-in and standalone)")
+{
+    Rig r;
+    auto& e = *r.e;
+    e.setLanguage (i18n::Language::German);
+    for (const bool standalone : { false, true })
+    {
+        r.view().setStandalone (standalone);
+        e.showSettings (true);
+        const auto bounds = r.view().getLocalBounds().toFloat();
+        const float u = (float) r.view().getWidth() / 114.0f;
+        for (int t = 0; t < r.view().numTabs(); ++t)
+        {
+            r.view().showPage (t);
+            CAPTURE (t);
+            CAPTURE (standalone);
+            for (const auto& a : r.view().clickableAreas())
+            {
+                CAPTURE (a.toString());
+                CHECK (bounds.reduced (u * 0.4f).contains (a));
+            }
+        }
+        e.showSettings (false);
+    }
+    e.setLanguage (i18n::Language::English);
+}
+
 TEST_CASE ("settings: language is a user setting, stored in settings.json")
 {
     Rig r;
