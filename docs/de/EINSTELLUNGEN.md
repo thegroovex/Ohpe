@@ -49,10 +49,18 @@ Textfarbe hält mindestens 4,5 : 1 Kontrast zu ihrem Hintergrund (von den Tests 
 - **MIDI-Eingänge**: in der Standalone-App jeder MIDI-Eingang mit Ein / Aus und ein Knopf zu den Audio-Einstellungen; im
   Plug-in wählt der Host die Eingänge.
 - **Clock und Sync**: Quelle Intern / MIDI-Clock / Link, MIDI-Clock senden, Clock-Glättung.
-- **Controller** (p46; Plug-in seit p49): Profil Aus / **Grid-Controller (Profil 1)**, MIDI-Eingang und -Ausgang des
-  Controllers (Plug-in: **Ports automatisch wählen** an / aus, welche Instanz den Controller hält, **Hierher holen**), Touch-Strip Bend / Mod und **Ansicht** – der virtuelle Controller (seine Displayzeilen, Pad-Lichter und
-  letzten Nachrichten) anstelle der Part-Tabelle. Gespeichert in `settings.json`, ab Werk aus – siehe
-  [Grid-Controller](CONTROLLER.md).
+- **Controller** (p53): eine Statuszeile und eine Taste zur Seite **Controller**.
+
+## Controller (p53)
+
+![Einstellungen – Controller](../images/ohpe-settings-controller-de.png)
+
+Profil Aus / **Grid-Controller (Profil 1)** (ab Werk an), **Ports automatisch wählen** (ab Werk an) und je ein Menü
+für **Eingang** und **Ausgang** des Controllers mit den vollen Portnamen, der Verbindungsstatus (Verbunden mit der
+Generation des Controllers / Gerät wird geprüft / Nicht gefunden / Port belegt / Wartet), Touch-Strip Bend / Mod,
+Master-Regler Lautstärke / Tempo; im Plug-in welche Instanz den Controller hält und **Hierher holen**. Rechts der
+virtuelle Controller live (Display, Tastenreihen, Pads; Pads und Tasten anklicken, Mausrad über dem Display dreht
+einen Regler). Gespeichert in `settings.json` – siehe [Grid-Controller](CONTROLLER.md).
 
 Das sind die bestehenden Parameter (`pN.midich`, `pN.mpe`, `pN.bend`, `pN.mpe.bend`, `sync.*`) – sie hier zu ändern ist
 dasselbe wie überall sonst: der Host erfährt es, sie bleiben automatisierbar und MIDI-zuweisbar und werden mit dem Projekt

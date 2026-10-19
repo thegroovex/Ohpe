@@ -49,9 +49,18 @@ contrast of at least 4.5 : 1 to its background (checked by the tests).
 - **MIDI inputs**: in the standalone app every MIDI input with On / Off and a button to the audio settings; in a plug-in the
   host chooses the inputs.
 - **Clock and sync**: source Internal / MIDI clock / Link, MIDI clock out, clock smoothing.
-- **Controller** (p46; plug-in since p49): profile Off / **Grid controller profile 1**, the controller's MIDI input and
-  output (plug-in: **Choose ports automatically** on / off, which instance holds the controller, **Take over here**), touch strip Bend / Mod, and **View** – the virtual controller (its display lines, pad lights and last
-  messages) in place of the parts table. Saved in `settings.json`, off by default – see [Grid controller](CONTROLLER.md).
+- **Controller** (p53): a status line and a key to the **Controller** page.
+
+## Controller (p53)
+
+![Settings – Controller](../images/ohpe-settings-controller.png)
+
+Profile Off / **Grid controller profile 1** (on by default), **Choose ports automatically** (on by default) and a menu
+each for the controller's **Input** and **Output** with the full port names, the connection status (Connected with the
+controller's generation / Checking the device / No controller found / Port in use / Waiting), touch strip Bend / Mod,
+master encoder Volume / Tempo; in a plug-in which instance holds the controller and **Take over here**. On the right
+the live virtual controller (display, button rows, pads; click pads and buttons, mouse wheel over the display turns an
+encoder). Saved in `settings.json` – see [Grid controller](CONTROLLER.md).
 
 These are the existing parameters (`pN.midich`, `pN.mpe`, `pN.bend`, `pN.mpe.bend`, `sync.*`) – changing them here is the
 same as anywhere else: the host is notified, they stay automatable and MIDI-mappable and are saved with the project.

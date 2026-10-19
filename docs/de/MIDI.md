@@ -233,9 +233,9 @@ folgt immer seinem Host.
 
 ### Grid-Controller (Standalone und Plug-in)
 
-Ein 8 × 8-Pad-Controller mit vierzeiligem Display kann die Raster-Tastatur spielen und die gezeigte Seite bedienen –
-**Grid-Controller (Profil 1)** und seine Ports unter Einstellungen > MIDI > Controller wählen. Sein Port wird aus den
-normalen MIDI-Eingängen genommen. Im Plug-in öffnet Ohpe den User-Port des Controllers selbst (eine Instanz zur
+Ein 8 × 8-Pad-Controller mit vierzeiligem Display kann die Raster-Tastatur spielen und die gezeigte Seite bedienen – er
+ist ab Werk an und verbindet sich beim Anstecken selbst (Einstellungen > Controller: Profil, Ports, Status, virtueller
+Controller). Seine Ports werden aus den normalen MIDI-Eingängen genommen, solange Ohpe sie hält. Im Plug-in öffnet Ohpe den User-Port des Controllers selbst (eine Instanz zur
 Zeit) – diesen Port in der DAW für Spuren und Fernsteuerung ausschalten. Siehe [Grid-Controller](CONTROLLER.md).
 
 ## Einstellungen im Überblick

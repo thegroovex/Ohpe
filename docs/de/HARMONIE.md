@@ -383,7 +383,7 @@ Schritte jeder Anordnung.
 
 ### Auf einem Grid-Controller
 
-**Grid-Controller (Profil 1)** (Standalone-App, Einstellungen > MIDI > Controller) bringt dieses Raster auf einen
+**Grid-Controller (Profil 1)** (Standalone-App und Plug-in, Einstellungen > Controller) bringt dieses Raster auf einen
 externen 8 × 8-Pad-Controller: **dieselben Anordnungen** (die Taste Scales schaltet sie weiter), **derselbe Ton** für
 dieselbe Spalte und Reihe ab demselben tiefsten C (die vier unteren Pad-Reihen sind die vier Reihen des
 Bildschirm-Rasters), **dieselbe Tonart** mit **Scale Lock** (andere Töne dunkel und stumm), der Grundton leuchtet

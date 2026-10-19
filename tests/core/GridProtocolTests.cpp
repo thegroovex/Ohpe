@@ -228,11 +228,13 @@ TEST_CASE ("p46 grid controller: the core's controller queue plays a part (notes
     CHECK (allFinite (rig.all));
 }
 
-TEST_CASE ("p46 grid controller: settings - off by default, ports and options round trip")
+TEST_CASE ("p46 grid controller: settings - (p53: on with automatic ports by default), ports and options round trip")
 {
     using namespace ohpe::settings;
     UserSettings s;
-    CHECK (s.controllerProfile == ControllerOff);
+    CHECK (s.controllerProfile == ControllerGrid1); // p53: connects by itself when the controller is found
+    CHECK (s.controllerAuto);
+    CHECK_FALSE (s.controllerChosen);
     CHECK (s.controllerIn.empty());
     CHECK (UserSettings::fromJson (s.toJson()) == s);
     s.controllerProfile = ControllerGrid1;
@@ -246,7 +248,91 @@ TEST_CASE ("p46 grid controller: settings - off by default, ports and options ro
     CHECK (back.controllerIn == "Pad Grid Port 1");
     CHECK (back.controllerStrip == 1);
     CHECK (back.extras.find ("controller") == std::string::npos); // a known key, not an unknown extra
-    const auto junk = UserSettings::fromJson (R"({"controller":{"profile":"other","in":5}})");
+    const auto junk = UserSettings::fromJson (R"({"controller":{"profile":"other","in":5,"chosen":true}})");
     CHECK (junk.controllerProfile == ControllerOff);
     CHECK (junk.controllerIn.empty());
+}
+
+// ---------------------------------------------------------------- p53
+TEST_CASE ("p53 grid controller: decoding - touch notes and the strip touch are never pads, encoders are relative")
+{
+    // encoder touches: notes 0 .. 10 (0 .. 7 the eight encoders, 8 master, 9 swing, 10 tempo), the strip touch 12
+    for (int n = 0; n <= 10; ++n)
+    {
+        const auto d = g::decode (0x90, n, 127);
+        CHECK (d.kind == g::Input::EncoderTouch);
+        CHECK (d.index == n);
+        CHECK (d.value == 1);
+        CHECK (g::decode (0x90, n, 0).value == 0); // note-on velocity 0 = released
+        CHECK (g::decode (0x80, n, 64).value == 0);
+    }
+    CHECK (g::decode (0x90, g::touchNoteStrip, 127).kind == g::Input::StripTouch);
+    CHECK (g::decode (0x90, 11, 127).kind == g::Input::Other);
+    CHECK (g::decode (0x90, 35, 127).kind == g::Input::Other);
+    // pads 36 .. 99
+    CHECK (g::decode (0x90, 36, 90).kind == g::Input::Pad);
+    CHECK (g::decode (0x90, 36, 90).index == 0);
+    CHECK (g::decode (0x90, 99, 90).index == 63);
+    CHECK (g::decode (0xa0, 40, 33).kind == g::Input::Pressure);
+    // encoders: CC 71 .. 78, master 79, tempo 14, swing 15 - two's complement relative steps
+    for (int i = 0; i < 8; ++i)
+    {
+        const auto d = g::decode (0xb0, 71 + i, 1);
+        CHECK (d.kind == g::Input::EncoderTurn);
+        CHECK (d.index == i);
+        CHECK (d.value == 1);
+        CHECK (g::decode (0xb0, 71 + i, 127).value == -1);
+        CHECK (g::decode (0xb0, 71 + i, 63).value == 63);
+        CHECK (g::decode (0xb0, 71 + i, 64).value == -64);
+        CHECK (g::decode (0xb0, 71 + i, 65).value == -63);
+    }
+    CHECK (g::decode (0xb0, 79, 3).index == g::touchNoteMaster);
+    CHECK (g::decode (0xb0, 14, 3).index == g::touchNoteTempo);
+    CHECK (g::decode (0xb0, 15, 3).index == g::touchNoteSwing);
+    CHECK (g::decode (0xb0, 14, 125).value == -3);
+    // buttons stay buttons, the strip is a 14-bit bend
+    CHECK (g::decode (0xb0, g::cc::play, 127).kind == g::Input::Button);
+    CHECK (g::decode (0xb0, g::cc::play, 127).index == g::cc::play);
+    const auto strip = g::decode (0xe0, 0x00, 0x40);
+    CHECK (strip.kind == g::Input::Strip);
+    CHECK (strip.value == 8192);
+}
+
+TEST_CASE ("p53 grid controller: identity, user / live mode, splash, device keys")
+{
+    const auto req = g::identityRequestSysex();
+    CHECK (req == std::vector<uint8_t> { 0xf0, 0x7e, 0x7f, 0x06, 0x01, 0xf7 });
+    // a first-generation reply (one-byte maker id, model 0x15), a later one (three-byte maker id), another device
+    const uint8_t first[] = { 0xf0, 0x7e, 0x00, 0x06, 0x02, 0x47, 0x15, 0x00, 0x19, 0x00, 0x01, 0x00, 0x00, 0x00, 0xf7 };
+    const uint8_t later[] = { 0xf0, 0x7e, 0x01, 0x06, 0x02, 0x00, 0x21, 0x1d, 0x67, 0x32, 0x02, 0x00, 0x01, 0x00, 0xf7 };
+    const uint8_t other[] = { 0xf0, 0x7e, 0x00, 0x06, 0x02, 0x41, 0x10, 0x01, 0x00, 0x00, 0xf7 };
+    const uint8_t note[] = { 0x90, 0x24, 0x40 };
+    CHECK (g::identityGeneration (first, sizeof (first)) == g::Generation::First);
+    CHECK (g::identityGeneration (later, sizeof (later)) == g::Generation::Later);
+    CHECK (g::identityGeneration (other, sizeof (other)) == g::Generation::Unknown);
+    CHECK (g::identityGeneration (note, sizeof (note)) == g::Generation::Unknown);
+    CHECK (g::identityGeneration (nullptr, 0) == g::Generation::Unknown);
+    // user / live mode switch
+    CHECK (g::userModeSysex (g::Generation::First, true) == std::vector<uint8_t> { 0xf0, 0x47, 0x7f, 0x15, 0x62, 0x00, 0x01, 0x01, 0xf7 });
+    CHECK (g::userModeSysex (g::Generation::First, false)[7] == 0x00);
+    CHECK (g::userModeSysex (g::Generation::Later, true) == std::vector<uint8_t> { 0xf0, 0x00, 0x21, 0x1d, 0x01, 0x01, 0x0a, 0x01, 0xf7 });
+    CHECK (g::userModeSysex (g::Generation::Unknown, true).empty());
+    for (auto gen : { g::Generation::First, g::Generation::Later })
+        for (uint8_t b : g::userModeSysex (gen, true))
+            if (b != 0xf0 && b != 0xf7) CHECK (b < 0x80);
+    // splash: four full lines, EN / DE
+    const auto en0 = g::splashLines (0, false), en1 = g::splashLines (1, false), de0 = g::splashLines (0, true), de1 = g::splashLines (1, true);
+    for (const auto* l : { &en0, &en1, &de0, &de1 })
+        for (const auto& line : *l) CHECK (line.size() == (size_t) g::lineLength);
+    CHECK (en0[1].find ("O H P E") != std::string::npos);
+    CHECK (en0[2].find ("connecting") != std::string::npos);
+    CHECK (en1[2].find ("connected") != std::string::npos);
+    CHECK (de0[2].find ("verbindet") != std::string::npos);
+    CHECK (de1[2].find ("verbunden") != std::string::npos);
+    // the device part of port names: live and user port of one device, macOS / Linux and Windows
+    CHECK (g::deviceKey ("Pad Grid User Port") == g::deviceKey ("Pad Grid Live Port"));
+    CHECK (g::deviceKey ("MIDIIN2 (Pad Grid)") == g::deviceKey ("Pad Grid"));
+    CHECK (g::deviceKey ("MIDIOUT2 (Pad Grid)") == "padgrid");
+    CHECK (g::deviceKey ("Pad Grid 2 User Port") != g::deviceKey ("Pad Grid User Port"));
+    CHECK (g::deviceKey ("Other Box User Port") != g::deviceKey ("Pad Grid User Port"));
 }

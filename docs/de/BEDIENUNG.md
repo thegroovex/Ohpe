@@ -697,7 +697,8 @@ Die **Zahnrad-Taste** rechts in der Kopfzeile öffnet die Einstellungen (die Spr
 werden für dich auf diesem Computer gespeichert – nicht in Projekten oder Presets – und gelten für jedes geöffnete Ohpe:
 **Allgemein** (Sprache, Tooltips, Hilfe-Overlay, Hilfeseiten), **Anzeige** (Erscheinung hell / dunkel / auto,
 Display-Helligkeit, Animationen, Fenstergröße), **MIDI** (Kanal, MPE und Bend-Bereiche der vier Parts, der [Fingerboard-Modus](MIDI.md#fingerboard-modus-mpe-hd-1421-bit) pro Part mit einem Tipp samt MPE-HD-Status, MIDI-Eingänge,
-Clock und Sync), **MIDI-Learn** (alle Zuweisungen: bearbeiten, löschen, alle löschen, Map-Dateien), **Updates**,
+Clock und Sync), **MIDI-Learn** (alle Zuweisungen: bearbeiten, löschen, alle löschen, Map-Dateien), **Controller** (der
+[Grid-Controller](CONTROLLER.md): ab Werk an und automatisch verbunden, Ports, Status, Bedienung, der virtuelle Controller live), **Updates**,
 **Hilfe** und **Über**. **F1** schaltet das Hilfe-Overlay ein und aus.
 
 ![Der Nachtmodus](../images/ohpe-dark-de.png)

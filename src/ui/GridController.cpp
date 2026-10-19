@@ -91,7 +91,9 @@ GridController::State GridController::state() const
     if (! enabled() && ! testSender) return State::Off;
     if (inPlugin && enabled() && ! ownedHere()) return State::OtherInstance;
     if (isConnected) return State::Connected;
+    if (isProbing) return State::Probing;
     if (portBusy) return State::PortBusy;
+    if (autoPorts && (notFound || inName.isEmpty() || outName.isEmpty())) return State::NotFound;
     if (inName.isEmpty() || outName.isEmpty()) return State::ChoosePorts;
     return State::Waiting;
 }
@@ -108,6 +110,7 @@ void GridController::detachFromEditor()
     if (hooks.context) detached.ctx = hooks.context();
     if (hooks.page) detached.page = hooks.page();
     if (hooks.octave) detached.octave = hooks.octave();
+    if (hooks.gridShown) detached.grid = hooks.gridShown();
     isHeadless = true;
     auto remember = [this] (const char* key, int v) { // the window opens with it again
         if (auto* obj = proc.uiState.getDynamicObject()) obj->setProperty (key, v);
@@ -136,6 +139,11 @@ void GridController::detachFromEditor()
     };
     h.transport = [this] (OhpeProcessor::TransportKey k) { proc.runTransport (k); };
     h.octave = [this] { return detached.octave; };
+    h.gridShown = [this] { return detached.grid; };
+    h.showGrid = [this, remember] (bool show) {
+        detached.grid = show;
+        remember ("grid", show ? 1 : 0);
+    };
     h.setOctave = [this, remember] (int o) {
         detached.octave = juce::jlimit (0, 7, o);
         remember ("octave", detached.octave);
@@ -151,7 +159,11 @@ void GridController::poll()
         watchTicks = 0;
         watchPorts();
     }
-    if (isConnected) update();
+    if (isProbing && --probeTicks <= 0) rejectProbe(); // p53: no identity reply in 2 s
+    if (splashTicks > 0) --splashTicks;
+    // p53: the virtual controller follows the pads and buttons also before (or without) a connected output
+    if (isConnected || isProbing) update();
+    else if ((enabled() || testSender) && (++idleTicks & 1) == 0) update(); // the virtual controller (12 Hz)
 }
 
 void GridController::checkOwnership()
@@ -177,10 +189,8 @@ void GridController::checkOwnership()
     wasOwner = true;
     if (testSender)
     {
-        isConnected = true;
         addLog ("virtual device");
-        resetOutputCache();
-        sendSysex (g::aftertouchModeSysex (true));
+        onConnected (false);
         return;
     }
     watchTicks = 25; // ours now: try the ports at once
@@ -205,7 +215,8 @@ void GridController::configure (const settings::UserSettings& s)
 {
     strip = s.controllerStrip;
     const bool changed = s.controllerProfile != profile || juce::String (s.controllerIn) != wantIn || juce::String (s.controllerOut) != wantOut
-                         || s.controllerAuto != autoPorts || juce::String (s.controllerPattern) != pattern;
+                         || s.controllerAuto != autoPorts || juce::String (s.controllerPattern) != pattern
+                         || s.controllerChosen != chosenByUser;
     if (s.controllerMaster != (masterTempo ? 1 : 0) || changed) masterTempo = s.controllerMaster == 1;
     if (! changed) return;
     closePorts();
@@ -213,7 +224,10 @@ void GridController::configure (const settings::UserSettings& s)
     wantIn = juce::String (s.controllerIn);
     wantOut = juce::String (s.controllerOut);
     autoPorts = s.controllerAuto;
+    chosenByUser = s.controllerChosen;
     pattern = juce::String (s.controllerPattern);
+    rejected.clear();
+    notFound = false;
     resolvePorts();
     if (inPlugin)
     {
@@ -228,8 +242,10 @@ void GridController::configure (const settings::UserSettings& s)
 
 void GridController::resolvePorts()
 {
-    // p49: automatic (plug-in only) = the ports whose names match the pattern; else the ones chosen
-    if (! inPlugin || ! autoPorts)
+    // p49: automatic = the ports whose names match the pattern; else the ones chosen
+    // p53: automatic in the standalone app too; the input and the output of the same device (its user port), and
+    // candidates that did not answer as the controller are skipped
+    if (! autoPorts)
     {
         inName = wantIn;
         outName = wantOut;
@@ -238,14 +254,21 @@ void GridController::resolvePorts()
     std::vector<std::string> ins, outs;
     for (const auto& n : inputNames()) ins.push_back (n.toStdString());
     for (const auto& n : outputNames()) outs.push_back (n.toStdString());
-    const auto pick = g::autoPorts (ins, outs, pattern.toStdString());
-    inName = pick.found() ? juce::String (ins[(size_t) pick.in]) : juce::String();
-    outName = pick.found() ? juce::String (outs[(size_t) pick.out]) : juce::String();
+    inName = outName = {};
+    for (const auto& pick : g::autoPortCandidates (ins, outs, pattern.toStdString()))
+    {
+        const juce::String in (ins[(size_t) pick.in]);
+        if (rejected.contains (in)) continue;
+        inName = in;
+        outName = juce::String (outs[(size_t) pick.out]);
+        break;
+    }
 }
 
 void GridController::openPorts()
 {
     if (testSender || ! enabled() || ! ownedHere()) return;
+    if (inName.isEmpty() || outName.isEmpty()) return; // p53: both or nothing (a half-open controller shows nothing)
     portBusy = false;
     if (input == nullptr && inName.isNotEmpty())
         for (const auto& d : juce::MidiInput::getAvailableDevices())
@@ -253,7 +276,10 @@ void GridController::openPorts()
             {
                 // the controller's pads must not reach the parts twice (as a plain MIDI input too)
                 if (auto* dm = proc.standaloneDevices; dm != nullptr && dm->isMidiInputDeviceEnabled (d.identifier))
+                {
                     dm->setMidiInputDeviceEnabled (d.identifier, false);
+                    disabledInputs.addIfNotAlreadyThere (d.identifier); // p53: given back when Ohpe lets go
+                }
                 input = juce::MidiInput::openDevice (d.identifier, this);
                 if (input != nullptr) input->start();
                 else portBusy = true; // p49: there but not to be opened - held by another program (the host)
@@ -268,36 +294,106 @@ void GridController::openPorts()
                 break;
             }
     const bool now = input != nullptr && output != nullptr;
-    if (now && ! isConnected)
+    if (now && ! isConnected && ! isProbing)
     {
-        isConnected = true;
-        addLog ("connected");
-        resetOutputCache();
-        sendSysex (g::aftertouchModeSysex (true));
-        update();
+        // p53: the identity request tells the generation. Connected at once when the ports were chosen by hand or
+        // the controller was set up by the user, or when the device has a live port next to the user port (the
+        // controller's port pair); else (automatic, by default) only when it answers as the controller.
+        std::vector<std::string> ins;
+        for (const auto& n : inputNames()) ins.push_back (n.toStdString());
+        const bool sure = ! autoPorts || chosenByUser || g::siblingPort (ins, inName.toStdString()) >= 0;
+        gen = g::Generation::Unknown;
+        sendSysex (g::identityRequestSysex());
+        if (sure)
+        {
+            addLog ("connected");
+            onConnected (true);
+        }
+        else
+        {
+            isProbing = true;
+            probeTicks = 50;
+            addLog ("identity?");
+        }
     }
+}
+
+void GridController::onConnected (bool splash)
+{
+    isProbing = false;
+    notFound = false;
+    isConnected = true;
+    if (gen == g::Generation::Unknown) gen = g::Generation::First; // until it answers
+    resetOutputCache();
+    // p53: into the User mode (the controller's own functions off, Ohpe gets the user port), pressure as poly aftertouch
+    sendSysex (g::userModeSysex (gen, true));
+    if (gen == g::Generation::First) sendSysex (g::aftertouchModeSysex (true));
+    splashTicks = splash ? 40 : 0; // ~1.6 s at 25 Hz: "connecting ..." then "connected"
+    claimDeviceInputs();
+    update();
+}
+
+void GridController::claimDeviceInputs()
+{
+    auto* dm = proc.standaloneDevices;
+    if (dm == nullptr || inName.isEmpty()) return;
+    const auto key = g::deviceKey (inName.toStdString());
+    for (const auto& d : juce::MidiInput::getAvailableDevices())
+        if ((d.name == inName || (! key.empty() && g::deviceKey (d.name.toStdString()) == key)) && dm->isMidiInputDeviceEnabled (d.identifier))
+        {
+            dm->setMidiInputDeviceEnabled (d.identifier, false); // its pads and touches reach the parts only through Ohpe's controller layer
+            disabledInputs.addIfNotAlreadyThere (d.identifier);
+        }
+}
+
+void GridController::releaseDeviceInputs()
+{
+    if (auto* dm = proc.standaloneDevices)
+        for (const auto& id : disabledInputs) dm->setMidiInputDeviceEnabled (id, true);
+    disabledInputs.clear();
+}
+
+void GridController::rejectProbe()
+{
+    addLog ("no answer: " + inName);
+    rejected.addIfNotAlreadyThere (inName);
+    closePorts();
+    notFound = true;
+    resolvePorts(); // the next candidate (tried by the watch)
+    watchTicks = 25;
 }
 
 void GridController::closePorts()
 {
     for (int pad = 0; pad < g::numPads; ++pad) padUp (pad);
-    if (isConnected) lightsOff();
+    if (isConnected)
+    {
+        lightsOff();
+        sendSysex (g::userModeSysex (gen, false)); // p53: back to its own (live) mode - released cleanly
+    }
     if (input != nullptr) input->stop();
     input = nullptr;
     output = nullptr;
     if (isConnected && ! testSender) addLog ("disconnected");
     isConnected = testSender != nullptr;
+    isProbing = false;
+    splashTicks = 0;
     portBusy = false;
+    releaseDeviceInputs();
 }
 
 void GridController::attachForTests (Sender out)
 {
     closePorts();
     testSender = std::move (out);
-    isConnected = testSender != nullptr;
+    isConnected = false;
     resetOutputCache();
-    if (isConnected) addLog ("virtual device");
-    if (isConnected) sendSysex (g::aftertouchModeSysex (true));
+    gen = g::Generation::First; // a test device answers as the first generation
+    if (testSender != nullptr)
+    {
+        addLog ("virtual device");
+        onConnected (testSplash);
+    }
 }
 
 juce::String GridController::status() const
@@ -307,12 +403,27 @@ juce::String GridController::status() const
         case State::Off: return tr ("Off");
         case State::OtherInstance: return tr ("Active in another instance");
         case State::Connected: return inPlugin ? tr ("Active in this instance") : tr ("Connected");
-        case State::PortBusy: return tr ("Port in use - free it in the host");
+        case State::PortBusy: return inPlugin ? tr ("Port in use - free it in the host") : tr ("Port in use by another program");
         case State::ChoosePorts:
             return inPlugin && autoPorts ? tr ("No port matches - choose the ports") : tr ("Choose the controller's MIDI input and output");
+        case State::Probing: return tr ("Checking the device ...");
+        case State::NotFound: return inPlugin ? tr ("No port matches - choose the ports") : tr ("No controller found");
         case State::Waiting: break;
     }
     return tr ("Waiting for the controller");
+}
+
+juce::String GridController::statusLine() const
+{
+    const auto st = state();
+    if (st == State::Connected)
+    {
+        juce::String s = status();
+        if (gen == g::Generation::First) s << juce::String::fromUTF8 (" \xc2\xb7 ") << tr ("first generation, text display");
+        else if (gen == g::Generation::Later) s << juce::String::fromUTF8 (" \xc2\xb7 ") << tr ("later generation, no text display");
+        return s;
+    }
+    return status();
 }
 
 void GridController::timerCallback()
@@ -324,6 +435,16 @@ void GridController::watchPorts()
 {
     if (inPlugin && ! ownedHere()) return;
     {
+        // p53: a changed port list (plugged in / out): candidates that did not answer may be tried again
+        const auto sig = inputNames().joinIntoString ("\n") + "|" + outputNames().joinIntoString ("\n");
+        if (sig != portListSig)
+        {
+            portListSig = sig;
+            rejected.clear();
+            notFound = false;
+        }
+        if (isConnected) claimDeviceInputs(); // the standalone's device manager may come later than the controller
+        if (isProbing) return;
         if (! isConnected && input == nullptr && output == nullptr) resolvePorts(); // p49: automatic: plugged in later
         const bool inThere = inputNames().contains (inName), outThere = outputNames().contains (outName);
         if (isConnected && (! inThere || ! outThere))
@@ -334,10 +455,14 @@ void GridController::watchPorts()
             input = nullptr;
             output = nullptr;
             isConnected = false;
+            splashTicks = 0;
+            releaseDeviceInputs();
             addLog ("disconnected");
         }
         else if (! isConnected && inThere && outThere)
             openPorts();
+        else if (! isConnected && (input != nullptr || output != nullptr) && (! inThere || ! outThere))
+            closePorts(); // p53: half open (one side vanished or was never there)
     }
 }
 
@@ -349,6 +474,7 @@ void GridController::send (const juce::MidiMessage& m)
 
 void GridController::sendSysex (const std::vector<uint8_t>& bytes)
 {
+    if (bytes.size() < 2) return; // p53: nothing for an unknown generation
     send (juce::MidiMessage (bytes.data(), (int) bytes.size()));
 }
 
@@ -489,7 +615,7 @@ void GridController::update()
     }
     for (const auto& m : pending) handleQueued (m);
     refreshMap();
-    if (! isConnected) return;
+    // p53: display lines and lights are computed for the virtual controller too; sent only to a connected device
     refreshDisplay();
     refreshLights();
 }
@@ -497,6 +623,24 @@ void GridController::update()
 void GridController::handleQueued (const juce::MidiMessage& m)
 {
     addLog ("> " + m.getDescription());
+    if (m.isSysEx()) // p53: the identity reply - the generation (and, while probing, the proof it is the controller)
+    {
+        const auto gn = g::identityGeneration (m.getRawData(), (size_t) m.getRawDataSize());
+        if (gn == g::Generation::Unknown) return;
+        const bool changed = gn != gen;
+        gen = gn;
+        if (isProbing)
+        {
+            addLog ("connected");
+            onConnected (true);
+        }
+        else if (isConnected && changed)
+        {
+            resetOutputCache();
+            sendSysex (g::userModeSysex (gen, true));
+        }
+        return;
+    }
     if (m.isNoteOnOrOff())
     {
         const int n = m.getNoteNumber();
@@ -611,6 +755,8 @@ void GridController::button (int cc, bool)
             {
                 setParam (Core::Ids::keyLock, proc.core().keyScale().lock ? 0.0f : 1.0f);
             }
+            else if (hooks.gridShown && hooks.showGrid && ! hooks.gridShown())
+                hooks.showGrid (true); // p53: first the grid keyboard on the screen (its layout on the pads), then the next layout
             else
                 setParam ("harmony.kb.layout", (float) (((int) std::lround (proc.core().params().get ("harmony.kb.layout")) + 1) % harmony::numLayouts));
             break;
@@ -668,6 +814,13 @@ void GridController::turn (int encoder, int delta)
 }
 
 // ---------------------------------------------------------------- state -> pads, display, lights
+int GridController::padLayout() const
+{
+    const bool grid = hooks.gridShown ? hooks.gridShown() : false;
+    if (! grid) return harmony::LayoutFourths;
+    return juce::jlimit (0, (int) harmony::numLayouts - 1, (int) std::lround (proc.core().params().get ("harmony.kb.layout")));
+}
+
 g::PadKey GridController::padKey() const
 {
     auto& core = proc.core();
@@ -683,6 +836,14 @@ int GridController::padNoteNow (int pad) const noexcept
     return pad >= 0 && pad < g::numPads ? padMap[(size_t) pad].load() : -1;
 }
 
+bool GridController::padNoteDown (int note) const noexcept
+{
+    if (note < 0 || padMode() != PadMode::Keys) return false;
+    for (int pad = 0; pad < g::numPads; ++pad)
+        if (held[(size_t) pad].load() && padMap[(size_t) pad].load() == note) return true;
+    return false;
+}
+
 void GridController::refreshMap()
 {
     auto& core = proc.core();
@@ -690,7 +851,7 @@ void GridController::refreshMap()
     partNow.store (juce::jlimit (0, Core::numParts - 1, ctx.part));
     mpeNow.store (core.params().get ("p" + std::to_string (ctx.part + 1) + ".mpe") >= 0.5f);
     drumBase.store ((int) std::lround (core.params().get ("drum.base")));
-    const int layout = juce::jlimit (0, (int) harmony::numLayouts - 1, (int) std::lround (core.params().get ("harmony.kb.layout")));
+    const int layout = padLayout();
     const int octave = hooks.octave ? hooks.octave() : 3;
     const auto key = padKey();
     const auto mode = padMode();
@@ -750,6 +911,8 @@ void GridController::refreshDisplay()
     juce::String engine;
     if (const int ei = reg.indexOf ("p" + std::to_string (ctx.part + 1) + ".engine"); ei >= 0) engine = formatValue (reg.descriptor (ei), reg.get (ei));
     if (touched >= 0 && touched < g::numCells && ! touchedText.empty()) lines[2] = g::fitLine (touchedText);
+    else if (touched == g::touchNoteTempo) // p53: the tempo encoder touched
+        lines[2] = g::fitLine (str (tr ("Tempo") + ": " + juce::String (proc.currentTempo(), 1) + " BPM"));
     else if (touched == g::touchNoteMaster)
         lines[2] = g::fitLine (str (masterTempo ? tr ("Tempo") + ": " + juce::String (proc.currentTempo(), 1) + " BPM"
                                                 : tr ("Volume") + ": " + formatValue (reg.descriptor (reg.indexOf ("mix.master.vol")), reg.get ("mix.master.vol"))));
@@ -776,12 +939,15 @@ void GridController::refreshDisplay()
     juce::String padText = modeName (padMode());
     if (padMode() == PadMode::Keys || padMode() == PadMode::Steps)
     {
-        const int layout = juce::jlimit (0, (int) harmony::numLayouts - 1, (int) std::lround (reg.get ("harmony.kb.layout")));
+        const int layout = padLayout();
         const auto ln = i18n::current() == i18n::Language::German ? harmony::layoutNamesDe() : harmony::layoutNamesEn();
         padText << " " << juce::String (ln[(size_t) layout]) << " O" << juce::String (hooks.octave ? hooks.octave() : 3);
     }
     lines[3] = g::segmentLine ({ str (page), str (tx), str (proc.tapeTimeText (secs).replace (juce::String::fromUTF8 (" \xc2\xb7 "), "  ")), str (padText) });
+    if (splashTicks > 0) lines = g::splashLines (splashTicks > 20 ? 0 : 1, i18n::current() == i18n::Language::German); // p53
 
+    // p53: only a connected first-generation device has the text display (a later one: pixel display over USB)
+    if (! isConnected || gen == g::Generation::Later) return;
     for (int l = 0; l < g::numLines; ++l)
         if (lines[(size_t) l] != sentLines[(size_t) l])
         {
@@ -826,7 +992,9 @@ void GridController::refreshLights()
         else
         {
             const int note = padMap[(size_t) pad].load();
-            if (note >= 0) c = g::roleColour (g::padRole (note, key, chordMask, down));
+            // p53: a note held on the on-screen keyboard lights its pads too
+            const bool screen = note >= 0 && mode == PadMode::Keys && hooks.screenPressed && hooks.screenPressed (note);
+            if (note >= 0) c = g::roleColour (g::padRole (note, key, chordMask, down || screen));
         }
         padLight[(size_t) pad] = g::padColourCode (c);
     }
@@ -874,6 +1042,7 @@ void GridController::refreshLights()
     ccLight[(size_t) g::cc::note] = g::buttonCode (mode == PadMode::Keys);
     ccLight[(size_t) g::cc::session] = g::buttonCode (mode == PadMode::Steps);
 
+    if (! isConnected) return; // p53: the virtual controller only
     for (int pad = 0; pad < g::numPads; ++pad)
         if (padLight[(size_t) pad] != sentPad[(size_t) pad])
         {

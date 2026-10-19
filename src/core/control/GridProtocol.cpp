@@ -244,6 +244,99 @@ std::vector<uint8_t> aftertouchModeSysex (bool poly)
     return { 0xf0, 0x47, 0x7f, 0x15, 0x5c, 0x00, 0x01, (uint8_t) (poly ? 0x01 : 0x00), 0xf7 };
 }
 
+// ---------------------------------------------------------------- p53: input, generation, mode, splash
+int encoderOfCc (int c) noexcept
+{
+    if (c >= cc::firstEncoder && c < cc::firstEncoder + numCells) return c - cc::firstEncoder;
+    if (c == cc::masterEncoder) return touchNoteMaster;
+    if (c == cc::swingEncoder) return touchNoteSwing;
+    if (c == cc::tempoEncoder) return touchNoteTempo;
+    return -1;
+}
+
+Decoded decode (int status, int data1, int data2) noexcept
+{
+    const int type = status & 0xf0;
+    Decoded d;
+    if (type == 0x90 || type == 0x80)
+    {
+        const bool on = type == 0x90 && data2 > 0;
+        if (const int pad = padOfNote (data1); pad >= 0) return { Input::Pad, pad, on ? data2 : 0 };
+        if (const int e = encoderOfTouchNote (data1); e >= 0) return { Input::EncoderTouch, e, on ? 1 : 0 };
+        if (data1 == touchNoteStrip) return { Input::StripTouch, 0, on ? 1 : 0 };
+        return d;
+    }
+    if (type == 0xa0)
+    {
+        if (const int pad = padOfNote (data1); pad >= 0) return { Input::Pressure, pad, data2 };
+        return d;
+    }
+    if (type == 0xd0) return { Input::Pressure, -1, data1 };
+    if (type == 0xe0) return { Input::Strip, 0, (data2 & 0x7f) << 7 | (data1 & 0x7f) };
+    if (type == 0xb0)
+    {
+        if (const int e = encoderOfCc (data1); e >= 0) return { Input::EncoderTurn, e, relativeDelta (data2) };
+        return { Input::Button, data1, data2 };
+    }
+    return d;
+}
+
+std::vector<uint8_t> identityRequestSysex() { return { 0xf0, 0x7e, 0x7f, 0x06, 0x01, 0xf7 }; }
+
+Generation identityGeneration (const uint8_t* m, size_t n) noexcept
+{
+    if (m == nullptr || n < 8 || m[0] != 0xf0 || m[1] != 0x7e || m[3] != 0x06 || m[4] != 0x02) return Generation::Unknown;
+    if (m[5] == 0x47) return n >= 8 && m[6] == 0x15 ? Generation::First : Generation::Unknown; // one-byte maker id, model
+    if (m[5] == 0x00 && n >= 9 && m[6] == 0x21 && m[7] == 0x1d) return Generation::Later;     // three-byte maker id
+    return Generation::Unknown;
+}
+
+std::vector<uint8_t> userModeSysex (Generation g, bool user)
+{
+    if (g == Generation::First) return { 0xf0, 0x47, 0x7f, 0x15, 0x62, 0x00, 0x01, (uint8_t) (user ? 0x01 : 0x00), 0xf7 };
+    if (g == Generation::Later) return { 0xf0, 0x00, 0x21, 0x1d, 0x01, 0x01, 0x0a, (uint8_t) (user ? 0x01 : 0x00), 0xf7 };
+    return {};
+}
+
+std::array<std::string, numLines> splashLines (int stage, bool german)
+{
+    auto centred = [] (const std::string& t) {
+        const int pad = std::max (0, (lineLength - (int) t.size()) / 2);
+        return fitLine (std::string ((size_t) pad, ' ') + t);
+    };
+    const std::string state = stage <= 0 ? (german ? "verbindet ..." : "connecting ...") : (german ? "verbunden" : "connected");
+    return { fitLine (""), centred ("O H P E"), centred (state), centred ("designed by groovex") };
+}
+
+std::string deviceKey (const std::string& portName)
+{
+    std::string s;
+    for (char c : portName) s += (char) std::tolower ((unsigned char) c);
+    std::string key, word;
+    auto flush = [&] {
+        static const char* const drop[] = { "in", "out", "input", "output", "user", "live", "port", "midi" };
+        bool skip = word.empty();
+        for (auto* d : drop) skip = skip || word == d;
+        // "midiin2" / "midiout2" / "midi2" (the Windows prefix of a device's further ports)
+        if (! skip && word.rfind ("midi", 0) == 0)
+        {
+            auto rest = word.substr (4);
+            if (rest.rfind ("in", 0) == 0) rest = rest.substr (2);
+            else if (rest.rfind ("out", 0) == 0) rest = rest.substr (3);
+            skip = ! rest.empty() && std::all_of (rest.begin(), rest.end(), [] (char ch) { return std::isdigit ((unsigned char) ch) != 0; });
+        }
+        if (! skip) key += word;
+        word.clear();
+    };
+    for (char c : s)
+    {
+        if (std::isalnum ((unsigned char) c)) word += c;
+        else flush();
+    }
+    flush();
+    return key;
+}
+
 // ---------------------------------------------------------------- pad layout
 int padLayoutNote (int layout, int col, int row, int octave, const PadKey& key) noexcept
 {

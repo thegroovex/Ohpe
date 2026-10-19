@@ -57,11 +57,12 @@ void setProfile (OhpeEditor& e, bool on)
 {
     auto s = e.userSettingsStore().get();
     s.controllerProfile = on ? settings::ControllerGrid1 : settings::ControllerOff;
+    s.controllerChosen = true;
     e.userSettingsStore().set (s);
 }
 } // namespace
 
-TEST_CASE ("p49 grid controller in a plug-in: plug-in editors create it, off by default; no ports = nothing happens")
+TEST_CASE ("p49 grid controller in a plug-in: plug-in editors create it, (p53: on by default); no ports = nothing happens")
 {
     juce::TemporaryFile tmp;
     tmp.getFile().createDirectory();
@@ -73,8 +74,7 @@ TEST_CASE ("p49 grid controller in a plug-in: plug-in editors create it, off by 
         REQUIRE (a.e->gridController() != nullptr);
         auto& c = a.c();
         CHECK (c.pluginMode()); // tests run as a plug-in wrapper
-        CHECK_FALSE (c.enabled());
-        CHECK (c.state() == ui::GridController::State::Off);
+        CHECK (c.enabled()); // p53: the Grid-Controller profile with automatic ports by default
         CHECK (a.e->userSettingsStore().get().controllerAuto); // automatic ports: on by default
         // profile on without a controller (CI has no MIDI ports, or none matches): it waits, every tick is harmless
         setProfile (*a.e, true);
@@ -85,7 +85,8 @@ TEST_CASE ("p49 grid controller in a plug-in: plug-in editors create it, off by 
         CHECK_FALSE (c.connected());
         const auto st = c.state();
         CHECK ((st == ui::GridController::State::ChoosePorts || st == ui::GridController::State::Waiting || st == ui::GridController::State::PortBusy
-                || st == ui::GridController::State::Connected)); // a developer machine may have a matching port
+                || st == ui::GridController::State::Connected || st == ui::GridController::State::NotFound
+                || st == ui::GridController::State::Probing)); // a developer machine may have a matching port
         CHECK (c.status().isNotEmpty());
         // the window closes: the controller is parked in the processor, the same object comes back
         auto* before = a.e->gridController();
@@ -130,7 +131,7 @@ TEST_CASE ("p49 grid controller in a plug-in: one instance holds it - the other 
     // a's settings section: which instance, take it over here
     auto& view = a.e->settingsComponent();
     view.setStandalone (false);
-    a.e->showSettings (true, ui::SettingsView::Midi);
+    a.e->showSettings (true, ui::SettingsView::Controller);
     auto chips = view.chipTexts();
     CHECK (chips.contains ("CHOOSE PORTS AUTOMATICALLY"));
     CHECK (chips.contains ("TAKE OVER HERE"));
@@ -144,7 +145,7 @@ TEST_CASE ("p49 grid controller in a plug-in: one instance holds it - the other 
     a.c().poll();
     CHECK (a.c().connected());
     CHECK (! sa.msgs.empty()); // a sends its display and lights
-    a.e->showSettings (true, ui::SettingsView::Midi);
+    a.e->showSettings (true, ui::SettingsView::Controller);
     CHECK_FALSE (view.chipTexts().contains ("TAKE OVER HERE"));
     CHECK (a.e->createComponentSnapshot (a.e->getLocalBounds()).isValid());
 
@@ -163,7 +164,7 @@ TEST_CASE ("p49 grid controller in a plug-in: one instance holds it - the other 
     // German
     a.e->setLanguage (i18n::Language::German);
     CHECK (a.c().status() == juce::String::fromUTF8 ("In anderer Instanz aktiv"));
-    a.e->showSettings (true, ui::SettingsView::Midi);
+    a.e->showSettings (true, ui::SettingsView::Controller);
     CHECK (view.chipTexts().contains (i18n::upper (juce::String::fromUTF8 ("Ports automatisch wählen"))));
     CHECK (view.chipTexts().contains ("HIERHER HOLEN"));
     CHECK (i18n::tr ("Port in use - free it in the host") == juce::String::fromUTF8 ("Port belegt \xe2\x80\x93 in der DAW freigeben"));

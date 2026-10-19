@@ -33,7 +33,7 @@ class GridController;
 class SettingsView : public juce::Component, private juce::ChangeListener, private juce::Timer
 {
 public:
-    enum Page { General = 0, Display, Midi, MidiLearn, Updates, Help, About, numPages };
+    enum Page { General = 0, Display, Midi, MidiLearn, Controller, Updates, Help, About, numPages }; ///< p53: + Controller
 
     SettingsView (OhpeProcessor& p, Updater& u, UserSettingsStore& s);
     ~SettingsView() override;
@@ -58,9 +58,14 @@ public:
     void setStandalone (bool s) { standalone = s; }
     /** p46: the Grid-Controller (Profil 1) the MIDI page sets up and previews (standalone; nullptr = none). */
     void setGridController (GridController* c) { gridCtl = c; }
-    /** p46: the virtual controller view (display lines, pads, message log) instead of the parts table. */
-    void showControllerPreview (bool on) { controllerPreview = on; repaint(); }
-    bool controllerPreviewShown() const noexcept { return controllerPreview; }
+    /** p46: the virtual controller view (display lines, pads, message log). p53: always on the Controller page; this
+        opens that page. */
+    void showControllerPreview (bool on) { if (on) showPage (Controller); repaint(); }
+    bool controllerPreviewShown() const noexcept { return current == Controller; }
+    /** p53: picks a controller port as the port menus do (switches automatic off); empty = none (tests). */
+    void chooseControllerPort (bool input, const juce::String& name);
+    /** p53: where the virtual pad grid is drawn (tests: mouse presses). */
+    juce::Rectangle<float> virtualPadBounds() const noexcept { return padGrid; }
 
     // help pages (EN / DE)
     static int numHelpTopics();
@@ -78,12 +83,15 @@ public:
     /** Clicks the chip whose text is `text` (upper case as drawn) on the shown page; false if there is none (tests). */
     bool clickChip (const juce::String& text);
     juce::StringArray chipTexts();
+    /** p53: every clickable area of the shown page (tests: nothing is cut off by the panel edge). */
+    std::vector<juce::Rectangle<float>> clickableAreas();
     /** MIDI learn list: the mapping row texts as shown (tests). */
     juce::StringArray learnRows() const;
 
     void paint (juce::Graphics& g) override;
     void resized() override;
     void mouseDown (const juce::MouseEvent& e) override;
+    void mouseUp (const juce::MouseEvent& e) override; ///< p53: a virtual pad let go
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
     bool keyPressed (const juce::KeyPress& k) override;
 
@@ -103,7 +111,9 @@ private:
     /** p50: the MIDI page shows what a fingerboard controller sends (HD data, smoothing): refreshed twice a second. */
     void timerCallback() override
     {
-        if (current == Midi && isShowing()) repaint();
+        // p53: the Controller page follows the device (pads, display) ten times a second; the MIDI page twice
+        if (! isShowing()) return;
+        if (current == Controller || (current == Midi && ++slowTicks % 5 == 0)) repaint();
     }
     void paintFingerboard (juce::Graphics& g, juce::Rectangle<float> a, float xParts); ///< p50
     float unit() const;
@@ -117,7 +127,9 @@ private:
     void paintGeneral (juce::Graphics& g, juce::Rectangle<float> a);
     void paintDisplay (juce::Graphics& g, juce::Rectangle<float> a);
     void paintMidi (juce::Graphics& g, juce::Rectangle<float> a);
-    void paintController (juce::Graphics& g, juce::Rectangle<float> a);        ///< p46: the controller section
+    void paintController (juce::Graphics& g, juce::Rectangle<float> a);        ///< p46: the controller section (p53: its page)
+    void portMenu (bool input, juce::Rectangle<float> near);                   ///< p53: the port pop-up menu
+    void dropdown (juce::Graphics& g, juce::Rectangle<float> r, const juce::String& text, std::function<void()> action, bool enabled);
     void paintControllerPreview (juce::Graphics& g, juce::Rectangle<float> a); ///< p46: the virtual controller
     void paintLearn (juce::Graphics& g, juce::Rectangle<float> a);
     void paintUpdates (juce::Graphics& g, juce::Rectangle<float> a);
@@ -142,7 +154,8 @@ private:
     float helpScroll = 0.0f, helpMax = 0.0f, learnScroll = 0.0f, learnMax = 0.0f;
     bool standalone = false;
     GridController* gridCtl = nullptr; ///< p46
-    bool controllerPreview = false;
+    juce::Rectangle<float> padGrid, lcdArea; ///< p53: the virtual pads (8 x 8 cells), the virtual display
+    int pressedPad = -1, slowTicks = 0;
     std::unique_ptr<juce::FileChooser> chooser;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SettingsView)
