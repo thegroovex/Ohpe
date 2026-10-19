@@ -52,7 +52,8 @@ int GridKeyboard::noteAt (int col, int row) const
 {
     const auto& h = proc.core().harmony();
     const auto o = harmony::gridOptions (proc.core().params()); // p59: In Key / Chromatic, fixed C
-    return harmony::gridNote (o.layout, col, row, 12 * (octave + 1), h.keyRoot(), h.keyScale(), o.inKey, o.fixed);
+    return harmony::gridNote (o.layout, col, row, 12 * (octave + 1), h.keyRoot(), h.keyScale(), o.inKey, o.fixed,
+                              proc.core().keyScale().root); // p59: the set key's root bottom left
 }
 
 int GridKeyboard::lowestNote() const { return noteAt (0, 0); }
@@ -105,14 +106,15 @@ void GridKeyboard::refresh()
     const auto o = harmony::gridOptions (proc.core().params());
     const int sig = (((((h.keyRoot() * 16 + h.keyScale()) * 200 + (c.root + 1) * 16 + c.type) * 8 + layout()) * 8 + octave) * 2 + (partMpe() ? 1 : 0)) * 4
                     + (o.inKey ? 2 : 0) + (o.fixed ? 1 : 0);
+    const int64_t sigFull = (int64_t) sig * 16 + proc.core().keyScale().root; // p59: the set key's root (bottom left)
     // p53: the notes held on the controller's pads (shown pressed)
     uint64_t held = 0;
     if (alsoPressed)
         for (int n = lowestNote(); n <= highestNote(); ++n)
             if (alsoPressed (n)) held ^= (uint64_t) (n + 1) * 0x9E3779B97F4A7C15ull;
-    if (sig != lastSignature || held != lastHeld)
+    if (sigFull != lastSignature || held != lastHeld)
     {
-        lastSignature = sig;
+        lastSignature = sigFull;
         lastHeld = held;
         repaint();
     }

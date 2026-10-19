@@ -75,7 +75,7 @@ private:
     OhpeProcessor& proc;
     int partIndex = 0, octave = 3, nextChannel = 2;
     std::array<Touch, maxTouches> touches {};
-    int lastSignature = 0;
+    int64_t lastSignature = 0;
     uint64_t lastHeld = 0; ///< p53
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GridKeyboard)

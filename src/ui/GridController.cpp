@@ -1360,6 +1360,7 @@ g::PadKey GridController::padKey() const
     k.root = core.harmony().keyRoot(); // the on-screen grid's key (the remembered key; the set key until anything is heard)
     k.scale = core.harmony().keyScale();
     k.lock = core.keyScale().lock; // p45: Scale Lock
+    k.origin = core.keyScale().root; // p59: the set key's root bottom left (stays while the remembered key moves)
     return k;
 }
 
