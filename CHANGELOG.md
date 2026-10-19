@@ -7,6 +7,13 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+## 0.6.2 Preview – 2026-10-19
+
+[Notes / Hinweise](docs/release-notes/0.6.2.md)
+
+- EN: Grid controller inside the plug-in, the preset name per part, own BREED key in the header.
+- DE: Grid-Controller im Plug-in, Preset-Name pro Part, eigene ZUCHT-Taste in der Kopfzeile.
+
 - EN: Grid controller in the plug-in (p49): in VST3 / AU the plug-in opens the controller's user port itself (full
   display, pad colours, pressure, encoders, strip, buttons); ports chosen or found automatically by name (on by
   default), one instance of the DAW holds the controller (window opened or clicked last, Take over here), it keeps
