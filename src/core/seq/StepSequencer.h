@@ -88,6 +88,13 @@ public:
     int getEditPattern() const noexcept { return editPattern.load(); }
     /** Own length of a pattern (1..64) or 0 = follow "seq.step.length". */
     void setPatternLength (int pattern, int length) noexcept;
+    /** p59: the length a pattern plays (its own, or "seq.step.length"). */
+    int effectiveLength (int pattern) const noexcept { return lengthOf (pattern); }
+    /** p59 (controller Double): copies steps 0 .. len-1 of `pattern` to len .. 2 len-1 (len = effectiveLength) and
+        returns the doubled length to set; 0 = it would not fit (more than maxSteps), nothing changed. */
+    int doubleSteps (int pattern) noexcept;
+    /** p59 (controller Duplicate): pattern `from` (steps, locks, own length) into pattern `to`. */
+    void copyPattern (int from, int to) noexcept;
     int getPatternLength (int pattern) const noexcept;
     void setChain (const std::vector<ChainEntry>& entries) noexcept;
     std::vector<ChainEntry> getChain() const;

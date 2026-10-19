@@ -14,6 +14,8 @@
 #include "plugin/PluginProcessor.h"
 #include "plugin/UserSettingsStore.h"
 #include "ui/PluginEditor.h"
+#include "ui/ModFxViews.h"
+#include "preset/PresetLibrary.h"
 
 using namespace ohpe;
 namespace g = ohpe::gridctl;
@@ -519,4 +521,228 @@ TEST_CASE ("p53 grid controller: a note held on a pad shows pressed on the on-sc
     r.c->update();
     CHECK_FALSE (e.gridKeyboard().alsoPressed (note));
     e.showGridKeyboard (false);
+}
+
+// ---------------------------------------------------------------------------------------------------- p59
+TEST_CASE ("p59 grid controller: Scales tap / hold - the grid options on the display, the upper row selects them")
+{
+    Rig r;
+    auto& e = *r.e;
+    auto& reg = r.p.core().params();
+    e.showGridKeyboard (true);
+    r.setHost ("harmony.kb.layout", (float) harmony::LayoutFourths);
+    // held: the menu on the display, the layout does not step on release when an option was chosen
+    r.cc (g::cc::scales, 127);
+    CHECK (r.c->scalesMenuShown());
+    CHECK (r.c->displayLines()[2].find ("Grid: Fourths") != std::string::npos);
+    CHECK (r.mock.lastCc (g::cc::upperRow + 0) == g::colourCode (g::Colour::Yellow));
+    r.cc (g::cc::upperRow + 3, 127); // Sequential
+    r.cc (g::cc::upperRow + 3, 0);
+    CHECK ((int) std::lround (reg.get ("harmony.kb.layout")) == harmony::LayoutSequential);
+    r.cc (g::cc::upperRow + 4, 127); // In Key
+    CHECK (reg.get ("harmony.kb.inkey") == 1.0f);
+    r.cc (g::cc::upperRow + 5, 127); // fixed C
+    CHECK (reg.get ("harmony.kb.fixed") == 1.0f);
+    const int rootBefore = (int) std::lround (reg.get ("key.root"));
+    r.cc (g::cc::upperRow + 6, 127); // root +1
+    CHECK ((int) std::lround (reg.get ("key.root")) == (rootBefore + 1) % 12);
+    CHECK (r.mock.lastCc (g::cc::upperRow + 4) == g::colourCode (g::Colour::Green));
+    r.cc (g::cc::scales, 0);
+    CHECK_FALSE (r.c->scalesMenuShown());
+    CHECK ((int) std::lround (reg.get ("harmony.kb.layout")) == harmony::LayoutSequential); // no step: an option was used
+    // line 4: layout, In Key, fixed, octave
+    CHECK (r.c->displayLines()[3].find ("Seq Key Fix O3") != std::string::npos);
+    // the pads follow (In Key + fixed: the first key note from C)
+    for (int pad = 0; pad < g::numPads; ++pad)
+        if (const int n = r.c->padNoteNow (pad); n >= 0 && n < 127) CHECK (scales::inScale (n, r.p.core().harmony().keyRoot(), r.p.core().harmony().keyScale()));
+    // a tap steps the layout
+    r.press (g::cc::scales);
+    CHECK ((int) std::lround (reg.get ("harmony.kb.layout")) == harmony::LayoutFourths);
+    // Shift + Scales = Scale Lock (unchanged)
+    r.cc (g::cc::shift, 127);
+    r.press (g::cc::scales);
+    r.cc (g::cc::shift, 0);
+    CHECK (r.p.core().keyScale().lock);
+    r.setHost ("key.lock", 0.0f);
+    r.setHost ("harmony.kb.inkey", 0.0f);
+    r.setHost ("harmony.kb.fixed", 0.0f);
+    r.setHost ("key.root", 0.0f);
+    e.showGridKeyboard (false);
+}
+
+TEST_CASE ("p59 grid controller: the further function buttons map to Ohpe functions and light by state")
+{
+    Rig r;
+    auto& e = *r.e;
+    auto& core = r.p.core();
+    auto& reg = core.params();
+    // Mute / Solo: alone = the edit part; held + part button = that part
+    e.selectPart (0);
+    r.c->update();
+    r.press (g::cc::mute);
+    CHECK (reg.get ("mix.ch1.mute") == 1.0f);
+    CHECK (r.mock.lastCc (g::cc::mute) == g::buttonCode (true));
+    r.cc (g::cc::solo, 127);
+    r.press (g::cc::lowerRow + 2);
+    r.cc (g::cc::solo, 0);
+    CHECK (reg.get ("mix.ch3.solo") == 1.0f);
+    CHECK (reg.get ("mix.ch1.solo") == 0.0f); // used with a part button: not the edit part
+    CHECK (e.currentPart() == 0);              // and the part button did not select part 3
+    r.setHost ("mix.ch1.mute", 0.0f);
+    r.setHost ("mix.ch3.solo", 0.0f);
+    // Volume / Pan & Send: the four parts' channels on the encoders
+    r.press (g::cc::volume);
+    CHECK (r.c->encoderPage() == ui::GridController::EncoderPage::Volume);
+    CHECK (r.c->encoderIds()[0] == "mix.ch1.vol");
+    CHECK (r.c->encoderIds()[7] == "mix.ch4.pan");
+    CHECK (r.mock.lastCc (g::cc::volume) == g::buttonCode (true));
+    const float before = reg.get ("mix.ch2.vol");
+    r.cc (g::cc::firstEncoder + 1, 10);
+    CHECK (reg.get ("mix.ch2.vol") > before);
+    r.press (g::cc::panSend);
+    CHECK (r.c->encoderIds()[0] == "mix.ch1.senda");
+    CHECK (r.c->encoderIds()[4] == "mix.ch1.sendb");
+    r.press (g::cc::panSend);
+    CHECK (r.c->encoderPage() == ui::GridController::EncoderPage::Normal);
+    // Track = mixer, Clip = tape
+    r.press (g::cc::track);
+    CHECK (e.currentMode() == ui::Mode::Mixer);
+    CHECK (r.mock.lastCc (g::cc::track) == g::buttonCode (true));
+    r.press (g::cc::clip);
+    CHECK (e.currentMode() == ui::Mode::Tape);
+    // Device = the FX editor (on the effects racks)
+    r.press (g::cc::device);
+    CHECK (e.currentMode() == ui::Mode::Effects);
+    CHECK (e.fxEditorVisible());
+    CHECK (r.mock.lastCc (g::cc::device) == g::buttonCode (true));
+    r.press (g::cc::device);
+    CHECK_FALSE (e.fxEditorVisible());
+    // Accent: every pad at full velocity
+    r.press (g::cc::accent);
+    CHECK (r.c->accentOn());
+    CHECK (r.mock.lastCc (g::cc::accent) == g::buttonCode (true));
+    r.press (g::cc::accent);
+    // Quantize = the edit part's scale quantise; Automation = its motion record
+    r.press (g::cc::quantize);
+    CHECK (reg.get ("p1.quant") == 1.0f);
+    r.press (g::cc::quantize);
+    r.press (g::cc::automation);
+    CHECK (reg.get ("p1.motion.rec") == 1.0f);
+    r.press (g::cc::automation);
+    CHECK (reg.get ("p1.motion.rec") == 0.0f);
+    // Fixed Length = step length 16 -> 32; Double copies the steps into the new half
+    auto& sq = core.stepSequencer();
+    sq.toggleStep (1, 60);
+    r.press (g::cc::fixedLength);
+    CHECK ((int) std::lround (reg.get ("seq.step.length")) == 32);
+    r.setHost ("seq.step.length", 16.0f);
+    r.play (1);
+    r.press (g::cc::doubleButton);
+    CHECK ((int) std::lround (reg.get ("seq.step.length")) == 32);
+    CHECK (sq.getStep (17).on);
+    // Duplicate = the pattern into the next one, which is edited and plays
+    r.press (g::cc::duplicate);
+    CHECK (sq.getEditPattern() == 1);
+    CHECK (sq.getStep (1, 1).on);
+    CHECK ((int) std::lround (reg.get ("seq.step.pattern")) == 2);
+    // Delete + step pad = clear the step
+    r.c->setPadMode (ui::GridController::PadMode::Steps);
+    r.c->update();
+    r.cc (g::cc::deleteButton, 127);
+    r.in (juce::MidiMessage::noteOn (1, g::padNote (1, g::rows - 1), (juce::uint8) 100)); // step 2 (top row)
+    r.cc (g::cc::deleteButton, 0);
+    CHECK_FALSE (sq.getStep (1).on);
+    sq.setEditPattern (0);
+    r.c->setPadMode (ui::GridController::PadMode::Keys);
+    // timing buttons: note repeat while held (the arp on the edit part at that rate), as before when released
+    const float arpOn = reg.get ("seq.arp.on");
+    r.cc (g::cc::firstScene + 2, 127); // 1/8
+    CHECK (reg.get ("seq.arp.on") == 1.0f);
+    CHECK ((int) std::lround (reg.get ("seq.arp.rate")) == 1);
+    CHECK ((int) std::lround (reg.get ("seq.arp.part")) == 1);
+    CHECK (r.mock.lastCc (g::cc::firstScene + 2) == g::colourCode (g::Colour::Green));
+    r.cc (g::cc::firstScene + 2, 0);
+    CHECK (reg.get ("seq.arp.on") == arpOn);
+    // Add Effect: the selected slot's next type
+    const auto pre = ui::modfx::rackPrefixes (ui::modfx::FxViewRack, 0).front();
+    const float type = reg.get (pre + "type");
+    r.press (g::cc::addEffect);
+    CHECK (reg.get (pre + "type") != type);
+    // User = ZUCHT
+    r.press (g::cc::user);
+    CHECK (e.breedingVisible());
+    CHECK (r.mock.lastCc (g::cc::user) == g::buttonCode (true));
+    r.press (g::cc::user);
+    CHECK_FALSE (e.breedingVisible());
+}
+
+TEST_CASE ("p59 grid controller: browse mode - the preset list on the display, filters on the encoders, loading")
+{
+    Rig r;
+    auto& e = *r.e;
+    auto& pm = r.p.presets();
+    r.press (g::cc::browse);
+    REQUIRE (r.c->browsing());
+    CHECK (e.libraryVisible()); // the screen's library opens and follows
+    CHECK (r.mock.lastCc (g::cc::browse) == g::buttonCode (true));
+    const auto lines = r.c->displayLines();
+    MESSAGE ("Browse:\n" << lines[0] << "\n" << lines[1] << "\n" << lines[2] << "\n" << lines[3]);
+    CHECK (lines[2].rfind (">", 0) == 0); // the cursor row is marked
+    REQUIRE (r.c->browseCursor() >= 0);
+    // ▲ / ▼ step and load at once
+    const int first = r.c->browseCursor();
+    r.press (g::cc::down);
+    CHECK (r.c->browseCursor() != first);
+    CHECK (pm.current() == r.c->browseCursor());
+    // encoder 1 scrolls without loading; Select loads
+    const int loaded = pm.current();
+    r.cc (g::cc::firstEncoder + 0, 4);
+    CHECK (r.c->browseCursor() != loaded);
+    CHECK (pm.current() == loaded);
+    r.cc (g::cc::select, 127);
+    r.cc (g::cc::select, 0);
+    CHECK (pm.current() == r.c->browseCursor());
+    // a part button loads into that part
+    r.press (g::cc::lowerRow + 1);
+    CHECK (pm.current (1) == r.c->browseCursor());
+    // filters: favourites (encoder 5) - lit upper button, the screen's filter is the same
+    CHECK (r.mock.lastCc (g::cc::upperRow + ui::GridController::BrowseFavourites) == g::colourCode (g::Colour::YellowDim));
+    r.cc (g::cc::firstEncoder + ui::GridController::BrowseFavourites, 4);
+    CHECK (pm.filter.favouritesOnly);
+    CHECK (r.c->browseFilterActive (ui::GridController::BrowseFavourites));
+    CHECK (r.mock.lastCc (g::cc::upperRow + ui::GridController::BrowseFavourites) == g::colourCode (g::Colour::Yellow));
+    r.press (g::cc::upperRow + ui::GridController::BrowseFavourites); // its button resets it
+    CHECK_FALSE (pm.filter.favouritesOnly);
+    // category / engine / rating
+    r.cc (g::cc::firstEncoder + ui::GridController::BrowseCategory, 4);
+    CHECK (pm.filter.tags.size() == 1);
+    CHECK (r.c->browseValue (ui::GridController::BrowseCategory) != i18n::tr ("All"));
+    for (int k = 0; k < (int) pm.view().size(); ++k) CHECK (preset::matches (pm.entries()[(size_t) pm.view()[(size_t) k]], pm.filter));
+    r.press (g::cc::upperRow + ui::GridController::BrowseCategory);
+    r.cc (g::cc::firstEncoder + ui::GridController::BrowseEngine, 4);
+    CHECK_FALSE (pm.filter.engine.empty());
+    r.press (g::cc::upperRow + ui::GridController::BrowseEngine);
+    r.cc (g::cc::firstEncoder + ui::GridController::BrowseRating, 4);
+    CHECK (pm.filter.minRating == 1);
+    r.press (g::cc::upperRow + ui::GridController::BrowseRating);
+    // Shift alone = favourite of the cursor's preset
+    const int cur = r.c->browseCursor();
+    const bool fav = pm.entries()[(size_t) cur].favourite;
+    r.press (g::cc::shift);
+    CHECK (pm.entries()[(size_t) cur].favourite != fav);
+    r.press (g::cc::shift);
+    CHECK (pm.entries()[(size_t) cur].favourite == fav);
+    // Browse again leaves (the screen's library closes, the preset stays)
+    const int keep = pm.current();
+    r.press (g::cc::browse);
+    CHECK_FALSE (r.c->browsing());
+    CHECK_FALSE (e.libraryVisible());
+    CHECK (pm.current() == keep);
+    // outside browse mode ▲ / ▼ = previous / next preset as before
+    r.press (g::cc::down);
+    CHECK (pm.current() != keep);
+    // Device leaves browse mode too
+    r.press (g::cc::browse);
+    r.press (g::cc::device);
+    CHECK_FALSE (r.c->browsing());
 }

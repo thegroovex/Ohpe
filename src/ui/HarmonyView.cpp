@@ -19,10 +19,12 @@ bool german() { return i18n::current() == i18n::Language::German; }
 
 std::vector<std::string> harmonyParams (int part)
 {
-    return { "harmony.p" + std::to_string (part + 1) + ".follow", "harmony.memory", "harmony.hold", "harmony.kb.layout" };
+    // p59: page 2 "Grid" = the grid keyboard's In Key / Chromatic and fixed C, next to the layout (encoder 4 of page 1)
+    return { "harmony.p" + std::to_string (part + 1) + ".follow", "harmony.memory", "harmony.hold", "harmony.kb.layout",
+             "harmony.kb.layout", "harmony.kb.inkey", "harmony.kb.fixed", "" };
 }
 
-std::vector<std::string> harmonyTitles() { return { "Harmony" }; }
+std::vector<std::string> harmonyTitles() { return { "Harmony", "Grid" }; }
 
 juce::String noteName (int pc)
 {

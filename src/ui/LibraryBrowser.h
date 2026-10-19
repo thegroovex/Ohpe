@@ -91,6 +91,13 @@ private:
     void rebuild();
     void showPackMenu();
     static juce::String packName (const update::ContentIndex::Pack& p);
+public:
+    /** p59: the label of a category / quick tag and of an engine id (the chips' texts; the controller's display). */
+    static juce::String tagText (const std::string& tag);
+    static juce::String engineText (const std::string& engineId);
+    /** p59: the controller's browse mode changed the filter or the cursor: the list follows (no preset is loaded). */
+    void followController (int entry);
+private:
     float unit() const;
     struct Hit
     {

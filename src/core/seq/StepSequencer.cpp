@@ -149,6 +149,22 @@ void StepSequencer::setPatternLength (int pattern, int len) noexcept
     if (pattern >= 0 && pattern < numPatterns) patternLength[(size_t) pattern].store (std::clamp (len, 0, maxSteps));
 }
 
+int StepSequencer::doubleSteps (int pattern) noexcept
+{
+    if (pattern < 0 || pattern >= numPatterns) return 0;
+    const int len = lengthOf (pattern);
+    if (len <= 0 || len * 2 > maxSteps) return 0;
+    for (int i = 0; i < len; ++i) setStep (pattern, len + i, getStep (pattern, i));
+    return len * 2;
+}
+
+void StepSequencer::copyPattern (int from, int to) noexcept
+{
+    if (from < 0 || from >= numPatterns || to < 0 || to >= numPatterns || from == to) return;
+    for (int i = 0; i < maxSteps; ++i) setStep (to, i, getStep (from, i));
+    setPatternLength (to, getPatternLength (from));
+}
+
 int StepSequencer::getPatternLength (int pattern) const noexcept
 {
     return pattern >= 0 && pattern < numPatterns ? patternLength[(size_t) pattern].load() : 0;

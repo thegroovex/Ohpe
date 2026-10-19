@@ -2,14 +2,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "GridController.h"
 
+#include "LibraryBrowser.h"
 #include "ModFxViews.h"
 #include "control/ControllerPorts.h"
 #include "harmony/HarmonyBrain.h"
 #include "perform/PerformancePads.h"
 #include "plugin/Localisation.h"
 #include "plugin/ParameterBridge.h"
+#include "preset/PresetLibrary.h"
 #include "seq/ScaleChord.h"
+#include "seq/SeqCommon.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "harmony/KeyScale.h"
@@ -540,6 +544,7 @@ void GridController::receive (const juce::MidiMessage& m)
 
 void GridController::padDown (int pad, int velocity)
 {
+    if (accentNow.load()) velocity = 127; // p59: Accent = fixed full velocity
     held[(size_t) pad].store (true);
     const int mode = padModeNow.load();
     if (playing[(size_t) pad].load() >= 0) padUp (pad);
@@ -679,7 +684,8 @@ void GridController::handleQueued (const juce::MidiMessage& m)
                 const int row = pad / g::cols, col = pad % g::cols;
                 const int step = (g::rows - 1 - row) * g::cols + col;
                 const int note = proc.core().lastNote();
-                proc.core().stepSequencer().toggleStep (step, note >= 0 ? note : 60);
+                if (deleteHeld) proc.core().stepSequencer().setStep (step, StepSequencer::Step {}); // p59: Delete + step = clear
+                else proc.core().stepSequencer().toggleStep (step, note >= 0 ? note : 60);
             }
             return;
         }
@@ -717,15 +723,75 @@ void GridController::handleQueued (const juce::MidiMessage& m)
         }
         return;
     }
-    if (cc == g::cc::shift) { shiftHeld = v > 0; return; }
-    if (cc == g::cc::select) { selectHeld = v > 0; return; }
+    if (cc == g::cc::shift)
+    {
+        if (v > 0) { shiftHeld = true; shiftUsed = false; return; }
+        shiftHeld = false;
+        // p59: browse mode - Shift alone toggles the favourite of the preset under the cursor
+        if (browse && ! shiftUsed && cursor >= 0 && cursor < (int) proc.presets().entries().size())
+            proc.presets().setFavourite (cursor, ! proc.presets().entries()[(size_t) cursor].favourite);
+        return;
+    }
+    if (cc == g::cc::select)
+    {
+        selectHeld = v > 0;
+        if (v > 0 && browse) browseLoad (-1); // p59: Select loads the preset under the cursor
+        return;
+    }
     if (v > 0) button (cc, true);
+    else buttonUp (cc);
 }
 
 void GridController::button (int cc, bool)
 {
     using TK = OhpeProcessor::TransportKey;
     auto transport = [this] (TK k) { if (hooks.transport) hooks.transport (k); };
+    if (shiftHeld) shiftUsed = true;
+    // p59: Scales held - the upper row selects layout, In Key / Chromatic, fixed C, root, scale
+    if (scalesHeld && cc >= g::cc::upperRow && cc < g::cc::upperRow + 8)
+    {
+        scalesUsed = true;
+        scalesMenuButton (cc - g::cc::upperRow);
+        return;
+    }
+    // p59: browse mode
+    if (browse)
+    {
+        if (cc >= g::cc::upperRow && cc < g::cc::upperRow + 8)
+        {
+            const int k = cc - g::cc::upperRow;
+            if (k == BrowseScroll) browseLoad (-1);
+            else browseTurn (k, 0); // 0 = reset the column's filter
+            return;
+        }
+        if (cc >= g::cc::lowerRow && cc < g::cc::lowerRow + 8)
+        {
+            const int k = cc - g::cc::lowerRow;
+            browseLoad (k < Core::numParts ? k : -1);
+            return;
+        }
+        switch (cc)
+        {
+            case g::cc::up: browseStep (-1, true); return;
+            case g::cc::down: browseStep (1, true); return;
+            case g::cc::left: browseStep (-4, false); return;
+            case g::cc::right: browseStep (4, false); return;
+            case g::cc::browse:
+            case g::cc::device: setBrowse (false); return;
+            default: break;
+        }
+    }
+    // p59: Mute / Solo held + part button
+    if ((muteHeld || soloHeld) && cc >= g::cc::lowerRow && cc < g::cc::lowerRow + Core::numParts)
+    {
+        partButtonHeld (cc - g::cc::lowerRow);
+        return;
+    }
+    if (cc >= g::cc::firstScene && cc < g::cc::firstScene + g::cc::numScenes)
+    {
+        sceneDown (cc - g::cc::firstScene);
+        return;
+    }
     if (cc >= g::cc::upperRow && cc < g::cc::upperRow + numModes)
     {
         if (hooks.selectMode) hooks.selectMode ((Mode) (cc - g::cc::upperRow));
@@ -765,18 +831,416 @@ void GridController::button (int cc, bool)
         case g::cc::undo: proc.runTapeEdit (shiftHeld ? "tape.edit.redo" : "tape.edit.undo"); break;
         case g::cc::scales:
             if (shiftHeld)
-            {
                 setParam (Core::Ids::keyLock, proc.core().keyScale().lock ? 0.0f : 1.0f);
-            }
-            else if (hooks.gridShown && hooks.showGrid && ! hooks.gridShown())
-                hooks.showGrid (true); // p53: first the grid keyboard on the screen (its layout on the pads), then the next layout
             else
-                setParam ("harmony.kb.layout", (float) (((int) std::lround (proc.core().params().get ("harmony.kb.layout")) + 1) % harmony::numLayouts));
+            {   // p59: a tap steps the layout (on release); held = the grid options on the display
+                scalesHeld = true;
+                scalesUsed = false;
+            }
             break;
         case g::cc::master: masterTempo = ! masterTempo; break;
         case g::cc::note: setPadMode (PadMode::Keys); break;
         case g::cc::session: setPadMode (PadMode::Steps); break;
+        // ---- p59: the further function buttons
+        case g::cc::mute: muteHeld = true; muteUsed = false; break;
+        case g::cc::solo: soloHeld = true; soloUsed = false; break;
+        case g::cc::deleteButton: deleteHeld = true; break;
+        case g::cc::device:
+            if (hooks.showFxEditor) hooks.showFxEditor (! (hooks.fxEditorShown && hooks.fxEditorShown()));
+            break;
+        case g::cc::browse: setBrowse (true); break;
+        case g::cc::track: if (hooks.selectMode) hooks.selectMode (Mode::Mixer); break;
+        case g::cc::clip: if (hooks.selectMode) hooks.selectMode (Mode::Tape); break;
+        case g::cc::volume:
+        case g::cc::panSend:
+        {
+            const auto page = cc == g::cc::volume ? EncoderPage::Volume : EncoderPage::PanSend;
+            encPage = encPage == page ? EncoderPage::Normal : page;
+            refreshMap();
+            break;
+        }
+        case g::cc::accent: accentNow.store (! accentNow.load()); break;
+        case g::cc::quantize:
+        {
+            const juce::String id = "p" + juce::String (partNow.load() + 1) + ".quant";
+            setParam (id, proc.core().params().get (id.toStdString()) >= 0.5f ? 0.0f : 1.0f);
+            break;
+        }
+        case g::cc::duplicate: // the step pattern into the next pattern, which then plays and is edited
+        {
+            auto& sq = proc.core().stepSequencer();
+            const int from = sq.getEditPattern();
+            if (from + 1 < StepSequencer::numPatterns)
+            {
+                sq.copyPattern (from, from + 1);
+                sq.setEditPattern (from + 1);
+                setParam ("seq.step.pattern", (float) (from + 2));
+            }
+            break;
+        }
+        case g::cc::doubleButton: // the step pattern twice as long, the steps copied into the new half
+        {
+            auto& sq = proc.core().stepSequencer();
+            const int pat = sq.getEditPattern();
+            if (const int len = sq.doubleSteps (pat); len > 0)
+            {
+                if (sq.getPatternLength (pat) > 0) sq.setPatternLength (pat, len);
+                else setParam ("seq.step.length", (float) len);
+            }
+            break;
+        }
+        case g::cc::newButton: proc.presets().loadStartSound(); break;
+        case g::cc::fixedLength: // step length 4 -> 8 -> 16 -> 32 -> 64 -> 4
+        {
+            const int len = (int) std::lround (proc.core().params().get ("seq.step.length"));
+            int next = 4;
+            for (int l : { 4, 8, 16, 32, 64 })
+                if (l > len) { next = l; break; }
+            setParam ("seq.step.length", (float) next);
+            break;
+        }
+        case g::cc::automation:
+        {
+            const juce::String id = "p" + juce::String (partNow.load() + 1) + ".motion.rec";
+            setParam (id, proc.core().params().get (id.toStdString()) >= 0.5f ? 0.0f : 1.0f);
+            break;
+        }
+        case g::cc::addEffect: addEffect(); break;
+        case g::cc::user:
+            if (hooks.showBreeding) hooks.showBreeding (! (hooks.breedingShown && hooks.breedingShown()));
+            break;
         default: break;
+    }
+}
+
+void GridController::buttonUp (int cc)
+{
+    if (cc >= g::cc::firstScene && cc < g::cc::firstScene + g::cc::numScenes) { sceneUp (cc - g::cc::firstScene); return; }
+    switch (cc)
+    {
+        case g::cc::scales:
+            if (scalesHeld && ! scalesUsed)
+            {
+                if (hooks.gridShown && hooks.showGrid && ! hooks.gridShown())
+                    hooks.showGrid (true); // p53: first the grid keyboard on the screen (its layout on the pads), then the next layout
+                else
+                    setParam ("harmony.kb.layout", (float) (((int) std::lround (proc.core().params().get ("harmony.kb.layout")) + 1) % harmony::numLayouts));
+            }
+            scalesHeld = false;
+            break;
+        case g::cc::mute:
+        case g::cc::solo:
+        {
+            const bool isMute = cc == g::cc::mute;
+            if (isMute ? (muteHeld && ! muteUsed) : (soloHeld && ! soloUsed)) partButtonHeld (-1); // alone: the edit part
+            (isMute ? muteHeld : soloHeld) = false;
+            break;
+        }
+        case g::cc::deleteButton: deleteHeld = false; break;
+        default: break;
+    }
+}
+
+void GridController::partButtonHeld (int part)
+{
+    const bool mute = muteHeld; // Mute wins when both are held
+    const int p = part < 0 ? partNow.load() : part;
+    const juce::String id = "mix.ch" + juce::String (juce::jlimit (0, Core::numParts - 1, p) + 1) + (mute ? ".mute" : ".solo");
+    setParam (id, proc.core().params().get (id.toStdString()) >= 0.5f ? 0.0f : 1.0f);
+    (mute ? muteUsed : soloUsed) = true;
+}
+
+void GridController::scalesMenuButton (int k)
+{
+    auto& reg = proc.core().params();
+    if (k < harmony::numLayouts)
+    {
+        if (hooks.gridShown && hooks.showGrid && ! hooks.gridShown()) hooks.showGrid (true); // the pads take the grid's layout
+        setParam ("harmony.kb.layout", (float) k);
+    }
+    else if (k == 4) setParam ("harmony.kb.inkey", reg.get ("harmony.kb.inkey") >= 0.5f ? 0.0f : 1.0f);
+    else if (k == 5) setParam ("harmony.kb.fixed", reg.get ("harmony.kb.fixed") >= 0.5f ? 0.0f : 1.0f);
+    else if (k == 6) setParam (Core::Ids::keyRoot, (float) ((((int) std::lround (reg.get (Core::Ids::keyRoot)) + (shiftHeld ? 11 : 1)) % 12)));
+    else if (k == 7)
+    {
+        const int n = (int) scales::namesEn().size();
+        setParam ("key.scale", (float) ((((int) std::lround (reg.get ("key.scale")) + (shiftHeld ? n - 1 : 1)) % n)));
+    }
+}
+
+void GridController::sceneDown (int scene)
+{
+    const int rate = g::sceneRate (scene);
+    if (rate < 0) return;
+    if (shiftHeld) { setParam ("seq.arp.rate", (float) rate); return; } // Shift: sets the arp rate and keeps it
+    auto& reg = proc.core().params();
+    if (scenesHeld == 0)
+    {   // note repeat while held: the arp on the edit part at this rate; released = as before
+        arpBefore[0] = reg.get ("seq.arp.on");
+        arpBefore[1] = reg.get ("seq.arp.part");
+        arpBefore[2] = reg.get ("seq.arp.rate");
+        setParam ("seq.arp.part", (float) (partNow.load() + 1));
+        setParam ("seq.arp.on", 1.0f);
+    }
+    scenesHeld |= 1 << scene;
+    setParam ("seq.arp.rate", (float) rate);
+}
+
+void GridController::sceneUp (int scene)
+{
+    const int bit = 1 << juce::jlimit (0, g::cc::numScenes - 1, scene);
+    if ((scenesHeld & bit) == 0) return;
+    scenesHeld &= ~bit;
+    if (scenesHeld != 0) return;
+    setParam ("seq.arp.on", arpBefore[0]);
+    setParam ("seq.arp.part", arpBefore[1]);
+    setParam ("seq.arp.rate", arpBefore[2]);
+}
+
+void GridController::addEffect()
+{
+    const auto ctx = hooks.context ? hooks.context() : PageContext {};
+    const int view = modfx::isRackView (ctx.fxView) ? ctx.fxView : (int) modfx::FxViewRack;
+    const auto prefixes = modfx::rackPrefixes (view, ctx.part);
+    if (prefixes.empty()) return;
+    const auto id = prefixes[(size_t) juce::jlimit (0, (int) prefixes.size() - 1, ctx.fxSlot)] + "type";
+    const auto& reg = proc.core().params();
+    const int idx = reg.indexOf (id);
+    if (idx < 0) return;
+    const auto& d = reg.descriptor (idx);
+    const int n = (int) std::lround (d.maxValue) + 1;
+    setParam (id, (float) (((int) std::lround (reg.get (idx)) + 1) % juce::jmax (1, n)));
+}
+
+// ---------------------------------------------------------------- p59: browse mode (the library on the display)
+void GridController::setBrowse (bool on)
+{
+    if (on == browse) return;
+    browse = on;
+    encAccum.fill (0);
+    auto& pm = proc.presets();
+    if (on)
+    {
+        if (hooks.showLibrary) hooks.showLibrary (true); // the screen's library opens and follows
+        else pm.rescan();
+        const auto v = pm.view();
+        cursor = std::find (v.begin(), v.end(), pm.current()) != v.end() ? pm.current() : (v.empty() ? -1 : v.front());
+        browseFollow();
+    }
+    else if (hooks.showLibrary && hooks.libraryShown && hooks.libraryShown())
+        hooks.showLibrary (false); // keeps the preset loaded
+}
+
+void GridController::browseFollow()
+{
+    if (hooks.libraryFollow) hooks.libraryFollow (cursor);
+}
+
+void GridController::browseStep (int delta, bool load)
+{
+    auto& pm = proc.presets();
+    const auto v = pm.view();
+    if (v.empty()) { cursor = -1; return; }
+    const int n = (int) v.size();
+    const auto it = std::find (v.begin(), v.end(), cursor);
+    int pos = it == v.end() ? (delta > 0 ? -1 : n) : (int) (it - v.begin());
+    pos = load ? ((pos + delta) % n + n) % n : juce::jlimit (0, n - 1, pos + delta); // ▲ / ▼ wrap like the preset keys
+    cursor = v[(size_t) pos];
+    if (load) pm.load (cursor); // instant audition
+    browseFollow();
+}
+
+void GridController::browseLoad (int part)
+{
+    if (cursor < 0 || cursor >= (int) proc.presets().entries().size()) return;
+    proc.presets().load (cursor, part);
+    browseFollow();
+}
+
+namespace
+{
+/** Steps through -1 (none) .. n - 1, wrapping. */
+int cycle (int current, int steps, int n)
+{
+    const int m = n + 1;
+    return (((current + 1 + steps) % m) + m) % m - 1;
+}
+
+std::vector<std::string> usedEngines (const std::vector<preset::Entry>& entries)
+{
+    std::vector<std::string> out;
+    for (const auto& e : entries)
+        if (! e.meta.engine.empty() && std::find (out.begin(), out.end(), e.meta.engine) == out.end()) out.push_back (e.meta.engine);
+    std::sort (out.begin(), out.end());
+    return out;
+}
+
+/** The browse column Source: 0 All, 1 Factory, 2 own presets, 3 .. = the content packs. */
+int sourceIndex (const preset::Filter& f, const std::vector<std::string>& packs)
+{
+    if (! f.pack.empty())
+    {
+        const auto it = std::find (packs.begin(), packs.end(), f.pack);
+        return it == packs.end() ? 0 : 3 + (int) (it - packs.begin());
+    }
+    return f.bank == preset::Bank::Factory ? 1 : f.bank == preset::Bank::User ? 2 : 0;
+}
+} // namespace
+
+void GridController::browseTurn (int column, int steps)
+{
+    auto& pm = proc.presets();
+    auto& f = pm.filter;
+    const auto& entries = pm.entries();
+    const bool reset = steps == 0;
+    switch (column)
+    {
+        case BrowseScroll: browseStep (steps, false); return;
+        case BrowseCategory:
+        {
+            const auto tags = preset::usedTags (entries);
+            int cur = -1;
+            if (f.tags.size() == 1)
+                if (const auto it = std::find (tags.begin(), tags.end(), f.tags.front()); it != tags.end()) cur = (int) (it - tags.begin());
+            const int next = reset ? -1 : cycle (cur, steps, (int) tags.size());
+            f.tags.clear();
+            if (next >= 0) f.tags.push_back (tags[(size_t) next]);
+            break;
+        }
+        case BrowseEngine:
+        {
+            const auto engines = usedEngines (entries);
+            const auto it = std::find (engines.begin(), engines.end(), f.engine);
+            const int cur = it == engines.end() ? -1 : (int) (it - engines.begin());
+            const int next = reset ? -1 : cycle (cur, steps, (int) engines.size());
+            f.engine = next >= 0 ? engines[(size_t) next] : std::string();
+            break;
+        }
+        case BrowseSource:
+        {
+            const auto packs = preset::usedPacks (entries);
+            const int n = 3 + (int) packs.size();
+            const int next = reset ? 0 : (((sourceIndex (f, packs) + steps) % n) + n) % n;
+            f.pack = next >= 3 ? packs[(size_t) (next - 3)] : std::string();
+            f.bank = next == 1 ? preset::Bank::Factory : next == 2 ? preset::Bank::User : preset::Bank::All;
+            break;
+        }
+        case BrowseFavourites: f.favouritesOnly = reset ? false : (std::abs (steps) % 2 == 1 ? ! f.favouritesOnly : f.favouritesOnly); break;
+        case BrowseTag:
+        {
+            const auto tags = preset::usedQuickTags (entries);
+            int cur = -1;
+            if (f.required.size() == 1)
+                if (const auto it = std::find (tags.begin(), tags.end(), f.required.front()); it != tags.end()) cur = (int) (it - tags.begin());
+            const int next = reset ? -1 : cycle (cur, steps, (int) tags.size());
+            f.required.clear();
+            if (next >= 0) f.required.push_back (tags[(size_t) next]);
+            break;
+        }
+        case BrowseRating: f.minRating = reset ? 0 : juce::jlimit (0, 5, f.minRating + steps); break;
+        case BrowseSort: f.sort = reset ? preset::Sort::Name : (preset::Sort) ((((int) f.sort + steps) % 4 + 4) % 4); break;
+        default: return;
+    }
+    // the cursor stays on its preset while it passes the filter, else the first one shown
+    const auto v = pm.view();
+    if (std::find (v.begin(), v.end(), cursor) == v.end()) cursor = v.empty() ? -1 : v.front();
+    browseFollow();
+}
+
+bool GridController::browseFilterActive (int column) const
+{
+    const auto& f = proc.presets().filter;
+    switch (column)
+    {
+        case BrowseCategory: return ! f.tags.empty();
+        case BrowseEngine: return ! f.engine.empty();
+        case BrowseSource: return ! f.pack.empty() || f.bank != preset::Bank::All;
+        case BrowseFavourites: return f.favouritesOnly;
+        case BrowseTag: return ! f.required.empty();
+        case BrowseRating: return f.minRating > 0;
+        case BrowseSort: return f.sort != preset::Sort::Name;
+        default: return false;
+    }
+}
+
+juce::String GridController::browseValue (int column) const
+{
+    const auto& pm = proc.presets();
+    const auto& f = pm.filter;
+    switch (column)
+    {
+        case BrowseScroll:
+        {
+            const auto v = pm.view();
+            const auto it = std::find (v.begin(), v.end(), cursor);
+            return juce::String (it == v.end() ? 0 : (int) (it - v.begin()) + 1) + "/" + juce::String ((int) v.size());
+        }
+        case BrowseCategory: return f.tags.empty() ? tr ("All") : f.tags.size() == 1 ? LibraryBrowser::tagText (f.tags.front()) : juce::String ((int) f.tags.size()) + "+";
+        case BrowseEngine: return f.engine.empty() ? tr ("All") : LibraryBrowser::engineText (f.engine);
+        case BrowseSource:
+        {
+            if (! f.pack.empty())
+            {
+                for (const auto& p : pm.contentPacks())
+                    if (p.id == f.pack) return juce::String::fromUTF8 ((i18n::current() == i18n::Language::German && ! p.nameDe.empty() ? p.nameDe : p.nameEn).c_str());
+                return juce::String::fromUTF8 (f.pack.c_str());
+            }
+            return f.bank == preset::Bank::Factory ? tr ("Factory") : f.bank == preset::Bank::User ? tr ("User") : tr ("All");
+        }
+        case BrowseFavourites: return f.favouritesOnly ? tr ("On") : tr ("Off");
+        case BrowseTag: return f.required.empty() ? tr ("All") : LibraryBrowser::tagText (f.required.front());
+        case BrowseRating: return f.minRating > 0 ? ">=" + juce::String (f.minRating) + "*" : tr ("All");
+        case BrowseSort:
+        {
+            static const char* sorts[] = { "Name", "Rating", "Engine", "Newest" };
+            return tr (sorts[juce::jlimit (0, 3, (int) f.sort)]);
+        }
+        default: return {};
+    }
+}
+
+void GridController::refreshBrowseDisplay()
+{
+    // line 1: the eight columns' values (a touched encoder: its name and value in full on line 1)
+    static const char* namesEn[] = { "Scroll", "Category", "Engine", "Source", "Favourites", "Tag", "Rating", "Sort" };
+    static const char* namesDe[] = { "Liste", "Kategorie", "Engine", "Quelle", "Favoriten", "Merkmal", "Bewertung", "Sortierung" };
+    const bool de = i18n::current() == i18n::Language::German;
+    std::array<std::string, g::numCells> values {};
+    for (int i = 0; i < g::numCells; ++i) values[(size_t) i] = g::shortValue (str (browseValue (i)));
+    lines[0] = g::cellLine (values);
+    if (touched >= 0 && touched < g::numCells)
+        lines[0] = g::fitLine (str (juce::String (de ? namesDe[touched] : namesEn[touched]) + ": " + browseValue (touched)));
+    // lines 2 - 4: the preset before, the one under the cursor (marked), the next one -
+    // name | category | engine | author or pack, favourite and rating
+    const auto& pm = proc.presets();
+    const auto v = pm.view();
+    const auto& entries = pm.entries();
+    const auto it = std::find (v.begin(), v.end(), cursor);
+    const int pos = it == v.end() ? -1 : (int) (it - v.begin());
+    for (int r = 0; r < 3; ++r)
+    {
+        const int at = pos + r - 1;
+        if (pos < 0 || at < 0 || at >= (int) v.size())
+        {
+            lines[(size_t) (r + 1)] = g::fitLine (r == 1 && v.empty() ? str (tr ("No presets - turn the filters back")) : std::string());
+            continue;
+        }
+        const auto& e = entries[(size_t) v[(size_t) at]];
+        juce::String cat;
+        for (const auto& t : e.meta.tags)
+            if (preset::isCategory (t)) { cat = LibraryBrowser::tagText (t); break; }
+        juce::String who = juce::String::fromUTF8 (e.meta.author.c_str());
+        for (const auto& pk : pm.contentPacks())
+            if (! e.pack.empty() && pk.id == e.pack) who = juce::String::fromUTF8 ((de && ! pk.nameDe.empty() ? pk.nameDe : pk.nameEn).c_str());
+        if (who.isEmpty()) who = e.factory ? tr ("Factory") : tr ("User");
+        juce::String marks;
+        if (e.favourite) marks << "+";
+        if (e.rating > 0) marks << juce::String (e.rating) << "*";
+        const auto pre = r == 1 ? juce::String (">") : juce::String (" ");
+        const auto name = juce::String::fromUTF8 (e.meta.name.c_str());
+        const int whoRoom = juce::jmax (1, 16 - marks.length() - 1);
+        lines[(size_t) (r + 1)] = g::segmentLine ({ str (pre + name), str (" " + cat), str (" " + LibraryBrowser::engineText (e.meta.engine)),
+                                                   str (" " + who.substring (0, whoRoom) + (marks.isEmpty() ? juce::String() : " " + marks)) });
     }
 }
 
@@ -805,6 +1269,17 @@ void GridController::setParam (const juce::String& id, float plain)
 void GridController::turn (int encoder, int delta)
 {
     if (encoder < 0 || encoder >= g::numCells || delta == 0) return;
+    if (browse) // p59: the browse columns (scroll: a row every two ticks, filters: a step every four)
+    {
+        auto& acc = encAccum[(size_t) encoder];
+        acc += delta;
+        const int div = encoder == BrowseScroll ? 2 : 4;
+        const int steps = acc / div;
+        if (steps == 0) return;
+        acc -= steps * div;
+        browseTurn (encoder, steps);
+        return;
+    }
     const auto& id = encIds[(size_t) encoder];
     if (id.empty()) return;
     const auto& reg = proc.core().params();
@@ -890,6 +1365,14 @@ void GridController::refreshMap()
         const size_t k = (size_t) (pg * 4 + i);
         encIds[(size_t) i] = k < ids.size() ? ids[k] : std::string();
     }
+    // p59: Volume = the four parts' volume (1 - 4) and pan (5 - 8); Pan & Send = send A (1 - 4) and send B (5 - 8)
+    if (encPage != EncoderPage::Normal)
+        for (int i = 0; i < Core::numParts; ++i)
+        {
+            const auto ch = "mix.ch" + std::to_string (i + 1) + ".";
+            encIds[(size_t) i] = ch + (encPage == EncoderPage::Volume ? "vol" : "senda");
+            encIds[(size_t) (i + 4)] = ch + (encPage == EncoderPage::Volume ? "pan" : "sendb");
+        }
 }
 
 void GridController::refreshDisplay()
@@ -940,7 +1423,9 @@ void GridController::refreshDisplay()
     const int n = numPages (modeParams (m, core, ctx));
     juce::String page = tr (modeInfo (m).nameEn);
     if (pg < (int) titles.size() && titles[(size_t) pg].size() > 0) page = tr (titles[(size_t) pg].c_str());
-    const juce::String count = juce::String (pg + 1) + "/" + juce::String (n);
+    juce::String count = juce::String (pg + 1) + "/" + juce::String (n);
+    if (encPage != EncoderPage::Normal) { page = tr (encPage == EncoderPage::Volume ? "Volume" : "Pan & Send"); count = {}; } // p59
+    if (browse) { page = tr ("Browse"); count = {}; }
     page = juce::String (g::fold (str (page)).substr (0, (size_t) juce::jmax (1, g::lineLength / 4 - 2 - count.length()))) + " " + count;
     juce::String tx = tr ("Stop");
     if (core.countInActive()) tx = tr ("Count-in");
@@ -956,6 +1441,34 @@ void GridController::refreshDisplay()
         padText = layoutSummary (padLayout(), harmony::gridOptions (reg)) + " O" + juce::String (hooks.octave ? hooks.octave() : 3);
     }
     lines[3] = g::segmentLine ({ str (page), str (tx), str (proc.tapeTimeText (secs).replace (juce::String::fromUTF8 (" \xc2\xb7 "), "  ")), str (padText) });
+    if (browse) refreshBrowseDisplay(); // p59: the preset list
+    if (scalesHeld) // p59: Scales held - the grid options over the upper row
+    {
+        const bool de = i18n::current() == i18n::Language::German;
+        const auto o = harmony::gridOptions (reg);
+        std::array<std::string, g::numCells> names {}, vals {};
+        const auto ln = de ? harmony::layoutNamesDe() : harmony::layoutNamesEn();
+        for (int l = 0; l < harmony::numLayouts; ++l)
+        {
+            names[(size_t) l] = g::shortName (ln[(size_t) l]);
+            vals[(size_t) l] = l == o.layout ? "[x]" : "";
+        }
+        names[4] = de ? "Toene" : "Notes";
+        vals[4] = o.inKey ? (de ? "Tonart" : "In Key") : (de ? "Chrom." : "Chrom");
+        names[5] = de ? "Unten" : "Bottom";
+        vals[5] = o.fixed ? (de ? "C fest" : "Fixed C") : (de ? "Grundt." : "Root");
+        names[6] = de ? "Grundt." : "Root";
+        vals[6] = pitchNames[juce::jlimit (0, 11, (int) std::lround (reg.get (Core::Ids::keyRoot)))];
+        names[7] = de ? "Skala" : "Scale";
+        vals[7] = g::shortValue (str (juce::String (scaleNames[(size_t) juce::jlimit (0, (int) scaleNames.size() - 1, (int) std::lround (reg.get ("key.scale")))])));
+        lines[0] = g::cellLine (names);
+        lines[1] = g::cellLine (vals);
+        lines[2] = g::fitLine (str ((de ? "Raster: " : "Grid: ") + juce::String (ln[(size_t) o.layout]) + " - "
+                                    + (o.inKey ? (de ? "nur Tonart" : "In Key") : (de ? "chromatisch" : "Chromatic")) + " - "
+                                    + (o.fixed ? (de ? "unten links C" : "bottom left C") : (de ? "unten links Grundton" : "bottom left root"))));
+        lines[3] = g::fitLine (de ? "Scales halten + obere Tasten waehlen (Shift: Grundton / Skala zurueck)"
+                                  : "Hold Scales + upper buttons to choose (Shift: root / scale back)");
+    }
     if (splashTicks > 0) lines = g::splashLines (splashTicks > 20 ? 0 : 1, i18n::current() == i18n::Language::German); // p53
 
     // p53: only a connected first-generation device has the text display (a later one: pixel display over USB)
@@ -1053,6 +1566,71 @@ void GridController::refreshLights()
     ccLight[(size_t) g::cc::master] = g::buttonCode (masterTempo);
     ccLight[(size_t) g::cc::note] = g::buttonCode (mode == PadMode::Keys);
     ccLight[(size_t) g::cc::session] = g::buttonCode (mode == PadMode::Steps);
+
+    // ---- p59: the further function buttons, lit by state
+    auto anyCh = [&] (const char* k) {
+        for (int i = 1; i <= Core::numParts; ++i)
+            if (reg.get ("mix.ch" + std::to_string (i) + "." + k) >= 0.5f) return true;
+        return false;
+    };
+    const auto pre = "p" + std::to_string (ctx.part + 1) + ".";
+    const bool motionRec = reg.get (pre + "motion.rec") >= 0.5f;
+    ccLight[(size_t) g::cc::scales] = g::buttonCode (key.lock || scalesHeld, true, scalesHeld);
+    ccLight[(size_t) g::cc::mute] = g::buttonCode (anyCh ("mute"), true, muteHeld);
+    ccLight[(size_t) g::cc::solo] = g::buttonCode (anyCh ("solo"), true, soloHeld);
+    ccLight[(size_t) g::cc::deleteButton] = g::buttonCode (deleteHeld);
+    ccLight[(size_t) g::cc::device] = g::buttonCode (hooks.fxEditorShown && hooks.fxEditorShown());
+    ccLight[(size_t) g::cc::browse] = g::buttonCode (browse);
+    ccLight[(size_t) g::cc::track] = g::buttonCode (m == Mode::Mixer);
+    ccLight[(size_t) g::cc::clip] = g::buttonCode (m == Mode::Tape);
+    ccLight[(size_t) g::cc::volume] = g::buttonCode (encPage == EncoderPage::Volume);
+    ccLight[(size_t) g::cc::panSend] = g::buttonCode (encPage == EncoderPage::PanSend);
+    ccLight[(size_t) g::cc::accent] = g::buttonCode (accentNow.load());
+    ccLight[(size_t) g::cc::quantize] = g::buttonCode (reg.get (pre + "quant") >= 0.5f);
+    ccLight[(size_t) g::cc::duplicate] = g::buttonCode (false);
+    ccLight[(size_t) g::cc::doubleButton] = g::buttonCode (false);
+    ccLight[(size_t) g::cc::newButton] = g::buttonCode (false);
+    ccLight[(size_t) g::cc::fixedLength] = g::buttonCode ((int) std::lround (reg.get ("seq.step.length")) != 16);
+    ccLight[(size_t) g::cc::automation] = g::buttonCode (motionRec, true, motionRec && proc.tapeRolling());
+    ccLight[(size_t) g::cc::addEffect] = g::buttonCode (false);
+    ccLight[(size_t) g::cc::user] = g::buttonCode (hooks.breedingShown && hooks.breedingShown());
+    ccLight[(size_t) g::cc::addTrack] = 0; // not mapped (skipped)
+    ccLight[(size_t) g::cc::stepIn] = 0;
+    ccLight[(size_t) g::cc::stepOut] = 0;
+    const bool arpOn = reg.get ("seq.arp.on") >= 0.5f;
+    const int arpRate = (int) std::lround (reg.get ("seq.arp.rate"));
+    for (int s = 0; s < g::cc::numScenes; ++s)
+    {
+        const bool heldNow = (scenesHeld & (1 << s)) != 0;
+        const bool isRate = g::sceneRate (s) == arpRate;
+        ccLight[(size_t) (g::cc::firstScene + s)] = g::colourCode (heldNow ? g::Colour::Green : isRate ? (arpOn ? g::Colour::Yellow : g::Colour::YellowDim)
+                                                                                                    : g::Colour::AmberDim);
+    }
+    if (scalesHeld) // the upper row = layouts, In Key, fixed C, root, scale
+    {
+        const auto o = harmony::gridOptions (reg);
+        for (int k = 0; k < 8; ++k)
+        {
+            g::Colour c = g::Colour::AmberDim;
+            if (k < harmony::numLayouts) c = k == o.layout ? g::Colour::Yellow : g::Colour::YellowDim;
+            else if (k == 4) c = o.inKey ? g::Colour::Green : g::Colour::GreenDim;
+            else if (k == 5) c = o.fixed ? g::Colour::Green : g::Colour::GreenDim;
+            ccLight[(size_t) (g::cc::upperRow + k)] = g::colourCode (c);
+        }
+    }
+    else if (browse) // the upper row under the columns: lit = that filter is set; 1 = load
+        for (int k = 0; k < 8; ++k)
+            ccLight[(size_t) (g::cc::upperRow + k)] = g::colourCode (k == BrowseScroll ? g::Colour::Green
+                                                                     : browseFilterActive (k) ? g::Colour::Yellow : g::Colour::YellowDim);
+    if (muteHeld || soloHeld) // the part buttons show mute (red) / solo (amber)
+        for (int k = 0; k < Core::numParts; ++k)
+        {
+            const bool on = reg.get ("mix.ch" + std::to_string (k + 1) + (muteHeld ? ".mute" : ".solo")) >= 0.5f;
+            ccLight[(size_t) (g::cc::lowerRow + k)] = g::colourCode (muteHeld ? (on ? g::Colour::Red : g::Colour::RedDim) : (on ? g::Colour::Amber : g::Colour::AmberDim));
+        }
+    else if (browse) // part buttons 1 - 4 load into that part
+        for (int k = 0; k < Core::numParts; ++k)
+            ccLight[(size_t) (g::cc::lowerRow + k)] = g::colourCode (k == ctx.part ? g::Colour::Green : g::Colour::GreenDim);
 
     if (! isConnected) return; // p53: the virtual controller only
     for (int pad = 0; pad < g::numPads; ++pad)

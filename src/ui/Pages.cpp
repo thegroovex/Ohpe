@@ -431,6 +431,7 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
             groups.push_back ({ "Morph", 0, { p + "morph.on", p + "morph.x", p + "morph.y", p + "morph.glide", p + "morph.xsrc", p + "morph.ysrc" } }); // p16
             groups.push_back ({ "Motion", 0, { p + "motion.on", p + "motion.rec", p + "motion.len", p + "motion.amt", p + "motion.clear" } }); // p22
             groups.push_back ({ "Harmony", 0, { "harmony.p" + std::to_string (juce::jlimit (0, Core::numParts - 1, ctx.part) + 1) + ".follow", "harmony.memory", "harmony.hold", "harmony.kb.layout", "harmony.take", "harmony.clear" } }); // p24
+            groups.push_back ({ "Grid", 0, { "harmony.kb.layout", "harmony.kb.inkey", "harmony.kb.fixed" } }); // p59
             return groups;
         }
         case Mode::Effects:

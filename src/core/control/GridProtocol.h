@@ -47,7 +47,21 @@ constexpr int masterEncoder = 79;
 constexpr int play = 85, record = 86;
 constexpr int lowerRow = 102;  ///< 102 .. 109: the second button row
 constexpr int undo = 119;
+// p59: the further function buttons of the first generation
+constexpr int firstScene = 36; ///< 36 .. 43: the eight timing buttons on the right, 1/4 1/4t 1/8 1/8t 1/16 1/16t 1/32 1/32t
+constexpr int numScenes = 8;
+constexpr int addEffect = 52, addTrack = 53, mute = 60, solo = 61, stepIn = 62, stepOut = 63;
+constexpr int newButton = 87, duplicate = 88, automation = 89, fixedLength = 90;
+constexpr int device = 110, browse = 111, track = 112, clip = 113, volume = 114, panSend = 115;
+constexpr int quantize = 116, doubleButton = 117, deleteButton = 118;
 } // namespace cc
+
+/** p59: the arp / note-repeat rate (seq::rateNames index) of timing button 0 .. 7 (1/4, 1/4t, 1/8, ... 1/32t). */
+inline int sceneRate (int scene) noexcept
+{
+    static const int rates[] = { 0, 4, 1, 5, 2, 6, 3, 7 }; // 1/4 1/4T 1/8 1/8T 1/16 1/16T 1/32 1/32T
+    return scene >= 0 && scene < cc::numScenes ? rates[scene] : -1;
+}
 
 constexpr int touchNoteMaster = 8, touchNoteStrip = 12;
 
