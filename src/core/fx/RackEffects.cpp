@@ -612,9 +612,9 @@ std::vector<ParamDescriptor> MultibandEffect::getParamDescriptors() const
              continuous ("upward", "Multiband Upward", "Multiband aufwärts", 0.0f, 1.0f, 1.0f),
              continuous ("downward", "Multiband Downward", "Multiband abwärts", 0.0f, 1.0f, 1.0f),
              continuous ("time", "Multiband Time", "Multiband Zeit", 0.0f, 1.0f, 0.5f),
-             continuous ("low", "Multiband Low", "Multiband Tiefen", -12.0f, 12.0f, 0.0f, ParamUnit::Decibel),
-             continuous ("mid", "Multiband Mid", "Multiband Mitten", -12.0f, 12.0f, 0.0f, ParamUnit::Decibel),
-             continuous ("high", "Multiband High", "Multiband Höhen", -12.0f, 12.0f, 0.0f, ParamUnit::Decibel),
+             continuous ("low", "Multiband Low", "Multiband Low", -12.0f, 12.0f, 0.0f, ParamUnit::Decibel),
+             continuous ("mid", "Multiband Mid", "Multiband Mid", -12.0f, 12.0f, 0.0f, ParamUnit::Decibel),
+             continuous ("high", "Multiband High", "Multiband High", -12.0f, 12.0f, 0.0f, ParamUnit::Decibel),
              continuous ("lowsplit", "Multiband Low Split", "Multiband Trennung tief", 40.0f, 500.0f, 120.0f, ParamUnit::Hertz, 0.5f),
              continuous ("highsplit", "Multiband High Split", "Multiband Trennung hoch", 800.0f, 8000.0f, 2500.0f, ParamUnit::Hertz, 0.5f),
              continuous ("output", "Multiband Output", "Multiband Ausgang", -12.0f, 12.0f, 0.0f, ParamUnit::Decibel),
@@ -771,19 +771,19 @@ std::vector<ParamDescriptor> EqEffect::getParamDescriptors() const
     };
     auto g = [] (const char* id, const char* en, const char* de) { return continuous (id, en, de, -18.0f, 18.0f, 0.0f, ParamUnit::Decibel); };
     auto q = [] (const char* id, const char* en, const char* de) { return continuous (id, en, de, 0.3f, 12.0f, 1.0f, ParamUnit::None, 0.4f); };
-    return { f ("lowfreq", "EQ Low Shelf Freq", "EQ Tiefen-Kuhschwanz Frequenz", 20.0f, 1000.0f, 100.0f),
-             g ("lowgain", "EQ Low Shelf Gain", "EQ Tiefen-Kuhschwanz Gain"),
+    return { f ("lowfreq", "EQ Low Shelf Freq", "EQ Low Shelf Frequenz", 20.0f, 1000.0f, 100.0f),
+             g ("lowgain", "EQ Low Shelf Gain", "EQ Low Shelf Gain"),
              f ("p1freq", "EQ Band 1 Freq", "EQ Band 1 Frequenz", 30.0f, 18000.0f, 300.0f),
              g ("p1gain", "EQ Band 1 Gain", "EQ Band 1 Gain"),
-             q ("p1q", "EQ Band 1 Q", "EQ Band 1 Güte"),
+             q ("p1q", "EQ Band 1 Q", "EQ Band 1 Q"),
              f ("p2freq", "EQ Band 2 Freq", "EQ Band 2 Frequenz", 30.0f, 18000.0f, 1200.0f),
              g ("p2gain", "EQ Band 2 Gain", "EQ Band 2 Gain"),
-             q ("p2q", "EQ Band 2 Q", "EQ Band 2 Güte"),
+             q ("p2q", "EQ Band 2 Q", "EQ Band 2 Q"),
              f ("p3freq", "EQ Band 3 Freq", "EQ Band 3 Frequenz", 30.0f, 18000.0f, 4500.0f),
              g ("p3gain", "EQ Band 3 Gain", "EQ Band 3 Gain"),
-             q ("p3q", "EQ Band 3 Q", "EQ Band 3 Güte"),
-             f ("highfreq", "EQ High Shelf Freq", "EQ Höhen-Kuhschwanz Frequenz", 1000.0f, 20000.0f, 8000.0f),
-             g ("highgain", "EQ High Shelf Gain", "EQ Höhen-Kuhschwanz Gain"),
+             q ("p3q", "EQ Band 3 Q", "EQ Band 3 Q"),
+             f ("highfreq", "EQ High Shelf Freq", "EQ High Shelf Frequenz", 1000.0f, 20000.0f, 8000.0f),
+             g ("highgain", "EQ High Shelf Gain", "EQ High Shelf Gain"),
              continuous ("output", "EQ Output", "EQ Ausgang", -18.0f, 18.0f, 0.0f, ParamUnit::Decibel) };
 }
 
@@ -1011,8 +1011,8 @@ std::vector<ParamDescriptor> EchoEffect::getParamDescriptors() const
              continuous ("time", "Echo Time", "Echo-Zeit", 1.0f, 2000.0f, 375.0f, ParamUnit::Milliseconds, 0.4f),
              continuous ("ratio", "Echo Right Ratio", "Echo Verhältnis rechts", 0.25f, 1.0f, 0.75f),
              continuous ("feedback", "Echo Feedback", "Echo-Feedback", 0.0f, 1.05f, 0.4f),
-             continuous ("lowcut", "Echo Low Cut", "Echo Tiefensperre", 20.0f, 2000.0f, 120.0f, ParamUnit::Hertz, 0.3f),
-             continuous ("highcut", "Echo High Cut", "Echo Höhensperre", 1000.0f, 20000.0f, 8000.0f, ParamUnit::Hertz, 0.3f),
+             continuous ("lowcut", "Echo Low Cut", "Echo Low Cut", 20.0f, 2000.0f, 120.0f, ParamUnit::Hertz, 0.3f),
+             continuous ("highcut", "Echo High Cut", "Echo High Cut", 1000.0f, 20000.0f, 8000.0f, ParamUnit::Hertz, 0.3f),
              continuous ("width", "Echo Width", "Echo-Breite", 0.0f, 1.0f, 1.0f),
              continuous ("mix", "Echo Mix", "Echo-Mischung", 0.0f, 1.0f, 0.3f) };
 }

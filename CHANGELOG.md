@@ -7,9 +7,15 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: FX editor: the picture now follows encoder, MIDI and host changes smoothly (it redrew only by chance before); curves are cached; long parameter names fit the bar list; German EQ terms use the studio words (Low Shelf, High Shelf, Q, Low Cut, High Cut).
+- DE: FX-Editor: das Bild folgt Encoder-, MIDI- und Host-Änderungen jetzt flüssig (vorher nur zufällig neu gezeichnet); Kurven zwischengespeichert; lange Parameternamen passen in die Balkenliste; deutsche EQ-Begriffe wie im Studio (Low Shelf, High Shelf, Q, Low Cut, High Cut).
 - EN: Grid controller (p58): a sustain pedal in the controller's pedal jack now holds notes (CC 64 sustain, CC 66
   sostenuto, CC 67 passed on) like from any MIDI keyboard, also in MPE / Fingerboard parts; it was taken as a button
   press and dropped. Display line 3: a long preset name is cut to its column with a space before "Part 1".
+- DE: Grid-Controller (p58): ein Haltepedal an der Pedalbuchse des Controllers hält jetzt Noten (CC 64 Sustain, CC 66
+  Sostenuto, CC 67 weitergereicht) wie von jedem MIDI-Keyboard, auch in MPE-/Fingerboard-Parts; es wurde als
+  Tastendruck genommen und verworfen. Display-Zeile 3: ein langer Presetname wird auf seine Spalte gekürzt, mit
+  Leerzeichen vor „Part 1".
 
 ## 0.6.3 Preview – 2026-10-19
 
