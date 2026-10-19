@@ -41,6 +41,10 @@ struct PageContext
     int fxView = 0;       ///< 0.7: Effects mode view (modfx::FxView: Sends, Rack, Master)
     int modRouting = 0;   ///< 0.7: selected routing of the matrix, 0..15
     int fxSlot = 0;       ///< 0.7: selected slot of the shown FX rack
+    /** p55: the point selected in the FX editor - its parameters form an extra encoder page right after "Slot" (only
+        while they belong to the selected slot's effect). */
+    std::vector<std::string> fxFocus;
+    std::string fxFocusTitle;
 };
 
 /** Parameter IDs a mode puts on the encoders, four per page. Empty strings leave an encoder free. */

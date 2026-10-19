@@ -129,23 +129,48 @@ std::vector<std::string> slotEffectParams (const Core& core, const std::string& 
     return ids;
 }
 
-std::vector<std::string> rackParams (const Core& core, const std::vector<std::string>& pre, int slot)
+std::vector<std::string> rackFocus (const Core& core, const std::string& pre, const std::vector<std::string>& focus)
+{
+    std::vector<std::string> ids;
+    const int t = getInt (core, pre + "type");
+    if (focus.empty() || t <= 0 || t >= InsertSlot::numTypes) return ids;
+    const auto info = InsertSlot::typeInfo (t);
+    if (info.id == nullptr) return ids;
+    const std::string block = pre + info.id + ".";
+    for (const auto& id : focus)
+        if (id.compare (0, block.size(), block) == 0 && core.params().indexOf (id) >= 0 && ids.size() < 4) ids.push_back (id);
+    return ids;
+}
+
+std::vector<std::string> rackParams (const Core& core, const std::vector<std::string>& pre, int slot, const std::vector<std::string>& focus)
 {
     slot = juce::jlimit (0, (int) pre.size() - 1, slot);
     const auto& p = pre[(size_t) slot];
     std::vector<std::string> ids { p + "type", p + "mix", p + "bypass", "" };
+    if (auto f = rackFocus (core, p, focus); ! f.empty()) // p55: the FX editor's selected point
+    {
+        f.resize (4);
+        ids.insert (ids.end(), f.begin(), f.end());
+    }
     for (const auto& id : slotEffectParams (core, p)) ids.push_back (id);
     while (ids.size() % 4 != 0) ids.emplace_back();
     return ids;
 }
 
-std::vector<std::string> rackTitles (const Core& core, const std::vector<std::string>& pre, int slot)
+std::vector<std::string> rackTitles (const Core& core, const std::vector<std::string>& pre, int slot, const std::vector<std::string>& focus,
+                                     const std::string& focusTitle)
 {
     slot = juce::jlimit (0, (int) pre.size() - 1, slot);
-    const auto ids = rackParams (core, pre, slot);
+    const auto ids = rackParams (core, pre, slot, focus);
     std::vector<std::string> t { "Slot" };
     const auto info = InsertSlot::typeInfo (getInt (core, pre[(size_t) slot] + "type"));
-    for (size_t i = 4; i < ids.size(); i += 4) t.emplace_back (info.nameEn);
+    size_t first = 4;
+    if (! rackFocus (core, pre[(size_t) slot], focus).empty())
+    {
+        t.push_back (focusTitle.empty() ? std::string ("Focus") : focusTitle); // already translated (FX editor)
+        first = 8;
+    }
+    for (size_t i = first; i < ids.size(); i += 4) t.emplace_back (info.nameEn);
     return t;
 }
 

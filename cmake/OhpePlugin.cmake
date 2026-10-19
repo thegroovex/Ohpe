@@ -73,6 +73,8 @@ list(APPEND OHPE_PLUGIN_SOURCES
     ${CMAKE_SOURCE_DIR}/src/plugin/PresetManager.cpp)
 # 0.7: display views of the modulation matrix and the FX racks
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ModFxViews.cpp)
+# p55: the graphical FX slot editor (Effects mode, Rack / Master)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/FxEditor.cpp)
 file(GLOB OHPE_FACTORY_PRESETS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/resources/presets/factory/*.ohpepreset)
 juce_add_binary_data(ohpe_presets
     HEADER_NAME OhpePresets.h
