@@ -7,6 +7,25 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Grid keyboard layouts (p59): new layout Sequential (+1 / +8, continuous rows); new switches In Key / Chromatic
+  (`harmony.kb.inkey`, every layout: only key notes with rows in scale degrees, or every note with the others dark) and
+  Fixed C (`harmony.kb.fixed`; off, the new default: the bottom-left cell is the key's root, so chord shapes are the same
+  in every key). The old In Key layout opens as Fourths + In Key. Encoder page Harmony > Grid, Grid-Controller display
+  line 4 shows layout / In Key / Fixed. Chord guide with grip diagrams in Harmony and the in-app help.
+- EN: Grid-Controller (p59): holding Scales shows the grid options, the upper buttons choose layout, In Key, Fixed C,
+  root and scale (tap = next layout). More buttons mapped and lit by state: Mute / Solo (+ part buttons), Volume and
+  Pan & Send encoder pages for the four parts, Device (FX editor), Browse (preset browser on the display: list with
+  neighbours, category / engine / source / favourites / tag / rating / sort on the encoders, up / down audition, Select
+  or a part button loads, Shift = favourite; the screen library follows), Track (mixer), Clip (tape), Accent (full
+  velocity), Quantize, Duplicate / Double (step pattern), Delete + step, New (start sound), Fixed Length (step length),
+  Automation (motion record), Add Effect, User (breeding), timing buttons 1/4 ... 1/32t = note repeat while held.
+- DE: Raster-Anordnungen (p59): neue Anordnung Sequenziell (+1 / +8, fortlaufende Reihen); neue Schalter Nur Tonart /
+  Chromatisch (`harmony.kb.inkey`, jede Anordnung) und C fest (`harmony.kb.fixed`; aus, neu ab Werk: unten links liegt
+  der Grundton der Tonart, Akkordformen sind in jeder Tonart gleich). Die frühere Anordnung In Tonart öffnet als Quarten +
+  Nur Tonart. Akkord-Leitfaden mit Griffbildern. Grid-Controller: Scales halten zeigt die Raster-Optionen; weitere Tasten
+  belegt (Mute / Solo, Volume, Pan & Send, Device, Browse mit Preset-Browser im Display, Track, Clip, Accent, Quantize,
+  Duplicate, Double, Delete, New, Fixed Length, Automation, Add Effect, User, Notenwiederholung 1/4 ... 1/32t).
+
 ## 0.6.3 Preview – 2026-10-19
 
 [Notes / Hinweise](docs/release-notes/0.6.3.md)

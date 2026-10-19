@@ -724,6 +724,7 @@ Edit-Part folgt.
 | **Halten** (Softkey) | das Gedächtnis einfrieren |
 | **Vergessen** (Softkey) | Tonart, Akkord und Verlauf vergessen |
 | Regler, Seite *Harmonie* | Folgen (Edit-Part: Aus / Skala / Akkord / Grundton), Gedächtnis (Takte), Halten, Raster-Anordnung |
+| Regler, Seite *Raster* | Raster-Anordnung (Quarten / Terzen / Ganztöne / Sequenziell), Nur Tonart / Chromatisch, C fest (aus = Grundton unten links) |
 
 Die Taste **RASTER** (zwischen OKTAVE + und MIDI) tauscht die Klaviertasten gegen die isomorphe Raster-Tastatur:
 4 × 24 Felder in Quarten, Terzen, Ganztönen oder nur den Tönen der Tonart; Akkordtöne tragen einen violetten Balken.

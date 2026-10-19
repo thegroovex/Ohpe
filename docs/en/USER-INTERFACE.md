@@ -694,6 +694,7 @@ and the last eight chords. The strip says what the brain does and whether the ed
 | **Hold** (soft key) | freeze the memory |
 | **Forget** (soft key) | forget key, chord and history |
 | Encoders, page *Harmony* | Follow (edit part: Off / Scale / Chord / Root), Memory (bars), Hold, Grid Layout |
+| Encoders, page *Grid* | Grid Layout (Fourths / Thirds / Whole Tones / Sequential), In Key / Chromatic, Fixed C (off = the key's root bottom left) |
 
 The **GRID** key (between OCTAVE + and MIDI) swaps the piano keys for the isomorphic grid keyboard: 4 × 24 cells in
 fourths, thirds, whole tones or only the key's notes; chord tones carry a violet bar. With MPE on for the edit part

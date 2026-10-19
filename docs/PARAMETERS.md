@@ -863,7 +863,7 @@ nor reset `harmony.pN.follow` (its role in the song, not its sound).
 | `harmony.hold` | Harmony Hold | Harmonie halten | Off / On | Off |
 | `harmony.take` | Harmony Take Key | Harmonie Tonart übernehmen | trigger (not part of projects) | off |
 | `harmony.clear` | Harmony Clear | Harmonie vergessen | trigger (not part of projects) | off |
-| `harmony.kb.layout` | Grid Layout | Raster-Anordnung | Fourths, Thirds, Whole Tones, In Key | Fourths |
+| `harmony.kb.layout` | Grid Layout | Raster-Anordnung | Fourths, Thirds, Whole Tones, Sequential (p59; was In Key, see p59 below) | Fourths |
 | `harmony.pN.follow` | Part N Harmony Follow | Part N Harmonie folgen | Off, Scale, Chord, Root | Off |
 
 The modulation matrix gains the sources **Chord Root**, **Chord Change** and **Tension** (29 – 31), the same value in
@@ -1043,3 +1043,16 @@ the keys that were down when it was pressed (all parts, with or without MPE).
 The modulation matrix gains the source **Key + Bend** (`keybend`, index 33, bipolar, per voice): key track
 ((note − 60) / 60) plus the note's own per-note bend in semitones / 60, clamped to −1 … +1 – the continuous position on
 a fingerboard. No new targets.
+
+## p59 – Grid keyboard: In Key / Chromatic, Fixed C
+
+Appended at the very end of the list (after `p4.mpe.pcurve`); global, saved in projects, automatable and MIDI-mappable.
+They act on the on-screen grid keyboard and the Grid-Controller pads alike, in every layout.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `harmony.kb.inkey` | Grid In Key | Raster nur Tonart | Off (Chromatic: every note) / On (In Key: only key notes, steps in scale degrees) | Off |
+| `harmony.kb.fixed` | Grid Fixed C | Raster C fest | Off (the bottom-left cell is the key's root) / On (it is C) | Off |
+
+`harmony.kb.layout` value 3 is now **Sequential** (+1 right, +8 up). Projects and presets from before that stored 3
+(the old *In Key* layout) and no `harmony.kb.inkey` open as **Fourths + In Key**. No new matrix sources or targets.
