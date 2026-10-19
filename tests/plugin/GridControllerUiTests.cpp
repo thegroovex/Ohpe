@@ -519,3 +519,40 @@ TEST_CASE ("p53 grid controller: a note held on a pad shows pressed on the on-sc
     CHECK_FALSE (e.gridKeyboard().alsoPressed (note));
     e.showGridKeyboard (false);
 }
+
+TEST_CASE ("p58 grid controller: the pedal jack's sustain (CC 64) holds pad notes after release, pedal up lets go")
+{
+    for (const bool mpe : { false, true })
+    {
+        CAPTURE (mpe);
+        Rig r;
+        auto& core = r.p.core();
+        r.setHost ("p1.amp.s", 1.0f);
+        r.setHost ("p1.amp.r", 0.01f);
+        r.setHost ("p1.mpe", mpe ? 1.0f : 0.0f);
+        r.c->setPadMode (ui::GridController::PadMode::Keys);
+        r.c->update();
+        r.play (2);
+        const float metroBefore = core.params().get ("metro.on");
+        r.in (juce::MidiMessage::noteOn (1, g::padNote (2, 1), (juce::uint8) 100));
+        r.in (juce::MidiMessage::noteOn (1, g::padNote (4, 1), (juce::uint8) 100));
+        r.play (2);
+        const int sounding = core.part (0).activeVoiceCount();
+        REQUIRE (sounding >= 2);
+        r.cc (64, 127); // "Controller Hold Pedal (on/off): 127 Channel 1"
+        r.play (1);
+        CHECK (core.part (0).sustainPedal());
+        r.in (juce::MidiMessage::noteOff (1, g::padNote (2, 1)));
+        r.in (juce::MidiMessage::noteOff (1, g::padNote (4, 1)));
+        r.play (60); // ~0.3 s: far past the release
+        CHECK (core.part (0).activeVoiceCount() == sounding);
+        r.cc (64, 0);
+        r.play (60);
+        CHECK_FALSE (core.part (0).sustainPedal());
+        CHECK (core.part (0).activeVoiceCount() == 0);
+        // never a button: nothing else changed
+        CHECK (core.params().get ("metro.on") == metroBefore);
+        CHECK (g::decode (0xb0, 64, 127).kind == g::Input::Pedal);
+        CHECK (g::decode (0xb0, 66, 127).kind == g::Input::Pedal);
+    }
+}
