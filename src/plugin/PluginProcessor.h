@@ -225,6 +225,11 @@ public:
     juce::AudioDeviceManager* standaloneDevices = nullptr;
     std::function<void()> openStandaloneAudioSettings;
 
+    /** p49: the Grid-Controller of a plug-in instance while its window is closed (the editor parks it here and takes
+        it back when it opens again), so the controller keeps working without the window. Deleted first in the
+        destructor (ports closed, lights off). Message thread. */
+    std::shared_ptr<void> parkedGridController;
+
     static BusesProperties makeBuses();
 
 private:

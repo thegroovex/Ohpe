@@ -134,16 +134,23 @@ const HelpTopic helpTopics[] = {
       "Anzeige > Erscheinung: Hell, Dunkel (blendarm für Nachtsessions) oder Auto (folgt dem System). Helligkeit dimmt das Display.\n\n"
       "Allgemein > Hilfe-Overlay benennt jeden Bereich des Instruments; F1 schaltet es ein und aus." },
     { "Grid controller", "Grid-Controller", // p46
-      "Grid controller profile 1 (standalone app): an 8 x 8 pad controller with a four-line display. Settings > MIDI > Controller: "
+      "Grid controller profile 1: an 8 x 8 pad controller with a four-line display. Settings > MIDI > Controller: "
       "choose the profile and the controller's MIDI input and output; View shows the virtual controller.\n\n"
+      "In a plug-in: switch the controller to its User mode and turn its user port off for tracks and remote in the DAW; Ohpe "
+      "opens the port itself (Choose ports automatically, or pick In / Out). One instance holds the controller: the window "
+      "opened or clicked last, or Take over here. Port in use: free it in the DAW, Ohpe tries again every second.\n\n"
       "Pads (Keys mode) = the on-screen grid keyboard: the same layout (Scales steps through Fourths, Thirds, Whole Tones, In Key), "
       "the same note for the same column and row, the same key (Shift + Scales: Scale Lock). Root amber, key notes yellow, chord tones "
       "green dim, held pads green. Octave - / + moves pads and screen grid together. Velocity and pressure play the edit part.\n\n"
       "Second button row: parts 1-4, pad modes Keys / Pads / Drum / Steps. First row: the mode keys. Encoders 1-8: the shown page and "
       "the next; arrows: page and preset; Play, Record, Stop, Metronome, Tap, Undo as their names say (Shift: tape play, arm, to start, "
       "count-in, redo). Touch strip: bend or mod.",
-      "Grid-Controller (Profil 1) (Standalone-App): ein 8 x 8-Pad-Controller mit vierzeiligem Display. Einstellungen > MIDI > "
+      "Grid-Controller (Profil 1): ein 8 x 8-Pad-Controller mit vierzeiligem Display. Einstellungen > MIDI > "
       "Controller: Profil und MIDI-Eingang und -Ausgang des Controllers wählen; Ansicht zeigt den virtuellen Controller.\n\n"
+      "Im Plug-in: den Controller in seinen User-Modus schalten und seinen User-Port in der DAW für Spuren und Fernsteuerung "
+      "ausschalten; Ohpe öffnet den Port selbst (Ports automatisch wählen, oder Ein / Ausgang wählen). Eine Instanz hält den "
+      "Controller: das zuletzt geöffnete oder angeklickte Fenster, oder Hierher holen. Port belegt: in der DAW freigeben, Ohpe "
+      "versucht es jede Sekunde erneut.\n\n"
       "Pads (Modus Tasten) = die Raster-Tastatur des Bildschirms: dieselbe Anordnung (Scales schaltet Quarten, Terzen, Ganztöne, "
       "In Tonart weiter), derselbe Ton für dieselbe Spalte und Reihe, dieselbe Tonart (Shift + Scales: Scale Lock). Grundton bernstein, "
       "Tonart-Töne gelb, Akkordtöne grün gedimmt, gehaltene Pads grün. Oktave - / + verschiebt Pads und Bildschirm-Raster gemeinsam. "
@@ -630,7 +637,7 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
                  [this, sm] { setPlain (Core::Ids::syncSmoothing, juce::jlimit (0.0f, 1.0f, std::round (sm * 10.0f - 1.0f) / 10.0f)); },
                  [this, sm] { setPlain (Core::Ids::syncSmoothing, juce::jlimit (0.0f, 1.0f, std::round (sm * 10.0f + 1.0f) / 10.0f)); });
         yy += row + u * 1.0f;
-        paintController (g, { x, yy, half, u * 2.0f + row * 2.0f }); // p46
+        paintController (g, { x, yy, half, u * 2.0f + row * (standalone ? 2.0f : 3.0f) }); // p46 (p49: plug-in: a third row)
     }
 }
 
@@ -689,7 +696,7 @@ void SettingsView::paintController (juce::Graphics& g, juce::Rectangle<float> a)
     if (gridCtl != nullptr && us.controllerProfile != settings::ControllerOff) title << juce::String::fromUTF8 ("  \xc2\xb7  ") << gridCtl->status();
     legend (g, title, { a.getX(), a.getY(), a.getWidth(), u * 1.6f });
     float y = a.getY() + u * 2.0f;
-    if (! standalone || gridCtl == nullptr)
+    if (gridCtl == nullptr)
     {
         g.setColour (colour::displayDim);
         g.setFont (labelFont (u * 1.3f));
@@ -697,7 +704,9 @@ void SettingsView::paintController (juce::Graphics& g, juce::Rectangle<float> a)
                           juce::Rectangle<float> (a.getX(), y, a.getWidth(), u * 6.0f).toNearestInt(), juce::Justification::topLeft, 3, 0.9f);
         return;
     }
+    const bool plugin = ! standalone; // p49: the plug-in opens the controller's ports itself
     const bool on = us.controllerProfile != settings::ControllerOff;
+    const bool autoOn = plugin && us.controllerAuto;
     float x = a.getX();
     const float wOff = u * 6.2f, wProfile = juce::jmax (u * 14.0f, a.getWidth() - wOff - u * 14.0f - gap * 3.0f), wStrip = u * 7.0f;
     chip (g, { x, y, wOff, h }, i18n::upper (tr ("Off")), ! on, colour::sunYellow,
@@ -714,17 +723,22 @@ void SettingsView::paintController (juce::Graphics& g, juce::Rectangle<float> a)
           [this] { changeSettings ([] (settings::UserSettings& s) { s.controllerStrip = 1; }); }, on);
     y += row;
     // ports: a stepper each (cycles through the system's MIDI ports), the preview toggle
+    // p49: automatic ports show the ports found; stepping picks a port and switches automatic off
     const float wPreview = u * 9.0f, wPort = (a.getWidth() - wPreview - gap * 2.0f) * 0.5f;
     auto portStepper = [&] (float px, bool isInput) {
         const auto names = isInput ? GridController::inputNames() : GridController::outputNames();
-        const juce::String cur (isInput ? us.controllerIn : us.controllerOut);
+        const juce::String cur = autoOn ? (isInput ? gridCtl->inputPort() : gridCtl->outputPort())
+                                        : juce::String (isInput ? us.controllerIn : us.controllerOut);
         const juce::String shown = (isInput ? tr ("In") : tr ("Out")) + ": " + (cur.isEmpty() ? juce::String ("-") : cur);
         auto pick = [this, names, cur, isInput] (int d) {
             if (names.isEmpty()) return;
             int i = names.indexOf (cur);
             i = i < 0 ? (d > 0 ? 0 : names.size() - 1) : (i + d + names.size()) % names.size();
             const auto chosen = names[i].toStdString();
-            changeSettings ([chosen, isInput] (settings::UserSettings& s) { (isInput ? s.controllerIn : s.controllerOut) = chosen; });
+            changeSettings ([chosen, isInput] (settings::UserSettings& s) {
+                (isInput ? s.controllerIn : s.controllerOut) = chosen;
+                s.controllerAuto = false;
+            });
         };
         stepper (g, { px, y, wPort, h }, shown, [pick] { pick (-1); }, [pick] { pick (1); });
     };
@@ -732,6 +746,20 @@ void SettingsView::paintController (juce::Graphics& g, juce::Rectangle<float> a)
     portStepper (a.getX() + wPort + gap, false);
     chip (g, { a.getX() + (wPort + gap) * 2.0f, y, wPreview, h }, i18n::upper (tr ("View")), controllerPreview, colour::sunYellow,
           [this] { showControllerPreview (! controllerPreview); });
+    if (! plugin) return;
+    // p49: automatic ports (on / off), which instance holds the controller, take it over
+    y += row;
+    const float wAuto = juce::jmin (u * 22.0f, a.getWidth() * 0.45f), wTake = u * 13.0f;
+    chip (g, { a.getX(), y, wAuto, h }, i18n::upper (tr ("Choose ports automatically")), us.controllerAuto, colour::sunYellow,
+          [this, autoOn] { changeSettings ([autoOn] (settings::UserSettings& s) { s.controllerAuto = ! autoOn; }); });
+    const float xs = a.getX() + wAuto + gap;
+    const bool elsewhere = on && gridCtl->ownedElsewhere();
+    juce::String where;
+    if (on) where = elsewhere ? tr ("Active in another instance") : tr ("Active in this instance");
+    label (g, where, { xs, y, a.getRight() - xs - (elsewhere ? wTake + gap : 0.0f), h }, ! on);
+    if (elsewhere)
+        chip (g, { a.getRight() - wTake, y, wTake, h }, i18n::upper (tr ("Take over here")), false, colour::ultraviolet,
+              [this] { if (gridCtl != nullptr) gridCtl->claim(); repaint(); });
 }
 
 void SettingsView::paintControllerPreview (juce::Graphics& g, juce::Rectangle<float> a)
