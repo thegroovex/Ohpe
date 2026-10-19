@@ -13,6 +13,8 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
+#include <array>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -94,6 +96,8 @@ public:
     /** The parameters a point edits (x, y, alt; the encoders' focus page). */
     std::vector<std::string> handleParams (int h) const;
     juce::String handleName (int h) const;
+    /** p57: how often a cached curve was rebuilt (tests: unchanged values repaint without rebuilding). */
+    int curveBuilds() const noexcept { return builds; }
 
     std::function<void (int handle)> onHandleSelected;
 
@@ -110,6 +114,12 @@ private:
     InsertSlot* slotObject() const;
     void paintBackground (juce::Graphics& g, juce::Rectangle<float> plot);
     juce::String handleValues (int h) const;
+    /** p57: a curve of the picture, rebuilt only when its inputs (folded into key) changed. */
+    const juce::Path& cachedCurve (int slot, uint64_t key, const std::function<juce::Path()>& build);
+    static uint64_t keyOf (const float* v, size_t n, juce::Rectangle<float> r, float extra) noexcept;
+    struct CachedCurve { uint64_t key = 0; bool valid = false; juce::Path path; };
+    std::array<CachedCurve, 2> curves;
+    int builds = 0;
 
     int fxView = 1, slotIndex = 0;
     std::string prefix, block, type;
@@ -150,6 +160,8 @@ public:
     juce::Rectangle<float> slotTabArea (int i) const;
     juce::Rectangle<float> closeArea() const;
     int numSlots() const noexcept { return (int) prefixes.size(); }
+    /** p57: how often refresh() (the editor's 30 Hz) let the picture check its values (tests). */
+    int graphTicks() const noexcept { return graphTickCount; }
 
 private:
     void rebuild();
@@ -163,5 +175,6 @@ private:
     std::unique_ptr<FxGraphTile> tile;
     std::vector<std::unique_ptr<ParamBar>> bars;
     std::vector<juce::String> encoderIds;
+    int graphTickCount = 0;
 };
 } // namespace ohpe::ui

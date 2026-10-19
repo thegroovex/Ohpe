@@ -574,7 +574,7 @@ bedienbar**. Die Reiter oben wählen den Slot (Rechtsklick: MIDI-Learn seines Ty
 | Im Bild | Ergebnis |
 |---|---|
 | Punkt ziehen | bewegt seine Werte (quer / hoch), z. B. Frequenz und Verstärkung eines EQ-Bands |
-| **Alt**-Ziehen oder Mausrad auf einem Punkt | sein zweiter Wert: die Güte (Q) des Bands, das Knie des Kompressors, die LFO-Form, die Dämpfung … |
+| **Alt**-Ziehen oder Mausrad auf einem Punkt | sein zweiter Wert: das Q des Bands, das Knie des Kompressors, die LFO-Form, die Dämpfung … |
 | **Shift** (oder Cmd / Strg) beim Ziehen | fein |
 | Doppelklick auf einen Punkt | setzt ihn zurück (Alt + Doppelklick: seinen zweiten Wert) |
 | Klick auf einen Punkt | wählt ihn: seine Werte liegen auf den Encodern (eine zusätzliche Encoder-Seite direkt nach *Slot*, benannt nach dem Punkt) |
@@ -586,8 +586,8 @@ Rückgängig des Hosts funktionieren wie überall, die Modulationsmatrix zeigt i
 
 Was die Bilder zeigen (gelb = was du bearbeitest):
 
-* **EQ** – der Frequenzgang (20 Hz – 20 kHz, ±18 dB) mit fünf Punkten: Tiefen-Kuhschwanz, Bänder 1–3,
-  Höhen-Kuhschwanz; das gewählte Band zusätzlich allein (blass); der Ausgangspegel auf eigener Spur.
+* **EQ** – der Frequenzgang (20 Hz – 20 kHz, ±18 dB) mit fünf Punkten: Low Shelf, Peak-Bänder 1–3,
+  High Shelf; das gewählte Band zusätzlich allein (blass); der Ausgangspegel auf eigener Spur.
 * **Kompressor** – die Kennlinie (Eingang quer, Ausgang hoch, -60 – 0 dB): der Schwellen-Punkt auf der 1:1-Linie, der
   Ratio-Punkt am Ende der Kurve (tiefer = stärker), das Knie als helles Band (Alt / Rad); Aufholverstärkung auf eigener
   Spur, die aktuelle Pegelreduktion (rot); Attack und Release als Hüllkurve mit zwei Punkten.
@@ -598,12 +598,12 @@ Was die Bilder zeigen (gelb = was du bearbeitest):
   Vorfilter-Frequenz (Rad: Filtertyp). **Bitcrusher** – ein Sinus durch den Crusher: Bits hoch, Downsampling quer.
 * **Chorus, Phaser, Flanger, Hyper, Tremolo** – die Modulation als Welle: Tempo (oder die Notenlänge bei Sync) quer,
   Tiefe hoch; die Stimmen von Chorus / Hyper als mehrere Linien; weitere Werte (Breite, Feedback, Verzögerung, Stimmen,
-  Dimension, Tiefensperre) als Schieberzeilen darunter. **Wobble** – der Filterweg zwischen tiefer und hoher Frequenz
+  Dimension, Low Cut) als Schieberzeilen darunter. **Wobble** – der Filterweg zwischen tiefer und hoher Frequenz
   (zwei Punkte), Tempo und Drive darunter. **Formant** – Vokal (A E I O U quer) und Verschiebung (hoch) mit den zwei
   Formant-Spitzen, LFO-Tempo und -Tiefe darunter. **Kamm** – der Kamm-Frequenzgang: Frequenz quer, Feedback hoch,
   Dämpfung am Rad.
 * **Delay / Echo** – die Echos: Zeit quer, Feedback hoch (die folgenden Echos klingen damit ab); im Ping-Pong- / Tap-Modus
-  die Echos des rechten Kanals rosa (Verhältnis darunter); das Band zwischen Tiefen- und Höhensperre darunter.
+  die Echos des rechten Kanals rosa (Verhältnis darunter); das Band zwischen Low Cut und High Cut darunter.
 * **Reverb / Raum** – der trockene Schlag, das Pre-Delay (Punkt quer) und die abklingende Fahne: ihre Länge (Größe /
   Nachhall) quer, ihre Helligkeit (Dämpfung) hoch; Größe und Breite darunter.
 * **Mitte/Seite / Breite** – das Stereobild (Achsen L / R, das Bild so breit wie die Breite), Balance; Mitte- und
