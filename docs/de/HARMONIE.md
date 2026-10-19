@@ -158,7 +158,9 @@ Reihe zu Reihe.
 
 **Raster C fest** (`harmony.kb.fixed`):
 
-* **Aus (ab Werk)**: Das Feld unten links ist der **Grundton der aktuellen Tonart**, alle Reihen liegen relativ dazu.
+* **Aus (ab Werk)**: Das Feld unten links ist der **Grundton der Tonart in der Kopfzeile des Displays** (Tonart, oder
+  die des Hosts), alle Reihen liegen relativ dazu. Es bleibt beim Spielen liegen, auch wenn die gemerkte Tonart des
+  Harmonie-Hirns wandert (sie bestimmt weiter, welche Töne Nur Tonart spielt und wie die Felder leuchten).
   Eine Akkordform spielt darum in **jeder Tonart** dieselbe Akkordstufe – einmal in C lernen, in Fis spielen, ohne die
   Hand zu bewegen.
 * **An**: Das Feld unten links ist **C** (Nur Tonart: der erste Tonart-Ton auf oder über C) – wie in früheren Versionen.

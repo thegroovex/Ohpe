@@ -153,6 +153,7 @@ struct PadKey
     int root = 0;
     int scale = 1; ///< scales::Major
     bool lock = false;
+    int origin = -1; ///< p59: the set key's root - the bottom-left pad when not fixed (-1 = root)
 };
 
 /** The note of pad (col, row) - exactly the on-screen grid keyboard's cell at the same column and row

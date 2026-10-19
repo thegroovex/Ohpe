@@ -81,9 +81,12 @@ GridStep layoutDegrees (int layout) noexcept;
     p59: inKey = only notes of the key, every step a scale step (layoutDegrees); else every note (layoutSteps).
     fixed = the bottom-left cell is C (In Key: the first key note at or above C, the behaviour before p59); not fixed =
     the bottom-left cell is the key's root above `base`, so every chord shape is the same in every key.
-    A chromatic scale plays In Key like Chromatic.
+    A chromatic scale plays In Key like Chromatic. originRoot (-1 = keyRoot): the root the bottom-left cell starts on
+    when not fixed - the grid passes the set key (Core::keyScale, the display header), so the cells stay put while the
+    harmony brain's remembered key (keyRoot / keyScale: which notes are In Key, the colours) moves under the fingers.
 */
-int gridNote (int layout, int col, int row, int base, int keyRoot, int keyScale, bool inKey = false, bool fixed = true) noexcept;
+int gridNote (int layout, int col, int row, int base, int keyRoot, int keyScale, bool inKey = false, bool fixed = true,
+              int originRoot = -1) noexcept;
 /** p59: the cell's note as gridNote, for the grid's own parameters ("harmony.kb.layout / inkey / fixed"). */
 struct GridOptions { int layout = LayoutFourths; bool inKey = false; bool fixed = false; };
 GridOptions gridOptions (const ParamRegistry& reg) noexcept;

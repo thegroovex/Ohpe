@@ -32,6 +32,10 @@ TEST_CASE ("p59 grid layouts: Chromatic steps of every layout, fixed C and the k
             const auto st = layoutSteps (layout);
             CHECK (gridNote (layout, 3, 2, 48, root, scales::Minor, false, false) == 48 + root + 3 * st.col + 2 * st.row);
         }
+    // the origin is the set key's root: a remembered key that moves (here D) does not move the cells
+    CHECK (gridNote (LayoutFourths, 0, 0, 48, 2, scales::Major, false, false, 0) == 48);
+    CHECK (gridNote (LayoutFourths, 1, 1, 48, 2, scales::Major, false, false, 5) == 48 + 5 + 6);
+    CHECK (gridNote (LayoutFourths, 0, 0, 48, 2, scales::Major, true, false, 0) == 49); // In Key: the first D-major note from C
     auto core = std::make_unique<Core>(); // on the heap (Windows stack)
     CHECK (gridOptions (core->params()).fixed == false); // default: not fixed
 }

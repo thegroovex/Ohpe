@@ -150,7 +150,9 @@ is the first cell of the next row. Easy to find any note, but chord shapes chang
 
 **Grid Fixed C** (`harmony.kb.fixed`):
 
-* **Off (the default)**: the bottom-left cell is the **root of the current key**, and every row is relative to it. A
+* **Off (the default)**: the bottom-left cell is the **root of the key set on the display header** (Key, or the
+  host's key), and every row is relative to it. It stays put while you play, even when the harmony brain's remembered
+  key moves (that key still decides which notes are In Key and how the cells are lit). A
   chord shape therefore plays the same chord degree in **every key** – learn it once in C, play it in F# without
   moving your hand.
 * **On**: the bottom-left cell is **C** (In Key: the first key note at or above C) – the behaviour of earlier versions.

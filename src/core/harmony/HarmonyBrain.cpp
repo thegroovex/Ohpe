@@ -134,10 +134,11 @@ GridStep layoutDegrees (int layout) noexcept
     }
 }
 
-int gridNote (int layout, int col, int row, int base, int keyRoot, int keyScale, bool inKey, bool fixed) noexcept
+int gridNote (int layout, int col, int row, int base, int keyRoot, int keyScale, bool inKey, bool fixed, int originRoot) noexcept
 {
     layout = std::clamp (layout, 0, (int) numLayouts - 1);
-    const int root = ((keyRoot % 12) + 12) % 12;
+    const int from = originRoot >= 0 ? originRoot : keyRoot;
+    const int root = ((from % 12) + 12) % 12;
     if (! inKey || keyScale == scales::Chromatic)
     {
         const auto st = layoutSteps (layout);
