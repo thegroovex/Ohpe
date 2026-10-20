@@ -62,7 +62,7 @@ private:
     juce::Rectangle<float> arrow (bool right) const;
     juce::String name;
 };
-/** p27: the version legend above the wordmark ("V0.6.3", "UPDATE 0.7.0" in yellow when one is offered); a click on it
+/** p27: the version legend above the wordmark ("V0.6.4", "UPDATE 0.7.0" in yellow when one is offered); a click on it
     or on the wordmark opens the update view. */
 class VersionBadge : public juce::Component, public juce::TooltipClient
 {
@@ -274,7 +274,7 @@ private:
     void saveUiState();
     void loadUiState();
     void setParamPlain (const juce::String& id, float plain);
-    void refreshVersionBadge(); ///< p27: "V0.6.3" / "UPDATE 0.7.0" above the wordmark
+    void refreshVersionBadge(); ///< p27: "V0.6.4" / "UPDATE 0.7.0" above the wordmark
     void applyAccents();        ///< p32: key / encoder accent colours of the current skin
     void applySkinNow();        ///< p32: palette, look and feel, cached images
     void refreshHelpOverlay();  ///< p32: texts and visibility of the help overlay

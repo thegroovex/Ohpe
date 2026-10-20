@@ -75,11 +75,15 @@ const HelpTopic helpTopics[] = {
       "PLAY starts the sequencer (and the tape, when they are linked). REC records the armed tape track; without an armed track "
       "it arms the selected one.\n\n"
       "In the standalone app: Space = play / stop, R = record, Enter = to the start, L = loop.\n\n"
-      "The Sequencer mode has step, Euclid and orbit views; steps can lock parameter values.",
+      "The Sequencer mode has step, Euclid and orbit views; steps can lock parameter values.\n\n"
+      "Arpeggiator: the sustain pedal (CC 64) keeps released keys in the arpeggio until pedal up, sostenuto (CC 66) only the keys "
+      "down when it was pressed; with Latch on, keys under the pedal add to the latched set.",
       "START startet den Sequencer (und das Tape, wenn verbunden). REC nimmt auf die scharfe Tape-Spur auf; ohne scharfe Spur "
       "wird die gewählte scharf geschaltet.\n\n"
       "In der Standalone-App: Leertaste = Start / Stopp, R = Aufnahme, Enter = an den Anfang, L = Loop.\n\n"
-      "Der Sequencer-Modus hat Step-, Euklid- und Orbit-Ansichten; Schritte können Parameterwerte festhalten." },
+      "Der Sequencer-Modus hat Step-, Euklid- und Orbit-Ansichten; Schritte können Parameterwerte festhalten.\n\n"
+      "Arpeggiator: Das Haltepedal (CC 64) hält losgelassene Tasten bis Pedal hoch im Arpeggio, Sostenuto (CC 66) nur die beim "
+      "Treten gedrückten; mit Halten ergänzen Tasten unter dem Pedal den gehaltenen Satz." },
     { "MIDI, MPE and sync", "MIDI, MPE und Sync",
       "Each part listens on its own MIDI channel (Omni = every channel). Settings > MIDI sets the channel, MPE and the bend ranges of every part.\n\n"
       "With MPE on, each note gets its own pitch bend, pressure and timbre (lower zone: channel 1 is the master channel).\n\n"
@@ -170,7 +174,9 @@ const HelpTopic helpTopics[] = {
       "encoders), Device (FX editor), Browse (the library on the display: encoders = list and filters, up / down load, Select or a part "
       "button loads, Shift = favourite), Track (mixer), Clip (tape), Accent (full velocity), Quantize (scale quantise), Duplicate / "
       "Double (step pattern), Delete + step = clear, New (start sound), Fixed Length (step length), Automation (motion record), Add "
-      "Effect (next effect in the slot), User (breeding), 1/4 ... 1/32t held = note repeat (arp) at that rate.",
+      "Effect (next effect in the slot), User (breeding), 1/4 ... 1/32t held = note repeat (arp) at that rate.\n\n"
+      "Foot pedal: a sustain pedal in the controller's pedal jack holds notes like on a MIDI keyboard (sustain CC 64, sostenuto CC 66), "
+      "also in MPE / Fingerboard parts and in the arpeggio.",
       "Grid-Controller (Profil 1): ein 8 x 8-Pad-Controller mit vierzeiligem Display. Ab Werk an: anstecken, Ohpe findet seinen "
       "User-Port (Eingang und Ausgang), schaltet ihn in den User-Modus, zeigt verbindet ... / verbunden auf seinem Display, dann das "
       "Ohpe-Display; später angesteckt, verbindet er sich innerhalb einer Sekunde. Einstellungen > Controller: Profil, automatische "
@@ -193,7 +199,9 @@ const HelpTopic helpTopics[] = {
       "oder eine Part-Taste lädt, Shift = Favorit), Track (Mischer), Clip (Band), Accent (volle Anschlagstärke), Quantize (Skala "
       "quantisieren), Duplicate / Double (Step-Pattern), Delete + Schritt = löschen, New (Startklang), Fixed Length (Schrittanzahl), "
       "Automation (Bewegung aufnehmen), Add Effect (nächster Effekt im Slot), User (Zucht), 1/4 ... 1/32t gehalten = Notenwiederholung "
-      "(Arp) in diesem Raster." },
+      "(Arp) in diesem Raster.\n\n"
+      "Fußpedal: Ein Haltepedal an der Pedalbuchse des Controllers hält Noten wie an einem MIDI-Keyboard (Sustain CC 64, Sostenuto "
+      "CC 66), auch in MPE-/Fingerboard-Parts und im Arpeggio." },
     { "Updates", "Updates",
       "Ohpe can look for new versions once a day (off until you switch it on) or when you press Check now. Nothing about you is sent.\n\n"
       "Downloads are verified before they open. Content packs add presets without reinstalling; the previous pack is kept for a rollback.",

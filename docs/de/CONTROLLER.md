@@ -247,7 +247,8 @@ Ein Haltepedal an der Pedalbuchse des Controllers wirkt wie an einem MIDI-Keyboa
 Noten des Parts, den die Pads spielen, nach dem Loslassen der Pads, **Sostenuto** (CC 66) hält die Noten, die beim
 Treten gedrückt waren; beide lassen los, wenn das Pedal hochkommt. In einem MPE-/Fingerboard-Part hält das Pedal die
 Noten aller Member-Kanäle. Das Pedal geht auf dem Part hoch, auf dem es getreten wurde, auch nach einem Partwechsel
-und wenn der Controller abgezogen wird.
+und wenn der Controller abgezogen wird. Ist der Arpeggiator des Parts an, hält das Pedal auch die Tasten des Arpeggios –
+siehe [Sequenzer](SEQUENZER.md).
 
 ## Hinweise
 

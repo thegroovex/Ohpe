@@ -238,7 +238,8 @@ A sustain pedal in the controller's pedal jack works like one on a MIDI keyboard
 notes of the part the pads play after you let go of the pads, **sostenuto** (CC 66) holds the notes that were down
 when it was pressed; both let go when the pedal comes up. In an MPE / Fingerboard part the pedal holds the notes of
 all member channels. The pedal goes up on the part it went down on, also after a part change, and when the
-controller is unplugged.
+controller is unplugged. With the part's arpeggiator on, the pedal holds the arpeggio's keys too – see
+[Sequencers](SEQUENCERS.md).
 
 ## Notes
 
