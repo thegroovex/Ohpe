@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "StateSerializer.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 
 #include <nlohmann/json.hpp>
 
@@ -21,7 +22,7 @@ std::string saveState (const ParamRegistry& reg, const Sections& sections)
     json s = json::object();
     for (const auto& [name, text] : sections)
     {
-        auto parsed = json::parse (text, nullptr, false);
+        auto parsed = jsonutil::parse (text);
         s[name] = parsed.is_discarded() ? json (text) : parsed;
     }
     j["sections"] = s;
@@ -29,9 +30,10 @@ std::string saveState (const ParamRegistry& reg, const Sections& sections)
 }
 
 LoadResult loadState (const std::string& text, ParamRegistry& reg, bool resetFirst)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     LoadResult r;
-    const auto j = json::parse (text, nullptr, false);
+    const auto j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object() || j.value ("format", "") != "ohpe-state")
         return r;
     if (resetFirst) reg.resetToDefaults();
@@ -47,6 +49,10 @@ LoadResult loadState (const std::string& text, ParamRegistry& reg, bool resetFir
             r.sections[name] = v.is_string() ? v.get<std::string>() : v.dump();
     r.ok = true;
     return r;
+}
+catch (const std::exception&)
+{
+    return {};
 }
 
 std::string savePreset (const ParamRegistry& reg, const std::string& prefix, const std::string& name)
@@ -68,9 +74,10 @@ std::string savePreset (const ParamRegistry& reg, const std::string& prefix, con
 }
 
 LoadResult loadPreset (const std::string& text, ParamRegistry& reg, const std::string& targetPrefix)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     LoadResult r;
-    const auto j = json::parse (text, nullptr, false);
+    const auto j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object() || j.value ("format", "") != "ohpe-preset")
         return r;
     // parameters of the target prefix that the preset does not contain go back to their defaults
@@ -87,10 +94,15 @@ LoadResult loadPreset (const std::string& text, ParamRegistry& reg, const std::s
     r.ok = true;
     return r;
 }
+catch (const std::exception&)
+{
+    return {};
+}
+
 std::array<std::string, 4> sessionPresetUids (const std::string& uiJson)
 {
     std::array<std::string, 4> uids;
-    const auto ui = json::parse (uiJson, nullptr, false);
+    const auto ui = jsonutil::parse (uiJson);
     if (ui.is_discarded() || ! ui.is_object()) return uids;
     auto text = [] (const json& v) {
         if (v.is_string()) return v.get<std::string>();

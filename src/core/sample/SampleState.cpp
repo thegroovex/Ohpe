@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "SampleState.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 #include "../model/FormatVersions.h"
 
 #include "../OhpeCore.h"
@@ -58,6 +59,7 @@ std::string saveAssignments (Core& core)
 }
 
 RestoreResult restoreAssignments (Core& core, const std::string& text, const Decoder& decode)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     using nlohmann::json;
     RestoreResult result;
@@ -71,7 +73,7 @@ RestoreResult restoreAssignments (Core& core, const std::string& text, const Dec
     for (int pad = 0; pad < drum::DrumKit::numPads; ++pad) core.drumKit().setPadSample (pad, nullptr);
 
     if (text.empty() || ! decode) return result;
-    const json j = json::parse (text, nullptr, false);
+    const json j = jsonutil::parse (text);
     if (! j.is_object() || j.value ("format", std::string()) != "ohpe-samples") return result;
 
     auto load = [&] (const json& node) -> SamplePtr {
@@ -119,5 +121,9 @@ RestoreResult restoreAssignments (Core& core, const std::string& text, const Dec
             core.drumKit().setPadSample (pad, load (d));
         }
     return result;
+}
+catch (const std::exception&)
+{
+    return {};
 }
 } // namespace ohpe::sample

@@ -164,6 +164,7 @@ Alle Tests laufen mit `scripts/test-all.sh` – siehe [Mitwirken](docs/de/MITWIR
 * [Bounce ins Instrument](docs/de/BOUNCE-INS-INSTRUMENT.md) – Tape oder Live-Eingang in Grain / Sampler, Endlosschleifen
 * [Modulationsmatrix](docs/de/MODULATION.md) – Verbindungen, Quellen, Ziele, LFO 2 / 3, Hüllkurve 3, Makros
 * [Leistung](docs/de/LEISTUNG.md) – CPU-Anzeige, schlafende stille Parts, Benchmark-Zahlen, `ohpe_bench`
+* [Robustheits- und Dauertests](docs/de/DAUERTEST.md) – Tests mit beschädigten Dateien und Audio-Stresstests in der CI, der manuelle 8-Stunden-Dauertest, der absturzsichere Start
 * [Parameter](docs/PARAMETERS.md) – alle Host-Parameter-IDs
 * [Architektur](docs/de/ARCHITEKTUR.md) – Kurzfassung; ausführlich auf Englisch in [ARCHITECTURE.md](docs/ARCHITECTURE.md)
 * [Gestaltung](docs/de/DESIGN.md) – Farben, Figuren, Bedienelemente

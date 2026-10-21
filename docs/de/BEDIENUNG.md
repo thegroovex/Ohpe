@@ -787,6 +787,24 @@ Beschriftung wird rot ab 80 % im Mittel oder wenn ein Block länger als seine ei
 Anzeige (kein Parameter, wird nicht gespeichert). Parts, die einige Sekunden still waren, schlafen und kosten fast
 nichts, bis sie wieder spielen. Einzelheiten: [Leistung](LEISTUNG.md).
 
+## Absturzsicherer Start (Standalone, p63)
+
+![Der Hinweis zum Wiederherstellen nach einer nicht sauber beendeten Sitzung](../images/ohpe-recovery-notice-de.png)
+
+Die Standalone-App merkt sich, dass eine Sitzung läuft, und löscht diese Markierung beim normalen Beenden. Findet sie
+die Markierung beim nächsten Start (Absturz, Stromausfall, App zwangsweise beendet), lädt sie die letzte Sitzung nicht
+blind: Ohpe startet mit dem Startklang der Werksbank und zeigt oben auf der Platte einen kleinen Hinweis –
+**WIEDERHERSTELLEN** lädt die zuletzt gespeicherte Sitzung doch noch, **NEU BEGINNEN** behält den Startklang (der
+Hinweis verschwindet in beiden Fällen). Ein gespeicherter Zustand, der sich nicht laden lässt (beschädigt), startet
+ebenfalls mit dem Startklang; der Hinweis sagt das dann nur (**OK**). Die Platte bleibt spielbar, solange der Hinweis
+zu sehen ist. Eine zweite laufende Instanz der App gilt nie als Absturz.
+
+Ohpe speichert die Standalone-Sitzung beim Beenden. WIEDERHERSTELLEN holt diesen
+gespeicherten Zustand zurück; Änderungen nach dem letzten Speichern in einer abgestürzten Sitzung sind also nicht dabei.
+Eine beschädigte Sitzungs-, Preset-, Band-, Wavetable-, Inhaltspaket- oder Einstellungsdatei bringt Ohpe nie zum Absturz:
+Sie wird abgelehnt, oder die lesbaren Teile werden geladen und der Rest fällt auf Standardwerte zurück. Im Plug-in wird
+ein beschädigter Host-Zustand genauso abgelehnt, die Instanz behält ihren Klang.
+
 ## Tasten
 
 | Taste | Aktion |

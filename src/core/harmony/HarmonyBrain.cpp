@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "HarmonyBrain.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 #include "../model/FormatVersions.h"
 
 #include "../seq/ScaleChord.h"
@@ -463,8 +464,9 @@ std::string HarmonyBrain::toJson() const
 }
 
 bool HarmonyBrain::fromJson (const std::string& text)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
-    const auto j = json::parse (text, nullptr, false);
+    const auto j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object()) return false;
     auto pair = [&] (const char* key, int& a, int& b) {
         if (auto it = j.find (key); it != j.end() && it->is_array() && it->size() == 2 && (*it)[0].is_number_integer() && (*it)[1].is_number_integer())
@@ -507,5 +509,10 @@ bool HarmonyBrain::fromJson (const std::string& text)
     pubHeard.store (any, std::memory_order_relaxed);
     loaded.store (true, std::memory_order_release);
     return true;
+}
+catch (const std::exception&)
+{
+    requestClear();
+    return false;
 }
 } // namespace ohpe

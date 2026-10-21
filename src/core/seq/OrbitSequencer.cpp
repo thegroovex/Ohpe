@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "OrbitSequencer.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 #include "../model/FormatVersions.h"
 
 #include "../harmony/KeyScale.h"
@@ -186,8 +187,9 @@ std::string OrbitSequencer::toJson() const
 }
 
 bool OrbitSequencer::fromJson (const std::string& text)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
-    const auto j = nlohmann::json::parse (text, nullptr, false);
+    const auto j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object() || j.value ("format", "") != "ohpe-orbit") return false;
     clearPattern();
     if (! j.contains ("steps") || ! j["steps"].is_array()) return true;
@@ -201,6 +203,11 @@ bool OrbitSequencer::fromJson (const std::string& text)
         setStep (js.value ("lane", -1), js.value ("i", -1), s);
     }
     return true;
+}
+catch (const std::exception&)
+{
+    clearPattern();
+    return false;
 }
 
 int OrbitSequencer::shiftNote (int note, int by) const noexcept

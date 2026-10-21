@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "UserSettings.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 
 #include <nlohmann/json.hpp>
 
@@ -80,7 +81,7 @@ Skin effectiveSkin (Skin chosen, bool systemDark) noexcept
 
 std::string UserSettings::toJson() const
 {
-    json j = json::parse (extras, nullptr, false);
+    json j = jsonutil::parse (extras);
     if (j.is_discarded() || ! j.is_object()) j = json::object();
     j["version"] = formats::settings; // p62
     j["language"] = languageName (language);
@@ -102,9 +103,10 @@ std::string UserSettings::toJson() const
 }
 
 UserSettings UserSettings::fromJson (const std::string& text)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     UserSettings s;
-    const json j = json::parse (text, nullptr, false);
+    const json j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object()) return s;
     // p62: files before 1.0 have no "version" (= 0)
     if (const auto v = j.find ("version"); v != j.end() && v->is_number_integer()) s.fileVersion = std::max (0, v->get<int>());
@@ -163,6 +165,10 @@ UserSettings UserSettings::fromJson (const std::string& text)
     s.extras = extra.dump();
     return s;
 }
+catch (const std::exception&)
+{
+    return UserSettings {};
+}
 
 bool UserSettings::operator== (const UserSettings& o) const
 {
@@ -171,7 +177,7 @@ bool UserSettings::operator== (const UserSettings& o) const
            && controllerProfile == o.controllerProfile && controllerIn == o.controllerIn && controllerOut == o.controllerOut
            && controllerMaster == o.controllerMaster && controllerStrip == o.controllerStrip
            && controllerAuto == o.controllerAuto && controllerPattern == o.controllerPattern && controllerChosen == o.controllerChosen
-           && json::parse (extras, nullptr, false) == json::parse (o.extras, nullptr, false);
+           && jsonutil::parse (extras) == jsonutil::parse (o.extras);
 }
 
 double contrastRatio (uint32_t a, uint32_t b) noexcept

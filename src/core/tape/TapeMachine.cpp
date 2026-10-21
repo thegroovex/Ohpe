@@ -1,10 +1,12 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "TapeMachine.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 #include "../model/FormatVersions.h"
 
 #include <nlohmann/json.hpp>
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <limits>
@@ -862,6 +864,9 @@ bool TapeMachine::loadAudio (const void* data, size_t size, bool asUndoStep)
         p += sizeof (blk->l);
         std::memcpy (blk->r, p, sizeof (blk->r));
         p += sizeof (blk->r);
+        for (auto* ch : { blk->l, blk->r }) // p63: a damaged file may hold NaN / Inf / huge samples
+            for (int i = 0; i < TapeBlock::frames; ++i)
+                ch[i] = std::isfinite (ch[i]) ? std::clamp (ch[i], -8.0f, 8.0f) : 0.0f;
         blk->frozen.store (true);
         auto& list = *lists[t];
         if (list.size() <= page) list.resize ((size_t) page + 1);
@@ -895,10 +900,14 @@ std::string TapeMachine::settingsJson() const
 }
 
 void TapeMachine::loadSettingsJson (const std::string& text)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
-    auto j = nlohmann::json::parse (text, nullptr, false);
+    auto j = jsonutil::parse (text);
     if (j.is_object() && j.contains ("lengthSeconds") && j["lengthSeconds"].is_number())
         setLengthSeconds (j["lengthSeconds"].get<double>());
+}
+catch (const std::exception&)
+{
 }
 
 void TapeMachine::shareContentFrom (const TapeMachine& other)

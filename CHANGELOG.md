@@ -7,6 +7,18 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Robustness (p63): damaged sessions, presets, tape files, wavetables, content packs and settings never crash Ohpe
+  (refused, or loaded as far as readable with defaults for the rest); NaN / Inf can no longer reach the outputs (input
+  cleaned, output guard); crash-safe start in the standalone app – after a session that did not end cleanly, or with a
+  damaged saved state, Ohpe starts with the start sound and offers to restore the last session. New fuzz and audio
+  stress tests in CI (all sample rates, buffer sizes down to 1 sample, denormals, a 10-minute soak) and a documented
+  manual 8-hour soak.
+- DE: Robustheit (p63): beschädigte Sitzungen, Presets, Banddateien, Wavetables, Inhaltspakete und Einstellungen bringen
+  Ohpe nie zum Absturz (abgelehnt, oder soweit lesbar geladen, der Rest mit Standardwerten); NaN / Inf erreichen die
+  Ausgänge nicht mehr (Eingang bereinigt, Ausgangsschutz); absturzsicherer Start der Standalone-App – nach einer nicht
+  sauber beendeten Sitzung oder bei beschädigtem gespeicherten Zustand startet Ohpe mit dem Startklang und bietet an,
+  die letzte Sitzung wiederherzustellen. Neue Fuzz- und Audio-Stresstests in der CI (alle Abtastraten, Puffer bis 1
+  Sample, Denormals, 10-Minuten-Dauerlauf) und ein beschriebener manueller 8-Stunden-Dauertest.
 - EN: File formats frozen for 1.0 (p62): every saved format (state / sessions, presets, .ohpetape, .ohpewt,
   .ohpepack, .ohpemidi, settings.json, update.json, the state sections) has an explicit version in one place; older
   files always load and migrate, unknown newer fields are ignored. Golden fixture files of every format (current,

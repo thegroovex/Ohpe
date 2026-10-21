@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "ContentPacks.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 #include "../model/FormatVersions.h"
 
 #include <nlohmann/json.hpp>
@@ -58,9 +59,10 @@ std::string ContentRegistry::toJson() const
 }
 
 ContentRegistry ContentRegistry::fromJson (const std::string& text)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     ContentRegistry r;
-    const json j = json::parse (text, nullptr, false);
+    const json j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object() || ! j.contains ("packs") || ! j["packs"].is_array()) return r;
     for (const auto& o : j["packs"])
     {
@@ -72,6 +74,10 @@ ContentRegistry ContentRegistry::fromJson (const std::string& text)
         if (isSafePackId (p.id) && Version::of (p.version).valid() && r.find (p.id) == nullptr) r.packs.push_back (std::move (p));
     }
     return r;
+}
+catch (const std::exception&)
+{
+    return {};
 }
 
 bool isSafePackId (const std::string& id)

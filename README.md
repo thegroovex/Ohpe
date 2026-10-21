@@ -159,6 +159,7 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 * [Bounce to engine](docs/en/BOUNCE.md) – tape or live input into Grain / Sampler, endless loops
 * [Modulation matrix](docs/en/MODULATION.md) – routings, sources, targets, LFO 2 / 3, envelope 3, macros
 * [Performance](docs/en/PERFORMANCE.md) – the CPU meter, sleeping silent parts, benchmark numbers, `ohpe_bench`
+* [Robustness and soak tests](docs/en/SOAK-TEST.md) – damaged-file and audio stress tests in CI, the manual 8-hour soak, the crash-safe start
 * [Parameters](docs/PARAMETERS.md) – every host parameter ID
 * [Architecture](docs/ARCHITECTURE.md) – core, plug-in shell, threading, parameters, extension points
 * [Design language](docs/DESIGN.md) – colours, characters, components

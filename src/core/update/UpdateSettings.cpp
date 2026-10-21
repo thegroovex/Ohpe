@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "UpdateSettings.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 #include "../model/FormatVersions.h"
 
 #include <nlohmann/json.hpp>
@@ -32,9 +33,10 @@ std::string Settings::toJson() const
 }
 
 Settings Settings::fromJson (const std::string& text, const Settings& base)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     Settings s = base;
-    const json j = json::parse (text, nullptr, false);
+    const json j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object()) return s;
     auto num = [&j] (const char* k, int64_t fallback) {
         const auto it = j.find (k);
@@ -55,6 +57,10 @@ Settings Settings::fromJson (const std::string& text, const Settings& base)
     s.skipped = str ("skipped", s.skipped);
     s.remindVersion = str ("remindVersion", s.remindVersion);
     return s;
+}
+catch (const std::exception&)
+{
+    return base;
 }
 
 bool autoCheckDue (const Settings& s, int64_t now, bool playing)

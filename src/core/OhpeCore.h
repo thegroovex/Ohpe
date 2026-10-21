@@ -223,6 +223,8 @@ public:
     int sequencerPosition() const noexcept { return stepSeq.playPosition(); }
     int lastNote() const noexcept { return lastNoteOn.load (std::memory_order_relaxed); }
     int activeVoices() const noexcept { return voicesActive.load (std::memory_order_relaxed); }
+    /** p63: blocks the output guard silenced (a NaN / Inf reached an output; the DSP state was reset). Any thread. */
+    uint64_t nonFiniteBlocks() const noexcept { return guardedBlocks.load (std::memory_order_relaxed); }
     double transportPpq() const noexcept { return ppqForUi.load (std::memory_order_relaxed); }
     double transportBpm() const noexcept { return bpmForUi.load (std::memory_order_relaxed); }
     bool transportPlaying() const noexcept { return playingForUi.load (std::memory_order_relaxed); }
@@ -428,6 +430,10 @@ private:
     std::array<std::vector<float>, 2 * TapeMachine::numTracks> tapeOut;
     const float* inputL = nullptr;
     const float* inputR = nullptr;
+    std::vector<float> safeInputL, safeInputR; ///< p63: the input with NaN / Inf removed (sized in prepare())
+    std::atomic<uint64_t> guardedBlocks { 0 }; ///< p63: see nonFiniteBlocks()
+    void sanitiseInput (int numSamples) noexcept;
+    void guardOutputs (const OutputBuffers& outputs, int numSamples) noexcept;
     const std::array<float*, 2 * TapeMachine::numTracks>* tapeCapture = nullptr;
 
     std::atomic<int> lastNoteOn { -1 }, voicesActive { 0 };

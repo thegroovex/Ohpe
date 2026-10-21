@@ -4,6 +4,7 @@
 
 #include "BreedView.h"
 #include "ConfirmDialog.h"
+#include "RecoveryNotice.h"
 #include "Display.h"
 #include "FxEditor.h"
 #include "GridController.h"
@@ -241,6 +242,9 @@ public:
     static juce::Rectangle<float> designArea (const char* name);
     void softKey (int id) { onSoftKey (id); }
     ui::ConfirmDialog& confirmDialogComponent() { return confirmDialog; } ///< p38
+    ui::RecoveryNotice& recoveryNoticeComponent() { return recoveryNotice; } ///< p63
+    /** p63: shows the processor's pending recovery offer (crash-safe start), if any. */
+    void showPendingRecoveryOffer();
     /** p38: loads a tape file the way the LOAD TAPE key does after the file dialog (asks first over material). */
     void openTapeFile (const juce::File& f) { loadTapeFile (f); }
     /** p42: the loop keys of the tape page instead of the edit keys (the loop readout toggles them). */
@@ -359,6 +363,7 @@ private:
     bool packDropPending = false; ///< an .ohpepack was dropped / chosen: flash the result when the install ends
     ui::HelpOverlay helpOverlay;
     ui::ConfirmDialog confirmDialog; ///< p38
+    ui::RecoveryNotice recoveryNotice; ///< p63
     bool tooltipsOn = true;
     float animRate = 1.0f;
     int skinPoll = 0;

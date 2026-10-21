@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "MidiMap.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 #include "../model/FormatVersions.h"
 
 #include <nlohmann/json.hpp>
@@ -97,8 +98,9 @@ std::string MidiMap::toJson() const
 }
 
 bool MidiMap::fromJson (const std::string& text)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
-    const auto j = nlohmann::json::parse (text, nullptr, false);
+    const auto j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object() || j.value ("format", "") != "ohpe-midimap" || ! j.contains ("mappings")
         || ! j["mappings"].is_array())
         return false;
@@ -119,6 +121,11 @@ bool MidiMap::fromJson (const std::string& text)
     }
     list = std::move (parsed);
     return true;
+}
+catch (const std::exception&)
+{
+    clear();
+    return false;
 }
 
 // ---------------------------------------------------------------- MidiMapper

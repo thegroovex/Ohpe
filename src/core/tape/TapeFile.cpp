@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "TapeFile.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 #include "../model/FormatVersions.h"
 
 #include <nlohmann/json.hpp>
@@ -39,6 +40,7 @@ bool get (const uint8_t*& p, const uint8_t* end, T& v)
 
 /** Splits the file into its header and its audio blob. */
 bool split (const void* data, size_t size, Settings& s, const uint8_t*& blob, size_t& blobSize)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     const auto* p = static_cast<const uint8_t*> (data);
     const auto* end = p + size;
@@ -46,7 +48,7 @@ bool split (const void* data, size_t size, Settings& s, const uint8_t*& blob, si
     p += 8;
     uint32_t len = 0;
     if (! get (p, end, len) || len > maxHeader || (size_t) (end - p) < len) return false;
-    const auto j = nlohmann::json::parse (std::string (reinterpret_cast<const char*> (p), len), nullptr, false);
+    const auto j = jsonutil::parse (std::string (reinterpret_cast<const char*> (p), len));
     p += len;
     if (j.is_discarded() || ! j.is_object() || j.value ("format", std::string()) != "ohpe-tape") return false;
     if (j.value ("version", 0) < 1 || j.value ("version", 0) > fileVersion) return false;
@@ -61,6 +63,10 @@ bool split (const void* data, size_t size, Settings& s, const uint8_t*& blob, si
     blobSize = (size_t) (end - p);
     return blobSize >= blobHeader;
 }
+catch (const std::exception&)
+{
+    return false;
+}
 
 /** Resamples the blob's audio from its rate to `rate` (linear interpolation); returns a new blob. */
 bool resample (const uint8_t* blob, size_t size, double rate, std::vector<uint8_t>& out)
@@ -72,8 +78,10 @@ bool resample (const uint8_t* blob, size_t size, double rate, std::vector<uint8_
     double srcRate = 0.0;
     uint64_t length = 0;
     if (! get (p, end, version) || ! get (p, end, tracks) || tracks != (uint32_t) TapeMachine::numTracks || ! get (p, end, frames)
-        || frames != (uint32_t) TapeBlock::frames || ! get (p, end, srcRate) || ! get (p, end, length) || srcRate <= 0.0)
+        || frames != (uint32_t) TapeBlock::frames || ! get (p, end, srcRate) || ! get (p, end, length))
         return false;
+    // p63: a damaged rate would make the conversion endless (or huge): tape rates are 8 .. 768 kHz
+    if (! (srcRate >= 8000.0 && srcRate <= 768000.0) || ! (rate >= 8000.0 && rate <= 768000.0)) return false;
     constexpr size_t blockBytes = sizeof (float) * TapeBlock::frames;
     std::vector<std::vector<const uint8_t*>> pages ((size_t) tracks);
     for (;;)
@@ -81,7 +89,9 @@ bool resample (const uint8_t* blob, size_t size, double rate, std::vector<uint8_
         uint32_t t = 0, page = 0;
         if (! get (p, end, t)) return false;
         if (t == endMarker) break;
-        if (t >= tracks || ! get (p, end, page) || page > (1u << 24) || (size_t) (end - p) < 2 * blockBytes) return false;
+        // p63: pages beyond the longest tape at 768 kHz are damage (and would allocate gigabytes of page tables)
+        constexpr uint32_t maxPage = (uint32_t) (TapeMachine::maxLengthSeconds * 768000.0 / TapeBlock::frames) + 2;
+        if (t >= tracks || ! get (p, end, page) || page > maxPage || (size_t) (end - p) < 2 * blockBytes) return false;
         auto& list = pages[(size_t) t];
         if (list.size() <= page) list.resize ((size_t) page + 1, nullptr);
         list[page] = p;

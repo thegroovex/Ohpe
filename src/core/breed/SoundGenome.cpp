@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "SoundGenome.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 #include "../model/FormatVersions.h"
 
 #include "../OhpeCore.h"
@@ -719,8 +720,9 @@ std::string Session::toJson() const
 }
 
 bool Session::fromJson (const std::string& text)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
-    const auto j = json::parse (text, nullptr, false);
+    const auto j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object()) return false;
     amount = std::clamp (j.value ("amount", 0.3f), 0.0f, 1.0f);
     broodSize = std::clamp (j.value ("brood", defaultBrood), 1, 16);
@@ -760,6 +762,11 @@ bool Session::fromJson (const std::string& text)
     }
     cur = history.empty() ? -1 : std::clamp (j.value ("current", (int) history.size() - 1), 0, (int) history.size() - 1);
     return true;
+}
+catch (const std::exception&)
+{
+    clear();
+    return false;
 }
 
 // ------------------------------------------------------------------------------------------------ Audition
