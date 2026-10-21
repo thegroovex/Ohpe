@@ -55,7 +55,7 @@
     "lfo.dest": 1,
     "wavetable.lfopos": 0.12,
     "voices": 4,
-    "gain": 6.6,
+    "gain": 5.3,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,

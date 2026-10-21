@@ -70,7 +70,7 @@
     "mpe.bend": 48,
     "voices": 4,
     "glide": 0.02,
-    "gain": 4.6,
+    "gain": 1.3,
     "lfo2.rate": 5.3,
     "lfo2.sync": 0,
     "lfo2.shape": 0,

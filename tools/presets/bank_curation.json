@@ -26,13 +26,13 @@
   "bass-lofi-bass.ohpepreset": {
    "name": "Lo-Fi Bass",
    "params": {
-    "gain": 13.4
+    "gain": 15.8
    }
   },
   "bass-mellow-lofi-bass.ohpepreset": {
    "name": "Mellow Lo-Fi Bass",
    "params": {
-    "gain": 11.8
+    "gain": 14.4
    }
   },
   "project-lofi-kit.ohpepreset": {
@@ -46,13 +46,13 @@
     "Boom"
    ],
    "params": {
-    "gain": 17.1
+    "gain": 19.5
    }
   },
   "bass-glide-reese.ohpepreset": {
    "comment": "Saw-stack reese through a slow, deep phaser, with constant-rate portamento: overlap notes and it slides like a fretless rubber band.",
    "params": {
-    "gain": 9.3
+    "gain": 11.0
    }
   },
   "keys-digital-ep.ohpepreset": {
@@ -60,7 +60,7 @@
     "Piano"
    ],
    "params": {
-    "gain": 8.8
+    "gain": 8.4
    }
   },
   "keys-dusty-ep.ohpepreset": {
@@ -91,7 +91,7 @@
     "Piano"
    ],
    "params": {
-    "gain": 10.6
+    "gain": 10.2
    }
   },
   "arp-dream-tine-arp.ohpepreset": {
@@ -99,7 +99,7 @@
     "Piano"
    ],
    "params": {
-    "gain": 3.5
+    "gain": 1.5
    }
   },
   "keys-piano-scan-table.ohpepreset": {
@@ -112,32 +112,32 @@
     "Plucks"
    ],
    "params": {
-    "gain": 17.7
+    "gain": 15.9
    }
   },
   "arp-analog-arp.ohpepreset": {
    "params": {
-    "gain": 20.4
+    "gain": 20.7
    }
   },
   "arp-bell-cascade-arp.ohpepreset": {
    "params": {
-    "gain": 14.3
+    "gain": 12.1
    }
   },
   "arp-chord-stab-arp.ohpepreset": {
    "params": {
-    "gain": 4.3
+    "gain": 2.8
    }
   },
   "arp-fm-arp-bell.ohpepreset": {
    "params": {
-    "gain": 14.4
+    "gain": 11.9
    }
   },
   "arp-formant-arp.ohpepreset": {
    "params": {
-    "gain": 17.0
+    "gain": 16.5
    }
   },
   "arp-glock-arp.ohpepreset": {
@@ -152,12 +152,12 @@
   },
   "arp-mallet-echo-arp.ohpepreset": {
    "params": {
-    "gain": 16.2
+    "gain": 15.7
    }
   },
   "arp-orbit-arp.ohpepreset": {
    "params": {
-    "gain": 22.8
+    "gain": 23.1
    }
   },
   "arp-orbit-space-arp.ohpepreset": {
@@ -167,22 +167,22 @@
   },
   "arp-pizzicato-arp.ohpepreset": {
    "params": {
-    "gain": 11.0
+    "gain": 9.3
    }
   },
   "arp-random-spark-arp.ohpepreset": {
    "params": {
-    "gain": 19.5
+    "gain": 17.5
    }
   },
   "arp-resonant-comb-arp.ohpepreset": {
    "params": {
-    "gain": 15.1
+    "gain": 14.7
    }
   },
   "arp-ripple-arp.ohpepreset": {
    "params": {
-    "gain": 23.0
+    "gain": 22.4
    }
   },
   "arp-spiral-arp.ohpepreset": {
@@ -207,7 +207,7 @@
   },
   "bass-analog-reese.ohpepreset": {
    "params": {
-    "gain": 9.4
+    "gain": 11.3
    }
   },
   "bass-bounce-bass.ohpepreset": {
@@ -222,12 +222,12 @@
   },
   "bass-click-sub.ohpepreset": {
    "params": {
-    "gain": 8.0
+    "gain": 9.1
    }
   },
   "bass-dark-reese.ohpepreset": {
    "params": {
-    "gain": 9.4
+    "gain": 11.2
    }
   },
   "bass-deep-pluck-sub.ohpepreset": {
@@ -237,47 +237,47 @@
   },
   "bass-dirty-sub.ohpepreset": {
    "params": {
-    "gain": 15.9
+    "gain": 17.6
    }
   },
   "bass-distorted-reese.ohpepreset": {
    "params": {
-    "gain": 8.2
+    "gain": 10.2
    }
   },
   "bass-fingerboard-expressive-bass.ohpepreset": {
    "params": {
-    "gain": 8.7
+    "gain": 10.2
    }
   },
   "bass-flanged-reese.ohpepreset": {
    "params": {
-    "gain": 14.9
+    "gain": 16.9
    }
   },
   "bass-fold-bass.ohpepreset": {
    "params": {
-    "gain": 3.3
+    "gain": 5.8
    }
   },
   "bass-grit-bass.ohpepreset": {
    "params": {
-    "gain": 14.4
+    "gain": 16.8
    }
   },
   "bass-growl-fm-bass.ohpepreset": {
    "params": {
-    "gain": 9.1
+    "gain": 11.5
    }
   },
   "bass-half-step-wobble.ohpepreset": {
    "params": {
-    "gain": 4.4
+    "gain": 6.4
    }
   },
   "bass-halftime-sub.ohpepreset": {
    "params": {
-    "gain": 3.4
+    "gain": 5.7
    }
   },
   "bass-hollow-reese.ohpepreset": {
@@ -287,17 +287,17 @@
   },
   "bass-house-organ-bass.ohpepreset": {
    "params": {
-    "gain": 18.8
+    "gain": 20.3
    }
   },
   "bass-laser-wobble.ohpepreset": {
    "params": {
-    "gain": -0.1
+    "gain": -1.8
    }
   },
   "bass-liquid-sub.ohpepreset": {
    "params": {
-    "gain": 3.4
+    "gain": 5.6
    }
   },
   "bass-living-reese.ohpepreset": {
@@ -307,62 +307,62 @@
   },
   "bass-log-drum-bass.ohpepreset": {
    "params": {
-    "gain": 9.9
+    "gain": 8.7
    }
   },
   "bass-long-sub.ohpepreset": {
    "params": {
-    "gain": 13.8
+    "gain": 15.4
    }
   },
   "bass-metal-growl.ohpepreset": {
    "params": {
-    "gain": 10.2
+    "gain": 10.9
    }
   },
   "bass-moving-reese.ohpepreset": {
    "params": {
-    "gain": 7.5
+    "gain": 9.7
    }
   },
   "bass-orbit-reese.ohpepreset": {
    "params": {
-    "gain": 8.0
+    "gain": 6.5
    }
   },
   "bass-punch-fm-bass.ohpepreset": {
    "params": {
-    "gain": 14.2
+    "gain": 16.6
    }
   },
   "bass-reese-drift.ohpepreset": {
    "params": {
-    "gain": 15.3
+    "gain": 17.4
    }
   },
   "bass-riddim-saw.ohpepreset": {
    "params": {
-    "gain": 1.1
+    "gain": 2.1
    }
   },
   "bass-rise-bass.ohpepreset": {
    "params": {
-    "gain": 20.0
+    "gain": 22.0
    }
   },
   "bass-roller-bass.ohpepreset": {
    "params": {
-    "gain": 8.9
+    "gain": 10.1
    }
   },
   "bass-rolling-bass.ohpepreset": {
    "params": {
-    "gain": 22.5
+    "gain": 22.8
    }
   },
   "bass-rolling-sub.ohpepreset": {
    "params": {
-    "gain": 3.6
+    "gain": 6.4
    }
   },
   "bass-round-square-sub.ohpepreset": {
@@ -372,12 +372,12 @@
   },
   "bass-round-sub.ohpepreset": {
    "params": {
-    "gain": 13.0
+    "gain": 15.5
    }
   },
   "bass-rubber-bass.ohpepreset": {
    "params": {
-    "gain": 22.1
+    "gain": 22.5
    }
   },
   "bass-screech-bass.ohpepreset": {
@@ -387,27 +387,27 @@
   },
   "bass-slap-fm-bass.ohpepreset": {
    "params": {
-    "gain": 19.1
+    "gain": 20.1
    }
   },
   "bass-square-wobble.ohpepreset": {
    "params": {
-    "gain": 1.8
+    "gain": 1.5
    }
   },
   "bass-step-sub.ohpepreset": {
    "params": {
-    "gain": 3.3
+    "gain": 5.7
    }
   },
   "bass-sub-reese.ohpepreset": {
    "params": {
-    "gain": 2.8
+    "gain": 4.3
    }
   },
   "bass-table-sub.ohpepreset": {
    "params": {
-    "gain": 8.8
+    "gain": 11.4
    }
   },
   "bass-talking-bass.ohpepreset": {
@@ -417,7 +417,7 @@
   },
   "bass-tear-reese.ohpepreset": {
    "params": {
-    "gain": -2.1
+    "gain": -4.0
    }
   },
   "bass-tech-stab-bass.ohpepreset": {
@@ -432,27 +432,27 @@
   },
   "bass-triplet-wobble.ohpepreset": {
    "params": {
-    "gain": 0.6
+    "gain": 1.1
    }
   },
   "bass-unison-bass.ohpepreset": {
    "params": {
-    "gain": 12.7
+    "gain": 15.2
    }
   },
   "bass-vowel-growl.ohpepreset": {
    "params": {
-    "gain": 0.8
+    "gain": 1.5
    }
   },
   "bass-warm-roller.ohpepreset": {
    "params": {
-    "gain": 12.3
+    "gain": 14.3
    }
   },
   "bass-wub-machine.ohpepreset": {
    "params": {
-    "gain": 6.4
+    "gain": 7.5
    }
   },
   "boom-boom-distorted.ohpepreset": {
@@ -472,7 +472,7 @@
   },
   "drums-tick-hat.ohpepreset": {
    "params": {
-    "gain": 23.6
+    "gain": 24.0
    }
   },
   "drums-tuned-tom.ohpepreset": {
@@ -487,7 +487,7 @@
   },
   "drums-zap-perc.ohpepreset": {
    "params": {
-    "gain": 16.2
+    "gain": 16.7
    }
   },
   "fx-doppler-fly-by.ohpepreset": {
@@ -512,7 +512,7 @@
   },
   "fx-impact-boom.ohpepreset": {
    "params": {
-    "gain": 1.1
+    "gain": 1.6
    }
   },
   "fx-rising-halo-sweep.ohpepreset": {
@@ -532,7 +532,7 @@
   },
   "fx-stereo-zap.ohpepreset": {
    "params": {
-    "gain": 6.6
+    "gain": 5.3
    }
   },
   "fx-whoosh.ohpepreset": {
@@ -542,7 +542,7 @@
   },
   "fx-wide-riser.ohpepreset": {
    "params": {
-    "gain": 23.5
+    "gain": 24.0
    }
   },
   "keys-alive-tine-keys.ohpepreset": {
@@ -552,7 +552,7 @@
   },
   "keys-bright-grand.ohpepreset": {
    "params": {
-    "gain": 0.6
+    "gain": -0.1
    }
   },
   "keys-bright-poly-wide.ohpepreset": {
@@ -562,7 +562,7 @@
   },
   "keys-concert-grand.ohpepreset": {
    "params": {
-    "gain": 5.8
+    "gain": 4.9
    }
   },
   "keys-crystal-organ.ohpepreset": {
@@ -572,7 +572,7 @@
   },
   "keys-felt-grand.ohpepreset": {
    "params": {
-    "gain": 7.4
+    "gain": 6.7
    }
   },
   "keys-glass-body-keys.ohpepreset": {
@@ -582,7 +582,7 @@
   },
   "keys-glass-keys.ohpepreset": {
    "params": {
-    "gain": 6.2
+    "gain": 5.8
    }
   },
   "keys-glide-poly-synth.ohpepreset": {
@@ -592,12 +592,12 @@
   },
   "keys-halo-grand.ohpepreset": {
    "params": {
-    "gain": 8.4
+    "gain": 7.8
    }
   },
   "keys-marimba.ohpepreset": {
    "params": {
-    "gain": 4.4
+    "gain": 3.5
    }
   },
   "keys-music-box.ohpepreset": {
@@ -612,17 +612,17 @@
   },
   "keys-suitcase-tine.ohpepreset": {
    "params": {
-    "gain": -0.6
+    "gain": -1.5
    }
   },
   "keys-tape-ghost-keys.ohpepreset": {
    "params": {
-    "gain": 10.4
+    "gain": 11.1
    }
   },
   "keys-velvet-stab.ohpepreset": {
    "params": {
-    "gain": 12.8
+    "gain": 12.5
    }
   },
   "keys-vibraphone.ohpepreset": {
@@ -647,32 +647,32 @@
   },
   "leads-breath-lead.ohpepreset": {
    "params": {
-    "gain": 4.9
+    "gain": 2.8
    }
   },
   "leads-chip-square-lead.ohpepreset": {
    "params": {
-    "gain": 5.7
+    "gain": 2.3
    }
   },
   "leads-classic-mono-lead.ohpepreset": {
    "params": {
-    "gain": 14.3
+    "gain": 10.7
    }
   },
   "leads-digital-lead.ohpepreset": {
    "params": {
-    "gain": 14.2
+    "gain": 12.4
    }
   },
   "leads-dream-lead.ohpepreset": {
    "params": {
-    "gain": 7.1
+    "gain": 5.2
    }
   },
   "leads-fall-lead.ohpepreset": {
    "params": {
-    "gain": 7.1
+    "gain": 5.0
    }
   },
   "leads-fingerboard-bowed-string.ohpepreset": {
@@ -687,42 +687,42 @@
   },
   "leads-fm-brass-lead.ohpepreset": {
    "params": {
-    "gain": 10.0
+    "gain": 6.8
    }
   },
   "leads-formant-lead.ohpepreset": {
    "params": {
-    "gain": 9.4
+    "gain": 6.3
    }
   },
   "leads-growl-lead.ohpepreset": {
    "params": {
-    "gain": 17.0
+    "gain": 14.9
    }
   },
   "leads-hard-edge-fm-lead.ohpepreset": {
    "params": {
-    "gain": 10.5
+    "gain": 7.8
    }
   },
   "leads-hot-wire.ohpepreset": {
    "params": {
-    "gain": 9.7
+    "gain": 6.5
    }
   },
   "leads-legato-glide-lead.ohpepreset": {
    "params": {
-    "gain": 13.6
+    "gain": 10.4
    }
   },
   "leads-mono-glide-lead.ohpepreset": {
    "params": {
-    "gain": -0.2
+    "gain": -3.0
    }
   },
   "leads-octave-lead.ohpepreset": {
    "params": {
-    "gain": 7.7
+    "gain": 5.7
    }
   },
   "leads-pendulum-lead.ohpepreset": {
@@ -732,42 +732,42 @@
   },
   "leads-pluck-lead-wide.ohpepreset": {
    "params": {
-    "gain": 15.8
+    "gain": 15.2
    }
   },
   "leads-pop-lead.ohpepreset": {
    "params": {
-    "gain": 19.1
+    "gain": 15.6
    }
   },
   "leads-portamento-square.ohpepreset": {
    "params": {
-    "gain": 6.4
+    "gain": 4.5
    }
   },
   "leads-recorder.ohpepreset": {
    "params": {
-    "gain": -3.5
+    "gain": -6.6
    }
   },
   "leads-ring-machine.ohpepreset": {
    "params": {
-    "gain": 19.4
+    "gain": 16.3
    }
   },
   "leads-rise-lead.ohpepreset": {
    "params": {
-    "gain": 14.3
+    "gain": 10.9
    }
   },
   "leads-saw-unison-lead.ohpepreset": {
    "params": {
-    "gain": 8.0
+    "gain": 6.2
    }
   },
   "leads-shimmer-lead.ohpepreset": {
    "params": {
-    "gain": 14.1
+    "gain": 10.5
    }
   },
   "leads-sine-whistle.ohpepreset": {
@@ -782,7 +782,7 @@
   },
   "leads-square-hero.ohpepreset": {
    "params": {
-    "gain": 8.2
+    "gain": 5.6
    }
   },
   "leads-stereo-saw-lead.ohpepreset": {
@@ -792,7 +792,7 @@
   },
   "leads-super-lead.ohpepreset": {
    "params": {
-    "gain": 8.8
+    "gain": 6.3
    }
   },
   "leads-super-wide-lead.ohpepreset": {
@@ -802,22 +802,22 @@
   },
   "leads-twist-lead.ohpepreset": {
    "params": {
-    "gain": 4.2
+    "gain": 2.5
    }
   },
   "leads-vox-synth-lead.ohpepreset": {
    "params": {
-    "gain": 4.6
+    "gain": 1.3
    }
   },
   "morph-bass-shapes.ohpepreset": {
    "params": {
-    "gain": 13.0
+    "gain": 15.5
    }
   },
   "morph-keys-and-bells.ohpepreset": {
    "params": {
-    "gain": 8.8
+    "gain": 8.4
    }
   },
   "morph-lead-characters.ohpepreset": {
@@ -937,7 +937,7 @@
   },
   "plucks-future-chord.ohpepreset": {
    "params": {
-    "gain": 9.7
+    "gain": 9.2
    }
   },
   "plucks-gamelan-plate.ohpepreset": {
@@ -962,7 +962,7 @@
   },
   "plucks-koto-pluck.ohpepreset": {
    "params": {
-    "gain": 10.3
+    "gain": 8.6
    }
   },
   "plucks-living-nylon.ohpepreset": {
@@ -982,7 +982,7 @@
   },
   "plucks-pluck-nebula.ohpepreset": {
    "params": {
-    "gain": 12.2
+    "gain": 11.3
    }
   },
   "plucks-plucked-plate.ohpepreset": {
@@ -992,7 +992,7 @@
   },
   "plucks-poly-pluck.ohpepreset": {
    "params": {
-    "gain": 16.8
+    "gain": 14.8
    }
   },
   "plucks-resonator-hit.ohpepreset": {
@@ -1007,17 +1007,17 @@
   },
   "plucks-steel-string.ohpepreset": {
    "params": {
-    "gain": 5.8
+    "gain": 3.9
    }
   },
   "plucks-wide-glass-pluck.ohpepreset": {
    "params": {
-    "gain": 11.7
+    "gain": 10.0
    }
   },
   "plucks-zither.ohpepreset": {
    "params": {
-    "gain": 2.2
+    "gain": 0.5
    }
   },
   "project-ambient-drift.ohpepreset": {
@@ -1062,7 +1062,7 @@
   },
   "project-harmony-follow-jam.ohpepreset": {
    "params": {
-    "mix.master.vol": 6.0
+    "mix.master.vol": 5.3
    }
   },
   "project-liquid-roll.ohpepreset": {
@@ -1077,7 +1077,7 @@
   },
   "project-motion-lanes-groove.ohpepreset": {
    "params": {
-    "mix.master.vol": 6.0
+    "mix.master.vol": 3.5
    }
   },
   "project-neuro-engine.ohpepreset": {
@@ -1087,7 +1087,7 @@
   },
   "project-pads-performance-set.ohpepreset": {
    "params": {
-    "mix.master.vol": 6.0
+    "mix.master.vol": 3.5
    }
   },
   "project-sub-glide.ohpepreset": {
@@ -1147,22 +1147,22 @@
   },
   "textures-starfield.ohpepreset": {
    "params": {
-    "gain": 6.3
+    "gain": 4.0
    }
   },
   "vocal-aah-choir.ohpepreset": {
    "params": {
-    "gain": 4.8
+    "gain": 2.9
    }
   },
   "vocal-choir-grains.ohpepreset": {
    "params": {
-    "gain": 4.5
+    "gain": 3.9
    }
   },
   "vocal-formant-voices.ohpepreset": {
    "params": {
-    "gain": 14.5
+    "gain": 11.6
    }
   },
   "vocal-living-choir.ohpepreset": {
@@ -1172,7 +1172,7 @@
   },
   "vocal-solo-soprano.ohpepreset": {
    "params": {
-    "gain": 3.7
+    "gain": 1.8
    }
   }
  },

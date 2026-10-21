@@ -335,7 +335,7 @@
     "mix.ch5.vol": -1,
     "mix.ch5.senda": 0.0,
     "mix.ch5.sendb": 0.05,
-    "mix.master.vol": 6.0,
+    "mix.master.vol": 3.5,
     "fxa.delay.sync": 5,
     "fxa.delay.feedback": 0.35,
     "fxb.reverb.size": 0.6,
