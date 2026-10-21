@@ -332,6 +332,34 @@ def calibrate(args):
     print("changed", changed)
 
 
+def guard(args):
+    """The plug-in test window (4 beats at 100 BPM + 1 s tail; projects 4 s with the limiter): keeps every part preset
+    inside it with margin - sample peak at or below -1 dBFS first, then active RMS at or above -20 dBFS (the test
+    allows -21) - even where that leaves the long render above the true-peak target."""
+    cur = json.load(open(CURATION, encoding="utf-8"))
+    bank = load_bank()
+    n = 0
+    for line in open(args.tw):
+        r = json.loads(line)
+        f = r["file"] + ".ohpepreset"
+        if f not in bank or r["kind"] != "part":
+            continue
+        g = float(bank[f]["params"].get("gain", 0.0))
+        d = 0.0
+        if r["peak"] > -1.0:
+            d = -1.0 - r["peak"]
+        elif r["active"] < -20.0:
+            d = min(-20.0 - r["active"], -1.0 - r["peak"])
+        if abs(d) < 0.1:
+            continue
+        ng = max(GAIN_MIN, min(GAIN_MAX, round(g + d, 1)))
+        cur.setdefault("levels_before", {}).setdefault(f, g)
+        cur["changed"].setdefault(f, {}).setdefault("params", {})["gain"] = ng
+        n += 1
+    json.dump(cur, open(CURATION, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    print("guarded", n)
+
+
 def main():
     ap = argparse.ArgumentParser()
     sp = ap.add_subparsers(dest="cmd", required=True)
@@ -348,6 +376,8 @@ def main():
     r.add_argument("--pdist", type=float, default=PARAM_DIST)
     r.add_argument("--asim", type=float, default=AUDIO_SIM)
     sp.add_parser("apply")
+    gd = sp.add_parser("guard")
+    gd.add_argument("--tw", required=True, help="ohpe_render JSON lines of the test window (--beats 4 --tail 1)")
     c = sp.add_parser("calibrate")
     c.add_argument("--data", required=True)
     c.add_argument("--only", nargs="*", default=[])
@@ -361,6 +391,8 @@ def main():
         analyse(args)
     elif args.cmd == "report":
         report(args)
+    elif args.cmd == "guard":
+        guard(args)
     elif args.cmd == "calibrate":
         rows = json.load(open(args.data))
         args.unlimited = {f: 2.0 - r["tp_unlimited"] for f, r in rows.items() if r.get("tp_unlimited") is not None}

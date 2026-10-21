@@ -38,7 +38,7 @@
     "fx2.delay.tone": 0.5,
     "fx2.delay.pingpong": 1,
     "fx2.delay.mix": 0.18,
-    "gain": 14.1,
+    "gain": 14.7,
     "fx3.type": 10,
     "fx3.compressor.thresh": -4.0,
     "fx3.compressor.ratio": 8.0,
