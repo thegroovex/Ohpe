@@ -133,6 +133,20 @@ jobs:
         if: matrix.shard == 0
         run: bash scripts/ci/pack-tools-smoke.sh
 
+      # p62: the 1.0 format freeze - version constants, golden fixtures and the format documents never change silently
+      # (against the pull request's base / the previous main commit: versions only go up, fixtures are never changed)
+      - name: Format freeze check (versions, golden fixtures, docs)
+        if: matrix.shard == 0
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -n "$BASE" ] && [ "$BASE" != "0000000000000000000000000000000000000000" ]; then
+            git fetch --no-tags --depth=1 origin "$BASE"
+            python3 scripts/ci/check-formats.py --base "$BASE"
+          else
+            python3 scripts/ci/check-formats.py
+          fi
+
       - name: Configure + build (core, no JUCE)
         run: |
           ccache -z

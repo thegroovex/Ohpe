@@ -122,3 +122,4 @@ target_sources(ohpe_core_tests PRIVATE GridLayoutTests.cpp) # p59: grid keyboard
 target_sources(ohpe_core_tests PRIVATE ArpSustainTests.cpp) # p60: sustain / sostenuto hold the arpeggiator
 target_sources(ohpe_core_tests PRIVATE RobustnessTests.cpp) # p63: loaders survive damaged files
 target_sources(ohpe_core_tests PRIVATE AudioStressTests.cpp) # p63: sample rates, buffer sizes, denormals, output guard, soak
+target_sources(ohpe_core_tests PRIVATE FormatTests.cpp) # p62: format freeze (fixtures in tests/formats)

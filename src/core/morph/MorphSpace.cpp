@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "MorphSpace.h"
 #include "model/JsonParse.h" // p63: depth-limited parse
+#include "../model/FormatVersions.h"
 
 #include "../engines/Part.h"
 #include "../fx/InsertSlot.h"
@@ -371,7 +372,7 @@ catch (const std::exception&)
 std::string MorphSpace::toJson() const
 {
     json j;
-    j["version"] = 1;
+    j["version"] = formats::morph;
     json parts = json::array();
     for (int p = 0; p < numParts; ++p) parts.push_back (json::parse (partToJson (p)));
     j["parts"] = parts;

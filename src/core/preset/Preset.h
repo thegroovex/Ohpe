@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../model/ParamRegistry.h"
+#include "../model/FormatVersions.h"
 
 #include <cstdint>
 #include <map>
@@ -62,7 +63,7 @@ class Core;
 */
 namespace ohpe::preset
 {
-constexpr int formatVersion = 2;
+constexpr int formatVersion = formats::preset;
 constexpr const char* fileExtension = ".ohpepreset";
 
 enum class Kind { Part = 0, Project };

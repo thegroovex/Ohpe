@@ -1,0 +1,11 @@
+{
+  "format": 2,
+  "id": "future-pack",
+  "version": "1.0.0",
+  "kind": "presets",
+  "name": {
+    "en": "Future",
+    "de": "Zukunft"
+  },
+  "files": {}
+}

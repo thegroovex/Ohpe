@@ -36,6 +36,8 @@ mit Plug-in-Hosts, der Standalone-App und dem Bildschirm.
   die Golden-Datei `tests/core/golden/param_ids_v1.txt`.
 * **Zustand:** JSON (`ohpe-state`, Version 1). Unbekannte IDs werden ignoriert, fehlende
   bekommen ihren Standardwert – alte Zustände öffnen in neuen Versionen und umgekehrt.
+* **Formate (seit 1.0):** jedes gespeicherte Format hat eine Version und ist eingefroren – siehe
+  [FORMATE.md](FORMATE.md).
 
 ## Erweitern (Phase 2)
 

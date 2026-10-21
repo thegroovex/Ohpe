@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "PresetLibrary.h"
 #include "model/JsonParse.h" // p63: depth-limited parse
+#include "../model/FormatVersions.h"
 
 #include "../engines/EngineFactory.h"
 
@@ -217,7 +218,7 @@ std::string UserData::toJson() const
 {
     json j;
     j["format"] = "ohpe-library";
-    j["version"] = 1;
+    j["version"] = formats::library;
     j["author"] = author;
     json list = json::object();
     for (const auto& [uid, v] : items)

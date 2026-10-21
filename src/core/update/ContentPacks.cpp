@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "ContentPacks.h"
 #include "model/JsonParse.h" // p63: depth-limited parse
+#include "../model/FormatVersions.h"
 
 #include <nlohmann/json.hpp>
 
@@ -51,7 +52,7 @@ void ContentRegistry::removed (const std::string& id)
 std::string ContentRegistry::toJson() const
 {
     json j;
-    j["format"] = 1;
+    j["format"] = formats::installedPacks;
     j["packs"] = json::array();
     for (const auto& p : packs) j["packs"].push_back ({ { "id", p.id }, { "version", p.version }, { "previous", p.previousVersion } });
     return j.dump (2);

@@ -1,0 +1,21 @@
+{
+  "format": "ohpe-state",
+  "version": 7,
+  "app": "Ohpe",
+  "writtenBy": "9.9.0",
+  "params": {
+    "tempo": 100.0,
+    "p1.vol": 0.375,
+    "zz.future.param": 3.0
+  },
+  "sections": {
+    "futureSection": {
+      "version": 4,
+      "data": [
+        1,
+        2,
+        3
+      ]
+    }
+  }
+}

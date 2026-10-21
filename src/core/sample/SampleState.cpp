@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "SampleState.h"
 #include "model/JsonParse.h" // p63: depth-limited parse
+#include "../model/FormatVersions.h"
 
 #include "../OhpeCore.h"
 #include "../engines/GrainEngine.h"
@@ -29,7 +30,7 @@ std::string saveAssignments (Core& core)
     using nlohmann::json;
     json j;
     j["format"] = "ohpe-samples";
-    j["version"] = 1;
+    j["version"] = formats::samples;
     json parts = json::object();
     for (int p = 0; p < Core::numParts; ++p)
     {

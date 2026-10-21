@@ -1,0 +1,20 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "project",
+  "name": "Format Song",
+  "author": "groovex",
+  "tags": [
+    "Arp"
+  ],
+  "engine": "fm",
+  "comment": "",
+  "params": {
+    "tempo": 110.0,
+    "p1.engine": 0.0,
+    "p1.vol": 0.625,
+    "p2.vol": 0.5,
+    "harmony.kb.layout": 3.0,
+    "harmony.kb.inkey": 0.0
+  }
+}

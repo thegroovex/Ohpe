@@ -98,4 +98,23 @@ catch (const std::exception&)
 {
     return {};
 }
+
+std::array<std::string, 4> sessionPresetUids (const std::string& uiJson)
+{
+    std::array<std::string, 4> uids;
+    const auto ui = jsonutil::parse (uiJson);
+    if (ui.is_discarded() || ! ui.is_object()) return uids;
+    auto text = [] (const json& v) {
+        if (v.is_string()) return v.get<std::string>();
+        if (v.is_null()) return std::string();
+        return v.dump(); // as the plug-in's var::toString did for numbers / bools
+    };
+    if (const auto all = ui.find ("presets"); all != ui.end() && all->is_array() && all->size() == uids.size())
+    {
+        for (size_t part = 0; part < uids.size(); ++part) uids[part] = text ((*all)[part]);
+        return uids;
+    }
+    if (const auto one = ui.find ("preset"); one != ui.end()) uids.fill (text (*one));
+    return uids;
+}
 } // namespace ohpe::state

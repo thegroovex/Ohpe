@@ -1,0 +1,16 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Old Mod",
+  "author": "",
+  "tags": [],
+  "engine": "analog",
+  "comment": "",
+  "params": {
+    "engine": 2.0,
+    "mod.s1.src": 1.0,
+    "mod.s1.dst": 1.0,
+    "mod.s1.amt": 0.25
+  }
+}

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "UpdateSettings.h"
 #include "model/JsonParse.h" // p63: depth-limited parse
+#include "../model/FormatVersions.h"
 
 #include <nlohmann/json.hpp>
 
@@ -21,6 +22,7 @@ Settings Settings::defaults (const Version& current)
 std::string Settings::toJson() const
 {
     json j;
+    j["version"] = formats::updateSettings; // p62 (files before 1.0 have none; nothing to migrate)
     j["autoCheck"] = autoCheck;
     j["channel"] = channelName (channel);
     j["lastCheck"] = lastCheck;

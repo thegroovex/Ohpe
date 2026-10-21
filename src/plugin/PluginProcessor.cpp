@@ -4,6 +4,7 @@
 
 #include "ParameterBridge.h"
 #include "TapeIO.h"
+#include "model/StateSerializer.h"
 #include "tape/TapeFile.h"
 #include "ui/PluginEditor.h"
 
@@ -946,16 +947,10 @@ void OhpeProcessor::setStateInformation (const void* data, int size)
 
 std::array<std::string, 4> OhpeProcessor::sessionPresetUids (const juce::var& ui)
 {
-    // p50: "presets" = one uid per part; a session from before (only "preset") gives that one to every part
-    std::array<std::string, 4> uids;
-    if (! ui.isObject()) return uids;
-    if (const auto* all = ui["presets"].getArray(); all != nullptr && all->size() == (int) uids.size())
-    {
-        for (int part = 0; part < (int) uids.size(); ++part) uids[(size_t) part] = (*all)[part].toString().toStdString();
-        return uids;
-    }
-    uids.fill (ui["preset"].toString().toStdString());
-    return uids;
+    // p50: "presets" = one uid per part; a session from before (only "preset") gives that one to every part.
+    // p62: the migration lives in the core (state::sessionPresetUids) so the format tests cover it.
+    if (! ui.isObject()) return {};
+    return state::sessionPresetUids (juce::JSON::toString (ui, true).toStdString());
 }
 
 void OhpeProcessor::applyPendingPresetUid()

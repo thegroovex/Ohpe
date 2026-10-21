@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "TableFile.h"
+#include "../model/FormatVersions.h"
 
 #include <algorithm>
 #include <cmath>
@@ -11,7 +12,7 @@ namespace ohpe::usertable
 namespace
 {
 constexpr char magic[6] = { 'O', 'H', 'P', 'E', 'W', 'T' };
-constexpr uint16_t version = 1;
+constexpr uint16_t version = (uint16_t) formats::wavetable;
 
 void put32 (std::vector<uint8_t>& b, uint32_t v)
 {

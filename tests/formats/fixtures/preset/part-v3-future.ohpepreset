@@ -1,0 +1,22 @@
+{
+  "format": "ohpe-preset",
+  "version": 3,
+  "kind": "part",
+  "name": "From The Future",
+  "author": "groovex",
+  "tags": [
+    "Pads"
+  ],
+  "engine": "fm",
+  "comment": "",
+  "colour": "#ffcc00",
+  "modSchema": 1,
+  "params": {
+    "engine": 0.0,
+    "vol": 0.375,
+    "zz.future": 1.0
+  },
+  "futureBlock": {
+    "anything": true
+  }
+}

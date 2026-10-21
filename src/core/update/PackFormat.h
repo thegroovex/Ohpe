@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ContentPacks.h"
+#include "../model/FormatVersions.h"
 
 #include <cstdint>
 #include <map>
@@ -79,7 +80,7 @@ struct PackInfo
 constexpr const char* packFileExtension = ".ohpepack";
 
 constexpr const char* packInfoFile = "pack.json";
-constexpr int packFormat = 1;
+constexpr int packFormat = formats::pack;
 
 /** Pack ids in pack.json: 1 - 64 characters of a-z, 0-9 and '-', starting with a letter or digit. */
 bool isPackJsonId (const std::string& id);

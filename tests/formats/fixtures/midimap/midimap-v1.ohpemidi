@@ -1,0 +1,33 @@
+{
+  "format": "ohpe-midimap",
+  "version": 1,
+  "mappings": [
+    {
+      "param": "p1.vol",
+      "type": "cc",
+      "channel": 1,
+      "number": 7,
+      "min": 0.0,
+      "max": 1.0,
+      "mode": "absolute"
+    },
+    {
+      "param": "seq.run",
+      "type": "note",
+      "channel": 10,
+      "number": 36,
+      "min": 0.0,
+      "max": 1.0,
+      "mode": "toggle"
+    },
+    {
+      "param": "tempo",
+      "type": "cc",
+      "channel": 0,
+      "number": 20,
+      "min": 0.25,
+      "max": 0.75,
+      "mode": "relative"
+    }
+  ]
+}

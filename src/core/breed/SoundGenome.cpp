@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "SoundGenome.h"
 #include "model/JsonParse.h" // p63: depth-limited parse
+#include "../model/FormatVersions.h"
 
 #include "../OhpeCore.h"
 #include "../engines/EngineFactory.h"
@@ -679,7 +680,7 @@ Session::Parent parentFrom (const Schema& s, const json& j)
 std::string Session::toJson() const
 {
     json j;
-    j["version"] = 1;
+    j["version"] = formats::genome;
     j["amount"] = amount;
     j["brood"] = broodSize;
     j["a"] = parentJson (sch, pa);
