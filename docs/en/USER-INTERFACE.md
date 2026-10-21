@@ -751,6 +751,22 @@ up). The tooltip adds the slowest block of the last two seconds. The legend turn
 block took longer than its own time. It is a display only (no parameter, not saved). Parts that have been silent for a
 few seconds sleep and cost almost nothing until they play again. Details: [Performance](PERFORMANCE.md).
 
+## Crash-safe start (standalone, p63)
+
+![The restore notice after a session that did not end cleanly](../images/ohpe-recovery-notice.png)
+
+The standalone app notes when a session is running and clears the note when you quit normally. If it finds the note
+at the next start (a crash, a power cut, the app was killed), it does not load the last session blindly: Ohpe starts
+with the factory start sound and shows a small notice at the top of the plate – **RESTORE** loads the last saved session
+after all, **START FRESH** keeps the start sound (the notice disappears either way). A saved state that cannot be loaded
+(damaged file) also starts with the start sound; the notice then only says so (**OK**). The plate stays playable while
+the notice is shown. A second running instance of the app never counts as a crash.
+
+Ohpe saves the standalone session when you quit. RESTORE brings back that saved state, so
+changes made after the last save in a crashed session are not included. A damaged session, preset, tape, wavetable,
+content pack or settings file never crashes Ohpe: it is refused, or the parts that can be read are loaded and the rest
+falls back to defaults. In a plug-in host, a damaged host state is refused the same way and the instance keeps its sound.
+
 ## Keys and shortcuts
 
 | Key | Action |

@@ -415,13 +415,15 @@ TEST_CASE ("robustness: a tape blob holding NaN / Inf samples or absurd rates pl
     const std::string text (file.begin(), file.end());
     const auto blobAt = text.find ("OHPETAPE");
     REQUIRE (blobAt != std::string::npos);
+    auto other = std::make_unique<Core>();
+    other->prepare (44100.0, 256); // another rate than the file's header: the loader converts the audio
     for (double rate : { 1.0e-300, 1.0e-3, 1.0e300, -48000.0, (double) NAN, (double) INFINITY })
     {
         auto f = file;
         std::memcpy (f.data() + blobAt + 8 + 12, &rate, sizeof (double));
         const auto start = std::chrono::steady_clock::now();
         tapefile::Settings got;
-        try { tapefile::load (core->tape(), f.data(), f.size(), got); }
+        try { CHECK_FALSE (tapefile::load (other->tape(), f.data(), f.size(), got)); }
         catch (...) { FAIL ("tape load threw"); }
         CHECK (std::chrono::duration<double> (std::chrono::steady_clock::now() - start).count() < 5.0);
     }

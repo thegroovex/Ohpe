@@ -143,8 +143,10 @@ TEST_CASE ("stress: every sample rate and buffer size renders finite, bounded au
                 done += n;
             }
             CHECK (rig.watch.finite);
+            CHECK (rig.watch.peak > 1.0e-3f); // it plays
             CHECK (rig.watch.peak < 16.0f);
             CHECK (rig.watch.subnormals == 0);
+            rig.watch = {};
         }
     CHECK (rig.core->nonFiniteBlocks() == 0);
 }
