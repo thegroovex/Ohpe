@@ -51,7 +51,7 @@
     "fx3.reverb.damping": 0.45,
     "fx3.reverb.predelay": 0.03,
     "fx3.reverb.mix": 0.25,
-    "gain": 6.8,
+    "gain": 1.8,
     "lfo2.rate": 5.3,
     "lfo2.sync": 0,
     "lfo2.shape": 0,

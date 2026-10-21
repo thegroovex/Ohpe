@@ -186,7 +186,7 @@
     "mix.ch4.vol": -2,
     "mix.ch4.senda": 0,
     "mix.ch4.sendb": 0.5,
-    "mix.master.vol": 0.0,
+    "mix.master.vol": -9.7,
     "fxb.reverb.size": 0.9,
     "fxb.reverb.damping": 0.35,
     "fxb.reverb.predelay": 0.04,

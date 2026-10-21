@@ -63,7 +63,7 @@
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
     "voices": 4,
-    "gain": 9.5,
+    "gain": 5.2,
     "fx4.type": 10,
     "fx4.compressor.thresh": -4.0,
     "fx4.compressor.ratio": 8.0,

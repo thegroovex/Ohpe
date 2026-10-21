@@ -45,7 +45,7 @@
     "fx2.compressor.knee": 6.0,
     "fx2.compressor.makeup": 2.4,
     "fx2.compressor.mix": 0.7,
-    "gain": 22.9,
+    "gain": 24.0,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,

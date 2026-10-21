@@ -5,7 +5,8 @@
   "name": "Glide Sine Bass",
   "author": "groovex",
   "tags": [
-    "Bass"
+    "Bass",
+    "Boom"
   ],
   "engine": "fm",
   "comment": "Pure sine bass with legato glide for sliding bass lines; detached notes stay clean.",
@@ -44,7 +45,7 @@
     "fx.compressor.knee": 6.0,
     "fx.compressor.makeup": 6.4,
     "fx.compressor.mix": 1.0,
-    "gain": 13.9,
+    "gain": 19.5,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 82,

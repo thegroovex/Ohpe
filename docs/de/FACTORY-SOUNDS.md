@@ -2,7 +2,7 @@
 
 *Deutsch · English: [../en/FACTORY-SOUNDS.md](../en/FACTORY-SOUNDS.md)*
 
-Ohpe bringt **282 Part-Presets** für alle acht Engines mit, **14 Projekt-Presets** (Demo-Patterns,
+Ohpe bringt **356 Part-Presets** für alle acht Engines mit, **18 Projekt-Presets** (Demo-Patterns,
 die alle vier Parts, die Sequenzer und das Drum-Kit nutzen), **sechs Drum-Kits**, **zehn
 aufgenommene Instrumente** und (0.8) **vier Tasteninstrumente** (Flügel, Klavier, Tine- und
 Zungen-E-Piano) für die Sampler- und Grain-Engine. Du öffnest sie mit **BIBLIOTHEK**:
@@ -68,7 +68,7 @@ Neue Projekte: **Neuro Engine** (Neurofunk, 174 BPM), **Halftime Pressure** (Dub
 
 **Boom** ist eine eigene Kategorie (Bibliotheks-Chip *Boom*): tiefe, gestimmte Kicks und Sub-Bässe –
 das synthetisierte **Boom**-Kit (Projekt *Boom Kit*), *Sub Kick*, die Sub-Bässe (*Long Sub*,
-*Dirty Sub*, *Punch Sub*, *Sine Slide*) und fünf neue auf einem reinen Sinus-Sub mit Pitch-Dive (die
+*Dirty Sub*, *Punch Sub*, *Glide Sine Bass*) und fünf neue auf einem reinen Sinus-Sub mit Pitch-Dive (die
 Tonhöhen-Hüllkurve aus 0.6): *Boom Long Sub* (lang, gestimmt, mit Dive), *Boom Distorted* (hart
 angezerrt), *Boom Kick Bass* (kurz: Kick und Bass in einem), *Boom Slide* (überlappende Noten
 gleiten – Legato-Portamento, für Slides im Trap-Stil) und *Boom Click* (ein heller Klick, damit er
@@ -80,8 +80,8 @@ Amp-*Decay* bestimmen die Länge. Das Projekt *Sub & Glide* trägt ebenfalls den
 Das Projekt **Lo-Fi Beat** ist klassischer Lo-Fi-Hip-Hop: 78 BPM mit trägem, schwerem Swing, dumpfe
 Kick, weiche Snare und leise geshuffelte Hats auf dem Lo-Fi-Kit, grundtonlose Nonen-Voicings (Fm9 –
 Bb13 – Ebmaj9 – C7#9) auf **Dusty Keys** (starkes Band-Leiern, bitreduzierte Kante), ein warmer,
-runder Bass (**Mellow Lofi Bass**) auf den Grundtönen und **Vinyl Crackle** darunter; der Master wird
-vom Master-Tiefpass aus 0.6 (4,2 kHz) und Bandsättigung abgedunkelt. **Lofi Kit** ist dasselbe
+runder Bass (**Mellow Lo-Fi Bass**) auf den Grundtönen und **Vinyl Crackle** darunter; der Master wird
+vom Master-Tiefpass aus 0.6 (4,2 kHz) und Bandsättigung abgedunkelt. **Lo-Fi Kit** ist dasselbe
 Kit-Setup als Ausgangspunkt für eigene Beats. *Vinyl Crackle* ist die Analog-Engine mit
 ausgeschalteten Oszillatoren (0.6 `analog.osclevel`) und dem neuen Knister-Generator
 (`analog.crackle`) – eine beliebige Note halten.
@@ -214,6 +214,32 @@ Marimba mit zwei Anschlagstufen), im Pegel angeglichen und mono.
 Gehaltene Instrumente haben Loop-Punkte; die Presets, die sie nutzen, stellen *Loop* des Samplers
 auf *Vorwärts*. Lizenzen und Quellen: [THIRD-PARTY.md](../../THIRD-PARTY.md).
 
+## Bank-Kuratierung (1.0)
+
+Für 1.0 wurde die gesamte Werksbank offline gerendert und kuratiert (`tools/presets/bank_curate.py`, Protokoll in
+`tools/presets/bank_curation.json`):
+
+* **Beinahe-Dubletten** – Presets derselben Engine und Kategorie wurden nach ihren Parametern und nach ihrem Klang
+  (Spektrum und Hüllkurve des Standard-Renders) verglichen. Drei, die wie ein anderes Preset klangen, wurden
+  zurückgezogen; das bessere bleibt: *Sine Slide* (→ *Glide Sine Bass*), *Phase Reese* (→ *Glide Reese*, der seinen
+  Phaser behält) und *Sparkle Bell* (→ *FM Arp Bell*). Varianten, die sich anders spielen (Glide, Tonhöhen-Anstieg,
+  Morph, Arp, Fingerboard, Ausdruck), bleiben bewusst erhalten.
+* **Sitzungen bleiben sicher** – eine Sitzung oder ein Projekt mit einem zurückgezogenen Preset behält seinen Klang
+  (er ist in der Sitzung gespeichert); die Bibliothek zeigt für diesen Part nur keinen Preset-Namen. Verbliebene
+  Presets behalten ihre Identität, Favoriten, Bewertungen und Sitzungen finden sie also weiter, auch wenn sich der
+  angezeigte Name geändert hat.
+* **Namen und Tags** – jeder Name ist eindeutig; *Funk Clav* heißt jetzt *Funk Snap Keys*, die Lo-Fi-Presets werden
+  *Lo-Fi* geschrieben (*Lo-Fi Bass*, *Mellow Lo-Fi Bass*, *Lo-Fi Kit*); die FM-E-Pianos und *Dream Tine Arp* stehen
+  unter *Klavier*, *Glide Sine Bass* unter *Boom*, *Digital Pluck Arp* unter *Zupfer*.
+* **Lautheit** – jedes Part-Preset spielt die Standard-Phrase seiner Kategorie (120 BPM, 8 s), jedes Projekt sein
+  Pattern mit dem Master-Limiter wie gehört. Ziel: das lauteste 3-Sekunden-Fenster (Kurzzeit-Lautheit,
+  K-Bewertung nach EBU R128) bei **−11 LUFS ±1,5 LU**, **True Peak höchstens −1 dBTP**. −11 LUFS ist der Median der
+  Bank, damit springt der Pegel beim Wechsel zwischen Werkspresets, ZUFALL- und Zucht-Klängen (auf denselben
+  Median eingestellt) nicht. Geändert wurde nur der Pegelparameter (Part Gain bei Part-Presets, Master-Lautstärke
+  bei Projekten); wo der Spitzenpegel oder das Pegelfenster der Plug-in-Tests (−21 … −10 dBFS aktiver RMS) den vollen
+  Schritt nicht zulässt, bleibt das Preset so nah wie möglich. Helle Leads wurden leiser, weiche Subs und Klaviere
+  lauter; Presets, die übersteuerten, liegen jetzt unter der Grenze.
+
 ## Wie die Klänge geprüft wurden
 
 Jedes Werks-Preset wird offline mit einer typischen Phrase seiner Kategorie gerendert (Basslinie,
@@ -236,7 +262,7 @@ Werkzeuge, für Mitwirkende:
 ## Preset-Liste
 
 <!-- presets:begin -->
-### Bass (68)
+### Bass (66)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
@@ -253,8 +279,8 @@ Werkzeuge, für Mitwirkende:
 | Fat Saw Bass | Analog | – | Zwei verstimmte Sägezähne und ein Sub durch das Ladder-Filter; groß, aber nicht dröhnend. |
 | Flanged Reese | Wavetable | MPE | Sägezahn-Stapel mit langsamem Jet-Flanger und Chorus: wirbelnde Stereo-Höhen, stabiler Mono-Bass. |
 | Fold Bass | Wavetable | Hybrid, MPE | Sinus-Sub und analoger Sägezahn, ineinander gefaltet: die Faltmenge lässt ihn brüllen. |
-| Glide Reese | Wavetable | MPE | Reese mit Portamento konstanter Rate: überlappende Noten gleiten wie ein bundloses Gummiband. |
-| Glide Sine Bass | FM | – | Reiner Sinus-Bass mit Legato-Glide für gleitende Basslinien; abgesetzte Noten bleiben sauber. |
+| Glide Reese | Wavetable | MPE | Sägezahn-Reese durch einen langsamen, tiefen Phaser, mit Portamento konstanter Rate: überlappende Noten gleiten wie ein bundloses Gummiband. |
+| Glide Sine Bass | FM | Boom | Reiner Sinus-Bass mit Legato-Glide für gleitende Basslinien; abgesetzte Noten bleiben sauber. |
 | Grind Bass | Wavetable | MPE | Mahlende, gefaltete Grit-Tabelle, hart gesquasht: eine konstante, dichte Wand aus Mitten. |
 | Grit Bass | Wavetable | – | Knurrende Grit-Tabelle mit Hüllkurven-Sweep; aggressiv, aber kontrolliert. |
 | Growl FM Bass | FM | – | FM-Bass mit Feedback-Kante und langsamem Klangfarben-LFO. |
@@ -265,10 +291,10 @@ Werkzeuge, für Mitwirkende:
 | House Organ Bass | Analog | – | Hohles Rechteck mit zweitem Oszillator eine Oktave tiefer; kurz und druckvoll. |
 | Laser Wobble | Wavetable | MPE | Steigender Sägezahn-LFO auf einem Bandpass-Wobble in Sechzehnteln: zappende, laserartige Bewegung. |
 | Liquid Sub | FM | – | Reiner, warmer Sinus-Sub mit weicher zweiter Harmonischer; gleitet zwischen überlappenden Noten. |
-| Lofi Bass | Analog | – | Runder, warmer Bass: weicher Rechteck-Körper über kräftigem Sinus-Sub, sanft angezerrt. |
+| Lo-Fi Bass | Analog | – | Runder, warmer Bass: weicher Rechteck-Körper über kräftigem Sinus-Sub, sanft angezerrt. |
 | Log Drum Bass | Sampler | – | Tiefe Marimba-Stäbe als Bass: holzig, rund und kurz. |
 | Long Sub | Analog | Boom | Tiefer, lang ausklingender Sub, der zwischen überlappenden Noten gleitet (Glide); weicher Klick im Anschlag. |
-| Mellow Lofi Bass | Analog | – | Warmer, runder Bass: weicher, tiefpassgefilterter Körper über einem Sinus-Sub mit sanfter Sättigung und einem Hauch Glide. |
+| Mellow Lo-Fi Bass | Analog | – | Warmer, runder Bass: weicher, tiefpassgefilterter Körper über einem Sinus-Sub mit sanfter Sättigung und einem Hauch Glide. |
 | Metal Growl | Wavetable | MPE | Scheppernder, metallischer Growl: FM-Tabelle, resonanter Kammfilter obenauf und harter Squash. |
 | Moving Reese | Wavetable | MPE | Reese, dessen Tabellenposition und Filter mit einem langsamen LFO atmen – Bewegung auf gehaltenen Noten ohne Automation. |
 | Neuro Hybrid | FM | Hybrid, MPE | FM-Growl und Wavetable-Reese, die sich gegenseitig ringmodulieren, gefaltet und gesquasht: ein Neuro-Monster. |
@@ -276,7 +302,6 @@ Werkzeuge, für Mitwirkende:
 | Neuro Swirl | Wavetable | 3D, MPE | Sprechender Formant-Growl, der einmal pro Takt eine Acht zieht – der Vokal bewegt sich, der Raum bewegt sich, der Sub nicht. |
 | Orbit Reese | Wavetable | 3D, MPE | Neurofunk-Reese, dessen knurrende Mitten alle zwei Takte um deinen Kopf kreisen, während der Sub unter 160 Hz genau in der Mitte und mono bleibt – clubtaugliche Bewegung. |
 | Pendulum Wobble | Wavetable | 3D, MPE | Halftime-Dubstep-Wobble, der mit dem Takt über deinen Kopf und zurück schwingt: Wobble und Raum atmen zusammen. |
-| Phase Reese | Wavetable | MPE | Vierstimmiger Sägezahn-Stapel durch einen langsamen, tiefen Phaser: der klassische schwebende Drum-&-Bass-Reese. |
 | Punch FM Bass | FM | – | Solider digitaler Bass mit hellem Anschlag und sauberem Sinus-Körper. |
 | Punch Sub | Analog | Boom | Kurzer, druckvoller Sub mit knackigem Filterklick; rastet mit der Kick ein. |
 | Reese Drift | Analog | – | Breite, verstimmte Sägezähne, die langsam gegeneinander schweben; dunkel und bewegt. |
@@ -288,7 +313,6 @@ Werkzeuge, für Mitwirkende:
 | Round Sub | Analog | – | Warmes Rechteck mit Sub-Oszillator und weichem Filter-Blip; passt unter alles. |
 | Rubber Bass | Analog | Zupfer | Federnder gezupfter Bass: schneller Filterverlauf, runder Sub. |
 | Screech Bass | Wavetable | MPE | Kreischende FM mit hohem Verhältnis und gefalteten Höhen: für die hohen, aggressiven Bass-Antworten. |
-| Sine Slide | FM | Boom | Fast reiner Sinus-Sub mit langem Glide für gleitende Basslinien. |
 | Slap FM Bass | FM | – | Perkussiver FM-Bass: der Index schnappt zu wie eine geslappte Saite. |
 | Square Wobble | Wavetable | MPE | Harter Sechzehntel-An/Aus-Wobble mit Rechteck-LFO – zerhackt und rhythmisch. |
 | Step Sub | Wavetable | – | Sub, der in jede Note eine Quinte hineinfällt: ein kleiner Pitch-Kick für Half-Time-Linien. |
@@ -319,16 +343,16 @@ Werkzeuge, für Mitwirkende:
 | Cluster Organ | Cluster | – | Oktav-Stapel weicher Rechtecke: eine kitschige Combo-Orgel. |
 | Concert Grand | Sampler | Klavier, MPE | Flügel-Aufnahmen, zwei Anschlagsstufen, ein Hauch Hall. |
 | Crystal Organ | FM | Hybrid, MPE | Additive FM-Orgel mit Glas-Wavetable-Layer, die mit langsamem Autopan im Stereofeld kreist. |
-| Digital EP | FM | – | Helleres E-Piano, das bei hartem Anschlag mehr bellt. |
+| Digital EP | FM | Klavier | Helleres E-Piano, das bei hartem Anschlag mehr bellt. |
 | Drawbar Organ | FM | – | Additive Orgel: sechs Sinus-Zugriegel, sanftes Vibrato, Rotor-artiger Chorus. |
 | Dream Tine | Sampler | Klavier, Flächen, MPE | Tine-Piano, getränkt in Chorus, punktiertes Delay und langen Hall. |
 | Dub Stab | Analog | Flächen | Dunkler, verstimmter Akkord-Stab, dessen Filter langsam auf- und zugeht; mit Delay und Hall spielen. |
-| Dusty EP | FM | – | Warmes E-Piano mit Band-Wow und -Flutter (langsames Tonhöhen-LFO) und Chorus; für Lo-Fi-Akkorde gemacht. |
-| Dusty Keys | FM | – | Weiches, dunkles E-Piano für Lo-Fi-Akkorde: starkes Band-Leiern auf der Tonhöhe, bitreduzierte Kante, weicher Anschlag. |
+| Dusty EP | FM | Klavier | Warmes E-Piano mit Band-Wow und -Flutter (langsames Tonhöhen-LFO) und Chorus; für Lo-Fi-Akkorde gemacht. |
+| Dusty Keys | FM | Klavier | Weiches, dunkles E-Piano für Lo-Fi-Akkorde: starkes Band-Leiern auf der Tonhöhe, bitreduzierte Kante, weicher Anschlag. |
 | FM Bark Piano | FM | Klavier, MPE | FM-E-Piano aus zwei Paaren: das Tine-Paar klingt, das Bark-Paar beißt mit der Anschlagstärke. |
 | FM Vibes | FM | Zupfer | Weiche metallische Klangstäbe mit Tremolo. |
 | Felt Grand | Sampler | Klavier, MPE | Dunkler, weicher Flügel: Höhen abgesenkt, langsames Release und warmer Hall – intim. |
-| Funk Clav | FM | Zupfer | Knackige Clavinet-artige Tasten; kurz und synkopiert spielen. |
+| Funk Snap Keys | FM | Zupfer | Knackige, nasale FM-Tasten mit schnellem Biss; kurz und synkopiert spielen. |
 | Glass Body Keys | Cluster | MPE | Weiche Tasten durch eine Glasplatte, auf jede Note gestimmt: ein gläserner Schimmer über dem Akkord. |
 | Glass Keys | Wavetable | – | Glockige Glass-Tabelle, die beim Ausklingen dunkler wird. |
 | Glide Poly Synth | Analog | Leads | Poly-Synth, dessen Akkorde immer vom vorigen Akkord herübergleiten (Poly-Glide). |
@@ -342,11 +366,11 @@ Werkzeuge, für Mitwirkende:
 | Pop Brass | Analog | Flächen | Üppiges, verstimmtes Poly-Brass mit kurzem Anschwellen und Chorus: klassische Synth-Pop-Akkorde. |
 | Reed Keys | Sampler | Klavier, MPE | Modelliertes Zungen-E-Piano: nasal und holzig, mit rauem Bellen, wenn man es anfährt. |
 | Reed Tremolo | Sampler | Klavier, MPE | Zungen-Piano durch sein klassisches Lautstärke-Tremolo – Soul und Gospel. |
-| Scoop Keys | FM | – | E-Piano, bei dem jede Note einen Ganzton von unten anschleift: soulig, ein wenig lässig. |
+| Scoop Keys | FM | Klavier | E-Piano, bei dem jede Note einen Ganzton von unten anschleift: soulig, ein wenig lässig. |
 | Soft Brass | Analog | Flächen | Polyphones Blech: langsames Filter-Anschwellen auf verstimmten Sägezähnen. |
 | Suitcase Tine | Sampler | Klavier, MPE | Tine-Piano mit dem Stereo-Autopan eines Koffer-Verstärkers und kleinem Raum. |
 | Tape Ghost Keys | Sampler | Hybrid, Klavier, MPE | Tine-Piano mit einem Geist seiner selbst: eine verstimmte Grain-Kopie, gecrusht und geflangt wie ein altes, neu aufgenommenes Band. |
-| Tine Piano | FM | – | E-Piano: weicher Körper und glockiger Zungen-Anteil, der mit der Taste verklingt. Chorus im FX-Slot. |
+| Tine Piano | FM | Klavier | E-Piano: weicher Körper und glockiger Zungen-Anteil, der mit der Taste verklingt. Chorus im FX-Slot. |
 | Upright Keys | Sampler | Klavier, MPE | Klavier-Aufnahmen (Upright) mit etwas Raum: ehrlich und nah. |
 | Velvet Stab | Analog | – | Kurzer gefilterter Akkord-Stab für House und Disco. |
 | Vibraphone | Sampler | – | Aufgenommenes Vibrafon mit sanftem Motor-Tremolo. |
@@ -512,7 +536,7 @@ Werkzeuge, für Mitwirkende:
 | Whoosh | Analog | – | Gefiltertes Rauschen, von einem Ein-Takt-Bandpass-Wobble gefahren, breit gespreizt: ein vorbeiziehendes Whoosh. |
 | Wide Riser | Analog | – | Rauschen und Sägezähne, die über vier Sekunden ansteigen, geflangt und breit, in einen langen Hall. |
 
-### Arp (21)
+### Arp (22)
 
 Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie geladen werden; er spielt, solange Tasten gehalten werden, und stoppt beim Loslassen (*Halten* auf der Sequenzer-Seite lässt ihn weiterlaufen). Ein Preset ohne Arp in diesem Part schaltet ihn wieder aus. Siehe [PRESETS.md](PRESETS.md#arp-block).
 
@@ -522,8 +546,8 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 | Bell Cascade Arp | FM | Tasten | FM-Glocken, die in Triolen über drei Oktaven herabfallen, mit Echos und hellem Hall. *Arp: Abwärts · 1/16T · 3 Okt.* |
 | Bubble Arp | Analog | – | Schmaler Puls durch ein resonantes Filter: blubbernd und rund. *Arp: Aufwärts · 1/16 · 2 Okt.* |
 | Chord Stab Arp | Cluster | Tasten | Rhythmische Akkord-Stabs (Akkord-Modus, Achtel) aus einem breiten Sägezahn-Stapel – sofort House-Groove. *Arp: Akkord · 1/8 · 1 Okt.* |
-| Digital Pluck Arp | FM | – | Klickender digitaler Pluck für schnelle Sechzehntel. *Arp: Aufwärts · 1/16 · 2 Okt.* |
-| Dream Tine Arp | Sampler | Tasten | Tine-Piano-Arpeggio in Achteln mit Chorus, Delay und Hall: verträumt und voll. *Arp: Auf/Ab · 1/8 · 2 Okt.* |
+| Digital Pluck Arp | FM | Zupfer | Klickender digitaler Pluck für schnelle Sechzehntel. *Arp: Aufwärts · 1/16 · 2 Okt.* |
+| Dream Tine Arp | Sampler | Tasten, Klavier | Tine-Piano-Arpeggio in Achteln mit Chorus, Delay und Hall: verträumt und voll. *Arp: Auf/Ab · 1/8 · 2 Okt.* |
 | FM Arp Bell | FM | Tasten | Kurze gläserne FM-Glocken für Sequenzen. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
 | Figure Eight Arp | Wavetable | 3D | Digitales Arpeggio, das eine liegende Acht um dich zeichnet – links vorn, quer, rechts hinten – über zwei Takte. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
 | Formant Arp | Wavetable | Vokal | Vokal-Blips für sprechende Sequenzen. *Arp: Aufwärts · 1/16 · 2 Okt.* |
@@ -534,7 +558,6 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 | Pizzicato Arp | Zupfen | Zupfer | Kurze gezupfte Saiten für Ostinati. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
 | Random Spark Arp | FM | FX | Zufällige FM-Blips in Zweiunddreißigsteln über vier Oktaven durch ein Ping-Pong-Delay: Funken. *Arp: Zufall · 1/32 · 4 Okt.* |
 | Ripple Arp | Analog | – | Analoges Sägezahn-Arp in Sechzehnteltriolen mit schwebendem Phaser und Stereo-Echo. *Arp: Aufwärts · 1/16T · 2 Okt.* |
-| Sparkle Bell | FM | Zupfer | Kurze, helle FM-Glocke für funkelnde Arpeggios über Akkorden. *Arp: Aufwärts · 1/16 · 2 Okt.* |
 | Spiral Arp | FM | 3D | Glocken-Arpeggio, das sich über vier Takte von Ohrhöhe bis über deinen Kopf hochschraubt und für die nächste Runde wieder fällt. *Arp: Aufwärts · 1/16 · 3 Okt.* |
 | Table Arp | Wavetable | – | Wavetable-Sequenzklang: die Position springt mit jeder Note. *Arp: Auf/Ab · 1/16 · 2 Okt.* |
 | Trance Gate Arp | Cluster | Leads | Supersaw-Stapel auf einem Sechzehntel-Arp über zwei Oktaven, Ping-Pong-Delay und Hall. *Arp: Aufwärts · 1/16 · 2 Okt.* |
@@ -595,10 +618,10 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 | Boom Long Sub | Analog | Bass | Langer, gestimmter Sinus-Sub mit schnellem Pitch-Dive im Anschlag; klingt sekundenlang aus. |
 | Boom Slide | Analog | Bass | Langer Sinus-Sub für Slides im Trap-Stil: Noten überlappen und er gleitet (Legato, feste Zeit). |
 | Dirty Sub | Analog | Bass | Sub, ins Ladder-Filter gefahren: knurrende Obertöne, die auch auf kleinen Lautsprechern hörbar bleiben. |
+| Glide Sine Bass | FM | Bass | Reiner Sinus-Bass mit Legato-Glide für gleitende Basslinien; abgesetzte Noten bleiben sauber. |
 | Impact Boom | FM | FX | Sub-Impact mit metallischem Knall, gesquasht und in einen riesigen Hall geworfen. |
 | Long Sub | Analog | Bass | Tiefer, lang ausklingender Sub, der zwischen überlappenden Noten gleitet (Glide); weicher Klick im Anschlag. |
 | Punch Sub | Analog | Bass | Kurzer, druckvoller Sub mit knackigem Filterklick; rastet mit der Kick ein. |
-| Sine Slide | FM | Bass | Fast reiner Sinus-Sub mit langem Glide für gleitende Basslinien. |
 | Sub Kick | Analog | Drums, Bass | Stimmbare tiefe Kick: ein selbstoszillierendes Filter, auf die Taste gestimmt und von oben heruntergezogen; langer Boom, angezerrt. |
 
 ### Hybrid (18)
@@ -624,23 +647,29 @@ Presets mit *Arp:* schalten den Arpeggiator für den Part ein, in den sie gelade
 | Tape Ghost Keys | Sampler | Tasten, Klavier, MPE | Tine-Piano mit einem Geist seiner selbst: eine verstimmte Grain-Kopie, gecrusht und geflangt wie ein altes, neu aufgenommenes Band. |
 | Vox Reese | Wavetable | Bass, MPE | Ein Reese mit singendem Vokal-Layer obenauf: die Formanten reiten auf dem Bass, ein synchrones Vokalfilter lässt ihn sprechen. |
 
-### Klavier (14)
+### Klavier (20)
 
 | Name | Engine | Weitere Kategorien | Beschreibung |
 |---|---|---|---|
 | Bright Grand | Sampler | Tasten, MPE | Flügel, für Pop geöffnet: heller, leicht gesquasht, kurzer Raum. |
 | Classic Tine | Sampler | Tasten, MPE | Modelliertes Tine-E-Piano: glockig bei leichtem Anschlag, bellend bei hartem. |
 | Concert Grand | Sampler | Tasten, MPE | Flügel-Aufnahmen, zwei Anschlagsstufen, ein Hauch Hall. |
+| Digital EP | FM | Tasten | Helleres E-Piano, das bei hartem Anschlag mehr bellt. |
 | Dream Tine | Sampler | Tasten, Flächen, MPE | Tine-Piano, getränkt in Chorus, punktiertes Delay und langen Hall. |
-| FM Bark Piano | FM | Tasten, MPE | FM-E-Piano aus zwei Paaren: das Tine-Paar klingt, das Bark-Paar beißt mit der Anschlagstärke. |
+| Dream Tine Arp | Sampler | Arp, Tasten | Tine-Piano-Arpeggio in Achteln mit Chorus, Delay und Hall: verträumt und voll. *Arp: Auf/Ab · 1/8 · 2 Okt.* |
+| Dusty EP | FM | Tasten | Warmes E-Piano mit Band-Wow und -Flutter (langsames Tonhöhen-LFO) und Chorus; für Lo-Fi-Akkorde gemacht. |
+| Dusty Keys | FM | Tasten | Weiches, dunkles E-Piano für Lo-Fi-Akkorde: starkes Band-Leiern auf der Tonhöhe, bitreduzierte Kante, weicher Anschlag. |
 | Felt Grand | Sampler | Tasten, MPE | Dunkler, weicher Flügel: Höhen abgesenkt, langsames Release und warmer Hall – intim. |
+| FM Bark Piano | FM | Tasten, MPE | FM-E-Piano aus zwei Paaren: das Tine-Paar klingt, das Bark-Paar beißt mit der Anschlagstärke. |
 | Halo Grand | Sampler | Tasten, Hybrid, MPE | Flügel mit Heiligenschein: seine eigene Aufnahme, eingefroren zu einer Grain-Wolke, die hinter jedem Akkord aufblüht. |
 | Piano Grains | Grain | Flächen, Texturen, MPE | Flügel-Aufnahmen, eingefroren zu einer langsam ziehenden Grain-Wolke: ein Klavier, das atmet. |
 | Reed Keys | Sampler | Tasten, MPE | Modelliertes Zungen-E-Piano: nasal und holzig, mit rauem Bellen, wenn man es anfährt. |
 | Reed Tremolo | Sampler | Tasten, MPE | Zungen-Piano durch sein klassisches Lautstärke-Tremolo – Soul und Gospel. |
+| Scoop Keys | FM | Tasten | E-Piano, bei dem jede Note einen Ganzton von unten anschleift: soulig, ein wenig lässig. |
 | Suitcase Tine | Sampler | Tasten, MPE | Tine-Piano mit dem Stereo-Autopan eines Koffer-Verstärkers und kleinem Raum. |
 | Tape Ghost Keys | Sampler | Tasten, Hybrid, MPE | Tine-Piano mit einem Geist seiner selbst: eine verstimmte Grain-Kopie, gecrusht und geflangt wie ein altes, neu aufgenommenes Band. |
 | Tine Bloom | Grain | Flächen, Texturen, MPE | Tine-Piano-Grains, die langsam aufblühen, mit Chorus und punktiertem Echo. |
+| Tine Piano | FM | Tasten | E-Piano: weicher Körper und glockiger Zungen-Anteil, der mit der Taste verklingt. Chorus im FX-Slot. |
 | Upright Keys | Sampler | Tasten, MPE | Klavier-Aufnahmen (Upright) mit etwas Raum: ehrlich und nah. |
 
 ### 3D (13)

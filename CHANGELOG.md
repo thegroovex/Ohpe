@@ -16,6 +16,17 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   Englisch, in beiden Erscheinungen. Erscheint einmal beim ersten Start der Standalone-App und beim ersten
   Plug-in-Fenster, überspringbar (TOUR ÜBERSPRINGEN / Esc), wieder zu starten unter Einstellungen > Allgemein oder im
   Reiter Hilfe. settings.json bekommt den Schlüssel "tour" (keine Versionsänderung).
+- EN: Factory bank curated for 1.0 (p65): every preset rendered offline and compared; three near-duplicates retired
+  (Sine Slide, Phase Reese, Sparkle Bell – sessions that used them keep their sound and show no preset name), names
+  unique and free of maker names (Funk Clav → Funk Snap Keys, Lo-Fi spelling), tags fixed (FM electric pianos under
+  Piano and more), and every preset level-matched to one target – −11 LUFS short-term (EBU R128), true peak at or
+  below −1 dBTP – through its level parameter only. Clipping presets fixed. Details: docs/en/FACTORY-SOUNDS.md.
+- DE: Werksbank für 1.0 kuratiert (p65): jedes Preset offline gerendert und verglichen; drei Beinahe-Dubletten
+  zurückgezogen (Sine Slide, Phase Reese, Sparkle Bell – Sitzungen damit behalten ihren Klang und zeigen keinen
+  Preset-Namen), Namen eindeutig und ohne Herstellernamen (Funk Clav → Funk Snap Keys, Schreibweise Lo-Fi), Tags
+  korrigiert (FM-E-Pianos unter Klavier u. a.) und jedes Preset auf ein Ziel eingepegelt – −11 LUFS Kurzzeit
+  (EBU R128), True Peak höchstens −1 dBTP – nur über seinen Pegelparameter. Übersteuernde Presets behoben. Details:
+  docs/de/FACTORY-SOUNDS.md.
 - EN: Robustness (p63): damaged sessions, presets, tape files, wavetables, content packs and settings never crash Ohpe
   (refused, or loaded as far as readable with defaults for the rest); NaN / Inf can no longer reach the outputs (input
   cleaned, output guard); crash-safe start in the standalone app – after a session that did not end cleanly, or with a

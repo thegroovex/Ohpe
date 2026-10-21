@@ -181,6 +181,14 @@ std::vector<std::string> usedPacks (const std::vector<Entry>& entries)
     return out;
 }
 
+int indexOfUid (const std::vector<Entry>& entries, const std::string& uid)
+{
+    if (uid.empty()) return -1;
+    for (size_t i = 0; i < entries.size(); ++i)
+        if (entries[i].uid == uid) return (int) i;
+    return -1;
+}
+
 std::vector<int> filterAndSort (const std::vector<Entry>& entries, const Filter& f)
 {
     std::vector<int> idx;

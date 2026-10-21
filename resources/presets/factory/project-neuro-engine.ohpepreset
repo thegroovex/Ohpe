@@ -485,7 +485,7 @@
     "mix.ch5.vol": 0,
     "mix.ch5.senda": 0.0,
     "mix.ch5.sendb": 0.06,
-    "mix.master.vol": 0.0,
+    "mix.master.vol": -3.3,
     "fxb.reverb.size": 0.6,
     "fxb.reverb.damping": 0.5,
     "fxa.delay.sync": 5,

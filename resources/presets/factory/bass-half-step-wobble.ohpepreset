@@ -137,7 +137,7 @@
     "mpe.slide": 0.08,
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
-    "gain": 2.4,
+    "gain": 6.4,
     "mod.s8.src": 9,
     "mod.s8.via": 0,
     "mod.s8.dst": 4,

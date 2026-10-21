@@ -5,7 +5,8 @@
   "name": "Digital Pluck Arp",
   "author": "groovex",
   "tags": [
-    "Arp"
+    "Arp",
+    "Plucks"
   ],
   "engine": "fm",
   "comment": "Clicky digital pluck that loves fast sixteenths.",
@@ -54,7 +55,7 @@
     "fx3.delay.tone": 0.5,
     "fx3.delay.pingpong": 1,
     "fx3.delay.mix": 0.2,
-    "gain": 20.8,
+    "gain": 15.9,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 52,

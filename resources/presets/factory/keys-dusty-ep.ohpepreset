@@ -5,7 +5,8 @@
   "name": "Dusty EP",
   "author": "groovex",
   "tags": [
-    "Keys"
+    "Keys",
+    "Piano"
   ],
   "engine": "fm",
   "comment": "Warm electric piano with tape wow and flutter (slow pitch LFO) and chorus; made for lo-fi chords.",

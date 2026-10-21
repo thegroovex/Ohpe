@@ -62,6 +62,10 @@ bool matchesText (const Entry& e, const std::string& text);
 bool matches (const Entry& e, const Filter& f);
 /** Indices of `entries` that pass `f`, sorted by `f.sort` (ties: name, then factory before user). */
 std::vector<int> filterAndSort (const std::vector<Entry>& entries, const Filter& f);
+/** p65: index of the entry with this uid, -1 if there is none (empty uid, a user preset that was deleted, or a factory
+    preset retired by the 1.0 bank curation). A session that names an unknown uid keeps its sound - the parameters are
+    stored in the session - and shows no preset name. */
+int indexOfUid (const std::vector<Entry>& entries, const std::string& uid);
 
 /**
     User data of the library: favourites and ratings by uid, the last author name. Stored as

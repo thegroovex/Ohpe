@@ -65,7 +65,7 @@
     "monobass": 150.0,
     "wavetable.lfopos": 0.12,
     "velsens": 0.35,
-    "gain": 0.0,
+    "gain": 6.4,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 82,
