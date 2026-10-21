@@ -1,0 +1,16 @@
+{
+  "format": "ohpe-state",
+  "version": 1,
+  "app": "Ohpe",
+  "params": {
+    "tempo": 96.0,
+    "p1.engine": 2.0,
+    "p1.analog.cutoff": 800.0,
+    "harmony.kb.layout": 3.0
+  },
+  "sections": {
+    "ui": {
+      "preset": "factory:Glass Keys.ohpepreset"
+    }
+  }
+}

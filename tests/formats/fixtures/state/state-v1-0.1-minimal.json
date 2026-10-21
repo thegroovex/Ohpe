@@ -1,0 +1,10 @@
+{
+  "format": "ohpe-state",
+  "version": 1,
+  "app": "Ohpe",
+  "params": {
+    "tempo": 140.0,
+    "p1.engine": 1.0,
+    "p1.wavetable.pos": 0.75
+  }
+}

@@ -1,0 +1,53 @@
+# Ohpe format lock (p62, 1.0 format freeze) - see docs/FORMATS.md / docs/de/FORMATE.md.
+#
+# "version <key> <n>": every constant of src/core/model/FormatVersions.h, in its order (append-only). A version only
+#   ever goes up, together with a migration, a new fixture of the old shape and both format documents.
+# "fixture <path below tests/formats/fixtures> <sha256>": the golden files. Existing lines never change and are never
+#   removed (older files must always load); new fixtures are appended.
+# Checked by tests/core/FormatTests.cpp (versions) and scripts/ci/check-formats.py (versions, fixture checksums,
+# docs, and - against the pull request's base - nothing changed silently).
+version state 1
+version preset 2
+version modSchema 1
+version tapeFile 1
+version tapeAudio 1
+version wavetable 1
+version pack 1
+version midiMap 1
+version settings 1
+version updateSettings 1
+version library 1
+version installedPacks 1
+version sequencer 1
+version orbit 1
+version morph 1
+version motion 1
+version harmony 1
+version samples 1
+version userTables 1
+version genome 1
+fixture midimap/midimap-v1.ohpemidi 071baee1f6c703ee782a5e69b7ee6432863648f309afb97f45c542117f018eaa
+fixture pack/Ohpe-content-legacy-flat-1.0.0.zip 270429a527f81c9fc607da7c8014befd7ddaa2940fbf78f51035cf605e5fdd52
+fixture pack/format-fixture-1.0.0.ohpepack 76f0ca4bcb3c835f1282b9a7291421802f6b362aaee7753923745db5f6fe0441
+fixture pack/pack-json-format2-future.json 91718d0d31721d2761b5a0c6e470d6ba4e888ea96f56582327d41987ca695dfe
+fixture pack/pack-json-minimal.json 841769ce3303a1055803a6ed308e41fa3144a4a4536372c80ec979ad6806734d
+fixture preset/part-v1-0.1.ohpepreset 9361e51355cc1f71974f19974817734855393ff723483c019c065c5abde75bd9
+fixture preset/part-v2-no-modschema.ohpepreset 6e32025355e4e93f9ab215d5df30dd33fd1502be2d4f29acb074e0c0032b6d3a
+fixture preset/part-v2.ohpepreset 9b83b596557320f1a46e8ac18f541d8de95f6158901a83b6dad865d02df94b9d
+fixture preset/part-v3-future.ohpepreset 76a826d253e1baee9820224644cad8c46bb70f7309d54f62b8a39c625677b9f7
+fixture preset/project-v2-0.6-in-key.ohpepreset e8c2cac6f8993dd7cc4391ccd28eb57240eaf8cd511ccdf9084b64962a6f66e7
+fixture preset/project-v2.ohpepreset c4fdcad10b0b3725f356ac88fe044ee4176e36653caa5984b2063feef83aafc9
+fixture settings/settings-v0-0.6.2.json 2b09d993e86875e102223f31c03dd4593c5eb591cfc95aba0d9d863c9b894c56
+fixture settings/settings-v1.json 35ec91da2159c042ca9afabc7040bd38ec3e6d934035039ff10e4072bfcbf18f
+fixture settings/update-v0.json f176c39515f1ba8bc83a85ff51085cfb3d1a91eb3c1cf350747db0ac778a45ed
+fixture settings/update-v1.json 0ee946548635ab52db860bb4cab35541f764b22c38f13684e698e18232d5d433
+fixture state/plugin-state-v1-with-tape.bin 66b992351897d33126ca5458b83d14059b573aceae477beb5a7f2dbc5807a05c
+fixture state/state-v1-0.1-minimal.json e13b1f5e61565477618f7f3506b437e37c7c20368f7f7ea2c7cccd001c396f6d
+fixture state/state-v1-0.6-in-key.json 9fe7e49bf6b22dfee50de9ffafdc861ab2c4b1cf8791fc4f7e6e6f4f76f130ae
+fixture state/state-v1.json 9ae8fd6c3165ae0fffada295fbeb46cf70ef9fb87fbfd3615b63ff67d09b861e
+fixture state/state-v7-future.json 5b444e14f3e13a299098cd47a9b552a2fe103fcbc6982164136a9b3b610b024f
+fixture tape/tape-v1-minimal-44k.ohpetape 0b164757e504b493cd09318ed45127e471e92521ca0b0aaff1af4cb3f88a9f1d
+fixture tape/tape-v1.ohpetape d0b96514093cd8f2ca57ebf9657d0a3e9527aca6e97d94a34ae5215918392dcb
+fixture tape/tape-v2-future.ohpetape 2073273f45ccf92c24877c1dbd91338f07d2b7cd44b280bc6d2615d767095019
+fixture wavetable/table-v1-formants.ohpewt 00219e60417b753c3299148bb3e1a30d7df7d3f58dca89d261e7622340b3e604
+fixture wavetable/table-v1.ohpewt 5e1a90a6e448f73fdbd71d1eea3f05fe3e1f4254277dbcbe6212af7f0c0314e4

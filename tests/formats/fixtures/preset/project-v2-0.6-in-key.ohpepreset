@@ -1,0 +1,15 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "project",
+  "name": "Old Grid Song",
+  "author": "",
+  "tags": [],
+  "engine": "analog",
+  "comment": "",
+  "params": {
+    "tempo": 90.0,
+    "p1.engine": 2.0,
+    "harmony.kb.layout": 3.0
+  }
+}

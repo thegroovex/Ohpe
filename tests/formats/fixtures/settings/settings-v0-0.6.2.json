@@ -1,0 +1,16 @@
+{
+  "language": "en",
+  "tooltips": true,
+  "helpOverlay": false,
+  "skin": "light",
+  "brightness": 1.0,
+  "animations": "full",
+  "windowScale": 1.0,
+  "controller": {
+    "profile": "off",
+    "in": "Port A",
+    "out": "Port B",
+    "master": "volume",
+    "strip": "bend"
+  }
+}

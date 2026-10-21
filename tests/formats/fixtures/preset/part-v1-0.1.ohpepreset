@@ -1,0 +1,12 @@
+{
+  "format": "ohpe-preset",
+  "version": 1,
+  "name": "Old Bass",
+  "prefix": "p1.",
+  "params": {
+    "engine": 2.0,
+    "vol": 0.5,
+    "analog.cutoff": 800.0,
+    "amp.r": 0.75
+  }
+}
