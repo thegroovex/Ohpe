@@ -145,6 +145,8 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     metro.prepare (sr); // p39
     masterRack.prepare (sr, chunk);
     for (auto& t : tapeOut) t.assign ((size_t) chunk, 0.0f);
+    safeInputL.assign ((size_t) maxBlock, 0.0f); // p63
+    safeInputR.assign ((size_t) maxBlock, 0.0f);
     std::fill (stepParamLast.begin(), stepParamLast.end(), NAN);
     for (auto* b : { &euclidBinding, &arpBinding, &orbitBinding }) std::fill (b->last.begin(), b->last.end(), NAN);
     reset();
@@ -638,6 +640,7 @@ void Core::scheduleClicks (const Transport& tr, int numSamples) noexcept
 // ---------------------------------------------------------------- process
 void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEvent* midi, int numMidi, const Transport& host) noexcept
 {
+    sanitiseInput (numSamples); // p63: NaN / Inf at the input never reach the tape, the effects or the outputs
     // 1. parameters for this block, the transport (p22: the motion lanes need its position before the parts read them)
     snapshot.pullChanged (registry); // p35: only what changed (same values as a full pull)
     metro.pull (snapshot);               // p39
@@ -883,6 +886,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     else clockGen.reset();
     midiOut.sortByTime();
 
+    guardOutputs (outputs, numSamples); // p63
     int voices = 0;
     inputL = inputR = nullptr;
     for (auto& p : parts) voices += p->activeVoiceCount();
@@ -891,6 +895,48 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     publishSounding(); // p45
     sampleTime += numSamples;
     sampleCounterForUi.store (sampleTime, std::memory_order_relaxed);
+}
+
+void Core::sanitiseInput (int numSamples) noexcept
+{
+    if (inputL == nullptr && inputR == nullptr) return;
+    if (numSamples > (int) safeInputL.size()) { inputL = inputR = nullptr; return; } // more than prepared: no input
+    auto clean = [numSamples] (const float* in, std::vector<float>& out) -> const float* {
+        if (in == nullptr) return nullptr;
+        for (int i = 0; i < numSamples; ++i)
+        {
+            const float v = in[i];
+            out[(size_t) i] = std::isfinite (v) ? std::clamp (v, -8.0f, 8.0f) : 0.0f;
+        }
+        return out.data();
+    };
+    inputL = clean (inputL, safeInputL);
+    inputR = clean (inputR, safeInputR);
+}
+
+void Core::guardOutputs (const OutputBuffers& outputs, int numSamples) noexcept
+{
+    // a NaN / Inf from any DSP state would stay there and reach the speakers; silence the block, reset the DSP states
+    bool bad = false;
+    for (int o = 0; o < numOutputPairs && ! bad; ++o)
+        for (const float* x : { outputs.left[(size_t) o], outputs.right[(size_t) o] })
+        {
+            if (x == nullptr) continue;
+            float acc = 0.0f;
+            for (int i = 0; i < numSamples; ++i) acc += x[i] * 0.0f; // NaN or Inf anywhere makes the sum NaN
+            if (acc != 0.0f) { bad = true; break; }
+        }
+    if (! bad) return;
+    for (int o = 0; o < numOutputPairs; ++o)
+        for (float* x : { outputs.left[(size_t) o], outputs.right[(size_t) o] })
+            if (x != nullptr) std::fill (x, x + numSamples, 0.0f);
+    for (auto& p : parts) p->reset();
+    morphSpace.reset();
+    drums.reset();
+    mix.reset();
+    tapeMachine.resetDsp();
+    masterRack.reset();
+    guardedBlocks.fetch_add (1, std::memory_order_relaxed);
 }
 
 // ---------------------------------------------------------------- state
