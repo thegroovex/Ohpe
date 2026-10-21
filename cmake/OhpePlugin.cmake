@@ -112,6 +112,7 @@ list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/BreedView.cpp)
 # p38: the confirmation over the plate (clear the whole tape, load a tape over material)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ConfirmDialog.cpp)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/RecoveryNotice.cpp) # p63: crash-safe start
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/FirstStartTour.cpp) # p64: first-start tour
 # p21: pro view 2.0 - graphic tiles, the Discover strip
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ProTiles.cpp ${CMAKE_SOURCE_DIR}/src/ui/DiscoverStrip.cpp)
 
@@ -177,6 +178,7 @@ if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/FirstPresetTests.cpp) # p40
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/PartPresetNameTests.cpp) # p50
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/FxEditorTests.cpp) # p55
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/TourUiTests.cpp) # p64
     target_include_directories(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/src)
     if(MSVC) # tests keep cores / processors on the stack: 8 MB main thread on Windows (default 1 MB)
         target_link_options(ohpe_plugin_tests PRIVATE /STACK:8388608)

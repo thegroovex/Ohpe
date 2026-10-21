@@ -751,6 +751,30 @@ up). The tooltip adds the slowest block of the last two seconds. The legend turn
 block took longer than its own time. It is a display only (no parameter, not saved). Parts that have been silent for a
 few seconds sleep and cost almost nothing until they play again. Details: [Performance](PERFORMANCE.md).
 
+## First-start tour (p64)
+
+![Step 1 of the first-start tour: parts, the preset strip and LIBRARY](../images/ohpe-tour-1.png)
+
+The first time the standalone app starts, and the first time a plug-in window opens, a short tour of four steps shows
+the plate. The rest of the plate is dimmed; what a step talks about gets a yellow outline:
+
+1. **Parts, presets and the library** – the part selector, the preset strip and **LIBRARY**.
+2. **Encoders, soft keys and the FX editor** – the display with its soft keys and the four encoders below it; on the
+   Effects page a click on the effect picture opens the FX editor.
+3. **Tape, sequencer, tempo and key** – the mode column (SEQUENCER, TAPE) and the transport with the tape position and
+   the tempo; the key sits at the top of the display.
+4. **Help, settings and the Grid-Controller** – the gear key: language, night skin, help pages, help overlay, MIDI and
+   the Grid-Controller.
+
+**NEXT** / **BACK** (or → / ←, Return) step through it, **DONE** on the last step closes it, **SKIP TOUR** (or Esc)
+ends it at once. The plate waits while the tour is open. It shows once for the standalone app and once for the plug-in
+(stored in `settings.json`, key `"tour"`); **Settings > General > SHOW TOUR** and **SHOW TOUR** on the Help tab start
+it again at any time. It follows the language and the skin.
+
+![Step 2 of the first-start tour](../images/ohpe-tour-2.png)
+![Step 3 of the first-start tour](../images/ohpe-tour-3.png)
+![Step 4 of the first-start tour](../images/ohpe-tour-4.png)
+
 ## Crash-safe start (standalone, p63)
 
 ![The restore notice after a session that did not end cleanly](../images/ohpe-recovery-notice.png)

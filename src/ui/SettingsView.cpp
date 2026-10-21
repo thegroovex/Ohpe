@@ -534,7 +534,8 @@ void SettingsView::paintGeneral (juce::Graphics& g, juce::Rectangle<float> a)
                  { tr ("On"), s.helpOverlay, [this] { changeSettings ([] (auto& v) { v.helpOverlay = true; }); } } });
     y += row;
     label (g, tr ("Help pages"), { a.getX(), y, a.getWidth() * 0.4f, h });
-    chips3 (y, { { tr ("Open help"), false, [this] { showPage (Help); } } });
+    chips3 (y, { { tr ("Show tour"), false, [this] { if (onShowTour) onShowTour(); } }, // p64
+                 { tr ("Open help"), false, [this] { showPage (Help); } } });
     y += row + u * 1.0f;
     g.setColour (colour::displayDim);
     g.setFont (labelFont (u * 1.3f));
@@ -1209,6 +1210,8 @@ void SettingsView::paintHelp (juce::Graphics& g, juce::Rectangle<float> a)
         chip (g, r, helpTitle (t), on, colour::sunYellow, [this, t] { setHelpTopic (t); });
         y += h + u * 0.6f;
     }
+    y += u * 0.6f; // p64: the first-start tour again
+    chip (g, { a.getX(), y, listW, h }, i18n::upper (tr ("Show tour")), false, colour::sunYellow, [this] { if (onShowTour) onShowTour(); });
     const juce::Rectangle<float> text { a.getX() + listW + u * 2.5f, a.getY(), a.getWidth() - listW - u * 2.5f, a.getHeight() - u * 3.0f };
     g.setColour (colour::displayText);
     g.setFont (brandFont (u * 2.0f));

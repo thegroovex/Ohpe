@@ -19,7 +19,7 @@ a host parameter: nothing here is automated or changes the sound of a project.
 | Language | **System** (follows the operating system), **English**, **Deutsch**. The language pills of earlier versions moved here. |
 | Tooltips | On / Off – explanations on keys, encoders, light bars and the display |
 | Help overlay | On / Off (also **F1**) – names and one-line explanations over every area of the plate; clicks go through to the controls |
-| Help pages | opens the **Help** tab |
+| Help pages | **SHOW TOUR** starts the first-start tour again, **OPEN HELP** opens the **Help** tab |
 
 ![Help overlay](../images/ohpe-help-overlay.png)
 
@@ -99,6 +99,8 @@ presets, settings and the night skin, updates. With the grid keyboard shown, the
 steps over the keyboard.
 
 ![Settings – Help](../images/ohpe-settings-help.png)
+
+**SHOW TOUR** under the topic list starts the first-start tour again.
 
 ## About
 

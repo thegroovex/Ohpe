@@ -53,6 +53,7 @@ public:
     std::function<void()> onOpenUpdates;     ///< the update view (Updates / About page)
     std::function<void()> onInstallPack;     ///< content packs: "Install pack ..." (Updates page)
     std::function<void()> onManagePacks;     ///< content packs: the pack manager page
+    std::function<void()> onShowTour;        ///< p64: the first-start tour (General and Help pages)
     std::function<bool()> getAnimatedVisuals;
     std::function<void (bool)> setAnimatedVisuals;
     void setStandalone (bool s) { standalone = s; }

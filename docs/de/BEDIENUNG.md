@@ -787,6 +787,31 @@ Beschriftung wird rot ab 80 % im Mittel oder wenn ein Block länger als seine ei
 Anzeige (kein Parameter, wird nicht gespeichert). Parts, die einige Sekunden still waren, schlafen und kosten fast
 nichts, bis sie wieder spielen. Einzelheiten: [Leistung](LEISTUNG.md).
 
+## Einführungstour (p64)
+
+![Schritt 1 der Einführungstour: Parts, Preset-Leiste und BIBLIOTHEK](../images/ohpe-tour-1-de.png)
+
+Beim ersten Start der Standalone-App und beim ersten Öffnen eines Plug-in-Fensters zeigt eine kurze Tour in vier
+Schritten die Platte. Der Rest der Platte wird abgedunkelt; worum es in einem Schritt geht, bekommt einen gelben Rahmen:
+
+1. **Parts, Presets und die Bibliothek** – die Part-Auswahl, die Preset-Leiste und **BIBLIOTHEK**.
+2. **Encoder, Softkeys und der FX-Editor** – das Display mit seinen Softkeys und die vier Encoder darunter; auf der
+   Effekte-Seite öffnet ein Klick auf das Effektbild den FX-Editor.
+3. **Tape, Sequencer, Tempo und Tonart** – die Modus-Spalte (SEQUENCER, TAPE) und der Transport mit Tape-Position und
+   Tempo; die Tonart steht oben im Display.
+4. **Hilfe, Einstellungen und der Grid-Controller** – die Zahnrad-Taste: Sprache, dunkle Erscheinung, Hilfeseiten,
+   Hilfe-Overlay, MIDI und der Grid-Controller.
+
+**WEITER** / **ZURÜCK** (oder → / ←, Eingabe) blättern, **FERTIG** im letzten Schritt schließt sie, **TOUR
+ÜBERSPRINGEN** (oder Esc) beendet sie sofort. Solange die Tour offen ist, wartet die Platte. Sie erscheint einmal für
+die Standalone-App und einmal für das Plug-in (gespeichert in `settings.json`, Schlüssel `"tour"`);
+**Einstellungen > Allgemein > TOUR ZEIGEN** und **TOUR ZEIGEN** im Reiter Hilfe starten sie jederzeit wieder. Sie folgt
+Sprache und Erscheinung.
+
+![Schritt 2 der Einführungstour](../images/ohpe-tour-2-de.png)
+![Schritt 3 der Einführungstour](../images/ohpe-tour-3-de.png)
+![Schritt 4 der Einführungstour](../images/ohpe-tour-4-de.png)
+
 ## Absturzsicherer Start (Standalone, p63)
 
 ![Der Hinweis zum Wiederherstellen nach einer nicht sauber beendeten Sitzung](../images/ohpe-recovery-notice-de.png)

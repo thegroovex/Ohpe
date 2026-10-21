@@ -19,7 +19,7 @@ Keine Einstellung ist ein Host-Parameter: nichts davon wird automatisiert oder �
 | Sprache | **System** (folgt dem Betriebssystem), **English**, **Deutsch**. Die Sprachumschaltung früherer Versionen ist hierher umgezogen. |
 | Tooltips | Ein / Aus – Erklärungen an Tasten, Encodern, Leuchtbalken und Display |
 | Hilfe-Overlay | Ein / Aus (auch **F1**) – Namen und Kurzerklärungen über jedem Bereich der Platte; Klicks gehen an die Bedienelemente durch |
-| Hilfeseiten | öffnet den Reiter **Hilfe** |
+| Hilfeseiten | **TOUR ZEIGEN** startet die Einführungstour noch einmal, **HILFE ÖFFNEN** öffnet den Reiter **Hilfe** |
 
 ![Hilfe-Overlay](../images/ohpe-help-overlay-de.png)
 
@@ -101,6 +101,8 @@ Presets, Einstellungen und Nachtmodus, Updates. Ist die Raster-Tastatur zu sehen
 Tastatur eine Zeile mit ihren Schritten.
 
 ![Einstellungen – Hilfe](../images/ohpe-settings-help-de.png)
+
+**TOUR ZEIGEN** unter der Themenliste startet die Einführungstour noch einmal.
 
 ## Über
 
