@@ -50,7 +50,7 @@
     "fx3.reverb.damping": 0.5,
     "fx3.reverb.predelay": 0.01,
     "fx3.reverb.mix": 0.2,
-    "gain": 13.4,
+    "gain": 12.8,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,

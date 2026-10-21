@@ -35,7 +35,7 @@
     "lfo.shape": 2,
     "lfo.dest": 0,
     "voices": 6,
-    "gain": 15.7,
+    "gain": 19.1,
     "fx.type": 10,
     "fx.compressor.thresh": -5.0,
     "fx.compressor.ratio": 8.0,

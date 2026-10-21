@@ -190,15 +190,13 @@ def read_wav(path):
     return rw(path)
 
 
-def analyse(args):
-    bank = load_bank()
-    files = [os.path.join(BANK, f) for f in sorted(bank)]
+def render_rows(args, files, extra=()):
     rows = {}
     with tempfile.TemporaryDirectory() as d:
         for i in range(0, len(files), 20):
             chunk = files[i:i + 20]
             cmd = [args.render, "--bank", os.path.join(ROOT, "resources", "samples", "bank.json"), "--wavdir", args.wavdir,
-                   "--out", d, "--seconds", "8", "--bpm", "120"] + chunk
+                   "--out", d, "--seconds", "8", "--bpm", "120"] + list(extra) + chunk
             res = subprocess.run(cmd, capture_output=True, text=True)
             for line in res.stdout.splitlines():
                 if not line.startswith("{"):
@@ -217,6 +215,25 @@ def analyse(args):
             if res.returncode != 0:
                 sys.stderr.write(res.stderr[-2000:])
             print(f"{min(i + 20, len(files))}/{len(files)}", file=sys.stderr, flush=True)
+    return rows
+
+
+def analyse(args):
+    bank = load_bank()
+    only = set(args.only or [])
+    parts = [os.path.join(BANK, f) for f in sorted(bank) if bank[f]["kind"] == "part" and (not only or f in only)]
+    projects = [os.path.join(BANK, f) for f in sorted(bank) if bank[f]["kind"] == "project" and (not only or f in only)]
+    rows = render_rows(args, parts)
+    if projects:
+        unl = render_rows(args, projects)
+        lim = render_rows(args, projects, ["--limit"])  # projects as heard (master limiter on)
+        for f, r in lim.items():
+            r["tp_unlimited"] = unl.get(f, {}).get("tp")
+            rows[f] = r
+    if args.merge and os.path.exists(args.out):
+        old = json.load(open(args.out))
+        old.update(rows)
+        rows = old
     json.dump(rows, open(args.out, "w"), indent=0)
 
 
@@ -324,6 +341,8 @@ def main():
     a.add_argument("--wavdir", required=True)
     a.add_argument("--out", default="bank-analysis.json")
     a.add_argument("--keep", default="")
+    a.add_argument("--only", nargs="*", default=[])
+    a.add_argument("--merge", action="store_true", help="update the rows of --out instead of replacing the file")
     r = sp.add_parser("report")
     r.add_argument("--data", default="bank-analysis.json")
     r.add_argument("--pdist", type=float, default=PARAM_DIST)
@@ -343,7 +362,8 @@ def main():
     elif args.cmd == "report":
         report(args)
     elif args.cmd == "calibrate":
-        args.unlimited = {}
+        rows = json.load(open(args.data))
+        args.unlimited = {f: 2.0 - r["tp_unlimited"] for f, r in rows.items() if r.get("tp_unlimited") is not None}
         calibrate(args)
     else:
         apply_curation(args)

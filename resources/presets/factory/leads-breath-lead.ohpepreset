@@ -168,7 +168,7 @@
     "mpe.bend": 48,
     "voices": 4,
     "glide": 0.03,
-    "gain": 8.4,
+    "gain": 4.9,
     "mod.s9.src": 9,
     "mod.s9.via": 0,
     "mod.s9.dst": 4,

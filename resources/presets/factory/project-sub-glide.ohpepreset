@@ -224,7 +224,7 @@
     "mix.ch5.vol": -1,
     "mix.ch5.senda": 0.0,
     "mix.ch5.sendb": 0.06,
-    "mix.master.vol": 0.0,
+    "mix.master.vol": -3.2,
     "fxa.delay.sync": 5,
     "fxa.delay.feedback": 0.4,
     "fxa.delay.tone": 0.45,

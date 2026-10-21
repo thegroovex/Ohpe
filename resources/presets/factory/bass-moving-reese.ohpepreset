@@ -122,7 +122,7 @@
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
     "glide": 0.03,
-    "gain": 4.6,
+    "gain": 7.5,
     "mod.s6.src": 9,
     "mod.s6.via": 0,
     "mod.s6.dst": 4,

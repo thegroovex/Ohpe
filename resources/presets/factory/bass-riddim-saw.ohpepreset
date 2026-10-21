@@ -133,7 +133,7 @@
     "mpe.slide": 0.08,
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
-    "gain": 0.0,
+    "gain": 1.1,
     "fx5.type": 10,
     "fx5.compressor.thresh": -4.0,
     "fx5.compressor.ratio": 8.0,

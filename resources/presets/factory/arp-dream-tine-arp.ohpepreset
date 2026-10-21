@@ -56,7 +56,7 @@
     "lfo.shape": 0,
     "lfo.dest": 3,
     "voices": 12,
-    "gain": 6.6,
+    "gain": 3.5,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 52,

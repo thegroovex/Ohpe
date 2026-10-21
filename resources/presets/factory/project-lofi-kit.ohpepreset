@@ -204,7 +204,7 @@
     "mix.ch5.vol": 0,
     "mix.ch5.senda": 0.0,
     "mix.ch5.sendb": 0.05,
-    "mix.master.vol": 0.0,
+    "mix.master.vol": -3.6,
     "mix.ch5.eqhi": -4,
     "mix.master.tapesat": 0.4,
     "mix.master.lowpass": 4500,

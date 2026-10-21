@@ -71,7 +71,7 @@
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
     "voices": 4,
-    "gain": 6.6,
+    "gain": 4.2,
     "mod.s1.src": 1,
     "mod.s1.via": 9,
     "mod.s1.dst": 1,

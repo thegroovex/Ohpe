@@ -54,7 +54,7 @@
     "fx2.chorus.drift": 0.3,
     "fx2.chorus.spread": 0.85,
     "fx2.chorus.lowcut": 220.0,
-    "gain": 9.9,
+    "gain": 7.1,
     "mod.s1.src": 1,
     "mod.s1.via": 9,
     "mod.s1.dst": 1,

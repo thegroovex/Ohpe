@@ -42,7 +42,7 @@
     "fx.reverb.predelay": 0.03,
     "fx.reverb.mix": 0.3,
     "voices": 6,
-    "gain": 18.9,
+    "gain": 18.2,
     "fx2.type": 10,
     "fx2.compressor.thresh": -7.0,
     "fx2.compressor.ratio": 8.0,

@@ -303,7 +303,7 @@
     "mix.ch4.vol": -12,
     "mix.ch4.senda": 0.0,
     "mix.ch4.sendb": 0.2,
-    "mix.master.vol": 12.0,
+    "mix.master.vol": 6.0,
     "fxa.delay.sync": 5,
     "fxa.delay.feedback": 0.35,
     "fxa.delay.tone": 0.4,
