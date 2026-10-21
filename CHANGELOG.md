@@ -7,6 +7,15 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: First-start tour (p64): four short steps over the plate (parts, preset strip and LIBRARY; encoders, soft keys
+  and the FX editor; tape, sequencer, tempo and key; help, settings and the Grid-Controller), English and German, in
+  both skins. Shown once on the first standalone start and the first plug-in window, skippable (SKIP TOUR / Esc),
+  started again from Settings > General or the Help tab. settings.json gains the key "tour" (no version change).
+- DE: Einführungstour (p64): vier kurze Schritte über der Platte (Parts, Preset-Leiste und BIBLIOTHEK; Encoder,
+  Softkeys und FX-Editor; Tape, Sequencer, Tempo und Tonart; Hilfe, Einstellungen und Grid-Controller), Deutsch und
+  Englisch, in beiden Erscheinungen. Erscheint einmal beim ersten Start der Standalone-App und beim ersten
+  Plug-in-Fenster, überspringbar (TOUR ÜBERSPRINGEN / Esc), wieder zu starten unter Einstellungen > Allgemein oder im
+  Reiter Hilfe. settings.json bekommt den Schlüssel "tour" (keine Versionsänderung).
 - EN: Factory bank curated for 1.0 (p65): every preset rendered offline and compared; three near-duplicates retired
   (Sine Slide, Phase Reese, Sparkle Bell – sessions that used them keep their sound and show no preset name), names
   unique and free of maker names (Funk Clav → Funk Snap Keys, Lo-Fi spelling), tags fixed (FM electric pianos under

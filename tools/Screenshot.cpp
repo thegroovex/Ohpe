@@ -173,6 +173,7 @@ int main (int argc, char* argv[])
 
     // p40: the views below start from the plain parameter defaults; only the first-start shot uses the start sound
     OhpeProcessor::startWithFactorySound.store (false);
+    OhpeEditor::showTourOnFirstOpen.store (false); // p64: the tour only in its own shots below
     for (auto lang : { i18n::Language::English, i18n::Language::German })
     {
         const juce::String suffix = lang == i18n::Language::German ? "-de" : "";
@@ -191,6 +192,14 @@ int main (int argc, char* argv[])
         fe.showPendingRecoveryOffer();
         save (fe, dir.getChildFile ("ohpe-recovery-notice" + suffix + ".png"));
         fe.recoveryNoticeComponent().dismiss();
+        // p64: the first-start tour, every step
+        for (int step = 0; step < ui::FirstStartTour::numSteps; ++step)
+        {
+            fe.showTour (true, step);
+            animate (first, fe, 2);
+            save (fe, dir.getChildFile ("ohpe-tour-" + juce::String (step + 1) + suffix + ".png"));
+        }
+        fe.showTour (false);
         firstEd = nullptr;
     }
     for (auto lang : { i18n::Language::English, i18n::Language::German })
@@ -941,6 +950,9 @@ int main (int argc, char* argv[])
                     playAnimated (p, e, 2, { 60 });
                     playAnimated (p, e, 20, { 67 });
                     shot ("ohpe-dark"); // the whole plate in the night skin
+                    e.showTour (true, 0); // p64: the first-start tour in the night skin
+                    shot ("ohpe-tour-dark");
+                    e.showTour (false);
                     release (p, { 60, 67 });
                 }
                 {   // p47: the header's left block (version legend, logo mark, wordmark, engine caption) and its right

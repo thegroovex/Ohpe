@@ -54,6 +54,10 @@ struct UserSettings
     /** p53: the user has set the controller up in the settings (JSON "controller": { "chosen": true }). Files without
         it (0.6.2 and older) start with the defaults of 0.6.3: the Grid-Controller profile and automatic ports. */
     bool controllerChosen = false;
+    /** p64: the first-start tour has been seen (finished or skipped) - in the standalone app and in a plug-in, each
+        once. JSON "tour": { "standalone": true, "plugin": true } (additive key, files without it show the tour). */
+    bool tourSeenStandalone = false;
+    bool tourSeenPlugin = false;
     std::string extras = "{}";     ///< unknown keys (a JSON object)
     /** p62: "version" of the file it was read from (0 = before 1.0, no version field); written as formats::settings.
         Not part of operator==. */

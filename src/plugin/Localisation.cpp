@@ -881,6 +881,23 @@ const std::map<juce::String, juce::String>& table()
         { "Ohpe keeps the start sound.", "Ohpe behält den Startklang." },
         { "Restore", "Wiederherstellen" },
         { "Start fresh", "Neu beginnen" },
+        // p64: the first-start tour
+        { "Parts, presets and the library", "Parts, Presets und die Bibliothek" },
+        { "Encoders, soft keys and the FX editor", "Encoder, Softkeys und der FX-Editor" },
+        { "Tape, sequencer, tempo and key", "Tape, Sequencer, Tempo und Tonart" },
+        { "Help, settings and the Grid-Controller", "Hilfe, Einstellungen und der Grid-Controller" },
+        { "Four parts play at once - choose the one you edit at the top. The preset strip steps through the sounds; LIBRARY opens every preset with search, favourites and content packs.",
+          "Vier Parts spielen gleichzeitig - oben wählst du den, den du bearbeitest. Die Preset-Leiste blättert durch die Klänge; BIBLIOTHEK öffnet alle Presets mit Suche, Favoriten und Inhaltspaketen." },
+        { "The four encoders below the display set the four values shown above them. The soft keys at the foot of the display switch pages and functions. On the Effects page, click the effect picture to open the FX editor.",
+          "Die vier Encoder unter dem Display stellen die vier Werte darüber ein. Die Softkeys am Fuß des Displays wechseln Seiten und Funktionen. Auf der Effekte-Seite öffnet ein Klick auf das Effektbild den FX-Editor." },
+        { "SEQUENCER and TAPE are pages of the mode column: steps for every part and an eight-track tape. The transport plays, records and loops; the tempo sits next to the tape position, the key at the top of the display.",
+          "SEQUENCER und TAPE sind Seiten der Modus-Spalte: Schritte für jeden Part und ein Achtspur-Tape. Der Transport spielt, nimmt auf und loopt; das Tempo steht neben der Tape-Position, die Tonart oben im Display." },
+        { "The gear key opens the settings: language, night skin, the help pages and the help overlay (F1), MIDI and the Grid-Controller, found by itself when it is plugged in. This tour is there too.",
+          "Die Zahnrad-Taste öffnet die Einstellungen: Sprache, dunkle Erscheinung, die Hilfeseiten und das Hilfe-Overlay (F1), MIDI und den Grid-Controller, der sich beim Einstecken von selbst findet. Auch diese Tour ist dort." },
+        { "Next", "Weiter" },
+        { "Skip tour", "Tour überspringen" },
+        { "Show tour", "Tour zeigen" },
+        { "First-start tour", "Einführungstour" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;

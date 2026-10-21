@@ -442,6 +442,15 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
         addChildComponent (helpOverlay);
         addChildComponent (confirmDialog); // p38
         addChildComponent (recoveryNotice); // p63
+        addChildComponent (tour); // p64: the first-start tour
+        tour.onFinished = [this] {
+            auto v = userSettings->get();
+            if (proc.wrapperType == juce::AudioProcessor::wrapperType_Standalone) v.tourSeenStandalone = true;
+            else v.tourSeenPlugin = true;
+            userSettings->set (v);
+            grabKeyboardFocus();
+        };
+        settingsView.onShowTour = [this] { showTour (true); };
         userSettings->addChangeListener (this);
     }
 
@@ -627,6 +636,7 @@ void OhpeEditor::resized()
     helpOverlay.setBounds (getLocalBounds());
     confirmDialog.setBounds (getLocalBounds()); // p38
     recoveryNotice.setBounds (getLocalBounds()); // p63
+    tour.setBounds (getLocalBounds()); // p64
     place (versionBadge, "versionBadge");
     place (cpuMeter, "cpuMeter"); // p35
     for (auto& k : engineKeys) k->setUiScale (s);
@@ -2439,6 +2449,7 @@ void OhpeEditor::refreshKeys()
 
 bool OhpeEditor::keyPressed (const juce::KeyPress& key)
 {
+    if (tour.isVisible()) return tour.keyPressed (key); // p64: the tour has the keys while open
     if (handleShortcut (key)) return true; // p11: standalone transport shortcuts
     if (key.getKeyCode() == juce::KeyPress::F1Key) // p32: the help overlay on / off
     {
@@ -2464,6 +2475,11 @@ bool OhpeEditor::keyPressed (const juce::KeyPress& key)
 void OhpeEditor::timerCallback()
 {
     if (proc.hasRecoveryOffer()) showPendingRecoveryOffer(); // p63: crash-safe start
+    if (! tourChecked && ! recoveryNotice.isOpen()) // p64: after the crash-safe start's notice, if any
+    {
+        tourChecked = true;
+        showTourIfFirstOpen();
+    }
     auto& core = proc.core();
     display.tick (1.0f / 30.0f);
     {
@@ -2650,6 +2666,27 @@ void OhpeEditor::timerCallback()
         keyboard.setMidiChannel (ch);
     }
     presetStrip.setName (proc.presets().currentName());
+}
+
+void OhpeEditor::showTour (bool show, int step)
+{
+    if (! show) { tour.setVisible (false); return; }
+    // the plate in plain view, so the tour points at what it names
+    if (settingsView.isVisible()) showSettings (false);
+    if (library.isVisible()) library.close (false);
+    if (breedView.isVisible()) breedView.close (false);
+    if (updateView.isVisible()) showUpdates (false);
+    if (proView.isVisible()) showProView (false);
+    if (fxEditor.isVisible()) showFxEditor (false);
+    tour.show (step);
+}
+
+void OhpeEditor::showTourIfFirstOpen()
+{
+    if (! showTourOnFirstOpen.load()) return;
+    const auto& v = userSettings->get();
+    const bool seen = proc.wrapperType == juce::AudioProcessor::wrapperType_Standalone ? v.tourSeenStandalone : v.tourSeenPlugin;
+    if (! seen) showTour (true);
 }
 
 void OhpeEditor::showPendingRecoveryOffer()
