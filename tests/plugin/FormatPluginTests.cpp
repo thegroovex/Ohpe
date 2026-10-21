@@ -53,13 +53,11 @@ TEST_CASE ("formats (plug-in): a saved session with tape audio restores; re-save
 
 TEST_CASE ("formats (plug-in): the session ui block - old single 'preset' and the current 'presets'")
 {
-    juce::MemoryBlock mb;
-    REQUIRE (fixture ("state/state-v1-0.6-in-key.json").loadFileAsData (mb));
-    const auto text = juce::String::fromUTF8 ((const char*) mb.getData(), (int) mb.getSize());
-    const auto parsed = juce::JSON::parse (text);
+    const auto parsed = juce::JSON::parse (fixture ("state/state-v1-0.6-in-key.json").loadFileAsString());
+    REQUIRE (parsed.isObject());
     for (const auto& u : OhpeProcessor::sessionPresetUids (parsed["sections"]["ui"])) CHECK (u == "factory:Glass Keys.ohpepreset");
-    REQUIRE (fixture ("state/state-v1.json").loadFileAsData (mb));
-    const auto cur = juce::JSON::parse (juce::String::fromUTF8 ((const char*) mb.getData(), (int) mb.getSize()));
+    const auto cur = juce::JSON::parse (fixture ("state/state-v1.json").loadFileAsString());
+    REQUIRE (cur.isObject());
     const auto uids = OhpeProcessor::sessionPresetUids (cur["sections"]["ui"]);
     CHECK (uids[0] == "factory:Glass Keys.ohpepreset");
     CHECK (uids[1].empty());
