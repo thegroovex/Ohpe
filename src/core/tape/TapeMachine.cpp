@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "TapeMachine.h"
+#include "../model/FormatVersions.h"
 
 #include <nlohmann/json.hpp>
 
@@ -14,7 +15,7 @@ namespace ohpe
 namespace
 {
 constexpr char magic[8] = { 'O', 'H', 'P', 'E', 'T', 'A', 'P', 'E' };
-constexpr uint32_t audioFormatVersion = 1;
+constexpr uint32_t audioFormatVersion = (uint32_t) formats::tapeAudio;
 constexpr uint32_t endMarker = 0xffffffffu;
 constexpr int64_t maxPagesEver = (int64_t) (TapeMachine::maxLengthSeconds * 192000.0) / TapeBlock::frames + 2;
 

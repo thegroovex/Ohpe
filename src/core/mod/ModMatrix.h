@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../dsp/Envelope.h"
+#include "../model/FormatVersions.h"
 #include "../dsp/Lfo.h"
 #include "../model/ParamRegistry.h"
 #include "../model/ParamSnapshot.h"
@@ -23,7 +24,7 @@ namespace ohpe::mod
     so the choice values stored in presets and projects keep their meaning; a schema bump is only needed if the
     scaling of an existing source or target ever had to change.
 */
-constexpr int schemaVersion = 1;
+constexpr int schemaVersion = formats::modSchema;
 
 /** Where a source's value comes from. */
 enum class SourceScope

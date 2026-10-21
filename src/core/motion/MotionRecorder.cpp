@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "MotionRecorder.h"
+#include "../model/FormatVersions.h"
 
 #include <algorithm>
 #include <cmath>
@@ -340,7 +341,7 @@ std::string MotionRecorder::toJson() const
         }
         parts.push_back ({ { "lanes", ls } });
     }
-    return json ({ { "version", 1 }, { "parts", parts } }).dump();
+    return json ({ { "version", formats::motion }, { "parts", parts } }).dump();
 }
 
 bool MotionRecorder::fromJson (const std::string& text)

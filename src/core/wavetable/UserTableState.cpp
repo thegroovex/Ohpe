@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "UserTableState.h"
+#include "../model/FormatVersions.h"
 
 #include "../OhpeCore.h"
 #include "../engines/VocalEngine.h"
@@ -156,7 +157,7 @@ RestoreResult partFromJson (Core& core, int part, const std::string& text, const
 
 std::string saveAssignments (Core& core)
 {
-    json j = { { "format", "ohpe-usertables" }, { "version", 1 } };
+    json j = { { "format", "ohpe-usertables" }, { "version", formats::userTables } };
     json parts = json::object();
     for (int p = 0; p < Core::numParts; ++p)
     {

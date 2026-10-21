@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "OrbitSequencer.h"
+#include "../model/FormatVersions.h"
 
 #include "../harmony/KeyScale.h"
 
@@ -171,7 +172,7 @@ std::string OrbitSequencer::toJson() const
 {
     nlohmann::json j;
     j["format"] = "ohpe-orbit";
-    j["version"] = 1;
+    j["version"] = formats::orbit;
     auto arr = nlohmann::json::array();
     for (int l = 0; l < numLanes; ++l)
         for (int i = 0; i < maxSteps; ++i)

@@ -3,7 +3,9 @@
 #pragma once
 
 #include "ParamRegistry.h"
+#include "FormatVersions.h"
 
+#include <array>
 #include <map>
 #include <string>
 
@@ -22,7 +24,7 @@ namespace ohpe::state
 */
 using Sections = std::map<std::string, std::string>; ///< section name -> JSON text
 
-constexpr int currentVersion = 1;
+constexpr int currentVersion = formats::state;
 
 std::string saveState (const ParamRegistry& reg, const Sections& sections);
 
@@ -39,6 +41,11 @@ LoadResult loadState (const std::string& json, ParamRegistry& reg, bool resetFir
 
 /** Saves all parameters whose ID starts with `prefix` (e.g. "p1.") as a preset. */
 std::string savePreset (const ParamRegistry& reg, const std::string& prefix, const std::string& name);
+
+/** p62 (moved from the plug-in, p40 / p50): the preset uid of each of the four parts from a state's "ui" section.
+    Current shape: "presets" = [uid part 1 .. uid part 4] ("preset" = the edit part's, kept for older builds). Older
+    sessions (before p50) only have "preset": that uid is given to every part. Empty strings = no preset ("Init"). */
+std::array<std::string, 4> sessionPresetUids (const std::string& uiJson);
 
 /** Loads a preset into `targetPrefix` (e.g. a part-1 preset into part 2 with "p2."). */
 LoadResult loadPreset (const std::string& json, ParamRegistry& reg, const std::string& targetPrefix);
