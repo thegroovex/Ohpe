@@ -2,7 +2,7 @@
 
 *Deutsch · English: [../en/FACTORY-SOUNDS.md](../en/FACTORY-SOUNDS.md)*
 
-Ohpe bringt **282 Part-Presets** für alle acht Engines mit, **14 Projekt-Presets** (Demo-Patterns,
+Ohpe bringt **356 Part-Presets** für alle acht Engines mit, **18 Projekt-Presets** (Demo-Patterns,
 die alle vier Parts, die Sequenzer und das Drum-Kit nutzen), **sechs Drum-Kits**, **zehn
 aufgenommene Instrumente** und (0.8) **vier Tasteninstrumente** (Flügel, Klavier, Tine- und
 Zungen-E-Piano) für die Sampler- und Grain-Engine. Du öffnest sie mit **BIBLIOTHEK**:
@@ -213,6 +213,32 @@ Marimba mit zwei Anschlagstufen), im Pegel angeglichen und mono.
 
 Gehaltene Instrumente haben Loop-Punkte; die Presets, die sie nutzen, stellen *Loop* des Samplers
 auf *Vorwärts*. Lizenzen und Quellen: [THIRD-PARTY.md](../../THIRD-PARTY.md).
+
+## Bank-Kuratierung (1.0)
+
+Für 1.0 wurde die gesamte Werksbank offline gerendert und kuratiert (`tools/presets/bank_curate.py`, Protokoll in
+`tools/presets/bank_curation.json`):
+
+* **Beinahe-Dubletten** – Presets derselben Engine und Kategorie wurden nach ihren Parametern und nach ihrem Klang
+  (Spektrum und Hüllkurve des Standard-Renders) verglichen. Drei, die wie ein anderes Preset klangen, wurden
+  zurückgezogen; das bessere bleibt: *Sine Slide* (→ *Glide Sine Bass*), *Phase Reese* (→ *Glide Reese*, der seinen
+  Phaser behält) und *Sparkle Bell* (→ *FM Arp Bell*). Varianten, die sich anders spielen (Glide, Tonhöhen-Anstieg,
+  Morph, Arp, Fingerboard, Ausdruck), bleiben bewusst erhalten.
+* **Sitzungen bleiben sicher** – eine Sitzung oder ein Projekt mit einem zurückgezogenen Preset behält seinen Klang
+  (er ist in der Sitzung gespeichert); die Bibliothek zeigt für diesen Part nur keinen Preset-Namen. Verbliebene
+  Presets behalten ihre Identität, Favoriten, Bewertungen und Sitzungen finden sie also weiter, auch wenn sich der
+  angezeigte Name geändert hat.
+* **Namen und Tags** – jeder Name ist eindeutig; *Funk Clav* heißt jetzt *Funk Snap Keys*, die Lo-Fi-Presets werden
+  *Lo-Fi* geschrieben (*Lo-Fi Bass*, *Mellow Lo-Fi Bass*, *Lo-Fi Kit*); die FM-E-Pianos und *Dream Tine Arp* stehen
+  unter *Klavier*, *Glide Sine Bass* unter *Boom*, *Digital Pluck Arp* unter *Zupfer*.
+* **Lautheit** – jedes Part-Preset spielt die Standard-Phrase seiner Kategorie (120 BPM, 8 s), jedes Projekt sein
+  Pattern mit dem Master-Limiter wie gehört. Ziel: das lauteste 3-Sekunden-Fenster (Kurzzeit-Lautheit,
+  K-Bewertung nach EBU R128) bei **−11 LUFS ±1,5 LU**, **True Peak höchstens −1 dBTP**. −11 LUFS ist der Median der
+  Bank, damit springt der Pegel beim Wechsel zwischen Werkspresets, ZUFALL- und Zucht-Klängen (auf denselben
+  Median eingestellt) nicht. Geändert wurde nur der Pegelparameter (Part Gain bei Part-Presets, Master-Lautstärke
+  bei Projekten); wo der Spitzenpegel oder das Pegelfenster der Plug-in-Tests (−21 … −10 dBFS aktiver RMS) den vollen
+  Schritt nicht zulässt, bleibt das Preset so nah wie möglich. Helle Leads wurden leiser, weiche Subs und Klaviere
+  lauter; Presets, die übersteuerten, liegen jetzt unter der Grenze.
 
 ## Wie die Klänge geprüft wurden
 

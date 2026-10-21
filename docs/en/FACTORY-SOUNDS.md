@@ -2,7 +2,7 @@
 
 *English · Deutsch: [../de/FACTORY-SOUNDS.md](../de/FACTORY-SOUNDS.md)*
 
-Ohpe ships with **282 part presets** for all eight engines, **14 project presets** (demo patterns
+Ohpe ships with **356 part presets** for all eight engines, **18 project presets** (demo patterns
 that use all four parts, the sequencers and the drum kit), **six drum kits**, **ten recorded
 instruments** and (0.8) **four keyboard instruments** (grand and upright piano, tine and reed
 electric piano) for the Sampler and Grain engines. Open them with **LIBRARY**: pick a category on the
@@ -211,6 +211,31 @@ velocity layers), level-matched and mono.
 
 Sustained instruments carry loop points; the presets that use them switch the Sampler's *Loop* to
 *Forward*. Licences and sources: [THIRD-PARTY.md](../../THIRD-PARTY.md).
+
+## Bank curation (1.0)
+
+For 1.0 the whole factory bank was rendered offline and curated (`tools/presets/bank_curate.py`, record in
+`tools/presets/bank_curation.json`):
+
+* **Near-duplicates** – presets of one engine and category were compared by their parameters and by their sound
+  (spectrum and envelope of the standard render). Three that sounded the same as another preset were retired; the
+  better one stays: *Sine Slide* (→ *Glide Sine Bass*), *Phase Reese* (→ *Glide Reese*, which keeps its phaser) and
+  *Sparkle Bell* (→ *FM Arp Bell*). Variants that play differently (glide, pitch rise, morph, arp, Fingerboard,
+  Expression) were kept on purpose.
+* **Sessions stay safe** – a session or project that used a retired preset keeps its sound (the sound is stored in
+  the session); the library simply shows no preset name for that part. Presets that stay keep their identity, so
+  favourites, ratings and sessions still find them, even where the display name changed.
+* **Names and tags** – every name is unique; *Funk Clav* is now *Funk Snap Keys*, the lo-fi presets are spelt
+  *Lo-Fi* (*Lo-Fi Bass*, *Mellow Lo-Fi Bass*, *Lo-Fi Kit*); the FM electric pianos and *Dream Tine Arp* are found
+  under *Piano*, *Glide Sine Bass* under *Boom*, *Digital Pluck Arp* under *Plucks*.
+* **Loudness** – every part preset plays the standard phrase of its category (120 BPM, 8 s), every project its
+  pattern with the master limiter as heard. Target: the loudest 3-second window (short-term loudness, EBU R128
+  K-weighting) at **−11 LUFS ±1.5 LU**, **true peak at or below −1 dBTP**. −11 LUFS is the bank's median, so
+  switching between factory presets, RANDOM and BREED sounds (matched to the same median) does not jump in
+  level. Only the level parameter was changed (Part Gain for part presets, Master Volume for projects); where the
+  peak or the plug-in's level window (−21 … −10 dBFS active RMS) does not allow the full step, the preset stays as
+  close as it can. Bright leads came down, soft subs and pianos went up; presets that clipped were brought below the
+  ceiling.
 
 ## How the sounds were checked
 
