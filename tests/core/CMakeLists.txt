@@ -120,3 +120,4 @@ target_sources(ohpe_core_tests PRIVATE BendRetriggerTests.cpp) # p53
 target_sources(ohpe_core_tests PRIVATE SustainPedalTests.cpp) # p58: sustain / sostenuto from every input
 target_sources(ohpe_core_tests PRIVATE GridLayoutTests.cpp) # p59: grid keyboard layouts
 target_sources(ohpe_core_tests PRIVATE ArpSustainTests.cpp) # p60: sustain / sostenuto hold the arpeggiator
+target_sources(ohpe_core_tests PRIVATE FormatTests.cpp) # p62: format freeze (fixtures in tests/formats)
