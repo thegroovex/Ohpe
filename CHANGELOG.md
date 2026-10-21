@@ -7,6 +7,15 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: First-start tour (p64): four short steps over the plate (parts, preset strip and LIBRARY; encoders, soft keys
+  and the FX editor; tape, sequencer, tempo and key; help, settings and the Grid-Controller), English and German, in
+  both skins. Shown once on the first standalone start and the first plug-in window, skippable (SKIP TOUR / Esc),
+  started again from Settings > General or the Help tab. settings.json gains the key "tour" (no version change).
+- DE: Einführungstour (p64): vier kurze Schritte über der Platte (Parts, Preset-Leiste und BIBLIOTHEK; Encoder,
+  Softkeys und FX-Editor; Tape, Sequencer, Tempo und Tonart; Hilfe, Einstellungen und Grid-Controller), Deutsch und
+  Englisch, in beiden Erscheinungen. Erscheint einmal beim ersten Start der Standalone-App und beim ersten
+  Plug-in-Fenster, überspringbar (TOUR ÜBERSPRINGEN / Esc), wieder zu starten unter Einstellungen > Allgemein oder im
+  Reiter Hilfe. settings.json bekommt den Schlüssel "tour" (keine Versionsänderung).
 - EN: Robustness (p63): damaged sessions, presets, tape files, wavetables, content packs and settings never crash Ohpe
   (refused, or loaded as far as readable with defaults for the rest); NaN / Inf can no longer reach the outputs (input
   cleaned, output guard); crash-safe start in the standalone app – after a session that did not end cleanly, or with a

@@ -110,7 +110,9 @@ Die ersten Pakete waren *flache* Zips namens `Ohpe-content-<id>-<version>.zip`, 
 
 `settings.json` und `update.json` gelten pro Benutzer, nie pro Projekt. Dateien von vor 1.0 haben kein `"version"`
 (= 0). Für `settings.json` läuft bei Version 0 die Controller-Migration von 0.6.3: Ein Controller, der eingerichtet
-wurde, bevor es `controller.chosen` gab, startet mit dem Grid-Controller-Profil und automatischen Ports. Unbekannte
+wurde, bevor es `controller.chosen` gab, startet mit dem Grid-Controller-Profil und automatischen Ports. p64 hat den Schlüssel
+`"tour"` (`{"standalone": bool, "plugin": bool}`, die Einführungstour wurde gesehen) ohne Versionssprung ergänzt:
+Dateien ohne ihn zeigen die Tour einmal, ältere Versionen behalten ihn als unbekannten Schlüssel. Unbekannte
 Schlüssel von `settings.json` bleiben erhalten und werden zurückgeschrieben; wer die Datei speichert, schreibt die
 eigene Version.
 

@@ -107,7 +107,9 @@ the root and no `pack.json`: they still install, the content moves into the kind
 
 `settings.json` and `update.json` are per user, never per project. Files written before 1.0 have no `"version"` (= 0).
 For `settings.json` version 0 runs the 0.6.3 controller migration: a controller set up before `controller.chosen`
-existed starts with the Grid-Controller profile and automatic ports. Unknown keys of `settings.json` are kept and
+existed starts with the Grid-Controller profile and automatic ports. p64 added the key `"tour"`
+(`{"standalone": bool, "plugin": bool}`, the first-start tour was seen) without a version bump: files without it show
+the tour once, older builds keep it as an unknown key. Unknown keys of `settings.json` are kept and
 written back; a build saving the file writes its own version.
 
 ### Everything else (version 1)

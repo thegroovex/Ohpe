@@ -83,3 +83,27 @@ TEST_CASE ("user settings: helpers")
     CHECK (contrastRatio (0xff777777u, 0xff777777u) == doctest::Approx (1.0));
     CHECK (contrastRatio (0xffffffffu, 0xff000000u) == contrastRatio (0xff000000u, 0xffffffffu));
 }
+
+TEST_CASE ("p64 user settings: the first-start tour flags - absent = not seen, round trip, broken values ignored")
+{
+    const auto fresh = UserSettings::fromJson ("{}");
+    CHECK_FALSE (fresh.tourSeenStandalone);
+    CHECK_FALSE (fresh.tourSeenPlugin);
+    const auto old = UserSettings::fromJson (R"({"version":1,"skin":"dark"})"); // a 1.0 file before the tour
+    CHECK_FALSE (old.tourSeenStandalone);
+    CHECK_FALSE (old.tourSeenPlugin);
+    UserSettings s;
+    s.tourSeenPlugin = true;
+    const auto text = s.toJson();
+    CHECK (text.find ("\"tour\"") != std::string::npos);
+    CHECK (text.find ("\"version\": 1") != std::string::npos); // additive key: no version bump
+    const auto back = UserSettings::fromJson (text);
+    CHECK (back == s);
+    CHECK (back.tourSeenPlugin);
+    CHECK_FALSE (back.tourSeenStandalone);
+    CHECK (back.extras.find ("tour") == std::string::npos); // a known key, not kept twice
+    const auto broken = UserSettings::fromJson (R"({"tour":{"standalone":"yes","plugin":3}})");
+    CHECK_FALSE (broken.tourSeenStandalone);
+    CHECK_FALSE (broken.tourSeenPlugin);
+    CHECK_FALSE (UserSettings::fromJson (R"({"tour":true})").tourSeenStandalone);
+}

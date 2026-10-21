@@ -5,6 +5,7 @@
 #include "BreedView.h"
 #include "ConfirmDialog.h"
 #include "RecoveryNotice.h"
+#include "FirstStartTour.h"
 #include "Display.h"
 #include "FxEditor.h"
 #include "GridController.h"
@@ -245,6 +246,14 @@ public:
     ui::RecoveryNotice& recoveryNoticeComponent() { return recoveryNotice; } ///< p63
     /** p63: shows the processor's pending recovery offer (crash-safe start), if any. */
     void showPendingRecoveryOffer();
+    /** p64: the first-start tour. Shown once by itself (first standalone start, first plug-in editor open; settings.json
+        "tour") unless showTourOnFirstOpen is off (tests, screenshot tool); Settings and the help pages open it again. */
+    void showTour (bool show, int step = 0);
+    bool tourVisible() const noexcept { return tour.isVisible(); }
+    ui::FirstStartTour& tourComponent() { return tour; }
+    /** p64: shows the tour when this kind of editor (standalone / plug-in) has not seen it yet. */
+    void showTourIfFirstOpen();
+    static inline std::atomic<bool> showTourOnFirstOpen { true };
     /** p38: loads a tape file the way the LOAD TAPE key does after the file dialog (asks first over material). */
     void openTapeFile (const juce::File& f) { loadTapeFile (f); }
     /** p42: the loop keys of the tape page instead of the edit keys (the loop readout toggles them). */
@@ -364,6 +373,8 @@ private:
     ui::HelpOverlay helpOverlay;
     ui::ConfirmDialog confirmDialog; ///< p38
     ui::RecoveryNotice recoveryNotice; ///< p63
+    ui::FirstStartTour tour;           ///< p64
+    bool tourChecked = false;          ///< p64: the first-open check ran (once per editor)
     bool tooltipsOn = true;
     float animRate = 1.0f;
     int skinPoll = 0;

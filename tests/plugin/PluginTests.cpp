@@ -414,6 +414,7 @@ int main (int argc, char** argv)
     juce::ScopedJuceInitialiser_GUI gui;
     // p40: the tests start from the plain parameter defaults; FirstPresetTests switches the start sound on
     OhpeProcessor::startWithFactorySound.store (false);
+    OhpeEditor::showTourOnFirstOpen.store (false); // p64: TourUiTests switches the first-start tour on
     doctest::Context ctx (argc, argv);
     return ctx.run();
 }

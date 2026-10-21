@@ -14,7 +14,7 @@ namespace ohpe::settings
 {
 namespace
 {
-const char* const knownKeys[] = { "version", "language", "tooltips", "helpOverlay", "skin", "brightness", "animations", "windowScale", "controller" };
+const char* const knownKeys[] = { "version", "language", "tooltips", "helpOverlay", "skin", "brightness", "animations", "windowScale", "controller", "tour" };
 
 bool known (const std::string& k)
 {
@@ -99,6 +99,7 @@ std::string UserSettings::toJson() const
                         { "auto", controllerAuto },
                         { "pattern", controllerPattern },
                         { "chosen", controllerChosen } };
+    j["tour"] = { { "standalone", tourSeenStandalone }, { "plugin", tourSeenPlugin } }; // p64
     return j.dump (2);
 }
 
@@ -159,6 +160,15 @@ try // p63: a damaged document (wrong types) never throws out of the loader
             s.controllerAuto = true;
         }
     }
+    if (const auto t = j.find ("tour"); t != j.end() && t->is_object()) // p64: the first-start tour
+    {
+        auto seen = [&t] (const char* k) {
+            const auto it = t->find (k);
+            return it != t->end() && it->is_boolean() && it->get<bool>();
+        };
+        s.tourSeenStandalone = seen ("standalone");
+        s.tourSeenPlugin = seen ("plugin");
+    }
     json extra = json::object();
     for (auto it = j.begin(); it != j.end(); ++it)
         if (! known (it.key())) extra[it.key()] = it.value();
@@ -177,6 +187,7 @@ bool UserSettings::operator== (const UserSettings& o) const
            && controllerProfile == o.controllerProfile && controllerIn == o.controllerIn && controllerOut == o.controllerOut
            && controllerMaster == o.controllerMaster && controllerStrip == o.controllerStrip
            && controllerAuto == o.controllerAuto && controllerPattern == o.controllerPattern && controllerChosen == o.controllerChosen
+           && tourSeenStandalone == o.tourSeenStandalone && tourSeenPlugin == o.tourSeenPlugin
            && jsonutil::parse (extras) == jsonutil::parse (o.extras);
 }
 
