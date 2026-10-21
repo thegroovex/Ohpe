@@ -1,0 +1,86 @@
+{
+ "_doc": "p65 bank curation record (tools/presets/bank_curate.py apply). removed: retired file -> the kept preset that replaces it. changed: display name / tags / comment / level parameter per file (file names = uids never change).",
+ "loudness": {
+  "target_lufs_short_term_max": -11.0,
+  "tolerance_lu": 1.5,
+  "true_peak_max_dbtp": -1.0,
+  "active_rms_window_dbfs": [
+   -19.5,
+   -11.0
+  ],
+  "render": "category phrase, 120 bpm, 8 s, limiter off (parts) / on (projects)"
+ },
+ "removed": {
+  "bass-sine-slide.ohpepreset": "bass-glide-sine-bass.ohpepreset",
+  "bass-phase-reese.ohpepreset": "bass-glide-reese.ohpepreset",
+  "arp-sparkle-bell.ohpepreset": "arp-fm-arp-bell.ohpepreset"
+ },
+ "changed": {
+  "keys-funk-clav.ohpepreset": {
+   "name": "Funk Snap Keys",
+   "comment": "Snappy, nasal FM keys with a quick bite; play short and syncopated."
+  },
+  "bass-lofi-bass.ohpepreset": {
+   "name": "Lo-Fi Bass"
+  },
+  "bass-mellow-lofi-bass.ohpepreset": {
+   "name": "Mellow Lo-Fi Bass"
+  },
+  "project-lofi-kit.ohpepreset": {
+   "name": "Lo-Fi Kit"
+  },
+  "bass-glide-sine-bass.ohpepreset": {
+   "tags_add": [
+    "Boom"
+   ]
+  },
+  "bass-glide-reese.ohpepreset": {
+   "comment": "Saw-stack reese through a slow, deep phaser, with constant-rate portamento: overlap notes and it slides like a fretless rubber band."
+  },
+  "keys-digital-ep.ohpepreset": {
+   "tags_add": [
+    "Piano"
+   ]
+  },
+  "keys-dusty-ep.ohpepreset": {
+   "tags_add": [
+    "Piano"
+   ]
+  },
+  "keys-dusty-keys.ohpepreset": {
+   "tags_add": [
+    "Piano"
+   ]
+  },
+  "keys-tine-piano.ohpepreset": {
+   "tags_add": [
+    "Piano"
+   ]
+  },
+  "keys-velocity-glass-ep.ohpepreset": {
+   "tags_add": [
+    "Piano"
+   ]
+  },
+  "keys-scoop-keys.ohpepreset": {
+   "tags_add": [
+    "Piano"
+   ]
+  },
+  "arp-dream-tine-arp.ohpepreset": {
+   "tags_add": [
+    "Piano"
+   ]
+  },
+  "keys-piano-scan-table.ohpepreset": {
+   "tags_add": [
+    "Piano"
+   ]
+  },
+  "arp-digital-pluck-arp.ohpepreset": {
+   "tags_add": [
+    "Plucks"
+   ]
+  }
+ }
+}

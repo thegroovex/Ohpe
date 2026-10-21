@@ -7,6 +7,8 @@ p65 (1.0 bank curation): checks and curates the factory preset bank (resources/p
   python3 tools/presets/bank_curate.py check                      # static checks (names, tags, banned words)
   python3 tools/presets/bank_curate.py analyse --render BIN --wavdir DIR [--out JSON]
                                                                   # renders every preset, loudness + similarity
+  python3 tools/presets/bank_curate.py report --data JSON          # near-duplicate pairs, silent / clipping flags
+  python3 tools/presets/bank_curate.py calibrate --data JSON       # one level round, written to bank_curation.json
   python3 tools/presets/bank_curate.py apply                      # applies tools/presets/bank_curation.json
 
 Rendering: every part preset plays the standard phrase of its main category (ohpe_render, 120 bpm, 8 s, master
@@ -259,15 +261,58 @@ def apply_curation(_args):
         if f not in bank:
             continue
         p = bank[f]
-        if "name" in ch:
-            p["name"] = ch["name"]
-        if "tags" in ch:
-            p["tags"] = ch["tags"]
-        if "comment" in ch:
-            p["comment"] = ch["comment"]
-        if "gain" in ch:
-            p["params"]["gain"] = ch["gain"]
+        for k in ("name", "comment"):
+            if k in ch:
+                p[k] = ch[k]
+        for t in ch.get("tags_add", []):
+            if t not in p["tags"]:
+                p["tags"].append(t)
+        for k, v in ch.get("params", {}).items():
+            p["params"][k] = v
         save(f, p)
+
+
+def level_param(p):
+    return "gain" if p["kind"] == "part" else "mix.master.vol"
+
+
+def calibrate(args):
+    """One round: renders, moves the level parameter towards the target and records it in bank_curation.json."""
+    cur = json.load(open(CURATION, encoding="utf-8"))
+    L = cur["loudness"]
+    T, TOL, PK = L["target_lufs_short_term_max"], L["tolerance_lu"], L["true_peak_max_dbtp"]
+    lo, hi = L["active_rms_window_dbfs"]
+    bank = load_bank()
+    rows = json.load(open(args.data))
+    changed = 0
+    for f, r in sorted(rows.items()):
+        if f not in bank or (args.only and f not in args.only):
+            continue
+        p = bank[f]
+        key = level_param(p)
+        g = float(p["params"].get(key, 0.0))
+        st, tp, act = r["st"], r["tp"], r["active"]
+        d = 0.0
+        if abs(st - T) > TOL:
+            d = T - st
+        if p["kind"] == "part":
+            d = min(d, PK - tp)               # peak-safe
+            d = max(min(d, hi - act), lo - act)  # plug-in level window (active RMS)
+            d = min(d, PK - tp)               # the peak wins over the window
+            ng = max(GAIN_MIN, min(GAIN_MAX, round(g + d, 1)))
+        else:
+            if args.unlimited and f in args.unlimited:
+                d = min(d, args.unlimited[f])
+            ng = max(-60.0, min(6.0, round(g + d, 1)))
+        if abs(ng - g) < 0.3 and not (p["kind"] == "project" and g > 6.0):
+            continue
+        ch = cur["changed"].setdefault(f, {})
+        before = cur.setdefault("levels_before", {})
+        before.setdefault(f, g)
+        ch.setdefault("params", {})[key] = ng
+        changed += 1
+    json.dump(cur, open(CURATION, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+    print("changed", changed)
 
 
 def main():
@@ -284,6 +329,9 @@ def main():
     r.add_argument("--pdist", type=float, default=PARAM_DIST)
     r.add_argument("--asim", type=float, default=AUDIO_SIM)
     sp.add_parser("apply")
+    c = sp.add_parser("calibrate")
+    c.add_argument("--data", required=True)
+    c.add_argument("--only", nargs="*", default=[])
     args = ap.parse_args()
     if args.cmd == "check":
         probs = check(load_bank())
@@ -294,6 +342,9 @@ def main():
         analyse(args)
     elif args.cmd == "report":
         report(args)
+    elif args.cmd == "calibrate":
+        args.unlimited = {}
+        calibrate(args)
     else:
         apply_curation(args)
 

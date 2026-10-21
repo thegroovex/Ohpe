@@ -5,7 +5,8 @@
   "name": "Digital Pluck Arp",
   "author": "groovex",
   "tags": [
-    "Arp"
+    "Arp",
+    "Plucks"
   ],
   "engine": "fm",
   "comment": "Clicky digital pluck that loves fast sixteenths.",

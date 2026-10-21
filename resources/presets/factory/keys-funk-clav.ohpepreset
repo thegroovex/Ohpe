@@ -2,14 +2,14 @@
   "format": "ohpe-preset",
   "version": 2,
   "kind": "part",
-  "name": "Funk Clav",
+  "name": "Funk Snap Keys",
   "author": "groovex",
   "tags": [
     "Keys",
     "Plucks"
   ],
   "engine": "fm",
-  "comment": "Snappy clavinet-style keys; play short and syncopated.",
+  "comment": "Snappy, nasal FM keys with a quick bite; play short and syncopated.",
   "params": {
     "engine": 0,
     "fm.algo": 2,

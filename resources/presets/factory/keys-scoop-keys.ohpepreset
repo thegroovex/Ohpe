@@ -5,7 +5,8 @@
   "name": "Scoop Keys",
   "author": "groovex",
   "tags": [
-    "Keys"
+    "Keys",
+    "Piano"
   ],
   "engine": "fm",
   "comment": "Electric piano where every note scoops up a whole tone: soulful, a little lazy.",

@@ -9,7 +9,7 @@
     "MPE"
   ],
   "engine": "wavetable",
-  "comment": "Reese with constant-rate portamento: overlap notes and it slides like a fretless rubber band.",
+  "comment": "Saw-stack reese through a slow, deep phaser, with constant-rate portamento: overlap notes and it slides like a fretless rubber band.",
   "params": {
     "engine": 1,
     "wavetable.table": 0,

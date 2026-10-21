@@ -5,7 +5,8 @@
   "name": "Glide Sine Bass",
   "author": "groovex",
   "tags": [
-    "Bass"
+    "Bass",
+    "Boom"
   ],
   "engine": "fm",
   "comment": "Pure sine bass with legato glide for sliding bass lines; detached notes stay clean.",

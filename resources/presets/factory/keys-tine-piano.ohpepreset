@@ -5,7 +5,8 @@
   "name": "Tine Piano",
   "author": "groovex",
   "tags": [
-    "Keys"
+    "Keys",
+    "Piano"
   ],
   "engine": "fm",
   "comment": "Electric piano: soft body plus a bell-like tine that fades with the key. Chorus in the FX slot.",

@@ -133,10 +133,7 @@ void PresetManager::rescan()
     userData.applyTo (list);
     for (int part = 0; part < numParts; ++part)
     {
-        currentIndex[(size_t) part] = -1;
-        if (! uids[(size_t) part].empty())
-            for (int i = 0; i < (int) list.size(); ++i)
-                if (list[(size_t) i].uid == uids[(size_t) part]) currentIndex[(size_t) part] = i;
+        currentIndex[(size_t) part] = preset::indexOfUid (list, uids[(size_t) part]); // p65: unknown / retired uid = -1
     }
     sendChangeMessage();
 }
@@ -232,10 +229,7 @@ void PresetManager::restoreCurrent (const std::array<std::string, numParts>& uid
 {
     for (int part = 0; part < numParts; ++part)
     {
-        currentIndex[(size_t) part] = -1;
-        if (! uids[(size_t) part].empty())
-            for (int i = 0; i < (int) list.size(); ++i)
-                if (list[(size_t) i].uid == uids[(size_t) part]) currentIndex[(size_t) part] = i;
+        currentIndex[(size_t) part] = preset::indexOfUid (list, uids[(size_t) part]); // p65: unknown / retired uid = -1
     }
     arpOwner = -1; // a restored session brings its own arp setup
     previewBackup.reset();

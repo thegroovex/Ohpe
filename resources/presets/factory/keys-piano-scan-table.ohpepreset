@@ -5,7 +5,8 @@
   "name": "Piano Scan Table",
   "author": "groovex",
   "tags": [
-    "Keys"
+    "Keys",
+    "Piano"
   ],
   "engine": "wavetable",
   "comment": "A wavetable analysed from the recorded grand piano, eight frames from the hammer to the fading tail. The mod envelope scans through it with every note, so each key starts bright and settles like the piano did; velocity opens the tone. The mod wheel holds it on the bright frames.",

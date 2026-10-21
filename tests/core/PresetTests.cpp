@@ -10,6 +10,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 using namespace ohpe;
 
@@ -580,4 +583,53 @@ TEST_CASE ("preset library (p54): the factory bank's MPE presets are found by th
     CHECK (preset::matchesText (a, "MPE Flächen"));
     CHECK_FALSE (preset::matchesText (b, "mpe"));
     CHECK (preset::matchesText (b, "werk")); // factory bank, German
+}
+
+TEST_CASE ("preset library (p65): a session naming a retired factory preset keeps its sound and shows no preset")
+{
+    // the bank curation record: every retired factory preset is gone from the bank, every kept one is still there
+    std::ifstream in (std::string (OHPE_SOURCE_DIR) + "/tools/presets/bank_curation.json");
+    REQUIRE (in.good());
+    const auto cur = nlohmann::json::parse (in);
+    const std::string bank = std::string (OHPE_SOURCE_DIR) + "/resources/presets/factory/";
+    std::vector<preset::Entry> entries;
+    for (const auto& f : std::filesystem::directory_iterator (bank))
+    {
+        preset::Entry e;
+        e.factory = true;
+        e.uid = "factory:" + f.path().filename().string();
+        entries.push_back (e);
+    }
+    REQUIRE (cur.contains ("removed"));
+    std::vector<std::string> retired;
+    for (const auto& [file, keep] : cur["removed"].items())
+    {
+        CAPTURE (file);
+        CHECK (! std::filesystem::exists (bank + file));
+        CHECK (preset::indexOfUid (entries, "factory:" + file) == -1);
+        // the preset that replaces it in the bank is a kept one
+        CHECK (std::filesystem::exists (bank + keep.get<std::string>()));
+        retired.push_back ("factory:" + file);
+    }
+    CHECK (preset::indexOfUid (entries, "") == -1);
+    CHECK (preset::indexOfUid (entries, "factory:vocal-aah-choir.ohpepreset") >= 0); // the start sound stays
+
+    // a session saved with a retired preset on part 1 (and a deleted user preset on part 3)
+    Core a;
+    a.prepare (48000.0, 256);
+    const int cutoff = a.params().indexOf ("p1.analog.cutoff");
+    REQUIRE (cutoff >= 0);
+    a.params().set (a.params().indexOf ("p1.engine"), 2.0f);
+    a.params().set (cutoff, 1234.0f);
+    const std::string first = retired.empty() ? "factory:retired-example.ohpepreset" : retired.front();
+    const std::string ui = "{\"presets\":[\"" + first + "\",\"\",\"user:gone.ohpepreset\",\"\"]}";
+    const auto saved = a.saveState (ui);
+    Core b;
+    b.prepare (48000.0, 256);
+    std::string ui2;
+    REQUIRE (b.loadState (saved, &ui2));
+    for (int i = 0; i < a.params().size(); ++i) CHECK (b.params().get (i) == a.params().get (i)); // the sound is kept
+    const auto uids = state::sessionPresetUids (ui2);
+    CHECK (uids[0] == first);
+    for (const auto& u : uids) CHECK (preset::indexOfUid (entries, u) == -1); // no preset is named, nothing breaks
 }
