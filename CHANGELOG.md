@@ -7,6 +7,18 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: File formats frozen for 1.0 (p62): every saved format (state / sessions, presets, .ohpetape, .ohpewt,
+  .ohpepack, .ohpemidi, settings.json, update.json, the state sections) has an explicit version in one place; older
+  files always load and migrate, unknown newer fields are ignored. Golden fixture files of every format (current,
+  older and newer shapes) with load / migrate / round-trip tests, and a CI check that versions and fixtures never
+  change silently. settings.json and update.json now carry "version". See docs/FORMATS.md.
+- DE: Dateiformate für 1.0 eingefroren (p62): Jedes gespeicherte Format (Zustand / Sessions, Presets, .ohpetape,
+  .ohpewt, .ohpepack, .ohpemidi, settings.json, update.json, die Zustandsabschnitte) hat eine ausdrückliche Version
+  an einer Stelle; ältere Dateien laden und werden migriert, unbekannte neuere Felder ignoriert. Goldene Testdateien
+  jedes Formats (aktuelle, ältere und neuere Formen) mit Lade-, Migrations- und Rundlauf-Tests sowie eine CI-Prüfung,
+  dass sich Versionen und Testdateien nie stillschweigend ändern. settings.json und update.json tragen jetzt
+  "version". Siehe docs/de/FORMATE.md.
+
 ## 0.6.4 Preview – 2026-10-20
 
 [Notes / Hinweise](docs/release-notes/0.6.4.md)

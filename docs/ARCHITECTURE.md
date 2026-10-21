@@ -111,6 +111,9 @@ to their defaults – old states open in new versions and vice versa. Presets
 (`state::savePreset`) store all parameters of a prefix (e.g. `p1.`) and can be loaded into
 another prefix. MIDI map files use `{"format":"ohpe-midimap",…}` (extension `.ohpemidi`).
 
+Since 1.0 every persisted format is versioned and frozen (versions in `src/core/model/FormatVersions.h`, golden
+fixtures in `tests/formats`, CI check `scripts/ci/check-formats.py`): see [FORMATS.md](FORMATS.md).
+
 ## Interfaces for phase 2
 
 ### Adding a synth engine (example: Wavetable)
