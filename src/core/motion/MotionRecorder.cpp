@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "MotionRecorder.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 
 #include <algorithm>
 #include <cmath>
@@ -344,10 +345,11 @@ std::string MotionRecorder::toJson() const
 }
 
 bool MotionRecorder::fromJson (const std::string& text)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     clearAll();
     if (reg == nullptr) return false;
-    const auto j = json::parse (text, nullptr, false);
+    const auto j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object() || ! j.contains ("parts") || ! j["parts"].is_array()) return false;
     const auto& parts = j["parts"];
     for (int p = 0; p < numParts && p < (int) parts.size(); ++p)
@@ -370,5 +372,10 @@ bool MotionRecorder::fromJson (const std::string& text)
         }
     }
     return true;
+}
+catch (const std::exception&)
+{
+    clearAll();
+    return false;
 }
 } // namespace ohpe

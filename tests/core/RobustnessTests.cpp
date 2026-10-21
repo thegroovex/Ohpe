@@ -155,11 +155,19 @@ void fuzz (const char* what, const std::string& seed, const std::function<void (
     run ("{\"a\":" + std::string (100000, '[') + std::string (100000, ']') + "}");
     run ("{\"format\":\"" + std::string (4 << 20, 'x') + "\"}");
     run (seed);
+    // the valid document with a deeply nested value inside (top level, and inside its last inner object)
+    const std::string deep = std::string (50000, '[') + std::string (50000, ']');
+    if (! seed.empty() && seed.front() == '{')
+    {
+        run ("{\"deep\":" + deep + "," + seed.substr (1));
+        if (const auto inner = seed.rfind ("{\""); inner != std::string::npos && inner > 0)
+            run (seed.substr (0, inner + 1) + "\"deep\":" + deep + "," + seed.substr (inner + 1));
+    }
     for (int i = 0; i < fuzzIterations(); ++i) run (m.mutate (seed));
     const double seconds = std::chrono::duration<double> (std::chrono::steady_clock::now() - start).count();
-    MESSAGE (what << ": " << fuzzIterations() << " mutations in " << seconds << " s");
-    CHECK_MESSAGE (escaped == 0, what << ": " << escaped << " documents threw out of the loader, first: " << firstEscape);
-    CHECK_MESSAGE (seconds < 240.0, what << ": the fuzz run took too long");
+    MESSAGE (std::string (what) << ": " << fuzzIterations() << " mutations in " << seconds << " s");
+    CHECK_MESSAGE (escaped == 0, std::string (what) << ": " << escaped << " documents threw out of the loader, first: " << firstEscape);
+    CHECK_MESSAGE (seconds < 240.0, std::string (what) << ": the fuzz run took too long");
 }
 
 /** The core renders finite, bounded audio (a note on part 1, 0.2 s). */
@@ -399,6 +407,7 @@ TEST_CASE ("robustness: a tape blob holding NaN / Inf samples or absurd rates pl
         }
         CHECK (finite);
         CHECK (peak < 16.0f);
+        CHECK (core->nonFiniteBlocks() == 0); // cleaned while loading, not only caught by the output guard
     }
     // a tape file whose audio claims an absurd sample rate is refused quickly (no endless resampling)
     tapefile::Settings s;

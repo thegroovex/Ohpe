@@ -89,7 +89,12 @@ UserTablePtr decode (const uint8_t* data, size_t size, std::string* error)
     std::string name (reinterpret_cast<const char*> (data + 24), nameBytes);
     const uint8_t* p = data + 24 + nameBytes;
     std::vector<float> wave ((size_t) frames * frameSize);
-    for (auto& v : wave) { v = getFloat (p); p += 4; }
+    for (auto& v : wave) // p63: a damaged file may hold NaN / Inf / huge values
+    {
+        v = getFloat (p);
+        v = std::isfinite (v) ? std::clamp (v, -16.0f, 16.0f) : 0.0f;
+        p += 4;
+    }
     std::vector<FormantFrame> fm (formants);
     for (auto& f : fm)
     {

@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "PackFormat.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 
 #include <nlohmann/json.hpp>
 
@@ -90,12 +91,13 @@ bool isPackJsonId (const std::string& id)
 }
 
 bool parsePackInfo (const std::string& jsonText, PackInfo& out, std::string* error)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     auto fail = [error] (const char* e) {
         if (error != nullptr) *error = e;
         return false;
     };
-    const json j = json::parse (jsonText, nullptr, false);
+    const json j = jsonutil::parse (jsonText);
     if (j.is_discarded() || ! j.is_object()) return fail ("pack.json is not valid JSON");
     if (j.contains ("format") && j["format"].is_number_integer() && j["format"].get<int>() > packFormat)
         return fail ("pack.json has a newer format");
@@ -156,6 +158,11 @@ bool parsePackInfo (const std::string& jsonText, PackInfo& out, std::string* err
     out = std::move (p);
     return true;
 }
+catch (const std::exception&)
+{
+    if (error != nullptr) *error = "pack.json is damaged";
+    return false;
+}
 
 std::string packInfoToJson (const PackInfo& p)
 {
@@ -178,11 +185,16 @@ std::string packInfoToJson (const PackInfo& p)
 }
 
 std::string canonicalPackJson (const std::string& text)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
-    json j = json::parse (text, nullptr, false);
+    json j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object()) return {};
     j.erase ("signature");
     return j.dump(); // nlohmann objects keep their keys sorted; dump() writes no white space
+}
+catch (const std::exception&)
+{
+    return {};
 }
 
 namespace
@@ -225,6 +237,7 @@ KindLimits limitsFor (PackKind k) noexcept
 
 PackPlan planPack (const std::vector<ZipItem>& items, const std::string& packJson, const PackInfo& expected, uint64_t usedBytes,
                    bool requireChecksums)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     PackPlan plan;
     auto fail = [&plan] (const char* e, std::string detail = {}) {
@@ -335,6 +348,12 @@ PackPlan planPack (const std::vector<ZipItem>& items, const std::string& packJso
     if (usedBytes + plan.totalBytes > contentQuotaBytes)
         return fail ("Not enough room for content packs - remove a pack first", std::to_string ((usedBytes + plan.totalBytes) / (1024 * 1024)) + " MB");
     plan.ok = true;
+    return plan;
+}
+catch (const std::exception&)
+{
+    PackPlan plan;
+    plan.error = "The content pack is damaged";
     return plan;
 }
 

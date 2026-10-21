@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "UpdateManifest.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 
 #include <nlohmann/json.hpp>
 
@@ -108,9 +109,10 @@ const Asset* Release::assetFor (const std::string& platform, const std::string& 
 }
 
 bool parseManifest (const std::string& text, Release& out, std::string* error)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     auto fail = [error] (const char* msg) { if (error != nullptr) *error = msg; return false; };
-    const json j = json::parse (text, nullptr, false);
+    const json j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object()) return fail ("not JSON");
     if (! j.contains ("format") || ! j["format"].is_number_integer() || j["format"].get<int>() != 1) return fail ("unknown manifest format");
     if (getString (j, "app") != "Ohpe") return fail ("not an Ohpe manifest");
@@ -165,6 +167,11 @@ bool parseManifest (const std::string& text, Release& out, std::string* error)
         }
     out = std::move (r);
     return true;
+}
+catch (const std::exception&)
+{
+    if (error != nullptr) *error = "The update manifest is damaged";
+    return false;
 }
 
 std::string manifestToJson (const Release& r)
@@ -258,9 +265,10 @@ void applySums (Release& r, const std::string& sumsText)
 }
 
 std::vector<ReleaseRef> parseReleaseList (const std::string& text)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     std::vector<ReleaseRef> list;
-    const json j = json::parse (text, nullptr, false);
+    const json j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_array()) return list;
     for (const auto& o : j)
     {
@@ -295,6 +303,10 @@ std::vector<ReleaseRef> parseReleaseList (const std::string& text)
         list.push_back (std::move (ref));
     }
     return list;
+}
+catch (const std::exception&)
+{
+    return {};
 }
 
 int pickUpdate (const std::vector<ReleaseRef>& list, Channel channel, const Version& current, const std::string& skipped)

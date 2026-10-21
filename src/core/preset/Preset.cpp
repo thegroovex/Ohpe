@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Preset.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 
 #include "../OhpeCore.h"
 #include "../fx/SpaceMode.h"
@@ -171,12 +172,12 @@ std::string toJson (const Preset& p)
     }
     if (p.meta.kind == Kind::Part && p.morph) // p16
     {
-        auto parsed = json::parse (*p.morph, nullptr, false);
+        auto parsed = jsonutil::parse (*p.morph);
         if (! parsed.is_discarded()) j["morph"] = parsed;
     }
     if (p.meta.kind == Kind::Part && p.userTables) // p20
     {
-        auto parsed = json::parse (*p.userTables, nullptr, false);
+        auto parsed = jsonutil::parse (*p.userTables);
         if (! parsed.is_discarded()) j["usertables"] = parsed;
     }
     if (! p.sections.empty())
@@ -184,7 +185,7 @@ std::string toJson (const Preset& p)
         json s = json::object();
         for (const auto& [name, text] : p.sections)
         {
-            auto parsed = json::parse (text, nullptr, false);
+            auto parsed = jsonutil::parse (text);
             s[name] = parsed.is_discarded() ? json (text) : parsed;
         }
         j["sections"] = s;
@@ -193,9 +194,10 @@ std::string toJson (const Preset& p)
 }
 
 bool fromJson (const std::string& text, Preset& out, std::string* error)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     auto fail = [&] (const char* e) { if (error != nullptr) *error = e; return false; };
-    const auto j = json::parse (text, nullptr, false);
+    const auto j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object()) return fail ("not JSON");
     if (j.value ("format", "") != "ohpe-preset") return fail ("not an Ohpe preset");
     Preset p;
@@ -243,6 +245,11 @@ bool fromJson (const std::string& text, Preset& out, std::string* error)
     }
     out = std::move (p);
     return true;
+}
+catch (const std::exception&)
+{
+    if (error != nullptr) *error = "damaged preset";
+    return false;
 }
 
 ApplyResult applyPart (const Preset& p, ParamRegistry& reg, int partIndex, const PartOptions& options)

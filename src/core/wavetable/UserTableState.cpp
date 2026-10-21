@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "UserTableState.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 
 #include "../OhpeCore.h"
 #include "../engines/VocalEngine.h"
@@ -132,12 +133,13 @@ std::string partToJson (Core& core, int part)
 }
 
 RestoreResult partFromJson (Core& core, int part, const std::string& text, const Resolver& resolve, const ContentResolver& content)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     RestoreResult result;
     setTable (core, part, Target::Wavetable, nullptr);
     setTable (core, part, Target::Vocal, nullptr);
     if (text.empty()) return result;
-    const json j = json::parse (text, nullptr, false);
+    const json j = jsonutil::parse (text);
     if (! j.is_object()) return result;
     UserTablePtr wt;
     if (j.contains ("wavetable"))
@@ -152,6 +154,10 @@ RestoreResult partFromJson (Core& core, int part, const std::string& text, const
         else setTable (core, part, Target::Vocal, resolveRef (v, resolve, content, result));
     }
     return result;
+}
+catch (const std::exception&)
+{
+    return {};
 }
 
 std::string saveAssignments (Core& core)
@@ -168,9 +174,10 @@ std::string saveAssignments (Core& core)
 }
 
 RestoreResult restoreAssignments (Core& core, const std::string& text, const Resolver& resolve, const ContentResolver& content)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     RestoreResult total;
-    const json j = text.empty() ? json() : json::parse (text, nullptr, false);
+    const json j = text.empty() ? json() : jsonutil::parse (text);
     const bool valid = j.is_object() && j.value ("format", std::string()) == "ohpe-usertables" && j.contains ("parts") && j["parts"].is_object();
     for (int p = 0; p < Core::numParts; ++p)
     {
@@ -178,5 +185,9 @@ RestoreResult restoreAssignments (Core& core, const std::string& text, const Res
         total.add (partFromJson (core, p, valid && j["parts"].contains (key) ? j["parts"][key].dump() : std::string(), resolve, content));
     }
     return total;
+}
+catch (const std::exception&)
+{
+    return {};
 }
 } // namespace ohpe::usertable

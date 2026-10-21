@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "PresetLibrary.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 
 #include "../engines/EngineFactory.h"
 
@@ -226,8 +227,9 @@ std::string UserData::toJson() const
 }
 
 bool UserData::fromJson (const std::string& text)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
-    const auto j = json::parse (text, nullptr, false);
+    const auto j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object() || j.value ("format", "") != "ohpe-library") return false;
     author = j.value ("author", "");
     items.clear();
@@ -236,6 +238,10 @@ bool UserData::fromJson (const std::string& text)
             if (v.is_object())
                 items[uid] = { v.value ("fav", false), std::clamp (v.value ("rating", 0), 0, 5) };
     return true;
+}
+catch (const std::exception&)
+{
+    return false;
 }
 
 void UserData::applyTo (std::vector<Entry>& entries) const

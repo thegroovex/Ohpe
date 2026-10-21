@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "MorphSpace.h"
+#include "model/JsonParse.h" // p63: depth-limited parse
 
 #include "../engines/Part.h"
 #include "../fx/InsertSlot.h"
@@ -328,9 +329,10 @@ std::string MorphSpace::partToJson (int part) const
 }
 
 bool MorphSpace::partFromJson (int part, const std::string& text)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
     if (part < 0 || part >= numParts) return false;
-    const auto j = json::parse (text, nullptr, false);
+    const auto j = jsonutil::parse (text);
     for (auto& c : corners[(size_t) part]) c = {};
     bool ok = false;
     if (! j.is_discarded() && j.is_object() && j.contains ("corners") && j["corners"].is_array())
@@ -361,6 +363,10 @@ bool MorphSpace::partFromJson (int part, const std::string& text)
     rebuild (part);
     return ok;
 }
+catch (const std::exception&)
+{
+    return false;
+}
 
 std::string MorphSpace::toJson() const
 {
@@ -373,8 +379,9 @@ std::string MorphSpace::toJson() const
 }
 
 bool MorphSpace::fromJson (const std::string& text)
+try // p63: a damaged document (wrong types) never throws out of the loader
 {
-    const auto j = json::parse (text, nullptr, false);
+    const auto j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_object() || ! j.contains ("parts") || ! j["parts"].is_array()) { clearAll(); return false; }
     const auto& parts = j["parts"];
     for (int p = 0; p < numParts; ++p)
@@ -383,6 +390,11 @@ bool MorphSpace::fromJson (const std::string& text)
         else clearPart (p);
     }
     return true;
+}
+catch (const std::exception&)
+{
+    clearAll();
+    return false;
 }
 
 // ------------------------------------------------------------------------------------------------ plans
