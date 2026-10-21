@@ -6,6 +6,7 @@
 
 #include <doctest/doctest.h>
 
+#include <cmath>
 #include <random>
 
 #include "plugin/Localisation.h"
