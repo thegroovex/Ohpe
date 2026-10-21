@@ -142,7 +142,7 @@
   },
   "arp-glock-arp.ohpepreset": {
    "params": {
-    "gain": 14.7
+    "gain": 14.9
    }
   },
   "arp-living-bell-arp.ohpepreset": {
@@ -152,12 +152,12 @@
   },
   "arp-mallet-echo-arp.ohpepreset": {
    "params": {
-    "gain": 16.6
+    "gain": 16.9
    }
   },
   "arp-orbit-arp.ohpepreset": {
    "params": {
-    "gain": 23.4
+    "gain": 23.7
    }
   },
   "arp-orbit-space-arp.ohpepreset": {
@@ -172,12 +172,12 @@
   },
   "arp-random-spark-arp.ohpepreset": {
    "params": {
-    "gain": 19.2
+    "gain": 19.9
    }
   },
   "arp-resonant-comb-arp.ohpepreset": {
    "params": {
-    "gain": 14.9
+    "gain": 15.0
    }
   },
   "arp-ripple-arp.ohpepreset": {
@@ -187,7 +187,7 @@
   },
   "arp-spiral-arp.ohpepreset": {
    "params": {
-    "gain": 20.7
+    "gain": 21.0
    }
   },
   "arp-table-arp.ohpepreset": {
@@ -237,7 +237,7 @@
   },
   "bass-dirty-sub.ohpepreset": {
    "params": {
-    "gain": 15.8
+    "gain": 15.2
    }
   },
   "bass-distorted-reese.ohpepreset": {
@@ -377,7 +377,7 @@
   },
   "bass-rubber-bass.ohpepreset": {
    "params": {
-    "gain": 21.9
+    "gain": 21.7
    }
   },
   "bass-screech-bass.ohpepreset": {
@@ -492,7 +492,7 @@
   },
   "fx-doppler-fly-by.ohpepreset": {
    "params": {
-    "gain": 18.6
+    "gain": 19.0
    }
   },
   "fx-downlifter.ohpepreset": {
@@ -532,7 +532,7 @@
   },
   "fx-stereo-zap.ohpepreset": {
    "params": {
-    "gain": 5.5
+    "gain": 5.6
    }
   },
   "fx-whoosh.ohpepreset": {
@@ -552,7 +552,7 @@
   },
   "keys-bright-grand.ohpepreset": {
    "params": {
-    "gain": 0.0
+    "gain": 0.1
    }
   },
   "keys-bright-poly-wide.ohpepreset": {
@@ -562,7 +562,7 @@
   },
   "keys-concert-grand.ohpepreset": {
    "params": {
-    "gain": 5.8
+    "gain": 6.3
    }
   },
   "keys-crystal-organ.ohpepreset": {
@@ -572,7 +572,7 @@
   },
   "keys-felt-grand.ohpepreset": {
    "params": {
-    "gain": 7.2
+    "gain": 7.5
    }
   },
   "keys-glass-body-keys.ohpepreset": {
@@ -592,7 +592,7 @@
   },
   "keys-halo-grand.ohpepreset": {
    "params": {
-    "gain": 8.4
+    "gain": 8.8
    }
   },
   "keys-marimba.ohpepreset": {
@@ -1147,7 +1147,7 @@
   },
   "textures-starfield.ohpepreset": {
    "params": {
-    "gain": 6.1
+    "gain": 7.3
    }
   },
   "vocal-aah-choir.ohpepreset": {

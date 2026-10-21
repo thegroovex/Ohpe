@@ -65,7 +65,7 @@
     "fx2.reverb.mix": 0.22,
     "wavetable.lfopos": 0.12,
     "voices": 2,
-    "gain": 18.6,
+    "gain": 19.0,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,
