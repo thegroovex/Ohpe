@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "MidiMap.h"
+#include "../model/FormatVersions.h"
 
 #include <nlohmann/json.hpp>
 
@@ -86,7 +87,7 @@ std::string MidiMap::toJson() const
 {
     nlohmann::json j;
     j["format"] = "ohpe-midimap";
-    j["version"] = 1;
+    j["version"] = formats::midiMap;
     auto arr = nlohmann::json::array();
     for (const auto& m : list)
         arr.push_back ({ { "param", m.paramId }, { "type", m.type == MidiSourceType::Note ? "note" : "cc" }, { "channel", m.channel },

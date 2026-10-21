@@ -1,0 +1,31 @@
+{
+  "format": "ohpe-preset",
+  "version": 2,
+  "kind": "part",
+  "name": "Format Keys",
+  "author": "groovex",
+  "tags": [
+    "Keys",
+    "bright"
+  ],
+  "engine": "fm",
+  "comment": "p62 fixture",
+  "modSchema": 1,
+  "params": {
+    "engine": 0.0,
+    "vol": 0.625,
+    "tune": -5.0,
+    "amp.a": 0.25,
+    "amp.r": 1.5,
+    "mod.s1.src": 1.0,
+    "mod.s1.dst": 1.0,
+    "mod.s1.amt": 0.5
+  },
+  "arp": {
+    "on": 1,
+    "mode": 2,
+    "oct": 2,
+    "gate": 0.5,
+    "rate": 3
+  }
+}

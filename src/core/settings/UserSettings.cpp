@@ -13,7 +13,7 @@ namespace ohpe::settings
 {
 namespace
 {
-const char* const knownKeys[] = { "language", "tooltips", "helpOverlay", "skin", "brightness", "animations", "windowScale", "controller" };
+const char* const knownKeys[] = { "version", "language", "tooltips", "helpOverlay", "skin", "brightness", "animations", "windowScale", "controller" };
 
 bool known (const std::string& k)
 {
@@ -82,6 +82,7 @@ std::string UserSettings::toJson() const
 {
     json j = json::parse (extras, nullptr, false);
     if (j.is_discarded() || ! j.is_object()) j = json::object();
+    j["version"] = formats::settings; // p62
     j["language"] = languageName (language);
     j["tooltips"] = tooltips;
     j["helpOverlay"] = helpOverlay;
@@ -105,6 +106,9 @@ UserSettings UserSettings::fromJson (const std::string& text)
     UserSettings s;
     const json j = json::parse (text, nullptr, false);
     if (j.is_discarded() || ! j.is_object()) return s;
+    // p62: files before 1.0 have no "version" (= 0)
+    if (const auto v = j.find ("version"); v != j.end() && v->is_number_integer()) s.fileVersion = std::max (0, v->get<int>());
+    else s.fileVersion = 0;
     auto str = [&j] (const char* k) {
         const auto it = j.find (k);
         return it != j.end() && it->is_string() ? it->get<std::string>() : std::string();

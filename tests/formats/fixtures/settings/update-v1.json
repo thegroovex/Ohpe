@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "autoCheck": false,
+  "channel": "stable",
+  "lastCheck": 1760000000,
+  "skipped": "0.7.0",
+  "remindVersion": "",
+  "remindAfter": 0
+}

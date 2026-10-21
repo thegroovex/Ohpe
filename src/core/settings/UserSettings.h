@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
+#include "../model/FormatVersions.h"
+
 #include <cstdint>
 #include <string>
 
@@ -24,6 +26,10 @@ inline constexpr const char* defaultControllerPattern = "User; MIDIIN2; MIDIOUT2
     None of them is a host parameter: nothing here is automatable or stored in a session.
 
     Unknown keys of the file are kept and written back unchanged (newer versions and other features may add their own).
+
+    p62: the file carries "version" (formats::settings). Files without it (before 1.0) are version 0 and are migrated
+    on read (the 0.6.3 controller defaults, see controllerChosen); a newer version's keys this build does not know
+    are kept.
 */
 struct UserSettings
 {
@@ -49,6 +55,9 @@ struct UserSettings
         it (0.6.2 and older) start with the defaults of 0.6.3: the Grid-Controller profile and automatic ports. */
     bool controllerChosen = false;
     std::string extras = "{}";     ///< unknown keys (a JSON object)
+    /** p62: "version" of the file it was read from (0 = before 1.0, no version field); written as formats::settings.
+        Not part of operator==. */
+    int fileVersion = formats::settings;
 
     std::string toJson() const;
     /** Reads the JSON; missing, unknown or broken values keep the defaults. */

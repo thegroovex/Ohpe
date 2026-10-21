@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "HarmonyBrain.h"
+#include "../model/FormatVersions.h"
 
 #include "../seq/ScaleChord.h"
 
@@ -456,7 +457,7 @@ std::string HarmonyBrain::toJson() const
     json prof = json::array();
     for (const auto& w : pubWeight) prof.push_back (w.load (std::memory_order_relaxed));
     const auto c = chord();
-    return json ({ { "version", 1 }, { "key", { keyRoot(), keyScale() } }, { "chord", { c.root, c.type } }, { "history", hist },
+    return json ({ { "version", formats::harmony }, { "key", { keyRoot(), keyScale() } }, { "chord", { c.root, c.type } }, { "history", hist },
                    { "profile", prof } })
         .dump();
 }

@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "StepSequencer.h"
+#include "../model/FormatVersions.h"
 
 #include "../harmony/KeyScale.h"
 
@@ -454,7 +455,7 @@ std::string StepSequencer::toJson() const
 {
     nlohmann::json j;
     j["format"] = "ohpe-step-pattern";
-    j["version"] = 1;
+    j["version"] = formats::sequencer;
     j["steps"] = patternToJson (0);
     auto pats = nlohmann::json::array();
     for (int p = 1; p < numPatterns; ++p)

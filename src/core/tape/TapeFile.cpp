@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "TapeFile.h"
+#include "../model/FormatVersions.h"
 
 #include <nlohmann/json.hpp>
 
@@ -13,7 +14,7 @@ namespace ohpe::tapefile
 namespace
 {
 constexpr char fileMagic[8] = { 'O', 'H', 'P', 'E', 'T', 'P', 'F', '1' };
-constexpr int fileVersion = 1;
+constexpr int fileVersion = formats::tapeFile;
 // the tape audio blob (TapeMachine::saveAudio): "OHPETAPE", u32 version, u32 tracks, u32 frames per block,
 // f64 sample rate, u64 length, then (u32 track, u32 page, float L[frames], float R[frames])..., u32 0xffffffff
 constexpr size_t blobHeader = 8 + 4 + 4 + 4 + 8 + 8;

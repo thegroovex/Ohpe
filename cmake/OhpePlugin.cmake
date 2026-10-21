@@ -301,6 +301,14 @@ if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/WavetableBankTests.cpp)
 endif()
 
+# ---------------------------------------------------------------- p62: format freeze - the golden fixtures through the plug-in
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/FormatPluginTests.cpp)
+    # only this file needs the fixture folder (a target-wide define would rebuild every plug-in test source)
+    set_source_files_properties(${CMAKE_SOURCE_DIR}/tests/plugin/FormatPluginTests.cpp PROPERTIES
+        COMPILE_DEFINITIONS OHPE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+endif()
+
 # ---------------------------------------------------------------- p31: the SUB layer per part (Synth page, pro view group)
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/SubUiTests.cpp)

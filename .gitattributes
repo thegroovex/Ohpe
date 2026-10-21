@@ -1,0 +1,2 @@
+# p62: Ohpe file formats are frozen - never change existing fixtures (tests/formats/fixtures) or let a version go down.
+tests/formats/fixtures/** -text
