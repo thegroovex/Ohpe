@@ -441,6 +441,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
         addChildComponent (settingsView);
         addChildComponent (helpOverlay);
         addChildComponent (confirmDialog); // p38
+        addChildComponent (recoveryNotice); // p63
         userSettings->addChangeListener (this);
     }
 
@@ -625,6 +626,7 @@ void OhpeEditor::resized()
     place (settingsView, "overlay"); // p32
     helpOverlay.setBounds (getLocalBounds());
     confirmDialog.setBounds (getLocalBounds()); // p38
+    recoveryNotice.setBounds (getLocalBounds()); // p63
     place (versionBadge, "versionBadge");
     place (cpuMeter, "cpuMeter"); // p35
     for (auto& k : engineKeys) k->setUiScale (s);
@@ -2461,6 +2463,7 @@ bool OhpeEditor::keyPressed (const juce::KeyPress& key)
 
 void OhpeEditor::timerCallback()
 {
+    if (proc.hasRecoveryOffer()) showPendingRecoveryOffer(); // p63: crash-safe start
     auto& core = proc.core();
     display.tick (1.0f / 30.0f);
     {
@@ -2647,6 +2650,13 @@ void OhpeEditor::timerCallback()
         keyboard.setMidiChannel (ch);
     }
     presetStrip.setName (proc.presets().currentName());
+}
+
+void OhpeEditor::showPendingRecoveryOffer()
+{
+    auto offer = proc.takeRecoveryOffer();
+    if (offer.reason <= 0) return;
+    recoveryNotice.show ((ui::RecoveryNotice::Reason) juce::jlimit (1, 3, offer.reason), std::move (offer.restore));
 }
 
 void OhpeEditor::changeListenerCallback (juce::ChangeBroadcaster* source)

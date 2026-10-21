@@ -8,6 +8,8 @@
 #include "ui/PluginEditor.h"
 
 #include <chrono>
+#include <memory>
+#include <utility>
 
 namespace ohpe
 {
@@ -891,17 +893,44 @@ void OhpeProcessor::getStateInformation (juce::MemoryBlock& dest)
     tapeio::appendTapeAudio (ohpeCore, dest); // 0.2: tape audio after the JSON (see TapeIO.h)
 }
 
+void OhpeProcessor::offerRecovery (int reason, std::function<void()> restore)
+{
+    recoveryOffer = { reason, std::move (restore) }; // the editor shows it from its timer
+}
+
+OhpeProcessor::RecoveryOffer OhpeProcessor::takeRecoveryOffer() { return std::exchange (recoveryOffer, {}); }
+
 void OhpeProcessor::setStateInformation (const void* data, int size)
 {
+    // p63: a damaged state never takes the instance down: refused as a whole, or (a loader gave up half way)
+    // the instance starts over with the factory start sound
+    stateLoadFailed.store (false);
     std::string json, ui;
     const uint8_t* tape = nullptr;
     size_t tapeSize = 0;
-    tapeio::splitState (data, size, json, tape, tapeSize); // 0.2: JSON + optional tape audio
-    if (! ohpeCore.loadState (json, &ui))
+    try
+    {
+        if (data == nullptr || size <= 0) { stateLoadFailed.store (true); return; }
+        tapeio::splitState (data, size, json, tape, tapeSize); // 0.2: JSON + optional tape audio
+        if (! ohpeCore.loadState (json, &ui))
+        {
+            stateLoadFailed.store (true);
+            return;
+        }
+        tapeio::restoreTape (ohpeCore, tape, tapeSize);
+        samples.restoreFromState();
+        userTableManager.restoreFromState(); // p20
+    }
+    catch (...)
+    {
+        stateLoadFailed.store (true);
+        try { ohpeCore.loadState (std::make_unique<Core>()->saveState()); } // parameters and sections of a new instance
+        catch (...) { ohpeCore.params().resetToDefaults(); }
+        if (juce::MessageManager::existsAndIsCurrentThread() && startWithFactorySound.load()) presetManager->loadStartSound();
+        syncHostParametersFromRegistry();
+        sendChangeMessage();
         return;
-    tapeio::restoreTape (ohpeCore, tape, tapeSize);
-    samples.restoreFromState();
-    userTableManager.restoreFromState(); // p20
+    }
     auto parsed = juce::JSON::parse (juce::String::fromUTF8 (ui.c_str()));
     uiState = parsed.isObject() ? parsed : juce::var (new juce::DynamicObject());
     {   // p40: the preset that was loaded when the session was saved (none = "Init"); replaces the start sound's name

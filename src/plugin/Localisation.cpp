@@ -872,6 +872,15 @@ const std::map<juce::String, juce::String>& table()
         { "Key: drag up / down (Shift: scale), mouse wheel; click: key, scale, Scale Lock, MIDI learn",
           "Tonart: nach oben / unten ziehen (Shift: Skala), Mausrad; Klick: Tonart, Skala, In Tonart, MIDI-Learn" },
         { "Playing", "Klingt" },
+        // p63: crash-safe start
+        { "The last session did not end properly", "Die letzte Sitzung wurde nicht richtig beendet" },
+        { "The last session could not be loaded", "Die letzte Sitzung konnte nicht geladen werden" },
+        { "The session could not be restored", "Die Sitzung konnte nicht wiederhergestellt werden" },
+        { "Ohpe started with the start sound. Restore the last session?", "Ohpe ist mit dem Startklang gestartet. Letzte Sitzung wiederherstellen?" },
+        { "Its saved state is damaged. Ohpe started with the start sound.", "Ihr gespeicherter Zustand ist beschädigt. Ohpe ist mit dem Startklang gestartet." },
+        { "Ohpe keeps the start sound.", "Ohpe behält den Startklang." },
+        { "Restore", "Wiederherstellen" },
+        { "Start fresh", "Neu beginnen" },
     };
     static const std::map<juce::String, juce::String> t = [] {
         std::map<juce::String, juce::String> m;

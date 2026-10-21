@@ -217,14 +217,17 @@ public:
         io.numIns = 0;
         io.numOuts = 18;
         channels.add (io);
+        const bool unclean = beginSession(); // p63: before the holder loads the last state (a crash while loading counts)
         auto holder = std::make_unique<juce::StandalonePluginHolder> (appProperties.getUserSettings(), false, juce::String(), &setup, channels, true);
         window = std::make_unique<OhpeWindow> ("Ohpe", std::move (holder));
         window->setVisible (true);
+        offerRecovery (unclean);
     }
 
     void shutdown() override
     {
         window = nullptr;
+        endSession();
         appProperties.saveIfNeeded();
     }
 
@@ -240,7 +243,89 @@ public:
     }
 
 private:
+    // ---- p63: crash-safe start ----
+    // "sessionInProgress" is set while the app runs and cleared when it ends cleanly. Found set at the next start
+    // (and no other instance running), the last session did not end cleanly: its state is set aside
+    // ("recoveryState"), Ohpe starts with the factory start sound and offers to restore it. A state that fails to
+    // load starts with the start sound too (it stays in "damagedState" for support).
+    static constexpr const char* markerKey = "sessionInProgress";
+    static constexpr const char* stateKey = "filterState"; // the standalone holder's state
+    static constexpr const char* recoveryKey = "recoveryState";
+    static constexpr const char* damagedKey = "damagedState";
+
+    bool beginSession()
+    {
+        auto* settings = appProperties.getUserSettings();
+        if (settings == nullptr) return false;
+        // another running instance holds the lock: its marker is not a crash, and this instance does not track one
+        sessionLock = std::make_unique<juce::InterProcessLock> ("OhpeStandaloneSession");
+        if (! sessionLock->enter (0)) { sessionLock = nullptr; return false; }
+        const bool unclean = settings->getBoolValue (markerKey, false) && settings->getValue (stateKey).isNotEmpty();
+        if (unclean)
+        {
+            settings->setValue (recoveryKey, settings->getValue (stateKey));
+            settings->removeValue (stateKey);
+        }
+        settings->setValue (markerKey, true);
+        settings->saveIfNeeded();
+        return unclean;
+    }
+
+    void endSession()
+    {
+        if (sessionLock == nullptr) return;
+        if (auto* settings = appProperties.getUserSettings())
+        {
+            settings->setValue (markerKey, false);
+            settings->saveIfNeeded();
+        }
+        sessionLock = nullptr;
+    }
+
+    OhpeProcessor* processor() const
+    {
+        return window != nullptr && window->pluginHolder != nullptr ? dynamic_cast<OhpeProcessor*> (window->pluginHolder->processor.get()) : nullptr;
+    }
+
+    void offerRecovery (bool unclean)
+    {
+        auto* proc = processor();
+        auto* settings = appProperties.getUserSettings();
+        if (proc == nullptr || settings == nullptr) return;
+        if (unclean)
+        {
+            proc->offerRecovery (1, [this] { restoreLastSession(); });
+            return;
+        }
+        if (proc->lastStateLoadFailed() && settings->getValue (stateKey).isNotEmpty())
+        {
+            settings->setValue (damagedKey, settings->getValue (stateKey));
+            settings->removeValue (stateKey);
+            settings->saveIfNeeded();
+            proc->offerRecovery (2);
+        }
+    }
+
+    void restoreLastSession()
+    {
+        auto* proc = processor();
+        auto* settings = appProperties.getUserSettings();
+        if (proc == nullptr || settings == nullptr) return;
+        juce::MemoryBlock data;
+        const bool decoded = data.fromBase64Encoding (settings->getValue (recoveryKey)) && data.getSize() > 0;
+        if (decoded) proc->setStateInformation (data.getData(), (int) data.getSize());
+        if (! decoded || proc->lastStateLoadFailed())
+        {
+            proc->offerRecovery (3);
+            return;
+        }
+        settings->removeValue (recoveryKey);
+        window->pluginHolder->savePluginState();
+        settings->saveIfNeeded();
+    }
+
     juce::ApplicationProperties appProperties;
+    std::unique_ptr<juce::InterProcessLock> sessionLock;
     std::unique_ptr<OhpeWindow> window;
 };
 } // namespace ohpe

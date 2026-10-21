@@ -186,6 +186,11 @@ int main (int argc, char* argv[])
         fe.setLanguage (lang);
         animate (first, fe, 4);
         save (fe, dir.getChildFile ("ohpe-first-start" + suffix + ".png"));
+        // p63: the crash-safe start - the last session did not end cleanly, Ohpe offers to restore it
+        first.offerRecovery (1, [] {});
+        fe.showPendingRecoveryOffer();
+        save (fe, dir.getChildFile ("ohpe-recovery-notice" + suffix + ".png"));
+        fe.recoveryNoticeComponent().dismiss();
         firstEd = nullptr;
     }
     for (auto lang : { i18n::Language::English, i18n::Language::German })

@@ -234,7 +234,24 @@ public:
 
     static BusesProperties makeBuses();
 
+    /** p63: true when the last setStateInformation() could not load its state (damaged, or a loader failed half
+        way: the instance then starts over with the factory start sound). Message thread. */
+    bool lastStateLoadFailed() const noexcept { return stateLoadFailed.load(); }
+    /** p63: the standalone app's crash-safe start offers the last session (reason 1 = it did not end cleanly,
+        2 = its state is damaged, 3 = restoring it failed; see ui::RecoveryNotice). The editor shows the notice
+        and calls `restore` on RESTORE. Message thread. */
+    struct RecoveryOffer
+    {
+        int reason = 0;
+        std::function<void()> restore;
+    };
+    void offerRecovery (int reason, std::function<void()> restore = {});
+    RecoveryOffer takeRecoveryOffer();
+    bool hasRecoveryOffer() const noexcept { return recoveryOffer.reason > 0; }
+
 private:
+    std::atomic<bool> stateLoadFailed { false }; // p63
+    RecoveryOffer recoveryOffer;                 // p63
     void timerCallback() override;
     void captureInput (juce::AudioBuffer<float>& buffer, int numSamples); ///< 0.2: input bus -> core
     void syncHostParametersFromRegistry();
