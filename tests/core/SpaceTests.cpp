@@ -265,7 +265,10 @@ TEST_CASE ("1.0 space: moving sources stay click-free (orbit, jumps, motion, mon
 {
     for (int monitor : { SpaceEffect::Headphones, SpaceEffect::Speakers })
         for (int path : { space::PathCircle, space::PathFigure8, space::PathRandom, space::PathPendulum, space::PathSpiral,
-                          space::PathPingPong, space::PathSwarm, space::PathOverhead, space::PathWeave })
+                          space::PathPingPong, space::PathSwarm, space::PathOverhead, space::PathWeave,
+                          // p73 (the Doppler paths Fly-Over and Loop Orbit are checked at one bar, like the fly-by / walk)
+                          space::PathPingPongLR, space::PathCorners, space::PathBreathe, space::PathHelix, space::PathBounce,
+                          space::PathWander })
             for (float room : { 0.0f, 0.5f })
             {
                 CAPTURE (monitor);
@@ -843,4 +846,126 @@ TEST_CASE ("p41 space: Speakers renders the speaker path (no interaural delay), 
     double diff = 0.0;
     for (size_t i = 0; i < phones.size(); ++i) diff += std::abs (phones.l[i] - speakers.l[i]);
     CHECK (diff > 1.0);
+}
+
+// ------------------------------------------------------------------------------------------------- p73: more motion paths
+TEST_CASE ("p73 space: eight more motion paths, appended - old indices and names keep their meaning")
+{
+    Fx fx;
+    const auto d = fx.e.getParamDescriptors();
+    const auto& path = d[(size_t) SpaceEffect::Path];
+    REQUIRE (space::numPaths == 21);
+    REQUIRE (path.choices.size() == (size_t) space::numPaths);
+    REQUIRE (path.choicesDe.size() == (size_t) space::numPaths);
+    const char* old[] = { "Off", "Circle", "Figure-8", "Fly-By", "Random Orbit", "Pendulum", "Spiral Up", "Ping-Pong F/B",
+                          "Swarm", "Whisper", "Distance Walk", "Over the Head", "Weave" };
+    for (int i = 0; i < 13; ++i) CHECK (path.choices[(size_t) i] == old[i]);
+    const char* added[] = { "Ping-Pong L/R", "Four Corners", "Breathe", "Helix", "Fly-Over", "Bounce", "Wander", "Loop Orbit" };
+    for (int i = 0; i < 8; ++i) CHECK (path.choices[(size_t) (13 + i)] == added[i]);
+    CHECK (space::PathWeave == 12);
+    CHECK (space::PathPingPongLR == 13);
+    CHECK (space::PathLoopOrbit == 20);
+    CHECK (path.defaultValue == 0.0f);
+    CHECK (space::pathIsPeriodic (space::PathWander)); // a random shape, but the same loop every cycle
+}
+
+TEST_CASE ("p73 space: the new paths are continuous (also across the loop point), deterministic and shaped as named")
+{
+    using namespace space;
+    auto dist = [] (Vec3 a, Vec3 b) { return lengthOf ({ a.x - b.x, a.y - b.y, a.z - b.z }); };
+    for (int p = PathPingPongLR; p < numPaths; ++p)
+        for (float size : { 0.0f, 0.37f, 1.0f })
+        {
+            CAPTURE (p);
+            CAPTURE (size);
+            // the loop point: the end of one cycle meets the start of the next
+            CHECK (dist (pathPoint (p, 0.999999, size, 7), pathPoint (p, 1.0, size, 7)) < 1.0e-3f);
+            CHECK (dist (pathPoint (p, 0.0, size, 7), pathPoint (p, 3.0, size, 7)) < 1.0e-4f);
+            for (double ph = -1.0; ph < 2.0; ph += 0.0005) // no jumps anywhere (relative to the distance)
+            {
+                const auto a = pathPoint (p, ph, size, 7), b = pathPoint (p, ph + 0.0005, size, 7);
+                CHECK (dist (a, b) / std::max (0.3f, lengthOf (a)) < 0.05f);
+                CHECK (lengthOf (a) > 0.3f);
+                CHECK (lengthOf (a) < 13.0f);
+            }
+            CHECK (dist (pathPoint (p, 0.43, size, 9), pathPoint (p, 0.43, size, 9)) == 0.0f); // deterministic
+        }
+    // ping-pong L/R: left ear at the start, right ear halfway, in front on the way right, behind on the way back
+    CHECK (pathPoint (PathPingPongLR, 0.0, 0.5f, 1).x == doctest::Approx (-1.0f).epsilon (0.001));
+    CHECK (pathPoint (PathPingPongLR, 0.5, 0.5f, 1).x == doctest::Approx (1.0f).epsilon (0.001));
+    CHECK (pathPoint (PathPingPongLR, 0.4, 1.0f, 1).x > 0.99f); // snappy: arrived and holding
+    CHECK (pathPoint (PathPingPongLR, 0.1, 0.5f, 1).y > 0.1f);
+    CHECK (pathPoint (PathPingPongLR, 0.6, 0.5f, 1).y < -0.1f);
+    // four corners: front left, front right, back right, back left - one per quarter, holding at the end of each
+    CHECK (azimuthOf (pathPoint (PathCorners, 0.0, 0.5f, 1)) == doctest::Approx (-45.0f).epsilon (0.01));
+    CHECK (azimuthOf (pathPoint (PathCorners, 0.249, 1.0f, 1)) == doctest::Approx (45.0f).epsilon (0.01));
+    CHECK (azimuthOf (pathPoint (PathCorners, 0.499, 1.0f, 1)) == doctest::Approx (135.0f).epsilon (0.01));
+    CHECK (azimuthOf (pathPoint (PathCorners, 0.749, 1.0f, 1)) == doctest::Approx (-135.0f).epsilon (0.01));
+    // breathe: farthest at the start (size sets how far), nearest halfway
+    CHECK (lengthOf (pathPoint (PathBreathe, 0.0, 1.0f, 1)) == doctest::Approx (3.0f).epsilon (0.001));
+    CHECK (lengthOf (pathPoint (PathBreathe, 0.5, 0.3f, 1)) == doctest::Approx (0.45f).epsilon (0.001));
+    // helix: low at the start, high halfway, low again; 2 .. 4 turns
+    CHECK (elevationOf (pathPoint (PathHelix, 0.0, 0.5f, 1)) == doctest::Approx (-25.0f).epsilon (0.01));
+    CHECK (elevationOf (pathPoint (PathHelix, 0.5, 0.5f, 1)) == doctest::Approx (75.0f).epsilon (0.01));
+    CHECK (azimuthOf (pathPoint (PathHelix, 0.125, 0.0f, 1)) == doctest::Approx (90.0f).epsilon (0.01)); // 2 turns
+    // fly-over: far in front at the start, right overhead after a quarter, far behind halfway
+    CHECK (pathPoint (PathFlyOver, 0.0, 1.0f, 1).y == doctest::Approx (12.0f).epsilon (0.001));
+    CHECK (dist (pathPoint (PathFlyOver, 0.25, 0.5f, 1), { 0.0f, 0.0f, 1.0f }) < 1.0e-4f);
+    CHECK (pathPoint (PathFlyOver, 0.5, 0.0f, 1).y == doctest::Approx (-2.0f).epsilon (0.001));
+    // bounce: on the floor at the start, six hops per cycle, from the left to the right
+    CHECK (elevationOf (pathPoint (PathBounce, 0.0, 1.0f, 1)) == doctest::Approx (-15.0f).epsilon (0.01));
+    CHECK (elevationOf (pathPoint (PathBounce, 1.0 / 12.0, 1.0f, 1)) == doctest::Approx (45.0f).epsilon (0.01));
+    CHECK (azimuthOf (pathPoint (PathBounce, 0.0, 1.0f, 1)) == doctest::Approx (-70.0f).epsilon (0.01));
+    CHECK (azimuthOf (pathPoint (PathBounce, 0.5, 1.0f, 1)) == doctest::Approx (70.0f).epsilon (0.01));
+    // wander: every seed its own loop
+    CHECK (dist (pathPoint (PathWander, 0.3, 0.8f, 9), pathPoint (PathWander, 0.3, 0.8f, 10)) > 1.0e-3f);
+    CHECK (dist (pathPoint (PathWander, 0.3, 0.8f, 9), pathPoint (PathWander, 4.3, 0.8f, 9)) < 1.0e-4f);
+    // loop orbit: nearest (1 - loop size) in the middle of each loop, a quarter turn apart
+    CHECK (lengthOf (pathPoint (PathLoopOrbit, 0.125, 1.0f, 1)) == doctest::Approx (0.3317f).epsilon (0.01));
+    CHECK (lengthOf (pathPoint (PathLoopOrbit, 0.0, 1.0f, 1)) > 1.6f);
+}
+
+TEST_CASE ("p73 space: new paths render clean - every sample rate, 1-sample buffers, deterministic, click-free")
+{
+    for (int path = space::PathPingPongLR; path < space::numPaths; ++path)
+        for (double rate : { 44100.0, (double) sampleRate, 96000.0 })
+        {
+            CAPTURE (path);
+            CAPTURE (rate);
+            auto render = [path, rate] (int block) {
+                SpaceEffect e;
+                e.prepare (rate, 512);
+                const auto d = e.getParamDescriptors();
+                for (size_t i = 0; i < d.size(); ++i) e.setParam ((int) i, d[i].defaultValue);
+                e.setTempo (120.0);
+                e.setParam (SpaceEffect::Path, (float) path);
+                e.setParam (SpaceEffect::PathLength, 4.0f);
+                e.setParam (SpaceEffect::PathSize, 1.0f);
+                e.setParam (SpaceEffect::Doppler, 1.0f);
+                e.setParam (SpaceEffect::Room, 0.0f);
+                Stereo s ((size_t) (rate * 2.2));
+                for (size_t i = 0; i < s.size(); ++i)
+                    s.l[i] = s.r[i] = 0.3f * (float) std::sin (2.0 * 3.14159265358979323846 * 300.0 * (double) i / rate);
+                for (size_t pos = 0; pos < s.size(); pos += (size_t) block)
+                    e.process (s.l.data() + pos, s.r.data() + pos, (int) std::min<size_t> ((size_t) block, s.size() - pos));
+                return s;
+            };
+            const auto one = render (1);
+            CHECK (allFinite (one.l));
+            CHECK (allFinite (one.r));
+            CHECK (peak (one.l) < 4.0f);
+            CHECK (peak (one.r) < 4.0f);
+            const auto big = render (512); // the same output on every render; any buffer size gives the same level
+            const auto again = render (512);
+            double maxRun = 0.0;
+            for (size_t i = 0; i < big.size(); ++i) maxRun = std::max (maxRun, (double) std::abs (big.l[i] - again.l[i]));
+            CHECK (maxRun == 0.0);
+            CHECK (std::abs (db (energy (big.l) + 1e-12) - db (energy (one.l) + 1e-12)) < 0.5);
+            CHECK (std::abs (db (energy (big.r) + 1e-12) - db (energy (one.r) + 1e-12)) < 0.5);
+            if (rate != (double) sampleRate) continue;
+            // a 300 Hz tone stays smooth over a whole cycle of one bar (curvature measured against the highest pitch the
+            // Doppler limit allows), the loop point included
+            CHECK (clickRatio (one.l, 300.0f / 0.88f, 4800) < 1.6);
+            CHECK (clickRatio (one.r, 300.0f / 0.88f, 4800) < 1.6);
+        }
 }
