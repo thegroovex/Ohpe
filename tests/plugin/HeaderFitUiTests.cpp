@@ -92,7 +92,7 @@ TEST_CASE ("p75 header: no mode title or engine name is cut, the full key fits (
                                 auto& k = d.headerKey();
                                 const float hh = (float) k.getHeight();
                                 CHECK_FALSE (k.isCompact());
-                                CHECK ((float) k.getWidth() + 1.0f >= k.neededWidth (hh, false));
+                                CHECK ((float) k.getWidth() + 2.5f >= k.neededWidth (hh, false)); // hh is the rounded component height
                                 const float keyText = juce::GlyphArrangement::getStringWidth (ui::monoFont (hh * k.textSizeFraction (false)), k.headerText());
                                 CHECK (keyText <= (float) k.getWidth() - hh * 0.75f);
                                 // nothing overlaps: title and badges | gravity ring | key | TAP | tempo
