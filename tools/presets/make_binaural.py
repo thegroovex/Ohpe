@@ -107,8 +107,8 @@ def chorus(rate=0.3, depth=0.5, mix=0.3):
     return fx(1, "chorus", rate=rate, depth=depth, mix=mix, voices=3, drift=0.3, spread=0.85, lowcut=320.0)
 
 
-def drive(amount=0.25, mix=0.5, mode="tube"):
-    return fx(0, "distortion", mode=mode, drive=amount, mix=mix, output=0.0)
+def drive(amount=0.25, mix=0.5, mode="tube", out=0.0):
+    return fx(0, "distortion", mode=mode, drive=amount, mix=mix, output=out)
 
 
 def comp(thresh=-14.0, ratio=3.0, attack=2.0, release=90.0, makeup=0.0):
@@ -279,8 +279,8 @@ B("Night Insects", "Textures", "grain",
   gr(inst="harp", pos=0.02, size=14, density=40, spray=0.8, pitch=12, reverse=0.0, spread=1.0, scan=1.0, tone=0.55),
   amp(0.4, 1.0, 0.85, 1.5), mod(0.5, 1.0, 0.5, 1.0, 0.0), lfo(3.5, 0.3, "sh", "amp"),
   space("swarm", "4bars", size=0.8, distance=1.6, spread=120.0, room=0.25, roomsize=0.45, doppler=0.2),
-  rev(0.55, 0.14),
-  wheel=("engine4", 0.4), guard=-9.0, voices=6, velsens=0.2)
+  rev(0.55, 0.14), comp(0.0, 2.0, 2.0, 100.0, 12.0),
+  wheel=("engine4", 0.4), voices=6, velsens=0.2)
 
 B("Close Whispers", "Textures", "vocal",
   "Breath and whispered vowels right at your ears, slipping from one side to the other like someone leaning in "
@@ -485,7 +485,7 @@ B("Bell Ricochet", "Arp", "sampler",
   sm(inst="glockenspiel", start=0.0, tone=0.5),
   amp(0.002, 0.8, 0.0, 0.5), mod(0.01, 0.5, 0.0, 0.3, 0.0), lfo(0.1, 0.06, "sine", "timbre"),
   space("pingpong", "1/8", size=0.55, distance=1.6, spread=20.0, room=0.3, roomsize=0.45, doppler=0.1),
-  rev(0.55, 0.14),
+  rev(0.55, 0.14), comp(0.0, 2.0, 2.0, 100.0, 12.0),
   wheel=("pathrate", 0.5), arp_block=("random", 2, 0.4, "1/16"), voices=8, velsens=0.5)
 
 B("Pulse Orbit", "Arp", "analog",
@@ -553,8 +553,8 @@ B("Spinning Pluck Bass", "Bass", "pluck",
   pl(material=0.35, damping=0.55, bright=0.4, body=0.6, excite=0.55, pickpos=0.25, bodysize=0.6),
   amp(0.002, 0.9, 0.0, 0.2), mod(0.01, 0.3, 0.0, 0.2, 0.0), MONO, lfo(0.15, 0.06, "tri", "timbre"),
   space("circle", "1/2", size=0.3, distance=1.4, spread=20.0, room=0.12, roomsize=0.3, doppler=0.05, lowkeep=200.0),
-  sub(0.3, -1, "sine"), comp(-14.0, 3.0, 2.0, 90.0),
-  wheel=("engine2", -0.35), guard=(-20.0, 4.0), velsens=0.55)
+  sub(0.3, -1, "sine"), comp(-14.0, 3.0, 2.0, 90.0, 12.0),
+  wheel=("engine2", -0.35), guard=(-8.0, 0.0), velsens=0.55)
 
 B("Gravity Bass Halo", "Bass", "analog",
   "A vowel-like analog bass whose partials Key Gravity tunes into the key; the halo of overtones circles in a "
@@ -632,10 +632,10 @@ B("Circling Hats", "Drums", "cluster",
   "Metallische Cluster-Hats, die jeden Schlag einmal um den Kopf wandern; ein gerades Hat-Muster wird zum Ring aus "
   "Ticks. Das Modrad beschleunigt den Ring." + HP_DE,
   cl(detune=1.0, spread=0.7, tone=0.9, chord="fourths", stack=7, shape=1.0, side=1.0, reso=0.2, keytrack=0.3, drift=0.0),
-  amp(0.001, 0.3, 0.0, 0.12), mod(0.001, 0.05, 0.0, 0.05, 0.0), lfo(0.1, 0.05, "sine", "timbre"),
-  space("circle", "1/4", size=0.4, distance=1.3, spread=10.0, room=0.25, roomsize=0.35, doppler=0.05),
-  drive(0.7, 1.0, "soft"),
-  wheel=("pathrate", 0.6), voices=4, velsens=0.7, tune=12)
+  amp(0.001, 0.4, 0.0, 0.12), mod(0.001, 0.05, 0.0, 0.05, 0.0), lfo(0.1, 0.05, "sine", "timbre"),
+  space("circle", "1/4", size=0.4, distance=1.3, spread=10.0, room=0.4, roomsize=0.35, doppler=0.05),
+  drive(0.9, 1.0, "soft", -5.0),
+  wheel=("pathrate", 0.6), voices=4, velsens=0.45, tune=12)
 
 B("Hand Drum Ring", "Drums", "fm",
   "Hand-drum tones sitting in a ring around you: low strokes behind, slaps in front, each note at its own angle, and "
@@ -658,8 +658,8 @@ B("Drone Flyover", "FX", "wavetable",
   wt(table="grit", pos=0.3, warp=0.3, tone=0.45, unison=0.4, univoices=4, uniwidth=0.6, keytrack=0.3),
   amp(0.5, 1.0, 1.0, 1.5), mod(1.0, 1.0, 1.0, 1.5, 0.3), lfo(0.3, 0.15, "tri", "timbre"),
   space("flyby", "4bars", size=0.8, distance=2.5, spread=40.0, elevation=25.0, room=0.3, roomsize=0.6, doppler=0.8),
-  rev(0.7, 0.16),
-  wheel=("pathrate", 0.5), guard=-8.0, voices=4, velsens=0.25)
+  rev(0.7, 0.16), comp(0.0, 2.0, 2.0, 100.0, 12.0),
+  wheel=("pathrate", 0.5), voices=4, velsens=0.25)
 
 B("Vortex Riser", "FX", "analog",
   "A noise riser caught in a vortex: it spirals upwards faster and faster around your head over four bars. Hold a note "
@@ -692,7 +692,7 @@ B("Thunder Walk", "FX", "analog",
   amp(1.5, 2.0, 0.9, 3.0), mod(2.0, 2.0, 0.6, 2.0, 0.3), lfo(0.35, 0.4, "sh", "timbre"),
   space("walk", "8bars", size=0.6, distance=3.5, spread=120.0, room=0.45, roomsize=0.8, doppler=0.05, rolloff=0.5,
         lowkeep=150.0),
-  rev(0.85, 0.2),
+  rev(0.85, 0.2), comp(0.0, 2.0, 2.0, 100.0, 12.0),
   wheel=("distance", -0.2), voices=4, velsens=0.25, extra_tags=("Textures",))
 
 # ============================================================================================================= Vocal

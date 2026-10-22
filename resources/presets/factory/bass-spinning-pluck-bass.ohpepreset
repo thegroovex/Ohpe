@@ -60,15 +60,15 @@
     "fx.compressor.attack": 2.0,
     "fx.compressor.release": 90.0,
     "fx.compressor.knee": 6.0,
-    "fx.compressor.makeup": 0.0,
+    "fx.compressor.makeup": 12.0,
     "fx.compressor.mix": 1.0,
     "fx2.type": 10,
-    "fx2.compressor.thresh": -20.0,
+    "fx2.compressor.thresh": -8.0,
     "fx2.compressor.ratio": 8.0,
     "fx2.compressor.attack": 0.1,
     "fx2.compressor.release": 120.0,
     "fx2.compressor.knee": 6.0,
-    "fx2.compressor.makeup": 4.0,
+    "fx2.compressor.makeup": 0.0,
     "fx2.compressor.mix": 1.0,
     "mod.s1.src": 13,
     "mod.s1.via": 0,
@@ -88,6 +88,6 @@
     "monobass": 150.0,
     "velsens": 0.55,
     "glide": 0.0,
-    "gain": 6.0
+    "gain": 12.4
   }
 }
