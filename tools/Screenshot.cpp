@@ -7,7 +7,7 @@
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
 // p20: the user wavetable frame stack (ohpe-user-wavetable). p27: the update view (ohpe-update).
 // p32: the settings menu (ohpe-settings*, ohpe-about*, ohpe-help-overlay*), the night skin (ohpe-dark, *-dark).
-// p23: bounce to engine - a loop bounced into Grain (ohpe-bounce). p33: the Expression page (ohpe-expression).
+// p23: bounce to engine - a loop bounced into Grain (ohpe-bounce). p67: tape memory slices (ohpe-tapemem). p33: the Expression page (ohpe-expression).
 // p41: the 3D switch (ohpe-space-switch-{off,headphones,speakers}[-dark]).
 // p38: the tape page's clear-all confirmation (ohpe-tape-clear, ohpe-tape-clear-dark) and the tape page at night (ohpe-tape-dark).
 // p42: the tape page's loop keys and loop readout (ohpe-tape-loop, ohpe-tape-loop-dark).
@@ -23,6 +23,7 @@
 #include "plugin/Localisation.h"
 #include "plugin/PluginProcessor.h"
 #include "ui/PluginEditor.h"
+#include "engines/SamplerEngine.h"
 #include "ui/ProTiles.h"
 #include "mod/ModVoice.h"
 #include "plugin/Updater.h"
@@ -1287,6 +1288,79 @@ int main (int argc, char* argv[])
                 run (p, 8);
                 e.selectEngine ((EngineType) (int) engineBefore);
             }
+        }
+
+        // p67: tape memory - a phrase of part 1 played into the memory, CAPTURE (Slices) into part 2's Sampler
+        {
+            p.core().tapeMemory().clear();
+            for (int k = 0; k < 8; ++k)
+            {
+                run (p, 22, 48 + (k * 7) % 19);
+                release (p, { 48 + (k * 7) % 19 });
+            }
+            run (p, 30);
+            const float engineBefore = p.core().params().get ("p2.engine");
+            if (p.tapeMemory().capture (1, tapemem::ModeSlices))
+            {
+                p.tapeMemory().finishNow();
+                run (p, 4);
+                e.selectPart (1);
+                e.selectMode (ui::Mode::Synth);
+                e.selectEngine (EngineType::Sampler);
+                e.softKey (0); // refresh the soft keys (unknown id: no action)
+                e.advanceAnimation (0.05f);
+                save (e, dir.getChildFile ("ohpe-tapemem" + suffix + ".png"));
+                if (auto* smp = dynamic_cast<SamplerEngine*> (p.core().part (1).engine (EngineType::Sampler))) smp->setSample (nullptr);
+                setPlain (p, "p2.sampler.mode", 0.0f);
+                setPlain (p, "p2.engine", engineBefore);
+                run (p, 8);
+                e.selectEngine ((EngineType) (int) engineBefore);
+                e.selectPart (0);
+            }
+            // the demo render (once): the phrase as played, then CAPTURE (Chromatic) into part 1 playing a melody
+            if (suffix.isEmpty())
+            {
+                juce::AudioBuffer<float> rec (2, 0);
+                auto take = [&p, &rec] (int blocks, int note, bool off) {
+                    juce::AudioBuffer<float> b (p.getTotalNumOutputChannels(), 512);
+                    for (int k = 0; k < blocks; ++k)
+                    {
+                        juce::MidiBuffer m;
+                        if (k == 0 && note >= 0) m.addEvent (juce::MidiMessage::noteOn (1, note, (juce::uint8) 100), 0);
+                        if (k == blocks - 1 && off && note >= 0) m.addEvent (juce::MidiMessage::noteOff (1, note), 511);
+                        b.clear();
+                        p.processBlock (b, m);
+                        const int at = rec.getNumSamples();
+                        rec.setSize (2, at + 512, true, true);
+                        for (int c = 0; c < 2; ++c) rec.copyFrom (c, at, b, juce::jmin (c, b.getNumChannels() - 1), 0, 512);
+                    }
+                };
+                p.core().tapeMemory().clear();
+                const int phrase[] = { 57, 60, 64, 62 };
+                for (int n : phrase) take (24, n, true);
+                take (60, -1, false);
+                const float p1Before = p.core().params().get ("p1.engine");
+                p.core().params().set (Core::Ids::tapememLen, (float) tapemem::Len5s);
+                if (p.tapeMemory().capture (0, tapemem::ModeChromatic))
+                {
+                    p.tapeMemory().finishNow();
+                    take (8, -1, false);
+                    const int melody[] = { 45, 52, 57, 60, 64, 69, 72, 76 };
+                    for (int n : melody) take (20, n, true);
+                    take (90, -1, false);
+                    juce::WavAudioFormat wav;
+                    const auto file = dir.getChildFile ("ohpe-tapemem-demo.wav");
+                    file.deleteFile();
+                    std::unique_ptr<juce::OutputStream> os = std::make_unique<juce::FileOutputStream> (file);
+                    if (auto w = wav.createWriterFor (os, juce::AudioFormatWriterOptions().withSampleRate (48000.0).withNumChannels (2).withBitsPerSample (24)))
+                        w->writeFromAudioSampleBuffer (rec, 0, rec.getNumSamples());
+                    if (auto* smp = dynamic_cast<SamplerEngine*> (p.core().part (0).engine (EngineType::Sampler))) smp->setSample (nullptr);
+                    setPlain (p, "p1.engine", p1Before);
+                    run (p, 8);
+                }
+                p.core().params().set (Core::Ids::tapememLen, (float) tapemem::Len30s);
+            }
+            p.core().tapeMemory().clear();
         }
 
         // p33: the Expression page - aftertouch -> vibrato and cutoff on the analog part, a note held with pressure
