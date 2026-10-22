@@ -32,17 +32,17 @@
     "space.path": 11,
     "space.pathlen": 6,
     "space.pathrate": 1.0,
-    "space.pathsize": 0.55,
+    "space.pathsize": 0.45,
     "space.pathphase": 0.0,
     "space.azimuth": 0.0,
     "space.elevation": 0.0,
-    "space.distance": 1.9,
+    "space.distance": 2.3,
     "space.spread": 40.0,
     "space.room": 0.4,
     "space.roomsize": 0.55,
     "space.doppler": 0.12,
     "space.air": 0.6,
-    "space.rolloff": 0.7,
+    "space.rolloff": 0.5,
     "space.lowkeep": 120.0,
     "space.glide": 0.06,
     "fx.type": 6,
@@ -68,6 +68,6 @@
     "voices": 10,
     "velsens": 0.5,
     "glide": 0.0,
-    "gain": 6.1
+    "gain": 5.0
   }
 }

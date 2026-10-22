@@ -1227,32 +1227,32 @@
   },
   "bass-gravity-bass-halo.ohpepreset": {
    "params": {
-    "gain": 22.8
+    "gain": 24.0
    }
   },
   "bass-halo-reese.ohpepreset": {
    "params": {
-    "gain": 21.3
+    "gain": 22.7
    }
   },
   "bass-orbit-sub.ohpepreset": {
    "params": {
-    "gain": 23.7
+    "gain": 24.0
    }
   },
   "bass-pendulum-growl.ohpepreset": {
    "params": {
-    "gain": 18.7
+    "gain": 22.1
    }
   },
   "bass-spinning-pluck-bass.ohpepreset": {
    "params": {
-    "gain": 12.4
+    "gain": 15.0
    }
   },
   "drums-circling-hats.ohpepreset": {
    "params": {
-    "gain": -2.3
+    "gain": -2.9
    }
   },
   "drums-hand-drum-ring.ohpepreset": {
@@ -1267,7 +1267,7 @@
   },
   "fx-drone-flyover.ohpepreset": {
    "params": {
-    "gain": 4.6
+    "gain": 2.0
    }
   },
   "fx-grain-vortex.ohpepreset": {
@@ -1277,7 +1277,7 @@
   },
   "fx-thunder-walk.ohpepreset": {
    "params": {
-    "gain": 15.1
+    "gain": 10.0
    }
   },
   "fx-vortex-riser.ohpepreset": {
@@ -1287,7 +1287,7 @@
   },
   "keys-ceiling-harpsichord.ohpepreset": {
    "params": {
-    "gain": 6.1
+    "gain": 5.0
    }
   },
   "keys-orbiting-tines.ohpepreset": {
@@ -1392,7 +1392,7 @@
   },
   "textures-night-insects.ohpepreset": {
    "params": {
-    "gain": 2.9
+    "gain": 3.4
    }
   },
   "textures-rain-canopy.ohpepreset": {

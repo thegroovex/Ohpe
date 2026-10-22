@@ -278,7 +278,7 @@ B("Night Insects", "Textures", "grain",
   "zugleich. Das Modrad streut sie weiter." + HP_DE,
   gr(inst="harp", pos=0.02, size=14, density=40, spray=0.8, pitch=12, reverse=0.0, spread=1.0, scan=1.0, tone=0.55),
   amp(0.4, 1.0, 0.85, 1.5), mod(0.5, 1.0, 0.5, 1.0, 0.0), lfo(3.5, 0.3, "sh", "amp"),
-  space("swarm", "4bars", size=0.8, distance=1.6, spread=120.0, room=0.25, roomsize=0.45, doppler=0.2),
+  space("swarm", "4bars", size=0.7, distance=2.2, spread=120.0, room=0.25, roomsize=0.45, doppler=0.2),
   rev(0.55, 0.14), comp(0.0, 2.0, 2.0, 100.0, 12.0),
   wheel=("engine4", 0.4), voices=6, velsens=0.2)
 
@@ -380,7 +380,7 @@ B("Ceiling Harpsichord", "Keys", "sampler",
   "Seiten. Das Modrad macht den Kiel dunkler." + HP_DE,
   sm(inst="harpsichord", start=0.0, tone=0.5),
   amp(0.004, 1.8, 0.0, 0.6), mod(0.01, 1.0, 0.0, 0.5, 0.0), lfo(0.1, 0.08, "sine", "pan"),
-  space("overhead", "4bars", size=0.55, distance=1.9, spread=40.0, room=0.4, roomsize=0.55, doppler=0.12),
+  space("overhead", "4bars", size=0.45, distance=2.3, spread=40.0, room=0.4, roomsize=0.55, doppler=0.12, rolloff=0.5),
   rev(0.6, 0.16),
   wheel=("engine2", -0.4), voices=10, velsens=0.5)
 
@@ -657,7 +657,7 @@ B("Drone Flyover", "FX", "wavetable",
   "starkem Doppler). Eine Note halten; das Modrad beschleunigt die Überflüge." + HP_DE,
   wt(table="grit", pos=0.3, warp=0.3, tone=0.45, unison=0.4, univoices=4, uniwidth=0.6, keytrack=0.3),
   amp(0.5, 1.0, 1.0, 1.5), mod(1.0, 1.0, 1.0, 1.5, 0.3), lfo(0.3, 0.15, "tri", "timbre"),
-  space("flyby", "4bars", size=0.8, distance=2.5, spread=40.0, elevation=25.0, room=0.3, roomsize=0.6, doppler=0.8),
+  space("flyby", "4bars", size=0.8, distance=3.5, spread=40.0, elevation=25.0, room=0.3, roomsize=0.6, doppler=0.8, rolloff=0.4),
   rev(0.7, 0.16), comp(0.0, 2.0, 2.0, 100.0, 12.0),
   wheel=("pathrate", 0.5), voices=4, velsens=0.25)
 
@@ -690,7 +690,7 @@ B("Thunder Walk", "FX", "analog",
   "mono und ruhig. Das Modrad holt das Gewitter näher." + HP_DE,
   an(shape=0.0, detune=0.0, cutoff=650, reso=0.3, oscmix=0.0, sub=0.2, noise=1.0, drive=0.6, keytrack=0.3),
   amp(1.5, 2.0, 0.9, 3.0), mod(2.0, 2.0, 0.6, 2.0, 0.3), lfo(0.35, 0.4, "sh", "timbre"),
-  space("walk", "8bars", size=0.6, distance=3.5, spread=120.0, room=0.45, roomsize=0.8, doppler=0.05, rolloff=0.5,
+  space("walk", "8bars", size=0.5, distance=4.5, spread=120.0, room=0.45, roomsize=0.8, doppler=0.05, rolloff=0.3,
         lowkeep=150.0),
   rev(0.85, 0.2), comp(0.0, 2.0, 2.0, 100.0, 12.0),
   wheel=("distance", -0.2), voices=4, velsens=0.25, extra_tags=("Textures",))

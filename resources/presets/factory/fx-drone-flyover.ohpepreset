@@ -41,13 +41,13 @@
     "space.pathphase": 0.0,
     "space.azimuth": 0.0,
     "space.elevation": 25.0,
-    "space.distance": 2.5,
+    "space.distance": 3.5,
     "space.spread": 40.0,
     "space.room": 0.3,
     "space.roomsize": 0.6,
     "space.doppler": 0.8,
     "space.air": 0.6,
-    "space.rolloff": 0.7,
+    "space.rolloff": 0.4,
     "space.lowkeep": 120.0,
     "space.glide": 0.06,
     "fx.type": 10,
@@ -81,6 +81,6 @@
     "voices": 4,
     "velsens": 0.25,
     "glide": 0.0,
-    "gain": 4.6
+    "gain": 2.0
   }
 }
