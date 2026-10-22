@@ -409,6 +409,9 @@ private:
     int modPage = 0, rackPage = 0, lastModSignature = -1; ///< 0.7
     int morphPage = 0; ///< p16
     int motionPage = 0; ///< p22
+    int voicePage = 0;  ///< p68
+    int lastVoiceSignature = -1; ///< p68
+    juce::String voiceMapMessage; ///< p68: the last quick map (shown until the view is left)
     int lastMotionSignature = -1; ///< p22: soft key / status refresh of the Motion view
     int lastPadsSignature = -1;   ///< p25: soft key refresh of the Pads view
     int harmonyPage = 0, lastHarmonySignature = -1; ///< p24: the Harmony view

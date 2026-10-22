@@ -92,6 +92,7 @@ list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ResoView.cpp) # p19
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/MorphView.cpp)
 # p22: the motion recorder's lanes (LFO mode, view Motion)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/MotionView.cpp)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/VoiceView.cpp) # p68
 # p25: the performance pads (Effects mode, view Pads)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/PadsView.cpp)
 # p26: the living display (the sound as a 3D object in the display's visual area)
