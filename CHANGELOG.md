@@ -7,6 +7,18 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Learning breed (p69): the BREED key learns locally from use – time played with notes, saved, loaded again,
+  favourited, kept, quickly skipped (negative) – and keeps a small taste profile per engine. BREED / AGAIN breed more
+  candidates and show the best-scoring ones, mutation leans towards the liked region, the die's parent B follows the
+  taste. Breeding view foot row: LEARN on/off, CURIOSITY 0–100 % (100 % = unbiased), WHY (top learned traits), RESET.
+  Levels stay matched, safety caps stay. New local file `Taste/taste.json` (format `taste` 1); nothing is sent anywhere.
+- DE: Lernende Zucht (p69): die ZUCHT-Taste lernt lokal aus der Nutzung – Spielzeit mit Noten, gespeichert, wieder
+  geladen, Favorit, behalten, schnell übersprungen (negativ) – und führt ein kleines Geschmacksprofil pro Engine.
+  ZÜCHTEN / WEITER züchten mehr Kandidaten und zeigen die bestbewerteten, die Mutation neigt sich zum gemochten
+  Bereich, der Würfel-Elternteil B folgt dem Geschmack. Fußzeile der Zucht-Ansicht: LERNEN an/aus, NEUGIER 0–100 %
+  (100 % = unbeeinflusst), WARUM (stärkste gelernte Merkmale), VERGESSEN. Pegel bleiben angeglichen, Sicherheitsgrenzen
+  bleiben. Neue lokale Datei `Taste/taste.json` (Format `taste` 1); nichts wird gesendet.
+
 - EN: First-start tour (p64): four short steps over the plate (parts, preset strip and LIBRARY; encoders, soft keys
   and the FX editor; tape, sequencer, tempo and key; help, settings and the Grid-Controller), English and German, in
   both skins. Shown once on the first standalone start and the first plug-in window, skippable (SKIP TOUR / Esc),
