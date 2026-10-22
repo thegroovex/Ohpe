@@ -24,7 +24,7 @@ juce::String primaryTitle (ui::Mode m, EngineType t)
 {
     // what the header must always show in full: the engine name on the Synth page, the mode name elsewhere
     if (m == ui::Mode::Synth) return i18n::upper (i18n::pick (engineTypeInfo (t).nameEn, engineTypeInfo (t).nameDe));
-    return i18n::upper (tr (ui::modeInfo (m).nameEn));
+    return i18n::upper (i18n::tr (ui::modeInfo (m).nameEn));
 }
 } // namespace
 
