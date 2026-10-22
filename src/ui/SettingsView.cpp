@@ -1226,7 +1226,10 @@ void SettingsView::paintUpdates (juce::Graphics& g, juce::Rectangle<float> a)
 
 void SettingsView::paintHelp (juce::Graphics& g, juce::Rectangle<float> a)
 {
-    const float u = unit(), h = u * 3.0f;
+    const float u = unit();
+    // p70: the topics and the tour key always fit the page - the rows get a little lower when there are many topics
+    const float fit = juce::jmin (1.0f, a.getHeight() / ((float) (numHelpTopics() + 1) * u * 3.6f + u * 0.6f));
+    const float h = u * 3.0f * fit, gap = u * 0.6f * fit;
     float y = a.getY();
     const float listW = u * 24.0f;
     for (int t = 0; t < numHelpTopics(); ++t)
@@ -1234,9 +1237,9 @@ void SettingsView::paintHelp (juce::Graphics& g, juce::Rectangle<float> a)
         const juce::Rectangle<float> r { a.getX(), y, listW, h };
         const bool on = t == topic;
         chip (g, r, helpTitle (t), on, colour::sunYellow, [this, t] { setHelpTopic (t); });
-        y += h + u * 0.6f;
+        y += h + gap;
     }
-    y += u * 0.6f; // p64: the first-start tour again
+    y += gap; // p64: the first-start tour again
     chip (g, { a.getX(), y, listW, h }, i18n::upper (tr ("Show tour")), false, colour::sunYellow, [this] { if (onShowTour) onShowTour(); });
     const juce::Rectangle<float> text { a.getX() + listW + u * 2.5f, a.getY(), a.getWidth() - listW - u * 2.5f, a.getHeight() - u * 3.0f };
     g.setColour (colour::displayText);
