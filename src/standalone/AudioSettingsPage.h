@@ -37,6 +37,8 @@ private:
 
     juce::AudioDeviceManager& dm;
     OhpeProcessor& proc;
+    juce::Label inputLabel; ///< p68: audio input (Voice Control, tape, bounce)
+    juce::ComboBox inputBox;
     juce::Label typeLabel, deviceLabel, rateLabel, bufferLabel, latencyLabel, latencyValue, routingLabel, routingInfo, midiLabel;
     juce::ComboBox typeBox, deviceBox, rateBox, bufferBox;
     juce::OwnedArray<juce::ToggleButton> midiInputs;

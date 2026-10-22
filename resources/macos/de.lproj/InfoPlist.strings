@@ -1,0 +1,2 @@
+/* p68: Mikrofon-Berechtigung (Stimmsteuerung, Band-Aufnahme, Bounce) */
+"NSMicrophoneUsageDescription" = "Ohpe nutzt den gewählten Audio-Eingang, damit deine Stimme den Klang steuern kann (Stimmsteuerung) und du ihn auf das Band aufnehmen kannst. Der Eingang wird nur auf deinem Computer ausgewertet und nirgendwohin gesendet.";

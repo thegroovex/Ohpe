@@ -214,11 +214,21 @@ public:
         setup.useDefaultInputChannels = false;
         juce::Array<juce::StandalonePluginHolder::PluginInOuts> channels;
         juce::StandalonePluginHolder::PluginInOuts io;
-        io.numIns = 0;
+        io.numIns = 2; // p68: an input (Voice Control, tape, bounce); none is opened until one is chosen in the settings
         io.numOuts = 18;
         channels.add (io);
         const bool unclean = beginSession(); // p63: before the holder loads the last state (a crash while loading counts)
         auto holder = std::make_unique<juce::StandalonePluginHolder> (appProperties.getUserSettings(), false, juce::String(), &setup, channels, true);
+        holder->getMuteInputValue().setValue (false); // p68: Ohpe never passes the input through (Voice Monitor is off by default)
+        { // p68: no input device until one is chosen (no microphone prompt at the first start)
+            auto& dm = holder->deviceManager;
+            auto s = dm.getAudioDeviceSetup();
+            if (s.inputDeviceName.isNotEmpty() && s.inputChannels.isZero())
+            {
+                s.inputDeviceName = {};
+                dm.setAudioDeviceSetup (s, true);
+            }
+        }
         window = std::make_unique<OhpeWindow> ("Ohpe", std::move (holder));
         window->setVisible (true);
         offerRecovery (unclean);

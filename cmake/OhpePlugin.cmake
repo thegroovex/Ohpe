@@ -133,6 +133,10 @@ juce_add_plugin(Ohpe
     NEEDS_MIDI_OUTPUT FALSE
     IS_MIDI_EFFECT FALSE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
+    # p68: the standalone app's audio input (Voice Control, tape, bounce); localised in resources/macos/*.lproj
+    MICROPHONE_PERMISSION_ENABLED TRUE
+    MICROPHONE_PERMISSION_TEXT "Ohpe uses the audio input you choose so your voice can control the sound (Voice Control) and so you can record it to the tape. The input is analysed on your computer and never sent anywhere."
+    PLIST_TO_MERGE "<plist><dict><key>CFBundleLocalizations</key><array><string>en</string><string>de</string></array></dict></plist>"
     VST3_CATEGORIES Instrument Synth
     AU_MAIN_TYPE kAudioUnitType_MusicDevice
     COPY_PLUGIN_AFTER_BUILD ${OHPE_COPY_PLUGIN}
@@ -158,6 +162,14 @@ elseif(WIN32)
 endif()
 
 target_sources(Ohpe PRIVATE ${OHPE_PLUGIN_SOURCES} ${CMAKE_SOURCE_DIR}/src/standalone/StandaloneApp.cpp)
+# p68: localised microphone permission text (EN / DE) inside the app bundle (copied before JUCE signs it)
+if(APPLE AND TARGET Ohpe_Standalone)
+    foreach(OHPE_LPROJ en de)
+        set(OHPE_STRINGS ${CMAKE_SOURCE_DIR}/resources/macos/${OHPE_LPROJ}.lproj/InfoPlist.strings)
+        set_source_files_properties(${OHPE_STRINGS} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/${OHPE_LPROJ}.lproj HEADER_FILE_ONLY TRUE)
+        target_sources(Ohpe_Standalone PRIVATE ${OHPE_STRINGS})
+    endforeach()
+endif()
 target_compile_definitions(Ohpe PUBLIC ${OHPE_DEFINES} JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1)
 target_include_directories(Ohpe PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(Ohpe

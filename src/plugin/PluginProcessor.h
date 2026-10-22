@@ -200,6 +200,9 @@ public:
     keys::KeyScale keyScale() const noexcept { return ohpeCore.keyScale(); }
     void setKeyFromUi (int root, int scale);
     void setScaleLockFromUi (bool on, int mode);
+    /** p68 (message thread): Voice Control's quick map "Vowel -> Filter + Morph" for part `part` (0-based); returns how
+        many of the three routings found a slot (0 = the part's matrix is full). */
+    int applyVoiceQuickMap (int part);
 
     /** UI state stored with the session (language, mode, page). */
     juce::var uiState;
@@ -288,7 +291,7 @@ private:
     int syncSourceParam = -1, tempoParam = -1;
 
     // 0.3: remote controls
-    static constexpr int numTriggers = 30; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*, p23: + bounce.go, p24: + harmony.take / clear, p38: + tape.edit.clear / clearall, p42: + tape.edit.loop*
+    static constexpr int numTriggers = 34; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*, p23: + bounce.go, p24: + harmony.take / clear, p38: + tape.edit.clear / clearall, p42: + tape.edit.loop*
     void setPlainFromUi (const char* id, float plain);
     juce::CriticalSection transportLock;
     juce::String transportMessage;

@@ -3,6 +3,7 @@
 #include "PluginProcessor.h"
 
 #include "ParameterBridge.h"
+#include "Localisation.h"
 #include "TapeIO.h"
 #include "model/StateSerializer.h"
 #include "tape/TapeFile.h"
@@ -46,7 +47,9 @@ const char* const* triggerIds()
                                        Core::Ids::tapeClearTrack, Core::Ids::tapeClearAll,
                                        // p42: the tape loop by hand
                                        Core::Ids::tapeLoopSetIn, Core::Ids::tapeLoopSetOut, Core::Ids::tapeLoopUndo, Core::Ids::tapeLoopRedo,
-                                       Core::Ids::tapeLoopHalf, Core::Ids::tapeLoopDouble };
+                                       Core::Ids::tapeLoopHalf, Core::Ids::tapeLoopDouble,
+                                       // p68: Voice Control quick map per part
+                                       "p1.voice.map", "p2.voice.map", "p3.voice.map", "p4.voice.map" };
     return ids;
 }
 } // namespace
@@ -369,6 +372,17 @@ void OhpeProcessor::pollRemoteControls()
             else if (id == Core::Ids::harmonyTake) takeHarmonyKey();    // p24
             else if (id == Core::Ids::harmonyClear) ohpeCore.harmony().requestClear(); // p24
             else if (id == Core::Ids::tapeClearAll) tapeClearAllRequests.fetch_add (1); // p38: the editor asks first
+            else if (id.endsWith (".voice.map")) // p68: quick map; the display says what happened
+            {
+                const int part = id.substring (1, 2).getIntValue() - 1;
+                const int placed = applyVoiceQuickMap (part);
+                {
+                    const juce::ScopedLock sl (transportLock);
+                    transportMessage = placed > 0 ? i18n::pick ("Voice: vowel \xe2\x86\x92 filter + morph", "Stimme: Vokal \xe2\x86\x92 Filter + Morph")
+                                                  : i18n::pick ("Voice: no free routing", "Stimme: keine freie Zuweisung");
+                }
+                transportMessages.fetch_add (1);
+            }
             else if (id.startsWith ("tape.edit.loop")) // p42: the loop by hand; the display shows what happened
             {
                 const auto msg = tapeLoopAction (id);
@@ -632,6 +646,15 @@ void OhpeProcessor::setScaleLockFromUi (bool on, int mode)
 {
     setPlainFromUi (Core::Ids::keyLock, on ? 1.0f : 0.0f);
     setPlainFromUi (Core::Ids::keyLockMode, (float) juce::jlimit (0, keys::numLockModes - 1, mode));
+}
+
+// ---------------------------------------------------------------- p68: Voice Control
+int OhpeProcessor::applyVoiceQuickMap (int part)
+{
+    int placed = 0;
+    const auto changes = voice::VoiceControl::quickMap (ohpeCore.params(), juce::jlimit (0, Core::numParts - 1, part), &placed);
+    for (const auto& [id, v] : changes) setPlainFromUi (id.c_str(), v);
+    return placed;
 }
 
 // ---------------------------------------------------------------- p11: tape transport
