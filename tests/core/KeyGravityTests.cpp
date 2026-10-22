@@ -85,11 +85,11 @@ double inKeyShare (const std::vector<float>& v, uint16_t mask)
 }
 } // namespace
 
-TEST_CASE ("p66 gravity: parameters appended after the grid keyboard, defaults off; matrix targets after Amp Release")
+TEST_CASE ("p66 gravity: parameters appended after the p68 voice block, defaults off; matrix targets after Amp Release")
 {
     auto owner = std::make_unique<Core>();
     const auto& reg = owner->params();
-    int expect = reg.indexOf ("harmony.kb.fixed") + 1;
+    int expect = reg.indexOf ("p4.voice.map") + 1; // p67 tape memory + p68 voice control merged first
     REQUIRE (expect > 0);
     for (int p = 1; p <= Core::numParts; ++p)
         for (const char* k : { "amt", "target", "glide", "curve", "formant", "mix", "quality" })

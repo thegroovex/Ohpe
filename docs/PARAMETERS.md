@@ -1057,9 +1057,45 @@ They act on the on-screen grid keyboard and the Grid-Controller pads alike, in e
 `harmony.kb.layout` value 3 is now **Sequential** (+1 right, +8 up). Projects and presets from before that stored 3
 (the old *In Key* layout) and no `harmony.kb.inkey` open as **Fourths + In Key**. No new matrix sources or targets.
 
+## p67 – Tape memory
+
+Appended at the very end of the list (after `harmony.kb.fixed`), 5 IDs, group "tapemem" (`tapemem.go`: "remote"),
+not part of presets, all MIDI-mappable. Guides: [English](en/TAPE-MEMORY.md) · [Deutsch](de/TAPE-GEDAECHTNIS.md).
+A capture adds no sound parameters: it loads its audio into the part's Sampler (saved inside the session, state section
+`"tapememory"`). No modulation-matrix changes.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `tapemem.len` | Memory Length | Gedächtnislänge | 5 s, 10 s, 20 s, 30 s | 30 s |
+| `tapemem.src` | Memory Source | Gedächtnisquelle | Main Out, Part 1 … Part 4 / Hauptausgang, Part 1 … Part 4 | Main Out |
+| `tapemem.mode` | Capture Mode | Merk-Modus | Chromatic, Slices / Chromatisch, Slices | Chromatic |
+| `tapemem.to` | Capture Target | Merk-Ziel | Edit Part, Part 1 … Part 4 / Bearbeiteter Part, Part 1 … Part 4 | Edit Part |
+| `tapemem.go` | Capture | Merken | trigger | off |
+
+## p68 – Voice Control / Stimmsteuerung
+
+Appended after `tapemem.go` (p67); automatable and MIDI-mappable; the player's setup – **not** stored in part presets
+or projects. See [Voice Control](en/VOICE-CONTROL.md) / [Stimmsteuerung](de/STIMMSTEUERUNG.md).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `voice.on` | Voice Control | Stimmsteuerung | Off / On | On |
+| `voice.gain` | Voice Input Gain | Stimme Eingangspegel | −24 … +24 dB | 0 dB |
+| `voice.gate` | Voice Gate | Stimme Schwelle | −80 … −20 dBFS | −50 dBFS |
+| `voice.smooth` | Voice Smoothing | Stimme Glättung | 1 … 250 ms | 20 ms |
+| `voice.pitch` | Voice Pitch Tracking | Stimme Tonhöhe erkennen | Off / On | Off |
+| `voice.monitor` | Voice Monitor | Stimme abhören | Off / On (input on the main output) | Off |
+| `p1.voice.map` … `p4.voice.map` | Part N Voice Quick Map | Part N Stimme Schnellzuweisung | trigger: Vowel Y → Timbre, Vowel X → Morph X, Vowel Y → Morph Y | Off |
+
+New matrix **sources** (appended after Key + Bend 33; Part scope, 0 without input): 34 Voice Level (`voicelevel`),
+35 Vowel X (`vowelx`, bipolar), 36 Vowel Y (`vowely`, bipolar), 37 Voice Brightness (`voicebright`), 38 Voice
+Noisiness (`voicenoise`), 39 Voice Pitch (`voicepitch`), 40 Voice Onset (`voiceonset`). No new targets.
+Plug-in buses unchanged: the existing optional stereo input bus (off by default) is the voice input; the standalone
+app's input device is chosen in *Settings > Audio* (none by default).
+
 ## p66 – Key Gravity per part
 
-Appended after `harmony.kb.fixed`, for each part N = 1 … 4 in this order (group "partN/gravity"). Guides:
+Appended after `p4.voice.map` (p68), for each part N = 1 … 4 in this order (group "partN/gravity"). Guides:
 [English](en/KEY-GRAVITY.md) · [Deutsch](de/TONART-GRAVITATION.md).
 
 | ID | English | Deutsch | Range | Default |

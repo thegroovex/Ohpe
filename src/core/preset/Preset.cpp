@@ -70,19 +70,21 @@ std::vector<float> arpSnapshot (const ParamRegistry& reg)
 static bool isMotionId (const std::string& localId) noexcept { return startsWith (localId, "motion."); }
 
 /** p41: the 3D switch ("space.mode") is not stored in presets - it is set from space.on and the monitoring after a load. */
-static bool isSpaceSwitchId (const std::string& localId) noexcept { return localId == "space.mode"; }
+static bool isSpaceSwitchId (const std::string& localId) noexcept { return localId == "space.mode" || localId == "voice.map"; } // p68: a trigger
 
 bool isExcludedFromProject (const std::string& id) noexcept
 {
     return startsWith (id, "lib.") || startsWith (id, "ui.") || startsWith (id, "tape.edit.") || startsWith (id, "tape.tx.") || startsWith (id, "sync.")
         || startsWith (id, "space.")  // 1.0: monitoring (headphones / speakers, mono check) belongs to the listener
         || startsWith (id, "perf.")    // p14: wheel positions are performance, not sound
+        || startsWith (id, "tapemem.") // p67: tape memory is a tool (its result is the part's sample)
         || startsWith (id, "bounce.")  // p23: bounce to engine is a tool (its result is the part's sample)
         || startsWith (id, "metro.")   // p39: metronome / count-in belong to the player
         || (id.size() > 13 && id.compare (id.size() - 13, 13, ".motion.clear") == 0) // p22: a trigger
         || (id.size() > 11 && id.compare (id.size() - 11, 11, ".space.mode") == 0)   // p41: the 3D switch follows space.on + monitoring
         || id == "pads.stutter" || id == "pads.stop" || id == "pads.sweep" || id == "pads.freeze" // p25: held pads are performance
-        || id == "harmony.take" || id == "harmony.clear"; // p24: triggers
+        || id == "harmony.take" || id == "harmony.clear" // p24: triggers
+        || startsWith (id, "voice.") || (id.size() > 10 && id.compare (id.size() - 10, 10, ".voice.map") == 0); // p68: the player's input setup, a trigger
 }
 
 std::string engineIdOfPart (const ParamRegistry& reg, int partIndex)

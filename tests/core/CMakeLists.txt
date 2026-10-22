@@ -80,8 +80,12 @@ target_sources(ohpe_core_tests PRIVATE UserTableTests.cpp)
 target_sources(ohpe_core_tests PRIVATE BreedTests.cpp)
 # p37: the RANDOM key (constrained rolls, loudness normalisation)
 target_sources(ohpe_core_tests PRIVATE RandomSoundTests.cpp)
+# p69: learning breed (taste profile)
+target_sources(ohpe_core_tests PRIVATE TasteTests.cpp)
 # p23: bounce to engine
 target_sources(ohpe_core_tests PRIVATE BounceTests.cpp)
+# p67: tape memory
+target_sources(ohpe_core_tests PRIVATE TapeMemoryTests.cpp)
 # p22: the motion recorder
 target_sources(ohpe_core_tests PRIVATE MotionTests.cpp)
 
@@ -124,3 +128,4 @@ target_sources(ohpe_core_tests PRIVATE ArpSustainTests.cpp) # p60: sustain / sos
 target_sources(ohpe_core_tests PRIVATE RobustnessTests.cpp) # p63: loaders survive damaged files
 target_sources(ohpe_core_tests PRIVATE AudioStressTests.cpp) # p63: sample rates, buffer sizes, denormals, output guard, soak
 target_sources(ohpe_core_tests PRIVATE FormatTests.cpp) # p62: format freeze (fixtures in tests/formats)
+target_sources(ohpe_core_tests PRIVATE VoiceControlTests.cpp) # p68: Voice Control (live input -> modulation sources)

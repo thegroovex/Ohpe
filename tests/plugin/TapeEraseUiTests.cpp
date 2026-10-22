@@ -87,10 +87,10 @@ TEST_CASE ("tape erase: twelve keys in two rows; CLEAR TRACK at once, CLEAR ALL 
     e.setLanguage (i18n::Language::English);
     e.selectMode (ui::Mode::Tape);
     CHECK (d.softKeyRows() == 2);
-    for (int k = 0; k < 12; ++k) CHECK_FALSE (d.softKeyArea (k).isEmpty());
-    CHECK (d.softKeyArea (12).isEmpty());
-    CHECK (d.softKeyArea (6).getY() > d.softKeyArea (0).getBottom() - 1.0f); // CLEAR TRACK opens the second row
-    CHECK (d.softKeyArea (11).getRight() == doctest::Approx (d.softKeyArea (5).getRight()));
+    for (int k = 0; k < 14; ++k) CHECK_FALSE (d.softKeyArea (k).isEmpty()); // p67: + CAPTURE (row 1), MEMORY (row 2)
+    CHECK (d.softKeyArea (14).isEmpty());
+    CHECK (d.softKeyArea (7).getY() > d.softKeyArea (0).getBottom() - 1.0f); // CLEAR TRACK opens the second row
+    CHECK (d.softKeyArea (13).getRight() == doctest::Approx (d.softKeyArea (6).getRight()));
     for (int t = 0; t < TapeMachine::numTracks; ++t) // the lanes stay above the keys
         CHECK (d.trackLane (t).getBottom() <= d.softKeyArea (0).getY());
 

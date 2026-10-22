@@ -17,6 +17,7 @@
 #include "model/StereoFifo.h"
 #include "morph/MorphSpace.h"
 #include "motion/MotionRecorder.h"
+#include "voice/VoiceControl.h"
 #include "perform/PerformancePads.h"
 #include "sample/SampleData.h"
 #include "harmony/HarmonyBrain.h"
@@ -30,6 +31,8 @@
 #include "tape/TapeMachine.h"
 
 #include <array>
+#include "tapemem/TapeMemory.h"
+
 #include <atomic>
 #include <map>
 #include <memory>
@@ -78,6 +81,9 @@ public:
     drum::DrumKit& drumKit() noexcept { return drums; }   ///< mixer source "drum", MIDI channel 10
     TapeMachine& tape() noexcept { return tapeMachine; }             ///< 0.2: eight-track tape
     /** p39: the metronome (own synthesised click, "metro.*"); the core schedules its clicks. */
+    /** p67: the tape memory ring buffer (audio thread writes, any other thread snapshots). */
+    tapemem::RingBuffer& tapeMemory() noexcept { return tapeMem; }
+    const tapemem::RingBuffer& tapeMemory() const noexcept { return tapeMem; }
     Metronome& metronome() noexcept { return metro; }
     const Metronome& metronome() const noexcept { return metro; }
     /** p39 (set-up thread): the standalone app clicks whenever the metronome is on, a plug-in only with
@@ -106,6 +112,8 @@ public:
     /** p22, tests: the values the last block played with (after locks, motion lanes; the matrix may have moved some). */
     float blockValue (int registryIndex) const noexcept { return snapshot[registryIndex]; }
     const MotionRecorder& motion() const noexcept { return motionRec; }
+    /** p68: Voice Control - the live input analysed into matrix sources (UI values are atomics, any thread). */
+    const voice::VoiceControl& voiceControl() const noexcept { return voiceCtl; }
     /** p25: the performance pads on the main mix (states and meters for the display are atomics, any thread). */
     const PerformancePads& pads() const noexcept { return perfPads; }
     /** p24: the harmony brain (scale and chord memory of all parts; published state is atomics, any thread). */
@@ -312,6 +320,12 @@ public:
         // p24: the harmony brain - "harmony.memory / hold / take / clear / kb.layout", per part "harmony.pN.follow"
         static constexpr const char* harmonyTake = "harmony.take";   ///< trigger (message thread: key.root / key.scale)
         static constexpr const char* harmonyClear = "harmony.clear"; ///< trigger (the brain forgets)
+        // p67: tape memory - the last seconds of the output, CAPTURE turns them into a Sampler instrument
+        static constexpr const char* tapememLen = "tapemem.len";   ///< 5 / 10 / 20 / 30 s
+        static constexpr const char* tapememSrc = "tapemem.src";   ///< Main Out, Part 1-4
+        static constexpr const char* tapememMode = "tapemem.mode"; ///< Chromatic, Slices
+        static constexpr const char* tapememTo = "tapemem.to";     ///< Edit Part, Part 1-4
+        static constexpr const char* tapememGo = "tapemem.go";     ///< trigger: capture now (message thread)
     };
 
 private:
@@ -363,6 +377,7 @@ private:
     uint64_t tapeGrainRevision = 0;  ///< p28: tape content the region was built from (0 = none)
     int tapeGrainTrack = -2;         ///< p28: track it was built from (-1 = mix)
     MotionRecorder motionRec; ///< p22
+    voice::VoiceControl voiceCtl; ///< p68
     PerformancePads perfPads; ///< p25 (the mixer runs it in the master chain)
     HarmonyBrain harmonyBrain; ///< p24
     Mixer mix;
@@ -400,6 +415,8 @@ private:
     std::array<NoteShaper, numParts> liveShaper {}, seqShaper {};
     int stepDrumsIndex = -1, euclidDrumsIndex = -1, orbitDrumsIndex = -1; ///< 0.4: sequencers -> drum kit
     int spaceOutIndex = -1, monoCheckIndex = -1, lastMonitor = -1; ///< 1.0
+    tapemem::RingBuffer tapeMem; ///< p67
+    int tapememSrcIndex = -1;    ///< p67
     int perfBendIndex = -1, perfModIndex = -1, editPartIndex = -1; ///< p14
     float perfBendSent = 0.0f, perfModSent = 0.0f;
     std::atomic<float> wheelMidiBend { 0.0f }, wheelMidiMod { 0.0f };          ///< p28

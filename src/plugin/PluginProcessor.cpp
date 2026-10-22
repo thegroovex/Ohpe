@@ -3,6 +3,7 @@
 #include "PluginProcessor.h"
 
 #include "ParameterBridge.h"
+#include "Localisation.h"
 #include "TapeIO.h"
 #include "model/StateSerializer.h"
 #include "tape/TapeFile.h"
@@ -46,7 +47,11 @@ const char* const* triggerIds()
                                        Core::Ids::tapeClearTrack, Core::Ids::tapeClearAll,
                                        // p42: the tape loop by hand
                                        Core::Ids::tapeLoopSetIn, Core::Ids::tapeLoopSetOut, Core::Ids::tapeLoopUndo, Core::Ids::tapeLoopRedo,
-                                       Core::Ids::tapeLoopHalf, Core::Ids::tapeLoopDouble };
+                                       Core::Ids::tapeLoopHalf, Core::Ids::tapeLoopDouble,
+                                       // p67: tape memory
+                                       Core::Ids::tapememGo,
+                                       // p68: Voice Control quick map per part
+                                       "p1.voice.map", "p2.voice.map", "p3.voice.map", "p4.voice.map" };
     return ids;
 }
 } // namespace
@@ -90,6 +95,7 @@ OhpeProcessor::OhpeProcessor()
         triggerPresses[(size_t) t].store (0);
     }
     presetManager = std::make_unique<PresetManager> (*this);
+    tasteStore = std::make_unique<TasteStore> (*this); // p69
     // p40: start with the first factory preset, not with the plain defaults ("Init"); host state / a stored session replace it
     if (startWithFactorySound.load()) presetManager->loadStartSound();
     presetUidCache = presetManager->currentUids();
@@ -101,6 +107,7 @@ OhpeProcessor::OhpeProcessor()
     };
     // p23: a bounce switches the part's engine and its sample settings like the UI (host automation follows)
     bounceManager.setParam = [this] (const std::string& id, float plain) { setPlainFromUi (id.c_str(), plain); };
+    tapeMemoryManager.setParam = bounceManager.setParam; // p67
     syncSpaceModes(); // p41: the 3D switches start from the current values (the link remembers them)
     startTimerHz (20);
 }
@@ -308,9 +315,11 @@ void OhpeProcessor::timerCallback()
     samples.timerTick();
     userTableManager.timerTick(); // p20
     bounceManager.timerTick();    // p23
+    tapeMemoryManager.timerTick(); // p67: a finished capture analysis goes into its part
     pollRemoteControls();
     watchTapeLoop (juce::Time::getMillisecondCounterHiRes() * 0.001); // p42: loop range rules, loop undo steps
     applyPendingPresetUid(); // p40
+    tasteStore->tick (juce::Time::getMillisecondCounterHiRes() * 0.001); // p69: learning breed signals
     {
         auto uids = presetManager->currentUids();
         const juce::SpinLock::ScopedLockType sl (presetUidLock);
@@ -367,9 +376,21 @@ void OhpeProcessor::pollRemoteControls()
             else if (id == Core::Ids::libBreedGo) breedRequests[1].fetch_add (1);
             else if (id == Core::Ids::libBreedNext) breedRequests[2].fetch_add (1);
             else if (id == Core::Ids::bounceGo) bounceManager.bounce(); // p23: the edit part, the bounce settings
+            else if (id == Core::Ids::tapememGo) tapeMemoryManager.capture(); // p67: the tape memory settings
             else if (id == Core::Ids::harmonyTake) takeHarmonyKey();    // p24
             else if (id == Core::Ids::harmonyClear) ohpeCore.harmony().requestClear(); // p24
             else if (id == Core::Ids::tapeClearAll) tapeClearAllRequests.fetch_add (1); // p38: the editor asks first
+            else if (id.endsWith (".voice.map")) // p68: quick map; the display says what happened
+            {
+                const int part = id.substring (1, 2).getIntValue() - 1;
+                const int placed = applyVoiceQuickMap (part);
+                {
+                    const juce::ScopedLock sl (transportLock);
+                    transportMessage = placed > 0 ? i18n::pick ("Voice: vowel \xe2\x86\x92 filter + morph", "Stimme: Vokal \xe2\x86\x92 Filter + Morph")
+                                                  : i18n::pick ("Voice: no free routing", "Stimme: keine freie Zuweisung");
+                }
+                transportMessages.fetch_add (1);
+            }
             else if (id.startsWith ("tape.edit.loop")) // p42: the loop by hand; the display shows what happened
             {
                 const auto msg = tapeLoopAction (id);
@@ -635,6 +656,15 @@ void OhpeProcessor::setScaleLockFromUi (bool on, int mode)
     setPlainFromUi (Core::Ids::keyLockMode, (float) juce::jlimit (0, keys::numLockModes - 1, mode));
 }
 
+// ---------------------------------------------------------------- p68: Voice Control
+int OhpeProcessor::applyVoiceQuickMap (int part)
+{
+    int placed = 0;
+    const auto changes = voice::VoiceControl::quickMap (ohpeCore.params(), juce::jlimit (0, Core::numParts - 1, part), &placed);
+    for (const auto& [id, v] : changes) setPlainFromUi (id.c_str(), v);
+    return placed;
+}
+
 // ---------------------------------------------------------------- p11: tape transport
 void OhpeProcessor::setPlainFromUi (const char* id, float plain)
 {
@@ -869,6 +899,7 @@ void OhpeProcessor::getStateInformation (juce::MemoryBlock& dest)
     pullHostParametersIntoRegistry();
     samples.storeInState();
     userTableManager.storeInState(); // p20
+    if (juce::MessageManager::existsAndIsCurrentThread()) tapeMemoryManager.storeInState(); // p67 (else: the last one stored)
     // p40: the loaded preset's uid travels with the session (a copy: the editor owns uiState)
     // p50: one uid per part ("presets"); "preset" keeps the edit part's for older versions
     std::array<std::string, 4> uids;
@@ -922,6 +953,7 @@ void OhpeProcessor::setStateInformation (const void* data, int size)
         tapeio::restoreTape (ohpeCore, tape, tapeSize);
         samples.restoreFromState();
         userTableManager.restoreFromState(); // p20
+        tapeMemoryManager.restoreFromState(); // p67: after "samples" (which clears every assignment)
     }
     catch (...)
     {

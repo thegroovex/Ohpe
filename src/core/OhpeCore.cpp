@@ -75,6 +75,7 @@ Core::Core()
     keyRootIndex = registry.indexOf (Ids::keyRoot);
     spaceOutIndex = registry.indexOf (Ids::spaceOut);
     monoCheckIndex = registry.indexOf (Ids::spaceMonoCheck);
+    tapememSrcIndex = registry.indexOf (Ids::tapememSrc); // p67
     keyScaleIndex = registry.indexOf (Ids::keyScale);
     keyLockIndex = registry.indexOf (Ids::keyLock);         // p45
     keyLockModeIndex = registry.indexOf (Ids::keyLockMode); // p45
@@ -91,6 +92,7 @@ Core::Core()
     motionRec.bind (registry, snapshot); // p22
     perfPads.bind (registry);            // p25
     harmonyBrain.bind (registry);        // p24
+    voiceCtl.bind (registry);            // p68
     lockStorage.reserve (1024);
     seqOut.locks = &lockStorage;
     seqOut.maxLocks = 1024;
@@ -133,9 +135,11 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     motionRec.prepare (sr);         // p22
     perfPads.prepare (sr);          // p25
     harmonyBrain.prepare (sr);      // p24
+    voiceCtl.prepare (sr);          // p68
     drums.prepare (sr, chunk);
     drumAlign.prepare (sr, chunk); // p66
     mix.prepare (sr, chunk);
+    tapeMem.prepare (sr); // p67: allocated once per sample rate (30 s, 16 bit)
     stepSeq.prepare (sr, maxBlock);
     euclid.prepare (sr, maxBlock);
     arp.prepare (sr, maxBlock);
@@ -229,6 +233,7 @@ void Core::reset() noexcept
     motionRec.reset(); // p22
     perfPads.reset();  // p25
     harmonyBrain.reset(); // p24
+    voiceCtl.reset();     // p68
     drums.reset();
     drumAlign.reset(); // p66
     mix.reset();
@@ -700,6 +705,9 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     for (int p = 0; p < numParts; ++p) // p22: the lanes as matrix sources Motion 1 .. 4
         for (int l = 0; l < MotionRecorder::numLanes; ++l)
             parts[(size_t) p]->modMatrix().setSourceValue (mod::SrcMotion1 + l, motionRec.sourceValue (p, l));
+    voiceCtl.process (snapshot, inputL, inputR, numSamples); // p68: the live input as matrix sources Voice Level .. Onset
+    for (auto& p : parts)
+        for (int k = 0; k < voice::numValues; ++k) p->modMatrix().setSourceValue (mod::SrcVoiceLevel + k, voiceCtl.sourceValue (k));
     perfPads.pullParams (snapshot); // p25
     for (auto& p : parts) // p25: the pads as matrix sources (as of the last block)
     {
@@ -765,6 +773,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         masterRack.setMonitorMode (mon);
     }
     const bool monoCheck = monoCheckIndex >= 0 && snapshot.getBool (monoCheckIndex);
+    const int memSource = tapememSrcIndex >= 0 ? snapshot.getInt (tapememSrcIndex) : 0; // p67
     notesOutOn = snapshot.getBool (notesOutIndex);
     midiOut.clear();
 
@@ -906,6 +915,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
             src.left[(size_t) (source::part1 + p)] = partL[(size_t) p].data();
             src.right[(size_t) (source::part1 + p)] = partR[(size_t) p].data();
             scopeTap.offer (p, partL[(size_t) p].data(), partR[(size_t) p].data(), len); // 0.7: display scope (after the rack)
+            if (memSource == tapemem::SourcePart1 + p) tapeMem.push (partL[(size_t) p].data(), partR[(size_t) p].data(), len); // p67
         }
         drums.render (drumL.data(), drumR.data(), len);
         drumAlign.process (drumL.data(), drumR.data(), len); // p66: in time with the parts (no latency: untouched)
@@ -924,6 +934,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
             for (int i = 0; i < len; ++i)
                 out.left[0][i] = out.right[0][i] = 0.5f * (out.left[0][i] + out.right[0][i]);
         scopeTap.offer (ScopeTap::Master, out.left[0], out.right[0], len); // 0.7: display scope
+        if (memSource == tapemem::SourceMain) tapeMem.push (out.left[0], out.right[0], len); // p67: before the click
         pos = end;
     }
     while (nextEvent < numRouted) dispatch (routed[(size_t) nextEvent++]);
@@ -936,6 +947,8 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     else clockGen.reset();
     midiOut.sortByTime();
 
+    voiceCtl.monitor (outputs.left[0], outputs.right[0], inputL, inputR, numSamples); // p68: off by default (feedback)
+    voiceCtl.publishUi();
     guardOutputs (outputs, numSamples); // p63
     int voices = 0;
     inputL = inputR = nullptr;

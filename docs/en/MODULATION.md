@@ -56,6 +56,19 @@ add up.
 **Per voice** sources have their own value in every voice: with a chord, every note gets its own
 envelope, velocity and random value.
 
+p68 appends the **Voice Control** sources (Part scope, the same in every part; 0 while Voice Control is off or there is
+no input – see [Voice Control](VOICE-CONTROL.md)):
+
+| # | Source | Range | Bipolar | What |
+|---|---|---|---|---|
+| 34 | Voice Level | 0 … 1 | – | the input's level above the gate (1 at about −6 dBFS) |
+| 35 | Vowel X | ±1 | yes | back vowels (U, O) −1 … front vowels (I, E) +1 (second formant) |
+| 36 | Vowel Y | ±1 | yes | closed vowels (I, U) −1 … open (A) +1 (first formant) |
+| 37 | Voice Brightness | 0 … 1 | – | share of the voice's energy above about 2 kHz |
+| 38 | Voice Noisiness | 0 … 1 | – | sibilants and fricatives (s, sh, f, t) high, sung vowels low |
+| 39 | Voice Pitch | 0 … 1 | – | the sung note, C2 = 0 … C6 = 1 (only with pitch tracking on) |
+| 40 | Voice Onset | 0 … 1 | – | 1 at each new syllable or attack, fading in about 80 ms |
+
 ### LFO 2 and LFO 3 (`pN.lfo2.*`, `pN.lfo3.*`)
 
 | Parameter | Values |

@@ -41,6 +41,7 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **Life** | one LIFE control per part keeps held notes evolving: every voice drifts on its own (a few cents of pitch, breathing filter, wandering engine colour, grain scatter) – 0 = static, on every engine, a modulation target – see [Life](docs/en/USER-INTERFACE.md#life) |
 | **Resonator body** | every part can play through a physically modelled body – coupled strings with sympathetic strings tuned to the note or the held chord, a modal plate, an open or closed tube; it follows the keyboard, pitch bend and MPE (pressure rings it, slide moves the excitation point); also as rack effect *Resonator*; 7 presets – see [Resonator](docs/en/RESONATOR.md) |
 | **Morph space** | an XY pad per part between four complete sounds – also across different engines: parameters morph where the sounds share their structure, otherwise the sounds play in parallel and cross-fade at even loudness; play it by mouse, automation, MIDI, the modulation matrix, mod wheel or MPE pressure / slide; 4 morph presets – see [Morph space](docs/en/MORPH.md) |
+| **Voice Control** | sing, hum or talk into an input and your voice moves the sound (not a vocoder – it only modulates): level, vowel (A-E-I-O-U map), brightness, consonants, pitch and syllable onsets as modulation sources, one-press *Vowel → Filter + Morph* – see [Voice Control](docs/en/VOICE-CONTROL.md) |
 | **Motion recorder** | turn a part's knobs while the music runs and up to four movements per part loop as lanes with their own length (1 – 64 sixteenths, polymetric to the pattern); overdub by touching again, depth control, also modulation sources – see [Motion recorder](docs/en/MOTION.md) |
 | **Performance pads** | four pads throw effects on the main mix for live sets – a quantised **stutter** (1/4 … 1/32, triplets), a **tape stop** over 1/8 … 2 bars, a resonant **filter sweep** (low-pass down / high-pass up) and a **reverb freeze** that holds the moment endlessly; hold = momentary, shift-click = latch, MIDI-learnable, matrix sources – see [Performance pads](docs/en/PADS.md) |
 | **Harmony brain** | Ohpe remembers the key and chords you play on any part; other parts follow (snap to the key, the chord tones or the root), the memory feeds three modulation sources, and an isomorphic grid keyboard with MPE (four layouts, one finger per member channel) plays it from the screen – see [Harmony brain](docs/en/HARMONY.md) |
@@ -52,6 +53,7 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **Settings and night skin** | one settings view behind the gear key: language (EN / DE), tooltips and a help overlay, help pages, a low-glare dark skin (or auto with the system), display brightness, animations, window size, MIDI setup (channels, MPE, bend ranges, inputs, clock / sync) and a MIDI learn list to edit or clear mappings, updates and about – saved per user, never in projects – see [Settings](docs/en/SETTINGS.md) |
 | **Preset breeding** | cross two sounds (also across engines – a hybrid keeps the other engine as its layer) with a chosen mutation, hear six children with waveform / brightness thumbnails at their parents' loudness, keep the best and breed further generations with undo; children save to the library as favourites – see [Preset breeding](docs/en/BREEDING.md) |
 | **Bounce to engine** | one BOUNCE key moves a tape track, the tape mix, the loop range or a few bars of the live input into the Grain or Sampler engine of a part – as a seamless endless loop (grains wrap round the seam, held sampler notes sustain it) or a one-shot; bounces are saved as WAV and come back with the session – see [Bounce to engine](docs/en/BOUNCE.md) |
+| **Tape memory** | Ohpe always remembers the last 30 s of its own output; one CAPTURE key (MIDI-mappable, also on the Grid-Controller) turns it into a playable Sampler instrument – chromatic (pitch detected and tuned, root set) or sliced by onsets – saved inside the session, exportable as WAV – see [Tape memory](docs/en/TAPE-MEMORY.md) |
 | **Modulation matrix** | 16 routings per part from 20 sources (three LFOs, three envelopes, velocity, MPE, macros, a sequencer lane …) to pitch, level, pan, 24 engine parameters, the LFOs and every rack slot; rings on the encoders show what moves – see [Modulation](docs/en/MODULATION.md) |
 | **Sync** | host transport in the plug-in; MIDI clock in / out and network tempo sync (Link) in the standalone app |
 | **Multi-out** | every channel can go to the main output or its own stereo output (8 aux outputs) – in the plug-in and in the standalone app |
@@ -147,6 +149,7 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 * [Morph space](docs/en/MORPH.md) – the XY pad between four complete sounds per part
 * [Resonator body](docs/en/RESONATOR.md) – strings, plates and tubes the sound excites, sympathetic strings
 * [Motion recorder](docs/en/MOTION.md) – knob movements per part as looping, polymetric lanes
+* [Voice Control](docs/en/VOICE-CONTROL.md) – your voice as modulation sources (vowel, level, brightness, onsets)
 * [Performance pads](docs/en/PADS.md) – quantised stutter, tape stop, filter sweep and reverb freeze throws
 * [Living display](docs/en/LIVING-DISPLAY.md) – the sound as a 3D object reacting to envelopes, modulation and stereo width
 * [Harmony brain](docs/en/HARMONY.md) – scale and chord memory of all parts, follow modes, the isomorphic MPE grid keyboard
@@ -159,6 +162,7 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 * [Content packs](docs/en/CONTENT-PACKS.md) – install `.ohpepack` files (dialog or drag & drop), checksums, pack manager, library filter; [format](packaging/content/README.md)
 * [Preset breeding](docs/en/BREEDING.md) – cross two sounds, keep the best children, breed generations
 * [Bounce to engine](docs/en/BOUNCE.md) – tape or live input into Grain / Sampler, endless loops
+* [Tape memory](docs/en/TAPE-MEMORY.md) – the last 30 s of the output become an instrument with one key
 * [Modulation matrix](docs/en/MODULATION.md) – routings, sources, targets, LFO 2 / 3, envelope 3, macros
 * [Performance](docs/en/PERFORMANCE.md) – the CPU meter, sleeping silent parts, benchmark numbers, `ohpe_bench`
 * [Robustness and soak tests](docs/en/SOAK-TEST.md) – damaged-file and audio stress tests in CI, the manual 8-hour soak, the crash-safe start

@@ -39,6 +39,7 @@ list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/SampleLoader.cpp)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/UserTables.cpp)
 # p23: bounce to engine (tape / live input -> Grain or Sampler, bounce library)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/BounceToEngine.cpp)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/TapeMemoryManager.cpp) # p67
 
 set(OHPE_DEFINES OHPE_VERSION="${PROJECT_VERSION}" JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0 JUCE_DISPLAY_SPLASH_SCREEN=0)
@@ -71,6 +72,8 @@ list(APPEND OHPE_PLUGIN_SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/ProView.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/LibraryBrowser.cpp
     ${CMAKE_SOURCE_DIR}/src/plugin/PresetManager.cpp)
+# p69: learning breed (local taste profile)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/TasteStore.cpp)
 # 0.7: display views of the modulation matrix and the FX racks
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ModFxViews.cpp)
 # p55: the graphical FX slot editor (Effects mode, Rack / Master)
@@ -92,6 +95,7 @@ list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ResoView.cpp) # p19
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/MorphView.cpp)
 # p22: the motion recorder's lanes (LFO mode, view Motion)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/MotionView.cpp)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/VoiceView.cpp) # p68
 # p25: the performance pads (Effects mode, view Pads)
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/PadsView.cpp)
 # p26: the living display (the sound as a 3D object in the display's visual area)
@@ -133,6 +137,10 @@ juce_add_plugin(Ohpe
     NEEDS_MIDI_OUTPUT FALSE
     IS_MIDI_EFFECT FALSE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
+    # p68: the standalone app's audio input (Voice Control, tape, bounce); localised in resources/macos/*.lproj
+    MICROPHONE_PERMISSION_ENABLED TRUE
+    MICROPHONE_PERMISSION_TEXT "Ohpe uses the audio input you choose so your voice can control the sound (Voice Control) and so you can record it to the tape. The input is analysed on your computer and never sent anywhere."
+    PLIST_TO_MERGE "<plist><dict><key>CFBundleLocalizations</key><array><string>en</string><string>de</string></array></dict></plist>"
     VST3_CATEGORIES Instrument Synth
     AU_MAIN_TYPE kAudioUnitType_MusicDevice
     COPY_PLUGIN_AFTER_BUILD ${OHPE_COPY_PLUGIN}
@@ -158,6 +166,14 @@ elseif(WIN32)
 endif()
 
 target_sources(Ohpe PRIVATE ${OHPE_PLUGIN_SOURCES} ${CMAKE_SOURCE_DIR}/src/standalone/StandaloneApp.cpp)
+# p68: localised microphone permission text (EN / DE) inside the app bundle (copied before JUCE signs it)
+if(APPLE AND TARGET Ohpe_Standalone)
+    foreach(OHPE_LPROJ en de)
+        set(OHPE_STRINGS ${CMAKE_SOURCE_DIR}/resources/macos/${OHPE_LPROJ}.lproj/InfoPlist.strings)
+        set_source_files_properties(${OHPE_STRINGS} PROPERTIES MACOSX_PACKAGE_LOCATION Resources/${OHPE_LPROJ}.lproj HEADER_FILE_ONLY TRUE)
+        target_sources(Ohpe_Standalone PRIVATE ${OHPE_STRINGS})
+    endforeach()
+endif()
 target_compile_definitions(Ohpe PUBLIC ${OHPE_DEFINES} JUCE_USE_CUSTOM_PLUGIN_STANDALONE_APP=1)
 target_include_directories(Ohpe PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(Ohpe
@@ -291,6 +307,7 @@ endif()
 # ---------------------------------------------------------------- p23: bounce to engine
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/BounceUiTests.cpp)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/TapeMemoryUiTests.cpp) # p67
 endif()
 
 # ---------------------------------------------------------------- p27: the in-app updater

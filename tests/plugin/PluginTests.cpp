@@ -415,6 +415,7 @@ int main (int argc, char** argv)
     // p40: the tests start from the plain parameter defaults; FirstPresetTests switches the start sound on
     OhpeProcessor::startWithFactorySound.store (false);
     OhpeEditor::showTourOnFirstOpen.store (false); // p64: TourUiTests switches the first-start tour on
+    TasteStore::filesEnabled.store (false);        // p69: no taste profile from (or to) the user data folder
     doctest::Context ctx (argc, argv);
     return ctx.run();
 }

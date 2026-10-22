@@ -6858,6 +6858,23 @@ p4.mpe.pcurve
 # p59: grid keyboard - In Key / Chromatic, fixed C
 harmony.kb.inkey
 harmony.kb.fixed
+# p67: tape memory
+tapemem.len
+tapemem.src
+tapemem.mode
+tapemem.to
+tapemem.go
+# p68: Voice Control - live input as modulation sources
+voice.on
+voice.gain
+voice.gate
+voice.smooth
+voice.pitch
+voice.monitor
+p1.voice.map
+p2.voice.map
+p3.voice.map
+p4.voice.map
 # p66: Key Gravity per part
 p1.grav.amt
 p1.grav.target

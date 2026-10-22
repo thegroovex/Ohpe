@@ -128,3 +128,32 @@ TEST_CASE ("real-time: no allocation in Core::process with FX racks and the modu
     }
     CHECK (total == 0);
 }
+
+TEST_CASE ("p67 real-time: the tape memory records the output in Core::process without allocating, across the wrap")
+{
+    Core core;
+    core.prepare (48000.0, 512);
+    std::array<std::vector<float>, numOutputPairs> l, r;
+    OutputBuffers out;
+    for (int o = 0; o < numOutputPairs; ++o)
+    {
+        l[(size_t) o].assign (512, 0.0f);
+        r[(size_t) o].assign (512, 0.0f);
+        out.left[(size_t) o] = l[(size_t) o].data();
+        out.right[(size_t) o] = r[(size_t) o].data();
+    }
+    std::vector<MidiEvent> midi { MidiEvent::noteOn (1, 60, 100, 10) };
+    int total = 0;
+    const int blocks = (int) (core.tapeMemory().capacityFrames() / 512) + 40; // past the end of the ring
+    for (int b = 0; b < blocks; ++b)
+    {
+        if (b == blocks / 2) core.params().set (Core::Ids::tapememSrc, 1.0f); // Part 1 after its rack
+        counting = true;
+        core.process (out, 512, b == 0 ? midi.data() : nullptr, b == 0 ? 1 : 0, Transport {});
+        counting = false;
+        total += allocations.exchange (0);
+    }
+    CHECK (total == 0);
+    CHECK (core.tapeMemory().framesWritten() == (int64_t) blocks * 512);
+    CHECK (core.tapeMemory().available() == (int64_t) (tapemem::maxSeconds * 48000.0));
+}

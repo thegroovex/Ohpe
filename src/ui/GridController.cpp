@@ -950,6 +950,7 @@ void GridController::button (int cc, bool)
             break;
         }
         case g::cc::addEffect: addEffect(); break;
+        case g::cc::addTrack: proc.tapeMemory().capture(); break; // p67: CAPTURE - the tape memory into the target part
         case g::cc::user:
             if (hooks.showBreeding) hooks.showBreeding (! (hooks.breedingShown && hooks.breedingShown()));
             break;
@@ -1642,7 +1643,10 @@ void GridController::refreshLights()
     ccLight[(size_t) g::cc::automation] = g::buttonCode (motionRec, true, motionRec && proc.tapeRolling());
     ccLight[(size_t) g::cc::addEffect] = g::buttonCode (false);
     ccLight[(size_t) g::cc::user] = g::buttonCode (hooks.breedingShown && hooks.breedingShown());
-    ccLight[(size_t) g::cc::addTrack] = 0; // not mapped (skipped)
+    // p67: CAPTURE - dim while the memory holds sound, lit + blinking while a capture is analysed
+    ccLight[(size_t) g::cc::addTrack] = proc.tapeMemory().heldSeconds() > 0.05 || proc.tapeMemory().busy()
+                                            ? g::buttonCode (proc.tapeMemory().busy(), true, proc.tapeMemory().busy())
+                                            : 0;
     ccLight[(size_t) g::cc::stepIn] = 0;
     ccLight[(size_t) g::cc::stepOut] = 0;
     const bool arpOn = reg.get ("seq.arp.on") >= 0.5f;

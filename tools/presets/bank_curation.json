@@ -1189,6 +1189,16 @@
    "params": {
     "gain": 24.0
    }
+  },
+  "pads-voice-filter-pad.ohpepreset": {
+   "params": {
+    "gain": 12.6
+   }
+  },
+  "bass-voice-wah-bass.ohpepreset": {
+   "params": {
+    "gain": 15.4
+   }
   }
  },
  "levels_before": {
@@ -1417,6 +1427,8 @@
   "vocal-solo-soprano.ohpepreset": 6.8,
   "bass-pressure-glide-bass.ohpepreset": 24.0,
   "bass-wood-body-bass.ohpepreset": 24.0,
-  "leads-pressure-glide-lead.ohpepreset": 24.0
+  "leads-pressure-glide-lead.ohpepreset": 24.0,
+  "pads-voice-filter-pad.ohpepreset": 6.9,
+  "bass-voice-wah-bass.ohpepreset": 11.3
  }
 }

@@ -77,13 +77,17 @@ const HelpTopic helpTopics[] = {
       "In the standalone app: Space = play / stop, R = record, Enter = to the start, L = loop.\n\n"
       "The Sequencer mode has step, Euclid and orbit views; steps can lock parameter values.\n\n"
       "Arpeggiator: the sustain pedal (CC 64) keeps released keys in the arpeggio until pedal up, sostenuto (CC 66) only the keys "
-      "down when it was pressed; with Latch on, keys under the pedal add to the latched set.",
+      "down when it was pressed; with Latch on, keys under the pedal add to the latched set.\n\n"
+      "Tape memory: Ohpe always keeps the last 30 s of its output. CAPTURE (tape page, Sampler page, MIDI, Grid-Controller Add Track) "
+      "turns it into a Sampler instrument - Chromatic (tuned, root detected) or Slices; MEMORY sets mode, length, source and part.",
       "START startet den Sequencer (und das Tape, wenn verbunden). REC nimmt auf die scharfe Tape-Spur auf; ohne scharfe Spur "
       "wird die gewählte scharf geschaltet.\n\n"
       "In der Standalone-App: Leertaste = Start / Stopp, R = Aufnahme, Enter = an den Anfang, L = Loop.\n\n"
       "Der Sequencer-Modus hat Step-, Euklid- und Orbit-Ansichten; Schritte können Parameterwerte festhalten.\n\n"
       "Arpeggiator: Das Haltepedal (CC 64) hält losgelassene Tasten bis Pedal hoch im Arpeggio, Sostenuto (CC 66) nur die beim "
-      "Treten gedrückten; mit Halten ergänzen Tasten unter dem Pedal den gehaltenen Satz." },
+      "Treten gedrückten; mit Halten ergänzen Tasten unter dem Pedal den gehaltenen Satz.\n\n"
+      "Tape-Gedächtnis: Ohpe behält immer die letzten 30 s seines Ausgangs. MERKEN (Tape-Seite, Sampler-Seite, MIDI, Grid-Controller Add Track) "
+      "macht daraus ein Sampler-Instrument - Chromatisch (gestimmt, Grundton erkannt) oder Slices; GEDÄCHTNIS wählt Modus, Länge, Quelle und Part." },
     { "MIDI, MPE and sync", "MIDI, MPE und Sync",
       "Each part listens on its own MIDI channel (Omni = every channel). Settings > MIDI sets the channel, MPE and the bend ranges of every part.\n\n"
       "With MPE on, each note gets its own pitch bend, pressure and timbre (lower zone: channel 1 is the master channel).\n\n"
@@ -202,6 +206,17 @@ const HelpTopic helpTopics[] = {
       "(Arp) in diesem Raster.\n\n"
       "Fußpedal: Ein Haltepedal an der Pedalbuchse des Controllers hält Noten wie an einem MIDI-Keyboard (Sustain CC 64, Sostenuto "
       "CC 66), auch in MPE-/Fingerboard-Parts und im Arpeggio." },
+    { "Voice Control", "Stimmsteuerung", // p68
+      "Your voice can move the sound - it is never heard through it. Choose an input (standalone: Settings > Audio, Input device; "
+      "plug-in: enable the instrument's input or sidechain in the host), then open LFO > Voice.\n\n"
+      "The display shows the vowel you sing (A E I O U) and the input meter with the gate line. Vowel \xe2\x86\x92 Filter + Morph maps the vowel "
+      "to the edit part's filter and morph pad in one press; in the Mod view the sources Voice Level, Vowel X / Y, Voice Brightness, "
+      "Voice Noisiness, Voice Pitch and Voice Onset go anywhere. Monitor is off so speakers cannot feed back.",
+      "Deine Stimme kann den Klang bewegen - zu hören ist sie darin nie. Einen Eingang wählen (Standalone: Einstellungen > Audio, Eingangsgerät; "
+      "Plug-in: im Host den Eingang oder Sidechain des Instruments einschalten), dann LFO > Stimme öffnen.\n\n"
+      "Das Display zeigt den gesungenen Vokal (A E I O U) und die Eingangsanzeige mit der Schwellen-Linie. Vokal \xe2\x86\x92 Filter + Morph legt den Vokal "
+      "mit einem Druck auf Filter und Morph-Pad des Edit-Parts; in der Mod-Ansicht gehen die Quellen Stimme Pegel, Vokal X / Y, Stimme Helligkeit, "
+      "Stimme Rauschanteil, Stimme Tonhöhe und Stimme Einsatz überallhin. Abhören ist aus, damit Lautsprecher nicht rückkoppeln." },
     { "Updates", "Updates",
       "Ohpe can look for new versions once a day (off until you switch it on) or when you press Check now. Nothing about you is sent.\n\n"
       "Downloads are verified before they open. Content packs add presets without reinstalling; the previous pack is kept for a rollback.",

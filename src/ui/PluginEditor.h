@@ -293,6 +293,7 @@ private:
     void refreshHelpOverlay();  ///< p32: texts and visibility of the help overlay
     void refreshPadKeys(); ///< p25: the Pads view's soft keys follow the pad parameters
     void onSoftKey (int id);
+    void showTapeMemoryMenu();                  ///< p67: the MEMORY soft key of the tape page (mode, length, source, part, export)
     void showBounceMenu();                      ///< p23: the BOUNCE soft key of the Grain / Sampler page (source, loop)
     void showTableImportMenu();                 ///< p20: the IMPORT soft key (file, tape track, input, library, options)
     void importTable (const juce::File& file);  ///< p20: audio / wavetable file into the shown engine's user material
@@ -406,9 +407,13 @@ private:
     bool userTableBusy = false;
     int bounceMessagesSeen = 0; ///< p23
     bool bounceRecording = false;
+    int tapeMemMessagesSeen = 0, tapeMemState = -1; ///< p67
     int modPage = 0, rackPage = 0, lastModSignature = -1; ///< 0.7
     int morphPage = 0; ///< p16
     int motionPage = 0; ///< p22
+    int voicePage = 0;  ///< p68
+    int lastVoiceSignature = -1; ///< p68
+    juce::String voiceMapMessage; ///< p68: the last quick map (shown until the view is left)
     int lastMotionSignature = -1; ///< p22: soft key / status refresh of the Motion view
     int lastPadsSignature = -1;   ///< p25: soft key refresh of the Pads view
     int harmonyPage = 0, lastHarmonySignature = -1; ///< p24: the Harmony view

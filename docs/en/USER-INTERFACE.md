@@ -103,7 +103,8 @@ The **BREED** key (next to RANDOM; a click opens / closes the view, its light ba
 **[breeding](BREEDING.md)**: cross two sounds, hear six children, keep the best and breed further. RANDOM only
 rolls – holding or right-clicking it no longer opens breeding. While the breeding view is open, RANDOM rolls a new
 parent B and SAVE stores the selected child in the library as a favourite. Right-click BREED for MIDI learn of
-`lib.breed`.
+`lib.breed`. The breeding learns locally what you like ([learning breed](BREEDING.md#learning-breed): LEARN,
+CURIOSITY, WHY, RESET in its foot row).
 
 ![The breeding view](../images/ohpe-breeding.png)
 
@@ -190,7 +191,8 @@ samples. Sample paths are saved with the project.
 
 **BOUNCE** (third key, p23) puts tape or live-input audio into the engine you are looking at: a menu offers the edit
 track, Tape 1 … 8, the tape mix and the input (1–8 bars), plus *Endless loop* (on by default – the bounce loops
-seamlessly). See [Bounce to engine](BOUNCE.md).
+seamlessly). See [Bounce to engine](BOUNCE.md). On the Sampler page a fourth key, **CAPTURE** (p67), puts the
+tape memory into this part ([Tape memory](TAPE-MEMORY.md)).
 
 ## User wavetables and formants (p20)
 
@@ -444,6 +446,8 @@ Soft keys on the display – two rows: the edits of the selected track above, th
 | **Load Tape** | loads an `.ohpetape` file (or drop one on the window). When the tape holds material, Ohpe asks first (*Replace the recorded tape?*); the load is one undo step, so **Undo** brings the old tape back. A tape from another sample rate is converted and keeps its pitch |
 | **Export** | renders master + the eight tracks as **24-bit WAV** files into a folder you choose (offline, faster than real time; the live audio is not interrupted) |
 | **Bounce** | moves the edit track (or the source on the Bounce page; the loop range while the loop is on) into the Grain or Sampler engine of the edit part, as an endless loop by default – [Bounce to engine](BOUNCE.md) |
+| **Capture** | (end of the first row, p67) turns the tape memory – the last seconds of Ohpe's own output – into an instrument in the Sampler of the target part (Chromatic or Slices); dark while the memory is empty – [Tape memory](TAPE-MEMORY.md) |
+| **Memory** | (end of the second row) the memory menu: Chromatic / Slices, length (5–30 s), source (main out, part 1–4), target part, export the last capture as WAV, clear the memory, MIDI learn for CAPTURE |
 
 ![Clear all asks first](../images/ohpe-tape-clear.png)
 
@@ -487,7 +491,7 @@ note (page 3). **Load** puts an audio file on the selected pad (or drag a file o
 ![Mod view](../images/ohpe-mod-view.png)
 
 In **LFO** mode the tabs on the display switch between **LFO** (LFO 1, as before), **Mod**, the
-[modulation matrix](MODULATION.md) of the edit part, **Morph** (the [morph pad](#morph-view-p16)), **Motion** (the [motion recorder](#motion-view-p22)) and **Harmony** (the [harmony brain](#harmony-view-p24)). The Mod view lists all **16 routings** in two
+[modulation matrix](MODULATION.md) of the edit part, **Morph** (the [morph pad](#morph-view-p16)), **Motion** (the [motion recorder](#motion-view-p22)) **Harmony** (the [harmony brain](#harmony-view-p24)) and **Voice** ([Voice Control](#voice-view-p68)). The Mod view lists all **16 routings** in two
 columns: source → target, a bar for the amount (to the right = positive, to the left = negative) and
 the routing's live value. Targets on an engine or an effect show the real parameter name ("Cutoff",
 "FX2 Hyper Detune"), so you see what moves without counting slots. Below the list a **trace** draws
@@ -706,6 +710,16 @@ fourths, thirds, whole tones or sequential rows, in key or chromatic, the key's 
 each touch has its own channel – slide sideways to bend, up / down for slide, pressure from touch or pen. Every
 chord has the same shape in every key; the key's tooltip says so, and the first time the grid is switched on in a
 project the keyboard readout shows "Same chord shape in every key" for a few seconds (p47).
+
+## Voice view (p68)
+
+![The Voice view](../images/ohpe-voice-view.png)
+
+The sixth tab of **LFO** mode, **Voice**, shows [Voice Control](VOICE-CONTROL.md): the vowel map (A E I O U, the sung
+vowel as a yellow dot, grey below the gate), the input meter with the gate line and bars for level, brightness,
+noisiness, pitch and onset. Encoder pages **Voice** (on, input gain, gate, smoothing) and **Voice Options** (pitch
+tracking, monitor). Soft keys: **On** and **Vowel → Filter + Morph** (three routings into the edit part's matrix). The
+input: standalone *Settings > Audio > Input device*, plug-ins the instrument's input / sidechain in the host.
 
 ## Updates (p27)
 

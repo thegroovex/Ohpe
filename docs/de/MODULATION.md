@@ -53,6 +53,13 @@ Verbindungen auf dasselbe Ziel addieren sich.
 | 28 | Pads gehalten | 0 / 1 | – | p25: 1, solange ein [Performance-Pad](PERFORMANCE-PADS.md) aktiv ist |
 | 29 – 31 | Akkord-Grundton, Akkordwechsel, Spannung | 0 … 1 | – | p24: das [Harmonie-Hirn](HARMONIE.md) (in jedem Part gleich): Grundton des gemerkten Akkords (C = 0 … H = 1), 1 bei jedem neuen Akkord, verblasst in etwa 0,3 s, Anteil der gehaltenen Töne außerhalb der Tonart |
 | 32 | Vibrato (5,5 Hz) | ±1 | ja | p33: ein Sinus mit 5,5 Hz, der mit jeder Note beginnt – die Funktion Vibrato der [Ausdrucks-Seite](AUSDRUCK.md) (Notendruck via Vibrato → Tonhöhe); z. B. als *Via* für ein Vibrato, das erst Rad oder Druck einblenden |
+| 34 | Stimme Pegel | 0 … 1 | – | p68: Pegel des Eingangs über der Schwelle (1 bei etwa −6 dBFS) – [Stimmsteuerung](STIMMSTEUERUNG.md) |
+| 35 | Vokal X | ±1 | ja | p68: hintere Vokale (U, O) −1 … vordere (I, E) +1 (zweiter Formant) |
+| 36 | Vokal Y | ±1 | ja | p68: geschlossene Vokale (I, U) −1 … offene (A) +1 (erster Formant) |
+| 37 | Stimme Helligkeit | 0 … 1 | – | p68: Anteil der Energie oberhalb von etwa 2 kHz |
+| 38 | Stimme Rauschanteil | 0 … 1 | – | p68: Zischlaute und Reibelaute (s, sch, f, t) hoch, gesungene Vokale niedrig |
+| 39 | Stimme Tonhöhe | 0 … 1 | – | p68: der gesungene Ton, C2 = 0 … C6 = 1 (nur mit eingeschalteter Tonhöhenerkennung) |
+| 40 | Stimme Einsatz | 0 … 1 | – | p68: 1 bei jeder neuen Silbe oder jedem Anschlag, klingt in etwa 80 ms ab |
 
 Quellen **pro Stimme** haben in jeder Stimme ihren eigenen Wert: in einem Akkord bekommt jeder Ton
 seine eigene Hüllkurve, seinen Anschlag und Zufallswert.

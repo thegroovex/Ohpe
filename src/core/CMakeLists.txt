@@ -18,7 +18,8 @@ add_library(ohpe_core STATIC
     engines/PluckEngine.cpp
     engines/ClusterEngine.cpp
     breed/SoundGenome.cpp
-    breed/RandomSound.cpp)
+    breed/RandomSound.cpp
+    breed/TasteProfile.cpp)
 
 # phase 2, engines B: Grain, Vocal, Sampler, drum kit, sample model
 target_sources(ohpe_core PRIVATE
@@ -71,6 +72,8 @@ target_sources(ohpe_core PRIVATE morph/MorphSpace.cpp)
 
 # p22: the motion recorder (knob movements per part as looping lanes)
 target_sources(ohpe_core PRIVATE motion/MotionRecorder.cpp)
+# p68: Voice Control (live input -> modulation sources)
+target_sources(ohpe_core PRIVATE voice/VoiceAnalyser.cpp voice/VoiceControl.cpp)
 
 # p25: the performance pads (stutter, tape stop, filter sweep, reverb freeze on the main mix)
 target_sources(ohpe_core PRIVATE perform/PerformancePads.cpp)
@@ -113,6 +116,8 @@ target_sources(ohpe_core PRIVATE
 
 # p23: bounce to engine (tape / live input -> Grain or Sampler)
 target_sources(ohpe_core PRIVATE bounce/Bounce.cpp)
+# p67: tape memory (rolling output buffer -> Sampler instrument)
+target_sources(ohpe_core PRIVATE tapemem/TapeMemory.cpp)
 
 # p46: Grid-Controller (Profil 1) - wire protocol, display text, pad layout
 target_sources(ohpe_core PRIVATE control/GridProtocol.cpp control/ControllerPorts.cpp) # p46, p49
