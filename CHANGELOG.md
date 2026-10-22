@@ -5,7 +5,9 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
-## Unreleased / Unveröffentlicht
+## 0.7.3 – 2026-10-23
+
+[Notes / Hinweise](docs/release-notes/0.7.3.md)
 
 - EN: 3D motion retrigger and 3D amount (p77) – the binaural motion can now restart with the notes, like the key
   sync of an arpeggiator or LFO: new per-part **Motion Retrigger** (`pN.space.retrig`: *Free* = runs on with the song
@@ -22,7 +24,7 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   der Key-Sync eines Arpeggiators oder LFOs: neuer **Bewegung Retrigger** je Part (`pN.space.retrig`: *Frei* = läuft
   wie bisher mit dem Song weiter, *Erste* = beginnt wieder am Startpunkt bei einer Note, nachdem alle Tasten
   losgelassen waren, *Note* = bei jeder Note; Mono-Legato-Noten lassen sie weiterlaufen). Die Position gleitet in etwa
-  6 ms zum Start – kein Knacken. Neue **Stärke** je Part (`pN.space.amount`, 0–100 %, Standard 100 % = unverändert):
+  8 ms zum Start – kein Knacken. Neue **Stärke** je Part (`pN.space.amount`, 0–100 %, Standard 100 % = unverändert):
   stellt die Stärke des 3D-Effekts ein, von voller binauraler Position, Bewegung und Färbung bis zum normalen
   Stereoklang, bei etwa gleichem Pegel; geglättet und klickfrei, Modulationsziel 95 *3D-Stärke*. Beide auf der neuen
   3D-Seite *Stärke & Retrigger*, MIDI-zuweisbar und automatisierbar. Das Bewegungstempo reicht schon bis zu einem

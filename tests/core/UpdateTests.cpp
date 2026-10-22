@@ -203,6 +203,20 @@ TEST_CASE ("update: a preview channel user is offered the stable release (0.7.1 
     CHECK (pickUpdate (list, Channel::Preview, Version::of ("0.7.2")) == -1); // up to date
 }
 
+TEST_CASE ("update: preview and stable users on 0.7.x are offered the 0.7.3 stable release")
+{
+    const auto list = parseReleaseList (R"([
+      { "tag_name": "v0.7.3", "prerelease": false, "draft": false, "assets": [] },
+      { "tag_name": "v0.7.2", "prerelease": false, "draft": false, "assets": [] },
+      { "tag_name": "v0.7.1", "prerelease": true, "draft": false, "assets": [] }
+    ])");
+    REQUIRE (list.size() == 3);
+    CHECK (pickUpdate (list, Channel::Preview, Version::of ("0.7.2")) == 0);
+    CHECK (pickUpdate (list, Channel::Stable, Version::of ("0.7.2")) == 0);
+    CHECK (pickUpdate (list, Channel::Preview, Version::of ("0.7.1")) == 0);
+    CHECK (pickUpdate (list, Channel::Preview, Version::of ("0.7.3")) == -1); // up to date
+}
+
 TEST_CASE ("update: settings round trip, daily auto check, never while playing, remind / skip")
 {
     const auto d0 = Settings::defaults (Version::of ("0.3.0"));

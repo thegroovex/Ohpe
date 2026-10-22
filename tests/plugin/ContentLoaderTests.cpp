@@ -368,9 +368,9 @@ TEST_CASE ("content loader: Install pack ... (file dialog / drop) takes wavetabl
     CHECK (installed[1].info.kind == "presets");
 }
 
-TEST_CASE ("content loader: this build is 0.7.2 or newer (the 0.7.2 release)")
+TEST_CASE ("content loader: this build is 0.7.3 or newer (the 0.7.3 release)")
 {
     const auto app = Updater::currentVersion();
     CHECK (app.valid());
-    CHECK_FALSE (app < update::Version::of ("0.7.2"));
+    CHECK_FALSE (app < update::Version::of ("0.7.3"));
 }
