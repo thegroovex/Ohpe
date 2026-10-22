@@ -487,7 +487,7 @@ note (page 3). **Load** puts an audio file on the selected pad (or drag a file o
 ![Mod view](../images/ohpe-mod-view.png)
 
 In **LFO** mode the tabs on the display switch between **LFO** (LFO 1, as before), **Mod**, the
-[modulation matrix](MODULATION.md) of the edit part, **Morph** (the [morph pad](#morph-view-p16)), **Motion** (the [motion recorder](#motion-view-p22)) and **Harmony** (the [harmony brain](#harmony-view-p24)). The Mod view lists all **16 routings** in two
+[modulation matrix](MODULATION.md) of the edit part, **Morph** (the [morph pad](#morph-view-p16)), **Motion** (the [motion recorder](#motion-view-p22)) **Harmony** (the [harmony brain](#harmony-view-p24)) and **Voice** ([Voice Control](#voice-view-p68)). The Mod view lists all **16 routings** in two
 columns: source → target, a bar for the amount (to the right = positive, to the left = negative) and
 the routing's live value. Targets on an engine or an effect show the real parameter name ("Cutoff",
 "FX2 Hyper Detune"), so you see what moves without counting slots. Below the list a **trace** draws
@@ -701,6 +701,16 @@ fourths, thirds, whole tones or sequential rows, in key or chromatic, the key's 
 each touch has its own channel – slide sideways to bend, up / down for slide, pressure from touch or pen. Every
 chord has the same shape in every key; the key's tooltip says so, and the first time the grid is switched on in a
 project the keyboard readout shows "Same chord shape in every key" for a few seconds (p47).
+
+## Voice view (p68)
+
+![The Voice view](../images/ohpe-voice-view.png)
+
+The sixth tab of **LFO** mode, **Voice**, shows [Voice Control](VOICE-CONTROL.md): the vowel map (A E I O U, the sung
+vowel as a yellow dot, grey below the gate), the input meter with the gate line and bars for level, brightness,
+noisiness, pitch and onset. Encoder pages **Voice** (on, input gain, gate, smoothing) and **Voice Options** (pitch
+tracking, monitor). Soft keys: **On** and **Vowel → Filter + Morph** (three routings into the edit part's matrix). The
+input: standalone *Settings > Audio > Input device*, plug-ins the instrument's input / sidechain in the host.
 
 ## Updates (p27)
 

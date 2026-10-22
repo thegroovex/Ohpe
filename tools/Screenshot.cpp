@@ -815,6 +815,43 @@ int main (int argc, char* argv[])
             e.selectView (0);
         }
 
+        // p68: Voice Control - a sung "A" (synthetic: pulse train through four formants) on the input, the Voice view
+        {
+            e.selectPart (0);
+            e.selectMode (ui::Mode::Lfo);
+            e.selectView (5); // LFO | Mod | Morph | Motion | Harmony | Voice
+            juce::AudioBuffer<float> buffer (p.getTotalNumOutputChannels(), 512);
+            double ph = 0.0, glottal = 0.0, peak = 1.0e-9;
+            struct Res { double a1, a2, g, y1 = 0, y2 = 0; double run (double x) { const double y = g * x - a1 * y1 - a2 * y2; y2 = y1; y1 = y; return y; } };
+            auto res = [] (double f, double bw) { const double r = std::exp (-3.14159265 * bw / 48000.0); return Res { -2.0 * r * std::cos (6.2831853 * f / 48000.0), r * r, 1.0 - r }; };
+            Res r1 = res (730, 80), r2 = res (1150, 100), r3 = res (2600, 140), r4 = res (3500, 200);
+            for (int f = 0; f < 40; ++f)
+            {
+                for (int k = 0; k < 3; ++k)
+                {
+                    for (int i = 0; i < 512; ++i)
+                    {
+                        ph += 140.0 / 48000.0;
+                        double ex = 0.0;
+                        if (ph >= 1.0) { ph -= 1.0; ex = 1.0; }
+                        glottal = 0.97 * glottal + ex;
+                        const double y = r4.run (r3.run (r2.run (r1.run (glottal))));
+                        peak = std::max (peak, std::abs (y));
+                        const float v = (float) (0.3 * y / peak);
+                        buffer.setSample (0, i, v);
+                        buffer.setSample (1, i, v);
+                    }
+                    juce::MidiBuffer none;
+                    p.processBlock (buffer, none);
+                }
+                e.advanceAnimation (1.0f / 30.0f);
+            }
+            save (e, dir.getChildFile ("ohpe-voice-view" + suffix + ".png"));
+            buffer.clear();
+            for (int k = 0; k < 120; ++k) { juce::MidiBuffer none; p.processBlock (buffer, none); } // the voice goes home
+            e.selectView (0);
+        }
+
         // p25: the performance pads - a chord with the sequencer running, the filter sweep and the reverb freeze held,
         //      the stutter waiting for its grid line
         {

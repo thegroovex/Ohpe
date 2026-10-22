@@ -7,6 +7,22 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Voice Control (p68): a live audio input is analysed in real time (about 8 ms) into seven new modulation sources –
+  Voice Level, Vowel X / Y (formants on an A-E-I-O-U map), Voice Brightness, Voice Noisiness (consonants), Voice Pitch
+  (optional) and Voice Onset. Not a vocoder: the voice only modulates; monitoring is off by default. LFO > Voice shows
+  the vowel map and the input meter; *Vowel → Filter + Morph* maps it to the edit part in one press. Gain, gate,
+  smoothing, pitch tracking and monitor are host / MIDI parameters (appended, not stored in presets). The standalone
+  app gains an input device choice (none by default, macOS microphone text in English and German); plug-ins use their
+  existing optional input bus (unchanged layouts). Three factory presets with the tag Voice. Docs:
+  docs/en/VOICE-CONTROL.md.
+- DE: Stimmsteuerung (p68): Ein Live-Audio-Eingang wird in Echtzeit (etwa 8 ms) in sieben neue Modulationsquellen
+  zerlegt – Stimme Pegel, Vokal X / Y (Formanten auf einer A-E-I-O-U-Karte), Stimme Helligkeit, Stimme Rauschanteil
+  (Konsonanten), Stimme Tonhöhe (optional) und Stimme Einsatz. Kein Vocoder: Die Stimme moduliert nur; Abhören ist
+  anfangs aus. LFO > Stimme zeigt Vokalkarte und Eingangsanzeige; *Vokal → Filter + Morph* legt sie mit einem Druck auf
+  den Edit-Part. Eingangspegel, Schwelle, Glättung, Tonhöhenerkennung und Abhören sind Host-/MIDI-Parameter
+  (angehängt, nicht in Presets gespeichert). Die Standalone-App bekommt eine Eingangsgeräte-Wahl (anfangs keins,
+  macOS-Mikrofontext auf Deutsch und Englisch); Plug-ins nutzen ihren vorhandenen optionalen Eingangsbus
+  (unveränderte Layouts). Drei Werks-Presets mit dem Tag Voice. Doku: docs/de/STIMMSTEUERUNG.md.
 - EN: First-start tour (p64): four short steps over the plate (parts, preset strip and LIBRARY; encoders, soft keys
   and the FX editor; tape, sequencer, tempo and key; help, settings and the Grid-Controller), English and German, in
   both skins. Shown once on the first standalone start and the first plug-in window, skippable (SKIP TOUR / Esc),
