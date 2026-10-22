@@ -872,7 +872,15 @@
   "leads-fingerboard-breath-lead.ohpepreset": {
    "params": {
     "gain": 24.0,
-    "chordroom": 17.5
+    "chordroom": 17.5,
+    "fx2.type": 10,
+    "fx2.compressor.thresh": -20.0,
+    "fx2.compressor.ratio": 3.0,
+    "fx2.compressor.attack": 10.0,
+    "fx2.compressor.release": 300.0,
+    "fx2.compressor.knee": 6.0,
+    "fx2.compressor.makeup": 7.8,
+    "fx2.compressor.mix": 1.0
    }
   },
   "leads-fm-brass-lead.ohpepreset": {
@@ -1607,13 +1615,29 @@
   "fx-thunder-walk.ohpepreset": {
    "params": {
     "gain": 10.5,
-    "chordroom": 18.9
+    "chordroom": 18.9,
+    "fx3.type": 10,
+    "fx3.compressor.thresh": -20.0,
+    "fx3.compressor.ratio": 3.0,
+    "fx3.compressor.attack": 10.0,
+    "fx3.compressor.release": 300.0,
+    "fx3.compressor.knee": 6.0,
+    "fx3.compressor.makeup": 9.0,
+    "fx3.compressor.mix": 1.0
    }
   },
   "fx-vortex-riser.ohpepreset": {
    "params": {
     "gain": 19.2,
-    "chordroom": 16.3
+    "chordroom": 16.3,
+    "fx2.type": 10,
+    "fx2.compressor.thresh": -20.0,
+    "fx2.compressor.ratio": 3.0,
+    "fx2.compressor.attack": 10.0,
+    "fx2.compressor.release": 300.0,
+    "fx2.compressor.knee": 6.0,
+    "fx2.compressor.makeup": 6.7,
+    "fx2.compressor.mix": 1.0
    }
   },
   "keys-ceiling-harpsichord.ohpepreset": {
@@ -1771,7 +1795,15 @@
   "textures-wind-spiral.ohpepreset": {
    "params": {
     "gain": 20.0,
-    "chordroom": 14.6
+    "chordroom": 14.6,
+    "fx2.type": 10,
+    "fx2.compressor.thresh": -20.0,
+    "fx2.compressor.ratio": 3.0,
+    "fx2.compressor.attack": 10.0,
+    "fx2.compressor.release": 300.0,
+    "fx2.compressor.knee": 6.0,
+    "fx2.compressor.makeup": 7.1,
+    "fx2.compressor.mix": 1.0
    }
   },
   "vocal-breath-circle.ohpepreset": {
@@ -2642,7 +2674,15 @@
   "textures-bowed-metal-body.ohpepreset": {
    "params": {
     "chordroom": 21.4,
-    "gain": 19.2
+    "gain": 19.2,
+    "fx2.type": 10,
+    "fx2.compressor.thresh": -14.0,
+    "fx2.compressor.ratio": 2.0,
+    "fx2.compressor.attack": 10.0,
+    "fx2.compressor.release": 300.0,
+    "fx2.compressor.knee": 6.0,
+    "fx2.compressor.makeup": 2.0,
+    "fx2.compressor.mix": 1.0
    }
   },
   "textures-breath-texture.ohpepreset": {
