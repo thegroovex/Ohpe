@@ -115,6 +115,12 @@ const std::vector<DestInfo>& destTable()
         add ("ampattack", "Amp Attack", "Amp Attack", DestKind::PartParam, 0, "amp.a");
         add ("ampdecay", "Amp Decay", "Amp Decay", DestKind::PartParam, 0, "amp.d");
         add ("amprelease", "Amp Release", "Amp Release", DestKind::PartParam, 0, "amp.r");
+        // p66: Key Gravity
+        add ("gravamt", "Key Gravity", "Tonart-Gravitation", DestKind::PartParam, 0, "grav.amt");
+        add ("gravglide", "Gravity Glide", "Gravitation Glide", DestKind::PartParam, 0, "grav.glide");
+        add ("gravcurve", "Gravity Curve", "Gravitation Kurve", DestKind::PartParam, 0, "grav.curve");
+        add ("gravformant", "Gravity Formant", "Gravitation Formant", DestKind::PartParam, 0, "grav.formant");
+        add ("gravmix", "Gravity Mix", "Gravitation Mischung", DestKind::PartParam, 0, "grav.mix");
         return v;
     }();
     return t;

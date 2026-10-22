@@ -48,6 +48,8 @@ public:
     /** The latency the whole instrument runs at (core: the largest active one); 0 = none. */
     void setAlignLatency (int samples) noexcept;
 
+    /** The part sleeps (its input is silence): the run state and the alignment move on without any audio work. */
+    void tickSilent (int n) noexcept;
     /** Processes in place. */
     void process (float* l, float* r, int n) noexcept;
 

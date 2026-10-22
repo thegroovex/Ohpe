@@ -260,6 +260,26 @@ void KeyGravity::process (float* l, float* r, int n) noexcept
     }
 }
 
+void KeyGravity::tickSilent (int n) noexcept
+{
+    if (amount <= 0.0f && running) // silence: nothing to fade, the stage may stop at once after the hold
+    {
+        zeroSamples += n;
+        if (stopping || zeroSamples >= offHoldSamples)
+        {
+            running = stopping = false;
+            wetGain = 0.0f;
+        }
+    }
+    const int want = std::max (alignWanted, running ? lat : 0);
+    if (want != alignNow || fadeLeft > 0)
+    {
+        alignNow = alignFrom = want;
+        fadeLeft = 0;
+        ringsLive = false; // the rings hold silence anyway; cleared when audio comes back
+    }
+}
+
 float KeyGravity::stftSample (float xl, float xr, float& yr) noexcept
 {
     inL[(size_t) rover] = xl;

@@ -48,6 +48,7 @@ enum Dest
     DstCharBright, DstCharHard, DstCharAlive, DstCharWide, // p21: the character macros ("pN.char.*")
     DstSubLevel, // p31: the SUB layer's level ("pN.sub.level")
     DstGlide, DstAmpAttack, DstAmpDecay, DstAmpRelease, // p33: glide time ("pN.glide"), amp envelope ("pN.amp.a/d/r")
+    DstGravAmount, DstGravGlide, DstGravCurve, DstGravFormant, DstGravMix, // p66: Key Gravity ("pN.grav.*")
     numDests
 };
 static constexpr int numEngineDests = 24;

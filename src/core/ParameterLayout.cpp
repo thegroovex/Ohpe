@@ -363,5 +363,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate50FingerboardParams (reg);
     // ---- p59: grid keyboard - In Key / Chromatic and the fixed bottom-left C (screen grid and controller pads) -------
     HarmonyBrain::registerLate59GridParams (reg);
+    // ---- p66: Key Gravity per part - the spectral stage after the engines that pulls every partial to the key / chord
+    for (auto& p : parts) p->registerLate66GravityParams (reg);
 }
 } // namespace ohpe

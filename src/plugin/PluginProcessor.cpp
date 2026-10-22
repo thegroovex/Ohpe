@@ -302,6 +302,7 @@ void OhpeProcessor::captureInput (juce::AudioBuffer<float>& buffer, int n)
 void OhpeProcessor::timerCallback()
 {
     ohpeCore.tape().housekeeping(); // 0.2: block pool for recording, finished passes -> undo steps
+    if (const int lat = ohpeCore.latencySamples(); lat != getLatencySamples()) setLatencySamples (lat); // p66: Key Gravity latency
     if (ohpeCore.midiMapper().applyPendingLearns (ohpeCore.midiMap()))
         sendChangeMessage();
     samples.timerTick();

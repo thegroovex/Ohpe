@@ -4,6 +4,7 @@
 
 #include "../dsp/Filters.h"
 #include "../fx/FxRack.h"
+#include "../fx/KeyGravity.h"
 #include "../fx/Resonator.h"
 #include "../fx/Space3D.h"
 #include "../mod/ModMatrix.h"
@@ -120,6 +121,16 @@ public:
         Pressure / Velocity x Pressure), "pN.mpe.round" (pitch rounding Off / Initial / Continuous),
         "pN.mpe.round.time" (seconds the continuous rounding takes), "pN.mpe.pcurve" (pressure curve -1..+1). */
     void registerLate50FingerboardParams (ParamRegistry& reg) const;
+    /** p66 Key Gravity: "pN.grav.amt" (0 = off), ".target" (Scale / Chord / Chord+Scale), ".glide" (s), ".curve" (-1..+1),
+        ".formant" (formant keep), ".mix", ".quality" (Low Latency / Normal / High). The spectral stage right after the engines. */
+    void registerLate66GravityParams (ParamRegistry& reg) const;
+    /** p66, audio thread (core, every block): the key's scale and the held chord as absolute pitch-class masks. */
+    void setGravityTargets (uint16_t scaleMask, uint16_t chordMask) noexcept { gravity.setTargets (scaleMask, chordMask); }
+    /** p66, audio thread: the latency every part runs at (the largest one a running stage needs; 0 = none). */
+    void setGravityAlign (int samples) noexcept { gravity.setAlignLatency (samples); }
+    /** p66: the latency this part's stage needs now (0 when off). */
+    int gravityLatency() const noexcept { return gravity.wantedLatency(); }
+    const KeyGravity& gravityStage() const noexcept { return gravity; }
     /** p50: low-pass cutoffs (Hz, 0 = classic mpe.smooth / mpe.slide) of the per-note X / Y / Z expression (MpeInput). */
     void setExpressionCutoffs (float x, float y, float z) noexcept
     {
@@ -345,6 +356,9 @@ private:
     float resoFade = 0.0f;
     std::vector<float> resoDryL, resoDryR;
     std::atomic<bool> resoRunningFlag { false };
+    // ---- p66: Key Gravity stage
+    KeyGravity gravity;
+    std::array<int, 7> gravIndex { -1, -1, -1, -1, -1, -1, -1 };
     float keyNoteBend = 0.0f; ///< per-note bend (semitones) of the newest note
     static constexpr int controlBlock = 32; ///< samples per modulation update (as VoiceBase::controlRate)
 };

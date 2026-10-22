@@ -167,6 +167,9 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
                       "fxb.reverb.size", "fxb.reverb.damping", "fxb.reverb.predelay", "mix.returnb",
                       "fxa.delay.pingpong", "", "", "" };
             for (const auto& id : padded (fxSlotParams (core, partIndex))) ids.push_back (id);
+            if (core.params().indexOf (p + "grav.amt") >= 0) // p66: Key Gravity (two pages at the end)
+                for (const char* k : { "grav.amt", "grav.target", "grav.glide", "grav.curve", "grav.formant", "grav.mix", "grav.quality", "" })
+                    ids.push_back (*k != 0 ? p + k : std::string());
             return ids;
         }
         case Mode::Sequencer:
@@ -279,7 +282,12 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
     else if (m == Mode::Effects && modfx::isRackView (ctx.fxView))
         t = modfx::rackTitles (core, modfx::rackPrefixes (ctx.fxView, ctx.part), ctx.fxSlot, ctx.fxFocus, ctx.fxFocusTitle);
     else if (m == Mode::Effects)
+    {
         for (size_t i = 4; i < t.size(); ++i) t[i] = "FX Slot";
+        const auto& gp = core.part (juce::jlimit (0, Core::numParts - 1, ctx.part));
+        if (core.params().indexOf (gp.id ("grav.amt")) >= 0 && t.size() >= 6) // p66: the last two pages
+            t[t.size() - 2] = t[t.size() - 1] = "Key Gravity";
+    }
     while (t.size() < (size_t) pages) t.push_back (t.empty() ? std::string() : t.back());
     t.resize ((size_t) pages);
     return t;
@@ -462,6 +470,9 @@ std::vector<ParamGroup> proGroups (Mode m, Core& core, const PageContext& ctx)
                 rp.erase (std::remove (rp.begin(), rp.end(), std::string()), rp.end());
                 groups.push_back ({ "Resonator", 0, rp });
             }
+            if (const auto gp = core.part (juce::jlimit (0, Core::numParts - 1, ctx.part)).prefix(); core.params().indexOf (gp + "grav.amt") >= 0)
+                groups.push_back ({ "Key Gravity", 0, { gp + "grav.amt", gp + "grav.target", gp + "grav.glide", gp + "grav.curve",
+                                                        gp + "grav.formant", gp + "grav.mix", gp + "grav.quality" } }); // p66
             {
                 auto pp = padsview::padsParams(); // p25: the performance pads
                 pp.erase (std::remove (pp.begin(), pp.end(), std::string()), pp.end());

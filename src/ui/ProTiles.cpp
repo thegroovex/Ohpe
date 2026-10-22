@@ -95,6 +95,18 @@ juce::String explanation (const std::string& paramId)
         { "sub.oct", "How far below the played note the sub sounds: one or two octaves.", "Wie weit unter der gespielten Note der Sub klingt: eine oder zwei Oktaven." },
         { "sub.shape", "Wave of the sub: Sine (pure), Round (a little warmer), Square (hollow, more push) - swipe the picture.", "Welle des Subs: Sinus (rein), Rund (etwas wärmer), Rechteck (hohl, mehr Druck) - über das Bild wischen." },
         { "sub.direct", "On: the sub skips the engine's filter and stays full under a closed filter.", "An: der Sub umgeht das Filter der Engine und bleibt auch bei geschlossenem Filter voll." },
+        // p66: Key Gravity
+        { "grav.amt", "Pulls every partial of the part toward the key and the held chord - high values turn noise and drums into pitched texture in key (0 = off).",
+          "Zieht jeden Teilton des Parts zur Tonart und zum gehaltenen Akkord - hohe Werte machen aus Rauschen und Drums tonale Texturen in der Tonart (0 = aus)." },
+        { "grav.target", "What the partials are pulled to: the scale, the held chord, or the chord first and the scale between.",
+          "Wohin die Teiltöne gezogen werden: zur Skala, zum gehaltenen Akkord oder zuerst zum Akkord und dazwischen zur Skala." },
+        { "grav.glide", "How fast the partials flow to the new notes when the chord changes.", "Wie schnell die Teiltöne bei einem Akkordwechsel zu den neuen Tönen fließen." },
+        { "grav.curve", "Right = magnetic: even a little gravity snaps partials onto the notes. Left = gentle: they only lean toward them.",
+          "Rechts = magnetisch: schon wenig Gravitation rastet die Teiltöne auf den Tönen ein. Links = sanft: sie neigen sich nur dorthin." },
+        { "grav.formant", "Keeps the tone colour (formants) in place while the partials move.", "Hält die Klangfarbe (Formanten) fest, während sich die Teiltöne bewegen." },
+        { "grav.mix", "Blend of the pulled sound with the original.", "Mischung aus gezogenem Klang und Original." },
+        { "grav.quality", "Low Latency reacts fastest, High resolves low notes best. Every part waits for the slowest one, so all stay in time.",
+          "Geringe Latenz reagiert am schnellsten, Hoch löst tiefe Töne am besten auf. Alle Parts warten auf den langsamsten und bleiben so im Takt." },
         // p33: the Expression page
         { "expr.vel.dst1", "What playing harder moves (velocity target 1).", "Was härteres Anschlagen bewegt (Anschlagsziel 1)." },
         { "expr.vel.amt1", "How far velocity moves its target - negative: harder notes move it the other way.", "Wie weit der Anschlag sein Ziel bewegt - negativ: härtere Noten bewegen es in die andere Richtung." },
