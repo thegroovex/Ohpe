@@ -59,7 +59,7 @@ Bypass (jeder ältere Klang spielt bitgleich); Umschalten blendet über 20 ms ü
 | 3D-Bewegung | 3D-Raum (`pN.space.mode`, p41) | Aus, Kopfhörer, Lautsprecher | der 3D-Schalter: *Aus* = Stufe aus; *Kopfhörer* = an, binaural; *Lautsprecher* = an, Lautsprecher-Rendering. Als Segmentschalter gezeichnet; Encoder 1 schaltet die drei Stellungen durch |
 | | Bewegungspfad | Aus, Kreis, Acht, Vorbeiflug, Zufallsorbit, Pendel, Spirale aufwärts, Ping-Pong v/h, Schwarm, Flüstern, Entfernungsgang, Über den Kopf, Wellenorbit, Ping-Pong l/r, Vier Ecken, Atmen, Helix, Überflug, Hüpfen, Wandern, Schleifenorbit | siehe unten |
 | | Bewegungslänge | 1/16 … 32 Takte, 1/4. | ein Durchlauf des Pfads, im Takt des Songs |
-| | Bewegungstempo | ×−4 … ×4 (Standard ×1) | multipliziert das Tempo; negativ = rückwärts, 0 = steht. Bei genau ×1 rastet die Bewegung auf die Song-Position ein (sie wiederholt sich bei jedem Abspielen gleich) |
+| | Bewegungstempo | ×−4 … ×4 (Standard ×1) | multipliziert das Tempo; negativ = rückwärts, 0 = steht. Bei genau ×1 rastet die Bewegung auf die Song-Position ein (sie wiederholt sich bei jedem Abspielen gleich; nur mit Retrigger *Frei*). Am schnellsten: Bewegungslänge 1/16 bei ×4 = ein Durchlauf pro 1/64-Note – für kurze Noten 1/2 … 1/16 mit Retrigger *Note* |
 | 3D-Position | Azimut | −180 … 180° | Richtung (0 = vorn, +90 = rechts, ±180 = hinten); dreht den ganzen Pfad |
 | | Elevation | −60 … 90° | Höhe; kippt den ganzen Pfad |
 | | Entfernung | 0,2 … 40 m | Grundentfernung (der Pfad skaliert davon aus) |
@@ -75,6 +75,8 @@ Bypass (jeder ältere Klang spielt bitgleich); Umschalten blendet über 20 ms ü
 | Abhöre | Mono unter | 40 … 300 Hz | alles darunter bleibt **mono und unbewegt** (Linkwitz-Riley-Weiche, Standard 120 Hz) – der Sub bewegt sich nie |
 | | 3D-Abhöre (`space.out`, global) | Kopfhörer, Lautsprecher | binaurales oder Lautsprecher-Rendering für jeden 3D-Part und Rack-Slot |
 | | Mono-Prüfung (`space.monocheck`, global) | aus / an | faltet den Hauptausgang zu mono – hör, was Lautsprecher in mono spielen würden |
+| Stärke & Retrigger | Stärke (`pN.space.amount`, p77) | 0 … 100 % (Standard 100 %) | Stärke des 3D-Effekts: 100 % = volle Position, Bewegung und binaurale Färbung; kleinere Werte ziehen Bewegung, Richtung, Entfernung, Doppler, Luft und Raum nach vorn zusammen und blenden bei 0 % zum normalen Stereoklang über. Der Pegel bleibt etwa gleich (der normale Klang spielt mit dem Pegel der Grundentfernung). Geglättet, klickfrei; Matrix-Ziel |
+| | Bewegung Retrigger (`pN.space.retrig`, p77) | Frei, Erste, Note (Standard Frei) | *Frei* = die Bewegung läuft mit dem Song weiter (wie bisher); *Erste* = sie beginnt wieder am Startpunkt bei einer Note, nachdem alle Tasten losgelassen waren; *Note* = bei jeder Note (mono: Legato-Noten – eine Taste noch gedrückt – lassen sie weiterlaufen). Die Position gleitet in etwa 6 ms zum Start, ein Neustart knackt nie. Mit Erste / Note läuft die Bewegung ab der Note, nicht ab der Songposition |
 
 *3D-Abhöre* und *Mono-Prüfung* gehören dem Hörer: Projekt-Presets speichern und ändern sie nicht.
 
@@ -141,7 +143,7 @@ Azimut und Elevation drehen jeden Pfad: ein Pendel bei Azimut 90° schwingt von 
 ## Modulation und MPE
 
 Die Modulationsmatrix (LFO-Modus → Mod) bewegt **Azimut, Elevation, Entfernung, Bewegungspfad Tempo** und
-**Bewegungspfad Phase** der Stufe (Ziele 67 – 71, [MODULATION.md](MODULATION.md)). Mit einem MPE-Controller
+**Bewegungspfad Phase** der Stufe (Ziele 67 – 71) und ihre **3D-Stärke** (Ziel 95, p77; [MODULATION.md](MODULATION.md)). Mit einem MPE-Controller
 oder polyphonem Aftertouch:
 
 * **Slide (Klangfarbe) → Elevation**: nach oben sliden hebt den Klang über deinen Kopf;

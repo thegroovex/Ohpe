@@ -1115,3 +1115,14 @@ Appended after `p4.grav.quality`. Details: [FACTORY-SOUNDS](en/FACTORY-SOUNDS.md
 | ID | English | Deutsch | Range | Default |
 |---|---|---|---|---|
 | `pN.chordroom` | Part N Chord Headroom | Part N Akkord-Reserve | 0 … 24 dB at 8 sounding notes (log curve: 1 note 0 dB, 2 a third, 4 two thirds; 0 = off) | 4.5 dB |
+
+## 3D motion retrigger and 3D amount (p77)
+
+Appended after `p4.chordroom`, per part (`p1.space.retrig`, `p1.space.amount`, `p2.space.retrig`, …), group
+`partN/space`. Only the part's 3D stage has them (the Space 3D rack type keeps its block). Matrix target 95
+**3D Amount** (`spaceamount`) moves `pN.space.amount`. Details: [SPACE](en/SPACE.md) / [RAUM](de/RAUM.md).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.space.retrig` | Part N 3D Motion Retrigger | Part N 3D Bewegung Retrigger | Free / First / Note (Frei / Erste / Note): the motion restarts from its start position never, on a note after all keys were up, or on every note (mono legato notes do not restart it) | Free |
+| `pN.space.amount` | Part N 3D Amount | Part N 3D Stärke | 0 … 1 (0 = plain stereo, 1 = full 3D) | 1 |
