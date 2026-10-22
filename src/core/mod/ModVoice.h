@@ -64,7 +64,8 @@ enum Curve { CurveLinear = 0, CurveExp, CurveLog, CurveS, CurveSteps, numCurves 
 inline bool isBipolar (int src) noexcept
 {
     return src == SrcLfo1 || src == SrcLfo2 || src == SrcLfo3 || src == SrcKeyTrack || src == SrcPitchBend || src == SrcSlide
-        || src == SrcNoteBend || src == SrcRandom || src == SrcVibrato || src == SrcKeyBend;
+        || src == SrcNoteBend || src == SrcRandom || src == SrcVibrato || src == SrcKeyBend
+        || src == SrcVoiceVowelX || src == SrcVoiceVowelY; // p68: centre of the vowel map = 0
 }
 inline bool isVoiceDest (int dst) noexcept { return dst >= DstPitch && dst <= DstTimbre; }
 

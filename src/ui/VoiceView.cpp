@@ -69,7 +69,7 @@ void paint (juce::Graphics& g, juce::Rectangle<float> v, const Core& core)
 
     // ---- the input meter (with the gate line) and the five bars ----
     area.removeFromLeft (area.getWidth() * 0.06f);
-    const float barW = juce::jmin (area.getWidth() / 7.5f, side * 0.14f);
+    const float barW = juce::jmin (area.getWidth() / 11.5f, side * 0.12f);
     auto bar = [&] (juce::Rectangle<float> r, float value, juce::Colour c, const juce::String& label) {
         auto lab = r.removeFromBottom (side * 0.12f);
         g.setColour (colour::displayGrid.withAlpha (0.9f));
@@ -78,11 +78,11 @@ void paint (juce::Graphics& g, juce::Rectangle<float> v, const Core& core)
         g.setColour (c.withAlpha (alpha));
         if (h > 0.5f) g.fillRoundedRectangle (r.withTop (r.getBottom() - h), rad * 0.6f);
         g.setColour (colour::displayDim.withAlpha (alpha));
-        g.setFont (labelFont (lab.getHeight() * 0.7f));
-        g.drawText (label, lab.expanded (barW * 0.3f, 0.0f), juce::Justification::centred, false);
+        g.setFont (labelFont (lab.getHeight() * 0.62f));
+        g.drawFittedText (label, lab.expanded (barW * 0.48f, 0.0f).toNearestInt(), juce::Justification::centred, 1, 0.55f);
         return r;
     };
-    auto col = [&] { auto r = area.removeFromLeft (barW); area.removeFromLeft (barW * 0.45f); return r.withSizeKeepingCentre (barW, side); };
+    auto col = [&] { auto r = area.removeFromLeft (barW); area.removeFromLeft (barW * 0.95f); return r.withSizeKeepingCentre (barW, side); };
 
     const auto meter = bar (col(), on ? dbToMeter (a.uiInputDb()) : 0.0f, open ? colour::playGreen : colour::displayDim, tr ("Input"));
     const float gy = meter.getBottom() - meter.getHeight() * dbToMeter (gateDb (core));
