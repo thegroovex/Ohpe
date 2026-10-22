@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "wavetable",
-  "comment": "A bright wavetable lead that streaks past you every two bars, rising in pitch as it approaches and falling as it leaves (Doppler). The mod wheel sweeps the tone. Best with headphones.",
+  "comment": "A bright wavetable lead that streaks past you with every note it plays, rising in pitch as it approaches and falling as it leaves (Doppler). The mod wheel sweeps the tone. Best with headphones.",
   "params": {
     "engine": 1,
     "wavetable.table": 1,
@@ -35,7 +35,7 @@
     "lfo.dest": 0,
     "space.on": 1,
     "space.path": 3,
-    "space.pathlen": 5,
+    "space.pathlen": 3,
     "space.pathrate": 1.0,
     "space.pathsize": 0.6,
     "space.pathphase": 0.0,
@@ -82,6 +82,7 @@
     "glide": 0.04,
     "glide.press": 0.6,
     "gain": 9.2,
-    "chordroom": 5.7
+    "chordroom": 5.7,
+    "space.retrig": 2
   }
 }

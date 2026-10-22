@@ -626,8 +626,11 @@
     "fx.compressor.attack": 0.1,
     "fx.compressor.thresh": -6.0,
     "fx.compressor.knee": 6.0,
-    "chordroom": 4.5
-   }
+    "chordroom": 4.5,
+    "space.retrig": 2,
+    "space.pathlen": 4
+   },
+   "comment": "A siren tone racing past from left to right and back with every note - the pitch bends with the Doppler effect as it passes."
   },
   "fx-downlifter.ohpepreset": {
    "params": {
@@ -934,8 +937,11 @@
   "leads-pendulum-lead.ohpepreset": {
    "params": {
     "gain": 12.2,
-    "chordroom": 9.6
-   }
+    "chordroom": 9.6,
+    "space.retrig": 1,
+    "space.pathlen": 4
+   },
+   "comment": "A bright pulse lead swinging like a pendulum from one side of your head to the other, once per bar from the first note of each phrase (motion path Pendulum, in tempo). Pressure adds vibrato; the mod wheel slows the swing. Best with headphones."
   },
   "leads-pluck-lead-wide.ohpepreset": {
    "params": {
@@ -1243,8 +1249,10 @@
   "plucks-ping-pong-space-pluck.ohpepreset": {
    "params": {
     "gain": 13.9,
-    "chordroom": 5.1
-   }
+    "chordroom": 5.1,
+    "space.retrig": 2
+   },
+   "comment": "A bright pluck that bounces front to back every half bar, starting again with every note (motion path Ping-Pong front/back, in tempo) inside a small room. Velocity plucks harder; the mod wheel speeds up the bounce. Best with headphones."
   },
   "plucks-pluck-nebula.ohpepreset": {
    "params": {
@@ -1643,14 +1651,20 @@
   "keys-ceiling-harpsichord.ohpepreset": {
    "params": {
     "gain": 8.1,
-    "chordroom": 4.5
-   }
+    "chordroom": 4.5,
+    "space.retrig": 1,
+    "space.pathlen": 5
+   },
+   "comment": "A harpsichord that rises over your head and settles behind you every two bars from the first note of each phrase, the room answering from all sides. The mod wheel darkens the quill. Best with headphones."
   },
   "keys-orbiting-tines.ohpepreset": {
    "params": {
     "gain": 1.6,
-    "chordroom": 4.5
-   }
+    "chordroom": 4.5,
+    "space.retrig": 2,
+    "space.pathlen": 4
+   },
+   "comment": "A bell-tine electric piano drifting in a small circle in front of you once per bar, starting again with every note, like the instrument sways as you play. Velocity adds bite; the mod wheel adds tine brightness. Best with headphones."
   },
   "keys-rotor-organ.ohpepreset": {
    "params": {
@@ -1661,26 +1675,38 @@
   "leads-comet-lead.ohpepreset": {
    "params": {
     "gain": 9.2,
-    "chordroom": 5.7
-   }
+    "chordroom": 5.7,
+    "space.retrig": 2,
+    "space.pathlen": 3
+   },
+   "comment": "A bright wavetable lead that streaks past you with every note it plays, rising in pitch as it approaches and falling as it leaves (Doppler). The mod wheel sweeps the tone. Best with headphones."
   },
   "leads-ear-to-ear-lead.ohpepreset": {
    "params": {
     "gain": 15.1,
-    "chordroom": 4.6
-   }
+    "chordroom": 4.6,
+    "space.retrig": 2,
+    "space.pathlen": 4
+   },
+   "comment": "A singing analog lead hopping from one ear to the other every half bar, starting again with every new note – in front of you on the way right, behind you on the way back. Velocity opens the filter; the mod wheel opens it further. Best with headphones."
   },
   "leads-overhead-flute.ohpepreset": {
    "params": {
     "gain": 0.2,
-    "chordroom": 6.7
-   }
+    "chordroom": 6.7,
+    "space.retrig": 1,
+    "space.pathlen": 5
+   },
+   "comment": "A breathy recorder melody floating over your head and down behind you every two bars from the first note of each phrase, as if played from a gallery. The mod wheel brightens the breath. Best with headphones."
   },
   "leads-vowel-orbit-lead.ohpepreset": {
    "params": {
     "gain": 5.4,
-    "chordroom": 4.5
-   }
+    "chordroom": 4.5,
+    "space.retrig": 1,
+    "space.pathlen": 5
+   },
+   "comment": "A singing vowel lead circling you every two bars from the first note of each phrase like a voice moving through the room. Pressure adds vibrato; the mod wheel walks the vowel from 'ah' to 'ee'. Best with headphones."
   },
   "pads-bowed-ring.ohpepreset": {
    "params": {
@@ -1809,8 +1835,11 @@
   "vocal-breath-circle.ohpepreset": {
    "params": {
     "gain": 10.5,
-    "chordroom": 8.1
-   }
+    "chordroom": 8.1,
+    "space.retrig": 1,
+    "space.pathlen": 4
+   },
+   "comment": "Close, rhythmic breaths circling your head every bar from the first breath of each phrase at whispering distance: intimate and slightly uncanny. The mod wheel adds a sung tone to the breath. Best with headphones."
   },
   "arp-figure-eight-arp.ohpepreset": {
    "params": {
@@ -2304,8 +2333,11 @@
   "keys-glass-pendulum.ohpepreset": {
    "params": {
     "chordroom": 9.9,
-    "gain": 12.7
-   }
+    "gain": 12.7,
+    "space.retrig": 1,
+    "space.pathlen": 4
+   },
+   "comment": "Glass harmonica tones swinging from one ear to the other on a pendulum that starts again with each phrase. The mod wheel softens the glass. Best with headphones."
   },
   "keys-gravity-bell-lock.ohpepreset": {
    "params": {
@@ -2382,7 +2414,8 @@
   "keys-vibes-in-the-round.ohpepreset": {
    "params": {
     "chordroom": 6.6,
-    "gain": 10.8
+    "gain": 10.8,
+    "space.retrig": 1
    }
   },
   "keys-wide-organ.ohpepreset": {

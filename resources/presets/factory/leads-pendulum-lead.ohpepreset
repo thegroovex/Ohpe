@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "analog",
-  "comment": "A bright pulse lead swinging like a pendulum from one side of your head to the other, once every two bars (motion path Pendulum, in tempo). Pressure adds vibrato; the mod wheel slows the swing. Best with headphones.",
+  "comment": "A bright pulse lead swinging like a pendulum from one side of your head to the other, once per bar from the first note of each phrase (motion path Pendulum, in tempo). Pressure adds vibrato; the mod wheel slows the swing. Best with headphones.",
   "params": {
     "engine": 2,
     "analog.shape": 0.6,
@@ -32,7 +32,7 @@
     "voices": 4,
     "space.on": 1,
     "space.path": 5,
-    "space.pathlen": 5,
+    "space.pathlen": 4,
     "space.pathrate": 1.0,
     "space.pathsize": 0.6,
     "space.pathphase": 0.0,
@@ -70,6 +70,7 @@
     "velsens": 0.4,
     "glide": 0.0,
     "gain": 12.2,
-    "chordroom": 9.6
+    "chordroom": 9.6,
+    "space.retrig": 1
   }
 }

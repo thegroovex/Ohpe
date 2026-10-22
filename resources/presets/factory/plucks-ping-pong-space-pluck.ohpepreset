@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "pluck",
-  "comment": "A bright pluck that bounces front to back on every half bar (motion path Ping-Pong front/back, in tempo) inside a small room. Velocity plucks harder; the mod wheel speeds up the bounce. Best with headphones.",
+  "comment": "A bright pluck that bounces front to back every half bar, starting again with every note (motion path Ping-Pong front/back, in tempo) inside a small room. Velocity plucks harder; the mod wheel speeds up the bounce. Best with headphones.",
   "params": {
     "engine": 3,
     "pluck.material": 0.2,
@@ -66,6 +66,7 @@
     "velsens": 0.7,
     "glide": 0.0,
     "gain": 13.9,
-    "chordroom": 5.1
+    "chordroom": 5.1,
+    "space.retrig": 2
   }
 }

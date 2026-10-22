@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "sampler",
-  "comment": "A breathy recorder melody floating over your head and down behind you every four bars, as if played from a gallery. The mod wheel brightens the breath. Best with headphones.",
+  "comment": "A breathy recorder melody floating over your head and down behind you every two bars from the first note of each phrase, as if played from a gallery. The mod wheel brightens the breath. Best with headphones.",
   "params": {
     "engine": 7,
     "sampler.inst": 7,
@@ -30,7 +30,7 @@
     "lfo.dest": 0,
     "space.on": 1,
     "space.path": 11,
-    "space.pathlen": 6,
+    "space.pathlen": 5,
     "space.pathrate": 1.0,
     "space.pathsize": 0.55,
     "space.pathphase": 0.0,
@@ -69,6 +69,7 @@
     "velsens": 0.35,
     "glide": 0.0,
     "gain": 0.2,
-    "chordroom": 6.7
+    "chordroom": 6.7,
+    "space.retrig": 1
   }
 }
