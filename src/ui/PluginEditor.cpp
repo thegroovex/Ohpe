@@ -1735,14 +1735,14 @@ void OhpeEditor::refreshSoftKeys()
         keys = { { skLift, tr ("Lift") },     { skCut, tr ("Cut") },   { skDrop, tr ("Drop"), tape.clipboardFrames() > 0 },
                  { skSplice, tr ("Splice"), tape.clipboardFrames() > 0 },
                  { skUndo, tr ("Undo"), tape.canUndo() }, { skRedo, tr ("Redo"), tape.canRedo() },
+                 // p67: tape memory - CAPTURE ends the first row (the memory settings), MEMORY the second
+                 { skCapture, tr ("Capture"), proc.tapeMemory().heldSeconds() > 0.05, proc.tapeMemory().busy() },
                  { skTapeClear, tr ("Clear Track"), tape.contentEndFrames (ctx.tapeTrack) > 0 },
                  { skTapeClearAll, tr ("Clear All"), any },
                  { skTapeSave, tr ("Save Tape"), any },
                  { skTapeLoad, tr ("Load Tape") },
                  { skExport, tr ("Export") },
                  { skBounce, tr ("Bounce"), true, proc.bounces().recording() }, // p11: "to the start" is a transport button now; p23: bounce
-                 // p67: tape memory - CAPTURE (the memory settings) and the memory menu
-                 { skCapture, tr ("Capture"), proc.tapeMemory().heldSeconds() > 0.05, proc.tapeMemory().busy() },
                  { skMemory, tr ("Memory") } };
     }
     else if (mode == Mode::Drum)

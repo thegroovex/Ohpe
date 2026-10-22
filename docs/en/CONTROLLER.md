@@ -188,6 +188,7 @@ Letting go of Scales without choosing anything steps to the next layout (a tap).
 | Fixed Length | step length 4 → 8 → 16 → 32 → 64 → 4 – lit when not 16 |
 | Automation | motion record of the edit part on / off (`pN.motion.rec`) – lit while armed, blinks while the tape rolls |
 | Add Effect | the selected FX slot (part rack if the Effects page shows no rack) gets the next effect type |
+| Add Track | CAPTURE: the tape memory becomes an instrument in the target part (`tapemem.go`, see [TAPE-MEMORY.md](TAPE-MEMORY.md)) – dim while the memory holds sound, blinks while the capture is analysed |
 | User | opens / closes ZUCHT (breeding) – lit while open |
 | 1/4 … 1/32t (right) | held while playing pads = note repeat: the arpeggiator on the edit part at that rate (1/4, 1/4T, 1/8, 1/8T, 1/16, 1/16T, 1/32, 1/32T), as before when released; Shift = set the arp rate and keep it – green while held, yellow = the arp's rate |
 
