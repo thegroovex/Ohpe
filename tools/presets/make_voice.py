@@ -44,7 +44,7 @@ def presets():
     route(q, 2, VOWEL_X, DST["timbre"], 0.6)        # back .. front vowel moves the synth's vowel
     route(q, 3, VOICE_BRIGHT, DST_CHAR["charbright"], 0.3)
     route(q, 4, VOICE_ONSET, DST["level"], 0.15)     # a syllable leans into the note
-    out["vocal-voice-vowel-lead.ohpepreset"] = dict(p, name="Voice Vowel Lead", tags=["Vocal", "Leads", "Voice"], params=q,
+    out["vocal-voice-vowel-lead.ohpepreset"] = dict(p, name="Voice Vowel Lead", tags=["Vocal", "Leads"], params=q,
         comment="Sing into the input: your vowel moves its vowel, your brightness opens it. Without input a clean vowel lead.")
 
     # 2. a pad whose filter opens with open vowels and breathes with the voice's level
@@ -56,7 +56,7 @@ def presets():
     route(q, 2, VOWEL_Y, DST["timbre"], 0.5)          # "aah" opens, "ooh" / "ee" close
     route(q, 3, VOICE_LEVEL, DST_CHAR["charalive"], 0.5)
     route(q, 4, VOWEL_X, DST["pan"], 0.25)
-    out["pads-voice-filter-pad.ohpepreset"] = dict(p, name="Voice Filter Pad", tags=["Pads", "Voice"], params=q,
+    out["pads-voice-filter-pad.ohpepreset"] = dict(p, name="Voice Filter Pad", tags=["Pads"], params=q,
         comment="Talk or hum to it: open vowels open the filter, your level brings it alive. Without input a warm pulse pad.")
 
     # 3. a bass with a voice-controlled wah: the vowel sweeps the table, consonants bite
@@ -68,7 +68,7 @@ def presets():
     route(q, 2, VOWEL_Y, DST["timbre"], 0.55)
     route(q, 3, VOICE_NOISE, DST_CHAR["charhard"], 0.45)
     route(q, 4, VOICE_ONSET, DST["timbre"], 0.2)
-    out["bass-voice-wah-bass.ohpepreset"] = dict(p, name="Voice Wah Bass", tags=["Bass", "Voice"], params=q,
+    out["bass-voice-wah-bass.ohpepreset"] = dict(p, name="Voice Wah Bass", tags=["Bass"], params=q,
         comment="A wah you play with your mouth: vowels sweep the formant table, 's' and 't' bite. Without input a round talking bass.")
     return out
 

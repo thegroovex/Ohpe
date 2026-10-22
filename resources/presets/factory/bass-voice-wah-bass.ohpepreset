@@ -5,8 +5,7 @@
  "name": "Voice Wah Bass",
  "author": "groovex",
  "tags": [
-  "Bass",
-  "Voice"
+  "Bass"
  ],
  "engine": "wavetable",
  "comment": "A wah you play with your mouth: vowels sweep the formant table, 's' and 't' bite. Without input a round talking bass.",

@@ -5,8 +5,7 @@
  "name": "Voice Filter Pad",
  "author": "groovex",
  "tags": [
-  "Pads",
-  "Voice"
+  "Pads"
  ],
  "engine": "analog",
  "comment": "Talk or hum to it: open vowels open the filter, your level brings it alive. Without input a warm pulse pad.",

@@ -6,8 +6,7 @@
  "author": "groovex",
  "tags": [
   "Vocal",
-  "Leads",
-  "Voice"
+  "Leads"
  ],
  "engine": "vocal",
  "comment": "Sing into the input: your vowel moves its vowel, your brightness opens it. Without input a clean vowel lead.",
