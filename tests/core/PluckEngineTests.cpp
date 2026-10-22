@@ -84,3 +84,29 @@ TEST_CASE ("pluck: macro ranges, every macro changes the sound")
 }
 
 TEST_CASE ("pluck: CPU sanity") { kit::checkCpu (type, [] (ISynthEngine& e) { e.setParam (pluck::Material, 0.5f); }); }
+
+TEST_CASE ("pluck: a mono part receiving a chord plucks once, the newest key wins (p74)")
+{
+    auto rms = [] (const std::vector<float>& v) {
+        double s = 0.0;
+        for (float x : v) s += (double) x * x;
+        return std::sqrt (s / (double) std::max<size_t> (1, v.size()));
+    };
+    auto play = [&] (std::initializer_list<int> notes) {
+        PluckEngine e;
+        kit::prepare (e);
+        ringing (e, 0.0f);
+        e.setPolyphony (1);
+        for (int n : notes) e.noteOn (n, 1.0f); // all in the same block
+        return renderEngine (e, 24000);
+    };
+    const auto chord = play ({ 40, 44, 47, 52 });
+    const auto single = play ({ 52 });
+    const double c = rms (chord.l), s = rms (single.l);
+    CAPTURE (c);
+    CAPTURE (s);
+    REQUIRE (s > 1.0e-4);
+    CHECK (std::abs (20.0 * std::log10 (c / s)) < 0.5); // one pluck, not four stacked
+    const double f = kit::bandFrequency (chord.l, sampleRate, 4800, 24000, dsp::midiToHz (52.0f));
+    CHECK (std::abs (centsBetween (f, dsp::midiToHz (52.0f))) < 5.0);
+}

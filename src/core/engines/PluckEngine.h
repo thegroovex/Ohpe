@@ -62,6 +62,10 @@ private:
     // body
     dsp::Svf body1, body2, body3;
     dsp::Random noise;
+    // pluck requested by start(), done at the next render (one pluck per block, newest key wins)
+    bool pendingPluck = false;
+    float pendingFreq = 110.0f, pendingHardness = 0.5f;
+    uint32_t pendingSeed = 17;
 };
 } // namespace pluck
 
