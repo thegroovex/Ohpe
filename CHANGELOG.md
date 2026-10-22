@@ -7,6 +7,22 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Voice Control (p68): a live audio input is analysed in real time (about 8 ms) into seven new modulation sources –
+  Voice Level, Vowel X / Y (formants on an A-E-I-O-U map), Voice Brightness, Voice Noisiness (consonants), Voice Pitch
+  (optional) and Voice Onset. Not a vocoder: the voice only modulates; monitoring is off by default. LFO > Voice shows
+  the vowel map and the input meter; *Vowel → Filter + Morph* maps it to the edit part in one press. Gain, gate,
+  smoothing, pitch tracking and monitor are host / MIDI parameters (appended, not stored in presets). The standalone
+  app gains an input device choice (none by default, macOS microphone text in English and German); plug-ins use their
+  existing optional input bus (unchanged layouts). Three factory presets (names start with "Voice"). Docs:
+  docs/en/VOICE-CONTROL.md.
+- DE: Stimmsteuerung (p68): Ein Live-Audio-Eingang wird in Echtzeit (etwa 8 ms) in sieben neue Modulationsquellen
+  zerlegt – Stimme Pegel, Vokal X / Y (Formanten auf einer A-E-I-O-U-Karte), Stimme Helligkeit, Stimme Rauschanteil
+  (Konsonanten), Stimme Tonhöhe (optional) und Stimme Einsatz. Kein Vocoder: Die Stimme moduliert nur; Abhören ist
+  anfangs aus. LFO > Stimme zeigt Vokalkarte und Eingangsanzeige; *Vokal → Filter + Morph* legt sie mit einem Druck auf
+  den Edit-Part. Eingangspegel, Schwelle, Glättung, Tonhöhenerkennung und Abhören sind Host-/MIDI-Parameter
+  (angehängt, nicht in Presets gespeichert). Die Standalone-App bekommt eine Eingangsgeräte-Wahl (anfangs keins,
+  macOS-Mikrofontext auf Deutsch und Englisch); Plug-ins nutzen ihren vorhandenen optionalen Eingangsbus
+  (unveränderte Layouts). Drei Werks-Presets (Namen beginnen mit „Voice“). Doku: docs/de/STIMMSTEUERUNG.md.
 - EN: Learning breed (p69): the BREED key learns locally from use – time played with notes, saved, loaded again,
   favourited, kept, quickly skipped (negative) – and keeps a small taste profile per engine. BREED / AGAIN breed more
   candidates and show the best-scoring ones, mutation leans towards the liked region, the die's parent B follows the

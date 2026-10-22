@@ -70,7 +70,7 @@ std::vector<float> arpSnapshot (const ParamRegistry& reg)
 static bool isMotionId (const std::string& localId) noexcept { return startsWith (localId, "motion."); }
 
 /** p41: the 3D switch ("space.mode") is not stored in presets - it is set from space.on and the monitoring after a load. */
-static bool isSpaceSwitchId (const std::string& localId) noexcept { return localId == "space.mode"; }
+static bool isSpaceSwitchId (const std::string& localId) noexcept { return localId == "space.mode" || localId == "voice.map"; } // p68: a trigger
 
 bool isExcludedFromProject (const std::string& id) noexcept
 {
@@ -83,7 +83,8 @@ bool isExcludedFromProject (const std::string& id) noexcept
         || (id.size() > 13 && id.compare (id.size() - 13, 13, ".motion.clear") == 0) // p22: a trigger
         || (id.size() > 11 && id.compare (id.size() - 11, 11, ".space.mode") == 0)   // p41: the 3D switch follows space.on + monitoring
         || id == "pads.stutter" || id == "pads.stop" || id == "pads.sweep" || id == "pads.freeze" // p25: held pads are performance
-        || id == "harmony.take" || id == "harmony.clear"; // p24: triggers
+        || id == "harmony.take" || id == "harmony.clear" // p24: triggers
+        || startsWith (id, "voice.") || (id.size() > 10 && id.compare (id.size() - 10, 10, ".voice.map") == 0); // p68: the player's input setup, a trigger
 }
 
 std::string engineIdOfPart (const ParamRegistry& reg, int partIndex)

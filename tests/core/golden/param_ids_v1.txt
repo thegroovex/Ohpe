@@ -6864,3 +6864,14 @@ tapemem.src
 tapemem.mode
 tapemem.to
 tapemem.go
+# p68: Voice Control - live input as modulation sources
+voice.on
+voice.gain
+voice.gate
+voice.smooth
+voice.pitch
+voice.monitor
+p1.voice.map
+p2.voice.map
+p3.voice.map
+p4.voice.map

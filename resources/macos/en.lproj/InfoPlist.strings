@@ -1,0 +1,2 @@
+/* p68: microphone permission (Voice Control, tape recording, bounce) */
+"NSMicrophoneUsageDescription" = "Ohpe uses the audio input you choose so your voice can control the sound (Voice Control) and so you can record it to the tape. The input is analysed on your computer and never sent anywhere.";

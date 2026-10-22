@@ -25,6 +25,7 @@ enum Source
     SrcChordRoot, SrcChordChange, SrcTension, // p24: the harmony brain (Part scope, the same value for every part)
     SrcVibrato, // p33: a 5.5 Hz sine per voice (Voice scope; the Expression page's Vibrato target uses it)
     SrcKeyBend, // p50: key track including the note's own bend (continuous slide position, Voice scope)
+    SrcVoiceLevel, SrcVoiceVowelX, SrcVoiceVowelY, SrcVoiceBrightness, SrcVoiceNoisiness, SrcVoicePitch, SrcVoiceOnset, // p68: Voice Control (Part scope, fed by the core)
     numSources
 };
 /** Sources of the 0.7 list; sources appended later (from here on) are Part-scope values fed by other modules. */
@@ -63,7 +64,8 @@ enum Curve { CurveLinear = 0, CurveExp, CurveLog, CurveS, CurveSteps, numCurves 
 inline bool isBipolar (int src) noexcept
 {
     return src == SrcLfo1 || src == SrcLfo2 || src == SrcLfo3 || src == SrcKeyTrack || src == SrcPitchBend || src == SrcSlide
-        || src == SrcNoteBend || src == SrcRandom || src == SrcVibrato || src == SrcKeyBend;
+        || src == SrcNoteBend || src == SrcRandom || src == SrcVibrato || src == SrcKeyBend
+        || src == SrcVoiceVowelX || src == SrcVoiceVowelY; // p68: centre of the vowel map = 0
 }
 inline bool isVoiceDest (int dst) noexcept { return dst >= DstPitch && dst <= DstTimbre; }
 

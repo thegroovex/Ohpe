@@ -127,3 +127,4 @@ target_sources(ohpe_core_tests PRIVATE ArpSustainTests.cpp) # p60: sustain / sos
 target_sources(ohpe_core_tests PRIVATE RobustnessTests.cpp) # p63: loaders survive damaged files
 target_sources(ohpe_core_tests PRIVATE AudioStressTests.cpp) # p63: sample rates, buffer sizes, denormals, output guard, soak
 target_sources(ohpe_core_tests PRIVATE FormatTests.cpp) # p62: format freeze (fixtures in tests/formats)
+target_sources(ohpe_core_tests PRIVATE VoiceControlTests.cpp) # p68: Voice Control (live input -> modulation sources)

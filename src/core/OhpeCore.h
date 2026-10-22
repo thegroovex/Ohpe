@@ -17,6 +17,7 @@
 #include "model/StereoFifo.h"
 #include "morph/MorphSpace.h"
 #include "motion/MotionRecorder.h"
+#include "voice/VoiceControl.h"
 #include "perform/PerformancePads.h"
 #include "sample/SampleData.h"
 #include "harmony/HarmonyBrain.h"
@@ -107,6 +108,8 @@ public:
     /** p22, tests: the values the last block played with (after locks, motion lanes; the matrix may have moved some). */
     float blockValue (int registryIndex) const noexcept { return snapshot[registryIndex]; }
     const MotionRecorder& motion() const noexcept { return motionRec; }
+    /** p68: Voice Control - the live input analysed into matrix sources (UI values are atomics, any thread). */
+    const voice::VoiceControl& voiceControl() const noexcept { return voiceCtl; }
     /** p25: the performance pads on the main mix (states and meters for the display are atomics, any thread). */
     const PerformancePads& pads() const noexcept { return perfPads; }
     /** p24: the harmony brain (scale and chord memory of all parts; published state is atomics, any thread). */
@@ -370,6 +373,7 @@ private:
     uint64_t tapeGrainRevision = 0;  ///< p28: tape content the region was built from (0 = none)
     int tapeGrainTrack = -2;         ///< p28: track it was built from (-1 = mix)
     MotionRecorder motionRec; ///< p22
+    voice::VoiceControl voiceCtl; ///< p68
     PerformancePads perfPads; ///< p25 (the mixer runs it in the master chain)
     HarmonyBrain harmonyBrain; ///< p24
     Mixer mix;

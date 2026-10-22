@@ -26,6 +26,7 @@ AudioSettingsPage::AudioSettingsPage (juce::AudioDeviceManager& d, OhpeProcessor
     };
     setupLabel (typeLabel, tr ("Audio system"));
     setupLabel (deviceLabel, tr ("Output device"));
+    setupLabel (inputLabel, tr ("Input device")); // p68
     setupLabel (rateLabel, tr ("Sample rate"));
     setupLabel (bufferLabel, tr ("Buffer size"));
     setupLabel (latencyLabel, tr ("Output latency"));
@@ -38,7 +39,17 @@ AudioSettingsPage::AudioSettingsPage (juce::AudioDeviceManager& d, OhpeProcessor
     setupLabel (routingInfo, tr ("Every mixer channel can go to the main output or to its own stereo output."));
     setupLabel (midiLabel, tr ("MIDI inputs"));
 
-    for (auto* b : { &typeBox, &deviceBox, &rateBox, &bufferBox }) addAndMakeVisible (*b);
+    for (auto* b : { &typeBox, &deviceBox, &inputBox, &rateBox, &bufferBox }) addAndMakeVisible (*b);
+    inputBox.onChange = [this] { // p68: none by default; macOS asks for the microphone the first time one opens
+        if (updating) return;
+        const bool none = inputBox.getSelectedId() <= 1;
+        applySetup ([this, none] (auto& s) {
+            s.inputDeviceName = none ? juce::String() : inputBox.getText();
+            s.useDefaultInputChannels = false;
+            s.inputChannels.clear();
+            if (! none) s.inputChannels.setRange (0, 2, true);
+        });
+    };
     typeBox.onChange = [this] {
         if (updating) return;
         dm.setCurrentAudioDeviceType (typeBox.getText(), true);
@@ -79,7 +90,7 @@ AudioSettingsPage::AudioSettingsPage (juce::AudioDeviceManager& d, OhpeProcessor
     dm.addChangeListener (this);
     refreshDeviceLists();
     startTimerHz (2);
-    setSize (640, 640);
+    setSize (640, 674); // p68: + input row
 }
 
 AudioSettingsPage::~AudioSettingsPage()
@@ -120,6 +131,17 @@ void AudioSettingsPage::refreshDeviceLists()
     }
     auto* dev = dm.getCurrentAudioDevice();
     deviceBox.setText (dev != nullptr ? dev->getName() : tr ("No device"), juce::dontSendNotification);
+
+    inputBox.clear (juce::dontSendNotification); // p68
+    inputBox.addItem (tr ("No input"), 1);
+    if (auto* type = dm.getCurrentDeviceTypeObject())
+    {
+        id = 2;
+        for (const auto& name : type->getDeviceNames (true)) inputBox.addItem (name, id++);
+    }
+    const auto inName = dm.getAudioDeviceSetup().inputDeviceName;
+    if (inName.isEmpty() || dm.getAudioDeviceSetup().inputChannels.isZero()) inputBox.setSelectedId (1, juce::dontSendNotification);
+    else inputBox.setText (inName, juce::dontSendNotification);
 
     rateBox.clear (juce::dontSendNotification);
     bufferBox.clear (juce::dontSendNotification);
@@ -196,6 +218,7 @@ void AudioSettingsPage::resized()
     };
     pair (typeLabel, typeBox);
     pair (deviceLabel, deviceBox);
+    pair (inputLabel, inputBox); // p68
     pair (rateLabel, rateBox);
     pair (bufferLabel, bufferBox);
     pair (latencyLabel, latencyValue);

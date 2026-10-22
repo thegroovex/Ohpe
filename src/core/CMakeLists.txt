@@ -71,6 +71,8 @@ target_sources(ohpe_core PRIVATE morph/MorphSpace.cpp)
 
 # p22: the motion recorder (knob movements per part as looping lanes)
 target_sources(ohpe_core PRIVATE motion/MotionRecorder.cpp)
+# p68: Voice Control (live input -> modulation sources)
+target_sources(ohpe_core PRIVATE voice/VoiceAnalyser.cpp voice/VoiceControl.cpp)
 
 # p25: the performance pads (stutter, tape stop, filter sweep, reverb freeze on the main mix)
 target_sources(ohpe_core PRIVATE perform/PerformancePads.cpp)

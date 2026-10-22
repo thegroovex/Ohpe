@@ -366,5 +366,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     HarmonyBrain::registerLate59GridParams (reg);
     // ---- p67: tape memory - length, source, capture mode, target part, CAPTURE ------------------------------------
     tapemem::registerParams (reg);
+    // ---- p68: Voice Control - the live input as modulation sources (on, gain, gate, smoothing, pitch, monitor; quick map) --
+    voice::VoiceControl::registerParams (reg, Core::numParts);
 }
 } // namespace ohpe

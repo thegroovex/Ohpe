@@ -206,6 +206,17 @@ const HelpTopic helpTopics[] = {
       "(Arp) in diesem Raster.\n\n"
       "Fußpedal: Ein Haltepedal an der Pedalbuchse des Controllers hält Noten wie an einem MIDI-Keyboard (Sustain CC 64, Sostenuto "
       "CC 66), auch in MPE-/Fingerboard-Parts und im Arpeggio." },
+    { "Voice Control", "Stimmsteuerung", // p68
+      "Your voice can move the sound - it is never heard through it. Choose an input (standalone: Settings > Audio, Input device; "
+      "plug-in: enable the instrument's input or sidechain in the host), then open LFO > Voice.\n\n"
+      "The display shows the vowel you sing (A E I O U) and the input meter with the gate line. Vowel \xe2\x86\x92 Filter + Morph maps the vowel "
+      "to the edit part's filter and morph pad in one press; in the Mod view the sources Voice Level, Vowel X / Y, Voice Brightness, "
+      "Voice Noisiness, Voice Pitch and Voice Onset go anywhere. Monitor is off so speakers cannot feed back.",
+      "Deine Stimme kann den Klang bewegen - zu hören ist sie darin nie. Einen Eingang wählen (Standalone: Einstellungen > Audio, Eingangsgerät; "
+      "Plug-in: im Host den Eingang oder Sidechain des Instruments einschalten), dann LFO > Stimme öffnen.\n\n"
+      "Das Display zeigt den gesungenen Vokal (A E I O U) und die Eingangsanzeige mit der Schwellen-Linie. Vokal \xe2\x86\x92 Filter + Morph legt den Vokal "
+      "mit einem Druck auf Filter und Morph-Pad des Edit-Parts; in der Mod-Ansicht gehen die Quellen Stimme Pegel, Vokal X / Y, Stimme Helligkeit, "
+      "Stimme Rauschanteil, Stimme Tonhöhe und Stimme Einsatz überallhin. Abhören ist aus, damit Lautsprecher nicht rückkoppeln." },
     { "Updates", "Updates",
       "Ohpe can look for new versions once a day (off until you switch it on) or when you press Check now. Nothing about you is sent.\n\n"
       "Downloads are verified before they open. Content packs add presets without reinstalling; the previous pack is kept for a rollback.",

@@ -7,6 +7,7 @@
 #include "ModFxViews.h"
 #include "MorphView.h"
 #include "MotionView.h"
+#include "VoiceView.h"
 #include "PadsView.h"
 #include "HarmonyView.h"
 
@@ -46,6 +47,7 @@ enum SoftKeyId
     skMotionRec = 100, skMotionPlay, skMotionClear,   // p22: motion recorder
     skPadFirst = 110,                                 // p25: performance pads (latching: 110 .. 113)
     skHarmonyTake = 120, skHarmonyHold, skHarmonyClear, // p24: harmony brain
+    skVoiceOn = 180, skVoiceMap, // p68: Voice Control (after p67 capture keys 170/171)
     skTapeClear = 130, skTapeClearAll, skTapeSave, skTapeLoad, // p38: clear track / all, save / load the tape
     // p42: the loop keys of the tape page (the loop readout left of the keys opens / closes them)
     skLoopSetIn = 140, skLoopSetOut, skLoopOnOff, skLoopSnap, skLoopToIn, skLoopBack, skLoopUndo, skLoopRedo, skLoopHalf,
@@ -770,6 +772,7 @@ int& OhpeEditor::currentPage()
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMorph) return morphPage;   // p16
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMotion) return motionPage; // p22
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewHarmony) return harmonyPage; // p24
+    if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewVoice) return voicePage; // p68
     if (mode == Mode::Effects && ctx.fxView != modfx::FxViewSends) return rackPage;  // 0.7 (1.0: also the Space view)
     return pageOf[(size_t) mode];
 }
@@ -1771,6 +1774,13 @@ void OhpeEditor::refreshSoftKeys()
                  { skHarmonyHold, tr ("Hold"), true, hold != nullptr && hold->getValue() > 0.5f },
                  { skHarmonyClear, tr ("Forget"), core.harmony().heard() } };
     }
+    else if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewVoice) // p68: on / off, quick map for the edit part
+    {
+        const auto* on = proc.parameter (voice::Ids::on);
+        keys = { { skVoiceOn, tr ("On"), true, on != nullptr && on->getValue() > 0.5f },
+                 { skVoiceMap, i18n::pick ("Vowel \xe2\x86\x92 Filter + Morph", "Vokal \xe2\x86\x92 Filter + Morph"), true } };
+        if (voiceMapMessage.isNotEmpty()) status = voiceMapMessage;
+    }
     else if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMotion) // p22: record, play, clear the part's lanes
     {
         const auto pre = "p" + juce::String (ctx.part + 1) + ".motion.";
@@ -1910,6 +1920,19 @@ void OhpeEditor::onSoftKey (int id)
             break;
         }
         case skMotionClear: core.motion().clearPart (ctx.part); break; // p22
+        case skVoiceOn: // p68
+        {
+            const auto* prm = proc.parameter (voice::Ids::on);
+            setParamPlain (voice::Ids::on, prm != nullptr && prm->getValue() > 0.5f ? 0.0f : 1.0f);
+            break;
+        }
+        case skVoiceMap: // p68: three routings into the edit part's matrix
+        {
+            const int placed = proc.applyVoiceQuickMap (ctx.part);
+            voiceMapMessage = placed > 0 ? tr ("Part") + " " + juce::String (ctx.part + 1) + ": " + i18n::pick ("vowel moves filter and morph", "Vokal bewegt Filter und Morph")
+                                         : i18n::pick ("No free routing in the Mod view", "Keine freie Zuweisung in der Mod-Ansicht");
+            break;
+        }
         case skPadFirst:
         case skPadFirst + 1:
         case skPadFirst + 2:
@@ -2622,6 +2645,13 @@ void OhpeEditor::timerCallback()
         if (sig != lastHarmonySignature) { lastHarmonySignature = sig; refreshSoftKeys(); }
         display.repaint(); // the memory bars move with every block
     }
+    if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewVoice) // p68: the meter and the dot move with every block
+    {
+        const int sig = voiceview::signature (core) + 8 * (proc.parameter (voice::Ids::on) != nullptr && proc.parameter (voice::Ids::on)->getValue() > 0.5f ? 1 : 0);
+        if (sig != lastVoiceSignature) { lastVoiceSignature = sig; refreshSoftKeys(); }
+        display.repaint();
+    }
+    else voiceMapMessage.clear();
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMotion) // p22: key states and the status line follow the recorder
     {
         const auto pre = "p" + std::to_string (ctx.part + 1) + ".motion.";

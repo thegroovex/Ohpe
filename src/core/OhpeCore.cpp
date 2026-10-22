@@ -92,6 +92,7 @@ Core::Core()
     motionRec.bind (registry, snapshot); // p22
     perfPads.bind (registry);            // p25
     harmonyBrain.bind (registry);        // p24
+    voiceCtl.bind (registry);            // p68
     lockStorage.reserve (1024);
     seqOut.locks = &lockStorage;
     seqOut.maxLocks = 1024;
@@ -134,6 +135,7 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     motionRec.prepare (sr);         // p22
     perfPads.prepare (sr);          // p25
     harmonyBrain.prepare (sr);      // p24
+    voiceCtl.prepare (sr);          // p68
     drums.prepare (sr, chunk);
     mix.prepare (sr, chunk);
     tapeMem.prepare (sr); // p67: allocated once per sample rate (30 s, 16 bit)
@@ -230,6 +232,7 @@ void Core::reset() noexcept
     motionRec.reset(); // p22
     perfPads.reset();  // p25
     harmonyBrain.reset(); // p24
+    voiceCtl.reset();     // p68
     drums.reset();
     mix.reset();
     tapeMachine.resetDsp();
@@ -654,6 +657,9 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     for (int p = 0; p < numParts; ++p) // p22: the lanes as matrix sources Motion 1 .. 4
         for (int l = 0; l < MotionRecorder::numLanes; ++l)
             parts[(size_t) p]->modMatrix().setSourceValue (mod::SrcMotion1 + l, motionRec.sourceValue (p, l));
+    voiceCtl.process (snapshot, inputL, inputR, numSamples); // p68: the live input as matrix sources Voice Level .. Onset
+    for (auto& p : parts)
+        for (int k = 0; k < voice::numValues; ++k) p->modMatrix().setSourceValue (mod::SrcVoiceLevel + k, voiceCtl.sourceValue (k));
     perfPads.pullParams (snapshot); // p25
     for (auto& p : parts) // p25: the pads as matrix sources (as of the last block)
     {
@@ -891,6 +897,8 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     else clockGen.reset();
     midiOut.sortByTime();
 
+    voiceCtl.monitor (outputs.left[0], outputs.right[0], inputL, inputR, numSamples); // p68: off by default (feedback)
+    voiceCtl.publishUi();
     guardOutputs (outputs, numSamples); // p63
     int voices = 0;
     inputL = inputR = nullptr;

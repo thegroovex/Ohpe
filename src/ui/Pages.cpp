@@ -5,6 +5,7 @@
 #include "ModFxViews.h"
 #include "MorphView.h"
 #include "MotionView.h"
+#include "VoiceView.h"
 #include "PadsView.h"
 #include "HarmonyView.h"
 #include "ResoView.h"
@@ -143,6 +144,7 @@ std::vector<std::string> modeParams (Mode m, Core& core, const PageContext& ctx)
             if (ctx.lfoView == modfx::LfoViewMorph) return morphview::morphParams (partIndex); // p16
             if (ctx.lfoView == modfx::LfoViewMotion) return motionview::motionParams (partIndex); // p22
             if (ctx.lfoView == modfx::LfoViewHarmony) return harmonyview::harmonyParams (partIndex); // p24
+            if (ctx.lfoView == modfx::LfoViewVoice) return voiceview::voiceParams(); // p68
             return { p + "lfo.rate", p + "lfo.depth", p + "lfo.shape", p + "lfo.dest", p + "tune", p + "fine", p + "bend", p + "vol",
                      p + "midich", p + "quant", p + "chord", "key.root", "key.scale", p + "mpe", p + "mpe.bend", p + "mpe.press",
                      p + "mpe.timbre", p + "mpe.pressamt", p + "mpe.timbreamt", p + "mpe.smooth", p + "mpe.slide", p + "mpe.hd", p + "mpe.onset",
@@ -235,6 +237,7 @@ std::vector<std::string> pageTitles (Mode m, Core& core, const PageContext& ctx)
                 : ctx.lfoView == modfx::LfoViewMorph ? morphview::morphTitles() // p16
                 : ctx.lfoView == modfx::LfoViewMotion ? motionview::motionTitles() // p22
                 : ctx.lfoView == modfx::LfoViewHarmony ? harmonyview::harmonyTitles() // p24
+                : ctx.lfoView == modfx::LfoViewVoice ? voiceview::voiceTitles() // p68
                                                      : std::vector<std::string> { "LFO", "Pitch & Level", "MIDI & Key", "Scale & MPE", "MPE" };
             break;
         case Mode::Mixer: t = { "Channel", "EQ & Output", "Source & Dynamics", "Master", "Master Compressor", "Master Output", "Master Filter" }; break;

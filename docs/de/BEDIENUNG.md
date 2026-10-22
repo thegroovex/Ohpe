@@ -512,7 +512,7 @@ und Lautstärke und Grundnote des Kits (Seite 3). **Laden** legt eine Audiodatei
 ![Mod-Ansicht](../images/ohpe-mod-view-de.png)
 
 Im **LFO**-Modus schalten die Reiter auf dem Display zwischen **LFO** (LFO 1, wie bisher),
-**Mod**, der [Modulationsmatrix](MODULATION.md) des Edit-Parts, **Morph** (dem [Morph-Pad](#morph-ansicht-p16)), **Bewegung** (dem [Bewegungs-Recorder](#bewegungs-ansicht-p22)) und **Harmonie** (dem [Harmonie-Hirn](#harmonie-ansicht-p24)). Die Mod-Ansicht listet alle
+**Mod**, der [Modulationsmatrix](MODULATION.md) des Edit-Parts, **Morph** (dem [Morph-Pad](#morph-ansicht-p16)), **Bewegung** (dem [Bewegungs-Recorder](#bewegungs-ansicht-p22)) **Harmonie** (dem [Harmonie-Hirn](#harmonie-ansicht-p24)) und **Stimme** (der [Stimmsteuerung](#ansicht-stimme-p68)). Die Mod-Ansicht listet alle
 **16 Verbindungen** in zwei Spalten: Quelle → Ziel, ein Balken für die Menge (nach rechts = positiv,
 nach links = negativ) und der aktuelle Wert der Verbindung. Ziele auf einer Engine oder einem Effekt
 zeigen den echten Parameternamen („Cutoff“, „FX2 Hyper-Verstimmung“) – man sieht, was sich bewegt,
@@ -736,6 +736,17 @@ Mit MPE für den Edit-Part hat jede Berührung ihren eigenen Kanal – seitlich 
 Druck von Touch oder Stift. Jeder Akkord hat in jeder Tonart dieselbe Form; das sagt auch der Tooltip der Taste,
 und beim ersten Einschalten in einem Projekt zeigt die Tastatur-Anzeige ein paar Sekunden lang „Gleiche
 Akkordform in jeder Tonart“ (p47).
+
+## Ansicht Stimme (p68)
+
+![Die Ansicht Stimme](../images/ohpe-voice-view-de.png)
+
+Der sechste Reiter des **LFO**-Modus, **Stimme**, zeigt die [Stimmsteuerung](STIMMSTEUERUNG.md): die Vokalkarte
+(A E I O U, der gesungene Vokal als gelber Punkt, grau unter der Schwelle), die Eingangsanzeige mit der
+Schwellen-Linie und Balken für Pegel, Helligkeit, Rauschanteil, Tonhöhe und Einsatz. Encoder-Seiten **Stimme** (Ein,
+Eingangspegel, Schwelle, Glättung) und **Stimme Optionen** (Tonhöhe erkennen, Abhören). Softkeys: **Ein** und
+**Vokal → Filter + Morph** (drei Zuweisungen in die Matrix des Edit-Parts). Der Eingang: Standalone
+*Einstellungen > Audio > Eingangsgerät*, Plug-ins im Host der Eingang / Sidechain des Instruments.
 
 ## Updates (p27)
 

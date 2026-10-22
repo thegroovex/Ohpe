@@ -194,6 +194,7 @@ private:
     bool showsMotionView() const noexcept; ///< p22: LFO mode, view Motion
     bool showsPadsView() const noexcept;   ///< p25: Effects mode, view Pads
     bool showsHarmonyView() const noexcept; ///< p24: LFO mode, view Harmony
+    bool showsVoiceView() const noexcept;   ///< p68: LFO mode, view Voice
     void setMorphPosition (juce::Point<float> p); ///< p16: pad drag
     juce::Rectangle<float> visualArea() const; ///< 0.7: left of the rows (routing list / FX chain)
     FxRack& shownRack() const;
