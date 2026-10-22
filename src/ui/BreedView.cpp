@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "BreedView.h"
+#include "breed/TasteProfile.h"
 
 #include "Palette.h"
 #include "engines/EngineFactory.h"
@@ -274,7 +275,27 @@ void BreedView::randomParent (int which)
         if (list[(size_t) i].meta.kind == preset::Kind::Part) parts.push_back (i);
     if (parts.empty()) return;
     breed::Rng rng (nextSeed());
-    setParentFromLibrary (which, parts[(size_t) rng.below ((int) parts.size())]);
+    const auto taste = proc.taste().bias();
+    if (taste == nullptr || ! (taste->pull() > 0.0f))
+    {
+        setParentFromLibrary (which, parts[(size_t) rng.below ((int) parts.size())]);
+        return;
+    }
+    // p69: a handful of random candidates, picked by the learned taste (curiosity keeps a uniform share)
+    std::vector<int> cand;
+    std::vector<float> score;
+    auto& presets = proc.presets();
+    for (int k = 0; k < 16; ++k)
+    {
+        const int e = parts[(size_t) rng.below ((int) parts.size())];
+        preset::Preset pr;
+        if (! preset::fromJson (presets.read (list[(size_t) e]), pr) || pr.meta.kind != preset::Kind::Part) continue;
+        cand.push_back (e);
+        score.push_back (taste->score (ses->schema(), breed::fromParams (ses->schema(), pr.params))
+                         + 0.05f * juce::jlimit (-4.0f, 4.0f, proc.taste().taste().fitness (list[(size_t) e].uid)));
+    }
+    if (cand.empty()) return;
+    setParentFromLibrary (which, cand[(size_t) juce::jmax (0, breed::pickByTaste (score, taste->curiosity, rng.uniform()))]);
 }
 
 // ---- breeding ---------------------------------------------------------------------------------------------------------
@@ -286,6 +307,7 @@ void BreedView::breedNew()
         repaint();
         return;
     }
+    ses->options.taste = proc.taste().bias(); // p69: the learned taste (none when learning is off)
     ses->breedParents (nextSeed());
     selected = -1;
     status.clear();
@@ -295,6 +317,7 @@ void BreedView::breedNew()
 void BreedView::breedAgain()
 {
     if (ses->empty()) { breedNew(); return; }
+    ses->options.taste = proc.taste().bias(); // p69
     ses->breedAgain (nextSeed());
     selected = -1;
     status.clear();
@@ -436,6 +459,8 @@ void BreedView::audition (int i, bool playNote)
     if (g == nullptr || i < 0 || i >= (int) g->children.size()) return;
     selected = i;
     proc.presets().apply (childPreset (i), -1);
+    const auto& child = g->children[(size_t) i];
+    proc.taste().soundChanged ("breed:" + std::to_string (child.seed), child.genome); // p69: play time, skips
     if (playNote && playNotes)
     {
         if (noteOn >= 0) proc.keyboardState.noteOff (noteChannel, noteOn, 0.0f);
@@ -458,7 +483,9 @@ void BreedView::toggleKept (int i)
 {
     const auto* g = ses->current();
     if (g == nullptr || i < 0 || i >= (int) g->children.size()) return;
-    ses->setKept (i, ! g->children[(size_t) i].kept);
+    const auto& child = g->children[(size_t) i];
+    if (! child.kept) proc.taste().signal ("breed:" + std::to_string (child.seed), breed::Signal::Kept, child.genome); // p69
+    ses->setKept (i, ! child.kept);
     store();
     repaint();
 }
@@ -688,11 +715,112 @@ void BreedView::paint (juce::Graphics& g)
     else
         for (int i = 0; i < (int) gen->children.size() && i < 6; ++i) paintTile (g, i, tileArea (i));
 
-    // ---- foot: what SAVE does
+    if (showWhy) paintWhy (g, tileArea (0).getUnion (tileArea (5)).reduced (u * 14.0f, u * 3.0f));
+
+    // ---- foot: p69 learning row, what SAVE does
+    paintLearnRow (g, b.getHeight() - u * 3.2f, u * 2.4f);
     g.setColour (colour::displayDim);
     g.setFont (labelFont (u * 1.3f));
-    g.drawText (tr ("SAVE stores the selected child in the library as a favourite. RANDOM rolls a new parent B."),
-                juce::Rectangle<float> (u * 2.0f, b.getHeight() - u * 3.2f, u * 110.0f, u * 2.4f), juce::Justification::centredLeft, true);
+    g.drawFittedText (tr ("SAVE stores the selected child in the library as a favourite. RANDOM rolls a new parent B."),
+                      juce::Rectangle<float> (u * 52.0f, b.getHeight() - u * 3.2f, u * 60.0f, u * 2.4f).toNearestInt(),
+                      juce::Justification::centredRight, 1, 0.7f);
+}
+
+// ---- p69: learning breed ----------------------------------------------------------------------------------------------
+void BreedView::setLearning (bool on)
+{
+    proc.taste().setLearning (on);
+    status = on ? tr ("Learning: the breeding follows what you play, keep and save.") : tr ("Learning off: the brood is not biased.");
+    repaint();
+}
+
+void BreedView::setCuriosity (float c)
+{
+    proc.taste().setCuriosity (c);
+    repaint();
+}
+
+void BreedView::setShowWhy (bool show)
+{
+    showWhy = show;
+    repaint();
+}
+
+void BreedView::resetTaste (bool confirmed)
+{
+    if (! confirmed && ! resetArmed)
+    {
+        resetArmed = true;
+        status = tr ("Press RESET again to forget everything the breeding has learned.");
+        repaint();
+        return;
+    }
+    resetArmed = false;
+    proc.taste().reset();
+    status = tr ("The learned taste is forgotten.");
+    repaint();
+}
+
+juce::StringArray BreedView::whyLines() const
+{
+    juce::StringArray out;
+    const auto& reg = proc.core().params();
+    for (const auto& t : proc.taste().taste().traits (ses->schema(), 5))
+    {
+        const int d = reg.indexOf ("p1." + t.gene);
+        const auto& desc = reg.descriptor (d >= 0 ? d : 0);
+        const juce::String name = d >= 0 ? i18n::pick (desc.nameEn.c_str(), desc.nameDe.c_str()) : juce::String (t.gene);
+        out.add (engineName (t.engine) + juce::String::fromUTF8 (" \xc2\xb7 ") + name + ": "
+                 + tr (t.liked > t.reference ? "higher" : "lower") + " (" + juce::String (juce::roundToInt (t.liked * 100.0f)) + " %)");
+    }
+    return out;
+}
+
+void BreedView::paintLearnRow (juce::Graphics& g, float y, float h)
+{
+    const float u = unit();
+    auto& taste = proc.taste();
+    const bool on = taste.learning();
+    chip (g, { u * 2.0f, y, u * 12.0f, h }, i18n::upper (tr ("Learn")) + ": " + i18n::upper (tr (on ? "On" : "Off")), on, colour::playGreenLit,
+          [this, on] { setLearning (! on); });
+    const int pct = juce::roundToInt (taste.curiosity() * 100.0f);
+    chip (g, { u * 14.6f, y, u * 16.0f, h }, i18n::upper (tr ("Curiosity")) + " " + juce::String (pct) + " %", false, colour::sunYellow,
+          [this, pct] { setCuriosity ((float) ((pct + 10) > 100 ? 0 : pct + 10) / 100.0f); },
+          [this, pct] { setCuriosity ((float) juce::jmax (0, pct - 10) / 100.0f); });
+    chip (g, { u * 31.2f, y, u * 9.0f, h }, i18n::upper (tr ("Why")), showWhy, colour::ultraviolet, [this] { setShowWhy (! showWhy); });
+    chip (g, { u * 40.8f, y, u * 10.0f, h }, i18n::upper (tr ("Reset")), resetArmed, colour::signalRed, [this] { resetTaste(); });
+}
+
+void BreedView::paintWhy (juce::Graphics& g, juce::Rectangle<float> r)
+{
+    const float u = unit();
+    g.setColour (colour::display.withAlpha (0.94f));
+    g.fillRoundedRectangle (r, u * 0.8f);
+    g.setColour (colour::ultraviolet);
+    g.drawRoundedRectangle (r, u * 0.8f, u * 0.2f);
+    auto in = r.reduced (u * 2.0f, u * 1.4f);
+    g.setColour (colour::displayText);
+    g.setFont (labelFont (u * 1.6f));
+    g.drawText (i18n::upper (tr ("What the breeding has learned")), in.removeFromTop (u * 2.8f), juce::Justification::centredLeft, true);
+    const auto lines = whyLines();
+    g.setFont (labelFont (u * 1.5f));
+    if (lines.isEmpty())
+    {
+        g.setColour (colour::displayDim);
+        g.drawFittedText (proc.taste().learning() ? tr ("Nothing yet: play sounds, keep children and save favourites - the breeding learns from it.")
+                                                  : tr ("Learning is off."),
+                          in.toNearestInt(), juce::Justification::topLeft, 3, 0.9f);
+        return;
+    }
+    for (const auto& l : lines)
+    {
+        g.setColour (colour::displayText);
+        g.drawText (juce::String::fromUTF8 ("\xe2\x80\xa2 ") + l, in.removeFromTop (u * 2.4f), juce::Justification::centredLeft, true);
+    }
+    g.setColour (colour::displayDim);
+    g.setFont (labelFont (u * 1.3f));
+    g.drawFittedText (tr ("Curiosity keeps exploring: at 100 % the brood ignores the profile. Everything stays on this computer."),
+                      in.removeFromBottom (u * 2.4f).toNearestInt(), juce::Justification::centredLeft, 1, 0.7f);
 }
 
 void BreedView::paintTile (juce::Graphics& g, int i, juce::Rectangle<float> r)

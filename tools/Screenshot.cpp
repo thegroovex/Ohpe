@@ -174,6 +174,7 @@ int main (int argc, char* argv[])
     // p40: the views below start from the plain parameter defaults; only the first-start shot uses the start sound
     OhpeProcessor::startWithFactorySound.store (false);
     OhpeEditor::showTourOnFirstOpen.store (false); // p64: the tour only in its own shots below
+    TasteStore::filesEnabled.store (false);        // p69: the taste profile in memory only
     for (auto lang : { i18n::Language::English, i18n::Language::German })
     {
         const juce::String suffix = lang == i18n::Language::German ? "-de" : "";
@@ -1347,6 +1348,16 @@ int main (int argc, char* argv[])
             bv.audition (1, false);
             e.advanceAnimation (0.2f);
             save (e, dir.getChildFile ("ohpe-breeding" + suffix + ".png"));
+            // p69: learning breed - the kept children and a favourite taught the profile; WHY shows what it learned
+            p.presets().setFavourite (byName ("Glass Shimmer"), true);
+            bv.setCuriosity (0.3f);
+            bv.breedNew();
+            bv.waitForSketches (180000);
+            bv.setShowWhy (true);
+            e.advanceAnimation (0.2f);
+            save (e, dir.getChildFile ("ohpe-breeding-learn" + suffix + ".png"));
+            bv.setShowWhy (false);
+            p.presets().setFavourite (byName ("Glass Shimmer"), false);
             bv.close (false);
             run (p, 8);
         }

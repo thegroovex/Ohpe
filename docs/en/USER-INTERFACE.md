@@ -103,7 +103,8 @@ The **BREED** key (next to RANDOM; a click opens / closes the view, its light ba
 **[breeding](BREEDING.md)**: cross two sounds, hear six children, keep the best and breed further. RANDOM only
 rolls – holding or right-clicking it no longer opens breeding. While the breeding view is open, RANDOM rolls a new
 parent B and SAVE stores the selected child in the library as a favourite. Right-click BREED for MIDI learn of
-`lib.breed`.
+`lib.breed`. The breeding learns locally what you like ([learning breed](BREEDING.md#learning-breed): LEARN,
+CURIOSITY, WHY, RESET in its foot row).
 
 ![The breeding view](../images/ohpe-breeding.png)
 

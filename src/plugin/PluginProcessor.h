@@ -9,6 +9,7 @@
 #include "fx/SpaceMode.h"
 #include "model/CpuLoad.h"
 #include "PresetManager.h"
+#include "TasteStore.h"
 #include "SampleLoader.h"
 #include "UserTables.h"
 #include "tape/TapeLoop.h"
@@ -98,6 +99,8 @@ public:
 
     /** 0.3: the preset library (factory + user bank). Message thread. */
     PresetManager& presets() noexcept { return *presetManager; }
+    /** p69: the learning breed's local taste profile (message thread). */
+    TasteStore& taste() noexcept { return *tasteStore; }
 
     /**
         0.3: edits the core's registry on the message thread and publishes the result to the host:
@@ -304,6 +307,7 @@ private:
     double tapeBpm() const;
     std::array<std::atomic<int>, 3> breedRequests {}; ///< p18
     std::unique_ptr<PresetManager> presetManager;
+    std::unique_ptr<TasteStore> tasteStore; ///< p69
     // p40: the loaded preset's uid for the session (getStateInformation may run off the message thread)
     juce::SpinLock presetUidLock;
     std::array<std::string, 4> presetUidCache, presetUidPending; // p50: one per part

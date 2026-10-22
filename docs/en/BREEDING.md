@@ -82,3 +82,29 @@ A sound is treated as a **genome**: every parameter of the part, sorted into gro
 The breeding session – parents, generations, kept children, the group choices – is saved with the project
 (plug-in state, section `"breed"`). The breeding core (`src/core/breed`) is engine-agnostic: it reads only the
 parameter descriptions, so new engines and effects breed without changes.
+
+## Learning breed
+
+The breeding learns locally what you like. It watches, per sound (a library preset or a bred child): how long you
+play it with notes, whether you save it, load it again, favourite it or keep it (heart) – and whether you skip it
+quickly (a note or two, replaced within a few seconds: counts against it). From this it keeps a small **taste
+profile per engine**: for every sound parameter the region you liked and the one you skipped.
+
+![Learning breed](../images/ohpe-breeding-learn.png)
+
+BREED and AGAIN then lean towards the liked region of each child's engine: twice as many candidates are bred and
+the best-scoring ones are shown, and mutation steps are pulled towards what you liked (and away from what you
+skipped). The die picks its random parent B with the same taste. Levels are never touched – every child is still
+level-matched to its parents, and the safety caps on resonance, feedback and drive stay.
+
+The foot row of the breeding view:
+
+| Control | What it does |
+| --- | --- |
+| **LEARN: ON / OFF** | Learning on or off. Off = nothing is recorded and the brood is not biased. |
+| **CURIOSITY n %** | How much keeps exploring (click +10 %, right-click −10 %). 100 % = the brood ignores the profile, 0 % = it follows it fully. Default 35 %. |
+| **WHY** | Shows the strongest learned traits, e.g. "Analog · Cutoff: higher (82 %)". |
+| **RESET** | Press twice: forgets the whole profile (the settings stay). |
+
+The profile is a local file (`<user data>/groovex/Ohpe/Taste/taste.json`, see [FORMATS](../FORMATS.md)); nothing
+leaves the computer. A damaged file starts an empty profile. With a fixed seed the brood is reproducible.
