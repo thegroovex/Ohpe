@@ -310,7 +310,7 @@ B("Distant Voices", "Textures", "vocal",
   amp(1.0, 2.0, 0.9, 3.0), mod(1.0, 2.0, 0.5, 2.0, 0.0), lfo(0.07, 0.2, "tri", "timbre"),
   space("breathe", "16bars", size=0.6, distance=4.5, spread=60.0, room=0.55, roomsize=0.85, doppler=0.05, rolloff=0.4),
   rev(0.85, 0.18),
-  wheel=("distance", -0.06), voices=8, velsens=0.2, extra_tags=("Vocal",))
+  wheel=("distance", -0.035), voices=8, velsens=0.2, extra_tags=("Vocal",))
 
 B("Ember Field", "Textures", "grain",
   "Short crackling marimba grains like embers, popping up around you on a wandering loop that returns every four bars. The mod wheel "
