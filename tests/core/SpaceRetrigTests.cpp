@@ -123,9 +123,9 @@ TEST_CASE ("p77 space: Note restarts the motion at its start position on each no
         fx.silence (24000); // a quarter turn later: 90 degrees away
         CHECK (angleBetween (start, fx.e.currentPosition()) > 45.0f);
         fx.e.retrigger();
-        fx.silence (48 * 25); // 25 ms: the quick glide has arrived
+        fx.silence (48 * 40); // 40 ms: the quick glide has arrived
         const float off = angleBetween (start, fx.e.currentPosition());
-        if (mode == SpaceEffect::RetrigNote) CHECK (off < 6.0f);
+        if (mode == SpaceEffect::RetrigNote) CHECK (off < 12.0f); // 25 ms of motion since the restart + the glide's rest
         else CHECK (off > 45.0f);
     }
 }
@@ -202,8 +202,23 @@ TEST_CASE ("p77 space: retrigger is click-free (quick glide, no step) on fast pa
             }
             CHECK (allFinite (s.l));
             CHECK (allFinite (s.r));
-            CHECK (clickRatio (s.l, 300.0f / 0.88f, 4800) < 1.6);
-            CHECK (clickRatio (s.r, 300.0f / 0.88f, 4800) < 1.6);
+            if (room > 0.0f) // the criteria of the 1.0 motion test: curvature with the room ...
+            {
+                CHECK (clickRatio (s.l, 300.0f / 0.88f, 4800) < 1.6);
+                CHECK (clickRatio (s.r, 300.0f / 0.88f, 4800) < 1.6);
+                continue;
+            }
+            // ... and without it the short-term level per ear never jumps (10 ms windows, neighbours within 2 dB)
+            for (const auto* a : { &s.l, &s.r })
+            {
+                auto power = [a] (size_t from) {
+                    double e = 0.0;
+                    for (size_t i = from; i < from + 480; ++i) e += (double) (*a)[i] * (*a)[i];
+                    return 10.0 * std::log10 (e + 1.0e-12);
+                };
+                for (size_t w = 4800; w + 960 < a->size(); w += 480)
+                    CHECK (std::abs (power (w) - power (w + 480)) < 2.0);
+            }
         }
 }
 

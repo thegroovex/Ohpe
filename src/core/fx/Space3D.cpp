@@ -398,6 +398,7 @@ void SpaceEffect::prepare (double sampleRate, int)
     for (auto& s : src) s.line.prepare (directMax);
     lowLine.prepare (directMax);
     for (auto& l : dryLine) l.prepare (directMax); // p77
+    dryOffset = std::round (1.0f + itdMax * 0.5f * sr) - (1.0f + itdMax * 0.5f * sr);
     roomLine.prepare ((int) std::ceil (0.42f * sr) + directMax);
     for (int i = 0; i < 4; ++i) fdn[(size_t) i].assign ((size_t) (0.05f * sr) + 8, 0.0f);
     for (int b = 0; b < 4; ++b) bandFreqG[(size_t) b] = fastTan (pi * std::min (bandHz[b], 0.45f * sr) / sr);
@@ -527,7 +528,7 @@ void SpaceEffect::control (int n) noexcept
         if (retrigMode != RetrigFree)
         {
             phase = 0.0;
-            if (! fresh) retrigHold = (int) (2.0f * retrigGlideSeconds * sr);
+            if (! fresh) retrigHold = (int) (5.0f * retrigGlideSeconds * sr); // the two glide stages have arrived
         }
     }
     // p77: amount - smoothed (about 20 ms), exactly 1 = the unchanged full effect
@@ -551,8 +552,10 @@ void SpaceEffect::control (int n) noexcept
     // glide: direction on the sphere (normalised lerp), distance in the log domain. Two cascaded stages (critically
     // damped, each half the glide time): the source starts and stops moving smoothly instead of jumping to full speed,
     // so a jump of the position (automation, a fresh target) never steps the Doppler pitch.
-    const float glideNow = retrigHold > 0 ? std::min (glide, retrigGlideSeconds) : glide; // p77: retrigger = a quick glide
+    const float glideNow = retrigHold > 0 ? retrigGlideSeconds : glide; // p77: retrigger = a quick glide
     retrigHold = std::max (0, retrigHold - n);
+    earUp = 0.12f / 1.12f * (float) n;
+    earDown = 0.12f / 0.88f * (float) n;
     const float c = fresh ? 1.0f : 1.0f - std::exp (-(float) n / (0.5f * glideNow * sr));
     auto slerp = [c] (const Vec3& from, const Vec3& to) {
         Vec3 nd { from.x + (to.x - from.x) * c, from.y + (to.y - from.y) * c, from.z + (to.z - from.z) * c };
@@ -631,7 +634,9 @@ void SpaceEffect::setEar (Ear& E, const Vec3& u, float d, float b, float sign, i
     const float shT = b * 0.22f * (0.5f + 0.5f * u.z);
     E.shDelay = (0.0003f + 0.0006f * (0.5f + 0.5f * u.z)) * sr;
     if (fresh) { E.delay = dTarget; E.b0 = b0; E.b1 = b1; E.gain = gT; E.sh = shT; }
-    E.dDelay = (dTarget - E.delay) * invN;
+    // p77: while a retrigger glides, the interaural delay follows at the Doppler speed limit (no pitch spike)
+    const float dSlewed = retrigHold > 0 ? E.delay + std::clamp (dTarget - E.delay, -earDown, earUp) : dTarget;
+    E.dDelay = (dSlewed - E.delay) * invN;
     E.dB0 = (b0 - E.b0) * invN;
     E.dB1 = (b1 - E.b1) * invN;
     E.dGain = (gT - E.gain) * invN;
@@ -848,8 +853,10 @@ void SpaceEffect::process (float* left, float* right, int numSamples) noexcept
 
         if (dryGain != 0.0f || dDryGain != 0.0f) // p77: amount < 1 - crossfade to the plain input, aligned with the wet centre
         {
-            outL = outL * wetGain + dryLine[0].linear (lowDelay - dLowDelay) * dryGain;
-            outR = outR * wetGain + dryLine[1].linear (lowDelay - dLowDelay) * dryGain;
+            // read on whole samples while the distance delay is 0 (amount 0: the input itself, not interpolated)
+            const float dd = lowDelay - dLowDelay + dryOffset;
+            outL = outL * wetGain + dryLine[0].linear (dd) * dryGain;
+            outR = outR * wetGain + dryLine[1].linear (dd) * dryGain;
         }
         dryGain += dDryGain;
         wetGain += dWetGain;

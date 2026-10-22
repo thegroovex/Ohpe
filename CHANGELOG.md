@@ -10,7 +10,7 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 - EN: 3D motion retrigger and 3D amount (p77) – the binaural motion can now restart with the notes, like the key
   sync of an arpeggiator or LFO: new per-part **Motion Retrigger** (`pN.space.retrig`: *Free* = runs on with the song
   as before, *First* = restarts from its start position on a note after all keys were up, *Note* = on every note; mono
-  legato notes keep it running). The position glides to the start in about 6 ms – no clicks. New per-part **Amount**
+  legato notes keep it running). The position glides to the start in about 8 ms – no clicks. New per-part **Amount**
   (`pN.space.amount`, 0–100 %, default 100 % = unchanged): sets the strength of the 3D effect, from full binaural
   position, motion and colouring down to the plain stereo sound, at about the same level; smoothed and click-free,
   mod matrix target 95 *3D Amount*. Both on the new 3D page *Amount & Retrigger*, MIDI-mappable and automatable. The
