@@ -8,6 +8,10 @@ Melodie lehnt sich an die Akkordtöne, und bei hohen Werten werden aus Rauschen 
 Akkord spielen. Sie liegt im Effekt-Modus auf den letzten beiden Encoder-Seiten **Tonart-Gravitation** und in der
 Pro-Ansicht als Karte **Tonart-Gravitation**.
 
+**Am schnellsten (p70):** der kleine Ring in der Kopfzeile des Displays, direkt neben der Tonart, zeigt die
+Gravitation des Edit-Parts (bei 0 % leer). Ein Klick öffnet die Seite Tonart-Gravitation direkt; Ziehen oder das
+Mausrad auf dem Ring stellen den Wert ein; Rechtsklick für MIDI-Learn. Siehe [Bedienung](BEDIENUNG.md).
+
 | Regler | Parameter | Wirkung |
 |---|---|---|
 | Gravitation | `pN.grav.amt` | 0 = aus (der Part klingt genau wie ohne die Stufe: bit-identisch, keine Latenz, keine CPU) … 100 % |

@@ -57,6 +57,8 @@ Display::Display (OhpeProcessor& p) : proc (p)
     addAndMakeVisible (tempoHeader); // p39
     addAndMakeVisible (tapHeader);
     addAndMakeVisible (keyHeader); // p45
+    addAndMakeVisible (gravHeader); // p70
+    gravHeader.onOpen = [this] { if (onGravityClicked) onGravityClicked(); };
 }
 
 Display::~Display() { proc.core().scope().setSource (ScopeTap::None); }
@@ -419,16 +421,21 @@ void Display::placeTempo()
     // the badges after the (shortest) title - it never overlaps the 3D badge
     const float hh = h.getHeight();
     const float left = (float) (tapHeader.isVisible() ? tapHeader.getX() : tempoHeader.getX()) - hh * 0.1f;
+    // p70: the Key Gravity ring left of the key (hidden without the stage); the key's room starts left of it
+    gravHeader.setPart (ctx.part);
+    gravHeader.setVisible (gravHeader.available());
+    const float gw = gravHeader.isVisible() ? GravityControl::preferredWidth (hh) : 0.0f;
     const auto tf = brandFont (hh * 0.62f);
     const float titleFull = juce::GlyphArrangement::getStringWidth (tf, headerTitle (false)) + 4.0f;
     const float titleMin = mode == Mode::Synth ? juce::GlyphArrangement::getStringWidth (tf, headerTitle (true)) + 4.0f : juce::jmin (titleFull, hh * 4.0f);
     const float leftNeed = h.getX() + juce::jmin (titleFull, titleMin) + headerBadgesWidth() + hh * 0.2f;
-    const bool full = left - keyHeader.neededWidth (hh, false) >= leftNeed;
+    const bool full = left - keyHeader.neededWidth (hh, false) - gw >= leftNeed;
     keyHeader.setCompact (! full);
     const float kw = keyHeader.neededWidth (hh, ! full);
     keyHeader.setBounds (juce::Rectangle<float> (kw, hh).withPosition (left - kw, h.getY()).toNearestInt());
+    gravHeader.setBounds (juce::Rectangle<float> (gw, hh).withPosition ((float) keyHeader.getX() - gw, h.getY()).toNearestInt());
     keyHost = proc.keyScale().fromHost;
-    keyLaidOut = keyHeader.shownText() + "|" + headerTitle (false);
+    keyLaidOut = keyHeader.shownText() + "|" + headerTitle (false) + "|" + juce::String (ctx.part);
 }
 
 juce::String Display::headerTitle (bool engineOnly)
@@ -584,8 +591,9 @@ void Display::tick (float seconds)
     if (tapHeader.isVisible() == proc.tempoFollowsHost()) placeTempo();
     tempoHeader.refresh();
     tapHeader.refresh();
-    if (proc.keyScale().fromHost != keyHost || keyHeader.shownText() + "|" + headerTitle (false) != keyLaidOut) placeTempo(); // p45
+    if (proc.keyScale().fromHost != keyHost || keyHeader.shownText() + "|" + headerTitle (false) + "|" + juce::String (ctx.part) != keyLaidOut) placeTempo(); // p45 (p70: + part)
     keyHeader.refresh();
+    gravHeader.refresh(); // p70
     updateChord();
     if (const int ci = proc.core().countInBeatsLeft(); ci != shownCountIn)
     {
@@ -1248,7 +1256,7 @@ void Display::paint (juce::Graphics& g)
     // 1.0: a long title (engine names, German) shortens with an ellipsis before it pushes the part badge and the 3D badge
     // into the tempo on the right: badges = 0.4 + 1.9 (part) + 2.3 (3D) header heights, tempo + page arrows = 7.8
     const float badgesW = h.getHeight() * ((partMode || mode == Mode::Effects ? 2.3f : 0.4f) + 1.75f + 0.2f);
-    const float titleMax = juce::jmax (h.getHeight() * 1.0f, juce::jmin (h.getWidth() * 0.62f, h.getWidth() - juce::jmax (h.getHeight() * 7.8f, h.getRight() - (float) keyHeader.getX() + h.getHeight() * 0.3f) - badgesW));
+    const float titleMax = juce::jmax (h.getHeight() * 1.0f, juce::jmin (h.getWidth() * 0.62f, h.getWidth() - juce::jmax (h.getHeight() * 7.8f, h.getRight() - (float) headerLeftX() + h.getHeight() * 0.3f) - badgesW));
     // p45: a crowded Synth header keeps the engine name ("VOCAL") rather than cutting "SYNTH / VO..."
     if (mode == Mode::Synth && juce::GlyphArrangement::getStringWidth (brandFont (h.getHeight() * 0.62f), title) + 4.0f > titleMax) title = headerTitle (true);
     const float titleW = juce::jmin (titleMax, juce::GlyphArrangement::getStringWidth (brandFont (h.getHeight() * 0.62f), title) + 4.0f);
@@ -1275,7 +1283,7 @@ void Display::paint (juce::Graphics& g)
     const auto bpmArea = h.withTrimmedRight (h.getHeight() * 4.0f);
     if (mode != Mode::Tape) // p11: the tape's state on every other page
     {
-        const float bpmW = bpmArea.getRight() - (float) keyHeader.getX() - h.getHeight() * 0.3f; // p45: the key, TAP, the tempo
+        const float bpmW = bpmArea.getRight() - (float) headerLeftX() - h.getHeight() * 0.3f; // p45: the key, TAP, the tempo (p70: + gravity)
         auto room = bpmArea.withTrimmedRight (bpmW + h.getHeight() * 0.5f);
         room = room.withLeft (h.getX() + titleW + h.getHeight() * ((partMode || mode == Mode::Effects) ? 2.4f : 0.5f));
         if (room.getWidth() > 0.0f) paintTapeHeaderStatus (g, room, h.getHeight());
