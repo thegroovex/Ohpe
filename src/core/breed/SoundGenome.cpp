@@ -175,11 +175,12 @@ Schema Schema::forPart (const ParamRegistry& reg, int partIndex)
             || g.id == "seqlane" || head == "morph" || head == "motion" || head == "usertable" // usertable: follows its table, never bred
             || g.id == "glide.press" // p32: how the player's pressure shapes the glide (an expression setting, like mpe.press)
             || g.id == "space.mode" // p41: the 3D switch follows space.on / space.out (set again after a child loads)
+            || head == "grav" // p66: Key Gravity is a deliberate choice (and adds latency) - never bred, never drawn
             || isFingerboardGene (g.id)) // p50: the MPE / fingerboard setup belongs to the player's controller, not to the sound's genes
         {
             g.group = Fixed;
             g.mutable_ = false;
-            g.drawsRandom = g.id != "glide.press" && g.id != "space.mode" && ! isFingerboardGene (g.id); // p32 / p41 / p50: appended later - keeps the broods of a seed unchanged
+            g.drawsRandom = g.id != "glide.press" && g.id != "space.mode" && head != "grav" && ! isFingerboardGene (g.id); // p32 / p41 / p50: appended later - keeps the broods of a seed unchanged
         }
         else if (g.id == "vol" || g.id == "gain" || g.id == "layer.level")
         {

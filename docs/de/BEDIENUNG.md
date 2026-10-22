@@ -541,6 +541,12 @@ wandert mit.
 
 ![FX-Rack eines Parts](../images/ohpe-rack-view-de.png)
 
+**Tonart-Gravitation (p66).** Der Reiter **Sends** im **Effekte**-Modus endet mit zwei Encoder-Seiten
+**Tonart-Gravitation** für den Edit-Part: Gravitation, Ziel, Glide, Kurve, dann Formant, Mischung und Qualität – die
+Stufe [Tonart-Gravitation](TONART-GRAVITATION.md) des Parts, die jeden Teilton zur Tonart und zum gehaltenen Akkord
+zieht (0 = aus). In der Pro-Ansicht ist es die Karte **Tonart-Gravitation**. Jeder Regler hat seine Hilfezeile in
+beiden Sprachen.
+
 Im **Effekte**-Modus schalten die Reiter zwischen **Sends** (wie bisher), **Rack** – den sechs Slots
 des [FX-Racks](BAND-MISCHER-FX.md#fx-rack-07) des Edit-Parts – und **Master**, den vier Slots des
 Master-Racks. Die Kette zeigt jeden Slot als Block in Signalrichtung: Effektname, Mischungsbalken,

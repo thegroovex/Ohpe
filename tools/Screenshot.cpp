@@ -7,7 +7,7 @@
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
 // p20: the user wavetable frame stack (ohpe-user-wavetable). p27: the update view (ohpe-update).
 // p32: the settings menu (ohpe-settings*, ohpe-about*, ohpe-help-overlay*), the night skin (ohpe-dark, *-dark).
-// p23: bounce to engine - a loop bounced into Grain (ohpe-bounce). p67: tape memory slices (ohpe-tapemem). p33: the Expression page (ohpe-expression).
+// p23: bounce to engine - a loop bounced into Grain (ohpe-bounce). p67: tape memory slices (ohpe-tapemem). p66: Key Gravity pages (ohpe-key-gravity). p33: the Expression page (ohpe-expression).
 // p41: the 3D switch (ohpe-space-switch-{off,headphones,speakers}[-dark]).
 // p38: the tape page's clear-all confirmation (ohpe-tape-clear, ohpe-tape-clear-dark) and the tape page at night (ohpe-tape-dark).
 // p42: the tape page's loop keys and loop readout (ohpe-tape-loop, ohpe-tape-loop-dark).
@@ -1326,6 +1326,29 @@ int main (int argc, char* argv[])
                 run (p, 8);
                 e.selectEngine ((EngineType) (int) engineBefore);
             }
+        }
+
+        // p66: Key Gravity - the part's two gravity pages at the end of the Effects pages, a chord held into the stage
+        {
+            setPlain (p, "p1.grav.amt", 0.8f);
+            setPlain (p, "p1.grav.target", 2.0f); // Chord+Scale
+            setPlain (p, "p1.grav.glide", 0.3f);
+            setPlain (p, "p1.grav.curve", 0.4f);
+            run (p, 4);
+            e.selectPart (0);
+            e.selectMode (ui::Mode::Effects);
+            e.selectView (0);
+            auto& disp = e.displayComponent();
+            if (disp.onPageChange) disp.onPageChange (-e.shownPage() - 2); // the first Key Gravity page (second to last)
+            playAnimated (p, e, 30, { 48, 55, 60, 64 });
+            save (e, dir.getChildFile ("ohpe-key-gravity" + suffix + ".png"));
+            release (p, { 48, 55, 60, 64 });
+            if (disp.onPageChange) disp.onPageChange (-e.shownPage());
+            setPlain (p, "p1.grav.amt", 0.0f);
+            setPlain (p, "p1.grav.target", 2.0f);
+            setPlain (p, "p1.grav.glide", 0.15f);
+            setPlain (p, "p1.grav.curve", 0.0f);
+            run (p, 8);
         }
 
         // p67: tape memory - a phrase of part 1 played into the memory, CAPTURE (Slices) into part 2's Sampler

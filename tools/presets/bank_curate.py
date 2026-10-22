@@ -16,8 +16,8 @@ limiter off) - the same phrase for every preset of a category, so presets of one
 presets run their sequencers for 8 s.
 
 Loudness target (documented in docs/en/PRESETS-BANK.md / docs/de/PRESETS-BANK.md): the loudest 3 s window of the
-render (EBU R128 short-term loudness, K-weighted) at -16 LUFS, tolerance +-1.5 LU, true peak at or below -1.5 dBTP
-(peak-safe: a preset that would pass -1.5 dBTP at the target stays quieter). Only the part's level parameter
+render (EBU R128 short-term loudness, K-weighted) at -11 LUFS, tolerance +-1.5 LU, true peak at or below -1 dBTP
+(peak-safe: a preset that would pass -1 dBTP at the target stays quieter). Only the part's level parameter
 ("gain", -24..24 dB) is changed; the sound itself is untouched.
 
 Near-duplicates: same engine and main category, parameter distance (mean normalised difference over the union of
@@ -38,9 +38,9 @@ BANK = os.path.join(ROOT, "resources", "presets", "factory")
 CURATION = os.path.join(HERE, "bank_curation.json")
 sys.path.insert(0, HERE)
 
-TARGET_LUFS = -16.0   # short-term max (3 s), K-weighted
+TARGET_LUFS = -11.0   # short-term max (3 s), K-weighted (bank_curation.json: target_lufs_short_term_max)
 TOLERANCE = 1.5       # LU: inside +-TOLERANCE the level stays as it is
-PEAK_MAX = -1.5       # dBTP
+PEAK_MAX = -1.0       # dBTP (bank_curation.json: true_peak_max_dbtp)
 GAIN_MIN, GAIN_MAX = -24.0, 24.0
 PARAM_DIST = 0.06
 AUDIO_SIM = 0.985

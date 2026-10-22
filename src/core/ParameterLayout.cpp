@@ -368,5 +368,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     tapemem::registerParams (reg);
     // ---- p68: Voice Control - the live input as modulation sources (on, gain, gate, smoothing, pitch, monitor; quick map) --
     voice::VoiceControl::registerParams (reg, Core::numParts);
+    // ---- p66: Key Gravity per part - the spectral stage after the engines that pulls every partial to the key / chord
+    for (auto& p : parts) p->registerLate66GravityParams (reg);
 }
 } // namespace ohpe

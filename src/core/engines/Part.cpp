@@ -266,6 +266,23 @@ void Part::registerLate50FingerboardParams (ParamRegistry& reg) const
     add (continuous (id ("mpe.pcurve"), P + "Pressure Curve", P + "Druckkurve", -1.0f, 1.0f, 0.0f));
 }
 
+void Part::registerLate66GravityParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const std::string P = "Part " + n + " ";
+    auto add = [&] (ParamDescriptor d) { d.group = "part" + n + "/gravity"; reg.add (std::move (d)); };
+    add (continuous (id ("grav.amt"), P + "Key Gravity", P + "Tonart-Gravitation", 0.0f, 1.0f, 0.0f, ParamUnit::Percent));
+    add (choice (id ("grav.target"), P + "Gravity Target", P + "Gravitation Ziel", { "Scale", "Chord", "Chord+Scale" },
+                 { "Skala", "Akkord", "Akkord+Skala" }, KeyGravity::TargetChordScale));
+    add (continuous (id ("grav.glide"), P + "Gravity Glide", P + "Gravitation Glide", 0.005f, 2.0f, 0.15f, ParamUnit::Seconds, 0.4f));
+    add (continuous (id ("grav.curve"), P + "Gravity Curve", P + "Gravitation Kurve", -1.0f, 1.0f, 0.0f, ParamUnit::Percent));
+    add (continuous (id ("grav.formant"), P + "Gravity Formant", P + "Gravitation Formant", 0.0f, 1.0f, 0.5f, ParamUnit::Percent));
+    add (continuous (id ("grav.mix"), P + "Gravity Mix", P + "Gravitation Mischung", 0.0f, 1.0f, 1.0f, ParamUnit::Percent));
+    add (choice (id ("grav.quality"), P + "Gravity Quality", P + "Gravitation Qualität", { "Low Latency", "Normal", "High" },
+                 { "Geringe Latenz", "Normal", "Hoch" }, KeyGravity::QualityNormal));
+}
+
 void Part::registerLate31SubParams (ParamRegistry& reg) const
 {
     using namespace pd;
@@ -409,6 +426,10 @@ void Part::bind (const ParamRegistry& reg)
     userWtIndex = reg.indexOf (id ("usertable.wt"));       // p20
     userVocalIndex = reg.indexOf (id ("usertable.vocal")); // p20
     for (int m = 0; m < character::numMacros; ++m) charIndex[(size_t) m] = reg.indexOf (id (std::string ("char.") + character::key (m))); // p21
+    {
+        static const char* gravKeys[7] = { "grav.amt", "grav.target", "grav.glide", "grav.curve", "grav.formant", "grav.mix", "grav.quality" }; // p66
+        for (size_t k = 0; k < gravIndex.size(); ++k) gravIndex[k] = reg.indexOf (id (gravKeys[k]));
+    }
     spaceOnIndex = reg.indexOf (id ("space.on")); // 1.0
     resoOnIndex = reg.indexOf (id ("reso.on"));   // p19
     {
@@ -513,6 +534,7 @@ void Part::prepare (double sampleRate, int maxBlockSize)
     reso.setKeys (&keys); // p19: the body and the rack's resonators follow this part's keyboard
     rack.setKeys (&keys);
     reso.prepare (sampleRate, maxBlockSize);
+    gravity.prepare (sampleRate, maxBlockSize); // p66
     resoDryL.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
     resoDryR.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
     resoLast.fill (NAN);
@@ -545,6 +567,7 @@ void Part::reset() noexcept
     keyNoteBend = 0.0f;
     reso.reset();
     resoFade = resoOn ? 1.0f : 0.0f;
+    gravity.reset(); // p66
 }
 
 void Part::pullParams (const ParamSnapshot& s) noexcept
@@ -663,6 +686,16 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
         for (size_t i = 0; i < resoIndex.size(); ++i)
             if (resoIndex[i] >= 0)
                 if (const float val = s[resoIndex[i]]; ! (val == resoLast[i])) { resoLast[i] = val; reso.setParam ((int) i, val); }
+    }
+    if (gravIndex[0] >= 0) // p66 Key Gravity
+    {
+        gravity.setAmount (s[gravIndex[0]]);
+        if (gravIndex[1] >= 0) gravity.setTarget (s.getInt (gravIndex[1]));
+        if (gravIndex[2] >= 0) gravity.setGlide (s[gravIndex[2]]);
+        if (gravIndex[3] >= 0) gravity.setCurve (s[gravIndex[3]]);
+        if (gravIndex[4] >= 0) gravity.setFormant (s[gravIndex[4]]);
+        if (gravIndex[5] >= 0) gravity.setMix (s[gravIndex[5]]);
+        if (gravIndex[6] >= 0) gravity.setQuality (s.getInt (gravIndex[6]));
     }
     keys.bendSemitones = tune + bend * bendRange + keyNoteBend; // the part's tuning moves the body too
 
@@ -917,6 +950,7 @@ void Part::renderEngines (float* l, float* r, int numSamples) noexcept
 
 void Part::finishBlock (float* l, float* r, int numSamples) noexcept
 {
+    gravity.process (l, r, numSamples); // p66: Key Gravity right after the engines (amount 0, no latency: untouched)
     applyReso (l, r, numSamples); // p19: the body right after the engines (before volume and FX rack)
     // 0.4: a gentle DC blocker (one pole at ~5 Hz): pulse shapes and asymmetric waves must not
     // push a DC offset into the mix. 0.7: the volume glides over the block when it changed (automation, matrix).
@@ -990,6 +1024,7 @@ void Part::renderChain (float* l, float* r, int n) noexcept
             std::memset (l, 0, sizeof (float) * (size_t) n);
             std::memset (r, 0, sizeof (float) * (size_t) n);
             lastGain = volume * gainFactor; // a volume change while asleep is no ramp when it wakes
+            gravity.tickSilent (n);           // p66: Key Gravity stops / aligns without audio work
             return;
         }
         asleep = false; // a voice starts: the chain carries on where it stopped (every stage was below -120 dBFS)

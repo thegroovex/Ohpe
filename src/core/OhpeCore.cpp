@@ -137,6 +137,7 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     harmonyBrain.prepare (sr);      // p24
     voiceCtl.prepare (sr);          // p68
     drums.prepare (sr, chunk);
+    drumAlign.prepare (sr, chunk); // p66
     mix.prepare (sr, chunk);
     tapeMem.prepare (sr); // p67: allocated once per sample rate (30 s, 16 bit)
     stepSeq.prepare (sr, maxBlock);
@@ -234,6 +235,7 @@ void Core::reset() noexcept
     harmonyBrain.reset(); // p24
     voiceCtl.reset();     // p68
     drums.reset();
+    drumAlign.reset(); // p66
     mix.reset();
     tapeMachine.resetDsp();
     masterRack.reset();
@@ -299,6 +301,52 @@ void Core::refreshShapers (int p) noexcept
     // p45: White Keys - the keyboard's white keys play the key's degrees (live input only; sequenced notes are notes)
     liveShaper[(size_t) p].setWhiteKeys (blockLock && blockLockMode == keys::LockWhiteKeys, blockRoot, keys::scaleMask (blockScale));
     seqShaper[(size_t) p].setWhiteKeys (false, blockRoot, keys::scaleMask (blockScale));
+}
+
+void Core::updateGravity (int root, int scale) noexcept
+{
+    int want = 0;
+    bool any = false;
+    for (auto& p : parts)
+    {
+        want = std::max (want, p->gravityLatency());
+        any = any || p->gravityLatency() > 0 || ! p->gravityStage().idle();
+    }
+    if (any)
+    {
+        auto rot = [] (uint16_t m, int r) {
+            r = ((r % 12) + 12) % 12;
+            return (uint16_t) (((m << r) | (m >> (12 - r))) & 0xfff);
+        };
+        const int rootPc = std::clamp (root, 0, 11);
+        const uint16_t rel = keys::scaleMask (std::clamp (scale, 0, scales::numScales - 1));
+        const uint16_t sm = rot (rel, rootPc);
+        // the held chord (every part), named like the chord guide; else the last chord the harmony brain heard; else the
+        // key's own tonic triad
+        uint16_t cm = 0;
+        const auto held = soundingNotes (-1);
+        const uint16_t pcs = chords::pitchClasses (held);
+        if (pcs != 0)
+        {
+            const int lo = chords::lowest (held);
+            const auto name = chords::detect (pcs, lo >= 0 ? lo % 12 : -1);
+            cm = name.valid() ? rot (chords::shape (name.quality), name.root) : pcs;
+        }
+        else if (const auto c = harmonyBrain.chord(); c.root >= 0)
+            cm = rot (harmony::chordShape (c.type), c.root);
+        else
+        {
+            int deg[7] {}, nd = 0;
+            for (int i = 0; i < 12 && nd < 7; ++i)
+                if ((rel >> i) & 1u) deg[nd++] = i;
+            cm = rot ((uint16_t) ((1u << deg[0]) | (nd > 2 ? 1u << deg[2] : 0u) | (nd > 4 ? 1u << deg[4] : 0u)), rootPc);
+        }
+        gravityChordPub.store (cm, std::memory_order_relaxed);
+        for (auto& p : parts) p->setGravityTargets (sm, cm);
+    }
+    for (auto& p : parts) p->setGravityAlign (want);
+    drumAlign.setAlignLatency (want);
+    gravityLatency.store (want, std::memory_order_relaxed);
 }
 
 keys::KeyScale Core::keyScale() const noexcept
@@ -699,6 +747,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
     stepSeq.setKeyLock (blockLock, root, keys::scaleMask (scale)); // p45: transpose moves in scale degrees
     orbit.setKeyLock (blockLock, root, keys::scaleMask (scale));
     harmonyBrain.beginBlock (snapshot, tr.bpm, numSamples, root, scale); // p24: memory, follow modes
+    updateGravity (root, scale); // p66
     for (int p = 0; p < numParts; ++p) // p24: the brain as matrix sources Chord Root / Chord Change / Tension
         for (int k = 0; k < HarmonyBrain::numSources; ++k)
             parts[(size_t) p]->modMatrix().setSourceValue (mod::SrcChordRoot + k, harmonyBrain.sourceValue (k));
@@ -869,6 +918,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
             if (memSource == tapemem::SourcePart1 + p) tapeMem.push (partL[(size_t) p].data(), partR[(size_t) p].data(), len); // p67
         }
         drums.render (drumL.data(), drumR.data(), len);
+        drumAlign.process (drumL.data(), drumR.data(), len); // p66: in time with the parts (no latency: untouched)
         src.left[(size_t) source::drum] = drumL.data();
         src.right[(size_t) source::drum] = drumR.data();
         renderTapeChunk (src, pos, len);

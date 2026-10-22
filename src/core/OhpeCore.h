@@ -73,7 +73,11 @@ public:
     Part& part (int index) noexcept { return *parts[(size_t) index]; }
     Mixer& mixer() noexcept { return mix; }
     /** 0.8: output latency in samples (after prepare), reported to the host. */
-    int latencySamples() const noexcept { return mix.latencySamples(); }
+    int latencySamples() const noexcept { return mix.latencySamples() + gravityLatency.load (std::memory_order_relaxed); }
+    /** p66: the part of the latency that comes from Key Gravity (the largest running stage; every part aligns to it). */
+    int gravityLatencySamples() const noexcept { return gravityLatency.load (std::memory_order_relaxed); }
+    /** p66: the chord Key Gravity pulls to now (absolute pitch-class mask) - the held chord, else the last one heard. */
+    uint16_t gravityChordMask() const noexcept { return gravityChordPub.load (std::memory_order_relaxed); }
     drum::DrumKit& drumKit() noexcept { return drums; }   ///< mixer source "drum", MIDI channel 10
     TapeMachine& tape() noexcept { return tapeMachine; }             ///< 0.2: eight-track tape
     /** p39: the metronome (own synthesised click, "metro.*"); the core schedules its clicks. */
@@ -378,6 +382,10 @@ private:
     HarmonyBrain harmonyBrain; ///< p24
     Mixer mix;
     drum::DrumKit drums;
+    KeyGravity drumAlign;                      ///< p66: delays the drum kit like the parts while Key Gravity runs
+    std::atomic<int> gravityLatency { 0 };     ///< p66
+    std::atomic<uint16_t> gravityChordPub { 0 }; ///< p66
+    void updateGravity (int root, int scale) noexcept; ///< p66: targets and alignment of every part (block start)
     StepSequencer stepSeq;
     EuclidSequencer euclid;
     Arpeggiator arp;

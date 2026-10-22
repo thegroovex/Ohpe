@@ -362,6 +362,7 @@ const std::map<juce::String, juce::String>& table()
         { "Pitch Envelope", "Tonhöhen-Hüllkurve" },
         // p31: the SUB layer
         { "Sub", "Sub" },
+        { "Key Gravity", "Tonart-Gravitation" }, // p66
         { "Direct", "Direkt" },
         { "Into filter", "Ins Filter" },
         // p33: the Expression pages
