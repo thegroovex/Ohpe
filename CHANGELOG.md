@@ -7,6 +7,21 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Key Gravity (p66): a spectral stage per part right after the engines pulls every partial toward the key / scale
+  and the held chord (Scale, Chord, Chord+Scale; host key when available). Gravity, Target, Glide (partials flow on
+  chord changes), Curve (gentle … magnetic), Formant keep, Mix, Quality (Low Latency / Normal / High). Transients
+  pass; at high amounts noise and drums become pitched texture in key. Gravity 0 is bit-identical with no latency and
+  no CPU; while a stage runs, the host is told its latency and all parts and the drum kit stay aligned. Effects mode
+  pages and pro card "Key Gravity", MIDI-learnable, matrix targets 90 – 94, four factory sounds (tag gravity). New
+  host parameters pN.grav.* appended. Details: docs/en/KEY-GRAVITY.md.
+- DE: Tonart-Gravitation (p66): eine Spektral-Stufe pro Part direkt nach den Engines zieht jeden Teilton zur Tonart /
+  Skala und zum gehaltenen Akkord (Skala, Akkord, Akkord+Skala; Tonart des Hosts, wenn vorhanden). Gravitation, Ziel,
+  Glide (Teiltöne fließen bei Akkordwechseln), Kurve (sanft … magnetisch), Formant-Erhalt, Mischung, Qualität
+  (Geringe Latenz / Normal / Hoch). Anschläge bleiben; bei hohen Werten werden Rauschen und Drums zu tonalen Texturen
+  in der Tonart. Gravitation 0 ist bit-identisch, ohne Latenz und ohne CPU; läuft eine Stufe, erfährt der Host ihre
+  Latenz und alle Parts und das Drum-Kit bleiben zeitgleich. Effekt-Seiten und Pro-Karte „Tonart-Gravitation", per
+  MIDI lernbar, Matrix-Ziele 90 – 94, vier Werksklänge (Tag gravity). Neue Host-Parameter pN.grav.* angehängt.
+  Details: docs/de/TONART-GRAVITATION.md.
 - EN: First-start tour (p64): four short steps over the plate (parts, preset strip and LIBRARY; encoders, soft keys
   and the FX editor; tape, sequencer, tempo and key; help, settings and the Grid-Controller), English and German, in
   both skins. Shown once on the first standalone start and the first plug-in window, skippable (SKIP TOUR / Esc),

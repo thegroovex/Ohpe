@@ -514,6 +514,11 @@ position** while notes play. Turn the encoder to move the centre; the reach move
 
 ![FX rack of a part](../images/ohpe-rack-view.png)
 
+**Key Gravity (p66).** The **Sends** tab of **Effects** mode ends with two encoder pages **Key Gravity** for the edit
+part: Gravity, Target, Glide, Curve, then Formant, Mix and Quality – the part's [Key Gravity](KEY-GRAVITY.md) stage,
+which pulls every partial toward the key and the held chord (0 = off). In the pro view it is the card **Key Gravity**.
+Every control has its help line in both languages.
+
 In **Effects** mode the tabs switch between **Sends** (as before), **Rack** – the six slots of the
 edit part's [FX rack](TAPE-MIXER-FX.md#fx-rack-07) – and **Master**, the four slots of the master
 rack. The chain shows every slot as a block in signal order: effect name, mix bar, output level,

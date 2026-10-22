@@ -1056,3 +1056,18 @@ They act on the on-screen grid keyboard and the Grid-Controller pads alike, in e
 
 `harmony.kb.layout` value 3 is now **Sequential** (+1 right, +8 up). Projects and presets from before that stored 3
 (the old *In Key* layout) and no `harmony.kb.inkey` open as **Fourths + In Key**. No new matrix sources or targets.
+
+## p66 – Key Gravity per part
+
+Appended after `harmony.kb.fixed`, for each part N = 1 … 4 in this order (group "partN/gravity"). Guides:
+[English](en/KEY-GRAVITY.md) · [Deutsch](de/TONART-GRAVITATION.md).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.grav.amt` | Part N Key Gravity | Part N Tonart-Gravitation | 0 … 1 (0 – 100 %; 0 = off, bit-identical, no latency) | 0 |
+| `pN.grav.target` | Part N Gravity Target | Part N Gravitation Ziel | Scale / Chord / Chord+Scale (Skala / Akkord / Akkord+Skala) | Chord+Scale |
+| `pN.grav.glide` | Part N Gravity Glide | Part N Gravitation Glide | 0.005 … 2 s | 0.15 s |
+| `pN.grav.curve` | Part N Gravity Curve | Part N Gravitation Kurve | −1 … +1 (gentle … magnetic) | 0 |
+| `pN.grav.formant` | Part N Gravity Formant | Part N Gravitation Formant | 0 … 1 (formant keep) | 0.5 |
+| `pN.grav.mix` | Part N Gravity Mix | Part N Gravitation Mischung | 0 … 1 | 1 |
+| `pN.grav.quality` | Part N Gravity Quality | Part N Gravitation Qualität | Low Latency / Normal / High (Geringe Latenz / Normal / Hoch) | Normal |
