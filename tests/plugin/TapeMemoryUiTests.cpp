@@ -53,7 +53,7 @@ TEST_CASE ("plug-in p67: the output fills the tape memory; CAPTURE makes a Sampl
     CHECK (p.tapeMemory().lastMessage() == "Tape memory is empty - play something first");
 
     play (p, 200, 57); // about a second of part 1
-    CHECK (p.tapeMemory().heldSeconds() > 0.9);
+    CHECK (p.tapeMemory().heldSeconds() > 0.5); // 1.07 s pushed, the 0.5 s guard is not capturable
     REQUIRE (p.tapeMemory().capture (1, tapemem::ModeChromatic));
     CHECK (p.tapeMemory().busy());
     CHECK_FALSE (p.tapeMemory().capture (1)); // one at a time
@@ -121,7 +121,7 @@ TEST_CASE ("plug-in p67: CAPTURE and MEMORY soft keys on the tape page, CAPTURE 
     CHECK (keys[6].label == "Capture");
     CHECK (keys[13].label == "Memory");
     CHECK_FALSE (keys[6].enabled); // nothing held yet
-    play (p, 100, 60);
+    play (p, 300, 60);
     e.selectMode (ui::Mode::Mixer);
     e.selectMode (ui::Mode::Tape); // the keys are rebuilt (the editor's timer does it while open)
     CHECK (d.softKeyList()[6].enabled);
