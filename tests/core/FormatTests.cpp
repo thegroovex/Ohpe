@@ -9,6 +9,7 @@
 #include "model/StateSerializer.h"
 #include "preset/Preset.h"
 #include "settings/UserSettings.h"
+#include "tapemem/TapeMemory.h"
 #include "tape/TapeFile.h"
 #include "tape/TapeMachine.h"
 #include "update/PackFormat.h"
@@ -599,4 +600,43 @@ TEST_CASE ("formats: .ohpemidi v1 loads and round-trips")
         CHECK (back.mappings()[i].channel == m.mappings()[i].channel);
         CHECK (back.mappings()[i].mode == m.mappings()[i].mode);
     }
+}
+
+TEST_CASE ("formats: tape memory section v1 loads and round-trips; v0 (no version) migrates; a newer version loads")
+{
+    CHECK (formats::tapeMemory == 1);
+    const auto v1 = tapemem::restoreCaptures (readText ("tapememory/tapememory-v1.json"));
+    REQUIRE (v1.size() == 2);
+    CHECK (v1[0].part == 1);
+    CHECK (v1[0].capture.mode == tapemem::ModeChromatic);
+    CHECK (v1[0].capture.root == 69);
+    CHECK (v1[0].capture.name == "Capture 1");
+    REQUIRE (v1[0].capture.sample->numFrames() == 2400);
+    CHECK (v1[0].capture.sample->sampleRate() == 48000.0);
+    CHECK (v1[0].capture.sample->channel (0)[12] == doctest::Approx (0.5 * std::sin (2 * 3.14159265358979 * 440.0 * 12 / 48000.0)).epsilon (0.001));
+    CHECK (v1[0].capture.sample->channel (1)[12] == doctest::Approx (0.25 * std::sin (2 * 3.14159265358979 * 440.0 * 12 / 48000.0)).epsilon (0.002));
+    CHECK (v1[1].part == 3);
+    CHECK (v1[1].capture.mode == tapemem::ModeSlices);
+    CHECK (v1[1].capture.slices == 3);
+    CHECK (v1[1].capture.sample->numChannels() == 2); // mono stored, played as two equal channels
+    CHECK (v1[1].capture.sample->sampleRate() == 44100.0);
+    // round trip keeps everything this build knows
+    std::vector<tapemem::Stored> keep (v1.begin(), v1.end());
+    const auto again = tapemem::restoreCaptures (tapemem::saveCaptures (keep));
+    REQUIRE (again.size() == 2);
+    CHECK (again[0].capture.root == 69);
+    CHECK (again[0].capture.sample->numFrames() == 2400);
+    // v0: written before the version field (and without "format", "frames", "name") - read as version 1
+    const auto v0 = tapemem::restoreCaptures (readText ("tapememory/tapememory-v0-noversion.json"));
+    REQUIRE (v0.size() == 1);
+    CHECK (v0[0].part == 0);
+    CHECK (v0[0].capture.mode == tapemem::ModeSlices);
+    CHECK (v0[0].capture.root == 48);
+    CHECK (v0[0].capture.sample->numFrames() == 2400);
+    // newer: unknown fields ignored, the known ones keep their meaning
+    const auto v2 = tapemem::restoreCaptures (readText ("tapememory/tapememory-v2-future.json"));
+    REQUIRE (v2.size() == 1);
+    CHECK (v2[0].part == 2);
+    CHECK (v2[0].capture.root == 72);
+    CHECK (v2[0].capture.sample->sampleRate() == 96000.0);
 }

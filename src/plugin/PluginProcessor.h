@@ -5,6 +5,7 @@
 #include <array>
 
 #include "BounceToEngine.h"
+#include "TapeMemoryManager.h"
 #include "OhpeCore.h"
 #include "fx/SpaceMode.h"
 #include "model/CpuLoad.h"
@@ -79,6 +80,7 @@ public:
     UserTableManager& userTables() noexcept { return userTableManager; }
     /** p23: bounce to engine (tape / live input -> Grain or Sampler). Message thread. */
     BounceManager& bounces() noexcept { return bounceManager; }
+    TapeMemoryManager& tapeMemory() noexcept { return tapeMemoryManager; } ///< p67
     juce::AudioProcessorValueTreeState& state() noexcept { return apvts; }
     juce::RangedAudioParameter* parameter (const juce::String& id) const { return apvts.getParameter (id); }
     juce::RangedAudioParameter* parameter (int registryIndex) const;
@@ -264,6 +266,7 @@ private:
     SampleLoader samples { ohpeCore };
     UserTableManager userTableManager { ohpeCore }; ///< p20
     BounceManager bounceManager { ohpeCore };       ///< p23
+    TapeMemoryManager tapeMemoryManager { ohpeCore }; ///< p67
     juce::AudioProcessorValueTreeState apvts;
     std::vector<std::atomic<float>*> rawValues;
     std::vector<juce::RangedAudioParameter*> params;
@@ -291,7 +294,7 @@ private:
     int syncSourceParam = -1, tempoParam = -1;
 
     // 0.3: remote controls
-    static constexpr int numTriggers = 30; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*, p23: + bounce.go, p24: + harmony.take / clear, p38: + tape.edit.clear / clearall, p42: + tape.edit.loop*
+    static constexpr int numTriggers = 31; ///< p67: + tapemem.go; p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*, p23: + bounce.go, p24: + harmony.take / clear, p38: + tape.edit.clear / clearall, p42: + tape.edit.loop*
     void setPlainFromUi (const char* id, float plain);
     juce::CriticalSection transportLock;
     juce::String transportMessage;

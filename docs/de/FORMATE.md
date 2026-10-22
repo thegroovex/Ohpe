@@ -53,6 +53,7 @@ CI vergleicht.
 | `samples` | 1 | Abschnitt `samples` | JSON `"format": "ohpe-samples"` |
 | `userTables` | 1 | Abschnitt `usertables` (und der `usertables`-Block eines Part-Presets) | JSON `"format": "ohpe-usertables"` |
 | `genome` | 1 | Klang-Genom (Zucht) | Feld `"version"` |
+| `tapeMemory` | 1 | Abschnitt `tapememory` (p67) | JSON `"format": "ohpe-tapememory"` |
 
 ## Die Formate
 
@@ -60,7 +61,7 @@ CI vergleicht.
 
 `{"format": "ohpe-state", "version": 1, "app": "Ohpe", "params": {"<id>": <Klarwert>, …}, "sections": {…}}`.
 Parameter stehen mit ID und Klarwert (Hz, Sekunden, Auswahl-Index); Abschnitte gehören ihrem Modul (`midimap`,
-`sequencer`, `orbit`, `tape`, `morph`, `motion`, `harmony`, `samples`, `usertables`, `ui`), unbekannte Abschnitte
+`sequencer`, `orbit`, `tape`, `morph`, `motion`, `harmony`, `samples`, `usertables`, `tapememory`, `ui`), unbekannte Abschnitte
 werden behalten und zurückgeschrieben. Im Plug-in und in der Standalone-App ist der Zustand
 `<Zustands-JSON> NUL <Band-Audio>` (der Bandteil nur, wenn das Band Audio enthält).
 
@@ -126,6 +127,17 @@ Mittel gemocht, Gewicht abgelehnt, Mittel abgelehnt]}}}`. Schlüssel sind Biblio
 Gen-IDs sind part-lokale Parameter-IDs, die Mittelwerte normiert (0..1). Eine beschädigte Datei (kein JSON, falsches
 `format`) lädt als leeres Profil; falsche Werte werden verworfen oder begrenzt; unbekannte Gen-IDs oder Engines
 werden ignoriert (und nicht zurückgeschrieben). Fixtures: `taste/taste-v1.json`, `taste/taste-v1-damaged.json`.
+
+### Tape-Gedächtnis (`tapeMemory` 1, p67)
+
+Abschnitt `tapememory`: `{"format": "ohpe-tapememory", "version": 1, "parts": {"p1": {"mode": 0, "root": 62,
+"slices": 1, "name": "Capture 1", "rate": 48000, "channels": 2, "frames": 96000, "pcm16": "<base64>"}}}` – das
+zuletzt Gemerkte jedes Parts, solange sein Sampler es noch spielt. `pcm16` ist das Audio selbst (Little-Endian-int16,
+Vollaussteuerung 32767, Kanäle verschränkt), eine Session braucht also keine externe Datei. `mode` 0 = Chromatisch
+(`root` = Grundton der Zone), 1 = Slices (erste Slice-Taste C2). Leser nehmen ein fehlendes `version` an (0, vor dem
+Feld: gelesen als 1; auch `format`, `frames` und `name` dürfen fehlen) und neuere Versionen (unbekannte Felder werden
+ignoriert); Einträge mit unpassender Rate, Kanalzahl oder weniger als 64 Frames werden übersprungen. Fixtures:
+`tapememory/tapememory-v1.json`, `tapememory-v0-noversion.json`, `tapememory-v2-future.json`.
 
 ### Alles Weitere (Version 1)
 

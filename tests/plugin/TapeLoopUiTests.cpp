@@ -171,11 +171,11 @@ TEST_CASE ("tape loop: the loop readout opens the loop keys (two rows), they act
     auto& d = e.displayComponent();
     e.setLanguage (i18n::Language::English);
     e.selectMode (ui::Mode::Tape);
-    REQUIRE (d.softKeyList().size() == 12); // the edit keys stay as they were
+    REQUIRE (d.softKeyList().size() == 14); // the edit keys stay as they were (p67: + CAPTURE, MEMORY)
     const auto readout = d.loopReadoutArea();
     REQUIRE_FALSE (readout.isEmpty());
     CHECK (readout.getRight() <= d.softKeyArea (0).getX());
-    CHECK (readout.getRight() <= d.softKeyArea (6).getX());
+    CHECK (readout.getRight() <= d.softKeyArea (7).getX());
 
     REQUIRE (d.onLoopReadoutClicked != nullptr);
     d.onLoopReadoutClicked();
@@ -230,5 +230,5 @@ TEST_CASE ("tape loop: the loop readout opens the loop keys (two rows), they act
 
     e.softKey (145); // BACK
     CHECK_FALSE (e.tapeLoopKeysShown());
-    CHECK (d.softKeyList().size() == 12);
+    CHECK (d.softKeyList().size() == 14);
 }
