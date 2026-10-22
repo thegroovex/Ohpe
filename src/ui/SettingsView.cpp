@@ -77,13 +77,17 @@ const HelpTopic helpTopics[] = {
       "In the standalone app: Space = play / stop, R = record, Enter = to the start, L = loop.\n\n"
       "The Sequencer mode has step, Euclid and orbit views; steps can lock parameter values.\n\n"
       "Arpeggiator: the sustain pedal (CC 64) keeps released keys in the arpeggio until pedal up, sostenuto (CC 66) only the keys "
-      "down when it was pressed; with Latch on, keys under the pedal add to the latched set.",
+      "down when it was pressed; with Latch on, keys under the pedal add to the latched set.\n\n"
+      "Tape memory: Ohpe always keeps the last 30 s of its output. CAPTURE (tape page, Sampler page, MIDI, Grid-Controller Add Track) "
+      "turns it into a Sampler instrument - Chromatic (tuned, root detected) or Slices; MEMORY sets mode, length, source and part.",
       "START startet den Sequencer (und das Tape, wenn verbunden). REC nimmt auf die scharfe Tape-Spur auf; ohne scharfe Spur "
       "wird die gewählte scharf geschaltet.\n\n"
       "In der Standalone-App: Leertaste = Start / Stopp, R = Aufnahme, Enter = an den Anfang, L = Loop.\n\n"
       "Der Sequencer-Modus hat Step-, Euklid- und Orbit-Ansichten; Schritte können Parameterwerte festhalten.\n\n"
       "Arpeggiator: Das Haltepedal (CC 64) hält losgelassene Tasten bis Pedal hoch im Arpeggio, Sostenuto (CC 66) nur die beim "
-      "Treten gedrückten; mit Halten ergänzen Tasten unter dem Pedal den gehaltenen Satz." },
+      "Treten gedrückten; mit Halten ergänzen Tasten unter dem Pedal den gehaltenen Satz.\n\n"
+      "Tape-Gedächtnis: Ohpe behält immer die letzten 30 s seines Ausgangs. MERKEN (Tape-Seite, Sampler-Seite, MIDI, Grid-Controller Add Track) "
+      "macht daraus ein Sampler-Instrument - Chromatisch (gestimmt, Grundton erkannt) oder Slices; GEDÄCHTNIS wählt Modus, Länge, Quelle und Part." },
     { "MIDI, MPE and sync", "MIDI, MPE und Sync",
       "Each part listens on its own MIDI channel (Omni = every channel). Settings > MIDI sets the channel, MPE and the bend ranges of every part.\n\n"
       "With MPE on, each note gets its own pitch bend, pressure and timbre (lower zone: channel 1 is the master channel).\n\n"

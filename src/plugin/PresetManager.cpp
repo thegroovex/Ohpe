@@ -345,7 +345,12 @@ juce::File PresetManager::save (const preset::Meta& metaIn, bool project, int pa
         saveUserData();
     }
     rescan();
-    if (const int i = indexOfFile (file); i >= 0) setCurrent (i, project, part);
+    if (const int i = indexOfFile (file); i >= 0)
+    {
+        setCurrent (i, project, part);
+        if (! project) // p69: a saved sound counts for the learning breed
+            proc.taste().signal (list[(size_t) i].uid, breed::Signal::Saved, breed::fromParams (proc.taste().schema(), p.params));
+    }
     sendChangeMessage();
     return file;
 }
@@ -382,9 +387,17 @@ void PresetManager::setFavourite (int index, bool fav)
 {
     if (index < 0 || index >= (int) list.size()) return;
     auto& e = list[(size_t) index];
+    const bool changed = e.favourite != fav;
     e.favourite = fav;
     userData.set (e.uid, e.favourite, e.rating);
     saveUserData();
+    if (changed && e.meta.kind == preset::Kind::Part) // p69: the learning breed hears about it
+    {
+        preset::Preset pr;
+        breed::Genome g;
+        if (preset::fromJson (read (e), pr)) g = breed::fromParams (proc.taste().schema(), pr.params);
+        proc.taste().signal (e.uid, fav ? breed::Signal::Favourite : breed::Signal::Unfavourite, g);
+    }
     sendChangeMessage();
 }
 

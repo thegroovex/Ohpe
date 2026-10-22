@@ -49,6 +49,9 @@ class Core;
 */
 namespace ohpe::breed
 {
+struct TasteBias; // p69 (TasteProfile.h)
+struct EngineBias;
+
 enum Group : int { Engine = 0, Filter, Envelope, Fx, Mod, Level, Fixed, numGroups };
 /** Groups the user can steer (Level and Fixed follow rules). */
 constexpr int numChoiceGroups = 5;
@@ -144,6 +147,10 @@ struct Options
     std::array<Choice, numChoiceGroups> choice {}; ///< per steerable group (Engine .. Mod)
     float hybridChance = 0.5f;  ///< parents with different engines, Engine group blended: chance of a layered hybrid
     float hybridLevel = 0.45f;  ///< layer level of a hybrid (plain, 0..1)
+    /** p69: the learned taste (nullptr = none). With it a brood breeds twice as many candidates and keeps the
+        best-scoring share (1 - curiosity), and mutation steps are pulled towards the liked region of each child's
+        engine. Curiosity 1 gives exactly the unbiased brood. */
+    std::shared_ptr<const TasteBias> taste;
 };
 
 /** What a child got from whom (UI: the parent chips of a tile). */
@@ -157,6 +164,9 @@ struct Inheritance
 Genome crossover (const Schema& s, const Genome& a, const Genome& b, const Options& o, Rng& rng, Inheritance* inh = nullptr);
 /** Mutates `g` in place by `amount` (0..1). `a` / `b` are its parents (safe caps for risky genes). */
 void mutate (const Schema& s, Genome& g, const Genome& a, const Genome& b, float amount, Rng& rng);
+/** p69: the same with a pull towards a learned taste (`bias` of the child's engine, `pull` 0 .. 0.6). The random
+    numbers drawn are the same as without it; nullptr or pull 0 = mutate() exactly. */
+void mutate (const Schema& s, Genome& g, const Genome& a, const Genome& b, float amount, Rng& rng, const EngineBias* bias, float pull);
 
 struct Child
 {

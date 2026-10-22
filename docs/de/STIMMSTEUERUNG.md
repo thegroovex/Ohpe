@@ -64,7 +64,7 @@ die Matrix voll, bleibt sie unberührt (das Display sagt es).
 
 ## Werks-Presets
 
-Drei Part-Presets tragen das Tag **Voice** (in der Bibliothek nach „Voice" suchen). Ohne Eingang sind es fertige Klänge:
+Drei Part-Presets beginnen mit **Voice** im Namen (in der Bibliothek nach „Voice" suchen). Ohne Eingang sind es fertige Klänge:
 
 | Preset | Ohne Eingang | Mit deiner Stimme |
 |---|---|---|

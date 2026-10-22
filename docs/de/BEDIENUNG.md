@@ -109,7 +109,8 @@ Die Taste **ZUCHT** (neben ZUFALL, ein Klick öffnet / schließt die Ansicht, ih
 offen ist) öffnet die **[Zucht](ZUCHT.md)**: zwei Klänge kreuzen, sechs Kinder hören, die besten behalten und
 weiterzüchten. ZUFALL würfelt nur – Halten oder ein Rechtsklick öffnen die Zucht nicht mehr. Solange die
 Zucht-Ansicht offen ist, würfelt ZUFALL einen neuen Elternteil B, und SPEICHERN legt das gewählte Kind als Favorit in
-der Bibliothek ab. Ein Rechtsklick auf ZUCHT öffnet MIDI-Lernen für `lib.breed`.
+der Bibliothek ab. Ein Rechtsklick auf ZUCHT öffnet MIDI-Lernen für `lib.breed`. Die Zucht lernt lokal, was dir gefällt
+([lernende Zucht](ZUCHT.md#lernende-zucht): LERNEN, NEUGIER, WARUM, VERGESSEN in ihrer Fußzeile).
 
 ![Die Zucht-Ansicht](../images/ohpe-breeding-de.png)
 
@@ -199,7 +200,8 @@ Sampler). Jeder Part hat eigene Samples. Die Pfade werden mit dem Projekt gespei
 
 **BOUNCE** (dritte Taste, p23) bringt Tape- oder Live-Eingangs-Audio in die angezeigte Engine: Ein Menü bietet die
 Bearbeitungsspur, Tape 1 … 8, den Tape-Mix und den Eingang (1–8 Takte) sowie *Endlosschleife* (standardmäßig an – der
-Bounce schleift nahtlos). Siehe [Bounce ins Instrument](BOUNCE-INS-INSTRUMENT.md).
+Bounce schleift nahtlos). Siehe [Bounce ins Instrument](BOUNCE-INS-INSTRUMENT.md). Auf der Sampler-Seite bringt eine vierte
+Taste, **MERKEN** (p67), das Tape-Gedächtnis in diesen Part ([Tape-Gedächtnis](TAPE-GEDAECHTNIS.md)).
 
 ## Eigene Wavetables und Formanten (p20)
 
@@ -461,6 +463,8 @@ Soft-Tasten im Display – zwei Reihen: oben die Schnitte der gewählten Spur, u
 | **Band laden** | lädt eine `.ohpetape`-Datei (oder sie aufs Fenster ziehen). Enthält das Band schon Material, fragt Ohpe vorher (*Aufgenommenes Band ersetzen?*); das Laden ist ein Rückgängig-Schritt, **Rückgängig** holt das alte Band zurück. Ein Band mit anderer Abtastrate wird umgerechnet und behält seine Tonhöhe |
 | **Export** | rendert Master + die acht Spuren als **24-Bit-WAV** in einen wählbaren Ordner (offline, schneller als Echtzeit; das laufende Audio wird nicht unterbrochen) |
 | **Bounce** | bringt die Bearbeitungsspur (oder die Quelle der Bounce-Seite; bei eingeschalteter Schleife den Schleifenbereich) in die Grain- oder Sampler-Engine des bearbeiteten Parts, standardmäßig als Endlosschleife – [Bounce ins Instrument](BOUNCE-INS-INSTRUMENT.md) |
+| **Merken** | (Ende der ersten Reihe, p67) macht das Tape-Gedächtnis – die letzten Sekunden von Ohpes eigenem Ausgang – zum Instrument im Sampler des Ziel-Parts (Chromatisch oder Slices); dunkel, solange das Gedächtnis leer ist – [Tape-Gedächtnis](TAPE-GEDAECHTNIS.md) |
+| **Gedächtnis** | (Ende der zweiten Reihe) das Gedächtnis-Menü: Chromatisch / Slices, Länge (5–30 s), Quelle (Hauptausgang, Part 1–4), Ziel-Part, zuletzt Gemerktes als WAV exportieren, Gedächtnis leeren, MIDI-Learn für MERKEN |
 
 ![Alles löschen fragt vorher](../images/ohpe-tape-clear-de.png)
 

@@ -75,6 +75,7 @@ Core::Core()
     keyRootIndex = registry.indexOf (Ids::keyRoot);
     spaceOutIndex = registry.indexOf (Ids::spaceOut);
     monoCheckIndex = registry.indexOf (Ids::spaceMonoCheck);
+    tapememSrcIndex = registry.indexOf (Ids::tapememSrc); // p67
     keyScaleIndex = registry.indexOf (Ids::keyScale);
     keyLockIndex = registry.indexOf (Ids::keyLock);         // p45
     keyLockModeIndex = registry.indexOf (Ids::keyLockMode); // p45
@@ -137,6 +138,7 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     voiceCtl.prepare (sr);          // p68
     drums.prepare (sr, chunk);
     mix.prepare (sr, chunk);
+    tapeMem.prepare (sr); // p67: allocated once per sample rate (30 s, 16 bit)
     stepSeq.prepare (sr, maxBlock);
     euclid.prepare (sr, maxBlock);
     arp.prepare (sr, maxBlock);
@@ -722,6 +724,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
         masterRack.setMonitorMode (mon);
     }
     const bool monoCheck = monoCheckIndex >= 0 && snapshot.getBool (monoCheckIndex);
+    const int memSource = tapememSrcIndex >= 0 ? snapshot.getInt (tapememSrcIndex) : 0; // p67
     notesOutOn = snapshot.getBool (notesOutIndex);
     midiOut.clear();
 
@@ -863,6 +866,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
             src.left[(size_t) (source::part1 + p)] = partL[(size_t) p].data();
             src.right[(size_t) (source::part1 + p)] = partR[(size_t) p].data();
             scopeTap.offer (p, partL[(size_t) p].data(), partR[(size_t) p].data(), len); // 0.7: display scope (after the rack)
+            if (memSource == tapemem::SourcePart1 + p) tapeMem.push (partL[(size_t) p].data(), partR[(size_t) p].data(), len); // p67
         }
         drums.render (drumL.data(), drumR.data(), len);
         src.left[(size_t) source::drum] = drumL.data();
@@ -880,6 +884,7 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
             for (int i = 0; i < len; ++i)
                 out.left[0][i] = out.right[0][i] = 0.5f * (out.left[0][i] + out.right[0][i]);
         scopeTap.offer (ScopeTap::Master, out.left[0], out.right[0], len); // 0.7: display scope
+        if (memSource == tapemem::SourceMain) tapeMem.push (out.left[0], out.right[0], len); // p67: before the click
         pos = end;
     }
     while (nextEvent < numRouted) dispatch (routed[(size_t) nextEvent++]);

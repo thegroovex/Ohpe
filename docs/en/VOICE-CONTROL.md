@@ -62,7 +62,7 @@ are kept; pressing again only resets the three amounts; a full matrix is left al
 
 ## Factory presets
 
-Three part presets carry the tag **Voice** (search "Voice" in the library). Without an input they are complete sounds:
+Three part presets start with **Voice** in their name (search "Voice" in the library). Without an input they are complete sounds:
 
 | Preset | Without input | With your voice |
 |---|---|---|

@@ -1057,9 +1057,24 @@ They act on the on-screen grid keyboard and the Grid-Controller pads alike, in e
 `harmony.kb.layout` value 3 is now **Sequential** (+1 right, +8 up). Projects and presets from before that stored 3
 (the old *In Key* layout) and no `harmony.kb.inkey` open as **Fourths + In Key**. No new matrix sources or targets.
 
+## p67 – Tape memory
+
+Appended at the very end of the list (after `harmony.kb.fixed`), 5 IDs, group "tapemem" (`tapemem.go`: "remote"),
+not part of presets, all MIDI-mappable. Guides: [English](en/TAPE-MEMORY.md) · [Deutsch](de/TAPE-GEDAECHTNIS.md).
+A capture adds no sound parameters: it loads its audio into the part's Sampler (saved inside the session, state section
+`"tapememory"`). No modulation-matrix changes.
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `tapemem.len` | Memory Length | Gedächtnislänge | 5 s, 10 s, 20 s, 30 s | 30 s |
+| `tapemem.src` | Memory Source | Gedächtnisquelle | Main Out, Part 1 … Part 4 / Hauptausgang, Part 1 … Part 4 | Main Out |
+| `tapemem.mode` | Capture Mode | Merk-Modus | Chromatic, Slices / Chromatisch, Slices | Chromatic |
+| `tapemem.to` | Capture Target | Merk-Ziel | Edit Part, Part 1 … Part 4 / Bearbeiteter Part, Part 1 … Part 4 | Edit Part |
+| `tapemem.go` | Capture | Merken | trigger | off |
+
 ## p68 – Voice Control / Stimmsteuerung
 
-Appended after `harmony.kb.fixed`; automatable and MIDI-mappable; the player's setup – **not** stored in part presets
+Appended after `tapemem.go` (p67); automatable and MIDI-mappable; the player's setup – **not** stored in part presets
 or projects. See [Voice Control](en/VOICE-CONTROL.md) / [Stimmsteuerung](de/STIMMSTEUERUNG.md).
 
 | ID | English | Deutsch | Range | Default |

@@ -13,7 +13,7 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   the vowel map and the input meter; *Vowel → Filter + Morph* maps it to the edit part in one press. Gain, gate,
   smoothing, pitch tracking and monitor are host / MIDI parameters (appended, not stored in presets). The standalone
   app gains an input device choice (none by default, macOS microphone text in English and German); plug-ins use their
-  existing optional input bus (unchanged layouts). Three factory presets with the tag Voice. Docs:
+  existing optional input bus (unchanged layouts). Three factory presets (names start with "Voice"). Docs:
   docs/en/VOICE-CONTROL.md.
 - DE: Stimmsteuerung (p68): Ein Live-Audio-Eingang wird in Echtzeit (etwa 8 ms) in sieben neue Modulationsquellen
   zerlegt – Stimme Pegel, Vokal X / Y (Formanten auf einer A-E-I-O-U-Karte), Stimme Helligkeit, Stimme Rauschanteil
@@ -22,7 +22,32 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   den Edit-Part. Eingangspegel, Schwelle, Glättung, Tonhöhenerkennung und Abhören sind Host-/MIDI-Parameter
   (angehängt, nicht in Presets gespeichert). Die Standalone-App bekommt eine Eingangsgeräte-Wahl (anfangs keins,
   macOS-Mikrofontext auf Deutsch und Englisch); Plug-ins nutzen ihren vorhandenen optionalen Eingangsbus
-  (unveränderte Layouts). Drei Werks-Presets mit dem Tag Voice. Doku: docs/de/STIMMSTEUERUNG.md.
+  (unveränderte Layouts). Drei Werks-Presets (Namen beginnen mit „Voice“). Doku: docs/de/STIMMSTEUERUNG.md.
+- EN: Learning breed (p69): the BREED key learns locally from use – time played with notes, saved, loaded again,
+  favourited, kept, quickly skipped (negative) – and keeps a small taste profile per engine. BREED / AGAIN breed more
+  candidates and show the best-scoring ones, mutation leans towards the liked region, the die's parent B follows the
+  taste. Breeding view foot row: LEARN on/off, CURIOSITY 0–100 % (100 % = unbiased), WHY (top learned traits), RESET.
+  Levels stay matched, safety caps stay. New local file `Taste/taste.json` (format `taste` 1); nothing is sent anywhere.
+- DE: Lernende Zucht (p69): die ZUCHT-Taste lernt lokal aus der Nutzung – Spielzeit mit Noten, gespeichert, wieder
+  geladen, Favorit, behalten, schnell übersprungen (negativ) – und führt ein kleines Geschmacksprofil pro Engine.
+  ZÜCHTEN / WEITER züchten mehr Kandidaten und zeigen die bestbewerteten, die Mutation neigt sich zum gemochten
+  Bereich, der Würfel-Elternteil B folgt dem Geschmack. Fußzeile der Zucht-Ansicht: LERNEN an/aus, NEUGIER 0–100 %
+  (100 % = unbeeinflusst), WARUM (stärkste gelernte Merkmale), VERGESSEN. Pegel bleiben angeglichen, Sicherheitsgrenzen
+  bleiben. Neue lokale Datei `Taste/taste.json` (Format `taste` 1); nichts wird gesendet.
+- EN: Tape Memory (p67): Ohpe always keeps the last 30 s of its own output (main out or one part, 16-bit ring buffer,
+  about 6 MB at 48 kHz). CAPTURE (tape page, Sampler page, MIDI-mappable `tapemem.go`, Grid-Controller *Add Track*)
+  turns it into an instrument in a part's Sampler: Chromatic (the strongest note, pitch detected and tuned to the
+  nearest semitone, root set) or Slices (one slice per onset from C2). The analysis runs off the audio thread;
+  captures are saved inside the session (new state section `tapememory`, format `tapeMemory` 1) and export as WAV to
+  the capture library. 5 IDs `tapemem.len/src/mode/to/go` appended after `harmony.kb.fixed`.
+- DE: Tape-Gedächtnis (p67): Ohpe behält immer die letzten 30 s seines eigenen Ausgangs (Hauptausgang oder ein Part,
+  16-Bit-Ringpuffer, etwa 6 MB bei 48 kHz). MERKEN (Tape-Seite, Sampler-Seite, MIDI-zuweisbar `tapemem.go`,
+  Grid-Controller *Add Track*) macht daraus ein Instrument im Sampler eines Parts: Chromatisch (der stärkste Ton,
+  Tonhöhe erkannt und auf den nächsten Halbton gestimmt, Grundton gesetzt) oder Slices (ein Slice pro Einsatz ab C2).
+  Die Analyse läuft außerhalb des Audio-Threads; Gemerktes wird in der Session gespeichert (neuer Zustandsabschnitt
+  `tapememory`, Format `tapeMemory` 1) und lässt sich als WAV in die Merk-Bibliothek exportieren. 5 IDs
+  `tapemem.len/src/mode/to/go` nach `harmony.kb.fixed` angehängt.
+
 - EN: First-start tour (p64): four short steps over the plate (parts, preset strip and LIBRARY; encoders, soft keys
   and the FX editor; tape, sequencer, tempo and key; help, settings and the Grid-Controller), English and German, in
   both skins. Shown once on the first standalone start and the first plug-in window, skippable (SKIP TOUR / Esc),

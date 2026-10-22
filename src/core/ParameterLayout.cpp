@@ -12,6 +12,7 @@
 #include "OhpeCore.h"
 #include "fx/SpaceMode.h"
 #include "bounce/Bounce.h"
+#include "tapemem/TapeMemory.h"
 #include "tape/TapeLoop.h"
 
 namespace ohpe
@@ -363,6 +364,8 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate50FingerboardParams (reg);
     // ---- p59: grid keyboard - In Key / Chromatic and the fixed bottom-left C (screen grid and controller pads) -------
     HarmonyBrain::registerLate59GridParams (reg);
+    // ---- p67: tape memory - length, source, capture mode, target part, CAPTURE ------------------------------------
+    tapemem::registerParams (reg);
     // ---- p68: Voice Control - the live input as modulation sources (on, gain, gate, smoothing, pitch, monitor; quick map) --
     voice::VoiceControl::registerParams (reg, Core::numParts);
 }

@@ -5,10 +5,12 @@
 #include <array>
 
 #include "BounceToEngine.h"
+#include "TapeMemoryManager.h"
 #include "OhpeCore.h"
 #include "fx/SpaceMode.h"
 #include "model/CpuLoad.h"
 #include "PresetManager.h"
+#include "TasteStore.h"
 #include "SampleLoader.h"
 #include "UserTables.h"
 #include "tape/TapeLoop.h"
@@ -78,6 +80,7 @@ public:
     UserTableManager& userTables() noexcept { return userTableManager; }
     /** p23: bounce to engine (tape / live input -> Grain or Sampler). Message thread. */
     BounceManager& bounces() noexcept { return bounceManager; }
+    TapeMemoryManager& tapeMemory() noexcept { return tapeMemoryManager; } ///< p67
     juce::AudioProcessorValueTreeState& state() noexcept { return apvts; }
     juce::RangedAudioParameter* parameter (const juce::String& id) const { return apvts.getParameter (id); }
     juce::RangedAudioParameter* parameter (int registryIndex) const;
@@ -98,6 +101,8 @@ public:
 
     /** 0.3: the preset library (factory + user bank). Message thread. */
     PresetManager& presets() noexcept { return *presetManager; }
+    /** p69: the learning breed's local taste profile (message thread). */
+    TasteStore& taste() noexcept { return *tasteStore; }
 
     /**
         0.3: edits the core's registry on the message thread and publishes the result to the host:
@@ -264,6 +269,7 @@ private:
     SampleLoader samples { ohpeCore };
     UserTableManager userTableManager { ohpeCore }; ///< p20
     BounceManager bounceManager { ohpeCore };       ///< p23
+    TapeMemoryManager tapeMemoryManager { ohpeCore }; ///< p67
     juce::AudioProcessorValueTreeState apvts;
     std::vector<std::atomic<float>*> rawValues;
     std::vector<juce::RangedAudioParameter*> params;
@@ -291,7 +297,7 @@ private:
     int syncSourceParam = -1, tempoParam = -1;
 
     // 0.3: remote controls
-    static constexpr int numTriggers = 34; ///< p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*, p23: + bounce.go, p24: + harmony.take / clear, p38: + tape.edit.clear / clearall, p42: + tape.edit.loop*
+    static constexpr int numTriggers = 35; ///< p68: + p1-4.voice.map; p67: + tapemem.go; p11: + tape.tx.play / tplay / stop / rec / loop / arm, p18: + lib.breed*, p23: + bounce.go, p24: + harmony.take / clear, p38: + tape.edit.clear / clearall, p42: + tape.edit.loop*
     void setPlainFromUi (const char* id, float plain);
     juce::CriticalSection transportLock;
     juce::String transportMessage;
@@ -307,6 +313,7 @@ private:
     double tapeBpm() const;
     std::array<std::atomic<int>, 3> breedRequests {}; ///< p18
     std::unique_ptr<PresetManager> presetManager;
+    std::unique_ptr<TasteStore> tasteStore; ///< p69
     // p40: the loaded preset's uid for the session (getStateInformation may run off the message thread)
     juce::SpinLock presetUidLock;
     std::array<std::string, 4> presetUidCache, presetUidPending; // p50: one per part

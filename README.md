@@ -52,6 +52,7 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **Settings and night skin** | one settings view behind the gear key: language (EN / DE), tooltips and a help overlay, help pages, a low-glare dark skin (or auto with the system), display brightness, animations, window size, MIDI setup (channels, MPE, bend ranges, inputs, clock / sync) and a MIDI learn list to edit or clear mappings, updates and about – saved per user, never in projects – see [Settings](docs/en/SETTINGS.md) |
 | **Preset breeding** | cross two sounds (also across engines – a hybrid keeps the other engine as its layer) with a chosen mutation, hear six children with waveform / brightness thumbnails at their parents' loudness, keep the best and breed further generations with undo; children save to the library as favourites – see [Preset breeding](docs/en/BREEDING.md) |
 | **Bounce to engine** | one BOUNCE key moves a tape track, the tape mix, the loop range or a few bars of the live input into the Grain or Sampler engine of a part – as a seamless endless loop (grains wrap round the seam, held sampler notes sustain it) or a one-shot; bounces are saved as WAV and come back with the session – see [Bounce to engine](docs/en/BOUNCE.md) |
+| **Tape memory** | Ohpe always remembers the last 30 s of its own output; one CAPTURE key (MIDI-mappable, also on the Grid-Controller) turns it into a playable Sampler instrument – chromatic (pitch detected and tuned, root set) or sliced by onsets – saved inside the session, exportable as WAV – see [Tape memory](docs/en/TAPE-MEMORY.md) |
 | **Modulation matrix** | 16 routings per part from 20 sources (three LFOs, three envelopes, velocity, MPE, macros, a sequencer lane …) to pitch, level, pan, 24 engine parameters, the LFOs and every rack slot; rings on the encoders show what moves – see [Modulation](docs/en/MODULATION.md) |
 | **Sync** | host transport in the plug-in; MIDI clock in / out and network tempo sync (Link) in the standalone app |
 | **Multi-out** | every channel can go to the main output or its own stereo output (8 aux outputs) – in the plug-in and in the standalone app |
@@ -159,6 +160,7 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 * [Content packs](docs/en/CONTENT-PACKS.md) – install `.ohpepack` files (dialog or drag & drop), checksums, pack manager, library filter; [format](packaging/content/README.md)
 * [Preset breeding](docs/en/BREEDING.md) – cross two sounds, keep the best children, breed generations
 * [Bounce to engine](docs/en/BOUNCE.md) – tape or live input into Grain / Sampler, endless loops
+* [Tape memory](docs/en/TAPE-MEMORY.md) – the last 30 s of the output become an instrument with one key
 * [Modulation matrix](docs/en/MODULATION.md) – routings, sources, targets, LFO 2 / 3, envelope 3, macros
 * [Performance](docs/en/PERFORMANCE.md) – the CPU meter, sleeping silent parts, benchmark numbers, `ohpe_bench`
 * [Robustness and soak tests](docs/en/SOAK-TEST.md) – damaged-file and audio stress tests in CI, the manual 8-hour soak, the crash-safe start
