@@ -23,6 +23,13 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   *binaural*, Kopfhörer-Piktogramm), hat ein hörbares Modrad und ist auf das Bank-Ziel eingepegelt (−11 LUFS
   Kurzzeit, True Peak ≤ −1 dBTP). Die Werksbank hat jetzt 412 Part-Presets (72 mit 3D). Generator
   tools/presets/make_binaural.py; Liste in docs/de/FACTORY-SOUNDS.md.
+- EN: Key Gravity on the header (p70): a small ring right next to the key and its lock shows the edit part's gravity
+  amount (empty at 0 %). Click opens the Key Gravity page directly, drag / mouse wheel set the amount, right-click =
+  MIDI learn; tooltip and help topic EN / DE. The Sends pages and the pro view card stay. No new parameters.
+- DE: Tonart-Gravitation in der Kopfzeile (p70): ein kleiner Ring direkt neben der Tonart und ihrem Schloss zeigt die
+  Gravitation des Edit-Parts (bei 0 % leer). Klick öffnet die Seite Tonart-Gravitation direkt, Ziehen / Mausrad
+  stellen den Wert ein, Rechtsklick = MIDI-Learn; Tooltip und Hilfethema DE / EN. Die Sends-Seiten und die Karte der
+  Pro-Ansicht bleiben. Keine neuen Parameter.
 
 ## 0.7.0 Preview – 2026-10-22
 

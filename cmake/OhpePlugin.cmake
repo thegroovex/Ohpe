@@ -349,3 +349,8 @@ endif()
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/KeyChordUiTests.cpp)
 endif()
+
+# ---------------------------------------------------------------- p70: Key Gravity ring on the display's header
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/GravityHeaderUiTests.cpp)
+endif()

@@ -7,7 +7,7 @@
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
 // p20: the user wavetable frame stack (ohpe-user-wavetable). p27: the update view (ohpe-update).
 // p32: the settings menu (ohpe-settings*, ohpe-about*, ohpe-help-overlay*), the night skin (ohpe-dark, *-dark).
-// p23: bounce to engine - a loop bounced into Grain (ohpe-bounce). p67: tape memory slices (ohpe-tapemem). p66: Key Gravity pages (ohpe-key-gravity). p33: the Expression page (ohpe-expression).
+// p23: bounce to engine - a loop bounced into Grain (ohpe-bounce). p67: tape memory slices (ohpe-tapemem). p66: Key Gravity pages (ohpe-key-gravity). p70: the gravity ring on the header (ohpe-gravity-header). p33: the Expression page (ohpe-expression).
 // p41: the 3D switch (ohpe-space-switch-{off,headphones,speakers}[-dark]).
 // p38: the tape page's clear-all confirmation (ohpe-tape-clear, ohpe-tape-clear-dark) and the tape page at night (ohpe-tape-dark).
 // p42: the tape page's loop keys and loop readout (ohpe-tape-loop, ohpe-tape-loop-dark).
@@ -1343,6 +1343,14 @@ int main (int argc, char* argv[])
             playAnimated (p, e, 30, { 48, 55, 60, 64 });
             save (e, dir.getChildFile ("ohpe-key-gravity" + suffix + ".png"));
             release (p, { 48, 55, 60, 64 });
+            // p70: the Key Gravity ring on the header next to the key - from the Synth page one click opens the gravity page
+            setPlain (p, "p1.grav.amt", 0.65f);
+            e.selectMode (ui::Mode::Synth);
+            e.advanceAnimation (0.1f);
+            if (disp.headerGravity().onOpen) disp.headerGravity().onOpen();
+            playAnimated (p, e, 20, { 50, 57, 62, 65 });
+            save (e, dir.getChildFile ("ohpe-gravity-header" + suffix + ".png"));
+            release (p, { 50, 57, 62, 65 });
             if (disp.onPageChange) disp.onPageChange (-e.shownPage());
             setPlain (p, "p1.grav.amt", 0.0f);
             setPlain (p, "p1.grav.target", 2.0f);

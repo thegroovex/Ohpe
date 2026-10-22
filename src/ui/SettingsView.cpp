@@ -217,6 +217,17 @@ const HelpTopic helpTopics[] = {
       "Das Display zeigt den gesungenen Vokal (A E I O U) und die Eingangsanzeige mit der Schwellen-Linie. Vokal \xe2\x86\x92 Filter + Morph legt den Vokal "
       "mit einem Druck auf Filter und Morph-Pad des Edit-Parts; in der Mod-Ansicht gehen die Quellen Stimme Pegel, Vokal X / Y, Stimme Helligkeit, "
       "Stimme Rauschanteil, Stimme Tonhöhe und Stimme Einsatz überallhin. Abhören ist aus, damit Lautsprecher nicht rückkoppeln." },
+    { "Key Gravity", "Tonart-Gravitation", // p70
+      "Key Gravity pulls every partial of a part toward the key and the held chord - a little tightens a detuned pad, a lot turns "
+      "noise and drums into pitched texture in key.\n\n"
+      "The small ring on the display's header, right next to the key, shows the edit part's amount (empty = off). Click it to open "
+      "the Key Gravity page (Effects > Sends); drag or turn the mouse wheel on it to set the amount; right-click for MIDI learn. "
+      "Target, Glide, Curve, Formant, Mix and Quality are on that page and on the pro view's card.",
+      "Die Tonart-Gravitation zieht jeden Teilton eines Parts zur Tonart und zum gehaltenen Akkord - wenig strafft ein verstimmtes Pad, "
+      "viel macht aus Rauschen und Drums tonale Texturen in der Tonart.\n\n"
+      "Der kleine Ring in der Kopfzeile des Displays, direkt neben der Tonart, zeigt den Wert des Edit-Parts (leer = aus). Ein Klick "
+      "öffnet die Seite Tonart-Gravitation (Effekte > Sends); Ziehen oder das Mausrad auf dem Ring stellen den Wert ein; Rechtsklick "
+      "für MIDI-Learn. Ziel, Glide, Kurve, Formant, Mischung und Qualität liegen auf dieser Seite und auf der Karte der Pro-Ansicht." },
     { "Updates", "Updates",
       "Ohpe can look for new versions once a day (off until you switch it on) or when you press Check now. Nothing about you is sent.\n\n"
       "Downloads are verified before they open. Content packs add presets without reinstalling; the previous pack is kept for a rollback.",
@@ -1215,7 +1226,10 @@ void SettingsView::paintUpdates (juce::Graphics& g, juce::Rectangle<float> a)
 
 void SettingsView::paintHelp (juce::Graphics& g, juce::Rectangle<float> a)
 {
-    const float u = unit(), h = u * 3.0f;
+    const float u = unit();
+    // p70: the topics and the tour key always fit the page - the rows get a little lower when there are many topics
+    const float fit = juce::jmin (1.0f, a.getHeight() / ((float) (numHelpTopics() + 1) * u * 3.6f + u * 0.6f));
+    const float h = u * 3.0f * fit, gap = u * 0.6f * fit;
     float y = a.getY();
     const float listW = u * 24.0f;
     for (int t = 0; t < numHelpTopics(); ++t)
@@ -1223,9 +1237,9 @@ void SettingsView::paintHelp (juce::Graphics& g, juce::Rectangle<float> a)
         const juce::Rectangle<float> r { a.getX(), y, listW, h };
         const bool on = t == topic;
         chip (g, r, helpTitle (t), on, colour::sunYellow, [this, t] { setHelpTopic (t); });
-        y += h + u * 0.6f;
+        y += h + gap;
     }
-    y += u * 0.6f; // p64: the first-start tour again
+    y += gap; // p64: the first-start tour again
     chip (g, { a.getX(), y, listW, h }, i18n::upper (tr ("Show tour")), false, colour::sunYellow, [this] { if (onShowTour) onShowTour(); });
     const juce::Rectangle<float> text { a.getX() + listW + u * 2.5f, a.getY(), a.getWidth() - listW - u * 2.5f, a.getHeight() - u * 3.0f };
     g.setColour (colour::displayText);

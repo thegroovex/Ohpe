@@ -406,6 +406,20 @@ Das ist die globale Tonart `key.root` / `key.scale`, die die **Skala**-Quantisie
 das Harmonie-Hirn (bevor es etwas gehört hat; *Tonart übernehmen* schreibt hinein) und die Raster-Tastatur in der
 Tonart schon nutzen – nichts Neues abzugleichen.
 
+**Tonart-Gravitation in der Kopfzeile (p70).** Direkt neben der Tonart, links davon: ein kleiner **Ring** für die
+[Tonart-Gravitation](TONART-GRAVITATION.md) des Edit-Parts (`pN.grav.amt`). Er füllt sich im Uhrzeigersinn in der
+Akzentfarbe seines Encoders mit dem Wert und ist bei 0 % leer (die Stufe ist aus). Tooltip: *Tonart-Gravitation –
+zieht den Klang in die Tonart*.
+
+| Geste | Wirkung |
+|---|---|
+| Klick | öffnet die Encoder-Seite **Tonart-Gravitation** des Edit-Parts (Effekt-Modus, Reiter Sends) |
+| nach oben / unten ziehen | der Wert (Shift: fein) |
+| Mausrad | der Wert ± 5 % (Shift: ± 1 %) |
+| Rechtsklick | MIDI-Learn / Zuweisung löschen / zurücksetzen von `pN.grav.amt` |
+
+Die beiden Seiten Tonart-Gravitation am Ende des Reiters Sends und die Karte der Pro-Ansicht bleiben, wo sie waren.
+
 **In Tonart** (`key.lock`, englisch *Scale Lock*): jeder Ton, der einen Part erreicht, spielt in der Tonart – die
 Bildschirm-Tastatur, MIDI von einer Tastatur oder vom Host, die Sequenzer, der Arpeggiator (er bekommt die
 eingerasteten Töne). Zwei Modi (`key.lock.mode`):

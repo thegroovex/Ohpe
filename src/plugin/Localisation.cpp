@@ -912,6 +912,8 @@ const std::map<juce::String, juce::String>& table()
         { "Key from the host (read-only); click: Scale Lock", "Tonart vom Host (nur lesen); Klick: In Tonart" },
         { "Key: drag up / down (Shift: scale), mouse wheel; click: key, scale, Scale Lock, MIDI learn",
           "Tonart: nach oben / unten ziehen (Shift: Skala), Mausrad; Klick: Tonart, Skala, In Tonart, MIDI-Learn" },
+        // p70: Key Gravity on the header
+        { "Key Gravity – pulls the sound into key", "Tonart-Gravitation – zieht den Klang in die Tonart" },
         { "Playing", "Klingt" },
         // p63: crash-safe start
         { "The last session did not end properly", "Die letzte Sitzung wurde nicht richtig beendet" },

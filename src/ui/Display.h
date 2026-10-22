@@ -101,6 +101,7 @@ public:
     std::function<void()> onFxVisualClicked;              ///< p55: the selected slot's picture (opens the FX editor)
     /** p55: the selected slot's picture on the strip of the Rack / Master views (empty in other views). */
     juce::Rectangle<float> fxVisualArea() const;
+    std::function<void()> onGravityClicked;              ///< p70: the Key Gravity ring on the header (opens its page)
     std::function<void()> onSpaceBadgeClicked;           ///< 1.0: the 3D badge in the header (opens the Space view)
     std::function<void (int corner)> onMorphCornerClicked; ///< p16: a corner chip of the morph pad (assign a sound)
     /** p16: the morph pad and a corner chip (tests / screenshots). */
@@ -132,6 +133,7 @@ public:
     TempoReadout& headerTempo() noexcept { return tempoHeader; }
     TapKey& headerTap() noexcept { return tapHeader; }
     KeyReadout& headerKey() noexcept { return keyHeader; } ///< p45: key, scale, Scale Lock on the header
+    GravityControl& headerGravity() noexcept { return gravHeader; } ///< p70: Key Gravity ring next to the key
     /** p45: the voice strip of the default pages (tests / screenshots); the chord shown under the dots. */
     VoiceStripLayout voiceStripLayout() const;
     juce::String shownChord() const { return chordText; }
@@ -268,11 +270,13 @@ private:
     TempoReadout tempoHeader { proc, TempoReadout::Style::Header };
     TapKey tapHeader { proc };
     KeyReadout keyHeader { proc }; // p45
+    GravityControl gravHeader { proc }; // p70
     juce::String chordText, chordDetail; ///< p45: the chord that sounds (or sounded last) and its position
     bool chordSounding = false, keyHost = false;
     void updateChord();
     void placeTempo();
     juce::String headerTitle (bool engineOnly); ///< p45: "SYNTH / VOCAL" (engineOnly: "VOCAL" on the Synth page)
+    int headerLeftX() const { return gravHeader.isVisible() ? gravHeader.getX() : keyHeader.getX(); } ///< p70: the leftmost header control
     float headerBadgesWidth() const;                 ///< p45: part badge + 3D badge right of the title
     juce::String keyLaidOut;                         ///< p45: key text + title the header was laid out for
     int shownCountIn = 0;
