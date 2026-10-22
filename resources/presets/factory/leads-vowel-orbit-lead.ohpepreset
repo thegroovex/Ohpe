@@ -80,6 +80,7 @@
     "voices": 1,
     "velsens": 0.35,
     "glide": 0.05,
+    "glide.press": 0.6,
     "gain": 5.4
   }
 }

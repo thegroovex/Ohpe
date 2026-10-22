@@ -63,7 +63,7 @@
     "mod.s3.src": 9,
     "mod.s3.via": 0,
     "mod.s3.dst": 7,
-    "mod.s3.amt": -0.6,
+    "mod.s3.amt": -0.2,
     "mod.s3.curve": 0,
     "voices": 6,
     "velsens": 0.35,

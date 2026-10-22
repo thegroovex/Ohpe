@@ -155,6 +155,8 @@ def B(name, cat, engine, en, de, *dicts, wheel, routes=(), arp_block=None, guard
         rest.append(arp(arp_block[0], arp_block[1], arp_block[2], arp_block[3], latch=0))
     p = _P(name, tags, engine, en, *rest, **kw)
     p["params"].setdefault("glide", 0.0)
+    if p["params"]["glide"] > 0.0:  # p33: every gliding factory part has one pressure -> glide mechanism
+        p["params"].setdefault("glide.press", 0.6)
     p["params"]["gain"] = gain
     p["de"] = de
     p["file"] = "%s-%s.ohpepreset" % (CAT_PREFIX[cat], slug(name))
@@ -188,7 +190,7 @@ B("Choir Around You", "Pads", "vocal",
   amp(0.9, 2.0, 0.9, 2.5), mod(1.0, 2.0, 0.5, 2.0, 0.0), lfo(0.07, 0.18, "tri", "timbre"),
   space("orbit", "16bars", size=0.55, distance=2.4, spread=70.0, room=0.35, roomsize=0.6, doppler=0.1),
   chorus(0.2, 0.5, 0.3), rev(0.75, 0.18),
-  wheel=("engine1", 0.45), voices=10, velsens=0.2)
+  wheel=("engine1", 0.15), voices=10, velsens=0.2)
 
 B("Cathedral Ring", "Pads", "cluster",
   "Major-seventh stacks hanging in a high vault: the pad passes over your head and back every eight bars while a slow "
@@ -210,7 +212,7 @@ B("Slow Planet", "Pads", "analog",
   amp(1.4, 2.0, 0.85, 3.0), mod(2.5, 3.0, 0.5, 3.0, 0.2), lfo(0.11, 0.2, "tri", "timbre"),
   space("weave", "16bars", size=0.55, distance=3.5, spread=75.0, room=0.35, roomsize=0.6, doppler=0.15),
   chorus(0.25, 0.55, 0.32), rev(0.8, 0.18), expr(vel=[("attack", -0.25)]),
-  wheel=("distance", -0.18), voices=10, velsens=0.3)
+  wheel=("distance", -0.06), voices=10, velsens=0.3)
 
 B("Glass Horizon", "Pads", "grain",
   "Long glass grains spread into a wide horizon that walks away and comes back towards you over eight bars. The mod "
@@ -269,7 +271,7 @@ B("Rain Canopy", "Textures", "grain",
   space("swarm", "8bars", size=0.7, distance=2.0, spread=150.0, elevation=25.0, room=0.3, roomsize=0.55, doppler=0.05),
   rev(0.6, 0.14),
   comp(-30.0, 2.0, 5.0, 120.0, 12.0),
-  wheel=("engine3", 0.3), voices=6, velsens=0.2)
+  wheel=("engine2", -0.4), voices=6, velsens=0.2)
 
 B("Night Insects", "Textures", "grain",
   "Tiny bright chirps of plucked strings buzzing around your head on a fast swarm path, near and far at once. The mod "
@@ -302,7 +304,7 @@ B("Distant Voices", "Textures", "vocal",
   amp(1.0, 2.0, 0.9, 3.0), mod(1.0, 2.0, 0.5, 2.0, 0.0), lfo(0.07, 0.2, "tri", "timbre"),
   space("walk", "16bars", size=0.5, distance=4.5, spread=60.0, room=0.55, roomsize=0.85, doppler=0.05, rolloff=0.4),
   rev(0.85, 0.18),
-  wheel=("distance", -0.2), voices=8, velsens=0.2, extra_tags=("Vocal",))
+  wheel=("distance", -0.06), voices=8, velsens=0.2, extra_tags=("Vocal",))
 
 B("Ember Field", "Textures", "grain",
   "Short crackling marimba grains like embers, popping up at random places around you on a wandering orbit. The mod wheel "
@@ -497,7 +499,7 @@ B("Pulse Orbit", "Arp", "analog",
   amp(0.006, 0.35, 0.2, 0.12), mod(0.002, 0.15, 0.0, 0.1, 0.2), lfo(0.1, 0.1, "tri", "timbre"),
   space("figure8", "2bars", size=0.55, distance=1.6, spread=20.0, room=0.25, roomsize=0.4, doppler=0.15),
   echo("1/8.", 0.3, 0.15),
-  wheel=("engine3", 0.35), arp_block=("up", 2, 0.45, "1/16"), voices=8, velsens=0.5)
+  wheel=("engine3", 0.2), arp_block=("up", 2, 0.45, "1/16"), voices=8, velsens=0.5)
 
 B("Swarm Sequence", "Arp", "cluster",
   "Detuned cluster stabs arpeggiated in eighths, each note flying off with a swarm that never lands twice in the same "
@@ -543,7 +545,7 @@ B("Pendulum Growl", "Bass", "fm",
   amp(0.003, 0.5, 0.85, 0.1), mod(0.005, 0.35, 0.4, 0.1, 0.5), MONO, lfo(0.2, 0.1, "tri", "timbre"),
   space("pendulum", "1/2", size=0.5, distance=1.5, spread=25.0, room=0.12, roomsize=0.3, doppler=0.05, lowkeep=180.0),
   comp(-15.0, 4.0, 1.0, 70.0),
-  wheel=("engine3", 0.3), velsens=0.4)
+  wheel=("engine3", 0.2), velsens=0.4)
 
 B("Spinning Pluck Bass", "Bass", "pluck",
   "A plucked string bass: the woody attack spins once around your head every half bar, the low note stays centred. The "
@@ -638,9 +640,9 @@ B("Circling Hats", "Drums", "cluster",
   wheel=("pathrate", 0.6), voices=4, velsens=0.45, tune=12)
 
 B("Hand Drum Ring", "Drums", "fm",
-  "Hand-drum tones sitting in a ring around you: low strokes behind, slaps in front, each note at its own angle, and "
+  "Hand-drum tones sitting in a ring around you: low strokes behind, open tones in front, each note at its own angle, and "
   "the ring slowly turning. The mod wheel speeds the turn." + HP_EN,
-  "Handtrommeltöne in einem Ring um dich: tiefe Schläge hinten, Slaps vorn, jeder Ton in seinem eigenen Winkel, der "
+  "Handtrommeltöne in einem Ring um dich: tiefe Schläge hinten, offene Töne vorn, jeder Ton in seinem eigenen Winkel, der "
   "Ring dreht sich langsam. Das Modrad beschleunigt die Drehung." + HP_DE,
   fm(algo=2, modratio=1.5, index=0.22, feedback=0.25, op1ratio=1, op2ratio=1.5, op3ratio=3.3, op1level=1.0, op2level=0.5,
      op3level=0.25, op4level=0.0, op5level=0.0, op6level=0.0),
@@ -727,7 +729,7 @@ B("Breath Circle", "Vocal", "vocal",
   vo(vowel=2.4, formant=0.4, breath=0.95, tension=0.15, vibdepth=0.0, vibrate=4.5, jitter=0.4),
   amp(0.15, 0.6, 0.5, 0.6), mod(0.3, 1.0, 0.5, 1.0, 0.0), lfo(0.12, 0.2, "tri", "timbre"),
   space("circle", "2bars", size=0.3, distance=0.7, spread=20.0, room=0.15, roomsize=0.3, doppler=0.05, air=0.3),
-  wheel=("engine3", -0.6), voices=6, velsens=0.35, extra_tags=("Textures",))
+  wheel=("engine3", -0.2), voices=6, velsens=0.35, extra_tags=("Textures",))
 
 
 # ---------------------------------------------------------------------------------------------------------- writing

@@ -76,7 +76,7 @@
     "mod.s3.src": 9,
     "mod.s3.via": 0,
     "mod.s3.dst": 7,
-    "mod.s3.amt": 0.3,
+    "mod.s3.amt": 0.2,
     "mod.s3.curve": 0,
     "monobass": 150.0,
     "velsens": 0.4,

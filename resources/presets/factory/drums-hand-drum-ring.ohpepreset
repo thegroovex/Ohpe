@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "fm",
-  "comment": "Hand-drum tones sitting in a ring around you: low strokes behind, slaps in front, each note at its own angle, and the ring slowly turning. The mod wheel speeds the turn. Best with headphones.",
+  "comment": "Hand-drum tones sitting in a ring around you: low strokes behind, open tones in front, each note at its own angle, and the ring slowly turning. The mod wheel speeds the turn. Best with headphones.",
   "params": {
     "engine": 0,
     "fm.algo": 2,
