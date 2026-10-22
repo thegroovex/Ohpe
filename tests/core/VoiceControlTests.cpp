@@ -214,11 +214,11 @@ TEST_CASE ("p68 voice: silence, no input, NaN - everything rests at 0 and stays 
     for (int v = 0; v < numValues; ++v) CHECK (std::abs (a.value (v)) < 0.02f);
 }
 
-TEST_CASE ("p68 voice: parameters appended after the p59 grid block; matrix sources 34 .. 40")
+TEST_CASE ("p68 voice: parameters appended after the p67 tape memory block; matrix sources 34 .. 40")
 {
     auto owner = std::make_unique<Core>();
     const auto& reg = owner->params();
-    const int base = reg.indexOf ("harmony.kb.fixed");
+    const int base = reg.indexOf ("tapemem.go"); // p67 merged first
     REQUIRE (base >= 0);
     const char* ids[] = { "voice.on", "voice.gain", "voice.gate", "voice.smooth", "voice.pitch", "voice.monitor",
                           "p1.voice.map", "p2.voice.map", "p3.voice.map", "p4.voice.map" };
