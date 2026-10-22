@@ -109,7 +109,7 @@ void TempoReadout::paint (juce::Graphics& g)
         juce::String text = value + " BPM";
         if (proc.core().transportPlaying()) text = juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xb6 ")) + text;
         if (locked) text = i18n::upper (tag) + "  " + text;
-        g.setFont (monoFont (h * 0.5f));
+        g.setFont (monoFont (h * textSize));
         const float w = juce::GlyphArrangement::getStringWidth (g.getCurrentFont(), text);
         if (hover || dragging)
         {

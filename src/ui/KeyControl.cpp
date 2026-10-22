@@ -61,6 +61,14 @@ juce::String KeyReadout::shownText() const
     return t;
 }
 
+juce::String KeyReadout::headerText() const
+{
+    // p75: what the header paints in full form - key and scale; a host key says so by its violet colour (as the
+    // compact form), the tooltip names the host, so "HOST" does not take the title's room
+    const auto k = proc.keyScale();
+    return juce::String (keys::pitchName (k.root, k.root, k.scale, german())).toUpperCase() + " " + shortScaleName (k.scale);
+}
+
 juce::String KeyReadout::compactText() const
 {
     // root + a short lower-case suffix (major: none, minor: "m"); a host key keeps its violet colour instead of HOST
@@ -73,9 +81,9 @@ juce::String KeyReadout::compactText() const
 
 float KeyReadout::neededWidth (float h, bool compactForm) const
 {
-    const auto f = monoFont (h * (compactForm ? 0.46f : 0.5f));
+    const auto f = monoFont (h * textSizeFraction (compactForm));
     // the lock and some air; at least room to grab the text left of the lock ("C" alone)
-    return juce::jmax (h * 1.9f, juce::GlyphArrangement::getStringWidth (f, compactForm ? compactText() : shownText()) + h * 1.0f);
+    return juce::jmax (h * 1.7f, juce::GlyphArrangement::getStringWidth (f, compactForm ? compactText() : headerText()) + h * 0.84f);
 }
 
 float KeyReadout::preferredWidth (float h, bool host)
@@ -92,7 +100,7 @@ juce::Rectangle<float> KeyReadout::lockArea() const
 {
     const auto b = getLocalBounds().toFloat();
     const float h = b.getHeight();
-    return { b.getRight() - h * 0.85f, b.getY() + h * 0.18f, h * 0.64f, h * 0.64f };
+    return { b.getRight() - h * 0.68f, b.getY() + h * 0.23f, h * 0.54f, h * 0.54f }; // p75: a little smaller
 }
 
 void KeyReadout::refresh()
@@ -120,9 +128,9 @@ void KeyReadout::paint (juce::Graphics& g)
     const float h = b.getHeight();
     const bool hover = isMouseOverOrDragging();
     const auto lock = lockArea();
-    auto textArea = b.withRight (lock.getX() - h * 0.12f);
+    auto textArea = b.withRight (lock.getX() - h * 0.1f);
     const auto text = paintedText();
-    g.setFont (monoFont (h * (compact ? 0.46f : 0.5f)));
+    g.setFont (monoFont (h * textSizeFraction (compact)));
     const float w = juce::jmin (textArea.getWidth(), juce::GlyphArrangement::getStringWidth (g.getCurrentFont(), text));
     if (hover || dragging) // as the tempo: a soft yellow field behind while it is edited
     {
