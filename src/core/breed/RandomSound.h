@@ -42,6 +42,10 @@ constexpr float maxFlatness = 0.30f;
     is rolled again. */
 constexpr float maxGainDb = 24.0f;
 constexpr int maxAttempts = 5;
+/** When even the best of those would stay more than farTooQuietDb under the target with the gain at its top, up to
+    maxExtraAttempts more rolls (same seed sequence, so still deterministic) look for a louder candidate. */
+constexpr float farTooQuietDb = 8.0f;
+constexpr int maxExtraAttempts = 8;
 
 struct Loudness
 {

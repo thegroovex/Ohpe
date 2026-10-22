@@ -117,6 +117,7 @@ target_sources(ohpe_core_tests PRIVATE MetronomeTests.cpp)
 # p46: Grid-Controller (Profil 1) - display SysEx, text folding, pad layout and colours, settings
 target_sources(ohpe_core_tests PRIVATE GridProtocolTests.cpp)
 target_sources(ohpe_core_tests PRIVATE ShowcasePresetTests.cpp) # p44: the showcase factory presets
+target_sources(ohpe_core_tests PRIVATE BinauralPresetTests.cpp) # p71: the binaural factory presets
 # p50: Fingerboard mode / MPE HD (14/21-bit)
 target_sources(ohpe_core_tests PRIVATE FingerboardTests.cpp)
 # p49: Grid-Controller in a plug-in - ownership, automatic ports, settings

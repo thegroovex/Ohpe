@@ -2,7 +2,7 @@
 
 *Deutsch · English: [../en/FACTORY-SOUNDS.md](../en/FACTORY-SOUNDS.md)*
 
-Ohpe bringt **356 Part-Presets** für alle acht Engines mit, **18 Projekt-Presets** (Demo-Patterns,
+Ohpe bringt **412 Part-Presets** für alle acht Engines mit, **18 Projekt-Presets** (Demo-Patterns,
 die alle vier Parts, die Sequenzer und das Drum-Kit nutzen), **sechs Drum-Kits**, **zehn
 aufgenommene Instrumente** und (0.8) **vier Tasteninstrumente** (Flügel, Klavier, Tine- und
 Zungen-E-Piano) für die Sampler- und Grain-Engine. Du öffnest sie mit **BIBLIOTHEK**:
@@ -176,6 +176,64 @@ und das Rad ganz oben den Klang sauber verändert.
 | Pads Performance Set | Drums, Bass, FX | Projekt | Performance-Pads, Tempo-synchron | Ein House-Loop, eingerichtet für die Performance-Pads (Effekt-Modus, Pads): Stottern in Sechzehnteln, ein Bandstopp über einen Takt, ein Tiefpass-Sweep über zwei Takte und ein Hall-Freeze, alles im Takt. Während der Sweep schließt, öffnet die Fläche ihr eigenes Filter dagegen; solange ein Pad gehalten wird, treten die Zupfer zurück. Play drücken, dann die Pads halten. |
 | Binaural Scene | Flächen, 3D, Texturen | Projekt | 3D-Bewegungspfad, Tempo-synchron | Vier Klänge bewegen sich gleichzeitig um den Kopf: eine Fläche steigt in sechzehn Takten spiralförmig auf, Glocken kreisen einmal pro Takt, Zupfer springen jeden halben Takt von vorn nach hinten, dazu ein gläserner Grain-Schwarm. Jeder Pfad ist in Takten bemessen, die ganze Szene folgt dem Tempo. Kopfhörer auf, Play drücken. |
 <!-- showcase:end -->
+
+## Binaurale Presets (p71)
+
+49 Part-Presets für Kopfhörer, jedes um die binaurale 3D-Stufe des Parts gebaut: Flächen, die um den Kopf kreisen, nahes Flüstern und ferne Stimmen, regenartige Grain-Felder, Zupfer und Glocken rund um dich, Percussion, deren Schläge an verschiedenen Orten landen (Tonhöhe oder Zufall wählt die Richtung), Bässe, deren Tiefbass mittig und mono bleibt, während die Obertöne wandern, und Arps, die reisen - manche mit Key Gravity oder Stimmsteuerung kombiniert. Sie tragen die Kategorie **3D**: der *3D*-Chip der Bibliothek oder die Suche nach *3D* / *binaural* listet sie, das Kopfhörer-Piktogramm markiert sie in der Liste. Jedes ist auf das Bank-Ziel eingepegelt und hat ein hörbares Modrad.
+
+<!-- binaural:begin -->
+| Name | Kategorie | Engine | Bewegung | Beschreibung |
+|---|---|---|---|---|
+| Bowed Ring | Flächen, 3D | Sampler | Kreis | Gestrichenes Metall, das sich langsam gegen den Uhrzeigersinn um dich dreht (Kreis, vier Takte, rückwärts), in einem lang klingenden Raum. Das Modrad macht den Strich dunkler. Am besten mit Kopfhörern. |
+| Cathedral Ring | Flächen, 3D | Cluster | Über den Kopf | Große Septakkord-Schichten in einem hohen Gewölbe: die Fläche zieht alle acht Takte über den Kopf und zurück, ein langsamer Drift lässt sie schimmern. Das Modrad öffnet den Klang. Am besten mit Kopfhörern. |
+| Choir Around You | Flächen, 3D | Vocal | Zufallsorbit | Ein weicher 'Aah'-Chor, der in sechzehn Takten auf einem Zufallsorbit um dich treibt, mal oben, mal hinter dir. Das Modrad dreht den Vokal Richtung 'Uuh'. Am besten mit Kopfhörern. |
+| Glass Horizon | Flächen, 3D | Grain | Entfernungsgang | Lange Glas-Grains, zu einem weiten Horizont gefächert, der sich in acht Takten entfernt und wieder auf dich zukommt. Das Modrad streut die Grains zu einem Funkeln. Am besten mit Kopfhörern. |
+| Gravity Halo | Flächen, 3D, Texturen | Analog | Spirale aufwärts | Eine hauchige Fläche aus Rauschen und Sägezahn, die Key Gravity in die Tonart zieht und in sechzehn Takten spiralförmig um dich steigt. Das Modrad löst die Gravitation, die Fläche treibt aus der Tonart. Am besten mit Kopfhörern. |
+| Halo Carousel | Flächen, 3D | Wavetable | Kreis | Eine gläserne Unisono-Fläche, die alle acht Takte einmal in einigen Schritten Abstand um den Kopf kreist; ihr breites Bild dreht sich mit. Druck holt sie näher; das Modrad beschleunigt das Karussell. Am besten mit Kopfhörern. |
+| Morning Mist | Flächen, 3D | FM | Acht | Weiche Zwei-Operator-FM-Töne, die eine langsame Acht um den Kopf ziehen, vorne nah, hinten weiter weg. Das Modrad gibt glockige Helligkeit dazu. Am besten mit Kopfhörern. |
+| Slow Planet | Flächen, 3D | Analog | Wellenorbit | Eine warme, verstimmte Sägezahnfläche, die auf einem wellenförmigen Orbit um den Kopf webt und in sechzehn Takten steigt und sinkt. Anschlag macht den Einsatz weicher; das Modrad holt den Planeten aus der Ferne heran. Am besten mit Kopfhörern. |
+| Close Whispers | Texturen, 3D, Vokal | Vocal | Flüstern | Atem und geflüsterte Vokale direkt am Ohr, die von einer Seite zur anderen gleiten, als beuge sich jemand zu dir (Bewegungspfad Flüstern, vier Takte). Druck gibt mehr Atem; das Modrad ändert den Vokal. Am besten mit Kopfhörern. |
+| Distant Voices | Texturen, 3D, Vokal | Vocal | Entfernungsgang | Gesummte Stimmen weit weg in einem großen Raum, die in sechzehn Takten näher und ferner wandern. Das Modrad holt sie zu dir in den Raum. Am besten mit Kopfhörern. |
+| Ember Field | Texturen, 3D | Grain | Zufallsorbit | Knisternde Marimba-Grains wie Glut, die auf einem wandernden Orbit an zufälligen Stellen um dich aufflackern. Das Modrad dehnt das Knistern zu glühenden Tönen. Am besten mit Kopfhörern. |
+| Night Insects | Texturen, 3D | Grain | Schwarm | Winzige helle Zirplaute gezupfter Saiten, die auf einem schnellen Schwarmpfad um den Kopf schwirren, nah und fern zugleich. Das Modrad streut sie weiter. Am besten mit Kopfhörern. |
+| Rain Canopy | Texturen, 3D | Grain | Schwarm | Dichte kurze Grains, die wie Regen auf Blätter über und um dich fallen: ein Schwarm aus Tropfen über die ganze Kugel, leicht von oben. Das Modrad macht die Tropfen feiner. Am besten mit Kopfhörern. |
+| Voice Halo | Texturen, 3D, Vokal | Vocal | Kreis | Ein gesungener Halo, dessen Ort deiner Stimme folgt: singe in den Eingang, dein Vokal dreht ihn um den Kopf, deine Lautstärke holt ihn näher. Ohne Eingang ein sanft kreisender Chor. Das Modrad beschleunigt den Orbit. Am besten mit Kopfhörern. |
+| Wind Spiral | Texturen, 3D, FX | Analog | Spirale aufwärts | Gefilterter Wind, der alle vier Takte spiralförmig über den Kopf steigt und unten neu beginnt, die Resonanz pfeift leise. Das Modrad öffnet die Böen. Am besten mit Kopfhörern. |
+| Ceiling Harpsichord | Tasten, 3D | Sampler | Über den Kopf | Ein Cembalo, das alle vier Takte über den Kopf steigt und sich hinter dir niederlässt; der Raum antwortet von allen Seiten. Das Modrad macht den Kiel dunkler. Am besten mit Kopfhörern. |
+| Glass Pendulum | Tasten, 3D | Sampler | Pendel | Glasharmonika-Töne, die auf einem langsamen Pendel von einem Ohr zum anderen schwingen; jede Phrase landet woanders. Das Modrad macht das Glas weicher. Am besten mit Kopfhörern. |
+| Orbiting Tines | Tasten, 3D | FM | Kreis | Ein glockiges Tine-E-Piano, das alle zwei Takte in einem kleinen Kreis vor dir schwebt, als schwanke das Instrument beim Spielen. Anschlag gibt Biss; das Modrad macht die Tines heller. Am besten mit Kopfhörern. |
+| Rotor Organ | Tasten, 3D | Cluster | Kreis | Eine Zugriegel-artige Orgel, deren Klang wirklich um den Kopf rotiert (Kreis, ein Takt). Das Modrad schaltet den Rotor in die schnelle Stufe. Am besten mit Kopfhörern. |
+| Vibes in the Round | Tasten, 3D | Sampler | Ping-Pong v/h | Vibraphon, das jeden halben Takt zwischen vorn und hinten springt; das Motor-Flimmern wird zur echten Bewegung. Das Modrad rückt das Vibraphon weiter weg. Am besten mit Kopfhörern. |
+| Glass Droplets | Zupfer, 3D | Zupfen | feste Position | Helle, gläserne Zupfer, die wie Tropfen an zufälligen Stellen um den Kopf fallen, etwas von oben. Anschlag bestimmt den Spritzer; das Modrad lässt sie länger klingen. Am besten mit Kopfhörern. |
+| Harp Constellation | Zupfer, 3D | Sampler | feste Position | Jeder Harfenton erscheint als Stern an einem eigenen zufälligen Ort um und über dir, dann leuchtet der nächste woanders auf. Das Modrad hebt das Sternbild höher. Am besten mit Kopfhörern. |
+| Kalimba Circle | Zupfer, 3D | Sampler | Kreis | Kalimba-Töne nach Tonhöhe im Kreis verteilt: tiefe links, hohe hinten rechts, der ganze Ring dreht sich einmal pro Takt. Das Modrad macht die Zungen heller. Am besten mit Kopfhörern. |
+| Marimba Ricochet | Zupfer, 3D, Drums | Sampler | Ping-Pong v/h | Marimbaschläge, die jede Viertel zwischen vorn und hinten abprallen, knackig und nah. Das Modrad wirft sie weiter in den Raum. Am besten mit Kopfhörern. |
+| Zither Drizzle | Zupfer, 3D | Sampler | Schwarm | Zitherseiten, von einem Schwarmpfad verstreut; jeder Anschlag kommt von einem etwas anderen Ort wie leichter Nieselregen. Das Modrad macht die Saiten dunkler. Am besten mit Kopfhörern. |
+| Bell Ricochet | Arp, 3D | Sampler | Ping-Pong v/h | Glockenspiel-Töne in zufälliger Folge, die jede Achtel zwischen vorn und hinten springen und um dich funkeln. Das Modrad beschleunigt das Springen. Am besten mit Kopfhörern. |
+| Helix Sequence | Arp, 3D | Wavetable | Spirale aufwärts | Ein gläsernes Wavetable-Arpeggio, das eine Doppelhelix um den Kopf hinaufsteigt: in zwei Takten spiralförmig nach oben, während die Töne steigen. Das Modrad fährt durch die Wavetable. Am besten mit Kopfhörern. |
+| Pulse Orbit | Arp, 3D | Analog | Acht | Ein resonantes Rechteck-Arpeggio, das alle zwei Takte eine Acht durch den Raum um deinen Kopf zieht. Das Modrad öffnet das Filter. Am besten mit Kopfhörern. |
+| Satellite Arp | Arp, 3D | FM | Kreis | FM-Glocken-Arpeggios, die wie ein Satellit einmal pro Takt um den Kopf kreisen, knapp außer Reichweite. Das Modrad schiebt den Orbit weiter hinaus. Am besten mit Kopfhörern. |
+| Swarm Sequence | Arp, 3D | Cluster | Schwarm | Verstimmte Cluster-Stabs als Achtel-Arpeggio; jeder Ton fliegt mit einem Schwarm davon, der nie zweimal an derselben Stelle landet. Das Modrad verbreitert die Schichtung. Am besten mit Kopfhörern. |
+| Gravity Bass Halo | Bass, 3D | Analog | Acht | Ein vokalartiger Analogbass, dessen Teiltöne Key Gravity in die Tonart stimmt; der Obertonhalo zieht eine Acht über dem mittigen Sub. Das Modrad vertieft die Gravitation. Am besten mit Kopfhörern. |
+| Halo Reese | Bass, 3D | Wavetable | Wellenorbit | Ein breiter, verstimmter Reese-Bass mit monoem Sub-Kern; die bewegte Obertonschicht webt auf einem Vier-Takt-Orbit um dich. Das Modrad fährt für Knurren durch die Wavetable. Am besten mit Kopfhörern. |
+| Orbit Sub | Bass, 3D | Analog | Kreis | Ein runder Sägezahnbass: der Tiefbass bleibt mittig und mono, die oberen Obertöne kreisen alle zwei Takte um den Kopf. Das Modrad öffnet das Filter. Am besten mit Kopfhörern. |
+| Pendulum Growl | Bass, 3D | FM | Pendel | Ein knurrender FM-Bass, dessen helle Kante jeden halben Takt von Ohr zu Ohr schwingt, während der Grundton fest in der Mitte steht. Das Modrad hebt den FM-Index. Am besten mit Kopfhörern. |
+| Spinning Pluck Bass | Bass, 3D | Zupfen | Kreis | Ein gezupfter Saitenbass: der holzige Anschlag dreht sich jeden halben Takt einmal um den Kopf, der tiefe Ton bleibt in der Mitte. Das Modrad lässt die Saite länger klingen. Am besten mit Kopfhörern. |
+| Comet Lead | Leads, 3D | Wavetable | Vorbeiflug | Ein heller Wavetable-Lead, der alle zwei Takte an dir vorbeizieht, beim Nahen höher, beim Entfernen tiefer (Doppler). Das Modrad fährt den Klang. Am besten mit Kopfhörern. |
+| Ear to Ear Lead | Leads, 3D | Analog | Pendel | Ein singender Analog-Lead, der alle zwei Takte von einem Ohr zum anderen und zurück schwingt; eine Melodie wandert quer durch den Kopf. Anschlag öffnet das Filter; das Modrad öffnet es weiter. Am besten mit Kopfhörern. |
+| Overhead Flute | Leads, 3D | Sampler | Über den Kopf | Eine hauchige Blockflötenmelodie, die alle vier Takte über den Kopf und hinter dir herabschwebt, als spiele jemand von einer Empore. Das Modrad macht den Atem heller. Am besten mit Kopfhörern. |
+| Vowel Orbit Lead | Leads, 3D, Vokal | Vocal | Kreis | Ein singender Vokal-Lead, der alle vier Takte um dich kreist wie eine Stimme, die durch den Raum geht. Druck gibt Vibrato; das Modrad wandert vom 'Ah' zum 'Ii'. Am besten mit Kopfhörern. |
+| Circling Hats | Drums, 3D | Cluster | Kreis | Metallische Cluster-Hats, die jeden Schlag einmal um den Kopf wandern; ein gerades Hat-Muster wird zum Ring aus Ticks. Das Modrad beschleunigt den Ring. Am besten mit Kopfhörern. |
+| Hand Drum Ring | Drums, 3D | FM | Kreis | Handtrommeltöne in einem Ring um dich: tiefe Schläge hinten, offene Töne vorn, jeder Ton in seinem eigenen Winkel, der Ring dreht sich langsam. Das Modrad beschleunigt die Drehung. Am besten mit Kopfhörern. |
+| Round Toms | Drums, 3D | FM | feste Position | Gestimmte FM-Toms nach Tonhöhe um dich verteilt, tiefe links und hinten, hohe rechts und vorn: ein Fill rollt um den Kopf. Das Modrad rückt das Kit weiter weg. Am besten mit Kopfhörern. |
+| Drone Flyover | FX, 3D | Wavetable | Vorbeiflug | Ein körniges Motorbrummen, das von weit vorn naht, über dir vorbeidröhnt und hinter dir verklingt (Vorbeiflug mit starkem Doppler). Eine Note halten; das Modrad beschleunigt die Überflüge. Am besten mit Kopfhörern. |
+| Grain Vortex | FX, 3D, Texturen | Grain | Schwarm | Stöße rückwärts laufender Vibraphon-Grains, die auf einem Schwarmpfad mit Doppler-Schwüngen um dich wirbeln. Das Modrad streut die Grains weiter. Am besten mit Kopfhörern. |
+| Thunder Walk | FX, 3D, Texturen | Analog | Entfernungsgang | Ein tiefes, rollendes Grollen, das in acht Takten nah und fern wandert wie ein Gewitter über dem Tal; der Sub bleibt mono und ruhig. Das Modrad holt das Gewitter näher. Am besten mit Kopfhörern. |
+| Vortex Riser | FX, 3D | Analog | Spirale aufwärts | Ein Rausch-Riser in einem Wirbel: er schraubt sich in vier Takten immer schneller um den Kopf nach oben. Für den Aufbau eine Note halten; das Modrad zieht den Wirbel enger. Am besten mit Kopfhörern. |
+| Angel Overhead | Vokal, 3D | Vocal | Über den Kopf | Eine reine, hohe 'Uuh'-Stimme, die alle acht Takte über den Kopf und hinter dir herabschwebt wie eine Sängerin auf der Empore. Das Modrad öffnet den Vokal. Am besten mit Kopfhörern. |
+| Breath Circle | Vokal, 3D, Texturen | Vocal | Kreis | Nahe, rhythmische Atemzüge, die alle zwei Takte in Flüsterabstand um den Kopf kreisen: intim und leicht unheimlich. Das Modrad gibt dem Atem einen gesungenen Ton. Am besten mit Kopfhörern. |
+| Choir Weave | Vokal, 3D, Flächen | Vocal | Wellenorbit | Ein dunkler Chor mit tiefen Formanten, der in acht Takten einen wellenförmigen Orbit um dich webt, steigend und sinkend. Druck holt ihn näher; das Modrad hebt den Formant. Am besten mit Kopfhörern. |
+<!-- binaural:end -->
 
 ## Drum-Kits
 

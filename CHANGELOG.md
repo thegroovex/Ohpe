@@ -7,6 +7,22 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: 49 new binaural factory presets (p71), made for headphones and built around the part's 3D stage: pads circling
+  the head, near whispers and far-off voices, rain-like grain fields, plucks and bells placed around the listener,
+  percussion whose hits land at different places (pitch or chance picks the direction), basses with a centred mono
+  low end and moving overtones, travelling arps, plus Key Gravity and Voice Control combinations. Every engine and
+  ten categories; each carries its category plus **3D** (library 3D chip, search *3D* / *binaural*, headphones
+  pictogram), has an audible mod wheel and is calibrated to the bank target (−11 LUFS short-term, true peak ≤ −1 dBTP).
+  The factory bank now holds 412 part presets (72 with 3D). Generator tools/presets/make_binaural.py; list in
+  docs/en/FACTORY-SOUNDS.md.
+- DE: 49 neue binaurale Werks-Presets (p71) für Kopfhörer, um die 3D-Stufe des Parts gebaut: Flächen, die um den Kopf
+  kreisen, nahes Flüstern und ferne Stimmen, regenartige Grain-Felder, Zupfer und Glocken rund um dich, Percussion,
+  deren Schläge an verschiedenen Orten landen (Tonhöhe oder Zufall wählt die Richtung), Bässe mit mittigem Mono-
+  Tiefbass und wandernden Obertönen, reisende Arps, dazu Kombinationen mit Tonart-Gravitation und Stimmsteuerung.
+  Alle Engines und zehn Kategorien; jedes trägt seine Kategorie und **3D** (3D-Chip der Bibliothek, Suche *3D* /
+  *binaural*, Kopfhörer-Piktogramm), hat ein hörbares Modrad und ist auf das Bank-Ziel eingepegelt (−11 LUFS
+  Kurzzeit, True Peak ≤ −1 dBTP). Die Werksbank hat jetzt 412 Part-Presets (72 mit 3D). Generator
+  tools/presets/make_binaural.py; Liste in docs/de/FACTORY-SOUNDS.md.
 - EN: Key Gravity on the header (p70): a small ring right next to the key and its lock shows the edit part's gravity
   amount (empty at 0 %). Click opens the Key Gravity page directly, drag / mouse wheel set the amount, right-click =
   MIDI learn; tooltip and help topic EN / DE. The Sends pages and the pro view card stay. No new parameters.

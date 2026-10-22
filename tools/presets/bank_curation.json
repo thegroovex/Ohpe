@@ -1199,6 +1199,221 @@
    "params": {
     "gain": 15.4
    }
+  },
+  "arp-bell-ricochet.ohpepreset": {
+   "params": {
+    "gain": 14.1
+   }
+  },
+  "arp-helix-sequence.ohpepreset": {
+   "params": {
+    "gain": 12.9
+   }
+  },
+  "arp-pulse-orbit.ohpepreset": {
+   "params": {
+    "gain": 11.9
+   }
+  },
+  "arp-satellite-arp.ohpepreset": {
+   "params": {
+    "gain": 5.4
+   }
+  },
+  "arp-swarm-sequence.ohpepreset": {
+   "params": {
+    "gain": 10.3
+   }
+  },
+  "bass-gravity-bass-halo.ohpepreset": {
+   "params": {
+    "gain": 24.0
+   }
+  },
+  "bass-halo-reese.ohpepreset": {
+   "params": {
+    "gain": 22.7
+   }
+  },
+  "bass-orbit-sub.ohpepreset": {
+   "params": {
+    "gain": 24.0
+   }
+  },
+  "bass-pendulum-growl.ohpepreset": {
+   "params": {
+    "gain": 22.1
+   }
+  },
+  "bass-spinning-pluck-bass.ohpepreset": {
+   "params": {
+    "gain": 15.0
+   }
+  },
+  "drums-circling-hats.ohpepreset": {
+   "params": {
+    "gain": -2.9
+   }
+  },
+  "drums-hand-drum-ring.ohpepreset": {
+   "params": {
+    "gain": 17.4
+   }
+  },
+  "drums-round-toms.ohpepreset": {
+   "params": {
+    "gain": 8.6
+   }
+  },
+  "fx-drone-flyover.ohpepreset": {
+   "params": {
+    "gain": 2.0
+   }
+  },
+  "fx-grain-vortex.ohpepreset": {
+   "params": {
+    "gain": 14.1
+   }
+  },
+  "fx-thunder-walk.ohpepreset": {
+   "params": {
+    "gain": 10.0
+   }
+  },
+  "fx-vortex-riser.ohpepreset": {
+   "params": {
+    "gain": 20.1
+   }
+  },
+  "keys-ceiling-harpsichord.ohpepreset": {
+   "params": {
+    "gain": 5.0
+   }
+  },
+  "keys-orbiting-tines.ohpepreset": {
+   "params": {
+    "gain": -1.6
+   }
+  },
+  "keys-rotor-organ.ohpepreset": {
+   "params": {
+    "gain": -0.1
+   }
+  },
+  "leads-comet-lead.ohpepreset": {
+   "params": {
+    "gain": 9.3
+   }
+  },
+  "leads-ear-to-ear-lead.ohpepreset": {
+   "params": {
+    "gain": 17.9
+   }
+  },
+  "leads-overhead-flute.ohpepreset": {
+   "params": {
+    "gain": -0.9
+   }
+  },
+  "leads-vowel-orbit-lead.ohpepreset": {
+   "params": {
+    "gain": 5.4
+   }
+  },
+  "pads-bowed-ring.ohpepreset": {
+   "params": {
+    "gain": -3.6
+   }
+  },
+  "pads-cathedral-ring.ohpepreset": {
+   "params": {
+    "gain": 5.5
+   }
+  },
+  "pads-glass-horizon.ohpepreset": {
+   "params": {
+    "gain": 4.3
+   }
+  },
+  "pads-gravity-halo.ohpepreset": {
+   "params": {
+    "gain": 16.1
+   }
+  },
+  "pads-halo-carousel.ohpepreset": {
+   "params": {
+    "gain": 1.8
+   }
+  },
+  "pads-morning-mist.ohpepreset": {
+   "params": {
+    "gain": -0.7
+   }
+  },
+  "pads-slow-planet.ohpepreset": {
+   "params": {
+    "gain": 15.6
+   }
+  },
+  "plucks-glass-droplets.ohpepreset": {
+   "params": {
+    "gain": 17.2
+   }
+  },
+  "plucks-kalimba-circle.ohpepreset": {
+   "params": {
+    "gain": 8.7
+   }
+  },
+  "plucks-marimba-ricochet.ohpepreset": {
+   "params": {
+    "gain": 7.2
+   }
+  },
+  "plucks-zither-drizzle.ohpepreset": {
+   "params": {
+    "gain": 11.7
+   }
+  },
+  "textures-close-whispers.ohpepreset": {
+   "params": {
+    "gain": 2.2
+   }
+  },
+  "textures-distant-voices.ohpepreset": {
+   "params": {
+    "gain": 13.0
+   }
+  },
+  "textures-ember-field.ohpepreset": {
+   "params": {
+    "gain": 11.0
+   }
+  },
+  "textures-night-insects.ohpepreset": {
+   "params": {
+    "gain": 3.4
+   }
+  },
+  "textures-rain-canopy.ohpepreset": {
+   "params": {
+    "gain": 24.0
+   }
+  },
+  "textures-voice-halo.ohpepreset": {
+   "params": {
+    "gain": 7.8
+   }
+  },
+  "textures-wind-spiral.ohpepreset": {
+   "params": {
+    "gain": 8.8
+   }
+  },
+  "vocal-breath-circle.ohpepreset": {
+   "params": {
+    "gain": 10.5
+   }
   }
  },
  "levels_before": {
@@ -1429,6 +1644,49 @@
   "bass-wood-body-bass.ohpepreset": 24.0,
   "leads-pressure-glide-lead.ohpepreset": 24.0,
   "pads-voice-filter-pad.ohpepreset": 6.9,
-  "bass-voice-wah-bass.ohpepreset": 11.3
+  "bass-voice-wah-bass.ohpepreset": 11.3,
+  "arp-bell-ricochet.ohpepreset": 6.0,
+  "arp-helix-sequence.ohpepreset": 6.0,
+  "arp-pulse-orbit.ohpepreset": 6.0,
+  "arp-satellite-arp.ohpepreset": 6.0,
+  "arp-swarm-sequence.ohpepreset": 6.0,
+  "bass-gravity-bass-halo.ohpepreset": 6.0,
+  "bass-halo-reese.ohpepreset": 6.0,
+  "bass-orbit-sub.ohpepreset": 6.0,
+  "bass-pendulum-growl.ohpepreset": 6.0,
+  "bass-spinning-pluck-bass.ohpepreset": 6.0,
+  "drums-circling-hats.ohpepreset": 6.0,
+  "drums-hand-drum-ring.ohpepreset": 6.0,
+  "drums-round-toms.ohpepreset": 6.0,
+  "fx-drone-flyover.ohpepreset": 6.0,
+  "fx-grain-vortex.ohpepreset": 6.0,
+  "fx-thunder-walk.ohpepreset": 6.0,
+  "fx-vortex-riser.ohpepreset": 6.0,
+  "keys-ceiling-harpsichord.ohpepreset": 6.0,
+  "keys-orbiting-tines.ohpepreset": 6.0,
+  "keys-rotor-organ.ohpepreset": 6.0,
+  "leads-comet-lead.ohpepreset": 6.0,
+  "leads-ear-to-ear-lead.ohpepreset": 6.0,
+  "leads-overhead-flute.ohpepreset": 6.0,
+  "leads-vowel-orbit-lead.ohpepreset": 6.0,
+  "pads-bowed-ring.ohpepreset": 6.0,
+  "pads-cathedral-ring.ohpepreset": 6.0,
+  "pads-glass-horizon.ohpepreset": 6.0,
+  "pads-gravity-halo.ohpepreset": 6.0,
+  "pads-halo-carousel.ohpepreset": 6.0,
+  "pads-morning-mist.ohpepreset": 6.0,
+  "pads-slow-planet.ohpepreset": 6.0,
+  "plucks-glass-droplets.ohpepreset": 6.0,
+  "plucks-kalimba-circle.ohpepreset": 6.0,
+  "plucks-marimba-ricochet.ohpepreset": 6.0,
+  "plucks-zither-drizzle.ohpepreset": 6.0,
+  "textures-close-whispers.ohpepreset": 6.0,
+  "textures-distant-voices.ohpepreset": 6.0,
+  "textures-ember-field.ohpepreset": 6.0,
+  "textures-night-insects.ohpepreset": 6.0,
+  "textures-rain-canopy.ohpepreset": 6.0,
+  "textures-voice-halo.ohpepreset": 6.0,
+  "textures-wind-spiral.ohpepreset": 6.0,
+  "vocal-breath-circle.ohpepreset": 6.0
  }
 }
