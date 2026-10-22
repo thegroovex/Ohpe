@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "sampler",
-  "comment": "Glockenspiel notes in random order bouncing front to back every eighth note, sparkling around the listener. The mod wheel speeds the bounce. Best with headphones.",
+  "comment": "Glockenspiel notes in random order bouncing like a ball from left to right and back in front of you, six hops every two bars. The mod wheel speeds the bounce. Best with headphones.",
   "params": {
     "engine": 7,
     "sampler.inst": 4,
@@ -29,8 +29,8 @@
     "lfo.shape": 0,
     "lfo.dest": 1,
     "space.on": 1,
-    "space.path": 7,
-    "space.pathlen": 1,
+    "space.path": 18,
+    "space.pathlen": 5,
     "space.pathrate": 1.0,
     "space.pathsize": 0.55,
     "space.pathphase": 0.0,

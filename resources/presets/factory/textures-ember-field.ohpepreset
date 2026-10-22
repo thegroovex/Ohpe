@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "grain",
-  "comment": "Short crackling marimba grains like embers, popping up at random places around you on a wandering orbit. The mod wheel stretches the crackle into glowing tones. Best with headphones.",
+  "comment": "Short crackling marimba grains like embers, popping up around you on a wandering loop that returns every four bars. The mod wheel stretches the crackle into glowing tones. Best with headphones.",
   "params": {
     "engine": 4,
     "grain.inst": 2,
@@ -36,7 +36,7 @@
     "lfo.shape": 4,
     "lfo.dest": 1,
     "space.on": 1,
-    "space.path": 4,
+    "space.path": 19,
     "space.pathlen": 6,
     "space.pathrate": 1.0,
     "space.pathsize": 0.7,

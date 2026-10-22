@@ -7,6 +7,24 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: 3D Space – eight new motion paths (p73), appended to the path list (choices 13–20; older sounds and automation
+  keep their path and sound identical): **Ping-Pong L/R** (ear to ear on the beat, in front one way, behind the other),
+  **Four Corners** (front left → front right → back right → back left, one per quarter), **Breathe** (near ↔ far in
+  front), **Helix** (circles up above your head and back down), **Fly-Over** (a straight line over your head, front to
+  back), **Bounce** (hops like a ball left ↔ right), **Wander** (a smooth random loop that repeats every cycle) and
+  **Loop Orbit** (an orbit with four small loops). All tempo-synced, continuous at the loop point, MIDI-mappable,
+  drawn ahead of the dot in the 3D view; new help topic *3D motion paths*. Eight binaural presets now show them off
+  (Ear to Ear Lead, Helix Sequence, Marimba Ricochet, Bell Ricochet, Distant Voices, Ember Field, Satellite Arp, Glass
+  Horizon). No new parameters.
+- DE: 3D-Raum – acht neue Bewegungspfade (p73), hinten an die Pfadliste angehängt (Auswahl 13–20; ältere Klänge und
+  Automationen behalten ihren Pfad und klingen gleich): **Ping-Pong l/r** (im Takt von Ohr zu Ohr, in eine Richtung vor
+  dir, zurück hinter dir), **Vier Ecken** (vorn links → vorn rechts → hinten rechts → hinten links, eine pro Viertel),
+  **Atmen** (nah ↔ fern vor dir), **Helix** (kreist über deinen Kopf hinauf und wieder hinab), **Überflug** (eine
+  gerade Linie über deinem Kopf, von vorn nach hinten), **Hüpfen** (springt wie ein Ball links ↔ rechts), **Wandern**
+  (eine weiche Zufallsschleife, die sich jeden Durchlauf wiederholt) und **Schleifenorbit** (ein Orbit mit vier
+  kleinen Schleifen). Alle tempo-synchron, stetig am Schleifenpunkt, MIDI-zuweisbar, in der 3D-Ansicht vor dem Punkt
+  gezeichnet; neues Hilfethema *3D-Bewegungspfade*. Acht binaurale Presets zeigen sie (Ear to Ear Lead, Helix Sequence,
+  Marimba Ricochet, Bell Ricochet, Distant Voices, Ember Field, Satellite Arp, Glass Horizon). Keine neuen Parameter.
 - EN: 49 new binaural factory presets (p71), made for headphones and built around the part's 3D stage: pads circling
   the head, near whispers and far-off voices, rain-like grain fields, plucks and bells placed around the listener,
   percussion whose hits land at different places (pitch or chance picks the direction), basses with a centred mono

@@ -228,6 +228,22 @@ const HelpTopic helpTopics[] = {
       "Der kleine Ring in der Kopfzeile des Displays, direkt neben der Tonart, zeigt den Wert des Edit-Parts (leer = aus). Ein Klick "
       "öffnet die Seite Tonart-Gravitation (Effekte > Sends); Ziehen oder das Mausrad auf dem Ring stellen den Wert ein; Rechtsklick "
       "für MIDI-Learn. Ziel, Glide, Kurve, Formant, Mischung und Qualität liegen auf dieser Seite und auf der Karte der Pro-Ansicht." },
+    { "3D motion paths", "3D-Bewegungspfade", // p73
+      "Every part has a 3D stage (Effects > 3D Space): pick a Motion Path with encoder 2 and its length with encoder 3 - it runs in time "
+      "with the song and is drawn ahead of the part's dot as a dotted curve. Motion Size shapes each path, Motion Phase offsets it, "
+      "Azimuth and Elevation turn the whole path.\n\n"
+      "Paths: Circle, Figure-8, Fly-By, Random Orbit, Pendulum, Spiral Up, Ping-Pong F/B, Swarm, Whisper, Distance Walk, Over the Head, "
+      "Weave, Ping-Pong L/R (ear to ear on the beat), Four Corners (one corner per beat), Breathe (near - far), Helix (circles up and "
+      "back down), Fly-Over (over your head, front to back), Bounce (hops left - right), Wander (a random loop that repeats) and "
+      "Loop Orbit (an orbit with four small loops). Every path is MIDI-mappable and automatable.",
+      "Jeder Part hat eine 3D-Stufe (Effekte > 3D-Raum): mit Encoder 2 einen Bewegungspfad wählen, mit Encoder 3 seine Länge - er läuft im "
+      "Takt des Songs und wird vor dem Punkt des Parts als gepunktete Kurve gezeichnet. Bewegungsgröße formt jeden Pfad, Bewegungsphase "
+      "versetzt ihn, Azimut und Elevation drehen den ganzen Pfad.\n\n"
+      "Pfade: Kreis, Acht, Vorbeiflug, Zufallsorbit, Pendel, Spirale aufwärts, Ping-Pong v/h, Schwarm, Flüstern, Entfernungsgang, "
+      "Über den Kopf, Wellenorbit, Ping-Pong l/r (im Takt von Ohr zu Ohr), Vier Ecken (eine Ecke pro Schlag), Atmen (nah - fern), "
+      "Helix (kreist hinauf und wieder hinab), Überflug (über den Kopf, von vorn nach hinten), Hüpfen (springt links - rechts), "
+      "Wandern (eine Zufallsschleife, die sich wiederholt) und Schleifenorbit (ein Orbit mit vier kleinen Schleifen). Jeder Pfad ist "
+      "MIDI-zuweisbar und automatisierbar." },
     { "Updates", "Updates",
       "Ohpe can look for new versions once a day (off until you switch it on) or when you press Check now. Nothing about you is sent.\n\n"
       "Downloads are verified before they open. Content packs add presets without reinstalling; the previous pack is kept for a rollback.",

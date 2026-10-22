@@ -46,14 +46,20 @@ CURVE = {"lin": 0, "exp": 1, "log": 2, "s": 3, "steps": 4}
 EXPR = ["off", "cutoff", "resonance", "level", "timbre", "attack", "decay", "release", "modenv", "lforate", "lfodepth",
         "vibrato", "glide", "fm", "position", "spray", "morphx", "morphy", "drive", "fxmix", "sub", "pan", "pitch", "life"]
 PATH = ["off", "circle", "figure8", "flyby", "orbit", "pendulum", "spiral", "pingpong", "swarm", "whisper", "walk",
-        "overhead", "weave"]
+        "overhead", "weave",
+        # p73 (appended)
+        "pingponglr", "corners", "breathe", "helix", "flyover", "bounce", "wander", "looporbit"]
 PATHLEN = ["1/16", "1/8", "1/4", "1/2", "1bar", "2bars", "4bars", "8bars", "16bars", "32bars", "1/4."]
 PATH_EN = {"circle": "Circle", "figure8": "Figure-8", "flyby": "Fly-By", "orbit": "Random Orbit", "pendulum": "Pendulum",
            "spiral": "Spiral Up", "pingpong": "Ping-Pong F/B", "swarm": "Swarm", "whisper": "Whisper", "walk": "Distance Walk",
-           "overhead": "Over the Head", "weave": "Weave", "off": "fixed position"}
+           "overhead": "Over the Head", "weave": "Weave", "pingponglr": "Ping-Pong L/R",
+           "corners": "Four Corners", "breathe": "Breathe", "helix": "Helix", "flyover": "Fly-Over", "bounce": "Bounce",
+           "wander": "Wander", "looporbit": "Loop Orbit", "off": "fixed position"}
 PATH_DE = {"circle": "Kreis", "figure8": "Acht", "flyby": "Vorbeiflug", "orbit": "Zufallsorbit", "pendulum": "Pendel",
            "spiral": "Spirale aufwärts", "pingpong": "Ping-Pong v/h", "swarm": "Schwarm", "whisper": "Flüstern",
-           "walk": "Entfernungsgang", "overhead": "Über den Kopf", "weave": "Wellenorbit", "off": "feste Position"}
+           "walk": "Entfernungsgang", "overhead": "Über den Kopf", "weave": "Wellenorbit", "pingponglr": "Ping-Pong l/r",
+           "corners": "Vier Ecken", "breathe": "Atmen", "helix": "Helix", "flyover": "Überflug", "bounce": "Hüpfen",
+           "wander": "Wandern", "looporbit": "Schleifenorbit", "off": "feste Position"}
 
 
 def space(path="circle", length="2bars", rate=1.0, size=0.5, azimuth=0.0, elevation=0.0, distance=2.0, spread=40.0,
@@ -215,13 +221,13 @@ B("Slow Planet", "Pads", "analog",
   wheel=("distance", -0.04), voices=10, velsens=0.3)
 
 B("Glass Horizon", "Pads", "grain",
-  "Long glass grains spread into a wide horizon that walks away and comes back towards you over eight bars. The mod "
-  "wheel scatters the grains into a sparkle." + HP_EN,
-  "Lange Glas-Grains, zu einem weiten Horizont gefächert, der sich in acht Takten entfernt und wieder auf dich zukommt. "
-  "Das Modrad streut die Grains zu einem Funkeln." + HP_DE,
+  "Long glass grains spread into a wide horizon that drifts over your head from far in front to far behind and back "
+  "over eight bars. The mod wheel scatters the grains into a sparkle." + HP_EN,
+  "Lange Glas-Grains, zu einem weiten Horizont gefächert, der in acht Takten von weit vorn über "
+  "deinen Kopf nach weit hinten und zurück zieht. Das Modrad streut die Grains zu einem Funkeln." + HP_DE,
   gr(inst="glass", pos=0.25, size=180, density=26, spray=0.25, pitch=0, reverse=0.2, spread=0.9, scan=0.15, tone=0.6),
   amp(1.0, 2.0, 0.9, 3.0), mod(1.0, 2.0, 0.5, 2.0, 0.0), lfo(0.08, 0.15, "tri", "timbre"),
-  space("walk", "8bars", size=0.45, distance=2.5, spread=100.0, room=0.4, roomsize=0.7, doppler=0.05, rolloff=0.45),
+  space("flyover", "8bars", size=0.45, distance=1.2, spread=100.0, room=0.4, roomsize=0.7, doppler=0.05, rolloff=0.45),
   rev(0.8, 0.2),
   wheel=("engine4", 0.45), voices=8, velsens=0.2)
 
@@ -296,24 +302,24 @@ B("Close Whispers", "Textures", "vocal",
   wheel=("engine1", 0.5), voices=6, velsens=0.3, extra_tags=("Vocal",))
 
 B("Distant Voices", "Textures", "vocal",
-  "Hummed voices far off in a large space, wandering nearer and further over sixteen bars. The mod wheel brings them "
+  "Hummed voices far off in a large space, breathing nearer and further over sixteen bars. The mod wheel brings them "
   "into the room with you." + HP_EN,
-  "Gesummte Stimmen weit weg in einem großen Raum, die in sechzehn Takten näher und ferner wandern. Das Modrad holt sie "
+  "Gesummte Stimmen weit weg in einem großen Raum, die in sechzehn Takten näher und ferner atmen. Das Modrad holt sie "
   "zu dir in den Raum." + HP_DE,
   vo(vowel=3.6, formant=-0.3, breath=0.4, tension=0.35, vibdepth=0.1, vibrate=4.6, jitter=0.25),
   amp(1.0, 2.0, 0.9, 3.0), mod(1.0, 2.0, 0.5, 2.0, 0.0), lfo(0.07, 0.2, "tri", "timbre"),
-  space("walk", "16bars", size=0.5, distance=4.5, spread=60.0, room=0.55, roomsize=0.85, doppler=0.05, rolloff=0.4),
+  space("breathe", "16bars", size=0.6, distance=4.5, spread=60.0, room=0.55, roomsize=0.85, doppler=0.05, rolloff=0.4),
   rev(0.85, 0.18),
-  wheel=("distance", -0.06), voices=8, velsens=0.2, extra_tags=("Vocal",))
+  wheel=("distance", -0.035), voices=8, velsens=0.2, extra_tags=("Vocal",))
 
 B("Ember Field", "Textures", "grain",
-  "Short crackling marimba grains like embers, popping up at random places around you on a wandering orbit. The mod wheel "
+  "Short crackling marimba grains like embers, popping up around you on a wandering loop that returns every four bars. The mod wheel "
   "stretches the crackle into glowing tones." + HP_EN,
-  "Knisternde Marimba-Grains wie Glut, die auf einem wandernden Orbit an zufälligen Stellen um dich aufflackern. Das "
+  "Knisternde Marimba-Grains wie Glut, die auf einer wandernden Schleife um dich aufflackern, die alle vier Takte wiederkehrt. Das "
   "Modrad dehnt das Knistern zu glühenden Tönen." + HP_DE,
   gr(inst="marimba", pos=0.0, size=35, density=40, spray=0.8, pitch=0, reverse=0.4, spread=1.0, scan=0.3, tone=0.5),
   amp(0.5, 1.5, 0.9, 2.0), mod(0.5, 1.5, 0.5, 1.5, 0.0), lfo(0.2, 0.2, "sh", "timbre"),
-  space("orbit", "4bars", size=0.7, distance=1.8, spread=130.0, room=0.3, roomsize=0.5, doppler=0.1),
+  space("wander", "4bars", size=0.7, distance=1.8, spread=130.0, room=0.3, roomsize=0.5, doppler=0.1),
   rev(0.6, 0.15),
   wheel=("engine2", 0.5), voices=6, velsens=0.2)
 
@@ -422,13 +428,13 @@ B("Harp Constellation", "Plucks", "sampler",
   wheel=("elevation", 0.25), voices=12, velsens=0.5)
 
 B("Marimba Ricochet", "Plucks", "sampler",
-  "Marimba hits ricocheting between front and back every quarter note, crisp and close. The mod wheel throws them "
-  "further out into the room." + HP_EN,
-  "Marimbaschläge, die jede Viertel zwischen vorn und hinten abprallen, knackig und nah. Das Modrad wirft sie weiter in "
-  "den Raum." + HP_DE,
+  "Marimba hits ricocheting through the four corners around you, one corner per quarter note, crisp and close. The mod "
+  "wheel throws them further out into the room." + HP_EN,
+  "Marimbaschläge, die jede Viertel in eine andere der vier Ecken um dich abprallen, knackig und nah. Das Modrad wirft "
+  "sie weiter in den Raum." + HP_DE,
   sm(inst="marimba", start=0.0, tone=0.55),
   amp(0.002, 1.0, 0.0, 0.5), mod(0.01, 1.0, 0.0, 0.5, 0.0), lfo(0.1, 0.06, "sine", "timbre"),
-  space("pingpong", "1/4", size=0.6, distance=1.3, spread=20.0, room=0.25, roomsize=0.4, doppler=0.1),
+  space("corners", "1bar", size=0.6, distance=1.3, spread=20.0, room=0.25, roomsize=0.4, doppler=0.1),
   rev(0.5, 0.12),
   wheel=("distance", 0.3), voices=10, velsens=0.6, extra_tags=("Drums",))
 
@@ -457,36 +463,36 @@ B("Zither Drizzle", "Plucks", "sampler",
 
 # =============================================================================================================== Arp
 B("Satellite Arp", "Arp", "fm",
-  "FM bell arpeggios orbiting your head once per bar like a satellite, just out of reach. The mod wheel pushes the orbit "
-  "further out." + HP_EN,
-  "FM-Glocken-Arpeggios, die wie ein Satellit einmal pro Takt um den Kopf kreisen, knapp außer Reichweite. Das Modrad "
-  "schiebt den Orbit weiter hinaus." + HP_DE,
+  "FM bell arpeggios orbiting your head every two bars like a satellite, curling through four small loops on the way. "
+  "The mod wheel pushes the orbit further out." + HP_EN,
+  "FM-Glocken-Arpeggios, die wie ein Satellit alle zwei Takte um den Kopf kreisen und unterwegs vier kleine Schleifen "
+  "drehen. Das Modrad schiebt den Orbit weiter hinaus." + HP_DE,
   fm(algo=0, modratio=3.5, index=0.2, feedback=0.0, op1ratio=1, op2ratio=3.5, op1level=1.0, op2level=0.4, op3level=0.0,
      op4level=0.0, op5level=0.0, op6level=0.0),
   amp(0.002, 0.6, 0.0, 0.4), mod(0.001, 0.3, 0.0, 0.3, 0.45), lfo(0.1, 0.1, "tri", "timbre"),
-  space("circle", "1bar", size=0.4, distance=1.7, spread=20.0, room=0.3, roomsize=0.45, doppler=0.15),
+  space("looporbit", "2bars", size=0.2, distance=2.4, spread=20.0, room=0.3, roomsize=0.45, doppler=0.15),
   echo("1/8.", 0.3, 0.14), rev(0.5, 0.12),
   wheel=("distance", 0.3), arp_block=("updown", 2, 0.45, "1/16"), voices=8, velsens=0.5)
 
 B("Helix Sequence", "Arp", "wavetable",
-  "A glassy wavetable arpeggio climbing a double helix around your head: it spirals up over two bars while the notes "
-  "climb. The mod wheel sweeps the wavetable." + HP_EN,
-  "Ein gläsernes Wavetable-Arpeggio, das eine Doppelhelix um den Kopf hinaufsteigt: in zwei Takten spiralförmig nach "
-  "oben, während die Töne steigen. Das Modrad fährt durch die Wavetable." + HP_DE,
+  "A glassy wavetable arpeggio on a helix around your head: it circles up above you over two bars and spirals back "
+  "down over the next two. The mod wheel sweeps the wavetable." + HP_EN,
+  "Ein gläsernes Wavetable-Arpeggio auf einer Helix um den Kopf: in zwei Takten kreisend über dich hinauf, in den "
+  "nächsten zwei spiralförmig wieder hinab. Das Modrad fährt durch die Wavetable." + HP_DE,
   wt(table="digital", pos=0.3, warp=0.15, tone=0.6, unison=0.15, univoices=2, uniwidth=0.4, keytrack=0.35, envpos=0.3),
   amp(0.003, 0.35, 0.0, 0.25), mod(0.002, 0.25, 0.0, 0.2, 0.4), lfo(0.1, 0.1, "tri", "timbre"),
-  space("spiral", "2bars", size=0.5, distance=1.8, spread=25.0, room=0.3, roomsize=0.45, doppler=0.15),
+  space("helix", "4bars", size=0.5, distance=1.8, spread=25.0, room=0.3, roomsize=0.45, doppler=0.15),
   echo("1/8.", 0.3, 0.14), rev(0.5, 0.12),
   wheel=("engine1", 0.4), arp_block=("up", 3, 0.5, "1/16"), voices=8, velsens=0.5)
 
 B("Bell Ricochet", "Arp", "sampler",
-  "Glockenspiel notes in random order bouncing front to back every eighth note, sparkling around the listener. The mod "
-  "wheel speeds the bounce." + HP_EN,
-  "Glockenspiel-Töne in zufälliger Folge, die jede Achtel zwischen vorn und hinten springen und um dich funkeln. Das "
-  "Modrad beschleunigt das Springen." + HP_DE,
+  "Glockenspiel notes in random order bouncing like a ball from left to right and back in front of you, six hops every "
+  "two bars. The mod wheel speeds the bounce." + HP_EN,
+  "Glockenspiel-Töne in zufälliger Folge, die wie ein Ball vor dir von links nach rechts und zurück hüpfen, sechs "
+  "Sprünge alle zwei Takte. Das Modrad beschleunigt das Hüpfen." + HP_DE,
   sm(inst="glockenspiel", start=0.0, tone=0.5),
   amp(0.002, 0.8, 0.0, 0.5), mod(0.01, 0.5, 0.0, 0.3, 0.0), lfo(0.1, 0.06, "sine", "timbre"),
-  space("pingpong", "1/8", size=0.55, distance=1.6, spread=20.0, room=0.3, roomsize=0.45, doppler=0.1),
+  space("bounce", "2bars", size=0.55, distance=1.6, spread=20.0, room=0.3, roomsize=0.45, doppler=0.1),
   rev(0.55, 0.14), comp(0.0, 2.0, 2.0, 100.0, 12.0),
   wheel=("pathrate", 0.5), arp_block=("random", 2, 0.4, "1/16"), voices=8, velsens=0.5)
 
@@ -594,13 +600,13 @@ B("Vowel Orbit Lead", "Leads", "vocal",
   wheel=("engine1", 0.5), voices=1, velsens=0.35, glide=0.05, extra_tags=("Vocal",))
 
 B("Ear to Ear Lead", "Leads", "analog",
-  "A singing analog lead swinging from one ear to the other and back every two bars, so a melody sweeps across your "
-  "head. Velocity opens the filter; the mod wheel opens it further." + HP_EN,
-  "Ein singender Analog-Lead, der alle zwei Takte von einem Ohr zum anderen und zurück schwingt; eine Melodie wandert "
-  "quer durch den Kopf. Anschlag öffnet das Filter; das Modrad öffnet es weiter." + HP_DE,
+  "A singing analog lead hopping from one ear to the other every bar – in front of you on the way right, behind you on "
+  "the way back. Velocity opens the filter; the mod wheel opens it further." + HP_EN,
+  "Ein singender Analog-Lead, der jeden Takt von einem Ohr zum anderen springt – auf dem Weg nach rechts vor dir, auf "
+  "dem Rückweg hinter dir. Anschlag öffnet das Filter; das Modrad öffnet es weiter." + HP_DE,
   an(shape=0.25, detune=0.12, cutoff=1500, reso=0.15, oscmix=0.5, sub=0.1, drive=0.15, keytrack=0.6),
   amp(0.01, 0.5, 0.8, 0.25), mod(0.002, 0.3, 0.3, 0.2, 0.15), lfo(5.0, 0.04, "sine", "pitch"),
-  space("pendulum", "2bars", size=0.6, distance=2.0, spread=20.0, room=0.25, roomsize=0.4, doppler=0.15),
+  space("pingponglr", "2bars", size=0.35, distance=2.0, spread=20.0, room=0.25, roomsize=0.4, doppler=0.15),
   echo("1/8.", 0.3, 0.14), expr(vel=[("cutoff", 0.3, "exp")]),
   wheel=("engine3", 0.3), voices=1, velsens=0.45, glide=0.03)
 

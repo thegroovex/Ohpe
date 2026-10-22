@@ -166,6 +166,70 @@ Vec3 pathPoint (int path, double phase, float size, uint32_t seed) noexcept
             const float e = (10.0f + 30.0f * size) * std::sin (3.0f * th);
             return scaled (direction (360.0f * (float) fr, e), 1.0f + 0.35f * size * std::sin (3.0f * th));
         }
+        case PathPingPongLR: // left ear -> right ear -> left ear, each half cycle opens with a quick move and then holds;
+        {                    // size = how snappy (never shorter than 45 % of the half: no level steps). Left -> right
+                             // passes in front of you, right -> left behind you, so the two moves sound different.
+            const double halves = fr * 2.0;
+            const double h = std::floor (halves);
+            const float t = (float) (halves - h);
+            const float w = 1.0f - 0.55f * size;
+            const float m = t < w ? smoothStep (t / w) : 1.0f;
+            const float psi = pi * ((float) h + m);
+            return unit ({ -std::cos (psi), 0.6f * std::sin (psi), 0.0f });
+        }
+        case PathCorners: // front left -> front right -> back right -> back left, each quarter opens with a quick move
+        {                 // (rising a little on the way) and then holds; size = how snappy
+            const double quarters = fr * 4.0;
+            const double q = std::floor (quarters);
+            const float t = (float) (quarters - q);
+            const float w = 1.0f - 0.6f * size;
+            const float m = t < w ? smoothStep (t / w) : 1.0f;
+            return direction (-45.0f + 90.0f * ((float) q + m), 10.0f * std::sin (pi * m));
+        }
+        case PathBreathe: // far -> near -> far in front, log-even in distance, a little higher when near; size = how far out
+        {
+            const float c = 0.5f - 0.5f * std::cos (th); // 0 = farthest at the cycle start, 1 = nearest halfway
+            const float kNear = 0.45f, kFar = 1.2f + 1.8f * size;
+            const float k = std::exp (std::log (kFar) + (std::log (kNear) - std::log (kFar)) * c);
+            return scaled (direction (6.0f * std::sin (th), 8.0f * c), k);
+        }
+        case PathHelix: // orbits 2-4 times per cycle while rising evenly from below ear height to above the head (first
+        {               // half) and sinking back (second half), a bit closer at the top; size = number of turns
+            const float turns = std::round (2.0f + 2.0f * size);
+            const float h = 0.5f - 0.5f * std::cos (th);
+            return scaled (direction (360.0f * turns * (float) fr, -25.0f + 100.0f * h), 1.0f - 0.25f * h);
+        }
+        case PathFlyOver: // a straight line over the head (one base distance up): far in front -> overhead -> far behind
+        {                 // and back, slowest at the far ends; size = length of the line (2 .. 12 x the distance)
+            const float l = 2.0f + 10.0f * size;
+            return { 0.0f, std::cos (th) * l, 1.0f };
+        }
+        case PathBounce: // hops like a ball across the front, left -> right -> left, six hops per cycle; size = hop height
+        {
+            const float sn = std::sin (3.0f * th); // |sin| with the floor contact rounded off a little (no kink: no click)
+            const float hop = (std::sqrt (sn * sn + 0.0225f) - 0.15f) / (std::sqrt (1.0225f) - 0.15f);
+            return direction (-70.0f * std::cos (th), -15.0f + (15.0f + 45.0f * size) * hop);
+        }
+        case PathWander: // a smooth random closed loop (three seeded harmonics) - the same shape every cycle, every part its
+        {                // own; size = how far it wanders (direction, height, distance)
+            float a = 0.0f, e = 0.0f, d = 0.0f;
+            for (int k = 1; k <= 3; ++k)
+            {
+                const float fk = (float) k, w = 1.0f / fk;
+                a += w * (0.6f + 0.4f * std::abs (hashUnit (seed, k, 21))) * std::sin (fk * th + pi * hashUnit (seed, k, 22));
+                e += w * (0.6f + 0.4f * std::abs (hashUnit (seed, k, 23))) * std::sin (fk * th + pi * hashUnit (seed, k, 24));
+                d += w * hashUnit (seed, k, 25) * std::sin (fk * th + pi * hashUnit (seed, k, 26));
+            }
+            constexpr float norm = 1.0f / (1.0f + 0.5f + 1.0f / 3.0f);
+            const float el = std::clamp ((8.0f + 30.0f * size) * e * norm, -50.0f, 70.0f);
+            return scaled (direction ((40.0f + 100.0f * size) * a * norm, el), std::max (0.4f, 1.0f + 0.35f * size * d * norm));
+        }
+        case PathLoopOrbit: // an orbit with four small loops per turn: the source curls back against the turn on the near
+        {                   // side of each loop and lifts a little on the far side; size = loop size
+            const float r = 0.25f + 0.45f * size;
+            return { std::sin (th) + r * std::sin (5.0f * th), std::cos (th) + r * std::cos (5.0f * th),
+                     0.2f * r * std::cos (4.0f * th) };
+        }
         default: return { 0.0f, 1.0f, 0.0f };
     }
 }
@@ -307,9 +371,11 @@ std::vector<ParamDescriptor> SpaceEffect::getParamDescriptors() const
         continuous ("pathphase", "Motion Phase", "Bewegungsphase", 0.0f, 360.0f, 0.0f, ParamUnit::Degrees),
         choice ("path", "Motion Path", "Bewegungspfad",
                 { "Off", "Circle", "Figure-8", "Fly-By", "Random Orbit", "Pendulum", "Spiral Up",
-                  "Ping-Pong F/B", "Swarm", "Whisper", "Distance Walk", "Over the Head", "Weave" }, // p30: appended
+                  "Ping-Pong F/B", "Swarm", "Whisper", "Distance Walk", "Over the Head", "Weave", // p30: appended
+                  "Ping-Pong L/R", "Four Corners", "Breathe", "Helix", "Fly-Over", "Bounce", "Wander", "Loop Orbit" }, // p73
                 { "Aus", "Kreis", "Acht", "Vorbeiflug", "Zufallsorbit", "Pendel", "Spirale aufwärts",
-                  "Ping-Pong v/h", "Schwarm", "Flüstern", "Entfernungsgang", "Über den Kopf", "Wellenorbit" }, PathOff),
+                  "Ping-Pong v/h", "Schwarm", "Flüstern", "Entfernungsgang", "Über den Kopf", "Wellenorbit",
+                  "Ping-Pong l/r", "Vier Ecken", "Atmen", "Helix", "Überflug", "Hüpfen", "Wandern", "Schleifenorbit" }, PathOff),
         choice ("pathlen", "Motion Length", "Bewegungslänge",
                 { "1/16", "1/8", "1/4", "1/2", "1 Bar", "2 Bars", "4 Bars", "8 Bars", "16 Bars", "32 Bars", "1/4." },
                 { "1/16", "1/8", "1/4", "1/2", "1 Takt", "2 Takte", "4 Takte", "8 Takte", "16 Takte", "32 Takte", "1/4." }, 5),

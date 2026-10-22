@@ -30,6 +30,15 @@ enum PathType
     PathWalk,     ///< walks away into the distance and comes back (Doppler, air, level)
     PathOverhead, ///< a vertical circle through both ears: over the head and underneath
     PathWeave,    ///< an orbit that weaves up and down three times per turn and breathes in distance
+    // p73 (appended - the indices above keep their meaning):
+    PathPingPongLR, ///< tempo-synced left <-> right ear jumps (in front on the way right, behind on the way back)
+    PathCorners,    ///< steps through four corners (front left, front right, back right, back left), each on the beat
+    PathBreathe,    ///< near <-> far in front of you, slowly, rising a little as it comes close
+    PathHelix,      ///< a helix: orbits while rising from below ear height to above the head and back down, evenly
+    PathFlyOver,    ///< a straight line over the head: far in front -> overhead -> far behind and back
+    PathBounce,     ///< hops like a ball, left -> right -> left, six hops per cycle
+    PathWander,     ///< a smooth random loop that repeats every cycle (seeded: every part its own shape)
+    PathLoopOrbit,  ///< an orbit with four small loops per turn (an epicycle) - the source curls back and forth
     numPaths
 };
 

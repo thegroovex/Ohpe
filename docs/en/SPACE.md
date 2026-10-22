@@ -58,7 +58,7 @@ exact bypass (every older sound plays bit-identically); switching crossfades ove
 | Page | Parameter | Range | What it does |
 |---|---|---|---|
 | 3D Motion | 3D Space (`pN.space.mode`, p41) | Off, Headphones, Speakers | the 3D switch: *Off* = the stage off; *Headphones* = on, binaural; *Speakers* = on, speaker rendering. Drawn as a segmented switch; encoder 1 steps through the three states |
-| | Motion Path | Off, Circle, Figure-8, Fly-By, Random Orbit, Pendulum, Spiral Up, Ping-Pong F/B, Swarm, Whisper, Distance Walk, Over the Head, Weave | see below |
+| | Motion Path | Off, Circle, Figure-8, Fly-By, Random Orbit, Pendulum, Spiral Up, Ping-Pong F/B, Swarm, Whisper, Distance Walk, Over the Head, Weave, Ping-Pong L/R, Four Corners, Breathe, Helix, Fly-Over, Bounce, Wander, Loop Orbit | see below |
 | | Motion Length | 1/16 … 32 Bars, 1/4. | one cycle of the path, in time with the song |
 | | Motion Rate | ×−4 … ×4 (default ×1) | multiplies the speed; negative = backwards, 0 = stopped. At exactly ×1 the motion locks to the song position (it repeats identically on every playback) |
 | 3D Position | Azimuth | −180 … 180° | direction (0 = front, +90 = right, ±180 = behind); rotates the whole path |
@@ -116,9 +116,18 @@ Presets and sessions made before the switch existed show the right state when th
 | Distance Walk | walks off straight ahead into the distance and comes back, swaying a little left and right – level, air absorption and Doppler change on the way | how far (2 … 16 × the distance; nearest 0.35 ×) |
 | Over the Head | a vertical circle through both ears: above your head → right ear → underneath → left ear | tilts the circle's top forward (0 = straight through the ears, 100 % = 45°) |
 | Weave | a full orbit that weaves up and down three times per turn and comes a little closer at its low points | height of the waves (10 … 40°) and their depth |
+| Ping-Pong L/R | jumps from your left ear to your right ear and back, in time: each half cycle opens with a quick move on the beat, then the sound holds. Left → right passes in front of you, right → left behind you | how snappy (0 = a smooth swing over the whole half, 100 % = a quick move in the first 45 %) |
+| Four Corners | steps through four corners around you – front left → front right → back right → back left – one per quarter cycle, rising a little on each move, then holding | how snappy (0 = smooth, 100 % = a quick move in the first 40 % of each quarter) |
+| Breathe | breathes in and out in front of you: from far away to close (0.45 × the distance) and back, log-even, a little higher when close | how far out it breathes (1.2 … 3 × the distance) |
+| Helix | orbits two to four times while rising evenly from below ear height to above your head (first half) and sinking back down (second half), a little closer at the top | number of turns per cycle (2 … 4) |
+| Fly-Over | a straight line over your head (one distance up): from far in front, right overhead, to far behind and back, slowest at the far ends – with Doppler a plane passing over | length of the line (2 … 12 × the distance) |
+| Bounce | hops like a ball across the front, left → right → left, six hops per cycle | hop height (up to 60° above the floor point) |
+| Wander | a smooth random loop – direction, height and distance – that repeats exactly every cycle, so it stays in time with the song (every part its own shape) | how far it wanders |
+| Loop Orbit | a full orbit with four small loops: on the near side of each loop the sound curls back against the turn, on the far side it lifts a little | size of the loops (and how near it comes: 0.75 … 0.33 × the distance) |
 
-The six paths from Ping-Pong F/B on were added later; they sit at the end of the list, so sounds and
-automation saved with the older paths keep their path.
+The six paths from Ping-Pong F/B on and the eight from Ping-Pong L/R on were added later; they sit at the end of
+the list, so sounds and automation saved with the older paths keep their path and sound the same. All paths are
+continuous (also where a cycle starts again) and stay in time with the song.
 
 **In the 3D view** the edit part's path is drawn ahead of its dot as a faint dotted curve – one whole cycle
 (for Swarm and Random Orbit: the next cycle from now) – so you see the shape of a path, its size and its
