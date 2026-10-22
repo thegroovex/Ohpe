@@ -7,7 +7,7 @@ Ohpe can find, download and open a new version itself – in the standalone app 
 
 ## Opening the update view
 
-Click the **version legend** above the wordmark (e.g. `V0.7.1`) or the wordmark itself. When a newer version is on
+Click the **version legend** above the wordmark (e.g. `V0.7.2`) or the wordmark itself. When a newer version is on
 offer, the legend shows a small **yellow light bar** and `UPDATE 0.8.0`. **Esc** or **CLOSE** closes the view;
 opening the library, the pro view or the breeding view closes it too.
 

@@ -5,7 +5,9 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
-## Unreleased
+## 0.7.2 – 2026-10-22
+
+[Notes / Hinweise](docs/release-notes/0.7.2.md)
 
 - EN: Clean chords (p74) – fixed grit / crackle when several notes (4 and up) play at once on sounds such as Dust
   Orchestra. Cause: chords summed without headroom ran into the fast peak guard of those presets (a compressor with
@@ -31,6 +33,17 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   ≤ −1 dBTP, kein hartes Clipping) und ein Offline-Polyphonie-Audit (`tools/presets/poly_audit.py`). Ältere Sessions
   bekommen 4,5 dB Akkord-Reserve: einzelne Noten klingen gleich, große Akkorde etwas leiser und sauberer.
   MIDI-zuweisbar.
+
+- EN: Pluck engine – a part set to one voice that receives a chord is plucked once (the newest key wins) instead
+  of once per key.
+- DE: Pluck-Engine – ein Part mit einer Stimme, der einen Akkord bekommt, wird einmal gezupft (die neueste Taste
+  gewinnt) statt einmal pro Taste.
+- EN: Interface (p75) – German interface: **Behalten** is now **Übernehmen**, the mixer output **Haupt** is now
+  **Main**; mode and engine titles on the display are never truncated; a key passed in by a host turns the key
+  readout violet.
+- DE: Oberfläche (p75) – deutsche Oberfläche: **Behalten** heißt jetzt **Übernehmen**, der Mixer-Ausgang **Haupt**
+  heißt jetzt **Main**; Modus- und Engine-Titel im Display werden nie abgeschnitten; gibt ein Host eine Tonart mit,
+  wird die Tonart-Anzeige violett.
 
 ## 0.7.1 Preview – 2026-10-22
 
