@@ -1,5 +1,6 @@
 {
-  "pads-gravity-noise-choir": 3.0,
+  "pads-gravity-noise-choir": -2.0,
+  "textures-gravity-hat-pad": 6.0,
   "keys-gravity-bell-lock": 11.5,
   "drums-gravity-drum-wash": 15.0
 }
