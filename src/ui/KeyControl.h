@@ -28,7 +28,14 @@ public:
     static float preferredWidth (float h, bool host);
     /** p45: compact form for a crowded header ("F#m", "Cdor", "Hmoll" -> "Hm"): what is painted while compact. */
     juce::String compactText() const;
-    juce::String paintedText() const { return compact ? compactText() : shownText(); }
+    /** p75: the full form the header paints: key and scale ("C# PHRYG"); a host key is violet instead of "HOST". */
+    juce::String headerText() const;
+    juce::String paintedText() const { return compact ? compactText() : headerText(); }
+    /** p75: header text sizes (fraction of the header height), shared with the display's layout and its tests. */
+    static constexpr float headerKeyFont = 0.44f, headerKeyCompactFont = 0.42f;
+    /** p75: the text size in use (the display lowers it a little on a crowded header so the full key still fits). */
+    void setTextSize (float fraction) { if (fraction != textSize) { textSize = fraction; repaint(); } }
+    float textSizeFraction (bool compactForm) const noexcept { return compactForm ? juce::jmin (textSize, headerKeyCompactFont) : textSize; }
     /** Width the readout needs at header height h for the text it shows now (full or compact). */
     float neededWidth (float h, bool compactForm) const;
     void setCompact (bool c) { if (c != compact) { compact = c; repaint(); } }
@@ -54,6 +61,7 @@ private:
     keys::KeyScale shown;
     int dragStartRoot = 0, dragStartScale = 0;
     bool dragging = false, moved = false, onLock = false, compact = false;
+    float textSize = headerKeyFont;
 };
 
 /**
@@ -78,7 +86,7 @@ public:
     /** Repaints when the amount changed (the editor's timer). */
     void refresh();
     /** Width the ring needs at header height h. */
-    static float preferredWidth (float h) noexcept { return h * 0.8f; }
+    static float preferredWidth (float h) noexcept { return h * 0.72f; } // p75: was 0.8
     std::function<void()> onOpen;
 
     juce::String getTooltip() override;

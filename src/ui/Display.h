@@ -109,6 +109,14 @@ public:
     juce::Rectangle<float> morphCornerArea (int corner) const;
     /** 1.0: where the 3D badge is (header; tests / screenshots). */
     juce::Rectangle<float> spaceBadgeArea() const;
+    /** p75: the header's sizes (fractions of the header height): title font, the part badge and the 3D badge with the
+        gaps around them, the page arrows. One row: title, badges ... gravity ring, key, TAP, tempo, page arrows. */
+    static constexpr float headerTitleFont = 0.56f, headerGap = 0.3f, headerPartBadgeW = 1.2f, header3dBadgeW = 1.4f,
+                           headerArrowW = 0.95f, headerRightTrim = 3.4f, headerTapW = 1.2f;
+    /** p75: the title the header shows now, the width it needs (with the real font) and the room it has: it never
+        shortens with an ellipsis (tests check needed <= room for every mode, engine, language and UI scale). */
+    struct HeaderTitleFit { juce::String text; float needed = 0.0f, room = 0.0f; bool compact = false; };
+    HeaderTitleFit headerTitleFit();
     /** p11: the transport buttons of the tape page (TransportButton) and the arm dots of the tracks. */
     std::function<void (int button)> onTransportClicked;
     std::function<void (int track)> onTrackArmClicked;
@@ -275,7 +283,7 @@ private:
     bool chordSounding = false, keyHost = false;
     void updateChord();
     void placeTempo();
-    juce::String headerTitle (bool engineOnly); ///< p45: "SYNTH / VOCAL" (engineOnly: "VOCAL" on the Synth page)
+    juce::String headerTitle (bool compact); ///< p45: "SYNTH / VOCAL" (p75 compact: "VOCAL", "MIXER 3", "TAPE 2", "DRUM 7")
     int headerLeftX() const { return gravHeader.isVisible() ? gravHeader.getX() : keyHeader.getX(); } ///< p70: the leftmost header control
     float headerBadgesWidth() const;                 ///< p45: part badge + 3D badge right of the title
     juce::String keyLaidOut;                         ///< p45: key text + title the header was laid out for

@@ -374,9 +374,11 @@ the root: *C/E* (1st inversion), *G7/F* (3rd inversion), or a bass outside the c
 spelled in the key as well (*Bbmaj7* in F major, *Db* in A flat major, *C#* in A major).
 
 **The key on the header.** Left of **TAP** and the tempo: the key and scale (*F# DOR*, German *FIS* is written *F#*,
-*H DUR*) and a padlock for **Scale Lock**. On a crowded header (the part pages) it shows the short form – *F#m*,
-*Cdo*, *Ahm* (harmonic minor) – and a long title keeps only the engine name; it never covers the 3D badge. The same
-moves as the tempo:
+*H DUR*) and a padlock for **Scale Lock**. The header is laid out so that every page title and engine name (English
+and German) is shown in full next to the whole key: on the Synth page a long title keeps the engine name
+(*WAVETABLE* rather than *SYNTH / WAVETABLE*), the mixer, tape and drum pages shorten *MIXER / CHANNEL 3* to
+*MIXER 3* only when space is short, and on a very full header (incoming clock) the tempo and key text get slightly
+smaller. A title is never cut off, and the key never covers the 3D badge. The same moves as the tempo:
 
 | Gesture | What it does |
 |---|---|
@@ -419,7 +421,7 @@ Keys.
 
 **From the host.** The plug-in formats do not pass a key or scale to an instrument, so the key is Ohpe's own:
 `key.root` / `key.scale` are host parameters and can be automated from the host. Should a host key ever be passed in,
-the readout shows **HOST**, root and scale are read-only and Scale Lock stays editable. Everything is MIDI-mappable.
+the readout turns violet (the tooltip says the key comes from the host), root and scale are read-only and Scale Lock stays editable. Everything is MIDI-mappable.
 Parameters: [PARAMETERS.md](../PARAMETERS.md#p45--scale-lock).
 
 ## Tape page

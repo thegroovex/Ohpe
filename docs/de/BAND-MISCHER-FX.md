@@ -11,8 +11,8 @@ einen Stereo-Audioeingang im Plug-in und den Offline-Export des Bands als WAV-Da
  Part 1 ─ FX-Slot ─┬───────────┤   (Aufnahme von   │                                   ├─ Master
  (Parts 2-4, Drum) │           │   Eingang / Part) └─ Direktausgang → Out 1..8        │
                    └─ Mixer-Kanal 1 ──────────────────────────────────────────────────┘
- Kanal:  Quelle → EQ → Kompressor-lite → Fader / Panorama → Haupt oder Out N (+ Sends A / B)
- Master: Summe + Returns → Kompressor → Bandsättigung → Lautstärke → Tiefpass → Limiter (Obergrenze) → Haupt
+ Kanal:  Quelle → EQ → Kompressor-lite → Fader / Panorama → Main oder Out N (+ Sends A / B)
+ Master: Summe + Returns → Kompressor → Bandsättigung → Lautstärke → Tiefpass → Limiter (Obergrenze) → Main
 ```
 
 ## Bandmaschine
@@ -69,7 +69,7 @@ aufgenommen wurde (Blöcke zu 4096 Frames) – ein langes, leeres Band kostet fa
 | Positionieren | `TapeMachine::locate (Sekunden)` (gilt ab dem nächsten Audioblock). |
 | Bandcharakter | `tape.sat` (weiche Sättigung, sanfter Höhenverlust), `tape.wow`, `tape.flutter` (Geschwindigkeitsmodulation für alle Spuren gemeinsam, wie bei einem Laufwerk), `tape.hiss` (Bandrauschen). Alles auf 0 = exakte, unveränderte Wiedergabe. |
 | Spurpegel | `tape.trN.level` (dB). |
-| Direktausgang | `tape.trN.out`: *Nur Mixer* oder Out 1–8. Die Spur spielt dann zusätzlich auf diesem Ausgang (nach Pegel und Bandcharakter); ist der Ausgang nicht aktiv, spielt sie auf Haupt. Mixer-Kanäle können Bandspuren ebenfalls als Quelle wählen (Kanäle 6–8 starten mit den Spuren 1–3). |
+| Direktausgang | `tape.trN.out`: *Nur Mixer* oder Out 1–8. Die Spur spielt dann zusätzlich auf diesem Ausgang (nach Pegel und Bandcharakter); ist der Ausgang nicht aktiv, spielt sie auf Main. Mixer-Kanäle können Bandspuren ebenfalls als Quelle wählen (Kanäle 6–8 starten mit den Spuren 1–3). |
 
 **Vorzähler und Klick (p39).** Mit Vorzähler (`metro.countin`: 1 oder 2 Takte) wartet eine aus dem Stillstand
 gestartete Aufnahme auf ihn und beginnt genau auf dem ersten Sample des nächsten Takts (sample-genau, auch mitten in

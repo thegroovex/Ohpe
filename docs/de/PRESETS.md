@@ -23,7 +23,7 @@ Display; die Klaviatur bleibt spielbar, so kannst du Klänge beim Stöbern anspi
 | **Sortieren** | Nach Name, Bewertung (beste zuerst), Engine oder Neueste. |
 | **Liste** | Ein ausgewähltes Preset wird **sofort geladen** (Vorhören) – Part-Presets in den Part, der mit der Part-Auswahl gewählt ist, Projekt-Presets ersetzen alles. Der Stern links markiert einen Favoriten, die Sterne rechts bewerten (derselbe Stern noch einmal löscht die Bewertung). Pfeiltasten bewegen durch die Liste. |
 | **Details** (rechts) | Name, Bank, Art, Engine, Autor, Tags, Kommentar, Favorit und Bewertung. Eigene Presets können gelöscht werden (in den Papierkorb). |
-| **Behalten / Abbrechen** | *Behalten* (oder Enter, oder Doppelklick auf ein Preset) schließt die Bibliothek mit dem geladenen Preset. *Abbrechen* (oder Esc) stellt den Klang wieder her, der vor dem Öffnen da war. |
+| **Übernehmen / Abbrechen** | *Übernehmen* (oder Enter, oder Doppelklick auf ein Preset) schließt die Bibliothek mit dem geladenen Preset. *Abbrechen* (oder Esc) stellt den Klang wieder her, der vor dem Öffnen da war. |
 
 Der **Preset-Streifen** neben der Part-Auswahl zeigt das zuletzt in den **Edit-Part** geladene
 Preset: Jeder Part merkt sich sein eigenes Preset, ein Wechsel des Parts (Part-Auswahl, MIDI,

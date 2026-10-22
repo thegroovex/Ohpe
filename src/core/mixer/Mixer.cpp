@@ -16,7 +16,7 @@ std::string chId (int ch, const char* name) { return "mix.ch" + std::to_string (
 
 std::vector<std::string> outChoices (bool de)
 {
-    std::vector<std::string> c { de ? "Haupt" : "Main" };
+    std::vector<std::string> c { "Main" };
     for (int i = 1; i <= numAuxOutputs; ++i) c.push_back ((de ? "Ausgang " : "Out ") + std::to_string (i));
     return c;
 }
