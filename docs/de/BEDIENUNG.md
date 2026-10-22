@@ -109,7 +109,8 @@ Die Taste **ZUCHT** (neben ZUFALL, ein Klick öffnet / schließt die Ansicht, ih
 offen ist) öffnet die **[Zucht](ZUCHT.md)**: zwei Klänge kreuzen, sechs Kinder hören, die besten behalten und
 weiterzüchten. ZUFALL würfelt nur – Halten oder ein Rechtsklick öffnen die Zucht nicht mehr. Solange die
 Zucht-Ansicht offen ist, würfelt ZUFALL einen neuen Elternteil B, und SPEICHERN legt das gewählte Kind als Favorit in
-der Bibliothek ab. Ein Rechtsklick auf ZUCHT öffnet MIDI-Lernen für `lib.breed`.
+der Bibliothek ab. Ein Rechtsklick auf ZUCHT öffnet MIDI-Lernen für `lib.breed`. Die Zucht lernt lokal, was dir gefällt
+([lernende Zucht](ZUCHT.md#lernende-zucht): LERNEN, NEUGIER, WARUM, VERGESSEN in ihrer Fußzeile).
 
 ![Die Zucht-Ansicht](../images/ohpe-breeding-de.png)
 

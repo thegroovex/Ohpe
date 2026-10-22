@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "SoundGenome.h"
+#include "TasteProfile.h"
 #include "model/JsonParse.h" // p63: depth-limited parse
 #include "../model/FormatVersions.h"
 
@@ -476,7 +477,13 @@ Genome crossover (const Schema& s, const Genome& a, const Genome& b, const Optio
 // ------------------------------------------------------------------------------------------------ mutation
 void mutate (const Schema& s, Genome& g, const Genome& a, const Genome& b, float amount, Rng& rng)
 {
+    mutate (s, g, a, b, amount, rng, nullptr, 0.0f);
+}
+
+void mutate (const Schema& s, Genome& g, const Genome& a, const Genome& b, float amount, Rng& rng, const EngineBias* bias, float pull)
+{
     if (! (amount > 0.0f)) return;
+    if (bias != nullptr && ((int) bias->like.size() != s.size() || ! (pull > 0.0f))) bias = nullptr;
     amount = std::min (amount, 1.0f);
     const float touch = 0.3f + 0.7f * amount;
     const float sigma = 0.22f * amount;
@@ -502,7 +509,19 @@ void mutate (const Schema& s, Genome& g, const Genome& a, const Genome& b, float
             if (gene.risky) hi = std::min (hi, std::max (gene.toNorm (a[(size_t) i]), gene.toNorm (b[(size_t) i])) + 0.05f);
             lo = std::min (lo, n0);
             hi = std::max (hi, n0);
-            v = gene.fromNorm (std::clamp (n0 + z * sigma, lo, hi));
+            float drift = 0.0f;
+            if (bias != nullptr) // p69: towards the liked region, away from the disliked one (same random numbers)
+            {
+                const auto k = (size_t) i;
+                if (bias->likeConf[k] > 0.0f) drift += pull * bias->likeConf[k] * (bias->like[k] - n0);
+                if (bias->dislikeConf[k] > 0.0f)
+                {
+                    const float away = n0 - bias->dislike[k];
+                    const float near = std::max (0.0f, 0.25f - std::fabs (away));
+                    if (away != 0.0f) drift += pull * 0.5f * bias->dislikeConf[k] * (away > 0.0f ? near : -near);
+                }
+            }
+            v = gene.fromNorm (std::clamp (n0 + z * sigma + drift, lo, hi));
             continue;
         }
         if (u >= pDiscrete) continue;
@@ -524,17 +543,37 @@ void mutate (const Schema& s, Genome& g, const Genome& a, const Genome& b, float
 
 std::vector<Child> makeBrood (const Schema& s, const Genome& a, const Genome& b, int count, float amount, uint64_t seed, const Options& o)
 {
+    const auto* taste = o.taste.get();
+    const float pull = taste != nullptr ? taste->pull() : 0.0f;
+    // p69: with a taste, twice as many candidates (the first `count` are the unbiased brood's seeds)
+    const int candidates = pull > 0.0f ? count * 2 : count;
     std::vector<Child> out;
-    for (int i = 0; i < count; ++i)
+    for (int i = 0; i < candidates; ++i)
     {
         Child c;
         c.seed = Rng::mix (seed, (uint64_t) i + 1);
         Rng rng (c.seed);
         c.genome = crossover (s, a, b, o, rng, &c.inheritance);
-        mutate (s, c.genome, a, b, amount, rng);
+        mutate (s, c.genome, a, b, amount, rng, pull > 0.0f ? taste->forEngine (engineOf (s, c.genome)) : nullptr, pull);
         out.push_back (std::move (c));
     }
-    return out;
+    if (candidates == count) return out;
+    // the best-scoring share (1 - curiosity) of the slots, the rest in seed order; shown in seed order
+    const int exploit = std::clamp ((int) std::lround ((float) count * (1.0f - taste->curiosity)), 0, count);
+    std::vector<float> score ((size_t) candidates);
+    for (int i = 0; i < candidates; ++i) score[(size_t) i] = taste->score (s, out[(size_t) i].genome);
+    std::vector<int> order ((size_t) candidates);
+    for (int i = 0; i < candidates; ++i) order[(size_t) i] = i;
+    std::stable_sort (order.begin(), order.end(), [&] (int x, int y) { return score[(size_t) x] > score[(size_t) y]; });
+    std::vector<bool> take ((size_t) candidates, false);
+    for (int k = 0; k < exploit; ++k) take[(size_t) order[(size_t) k]] = true;
+    int taken = exploit;
+    for (int i = 0; i < candidates && taken < count; ++i)
+        if (! take[(size_t) i]) { take[(size_t) i] = true; ++taken; }
+    std::vector<Child> kept;
+    for (int i = 0; i < candidates; ++i)
+        if (take[(size_t) i]) kept.push_back (std::move (out[(size_t) i]));
+    return kept;
 }
 
 // ------------------------------------------------------------------------------------------------ Session
@@ -610,7 +649,10 @@ bool Session::breedAgain (uint64_t seed)
         c.seed = Rng::mix (seed, (uint64_t) i + 1);
         Rng rng (c.seed);
         c.genome = crossover (sch, x->genome, y->genome, options, rng, &c.inheritance);
-        mutate (sch, c.genome, x->genome, y->genome, m == 1 ? std::max (amount, 0.1f) : amount, rng);
+        const auto* taste = options.taste.get(); // p69: kept children breed towards the learned taste too
+        const float pull = taste != nullptr ? taste->pull() : 0.0f;
+        mutate (sch, c.genome, x->genome, y->genome, m == 1 ? std::max (amount, 0.1f) : amount, rng,
+                pull > 0.0f ? taste->forEngine (engineOf (sch, c.genome)) : nullptr, pull);
         c.name = childName (x->name, y->name, g.number, i);
         g.children.push_back (std::move (c));
     }

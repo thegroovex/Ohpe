@@ -72,6 +72,8 @@ list(APPEND OHPE_PLUGIN_SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/ProView.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/LibraryBrowser.cpp
     ${CMAKE_SOURCE_DIR}/src/plugin/PresetManager.cpp)
+# p69: learning breed (local taste profile)
+list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/TasteStore.cpp)
 # 0.7: display views of the modulation matrix and the FX racks
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ModFxViews.cpp)
 # p55: the graphical FX slot editor (Effects mode, Rack / Master)

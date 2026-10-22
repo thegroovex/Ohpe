@@ -92,6 +92,7 @@ OhpeProcessor::OhpeProcessor()
         triggerPresses[(size_t) t].store (0);
     }
     presetManager = std::make_unique<PresetManager> (*this);
+    tasteStore = std::make_unique<TasteStore> (*this); // p69
     // p40: start with the first factory preset, not with the plain defaults ("Init"); host state / a stored session replace it
     if (startWithFactorySound.load()) presetManager->loadStartSound();
     presetUidCache = presetManager->currentUids();
@@ -314,6 +315,7 @@ void OhpeProcessor::timerCallback()
     pollRemoteControls();
     watchTapeLoop (juce::Time::getMillisecondCounterHiRes() * 0.001); // p42: loop range rules, loop undo steps
     applyPendingPresetUid(); // p40
+    tasteStore->tick (juce::Time::getMillisecondCounterHiRes() * 0.001); // p69: learning breed signals
     {
         auto uids = presetManager->currentUids();
         const juce::SpinLock::ScopedLockType sl (presetUidLock);

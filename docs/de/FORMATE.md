@@ -44,6 +44,7 @@ CI vergleicht.
 | `updateSettings` | 1 | Updater-Einstellungen, `Settings/update.json` | Feld `"version"` (fehlt = 0) |
 | `library` | 1 | Favoriten und Bewertungen, `library.json` | JSON `"format": "ohpe-library"` |
 | `installedPacks` | 1 | Installierte Inhaltspakete, `Content/installed.json` | Feld `"format"` |
+| `taste` | 1 | Geschmacksprofil der lernenden Zucht, `<Benutzerdaten>/groovex/Ohpe/Taste/taste.json` | JSON `"format": "ohpe-taste"` |
 | `sequencer` | 1 | Zustands-/Projektabschnitt `sequencer` | Abschnittsfeld `"version"` |
 | `orbit` | 1 | Zustands-/Projektabschnitt `orbit` | Abschnittsfeld `"version"` |
 | `morph` | 1 | Abschnitt `morph` (und der `morph`-Block eines Part-Presets) | Abschnittsfeld `"version"` |
@@ -116,6 +117,16 @@ wurde, bevor es `controller.chosen` gab, startet mit dem Grid-Controller-Profil 
 Dateien ohne ihn zeigen die Tour einmal, ältere Versionen behalten ihn als unbekannten Schlüssel. Unbekannte
 Schlüssel von `settings.json` bleiben erhalten und werden zurückgeschrieben; wer die Datei speichert, schreibt die
 eigene Version.
+
+### Geschmacksprofil (`taste` 1)
+
+Das Profil der lernenden Zucht, pro Benutzer, nie pro Projekt und nie irgendwohin gesendet:
+`{"format": "ohpe-taste", "version": 1, "learning": bool, "curiosity": 0..1, "sounds": {"<Schlüssel>": {"f": Fitness,
+"n": Ladevorgänge, "e": Engine, "t": Aktualität}}, "engines": {"<Engine-Typ>": {"<Gen-ID>": [Gewicht gemocht,
+Mittel gemocht, Gewicht abgelehnt, Mittel abgelehnt]}}}`. Schlüssel sind Bibliotheks-UIDs oder `breed:<Seed>`;
+Gen-IDs sind part-lokale Parameter-IDs, die Mittelwerte normiert (0..1). Eine beschädigte Datei (kein JSON, falsches
+`format`) lädt als leeres Profil; falsche Werte werden verworfen oder begrenzt; unbekannte Gen-IDs oder Engines
+werden ignoriert (und nicht zurückgeschrieben). Fixtures: `taste/taste-v1.json`, `taste/taste-v1-damaged.json`.
 
 ### Tape-Gedächtnis (`tapeMemory` 1, p67)
 

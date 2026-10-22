@@ -236,3 +236,74 @@ TEST_CASE ("editor p51: BREED is its own header key next to RANDOM; RANDOM only 
     // BREED's right-click is the MIDI learn menu of "lib.breed" (no new parameter)
     CHECK (breedKey.onSecondaryClick != nullptr);
 }
+
+TEST_CASE ("editor p69: learning breed - signals, LEARN / CURIOSITY / WHY / RESET, the local profile file")
+{
+    TempFolder tmp, data;
+    OhpeProcessor p;
+    p.presets().setUserFolder (tmp.dir);
+    auto& taste = p.taste();
+    taste.setFolderForTests (data.dir);
+    CHECK (taste.taste().empty());
+    p.prepareToPlay (48000.0, 256);
+    std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
+    auto& e = *dynamic_cast<OhpeEditor*> (ed.get());
+    e.selectPart (0);
+    e.showBreeding (true);
+    auto& v = e.breedingComponent();
+    v.setSeedBase (69);
+    const int fm = factoryPart (p, "fm");
+    REQUIRE (fm >= 0);
+    v.setParentFromLibrary (1, fm);
+    v.setAmount (0.4f);
+    v.breedNew();
+    REQUIRE (v.session().current() != nullptr);
+    CHECK (v.session().options.taste == nullptr); // nothing learned yet: an unbiased brood
+
+    // keeping children and favouriting a library sound teach the profile
+    v.toggleKept (0);
+    v.toggleKept (2);
+    p.presets().setFavourite (fm, true);
+    CHECK (taste.taste().fitness (p.presets().entries()[(size_t) fm].uid) > 0.0f);
+    CHECK (taste.taste().numSounds() >= 3);
+    CHECK (taste.bias() != nullptr);
+    CHECK_FALSE (v.whyLines().isEmpty());
+    v.setShowWhy (true);
+    CHECK (v.whyVisible());
+    e.repaint();
+
+    // the brood is biased now; curiosity 100 % or learning off = no pull
+    v.setCuriosity (0.0f);
+    v.breedNew();
+    REQUIRE (v.session().options.taste != nullptr);
+    CHECK (v.session().options.taste->pull() > 0.5f);
+    v.setLearning (false);
+    CHECK (taste.bias() == nullptr);
+    v.breedNew();
+    CHECK (v.session().options.taste == nullptr);
+    v.setLearning (true);
+
+    // the file: written, read back by a new instance
+    taste.save();
+    REQUIRE (taste.file().existsAsFile());
+    CHECK (taste.file().getParentDirectory().getFileName() == "Taste");
+    {
+        OhpeProcessor q;
+        q.taste().setFolderForTests (data.dir);
+        CHECK (q.taste().taste().numSounds() == taste.taste().numSounds());
+        CHECK (q.taste().curiosity() == doctest::Approx (0.0f));
+    }
+
+    // RESET: the first press arms, the second forgets
+    v.resetTaste();
+    CHECK_FALSE (taste.taste().empty());
+    v.resetTaste();
+    CHECK (taste.taste().empty());
+    CHECK (v.whyLines().isEmpty());
+
+    // a damaged file loads as an empty profile
+    taste.file().replaceWithText ("{\"format\":\"ohpe-taste\",\"sounds\":[1,2");
+    taste.setFolderForTests (data.dir);
+    CHECK (taste.taste().empty());
+    v.close (false);
+}

@@ -7,6 +7,17 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Learning breed (p69): the BREED key learns locally from use – time played with notes, saved, loaded again,
+  favourited, kept, quickly skipped (negative) – and keeps a small taste profile per engine. BREED / AGAIN breed more
+  candidates and show the best-scoring ones, mutation leans towards the liked region, the die's parent B follows the
+  taste. Breeding view foot row: LEARN on/off, CURIOSITY 0–100 % (100 % = unbiased), WHY (top learned traits), RESET.
+  Levels stay matched, safety caps stay. New local file `Taste/taste.json` (format `taste` 1); nothing is sent anywhere.
+- DE: Lernende Zucht (p69): die ZUCHT-Taste lernt lokal aus der Nutzung – Spielzeit mit Noten, gespeichert, wieder
+  geladen, Favorit, behalten, schnell übersprungen (negativ) – und führt ein kleines Geschmacksprofil pro Engine.
+  ZÜCHTEN / WEITER züchten mehr Kandidaten und zeigen die bestbewerteten, die Mutation neigt sich zum gemochten
+  Bereich, der Würfel-Elternteil B folgt dem Geschmack. Fußzeile der Zucht-Ansicht: LERNEN an/aus, NEUGIER 0–100 %
+  (100 % = unbeeinflusst), WARUM (stärkste gelernte Merkmale), VERGESSEN. Pegel bleiben angeglichen, Sicherheitsgrenzen
+  bleiben. Neue lokale Datei `Taste/taste.json` (Format `taste` 1); nichts wird gesendet.
 - EN: Tape Memory (p67): Ohpe always keeps the last 30 s of its own output (main out or one part, 16-bit ring buffer,
   about 6 MB at 48 kHz). CAPTURE (tape page, Sampler page, MIDI-mappable `tapemem.go`, Grid-Controller *Add Track*)
   turns it into an instrument in a part's Sampler: Chromatic (the strongest note, pitch detected and tuned to the

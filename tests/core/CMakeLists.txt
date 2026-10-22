@@ -79,6 +79,8 @@ target_sources(ohpe_core_tests PRIVATE UserTableTests.cpp)
 target_sources(ohpe_core_tests PRIVATE BreedTests.cpp)
 # p37: the RANDOM key (constrained rolls, loudness normalisation)
 target_sources(ohpe_core_tests PRIVATE RandomSoundTests.cpp)
+# p69: learning breed (taste profile)
+target_sources(ohpe_core_tests PRIVATE TasteTests.cpp)
 # p23: bounce to engine
 target_sources(ohpe_core_tests PRIVATE BounceTests.cpp)
 # p67: tape memory

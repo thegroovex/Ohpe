@@ -85,3 +85,32 @@ Ein Klang wird als **Genom** behandelt: jeder Parameter des Parts, in Gruppen so
 Die Zucht-Sitzung – Eltern, Generationen, behaltene Kinder, die Gruppen-Wahl – wird mit dem Projekt gespeichert
 (Plug-in-Zustand, Abschnitt `"breed"`). Der Zucht-Kern (`src/core/breed`) ist engine-unabhängig: Er liest nur die
 Parameterbeschreibungen, sodass neue Engines und Effekte ohne Änderung mitzüchten.
+
+## Lernende Zucht
+
+Die Zucht lernt lokal, was dir gefällt. Sie beobachtet pro Klang (ein Bibliotheks-Preset oder ein gezüchtetes Kind):
+wie lange du ihn mit Noten spielst, ob du ihn speicherst, wieder lädst, zum Favoriten machst oder behältst (Herz) –
+und ob du ihn schnell überspringst (ein, zwei Noten, nach wenigen Sekunden ersetzt: zählt dagegen). Daraus führt sie
+ein kleines **Geschmacksprofil pro Engine**: für jeden Klangparameter den Bereich, der dir gefiel, und den, den du
+übersprungen hast.
+
+![Lernende Zucht](../images/ohpe-breeding-learn-de.png)
+
+ZÜCHTEN und WEITER neigen sich dann zum gemochten Bereich der Engine jedes Kindes: Es werden doppelt so viele
+Kandidaten gezüchtet und die bestbewerteten gezeigt, und Mutationsschritte werden zu dem gezogen, was dir gefiel (und
+weg von dem, was du übersprungen hast). Der Würfel wählt seinen zufälligen Elternteil B nach demselben Geschmack.
+Pegel werden nie verändert – jedes Kind wird weiter an die Lautheit seiner Eltern angeglichen, und die
+Sicherheitsgrenzen für Resonanz, Feedback und Drive bleiben.
+
+Die Fußzeile der Zucht-Ansicht:
+
+| Bedienelement | Was es tut |
+| --- | --- |
+| **LERNEN: AN / AUS** | Lernen an oder aus. Aus = nichts wird aufgezeichnet und die Brut wird nicht beeinflusst. |
+| **NEUGIER n %** | Wie viel weiter ausprobiert wird (Klick +10 %, Rechtsklick −10 %). 100 % = die Brut ignoriert das Profil, 0 % = sie folgt ihm ganz. Standard 35 %. |
+| **WARUM** | Zeigt die stärksten gelernten Merkmale, z. B. „Analog · Cutoff: höher (82 %)“. |
+| **VERGESSEN** | Zweimal drücken: vergisst das ganze Profil (die Einstellungen bleiben). |
+
+Das Profil ist eine lokale Datei (`<Benutzerdaten>/groovex/Ohpe/Taste/taste.json`, siehe [FORMATE](FORMATE.md));
+nichts verlässt den Computer. Eine beschädigte Datei startet ein leeres Profil. Mit festem Seed ist die Brut
+reproduzierbar.

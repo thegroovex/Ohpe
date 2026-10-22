@@ -2471,7 +2471,7 @@ void OhpeEditor::refreshKeys()
     keysReadout.setTooltip (tr ("Range of the on-screen keyboard and its octave shift; red during MIDI learn"));
     libraryKey.setTooltip (tr ("Preset library"));
     proKey.setTooltip (tr ("All parameters of the mode"));
-    breedKey.setTooltip (tr ("Breeding: cross two sounds, hear six children, keep the best (opens / closes the breeding view)")); // p51
+    breedKey.setTooltip (tr ("Breeding: cross two sounds, hear six children, keep the best - it learns what you like (opens / closes the breeding view)")); // p51
     randomKey.setTooltip (tr ("Random: new values for the sound of the edit part's engine (in the breeding view: a new parent B)"));
     saveKey.setTooltip (tr ("Save the edit part as a user preset"));
     settingsKey.setTooltip (tr ("Settings: language, help, skin, display, MIDI, updates, about")); // p32

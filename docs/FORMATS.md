@@ -41,6 +41,7 @@ All constants live in `src/core/model/FormatVersions.h`; `tests/formats/FORMATS.
 | `updateSettings` | 1 | Updater settings, `Settings/update.json` | field `"version"` (absent = 0) |
 | `library` | 1 | Favourites and ratings, `library.json` | JSON `"format": "ohpe-library"` |
 | `installedPacks` | 1 | Installed content packs, `Content/installed.json` | field `"format"` |
+| `taste` | 1 | Learning breed taste profile, `<user data>/groovex/Ohpe/Taste/taste.json` | JSON `"format": "ohpe-taste"` |
 | `sequencer` | 1 | State / project section `sequencer` | section field `"version"` |
 | `orbit` | 1 | State / project section `orbit` | section field `"version"` |
 | `morph` | 1 | Section `morph` (and a part preset's `morph` block) | section field `"version"` |
@@ -112,6 +113,16 @@ existed starts with the Grid-Controller profile and automatic ports. p64 added t
 (`{"standalone": bool, "plugin": bool}`, the first-start tour was seen) without a version bump: files without it show
 the tour once, older builds keep it as an unknown key. Unknown keys of `settings.json` are kept and
 written back; a build saving the file writes its own version.
+
+### Taste profile (`taste` 1)
+
+The learning breed's profile, per user, never per project and never sent anywhere:
+`{"format": "ohpe-taste", "version": 1, "learning": bool, "curiosity": 0..1, "sounds": {"<key>": {"f": fitness,
+"n": loads, "e": engine, "t": recency}}, "engines": {"<engine type>": {"<gene id>": [like weight, like mean,
+dislike weight, dislike mean]}}}`. Keys are library uids or `breed:<seed>`; gene IDs are part-local parameter IDs,
+means are normalised (0..1). A damaged file (not JSON, wrong `format`) loads as an empty profile; wrong values are
+dropped or clamped; gene IDs or engines this build does not know are ignored (and not written back). Fixtures:
+`taste/taste-v1.json`, `taste/taste-v1-damaged.json`.
 
 ### Tape memory captures (`tapeMemory` 1, p67)
 

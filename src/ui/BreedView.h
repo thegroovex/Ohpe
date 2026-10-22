@@ -73,6 +73,16 @@ public:
     breed::Audition::Sketch sketch (int i) const;
     const juce::String& statusMessage() const noexcept { return status; }
 
+    // ---- p69: learning breed (the foot row: LEARN on / off, CURIOSITY, WHY, RESET) ---------------------------------------
+    void setLearning (bool on);
+    void setCuriosity (float c); ///< 0 .. 1
+    void setShowWhy (bool show);
+    bool whyVisible() const noexcept { return showWhy; }
+    /** RESET: the first press arms it, the second forgets the profile (`confirmed` = forget at once). */
+    void resetTaste (bool confirmed = false);
+    /** The strongest learned traits as lines ("Analog - Cutoff: higher (82 %)"), in the UI language. */
+    juce::StringArray whyLines() const;
+
 private:
     class Worker;
     struct Hit
@@ -97,6 +107,8 @@ private:
     breed::Genome currentGenome() const;
     preset::Preset childPreset (int i) const;
     juce::String parentLabel (int which) const;
+    void paintLearnRow (juce::Graphics& g, float y, float h);
+    void paintWhy (juce::Graphics& g, juce::Rectangle<float> r);
 
     OhpeProcessor& proc;
     std::unique_ptr<breed::Session> ses;
@@ -113,6 +125,7 @@ private:
     int noteChannel = 1, noteOn = -1;
     int noteTicks = 0;
     bool draggingAmount = false;
+    bool showWhy = false, resetArmed = false; ///< p69
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreedView)
 };
