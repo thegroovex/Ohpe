@@ -6,7 +6,7 @@ Sing, hum, talk or whisper into an audio input and your voice moves the sound. V
 voice is never heard through Ohpe, it only modulates. It is analysed in real time into seven modulation sources that go
 anywhere in the [modulation matrix](MODULATION.md).
 
-![Voice view (German UI)](../images/ohpe-voice-view.png)
+![Voice view](../images/ohpe-voice-view.png)
 
 ## Connect an input
 
