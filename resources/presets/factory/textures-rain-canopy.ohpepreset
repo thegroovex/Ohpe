@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "grain",
-  "comment": "Dense short grains falling like rain on leaves above and around you: a swarm of drops spread over the whole sphere, slightly overhead. The mod wheel thickens the downpour. Best with headphones.",
+  "comment": "Dense short grains falling like rain on leaves above and around you: a swarm of drops spread over the whole sphere, slightly overhead. The mod wheel makes the drops finer. Best with headphones.",
   "params": {
     "engine": 4,
     "grain.inst": 4,

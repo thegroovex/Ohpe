@@ -212,7 +212,7 @@ B("Slow Planet", "Pads", "analog",
   amp(1.4, 2.0, 0.85, 3.0), mod(2.5, 3.0, 0.5, 3.0, 0.2), lfo(0.11, 0.2, "tri", "timbre"),
   space("weave", "16bars", size=0.55, distance=3.5, spread=75.0, room=0.35, roomsize=0.6, doppler=0.15),
   chorus(0.25, 0.55, 0.32), rev(0.8, 0.18), expr(vel=[("attack", -0.25)]),
-  wheel=("distance", -0.06), voices=10, velsens=0.3)
+  wheel=("distance", -0.04), voices=10, velsens=0.3)
 
 B("Glass Horizon", "Pads", "grain",
   "Long glass grains spread into a wide horizon that walks away and comes back towards you over eight bars. The mod "
@@ -263,9 +263,9 @@ B("Bowed Ring", "Pads", "sampler",
 # ========================================================================================================= Textures
 B("Rain Canopy", "Textures", "grain",
   "Dense short grains falling like rain on leaves above and around you: a swarm of drops spread over the whole sphere, "
-  "slightly overhead. The mod wheel thickens the downpour." + HP_EN,
+  "slightly overhead. The mod wheel makes the drops finer." + HP_EN,
   "Dichte kurze Grains, die wie Regen auf Blätter über und um dich fallen: ein Schwarm aus Tropfen über die ganze Kugel, "
-  "leicht von oben. Das Modrad verdichtet den Guss." + HP_DE,
+  "leicht von oben. Das Modrad macht die Tropfen feiner." + HP_DE,
   gr(inst="glockenspiel", pos=0.05, size=30, density=200, spray=0.95, pitch=0, reverse=0.1, spread=1.0, scan=0.6, tone=0.4),
   amp(0.6, 1.5, 0.9, 2.5), mod(0.5, 1.5, 0.5, 2.0, 0.0), lfo(0.15, 0.2, "sh", "timbre"),
   space("swarm", "8bars", size=0.7, distance=2.0, spread=150.0, elevation=25.0, room=0.3, roomsize=0.55, doppler=0.05),
@@ -499,7 +499,7 @@ B("Pulse Orbit", "Arp", "analog",
   amp(0.006, 0.35, 0.2, 0.12), mod(0.002, 0.15, 0.0, 0.1, 0.2), lfo(0.1, 0.1, "tri", "timbre"),
   space("figure8", "2bars", size=0.55, distance=1.6, spread=20.0, room=0.25, roomsize=0.4, doppler=0.15),
   echo("1/8.", 0.3, 0.15),
-  wheel=("engine3", 0.2), arp_block=("up", 2, 0.45, "1/16"), voices=8, velsens=0.5)
+  routes=[route("modwheel", "volume", -0.25)], wheel=("engine3", 0.3), arp_block=("up", 2, 0.45, "1/16"), voices=8, velsens=0.5)
 
 B("Swarm Sequence", "Arp", "cluster",
   "Detuned cluster stabs arpeggiated in eighths, each note flying off with a swarm that never lands twice in the same "
@@ -545,7 +545,7 @@ B("Pendulum Growl", "Bass", "fm",
   amp(0.003, 0.5, 0.85, 0.1), mod(0.005, 0.35, 0.4, 0.1, 0.5), MONO, lfo(0.2, 0.1, "tri", "timbre"),
   space("pendulum", "1/2", size=0.5, distance=1.5, spread=25.0, room=0.12, roomsize=0.3, doppler=0.05, lowkeep=180.0),
   comp(-15.0, 4.0, 1.0, 70.0),
-  wheel=("engine3", 0.2), velsens=0.4)
+  wheel=("engine3", 0.15), velsens=0.4)
 
 B("Spinning Pluck Bass", "Bass", "pluck",
   "A plucked string bass: the woody attack spins once around your head every half bar, the low note stays centred. The "
@@ -729,7 +729,7 @@ B("Breath Circle", "Vocal", "vocal",
   vo(vowel=2.4, formant=0.4, breath=0.95, tension=0.15, vibdepth=0.0, vibrate=4.5, jitter=0.4),
   amp(0.15, 0.6, 0.5, 0.6), mod(0.3, 1.0, 0.5, 1.0, 0.0), lfo(0.12, 0.2, "tri", "timbre"),
   space("circle", "2bars", size=0.3, distance=0.7, spread=20.0, room=0.15, roomsize=0.3, doppler=0.05, air=0.3),
-  wheel=("engine3", -0.2), voices=6, velsens=0.35, extra_tags=("Textures",))
+  routes=[route("modwheel", "volume", -0.3)], wheel=("engine3", -0.2), voices=6, velsens=0.35, extra_tags=("Textures",))
 
 
 # ---------------------------------------------------------------------------------------------------------- writing
