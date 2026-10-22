@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "TasteProfile.h"
 
+#include "../engines/EngineFactory.h"
 #include "../model/FormatVersions.h"
 #include "../model/JsonParse.h"
 
@@ -314,7 +315,7 @@ try
             Sound snd;
             snd.fitness = num (v, "f", 0.0f, -20.0f, 20.0f);
             snd.loads = (int) num (v, "n", 0.0f, 0.0f, 1.0e6f);
-            snd.engine = (int) num (v, "e", -1.0f, -1.0f, 1000.0f);
+            snd.engine = (int) num (v, "e", -1.0f, -1.0f, (float) (numEngineTypes - 1));
             const auto t = v.find ("t");
             snd.used = t != v.end() && t->is_number_unsigned() ? t->get<uint64_t>() : 0;
             clock = std::max (clock, snd.used);
@@ -325,7 +326,7 @@ try
         {
             char* end = nullptr;
             const long e = std::strtol (ek.c_str(), &end, 10);
-            if (end == ek.c_str() || *end != 0 || e < 0 || e > 1000 || ! genes.is_object()) continue;
+            if (end == ek.c_str() || *end != 0 || e < 0 || e >= numEngineTypes || ! genes.is_object()) continue;
             for (const auto& [id, a] : genes.items())
             {
                 if (! a.is_array() || a.size() != 4) continue;
