@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "wavetable",
-  "comment": "A glassy wavetable arpeggio climbing a double helix around your head: it spirals up over two bars while the notes climb. The mod wheel sweeps the wavetable. Best with headphones.",
+  "comment": "A glassy wavetable arpeggio on a helix around your head: it circles up above you over two bars and spirals back down over the next two. The mod wheel sweeps the wavetable. Best with headphones.",
   "params": {
     "engine": 1,
     "wavetable.table": 3,
@@ -35,8 +35,8 @@
     "lfo.shape": 1,
     "lfo.dest": 1,
     "space.on": 1,
-    "space.path": 6,
-    "space.pathlen": 5,
+    "space.path": 16,
+    "space.pathlen": 6,
     "space.pathrate": 1.0,
     "space.pathsize": 0.5,
     "space.pathphase": 0.0,

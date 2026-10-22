@@ -10,7 +10,7 @@
     "Drums"
   ],
   "engine": "sampler",
-  "comment": "Marimba hits ricocheting between front and back every quarter note, crisp and close. The mod wheel throws them further out into the room. Best with headphones.",
+  "comment": "Marimba hits ricocheting through the four corners around you, one corner per quarter note, crisp and close. The mod wheel throws them further out into the room. Best with headphones.",
   "params": {
     "engine": 7,
     "sampler.inst": 2,
@@ -30,8 +30,8 @@
     "lfo.shape": 0,
     "lfo.dest": 1,
     "space.on": 1,
-    "space.path": 7,
-    "space.pathlen": 2,
+    "space.path": 14,
+    "space.pathlen": 4,
     "space.pathrate": 1.0,
     "space.pathsize": 0.6,
     "space.pathphase": 0.0,

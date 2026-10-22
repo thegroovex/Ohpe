@@ -57,7 +57,7 @@ Bypass (jeder ältere Klang spielt bitgleich); Umschalten blendet über 20 ms ü
 | Seite | Parameter | Bereich | Wirkung |
 |---|---|---|---|
 | 3D-Bewegung | 3D-Raum (`pN.space.mode`, p41) | Aus, Kopfhörer, Lautsprecher | der 3D-Schalter: *Aus* = Stufe aus; *Kopfhörer* = an, binaural; *Lautsprecher* = an, Lautsprecher-Rendering. Als Segmentschalter gezeichnet; Encoder 1 schaltet die drei Stellungen durch |
-| | Bewegungspfad | Aus, Kreis, Acht, Vorbeiflug, Zufallsorbit, Pendel, Spirale aufwärts, Ping-Pong v/h, Schwarm, Flüstern, Entfernungsgang, Über den Kopf, Wellenorbit | siehe unten |
+| | Bewegungspfad | Aus, Kreis, Acht, Vorbeiflug, Zufallsorbit, Pendel, Spirale aufwärts, Ping-Pong v/h, Schwarm, Flüstern, Entfernungsgang, Über den Kopf, Wellenorbit, Ping-Pong l/r, Vier Ecken, Atmen, Helix, Überflug, Hüpfen, Wandern, Schleifenorbit | siehe unten |
 | | Bewegungslänge | 1/16 … 32 Takte, 1/4. | ein Durchlauf des Pfads, im Takt des Songs |
 | | Bewegungstempo | ×−4 … ×4 (Standard ×1) | multipliziert das Tempo; negativ = rückwärts, 0 = steht. Bei genau ×1 rastet die Bewegung auf die Song-Position ein (sie wiederholt sich bei jedem Abspielen gleich) |
 | 3D-Position | Azimut | −180 … 180° | Richtung (0 = vorn, +90 = rechts, ±180 = hinten); dreht den ganzen Pfad |
@@ -117,9 +117,18 @@ beim Laden die richtige Stellung.
 | Entfernungsgang | geht geradeaus in die Ferne und kommt zurück, pendelt dabei leicht links / rechts – Pegel, Luftdämpfung und Doppler ändern sich unterwegs | wie weit (2 … 16 × die Entfernung; am nächsten 0,35 ×) |
 | Über den Kopf | ein senkrechter Kreis durch beide Ohren: über dem Kopf → rechtes Ohr → unter dir → linkes Ohr | kippt die Oberseite des Kreises nach vorn (0 = genau durch die Ohren, 100 % = 45°) |
 | Wellenorbit | ein voller Orbit, der pro Runde dreimal auf und ab webt und an den Tiefpunkten etwas näher kommt | Höhe der Wellen (10 … 40°) und ihre Tiefe |
+| Ping-Pong l/r | springt im Takt von deinem linken zum rechten Ohr und zurück: jeder halbe Durchlauf beginnt auf dem Schlag mit einer schnellen Bewegung, dann bleibt der Klang stehen. Links → rechts führt vor dir vorbei, rechts → links hinter dir | wie zackig (0 = weiches Schwingen über den ganzen halben Durchlauf, 100 % = schnelle Bewegung in den ersten 45 %) |
+| Vier Ecken | schreitet durch vier Ecken um dich – vorn links → vorn rechts → hinten rechts → hinten links –, eine pro Viertel-Durchlauf, hebt sich bei jeder Bewegung etwas und bleibt dann stehen | wie zackig (0 = weich, 100 % = schnelle Bewegung in den ersten 40 % jedes Viertels) |
+| Atmen | atmet vor dir ein und aus: von weit weg bis nah heran (0,45 × die Entfernung) und zurück, logarithmisch gleichmäßig, nah etwas höher | wie weit es hinaus atmet (1,2 … 3 × die Entfernung) |
+| Helix | kreist zwei- bis viermal, während es gleichmäßig von unterhalb der Ohren bis über deinen Kopf steigt (erste Hälfte) und wieder sinkt (zweite Hälfte), oben etwas näher | Windungen pro Durchlauf (2 … 4) |
+| Überflug | eine gerade Linie über deinem Kopf (eine Entfernung hoch): von weit vorn, genau über dir, nach weit hinten und zurück, an den Enden am langsamsten – mit Doppler ein Flugzeug, das über dich hinwegzieht | Länge der Linie (2 … 12 × die Entfernung) |
+| Hüpfen | hüpft wie ein Ball vor dir von links → rechts → links, sechs Sprünge pro Durchlauf | Sprunghöhe (bis 60° über dem Aufsetzpunkt) |
+| Wandern | eine weiche Zufallsschleife – Richtung, Höhe und Entfernung –, die sich jeden Durchlauf genau wiederholt und so im Takt des Songs bleibt (jeder Part seine eigene Form) | wie weit es wandert |
+| Schleifenorbit | ein voller Orbit mit vier kleinen Schleifen: auf der nahen Seite jeder Schleife dreht der Klang gegen die Runde zurück, auf der fernen hebt er sich etwas | Größe der Schleifen (und wie nah er kommt: 0,75 … 0,33 × die Entfernung) |
 
-Die sechs Pfade ab Ping-Pong v/h kamen später dazu; sie stehen am Ende der Liste, damit Klänge und
-Automationen mit den älteren Pfaden ihren Pfad behalten.
+Die sechs Pfade ab Ping-Pong v/h und die acht ab Ping-Pong l/r kamen später dazu; sie stehen am Ende der Liste,
+damit Klänge und Automationen mit den älteren Pfaden ihren Pfad behalten und gleich klingen. Alle Pfade sind stetig
+(auch dort, wo ein Durchlauf neu beginnt) und bleiben im Takt des Songs.
 
 **In der 3D-Ansicht** ist der Pfad des Edit-Parts vor seinem Punkt als zarte gepunktete Kurve gezeichnet –
 ein ganzer Durchlauf (bei Schwarm und Zufallsorbit: der nächste Durchlauf ab jetzt) – so siehst du Form,
