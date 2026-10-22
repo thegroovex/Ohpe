@@ -26,6 +26,7 @@ version harmony 1
 version samples 1
 version userTables 1
 version genome 1
+version tapeMemory 1
 fixture midimap/midimap-v1.ohpemidi 071baee1f6c703ee782a5e69b7ee6432863648f309afb97f45c542117f018eaa
 fixture pack/Ohpe-content-legacy-flat-1.0.0.zip 270429a527f81c9fc607da7c8014befd7ddaa2940fbf78f51035cf605e5fdd52
 fixture pack/format-fixture-1.0.0.ohpepack 76f0ca4bcb3c835f1282b9a7291421802f6b362aaee7753923745db5f6fe0441

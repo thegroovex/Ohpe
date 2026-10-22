@@ -30,6 +30,8 @@
 #include "tape/TapeMachine.h"
 
 #include <array>
+#include "tapemem/TapeMemory.h"
+
 #include <atomic>
 #include <map>
 #include <memory>
@@ -74,6 +76,9 @@ public:
     drum::DrumKit& drumKit() noexcept { return drums; }   ///< mixer source "drum", MIDI channel 10
     TapeMachine& tape() noexcept { return tapeMachine; }             ///< 0.2: eight-track tape
     /** p39: the metronome (own synthesised click, "metro.*"); the core schedules its clicks. */
+    /** p67: the tape memory ring buffer (audio thread writes, any other thread snapshots). */
+    tapemem::RingBuffer& tapeMemory() noexcept { return tapeMem; }
+    const tapemem::RingBuffer& tapeMemory() const noexcept { return tapeMem; }
     Metronome& metronome() noexcept { return metro; }
     const Metronome& metronome() const noexcept { return metro; }
     /** p39 (set-up thread): the standalone app clicks whenever the metronome is on, a plug-in only with
@@ -308,6 +313,12 @@ public:
         // p24: the harmony brain - "harmony.memory / hold / take / clear / kb.layout", per part "harmony.pN.follow"
         static constexpr const char* harmonyTake = "harmony.take";   ///< trigger (message thread: key.root / key.scale)
         static constexpr const char* harmonyClear = "harmony.clear"; ///< trigger (the brain forgets)
+        // p67: tape memory - the last seconds of the output, CAPTURE turns them into a Sampler instrument
+        static constexpr const char* tapememLen = "tapemem.len";   ///< 5 / 10 / 20 / 30 s
+        static constexpr const char* tapememSrc = "tapemem.src";   ///< Main Out, Part 1-4
+        static constexpr const char* tapememMode = "tapemem.mode"; ///< Chromatic, Slices
+        static constexpr const char* tapememTo = "tapemem.to";     ///< Edit Part, Part 1-4
+        static constexpr const char* tapememGo = "tapemem.go";     ///< trigger: capture now (message thread)
     };
 
 private:
@@ -392,6 +403,8 @@ private:
     std::array<NoteShaper, numParts> liveShaper {}, seqShaper {};
     int stepDrumsIndex = -1, euclidDrumsIndex = -1, orbitDrumsIndex = -1; ///< 0.4: sequencers -> drum kit
     int spaceOutIndex = -1, monoCheckIndex = -1, lastMonitor = -1; ///< 1.0
+    tapemem::RingBuffer tapeMem; ///< p67
+    int tapememSrcIndex = -1;    ///< p67
     int perfBendIndex = -1, perfModIndex = -1, editPartIndex = -1; ///< p14
     float perfBendSent = 0.0f, perfModSent = 0.0f;
     std::atomic<float> wheelMidiBend { 0.0f }, wheelMidiMod { 0.0f };          ///< p28

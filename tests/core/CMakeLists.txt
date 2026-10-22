@@ -81,6 +81,8 @@ target_sources(ohpe_core_tests PRIVATE BreedTests.cpp)
 target_sources(ohpe_core_tests PRIVATE RandomSoundTests.cpp)
 # p23: bounce to engine
 target_sources(ohpe_core_tests PRIVATE BounceTests.cpp)
+# p67: tape memory
+target_sources(ohpe_core_tests PRIVATE TapeMemoryTests.cpp)
 # p22: the motion recorder
 target_sources(ohpe_core_tests PRIVATE MotionTests.cpp)
 

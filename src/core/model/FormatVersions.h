@@ -45,6 +45,7 @@ constexpr int harmony = 1;        ///< "harmony"
 constexpr int samples = 1;        ///< "samples": {"format":"ohpe-samples"}
 constexpr int userTables = 1;     ///< "usertables": {"format":"ohpe-usertables"}
 constexpr int genome = 1;         ///< sound genome (breed)
+constexpr int tapeMemory = 1;     ///< p67: "tapememory": {"format":"ohpe-tapememory"} (captures, 16-bit PCM in base64)
 
 struct Entry
 {
@@ -53,7 +54,7 @@ struct Entry
 };
 
 /** Every constant above, in the order of tests/formats/FORMATS.lock (append-only). */
-constexpr std::array<Entry, 20> all { { { "state", state },
+constexpr std::array<Entry, 21> all { { { "state", state },
                                         { "preset", preset },
                                         { "modSchema", modSchema },
                                         { "tapeFile", tapeFile },
@@ -72,5 +73,6 @@ constexpr std::array<Entry, 20> all { { { "state", state },
                                         { "harmony", harmony },
                                         { "samples", samples },
                                         { "userTables", userTables },
-                                        { "genome", genome } } };
+                                        { "genome", genome },
+                                        { "tapeMemory", tapeMemory } } };
 } // namespace ohpe::formats
