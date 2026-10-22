@@ -384,10 +384,11 @@ std::vector<std::string> spaceParams (int part)
              p + "azimuth", p + "elevation", p + "distance", p + "spread",              // position
              p + "pathsize", p + "pathphase", p + "glide", p + "doppler",              // motion shape
              p + "room", p + "roomsize", p + "air", p + "rolloff",                     // room and distance
-             p + "lowkeep", Core::Ids::spaceOut, Core::Ids::spaceMonoCheck, "" };      // monitoring
+             p + "lowkeep", Core::Ids::spaceOut, Core::Ids::spaceMonoCheck, "",        // monitoring
+             p + "amount", p + "retrig", "", "" };                                       // p77: strength and motion retrigger
 }
 
-std::vector<std::string> spaceTitles() { return { "3D Motion", "3D Position", "Motion Shape", "Room & Distance", "Monitoring" }; }
+std::vector<std::string> spaceTitles() { return { "3D Motion", "3D Position", "Motion Shape", "Room & Distance", "Monitoring", "Amount & Retrigger" }; }
 
 // ------------------------------------------------------------------------------------------------- the scene
 void Scene::clear()

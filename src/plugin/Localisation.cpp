@@ -336,6 +336,7 @@ const std::map<juce::String, juce::String>& table()
         { "3D Position", "3D-Position" },
         { "Motion Shape", "Bewegungsform" },
         { "Room & Distance", "Raum & Entfernung" },
+        { "Amount & Retrigger", "Stärke & Retrigger" }, // p77
         { "Monitoring", "Abhöre" },
         { "3D Monitoring", "3D-Abhöre" },
         { "Motion", "Bewegung" },
