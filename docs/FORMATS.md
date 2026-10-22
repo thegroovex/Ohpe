@@ -49,6 +49,7 @@ All constants live in `src/core/model/FormatVersions.h`; `tests/formats/FORMATS.
 | `samples` | 1 | Section `samples` | JSON `"format": "ohpe-samples"` |
 | `userTables` | 1 | Section `usertables` (and a part preset's `usertables` block) | JSON `"format": "ohpe-usertables"` |
 | `genome` | 1 | Sound genome (breeding) | field `"version"` |
+| `tapeMemory` | 1 | Section `tapememory` (p67) | JSON `"format": "ohpe-tapememory"` |
 
 ## The formats
 
@@ -56,7 +57,7 @@ All constants live in `src/core/model/FormatVersions.h`; `tests/formats/FORMATS.
 
 `{"format": "ohpe-state", "version": 1, "app": "Ohpe", "params": {"<id>": <plain value>, …}, "sections": {…}}`.
 Parameters are stored by ID with plain values (Hz, seconds, choice index); sections are owned by their module
-(`midimap`, `sequencer`, `orbit`, `tape`, `morph`, `motion`, `harmony`, `samples`, `usertables`, `ui`), and unknown
+(`midimap`, `sequencer`, `orbit`, `tape`, `morph`, `motion`, `harmony`, `samples`, `usertables`, `tapememory`, `ui`), and unknown
 sections are kept and written back. In a plug-in or the standalone app the state is
 `<state JSON> NUL <tape audio blob>` (the tape part only when the tape holds audio).
 
@@ -111,6 +112,17 @@ existed starts with the Grid-Controller profile and automatic ports. p64 added t
 (`{"standalone": bool, "plugin": bool}`, the first-start tour was seen) without a version bump: files without it show
 the tour once, older builds keep it as an unknown key. Unknown keys of `settings.json` are kept and
 written back; a build saving the file writes its own version.
+
+### Tape memory captures (`tapeMemory` 1, p67)
+
+Section `tapememory`: `{"format": "ohpe-tapememory", "version": 1, "parts": {"p1": {"mode": 0, "root": 62,
+"slices": 1, "name": "Capture 1", "rate": 48000, "channels": 2, "frames": 96000, "pcm16": "<base64>"}}}` – the last
+capture of each part whose Sampler still plays it. `pcm16` is the audio itself (little-endian int16, full scale 32767,
+channels interleaved), so a session needs no external file. `mode` 0 = Chromatic (`root` = the zone's root key),
+1 = Slices (first slice key C2). Readers accept a missing `version` (0, before the field: read as 1; `format`,
+`frames` and `name` may be missing too) and newer versions (unknown fields are ignored); entries with a bad rate,
+channel count or fewer than 64 frames are skipped. Fixtures: `tapememory/tapememory-v1.json`,
+`tapememory-v0-noversion.json`, `tapememory-v2-future.json`.
 
 ### Everything else (version 1)
 

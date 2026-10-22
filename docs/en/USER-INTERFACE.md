@@ -190,7 +190,8 @@ samples. Sample paths are saved with the project.
 
 **BOUNCE** (third key, p23) puts tape or live-input audio into the engine you are looking at: a menu offers the edit
 track, Tape 1 … 8, the tape mix and the input (1–8 bars), plus *Endless loop* (on by default – the bounce loops
-seamlessly). See [Bounce to engine](BOUNCE.md).
+seamlessly). See [Bounce to engine](BOUNCE.md). On the Sampler page a fourth key, **CAPTURE** (p67), puts the
+tape memory into this part ([Tape memory](TAPE-MEMORY.md)).
 
 ## User wavetables and formants (p20)
 
@@ -444,6 +445,8 @@ Soft keys on the display – two rows: the edits of the selected track above, th
 | **Load Tape** | loads an `.ohpetape` file (or drop one on the window). When the tape holds material, Ohpe asks first (*Replace the recorded tape?*); the load is one undo step, so **Undo** brings the old tape back. A tape from another sample rate is converted and keeps its pitch |
 | **Export** | renders master + the eight tracks as **24-bit WAV** files into a folder you choose (offline, faster than real time; the live audio is not interrupted) |
 | **Bounce** | moves the edit track (or the source on the Bounce page; the loop range while the loop is on) into the Grain or Sampler engine of the edit part, as an endless loop by default – [Bounce to engine](BOUNCE.md) |
+| **Capture** | (end of the first row, p67) turns the tape memory – the last seconds of Ohpe's own output – into an instrument in the Sampler of the target part (Chromatic or Slices); dark while the memory is empty – [Tape memory](TAPE-MEMORY.md) |
+| **Memory** | (end of the second row) the memory menu: Chromatic / Slices, length (5–30 s), source (main out, part 1–4), target part, export the last capture as WAV, clear the memory, MIDI learn for CAPTURE |
 
 ![Clear all asks first](../images/ohpe-tape-clear.png)
 

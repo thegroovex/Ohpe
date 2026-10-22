@@ -7,6 +7,20 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased
 
+- EN: Tape Memory (p67): Ohpe always keeps the last 30 s of its own output (main out or one part, 16-bit ring buffer,
+  about 6 MB at 48 kHz). CAPTURE (tape page, Sampler page, MIDI-mappable `tapemem.go`, Grid-Controller *Add Track*)
+  turns it into an instrument in a part's Sampler: Chromatic (the strongest note, pitch detected and tuned to the
+  nearest semitone, root set) or Slices (one slice per onset from C2). The analysis runs off the audio thread;
+  captures are saved inside the session (new state section `tapememory`, format `tapeMemory` 1) and export as WAV to
+  the capture library. 5 IDs `tapemem.len/src/mode/to/go` appended after `harmony.kb.fixed`.
+- DE: Tape-Gedächtnis (p67): Ohpe behält immer die letzten 30 s seines eigenen Ausgangs (Hauptausgang oder ein Part,
+  16-Bit-Ringpuffer, etwa 6 MB bei 48 kHz). MERKEN (Tape-Seite, Sampler-Seite, MIDI-zuweisbar `tapemem.go`,
+  Grid-Controller *Add Track*) macht daraus ein Instrument im Sampler eines Parts: Chromatisch (der stärkste Ton,
+  Tonhöhe erkannt und auf den nächsten Halbton gestimmt, Grundton gesetzt) oder Slices (ein Slice pro Einsatz ab C2).
+  Die Analyse läuft außerhalb des Audio-Threads; Gemerktes wird in der Session gespeichert (neuer Zustandsabschnitt
+  `tapememory`, Format `tapeMemory` 1) und lässt sich als WAV in die Merk-Bibliothek exportieren. 5 IDs
+  `tapemem.len/src/mode/to/go` nach `harmony.kb.fixed` angehängt.
+
 - EN: First-start tour (p64): four short steps over the plate (parts, preset strip and LIBRARY; encoders, soft keys
   and the FX editor; tape, sequencer, tempo and key; help, settings and the Grid-Controller), English and German, in
   both skins. Shown once on the first standalone start and the first plug-in window, skippable (SKIP TOUR / Esc),
