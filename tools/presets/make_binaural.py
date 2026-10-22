@@ -135,7 +135,13 @@ def B(name, cat, engine, en, de, *dicts, wheel, routes=(), arp_block=None, guard
     if guard is not None:  # a fast peak compressor at the end of the rack (near passes, grain bursts)
         g = dict(GUARD, thresh=guard[0], makeup=guard[1]) if isinstance(guard, tuple) else dict(GUARD, thresh=guard)
         rest.append(dict({slot_prefix(n) + "type": 10}, **{slot_prefix(n) + "compressor." + k: v for k, v in g.items()}))
-    rr = list(routes) + [route("modwheel", wheel[0], wheel[1], "off", wheel[2] if len(wheel) > 2 else "lin")]
+    rr = list(routes)
+    # like every 3D factory preset: slide lifts the source, pressure pulls it closer (MPE / aftertouch)
+    if not any(r[0] == "slide" for r in rr):
+        rr.append(route("slide", "elevation", 0.3))
+    if not any(r[0] == "pressure" and r[1] == "distance" for r in rr):
+        rr.append(route("pressure", "distance", -0.1))
+    rr = rr + [route("modwheel", wheel[0], wheel[1], "off", wheel[2] if len(wheel) > 2 else "lin")]
     m = {}
     for i, (src, dst, amt, via, curve) in enumerate(rr):
         s = "mod.s%d." % (i + 1)
@@ -258,11 +264,12 @@ B("Rain Canopy", "Textures", "grain",
   "slightly overhead. The mod wheel thickens the downpour." + HP_EN,
   "Dichte kurze Grains, die wie Regen auf Blätter über und um dich fallen: ein Schwarm aus Tropfen über die ganze Kugel, "
   "leicht von oben. Das Modrad verdichtet den Guss." + HP_DE,
-  gr(inst="glockenspiel", pos=0.05, size=9, density=110, spray=0.95, pitch=0, reverse=0.1, spread=1.0, scan=0.6, tone=0.45),
+  gr(inst="glockenspiel", pos=0.05, size=30, density=200, spray=0.95, pitch=0, reverse=0.1, spread=1.0, scan=0.6, tone=0.4),
   amp(0.6, 1.5, 0.9, 2.5), mod(0.5, 1.5, 0.5, 2.0, 0.0), lfo(0.15, 0.2, "sh", "timbre"),
   space("swarm", "8bars", size=0.7, distance=2.0, spread=150.0, elevation=25.0, room=0.3, roomsize=0.55, doppler=0.05),
   rev(0.6, 0.14),
-  wheel=("engine3", 0.4), guard=-9.0, voices=6, velsens=0.2)
+  comp(-30.0, 2.0, 5.0, 120.0, 12.0),
+  wheel=("engine3", 0.3), voices=6, velsens=0.2)
 
 B("Night Insects", "Textures", "grain",
   "Tiny bright chirps of plucked strings buzzing around your head on a fast swarm path, near and far at once. The mod "
@@ -298,15 +305,15 @@ B("Distant Voices", "Textures", "vocal",
   wheel=("distance", -0.2), voices=8, velsens=0.2, extra_tags=("Vocal",))
 
 B("Ember Field", "Textures", "grain",
-  "Crackling marimba grains like embers, popping up at random places around you on a wandering orbit. The mod wheel "
+  "Short crackling marimba grains like embers, popping up at random places around you on a wandering orbit. The mod wheel "
   "stretches the crackle into glowing tones." + HP_EN,
   "Knisternde Marimba-Grains wie Glut, die auf einem wandernden Orbit an zufälligen Stellen um dich aufflackern. Das "
   "Modrad dehnt das Knistern zu glühenden Tönen." + HP_DE,
-  gr(inst="marimba", pos=0.0, size=6, density=30, spray=1.0, pitch=0, reverse=0.4, spread=1.0, scan=0.3, tone=0.5),
+  gr(inst="marimba", pos=0.0, size=35, density=40, spray=0.8, pitch=0, reverse=0.4, spread=1.0, scan=0.3, tone=0.5),
   amp(0.5, 1.5, 0.9, 2.0), mod(0.5, 1.5, 0.5, 1.5, 0.0), lfo(0.2, 0.2, "sh", "timbre"),
   space("orbit", "4bars", size=0.7, distance=1.8, spread=130.0, room=0.3, roomsize=0.5, doppler=0.1),
   rev(0.6, 0.15),
-  wheel=("engine2", 0.5), guard=-9.0, voices=6, velsens=0.2)
+  wheel=("engine2", 0.5), voices=6, velsens=0.2)
 
 B("Wind Spiral", "Textures", "analog",
   "Filtered wind that spirals up and over your head every four bars and starts again at your feet, its resonance "
@@ -371,8 +378,8 @@ B("Ceiling Harpsichord", "Keys", "sampler",
   "The mod wheel darkens the quill." + HP_EN,
   "Ein Cembalo, das alle vier Takte über den Kopf steigt und sich hinter dir niederlässt; der Raum antwortet von allen "
   "Seiten. Das Modrad macht den Kiel dunkler." + HP_DE,
-  sm(inst="harpsichord", start=0.0, tone=0.55),
-  amp(0.002, 1.8, 0.0, 0.6), mod(0.01, 1.0, 0.0, 0.5, 0.0), lfo(0.1, 0.08, "sine", "pan"),
+  sm(inst="harpsichord", start=0.0, tone=0.5),
+  amp(0.004, 1.8, 0.0, 0.6), mod(0.01, 1.0, 0.0, 0.5, 0.0), lfo(0.1, 0.08, "sine", "pan"),
   space("overhead", "4bars", size=0.55, distance=1.9, spread=40.0, room=0.4, roomsize=0.55, doppler=0.12),
   rev(0.6, 0.16),
   wheel=("engine2", -0.4), voices=10, velsens=0.5)
@@ -440,22 +447,11 @@ B("Zither Drizzle", "Plucks", "sampler",
   "The mod wheel darkens the strings." + HP_EN,
   "Zitherseiten, von einem Schwarmpfad verstreut; jeder Anschlag kommt von einem etwas anderen Ort wie leichter "
   "Nieselregen. Das Modrad macht die Saiten dunkler." + HP_DE,
-  sm(inst="zither", start=0.0, tone=0.58),
-  amp(0.002, 1.8, 0.0, 1.0), mod(0.01, 1.0, 0.0, 0.5, 0.0), lfo(0.1, 0.06, "sine", "timbre"),
+  sm(inst="zither", start=0.0, tone=0.5),
+  amp(0.004, 1.8, 0.0, 1.0), mod(0.01, 1.0, 0.0, 0.5, 0.0), lfo(0.1, 0.06, "sine", "timbre"),
   space("swarm", "2bars", size=0.6, distance=1.7, spread=30.0, room=0.35, roomsize=0.55, doppler=0.1),
   rev(0.65, 0.15),
   wheel=("engine2", -0.4), voices=12, velsens=0.55)
-
-B("Wire Fly-By", "Plucks", "pluck",
-  "A steel-string pluck that flies past you from front-left to back-right every bar, its pitch bending with the Doppler "
-  "effect as it passes. The mod wheel speeds up the flights." + HP_EN,
-  "Ein Stahlsaiten-Zupfer, der jeden Takt von vorn links nach hinten rechts an dir vorbeifliegt; beim Vorbeiflug biegt "
-  "der Doppler-Effekt die Tonhöhe. Das Modrad beschleunigt die Flüge." + HP_DE,
-  pl(material=0.6, damping=0.3, bright=0.6, body=0.4, excite=0.5, pickpos=0.2, bodysize=0.45),
-  amp(0.002, 1.5, 0.0, 0.8), mod(0.01, 0.5, 0.0, 0.3, 0.0), lfo(0.1, 0.06, "sine", "timbre"),
-  space("flyby", "1bar", size=0.6, distance=1.8, spread=15.0, room=0.3, roomsize=0.45, doppler=0.55),
-  rev(0.5, 0.12),
-  wheel=("pathrate", 0.6), voices=10, velsens=0.6)
 
 # =============================================================================================================== Arp
 B("Satellite Arp", "Arp", "fm",
@@ -497,8 +493,8 @@ B("Pulse Orbit", "Arp", "analog",
   "filter." + HP_EN,
   "Ein resonantes Rechteck-Arpeggio, das alle zwei Takte eine Acht durch den Raum um deinen Kopf zieht. Das Modrad "
   "öffnet das Filter." + HP_DE,
-  an(shape=0.5, detune=0.04, cutoff=1100, reso=0.4, oscmix=0.3, sub=0.0, drive=0.3, keytrack=0.6),
-  amp(0.003, 0.25, 0.0, 0.12), mod(0.002, 0.15, 0.0, 0.1, 0.45), lfo(0.1, 0.1, "tri", "timbre"),
+  an(shape=0.5, detune=0.04, cutoff=1100, reso=0.15, oscmix=0.3, sub=0.0, drive=0.3, keytrack=0.6),
+  amp(0.006, 0.35, 0.2, 0.12), mod(0.002, 0.15, 0.0, 0.1, 0.2), lfo(0.1, 0.1, "tri", "timbre"),
   space("figure8", "2bars", size=0.55, distance=1.6, spread=20.0, room=0.25, roomsize=0.4, doppler=0.15),
   echo("1/8.", 0.3, 0.15),
   wheel=("engine3", 0.35), arp_block=("up", 2, 0.45, "1/16"), voices=8, velsens=0.5)
@@ -509,7 +505,7 @@ B("Swarm Sequence", "Arp", "cluster",
   "Verstimmte Cluster-Stabs als Achtel-Arpeggio; jeder Ton fliegt mit einem Schwarm davon, der nie zweimal an derselben "
   "Stelle landet. Das Modrad verbreitert die Schichtung." + HP_DE,
   cl(detune=0.3, spread=0.8, tone=0.6, chord="min7", stack=3, shape=0.0, side=0.6, reso=0.15, keytrack=0.5, drift=0.1),
-  amp(0.003, 0.3, 0.0, 0.2), mod(0.002, 0.2, 0.0, 0.15, 0.3), lfo(0.1, 0.1, "tri", "timbre"),
+  amp(0.008, 0.5, 0.4, 0.2), mod(0.002, 0.2, 0.0, 0.15, 0.05), lfo(0.1, 0.1, "tri", "timbre"),
   space("swarm", "1bar", size=0.65, distance=1.8, spread=40.0, room=0.3, roomsize=0.45, doppler=0.1),
   echo("1/8.", 0.25, 0.12), rev(0.45, 0.12),
   wheel=("engine1", 0.45), arp_block=("up", 1, 0.5, "1/8"), voices=8, velsens=0.5)
@@ -558,7 +554,7 @@ B("Spinning Pluck Bass", "Bass", "pluck",
   amp(0.002, 0.9, 0.0, 0.2), mod(0.01, 0.3, 0.0, 0.2, 0.0), MONO, lfo(0.15, 0.06, "tri", "timbre"),
   space("circle", "1/2", size=0.3, distance=1.4, spread=20.0, room=0.12, roomsize=0.3, doppler=0.05, lowkeep=200.0),
   sub(0.3, -1, "sine"), comp(-14.0, 3.0, 2.0, 90.0),
-  wheel=("engine2", -0.35), velsens=0.55)
+  wheel=("engine2", -0.35), guard=(-20.0, 4.0), velsens=0.55)
 
 B("Gravity Bass Halo", "Bass", "analog",
   "A vowel-like analog bass whose partials Key Gravity tunes into the key; the halo of overtones circles in a "
@@ -595,14 +591,14 @@ B("Vowel Orbit Lead", "Leads", "vocal",
   echo("1/4", 0.25, 0.12), rev(0.55, 0.14), expr(at=[("vibrato", 0.45, "s")]),
   wheel=("engine1", 0.5), voices=1, velsens=0.35, glide=0.05, extra_tags=("Vocal",))
 
-B("Spiral Sync Lead", "Leads", "analog",
-  "A hard-edged analog lead spiralling up around your head every two bars and dropping back to the front. The mod "
-  "wheel opens the resonant filter." + HP_EN,
-  "Ein kantiger Analog-Lead, der alle zwei Takte spiralförmig um den Kopf steigt und vorn wieder herabfällt. Das Modrad "
-  "öffnet das resonante Filter." + HP_DE,
-  an(shape=0.25, detune=0.12, cutoff=1800, reso=0.35, oscmix=0.5, sub=0.1, drive=0.4, keytrack=0.6),
-  amp(0.004, 0.5, 0.8, 0.25), mod(0.002, 0.3, 0.3, 0.2, 0.35), lfo(5.0, 0.04, "sine", "pitch"),
-  space("spiral", "2bars", size=0.45, distance=1.6, spread=20.0, room=0.25, roomsize=0.4, doppler=0.15),
+B("Ear to Ear Lead", "Leads", "analog",
+  "A singing analog lead swinging from one ear to the other and back every two bars, so a melody sweeps across your "
+  "head. Velocity opens the filter; the mod wheel opens it further." + HP_EN,
+  "Ein singender Analog-Lead, der alle zwei Takte von einem Ohr zum anderen und zurück schwingt; eine Melodie wandert "
+  "quer durch den Kopf. Anschlag öffnet das Filter; das Modrad öffnet es weiter." + HP_DE,
+  an(shape=0.25, detune=0.12, cutoff=1500, reso=0.15, oscmix=0.5, sub=0.1, drive=0.15, keytrack=0.6),
+  amp(0.01, 0.5, 0.8, 0.25), mod(0.002, 0.3, 0.3, 0.2, 0.15), lfo(5.0, 0.04, "sine", "pitch"),
+  space("pendulum", "2bars", size=0.6, distance=2.0, spread=20.0, room=0.25, roomsize=0.4, doppler=0.15),
   echo("1/8.", 0.3, 0.14), expr(vel=[("cutoff", 0.3, "exp")]),
   wheel=("engine3", 0.3), voices=1, velsens=0.45, glide=0.03)
 
@@ -636,42 +632,10 @@ B("Circling Hats", "Drums", "cluster",
   "Metallische Cluster-Hats, die jeden Schlag einmal um den Kopf wandern; ein gerades Hat-Muster wird zum Ring aus "
   "Ticks. Das Modrad beschleunigt den Ring." + HP_DE,
   cl(detune=1.0, spread=0.7, tone=0.9, chord="fourths", stack=7, shape=1.0, side=1.0, reso=0.2, keytrack=0.3, drift=0.0),
-  amp(0.001, 0.18, 0.0, 0.08), mod(0.001, 0.05, 0.0, 0.05, 0.0), lfo(0.1, 0.05, "sine", "timbre"),
-  space("circle", "1/4", size=0.4, distance=1.3, spread=10.0, room=0.2, roomsize=0.35, doppler=0.05),
+  amp(0.001, 0.3, 0.0, 0.12), mod(0.001, 0.05, 0.0, 0.05, 0.0), lfo(0.1, 0.05, "sine", "timbre"),
+  space("circle", "1/4", size=0.4, distance=1.3, spread=10.0, room=0.25, roomsize=0.35, doppler=0.05),
+  drive(0.7, 1.0, "soft"),
   wheel=("pathrate", 0.6), voices=4, velsens=0.7, tune=12)
-
-B("Scattered Blocks", "Drums", "pluck",
-  "Wood blocks struck at random places around and above you, a new spot for every hit. Velocity sets the knock; the mod "
-  "wheel lifts the hits overhead." + HP_EN,
-  "Holzblöcke, an zufälligen Stellen um und über dir angeschlagen, bei jedem Schlag ein neuer Ort. Anschlag bestimmt "
-  "das Klopfen; das Modrad hebt die Schläge über den Kopf." + HP_DE,
-  pl(material=0.15, damping=0.8, bright=0.55, body=0.7, excite=0.7, pickpos=0.3, bodysize=0.3),
-  amp(0.001, 0.25, 0.0, 0.1), mod(0.001, 0.1, 0.0, 0.1, 0.0), lfo(0.1, 0.05, "sine", "timbre"),
-  space("off", "1bar", size=0.0, distance=1.4, spread=10.0, room=0.25, roomsize=0.4, doppler=0.0, glide=0.005),
-  rev(0.4, 0.1),
-  routes=[route("random", "azimuth", 0.5), route("random", "elevation", 0.12)],
-  wheel=("elevation", 0.3), voices=6, velsens=0.75, tune=12)
-
-B("Snare Ricochet", "Drums", "analog",
-  "A noisy snare bouncing between the front and the back of your head every eighth note. The mod wheel throws it out "
-  "into a bigger room." + HP_EN,
-  "Eine rauschige Snare, die jede Achtel zwischen vorn und hinten springt. Das Modrad wirft sie in einen größeren "
-  "Raum." + HP_DE,
-  an(shape=0.6, detune=0.0, cutoff=5200, reso=0.15, oscmix=0.25, sub=0.0, noise=0.8, drive=0.25, keytrack=0.2),
-  amp(0.001, 0.2, 0.0, 0.12), mod(0.001, 0.06, 0.0, 0.05, 0.5), pitchenv(0.4, 0.03),
-  space("pingpong", "1/8", size=0.6, distance=1.3, spread=15.0, room=0.3, roomsize=0.4, doppler=0.05),
-  rev(0.45, 0.12),
-  wheel=("distance", 0.35), voices=4, velsens=0.7)
-
-B("Shaker Orbit", "Drums", "analog",
-  "A crisp noise shaker orbiting your head once per bar, steady as a second hand. The mod wheel opens it into a "
-  "brighter, splashier shake." + HP_EN,
-  "Ein knackiger Rausch-Shaker, der einmal pro Takt um den Kopf kreist, gleichmäßig wie ein Sekundenzeiger. Das Modrad "
-  "öffnet ihn zu einem helleren, spritzigeren Schütteln." + HP_DE,
-  an(shape=0.0, detune=0.0, cutoff=6500, reso=0.2, oscmix=0.0, sub=0.0, noise=1.0, drive=0.0, keytrack=0.0, ftype=2),
-  amp(0.004, 0.09, 0.0, 0.06), mod(0.001, 0.05, 0.0, 0.05, 0.0), lfo(0.1, 0.05, "sine", "timbre"),
-  space("circle", "1bar", size=0.4, distance=1.3, spread=10.0, room=0.2, roomsize=0.35, doppler=0.05),
-  wheel=("engine3", 0.25), voices=4, velsens=0.7)
 
 B("Hand Drum Ring", "Drums", "fm",
   "Hand-drum tones sitting in a ring around you: low strokes behind, slaps in front, each note at its own angle, and "
@@ -703,7 +667,7 @@ B("Vortex Riser", "FX", "analog",
   "Ein Rausch-Riser in einem Wirbel: er schraubt sich in vier Takten immer schneller um den Kopf nach oben. Für den "
   "Aufbau eine Note halten; das Modrad zieht den Wirbel enger." + HP_DE,
   an(shape=0.3, detune=0.25, cutoff=500, reso=0.45, oscmix=0.5, sub=0.0, noise=0.6, drive=0.2, keytrack=0.5),
-  amp(3.0, 1.0, 1.0, 1.5), mod(4.0, 1.0, 1.0, 1.5, 0.7), lfo(0.5, 0.2, "tri", "timbre"),
+  amp(1.2, 1.0, 1.0, 1.5), mod(2.5, 1.0, 1.0, 1.5, 0.7), lfo(0.5, 0.2, "tri", "timbre"),
   space("spiral", "4bars", size=0.6, distance=2.2, spread=60.0, room=0.35, roomsize=0.6, doppler=0.3),
   rev(0.75, 0.2),
   routes=[route("modenv", "pathrate", 0.5)], wheel=("pathrate", 0.4), voices=4, velsens=0.25)
@@ -724,7 +688,7 @@ B("Thunder Walk", "FX", "analog",
   "and steady. The mod wheel brings the storm closer." + HP_EN,
   "Ein tiefes, rollendes Grollen, das in acht Takten nah und fern wandert wie ein Gewitter über dem Tal; der Sub bleibt "
   "mono und ruhig. Das Modrad holt das Gewitter näher." + HP_DE,
-  an(shape=0.0, detune=0.0, cutoff=380, reso=0.3, oscmix=0.0, sub=0.2, noise=1.0, drive=0.45, keytrack=0.3),
+  an(shape=0.0, detune=0.0, cutoff=650, reso=0.3, oscmix=0.0, sub=0.2, noise=1.0, drive=0.6, keytrack=0.3),
   amp(1.5, 2.0, 0.9, 3.0), mod(2.0, 2.0, 0.6, 2.0, 0.3), lfo(0.35, 0.4, "sh", "timbre"),
   space("walk", "8bars", size=0.6, distance=3.5, spread=120.0, room=0.45, roomsize=0.8, doppler=0.05, rolloff=0.5,
         lowkeep=150.0),
