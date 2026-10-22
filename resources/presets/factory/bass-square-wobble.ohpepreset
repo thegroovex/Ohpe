@@ -128,11 +128,12 @@
     "mpe.slide": 0.08,
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
-    "gain": 1.5,
+    "gain": -0.4,
     "mod.s8.src": 9,
     "mod.s8.via": 0,
     "mod.s8.dst": 4,
     "mod.s8.amt": 0.25,
-    "mod.s8.curve": 0
+    "mod.s8.curve": 0,
+    "chordroom": 4.5
   }
 }

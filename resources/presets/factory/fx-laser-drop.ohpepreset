@@ -35,7 +35,7 @@
     "fx.delay.pingpong": 1,
     "fx.delay.mix": 0.25,
     "voices": 4,
-    "gain": 22.5,
+    "gain": 21.8,
     "fx2.type": 10,
     "fx2.compressor.thresh": -4.0,
     "fx2.compressor.ratio": 8.0,
@@ -48,6 +48,7 @@
     "mod.s1.via": 0,
     "mod.s1.dst": 4,
     "mod.s1.amt": 0.35,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 11.3
   }
 }

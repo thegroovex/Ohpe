@@ -84,6 +84,7 @@
     "mpe.hd": 1,
     "mpe.round": 0,
     "velsens": 0.15,
-    "mpe.pcurve": 0.0
+    "mpe.pcurve": 0.0,
+    "chordroom": 8.0
   }
 }

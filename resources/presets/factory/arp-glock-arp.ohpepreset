@@ -38,7 +38,7 @@
     "fx2.delay.tone": 0.5,
     "fx2.delay.pingpong": 1,
     "fx2.delay.mix": 0.18,
-    "gain": 14.9,
+    "gain": 16.0,
     "fx3.type": 10,
     "fx3.compressor.thresh": -4.0,
     "fx3.compressor.ratio": 8.0,
@@ -51,7 +51,8 @@
     "mod.s1.via": 0,
     "mod.s1.dst": 48,
     "mod.s1.amt": 0.25,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 9.4
   },
   "arp": {
     "on": 1,

@@ -74,7 +74,7 @@
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
     "glide": 0.03,
-    "gain": 16.9,
+    "gain": 15.2,
     "fx5.type": 10,
     "fx5.compressor.thresh": -4.0,
     "fx5.compressor.ratio": 8.0,
@@ -90,6 +90,7 @@
     "mod.s1.curve": 0,
     "expr.at.curve1": 3,
     "expr.at.amt1": 0.3,
-    "expr.at.dst1": 12
+    "expr.at.dst1": 12,
+    "chordroom": 4.5
   }
 }

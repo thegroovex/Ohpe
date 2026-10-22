@@ -35,7 +35,7 @@
     "lfo.shape": 4,
     "lfo.dest": 3,
     "voices": 6,
-    "gain": 8.8,
+    "gain": 8.1,
     "fx.type": 10,
     "fx.compressor.thresh": -5.0,
     "fx.compressor.ratio": 8.0,
@@ -48,6 +48,7 @@
     "mod.s1.via": 0,
     "mod.s1.dst": 8,
     "mod.s1.amt": 0.4,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 7.6
   }
 }

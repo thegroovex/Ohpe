@@ -148,7 +148,7 @@
     "mpe.slide": 0.08,
     "mpe.smooth": 0.04,
     "mpe.bend": 48,
-    "gain": 4.9,
+    "gain": 1.8,
     "fx5.type": 10,
     "fx5.compressor.thresh": -4.0,
     "fx5.compressor.ratio": 8.0,
@@ -161,6 +161,7 @@
     "mod.s8.via": 0,
     "mod.s8.dst": 4,
     "mod.s8.amt": 0.25,
-    "mod.s8.curve": 0
+    "mod.s8.curve": 0,
+    "chordroom": 4.5
   }
 }

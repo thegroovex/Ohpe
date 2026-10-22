@@ -283,6 +283,36 @@ void Part::registerLate66GravityParams (ParamRegistry& reg) const
                  { "Geringe Latenz", "Normal", "Hoch" }, KeyGravity::QualityNormal));
 }
 
+void Part::registerLate74HeadroomParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    auto d = continuous (id ("chordroom"), "Part " + n + " Chord Headroom", "Part " + n + " Akkord-Reserve", 0.0f, 24.0f,
+                         defaultChordHeadroomDb, ParamUnit::Decibel);
+    d.group = "part" + n;
+    reg.add (std::move (d));
+}
+
+void Part::applyChordHeadroom (float* l, float* r, int numSamples) noexcept
+{
+    float load = 0.0f;
+    for (auto& e : engines)
+        if (e != nullptr && e->activeVoiceCount() > 0) load = std::max (load, e->voiceLoad()); // main engine / layer: the same keys
+    // 8 sounding notes = the full amount; a log curve, so every doubling of the notes takes the same share
+    const float target = (chordRoomDb <= 0.0f || load <= 1.0f) ? 1.0f
+                         : dsp::dbToGain (-chordRoomDb * std::min (2.0f, std::log2 (load) / 3.0f));
+    float g = chordGain;
+    if (g == target && g == 1.0f) return;
+    const float c = target < g ? chordDown : chordUp;
+    for (int i = 0; i < numSamples; ++i)
+    {
+        g = target + (g - target) * c;
+        l[i] *= g;
+        r[i] *= g;
+    }
+    chordGain = std::abs (g - target) < 1.0e-5f ? target : g;
+}
+
 void Part::registerLate31SubParams (ParamRegistry& reg) const
 {
     using namespace pd;
@@ -430,6 +460,7 @@ void Part::bind (const ParamRegistry& reg)
         static const char* gravKeys[7] = { "grav.amt", "grav.target", "grav.glide", "grav.curve", "grav.formant", "grav.mix", "grav.quality" }; // p66
         for (size_t k = 0; k < gravIndex.size(); ++k) gravIndex[k] = reg.indexOf (id (gravKeys[k]));
     }
+    chordRoomIndex = reg.indexOf (id ("chordroom")); // p74
     spaceOnIndex = reg.indexOf (id ("space.on")); // 1.0
     resoOnIndex = reg.indexOf (id ("reso.on"));   // p19
     {
@@ -516,6 +547,9 @@ void Part::prepare (double sampleRate, int maxBlockSize)
     rack.prepare (sampleRate, maxBlockSize);
     matrix.prepare (sampleRate);
     lastGain = -1.0f;
+    chordDown = (float) std::exp (-1.0 / (0.004 * sampleRate)); // p74: ~4 ms down when notes start, ~250 ms back up
+    chordUp = (float) std::exp (-1.0 / (0.25 * sampleRate));
+    chordGain = 1.0f;
     layerL.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
     layerR.assign ((size_t) std::max (1, maxBlockSize), 0.0f);
     xEnvCoeff = 1.0f - (float) std::exp (-1.0 / (0.004 * sampleRate));
@@ -552,6 +586,7 @@ void Part::reset() noexcept
     portaSwitch = true;
     ccGlideSeconds = -1.0f;
     dcX[0] = dcX[1] = dcY[0] = dcY[1] = 0.0f;
+    chordGain = 1.0f; // p74
     asleep = false; // p35
     quietSamples = 0;
     asleepFlag.store (false, std::memory_order_relaxed);
@@ -687,6 +722,7 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
             if (resoIndex[i] >= 0)
                 if (const float val = s[resoIndex[i]]; ! (val == resoLast[i])) { resoLast[i] = val; reso.setParam ((int) i, val); }
     }
+    chordRoomDb = chordRoomIndex >= 0 ? s[chordRoomIndex] : 0.0f; // p74
     if (gravIndex[0] >= 0) // p66 Key Gravity
     {
         gravity.setAmount (s[gravIndex[0]]);
@@ -950,6 +986,7 @@ void Part::renderEngines (float* l, float* r, int numSamples) noexcept
 
 void Part::finishBlock (float* l, float* r, int numSamples) noexcept
 {
+    applyChordHeadroom (l, r, numSamples); // p74: the room for chords before any stage that could saturate
     gravity.process (l, r, numSamples); // p66: Key Gravity right after the engines (amount 0, no latency: untouched)
     applyReso (l, r, numSamples); // p19: the body right after the engines (before volume and FX rack)
     // 0.4: a gentle DC blocker (one pole at ~5 Hz): pulse shapes and asymmetric waves must not

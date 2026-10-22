@@ -68,6 +68,7 @@
     "voices": 14,
     "velsens": 0.7,
     "glide": 0.0,
-    "gain": 9.8
+    "gain": 18.1,
+    "chordroom": 12.0
   }
 }

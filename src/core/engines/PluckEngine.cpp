@@ -52,6 +52,7 @@ void Voice::kill() noexcept
 {
     killBase();
     clearState();
+    pendingPluck = false;
 }
 
 void Voice::start (int midiNote, float vel, bool legato, const VoiceCommon& c) noexcept
@@ -59,10 +60,14 @@ void Voice::start (int midiNote, float vel, bool legato, const VoiceCommon& c) n
     const bool wasActive = isActive();
     startBase (midiNote, vel, legato, c);
     if (! wasActive) clearState();
-    noise.seed ((uint32_t) (midiNote * 7919 + 17));
     const float hardness = dsp::clamp01 (shared->excite * (0.6f + 0.4f * vel));
     const float freq = std::clamp (dsp::midiToHz ((float) midiNote + c.pitchOffset), minFreq, sr / 6.0f);
-    exciteString (freq, hardness);
+    // the string is plucked at the next render, not here: a mono / legato part receiving a chord gets
+    // several starts in one block and must be plucked once (newest key wins), not once per key (p74)
+    pendingPluck = true;
+    pendingFreq = freq;
+    pendingHardness = hardness;
+    pendingSeed = (uint32_t) (midiNote * 7919 + 17);
     // mallet: raised-cosine pulse, 0.4 ms (hard) .. 6 ms (soft)
     malletLength = std::max (2, (int) (sr * (0.0004f + 0.0056f * (1.0f - hardness))));
     malletPos = 0;
@@ -101,6 +106,13 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
     const float mat = dsp::clamp01 (p.material);
     const float wString = 1.0f - mat, wMallet = mat;
     const bool doString = wString > 0.001f, doMallet = wMallet > 0.001f;
+
+    if (pendingPluck)
+    {
+        pendingPluck = false;
+        noise.seed (pendingSeed);
+        exciteString (pendingFreq, pendingHardness);
+    }
 
     int done = 0;
     while (done < numSamples && isActive())

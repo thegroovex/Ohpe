@@ -76,6 +76,7 @@
     "velsens": 0.45,
     "tune": 12,
     "glide": 0.0,
-    "gain": -2.9
+    "gain": -2.9,
+    "chordroom": 4.5
   }
 }

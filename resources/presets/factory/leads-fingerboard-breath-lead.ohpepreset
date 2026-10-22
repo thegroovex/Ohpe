@@ -58,7 +58,7 @@
     "fx.reverb.mix": 0.15,
     "voices": 4,
     "glide": 0.0,
-    "gain": 21.4,
+    "gain": 24.0,
     "mod.s1.src": 1,
     "mod.s1.via": 9,
     "mod.s1.dst": 1,
@@ -76,6 +76,15 @@
     "mpe.pressamt": 0.35,
     "mpe.timbre": 5,
     "mpe.timbreamt": 0.5,
-    "mpe.pcurve": 0.35
+    "mpe.pcurve": 0.35,
+    "chordroom": 17.5,
+    "fx2.type": 10,
+    "fx2.compressor.thresh": -20.0,
+    "fx2.compressor.ratio": 3.0,
+    "fx2.compressor.attack": 10.0,
+    "fx2.compressor.release": 300.0,
+    "fx2.compressor.knee": 6.0,
+    "fx2.compressor.makeup": 7.8,
+    "fx2.compressor.mix": 1.0
   }
 }

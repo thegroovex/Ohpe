@@ -179,6 +179,7 @@
     "mod.s9.curve": 0,
     "expr.at.curve1": 3,
     "expr.at.dst1": 12,
-    "expr.at.amt1": 0.3
+    "expr.at.amt1": 0.3,
+    "chordroom": 4.5
   }
 }

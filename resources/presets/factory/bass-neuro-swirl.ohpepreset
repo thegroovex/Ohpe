@@ -72,7 +72,7 @@
     "fx2.multiband.mid": 2,
     "fx2.multiband.high": 2,
     "fx2.multiband.mix": 1.0,
-    "fx2.multiband.output": 6.5,
+    "fx2.multiband.output": 2.7,
     "mod.s1.src": 13,
     "mod.s1.via": 0,
     "mod.s1.dst": 68,
@@ -94,6 +94,15 @@
     "mod.s3.via": 0,
     "mod.s3.dst": 4,
     "mod.s3.amt": 0.075,
-    "mod.s3.curve": 0
+    "mod.s3.curve": 0,
+    "chordroom": 8.8,
+    "fx3.type": 10,
+    "fx3.compressor.thresh": -14.0,
+    "fx3.compressor.ratio": 2.0,
+    "fx3.compressor.attack": 1.0,
+    "fx3.compressor.release": 200.0,
+    "fx3.compressor.knee": 6.0,
+    "fx3.compressor.makeup": 2.5,
+    "fx3.compressor.mix": 1.0
   }
 }

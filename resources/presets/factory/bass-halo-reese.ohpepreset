@@ -78,6 +78,7 @@
     "monobass": 150.0,
     "velsens": 0.3,
     "glide": 0.0,
-    "gain": 22.7
+    "gain": 21.5,
+    "chordroom": 6.7
   }
 }

@@ -132,11 +132,12 @@
     "mpe.bend": 48,
     "voices": 16,
     "velsens": 0.7,
-    "gain": 8.8,
+    "gain": 12.2,
     "mod.s6.src": 9,
     "mod.s6.via": 0,
     "mod.s6.dst": 4,
     "mod.s6.amt": -0.45,
-    "mod.s6.curve": 0
+    "mod.s6.curve": 0,
+    "chordroom": 4.5
   }
 }

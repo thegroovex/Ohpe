@@ -75,6 +75,15 @@
     "voices": 6,
     "velsens": 0.2,
     "glide": 0.0,
-    "gain": 8.8
+    "gain": 20.0,
+    "chordroom": 14.6,
+    "fx2.type": 10,
+    "fx2.compressor.thresh": -20.0,
+    "fx2.compressor.ratio": 3.0,
+    "fx2.compressor.attack": 10.0,
+    "fx2.compressor.release": 300.0,
+    "fx2.compressor.knee": 6.0,
+    "fx2.compressor.makeup": 7.1,
+    "fx2.compressor.mix": 1.0
   }
 }

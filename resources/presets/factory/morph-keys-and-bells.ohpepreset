@@ -52,13 +52,14 @@
     "fx2.chorus.drift": 0.35,
     "fx2.chorus.spread": 0.85,
     "fx2.chorus.lowcut": 150.0,
-    "gain": 8.4,
+    "gain": 11.3,
     "morph.on": 1,
     "morph.x": 0.0,
     "morph.y": 0.0,
     "morph.glide": 0.15,
     "morph.xsrc": 3,
-    "morph.ysrc": 1
+    "morph.ysrc": 1,
+    "chordroom": 4.5
   },
   "morph": {
     "corners": [

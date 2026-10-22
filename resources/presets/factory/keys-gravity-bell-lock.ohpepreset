@@ -60,6 +60,7 @@
     "mod.s1.dst": 90,
     "mod.s1.amt": -0.7,
     "mod.s1.curve": 0,
-    "gain": 11.5
+    "gain": 14.3,
+    "chordroom": 4.5
   }
 }

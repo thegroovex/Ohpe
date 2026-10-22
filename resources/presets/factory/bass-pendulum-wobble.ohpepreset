@@ -68,7 +68,7 @@
     "fx2.multiband.mid": 0.0,
     "fx2.multiband.high": 0.0,
     "fx2.multiband.mix": 1.0,
-    "fx2.multiband.output": 10.0,
+    "fx2.multiband.output": 7.3,
     "mod.s1.src": 13,
     "mod.s1.via": 0,
     "mod.s1.dst": 68,
@@ -95,6 +95,7 @@
     "mod.s3.via": 0,
     "mod.s3.dst": 4,
     "mod.s3.amt": 0.25,
-    "mod.s3.curve": 0
+    "mod.s3.curve": 0,
+    "chordroom": 9.0
   }
 }

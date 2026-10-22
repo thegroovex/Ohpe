@@ -72,6 +72,7 @@
     "mod.s2.curve": 0,
     "velsens": 0.4,
     "glide": 0.0,
-    "gain": 3.2
+    "gain": 3.7,
+    "chordroom": 4.5
   }
 }

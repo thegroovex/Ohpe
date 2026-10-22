@@ -72,6 +72,8 @@ target_sources(ohpe_core_tests PRIVATE SpaceTests.cpp)
 # p19: the resonator body
 target_sources(ohpe_core_tests PRIVATE ResonatorTests.cpp)
 target_sources(ohpe_core_tests PRIVATE KeyGravityTests.cpp)
+# p74: chord headroom per part
+target_sources(ohpe_core_tests PRIVATE ChordHeadroomTests.cpp)
 # p16: the morph space
 target_sources(ohpe_core_tests PRIVATE MorphTests.cpp)
 # p20: audio to wavetable

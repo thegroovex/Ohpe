@@ -1,0 +1,2062 @@
+{
+"arp-analog-arp.ohpepreset": {
+"st": -10.17,
+"tp": -1.15,
+"active": -19.6
+},
+"arp-bell-cascade-arp.ohpepreset": {
+"st": -9.29,
+"tp": -5.23,
+"active": -18.1
+},
+"arp-bell-ricochet.ohpepreset": {
+"st": -8.68,
+"tp": 0.08,
+"active": -18.4
+},
+"arp-bubble-arp.ohpepreset": {
+"st": -9.95,
+"tp": -3.32,
+"active": -17.4
+},
+"arp-chord-stab-arp.ohpepreset": {
+"st": -9.57,
+"tp": -1.44,
+"active": -18.4
+},
+"arp-digital-pluck-arp.ohpepreset": {
+"st": -10.1,
+"tp": -5.37,
+"active": -18.1
+},
+"arp-dream-tine-arp.ohpepreset": {
+"st": -9.67,
+"tp": -6.36,
+"active": -17.7
+},
+"arp-figure-eight-arp.ohpepreset": {
+"st": -10.12,
+"tp": -2.32,
+"active": -18.5
+},
+"arp-fm-arp-bell.ohpepreset": {
+"st": -9.5,
+"tp": -5.87,
+"active": -18.3
+},
+"arp-formant-arp.ohpepreset": {
+"st": -8.81,
+"tp": -2.13,
+"active": -19.2
+},
+"arp-glock-arp.ohpepreset": {
+"st": -8.9,
+"tp": -1.81,
+"active": -18.6
+},
+"arp-helix-sequence.ohpepreset": {
+"st": -11.17,
+"tp": -1.95,
+"active": -18.7
+},
+"arp-living-bell-arp.ohpepreset": {
+"st": -9.12,
+"tp": -7.23,
+"active": -18.9
+},
+"arp-mallet-echo-arp.ohpepreset": {
+"st": -8.25,
+"tp": -1.67,
+"active": -18.5
+},
+"arp-neuro-arp.ohpepreset": {
+"st": -10.17,
+"tp": -1.17,
+"active": -17.8
+},
+"arp-orbit-arp.ohpepreset": {
+"st": -9.96,
+"tp": -1.38,
+"active": -19.6
+},
+"arp-orbit-space-arp.ohpepreset": {
+"st": -9.85,
+"tp": -0.63,
+"active": -18.8
+},
+"arp-pizzicato-arp.ohpepreset": {
+"st": -9.85,
+"tp": -1.35,
+"active": -18.7
+},
+"arp-pulse-orbit.ohpepreset": {
+"st": -9.88,
+"tp": -0.85,
+"active": -18.9
+},
+"arp-random-spark-arp.ohpepreset": {
+"st": -11.92,
+"tp": 1.06,
+"active": -20.5
+},
+"arp-resonant-comb-arp.ohpepreset": {
+"st": -9.11,
+"tp": -3.84,
+"active": -19.2
+},
+"arp-ripple-arp.ohpepreset": {
+"st": -9.34,
+"tp": -2.13,
+"active": -19.1
+},
+"arp-satellite-arp.ohpepreset": {
+"st": -11.24,
+"tp": -2.28,
+"active": -19.2
+},
+"arp-spiral-arp.ohpepreset": {
+"st": -8.45,
+"tp": -2.5,
+"active": -19.1
+},
+"arp-swarm-sequence.ohpepreset": {
+"st": -10.32,
+"tp": -1.36,
+"active": -19.4
+},
+"arp-table-arp.ohpepreset": {
+"st": -10.97,
+"tp": -0.81,
+"active": -18.7
+},
+"arp-tempo-gate-arp.ohpepreset": {
+"st": -11.04,
+"tp": -6.85,
+"active": -18.8
+},
+"arp-trance-gate-arp.ohpepreset": {
+"st": -9.63,
+"tp": -1.17,
+"active": -18.0
+},
+"arp-wide-pluck-arp.ohpepreset": {
+"st": -10.34,
+"tp": -2.38,
+"active": -18.7
+},
+"bass-acid-line.ohpepreset": {
+"st": -9.66,
+"tp": -5.85,
+"active": -14.9
+},
+"bass-analog-reese.ohpepreset": {
+"st": -12.84,
+"tp": -2.38,
+"active": -13.7
+},
+"bass-bounce-bass.ohpepreset": {
+"st": -13.69,
+"tp": -2.15,
+"active": -16.1
+},
+"bass-classic-reese.ohpepreset": {
+"st": -12.38,
+"tp": -2.46,
+"active": -13.8
+},
+"bass-click-sub.ohpepreset": {
+"st": -15.91,
+"tp": -1.06,
+"active": -12.7
+},
+"bass-dark-reese.ohpepreset": {
+"st": -12.75,
+"tp": -2.33,
+"active": -13.0
+},
+"bass-deep-pluck-sub.ohpepreset": {
+"st": -16.97,
+"tp": -1.23,
+"active": -15.4
+},
+"bass-digital-monster.ohpepreset": {
+"st": -11.6,
+"tp": -1.56,
+"active": -15.0
+},
+"bass-dirty-sub.ohpepreset": {
+"st": -12.9,
+"tp": -2.88,
+"active": -13.8
+},
+"bass-distorted-reese.ohpepreset": {
+"st": -13.15,
+"tp": -3.11,
+"active": -14.8
+},
+"bass-fat-saw-bass.ohpepreset": {
+"st": -12.49,
+"tp": -1.76,
+"active": -14.5
+},
+"bass-fingerboard-cello.ohpepreset": {
+"st": -11.84,
+"tp": -4.3,
+"active": -15.2
+},
+"bass-fingerboard-expressive-bass.ohpepreset": {
+"st": -13.26,
+"tp": -2.06,
+"active": -13.9
+},
+"bass-flanged-reese.ohpepreset": {
+"st": -12.9,
+"tp": -2.98,
+"active": -14.4
+},
+"bass-fold-bass.ohpepreset": {
+"st": -12.94,
+"tp": -4.36,
+"active": -13.8
+},
+"bass-glide-reese.ohpepreset": {
+"st": -12.2,
+"tp": -3.05,
+"active": -13.6
+},
+"bass-glide-sine-bass.ohpepreset": {
+"st": -12.79,
+"tp": -6.22,
+"active": -13.0
+},
+"bass-gravity-bass-halo.ohpepreset": {
+"st": -13.83,
+"tp": -2.74,
+"active": -19.2
+},
+"bass-grind-bass.ohpepreset": {
+"st": -11.71,
+"tp": -3.38,
+"active": -14.7
+},
+"bass-grit-bass.ohpepreset": {
+"st": -14.05,
+"tp": -2.83,
+"active": -12.8
+},
+"bass-growl-fm-bass.ohpepreset": {
+"st": -12.75,
+"tp": -5.44,
+"active": -13.2
+},
+"bass-growl-machine.ohpepreset": {
+"st": -9.5,
+"tp": -2.72,
+"active": -15.6
+},
+"bass-half-step-wobble.ohpepreset": {
+"st": -13.66,
+"tp": -3.09,
+"active": -14.5
+},
+"bass-halftime-sub.ohpepreset": {
+"st": -12.81,
+"tp": -5.88,
+"active": -12.6
+},
+"bass-halo-reese.ohpepreset": {
+"st": -15.71,
+"tp": -1.25,
+"active": -15.5
+},
+"bass-hollow-reese.ohpepreset": {
+"st": -12.4,
+"tp": -3.84,
+"active": -13.2
+},
+"bass-house-organ-bass.ohpepreset": {
+"st": -12.89,
+"tp": -1.99,
+"active": -13.5
+},
+"bass-laser-wobble.ohpepreset": {
+"st": -9.58,
+"tp": -3.61,
+"active": -17.3
+},
+"bass-liquid-sub.ohpepreset": {
+"st": -12.59,
+"tp": -8.4,
+"active": -12.8
+},
+"bass-living-reese.ohpepreset": {
+"st": -15.73,
+"tp": -1.05,
+"active": -16.6
+},
+"bass-lofi-bass.ohpepreset": {
+"st": -12.77,
+"tp": -3.79,
+"active": -13.0
+},
+"bass-log-drum-bass.ohpepreset": {
+"st": -9.02,
+"tp": -2.07,
+"active": -18.9
+},
+"bass-long-sub.ohpepreset": {
+"st": -12.47,
+"tp": -1.92,
+"active": -13.0
+},
+"bass-mellow-lofi-bass.ohpepreset": {
+"st": -16.69,
+"tp": -6.92,
+"active": -13.0
+},
+"bass-metal-growl.ohpepreset": {
+"st": -13.22,
+"tp": -1.64,
+"active": -15.0
+},
+"bass-moving-reese.ohpepreset": {
+"st": -12.7,
+"tp": -4.63,
+"active": -13.2
+},
+"bass-neuro-hybrid.ohpepreset": {
+"st": -10.95,
+"tp": -1.12,
+"active": -15.2
+},
+"bass-neuro-reese.ohpepreset": {
+"st": -11.56,
+"tp": -3.46,
+"active": -14.7
+},
+"bass-neuro-swirl.ohpepreset": {
+"st": -10.06,
+"tp": -0.84,
+"active": -18.5
+},
+"bass-orbit-reese.ohpepreset": {
+"st": -13.46,
+"tp": -0.57,
+"active": -19.3
+},
+"bass-orbit-sub.ohpepreset": {
+"st": -16.29,
+"tp": -3.24,
+"active": -17.5
+},
+"bass-pendulum-growl.ohpepreset": {
+"st": -13.96,
+"tp": -1.29,
+"active": -15.5
+},
+"bass-pendulum-wobble.ohpepreset": {
+"st": -12.24,
+"tp": -0.73,
+"active": -15.1
+},
+"bass-pressure-glide-bass.ohpepreset": {
+"st": -17.9,
+"tp": -5.26,
+"active": -20.9
+},
+"bass-punch-fm-bass.ohpepreset": {
+"st": -12.79,
+"tp": -5.42,
+"active": -13.0
+},
+"bass-punch-sub.ohpepreset": {
+"st": -16.86,
+"tp": -1.11,
+"active": -15.8
+},
+"bass-reese-drift.ohpepreset": {
+"st": -12.57,
+"tp": -3.99,
+"active": -13.2
+},
+"bass-riddim-saw.ohpepreset": {
+"st": -13.34,
+"tp": -1.7,
+"active": -18.2
+},
+"bass-rise-bass.ohpepreset": {
+"st": -13.27,
+"tp": -2.4,
+"active": -13.3
+},
+"bass-roller-bass.ohpepreset": {
+"st": -12.19,
+"tp": -1.83,
+"active": -13.8
+},
+"bass-rolling-bass.ohpepreset": {
+"st": -17.7,
+"tp": -1.13,
+"active": -18.5
+},
+"bass-rolling-sub.ohpepreset": {
+"st": -13.24,
+"tp": -6.26,
+"active": -13.6
+},
+"bass-round-square-sub.ohpepreset": {
+"st": -10.97,
+"tp": -3.31,
+"active": -11.0
+},
+"bass-round-sub.ohpepreset": {
+"st": -12.89,
+"tp": -3.11,
+"active": -13.1
+},
+"bass-rubber-bass.ohpepreset": {
+"st": -16.31,
+"tp": -1.66,
+"active": -16.9
+},
+"bass-screech-bass.ohpepreset": {
+"st": -9.51,
+"tp": -2.19,
+"active": -17.9
+},
+"bass-slap-fm-bass.ohpepreset": {
+"st": -13.57,
+"tp": -1.7,
+"active": -13.6
+},
+"bass-spinning-pluck-bass.ohpepreset": {
+"st": -19.69,
+"tp": -1.98,
+"active": -19.5
+},
+"bass-square-wobble.ohpepreset": {
+"st": -12.72,
+"tp": -0.7,
+"active": -14.8
+},
+"bass-step-sub.ohpepreset": {
+"st": -13.14,
+"tp": -4.73,
+"active": -12.6
+},
+"bass-sub-pressure-bass.ohpepreset": {
+"st": -19.83,
+"tp": -4.57,
+"active": -15.3
+},
+"bass-sub-reese.ohpepreset": {
+"st": -12.96,
+"tp": -2.08,
+"active": -13.4
+},
+"bass-table-sub.ohpepreset": {
+"st": -13.83,
+"tp": -4.33,
+"active": -12.9
+},
+"bass-talker-bass.ohpepreset": {
+"st": -12.39,
+"tp": -1.95,
+"active": -15.1
+},
+"bass-talking-bass.ohpepreset": {
+"st": -12.37,
+"tp": -1.7,
+"active": -14.2
+},
+"bass-tear-reese.ohpepreset": {
+"st": -9.32,
+"tp": -1.69,
+"active": -15.7
+},
+"bass-tech-stab-bass.ohpepreset": {
+"st": -16.13,
+"tp": -1.11,
+"active": -16.9
+},
+"bass-tempo-wobble-sub.ohpepreset": {
+"st": -13.15,
+"tp": -4.08,
+"active": -14.4
+},
+"bass-triplet-wobble.ohpepreset": {
+"st": -15.12,
+"tp": -1.5,
+"active": -17.0
+},
+"bass-unison-bass.ohpepreset": {
+"st": -12.92,
+"tp": -4.72,
+"active": -13.1
+},
+"bass-upright-pluck.ohpepreset": {
+"st": -12.63,
+"tp": -1.05,
+"active": -16.6
+},
+"bass-voice-wah-bass.ohpepreset": {
+"st": -13.39,
+"tp": -2.21,
+"active": -11.7
+},
+"bass-vowel-growl.ohpepreset": {
+"st": -12.47,
+"tp": -1.24,
+"active": -18.6
+},
+"bass-vowel-reese.ohpepreset": {
+"st": -11.14,
+"tp": -2.31,
+"active": -14.3
+},
+"bass-vox-reese.ohpepreset": {
+"st": -10.05,
+"tp": -2.87,
+"active": -14.6
+},
+"bass-warm-roller.ohpepreset": {
+"st": -12.42,
+"tp": -2.61,
+"active": -12.3
+},
+"bass-wide-reese.ohpepreset": {
+"st": -12.3,
+"tp": -3.23,
+"active": -14.5
+},
+"bass-wobble-bass.ohpepreset": {
+"st": -10.8,
+"tp": -5.71,
+"active": -14.4
+},
+"bass-wood-body-bass.ohpepreset": {
+"st": -15.74,
+"tp": -2.38,
+"active": -20.0
+},
+"bass-wub-machine.ohpepreset": {
+"st": -13.04,
+"tp": -1.87,
+"active": -14.3
+},
+"boom-boom-click.ohpepreset": {
+"st": -9.89,
+"tp": -1.31,
+"active": -14.5
+},
+"boom-boom-distorted.ohpepreset": {
+"st": -9.84,
+"tp": -6.07,
+"active": -14.8
+},
+"boom-boom-kick-bass.ohpepreset": {
+"st": -11.54,
+"tp": -1.22,
+"active": -14.8
+},
+"boom-boom-long-sub.ohpepreset": {
+"st": -9.76,
+"tp": -4.23,
+"active": -13.9
+},
+"boom-boom-slide.ohpepreset": {
+"st": -10.13,
+"tp": -5.78,
+"active": -13.9
+},
+"drums-circling-hats.ohpepreset": {
+"st": -9.41,
+"tp": -1.95,
+"active": -19.2
+},
+"drums-cluster-hat.ohpepreset": {
+"st": -10.9,
+"tp": -1.71,
+"active": -18.7
+},
+"drums-filter-kick.ohpepreset": {
+"st": -13.03,
+"tp": -1.11,
+"active": -15.3
+},
+"drums-fm-snare.ohpepreset": {
+"st": -10.01,
+"tp": -1.82,
+"active": -18.4
+},
+"drums-fm-tom.ohpepreset": {
+"st": -9.87,
+"tp": -2.01,
+"active": -14.6
+},
+"drums-gravity-drum-wash.ohpepreset": {
+"st": -8.66,
+"tp": -1.76,
+"active": -18.6
+},
+"drums-hand-drum-ring.ohpepreset": {
+"st": -12.75,
+"tp": -0.72,
+"active": -19.1
+},
+"drums-metal-hat-fm.ohpepreset": {
+"st": -15.13,
+"tp": -1.45,
+"active": -20.1
+},
+"drums-noise-snare.ohpepreset": {
+"st": -11.51,
+"tp": -1.16,
+"active": -20.3
+},
+"drums-round-toms.ohpepreset": {
+"st": -11.68,
+"tp": -1.84,
+"active": -16.6
+},
+"drums-sub-kick.ohpepreset": {
+"st": -9.92,
+"tp": -3.55,
+"active": -14.8
+},
+"drums-tick-hat.ohpepreset": {
+"st": -14.71,
+"tp": -1.66,
+"active": -20.6
+},
+"drums-tuned-tom.ohpepreset": {
+"st": -15.06,
+"tp": -1.25,
+"active": -15.7
+},
+"drums-wood-block.ohpepreset": {
+"st": -15.41,
+"tp": -1.15,
+"active": -17.0
+},
+"drums-zap-perc.ohpepreset": {
+"st": -13.87,
+"tp": -1.42,
+"active": -15.5
+},
+"fx-alien-signal.ohpepreset": {
+"st": -10.07,
+"tp": -6.66,
+"active": -15.6
+},
+"fx-detune-swarm.ohpepreset": {
+"st": -12.36,
+"tp": -6.29,
+"active": -17.1
+},
+"fx-distance-walk-drone.ohpepreset": {
+"st": -12.17,
+"tp": -3.91,
+"active": -16.9
+},
+"fx-doppler-fly-by.ohpepreset": {
+"st": -12.03,
+"tp": -3.54,
+"active": -19.7
+},
+"fx-downlifter.ohpepreset": {
+"st": -10.41,
+"tp": -2.12,
+"active": -19.4
+},
+"fx-drone-flyover.ohpepreset": {
+"st": -11.35,
+"tp": -1.01,
+"active": -18.5
+},
+"fx-glitch-spray.ohpepreset": {
+"st": -11.7,
+"tp": -3.51,
+"active": -18.6
+},
+"fx-gong-hit.ohpepreset": {
+"st": -9.61,
+"tp": -5.27,
+"active": -19.0
+},
+"fx-grain-vortex.ohpepreset": {
+"st": -12.07,
+"tp": -5.14,
+"active": -18.7
+},
+"fx-granular-rise.ohpepreset": {
+"st": -12.33,
+"tp": -3.95,
+"active": -16.9
+},
+"fx-grit-sweep.ohpepreset": {
+"st": -11.31,
+"tp": -6.21,
+"active": -16.9
+},
+"fx-impact-boom.ohpepreset": {
+"st": -15.16,
+"tp": -1.44,
+"active": -18.5
+},
+"fx-laser-drop.ohpepreset": {
+"st": -11.43,
+"tp": -3.13,
+"active": -19.0
+},
+"fx-noise-riser.ohpepreset": {
+"st": -11.56,
+"tp": -6.14,
+"active": -18.4
+},
+"fx-resonant-impact.ohpepreset": {
+"st": -9.97,
+"tp": -3.21,
+"active": -17.8
+},
+"fx-reverse-spray.ohpepreset": {
+"st": -12.35,
+"tp": -6.21,
+"active": -16.8
+},
+"fx-rising-halo-sweep.ohpepreset": {
+"st": -11.04,
+"tp": -1.66,
+"active": -16.1
+},
+"fx-siren-pan.ohpepreset": {
+"st": -10.97,
+"tp": -8.45,
+"active": -17.4
+},
+"fx-spiral-riser.ohpepreset": {
+"st": -10.96,
+"tp": -4.34,
+"active": -20.3
+},
+"fx-stereo-zap.ohpepreset": {
+"st": -11.86,
+"tp": -0.35,
+"active": -19.7
+},
+"fx-stutter-glitch.ohpepreset": {
+"st": -11.5,
+"tp": -3.08,
+"active": -19.0
+},
+"fx-table-scanner.ohpepreset": {
+"st": -11.59,
+"tp": -6.77,
+"active": -16.8
+},
+"fx-thunder-walk.ohpepreset": {
+"st": -11.04,
+"tp": 0.34,
+"active": -18.4
+},
+"fx-vortex-riser.ohpepreset": {
+"st": -9.1,
+"tp": -1.53,
+"active": -19.5
+},
+"fx-whoosh.ohpepreset": {
+"st": -8.95,
+"tp": -4.94,
+"active": -19.3
+},
+"fx-wide-riser.ohpepreset": {
+"st": -11.01,
+"tp": -5.18,
+"active": -20.1
+},
+"keys-alive-tine-keys.ohpepreset": {
+"st": -11.01,
+"tp": -1.26,
+"active": -14.0
+},
+"keys-breathing-organ.ohpepreset": {
+"st": -11.62,
+"tp": -2.31,
+"active": -16.2
+},
+"keys-bright-grand.ohpepreset": {
+"st": -12.53,
+"tp": -0.49,
+"active": -19.1
+},
+"keys-bright-poly-wide.ohpepreset": {
+"st": -9.82,
+"tp": -3.22,
+"active": -16.2
+},
+"keys-ceiling-harpsichord.ohpepreset": {
+"st": -13.59,
+"tp": -0.85,
+"active": -19.1
+},
+"keys-classic-tine.ohpepreset": {
+"st": -12.16,
+"tp": -0.84,
+"active": -15.3
+},
+"keys-cluster-organ.ohpepreset": {
+"st": -12.31,
+"tp": -3.81,
+"active": -15.8
+},
+"keys-concert-grand.ohpepreset": {
+"st": -12.97,
+"tp": 0.26,
+"active": -19.4
+},
+"keys-crystal-organ.ohpepreset": {
+"st": -12.15,
+"tp": -2.06,
+"active": -18.4
+},
+"keys-digital-ep.ohpepreset": {
+"st": -11.09,
+"tp": -0.81,
+"active": -16.2
+},
+"keys-drawbar-organ.ohpepreset": {
+"st": -12.45,
+"tp": -4.19,
+"active": -15.5
+},
+"keys-dream-tine.ohpepreset": {
+"st": -10.97,
+"tp": -1.24,
+"active": -15.4
+},
+"keys-dub-stab.ohpepreset": {
+"st": -12.43,
+"tp": -0.94,
+"active": -16.9
+},
+"keys-dusty-ep.ohpepreset": {
+"st": -11.62,
+"tp": -0.78,
+"active": -15.0
+},
+"keys-dusty-keys.ohpepreset": {
+"st": -11.83,
+"tp": -1.43,
+"active": -15.3
+},
+"keys-felt-grand.ohpepreset": {
+"st": -14.01,
+"tp": -0.21,
+"active": -19.4
+},
+"keys-fm-bark-piano.ohpepreset": {
+"st": -10.99,
+"tp": -1.25,
+"active": -15.4
+},
+"keys-fm-vibes.ohpepreset": {
+"st": -12.47,
+"tp": -1.48,
+"active": -16.2
+},
+"keys-funk-clav.ohpepreset": {
+"st": -10.42,
+"tp": -1.26,
+"active": -16.9
+},
+"keys-glass-body-keys.ohpepreset": {
+"st": -10.99,
+"tp": -5.06,
+"active": -16.5
+},
+"keys-glass-keys.ohpepreset": {
+"st": -13.34,
+"tp": -0.83,
+"active": -17.3
+},
+"keys-glass-pendulum.ohpepreset": {
+"st": -9.9,
+"tp": -2.66,
+"active": -16.9
+},
+"keys-glide-poly-synth.ohpepreset": {
+"st": -9.89,
+"tp": -4.66,
+"active": -17.1
+},
+"keys-gravity-bell-lock.ohpepreset": {
+"st": -9.38,
+"tp": -3.2,
+"active": -18.4
+},
+"keys-halo-grand.ohpepreset": {
+"st": -12.4,
+"tp": -0.19,
+"active": -19.3
+},
+"keys-harmonic-organ.ohpepreset": {
+"st": -12.12,
+"tp": -3.12,
+"active": -15.8
+},
+"keys-harpsichord.ohpepreset": {
+"st": -10.55,
+"tp": -1.5,
+"active": -17.7
+},
+"keys-mallet-keys.ohpepreset": {
+"st": -16.69,
+"tp": -1.21,
+"active": -17.4
+},
+"keys-marimba.ohpepreset": {
+"st": -10.89,
+"tp": -0.48,
+"active": -18.1
+},
+"keys-minor-stab.ohpepreset": {
+"st": -12.29,
+"tp": -1.34,
+"active": -16.8
+},
+"keys-music-box.ohpepreset": {
+"st": -9.32,
+"tp": -1.55,
+"active": -19.3
+},
+"keys-orbiting-tines.ohpepreset": {
+"st": -13.81,
+"tp": -0.76,
+"active": -19.7
+},
+"keys-piano-scan-table.ohpepreset": {
+"st": -11.19,
+"tp": -1.2,
+"active": -16.5
+},
+"keys-pop-brass.ohpepreset": {
+"st": -11.04,
+"tp": -3.7,
+"active": -15.8
+},
+"keys-pressure-reed-keys.ohpepreset": {
+"st": -12.21,
+"tp": -3.03,
+"active": -15.6
+},
+"keys-reed-keys.ohpepreset": {
+"st": -11.73,
+"tp": -4.06,
+"active": -15.3
+},
+"keys-reed-tremolo.ohpepreset": {
+"st": -11.9,
+"tp": -0.75,
+"active": -15.5
+},
+"keys-rotor-organ.ohpepreset": {
+"st": -10.31,
+"tp": -2.46,
+"active": -14.9
+},
+"keys-scoop-keys.ohpepreset": {
+"st": -12.52,
+"tp": -0.79,
+"active": -16.1
+},
+"keys-soft-brass.ohpepreset": {
+"st": -11.39,
+"tp": -3.98,
+"active": -15.6
+},
+"keys-struck-plate-keys.ohpepreset": {
+"st": -10.91,
+"tp": -4.17,
+"active": -16.2
+},
+"keys-suitcase-tine.ohpepreset": {
+"st": -13.91,
+"tp": -0.54,
+"active": -17.2
+},
+"keys-sympathetic-harp-keys.ohpepreset": {
+"st": -10.08,
+"tp": -1.04,
+"active": -17.5
+},
+"keys-tape-ghost-keys.ohpepreset": {
+"st": -12.89,
+"tp": -1.23,
+"active": -17.3
+},
+"keys-tine-piano.ohpepreset": {
+"st": -11.39,
+"tp": -1.35,
+"active": -15.2
+},
+"keys-upright-keys.ohpepreset": {
+"st": -12.3,
+"tp": -1.5,
+"active": -18.6
+},
+"keys-velocity-glass-ep.ohpepreset": {
+"st": -12.61,
+"tp": -0.95,
+"active": -17.5
+},
+"keys-velvet-stab.ohpepreset": {
+"st": -12.12,
+"tp": -0.87,
+"active": -16.6
+},
+"keys-vibes-in-the-round.ohpepreset": {
+"st": -11.32,
+"tp": -1.77,
+"active": -18.6
+},
+"keys-vibraphone.ohpepreset": {
+"st": -10.29,
+"tp": -1.79,
+"active": -18.8
+},
+"keys-wide-organ.ohpepreset": {
+"st": -9.74,
+"tp": -1.54,
+"active": -15.2
+},
+"leads-binaural-lead.ohpepreset": {
+"st": -10.69,
+"tp": -4.39,
+"active": -18.3
+},
+"leads-bowed-body-lead.ohpepreset": {
+"st": -11.04,
+"tp": -8.38,
+"active": -19.3
+},
+"leads-bowed-tube.ohpepreset": {
+"st": -9.01,
+"tp": -4.12,
+"active": -18.7
+},
+"leads-breath-lead.ohpepreset": {
+"st": -10.12,
+"tp": -2.39,
+"active": -17.2
+},
+"leads-chip-square-lead.ohpepreset": {
+"st": -9.44,
+"tp": -6.2,
+"active": -17.8
+},
+"leads-classic-mono-lead.ohpepreset": {
+"st": -8.8,
+"tp": -6.11,
+"active": -17.4
+},
+"leads-comet-lead.ohpepreset": {
+"st": -11.26,
+"tp": -0.91,
+"active": -19.9
+},
+"leads-digital-lead.ohpepreset": {
+"st": -9.72,
+"tp": -4.9,
+"active": -15.8
+},
+"leads-dream-lead.ohpepreset": {
+"st": -9.61,
+"tp": -4.1,
+"active": -16.6
+},
+"leads-ear-to-ear-lead.ohpepreset": {
+"st": -11.95,
+"tp": -1.95,
+"active": -20.3
+},
+"leads-fall-lead.ohpepreset": {
+"st": -9.61,
+"tp": -9.42,
+"active": -16.3
+},
+"leads-fingerboard-bowed-string.ohpepreset": {
+"st": -10.97,
+"tp": -8.01,
+"active": -19.3
+},
+"leads-fingerboard-breath-lead.ohpepreset": {
+"st": -8.65,
+"tp": -1.86,
+"active": -18.3
+},
+"leads-fm-brass-lead.ohpepreset": {
+"st": -9.19,
+"tp": -9.28,
+"active": -18.3
+},
+"leads-formant-lead.ohpepreset": {
+"st": -7.4,
+"tp": -6.97,
+"active": -18.3
+},
+"leads-growl-lead.ohpepreset": {
+"st": -8.25,
+"tp": -2.95,
+"active": -18.0
+},
+"leads-hard-edge-fm-lead.ohpepreset": {
+"st": -7.71,
+"tp": -6.36,
+"active": -17.7
+},
+"leads-hot-wire.ohpepreset": {
+"st": -8.02,
+"tp": -8.69,
+"active": -18.1
+},
+"leads-hyper-saw-lead.ohpepreset": {
+"st": -9.57,
+"tp": -2.11,
+"active": -18.2
+},
+"leads-legato-glide-lead.ohpepreset": {
+"st": -9.05,
+"tp": -7.0,
+"active": -17.1
+},
+"leads-living-flute-lead.ohpepreset": {
+"st": -10.21,
+"tp": -2.14,
+"active": -16.5
+},
+"leads-mono-glide-lead.ohpepreset": {
+"st": -8.94,
+"tp": -6.56,
+"active": -15.9
+},
+"leads-octave-lead.ohpepreset": {
+"st": -9.6,
+"tp": -5.21,
+"active": -16.0
+},
+"leads-overhead-flute.ohpepreset": {
+"st": -10.6,
+"tp": -8.44,
+"active": -19.1
+},
+"leads-pendulum-lead.ohpepreset": {
+"st": -10.46,
+"tp": -3.5,
+"active": -18.4
+},
+"leads-pluck-lead-wide.ohpepreset": {
+"st": -11.27,
+"tp": -0.75,
+"active": -18.2
+},
+"leads-pop-lead.ohpepreset": {
+"st": -7.59,
+"tp": -4.73,
+"active": -17.2
+},
+"leads-portamento-square.ohpepreset": {
+"st": -9.69,
+"tp": -9.61,
+"active": -16.0
+},
+"leads-pressure-glide-lead.ohpepreset": {
+"st": -11.9,
+"tp": -8.72,
+"active": -20.1
+},
+"leads-recorder.ohpepreset": {
+"st": -9.14,
+"tp": -8.86,
+"active": -18.2
+},
+"leads-ring-machine.ohpepreset": {
+"st": -9.77,
+"tp": -4.71,
+"active": -18.5
+},
+"leads-rise-lead.ohpepreset": {
+"st": -8.81,
+"tp": -5.51,
+"active": -17.1
+},
+"leads-saw-unison-lead.ohpepreset": {
+"st": -10.06,
+"tp": -3.81,
+"active": -16.1
+},
+"leads-screamer-lead.ohpepreset": {
+"st": -8.4,
+"tp": -4.34,
+"active": -19.4
+},
+"leads-shimmer-lead.ohpepreset": {
+"st": -8.32,
+"tp": -4.3,
+"active": -17.9
+},
+"leads-sine-whistle.ohpepreset": {
+"st": -9.5,
+"tp": -8.19,
+"active": -14.7
+},
+"leads-soft-flute-lead.ohpepreset": {
+"st": -9.53,
+"tp": -7.3,
+"active": -14.9
+},
+"leads-square-hero.ohpepreset": {
+"st": -9.26,
+"tp": -8.78,
+"active": -16.3
+},
+"leads-stereo-saw-lead.ohpepreset": {
+"st": -10.55,
+"tp": -4.63,
+"active": -19.5
+},
+"leads-super-lead.ohpepreset": {
+"st": -9.61,
+"tp": -6.34,
+"active": -16.9
+},
+"leads-super-wide-lead.ohpepreset": {
+"st": -11.02,
+"tp": -3.02,
+"active": -18.7
+},
+"leads-twist-lead.ohpepreset": {
+"st": -9.83,
+"tp": -4.97,
+"active": -16.1
+},
+"leads-velocity-bite-lead.ohpepreset": {
+"st": -12.14,
+"tp": -4.74,
+"active": -18.8
+},
+"leads-vowel-orbit-lead.ohpepreset": {
+"st": -9.39,
+"tp": -4.9,
+"active": -18.2
+},
+"leads-vox-lead.ohpepreset": {
+"st": -9.77,
+"tp": -6.06,
+"active": -16.1
+},
+"leads-vox-synth-lead.ohpepreset": {
+"st": -9.48,
+"tp": -4.77,
+"active": -18.0
+},
+"morph-bass-shapes.ohpepreset": {
+"st": -12.89,
+"tp": -3.11,
+"active": -13.1
+},
+"morph-four-worlds.ohpepreset": {
+"st": -9.5,
+"tp": -2.62,
+"active": -14.6
+},
+"morph-keys-and-bells.ohpepreset": {
+"st": -11.09,
+"tp": -0.81,
+"active": -16.2
+},
+"morph-lead-characters.ohpepreset": {
+"st": -11.04,
+"tp": -8.38,
+"active": -19.3
+},
+"morph-living-keys.ohpepreset": {
+"st": -11.62,
+"tp": -2.31,
+"active": -16.2
+},
+"morph-pressure-pads.ohpepreset": {
+"st": -10.8,
+"tp": -3.6,
+"active": -16.7
+},
+"morph-strings-filter.ohpepreset": {
+"st": -9.5,
+"tp": -2.62,
+"active": -14.6
+},
+"pads-analog-dawn.ohpepreset": {
+"st": -10.97,
+"tp": -4.02,
+"active": -16.4
+},
+"pads-angel-pad.ohpepreset": {
+"st": -11.41,
+"tp": -4.45,
+"active": -18.8
+},
+"pads-aurora-scan.ohpepreset": {
+"st": -10.48,
+"tp": -2.6,
+"active": -18.3
+},
+"pads-bowed-haze.ohpepreset": {
+"st": -10.56,
+"tp": -2.84,
+"active": -18.2
+},
+"pads-bowed-metal.ohpepreset": {
+"st": -10.83,
+"tp": -4.3,
+"active": -18.5
+},
+"pads-bowed-ring.ohpepreset": {
+"st": -11.0,
+"tp": -2.76,
+"active": -18.8
+},
+"pads-brass-slide.ohpepreset": {
+"st": -12.41,
+"tp": -4.28,
+"active": -17.0
+},
+"pads-breath-choir-pad.ohpepreset": {
+"st": -10.99,
+"tp": -6.13,
+"active": -18.8
+},
+"pads-breath-grains.ohpepreset": {
+"st": -10.87,
+"tp": -3.33,
+"active": -17.9
+},
+"pads-bright-wide-pad.ohpepreset": {
+"st": -11.0,
+"tp": -2.53,
+"active": -15.1
+},
+"pads-cathedral-ring.ohpepreset": {
+"st": -10.22,
+"tp": -0.98,
+"active": -16.4
+},
+"pads-choir-around-you.ohpepreset": {
+"st": -9.86,
+"tp": -4.04,
+"active": -17.8
+},
+"pads-chop-pad.ohpepreset": {
+"st": -10.96,
+"tp": -3.79,
+"active": -17.4
+},
+"pads-crystal-fm-pad.ohpepreset": {
+"st": -9.8,
+"tp": -2.88,
+"active": -16.6
+},
+"pads-crystal-slide.ohpepreset": {
+"st": -10.34,
+"tp": -3.79,
+"active": -16.5
+},
+"pads-drift-stack.ohpepreset": {
+"st": -10.51,
+"tp": -3.22,
+"active": -15.3
+},
+"pads-evolving-tide.ohpepreset": {
+"st": -11.2,
+"tp": -1.94,
+"active": -17.6
+},
+"pads-fall-haze.ohpepreset": {
+"st": -11.03,
+"tp": -2.95,
+"active": -16.1
+},
+"pads-fifth-cloud.ohpepreset": {
+"st": -11.14,
+"tp": -1.86,
+"active": -16.2
+},
+"pads-fingerboard-opening-pad.ohpepreset": {
+"st": -10.97,
+"tp": -2.55,
+"active": -15.1
+},
+"pads-frozen-cloud.ohpepreset": {
+"st": -12.46,
+"tp": -3.74,
+"active": -17.5
+},
+"pads-frozen-vibes.ohpepreset": {
+"st": -11.02,
+"tp": -4.18,
+"active": -18.2
+},
+"pads-ghost-organ.ohpepreset": {
+"st": -11.13,
+"tp": -3.62,
+"active": -18.8
+},
+"pads-glass-engine.ohpepreset": {
+"st": -10.09,
+"tp": -3.2,
+"active": -16.8
+},
+"pads-glass-glide.ohpepreset": {
+"st": -10.77,
+"tp": -2.44,
+"active": -16.4
+},
+"pads-glass-grains.ohpepreset": {
+"st": -11.89,
+"tp": -5.96,
+"active": -18.3
+},
+"pads-glass-horizon.ohpepreset": {
+"st": -7.63,
+"tp": 1.07,
+"active": -14.4
+},
+"pads-glass-shimmer.ohpepreset": {
+"st": -10.85,
+"tp": -3.6,
+"active": -16.9
+},
+"pads-glide-strings.ohpepreset": {
+"st": -11.03,
+"tp": -3.8,
+"active": -16.0
+},
+"pads-gravity-halo.ohpepreset": {
+"st": -10.59,
+"tp": -2.97,
+"active": -19.5
+},
+"pads-gravity-noise-choir.ohpepreset": {
+"st": -11.51,
+"tp": -1.14,
+"active": -17.0
+},
+"pads-halo-carousel.ohpepreset": {
+"st": -10.97,
+"tp": -2.17,
+"active": -16.8
+},
+"pads-halo-drift.ohpepreset": {
+"st": -10.57,
+"tp": -2.32,
+"active": -17.6
+},
+"pads-halo-spiral-pad.ohpepreset": {
+"st": -10.3,
+"tp": -1.93,
+"active": -16.3
+},
+"pads-harmonic-swell.ohpepreset": {
+"st": -10.88,
+"tp": -2.88,
+"active": -17.0
+},
+"pads-infinite-hall.ohpepreset": {
+"st": -10.63,
+"tp": -2.68,
+"active": -16.7
+},
+"pads-living-strings.ohpepreset": {
+"st": -10.8,
+"tp": -3.6,
+"active": -16.7
+},
+"pads-metal-strings.ohpepreset": {
+"st": -10.59,
+"tp": -3.28,
+"active": -16.1
+},
+"pads-morning-mist.ohpepreset": {
+"st": -11.0,
+"tp": -2.7,
+"active": -16.9
+},
+"pads-night-drive.ohpepreset": {
+"st": -10.95,
+"tp": -3.35,
+"active": -18.2
+},
+"pads-orbit-atmos.ohpepreset": {
+"st": -11.03,
+"tp": -1.96,
+"active": -18.1
+},
+"pads-orbit-pad.ohpepreset": {
+"st": -11.03,
+"tp": -1.12,
+"active": -16.8
+},
+"pads-overhead-choir.ohpepreset": {
+"st": -10.95,
+"tp": -3.8,
+"active": -18.4
+},
+"pads-overhead-swell.ohpepreset": {
+"st": -10.82,
+"tp": -2.58,
+"active": -17.5
+},
+"pads-piano-grains.ohpepreset": {
+"st": -10.88,
+"tp": -2.23,
+"active": -17.1
+},
+"pads-recorder-breath-table.ohpepreset": {
+"st": -10.24,
+"tp": -3.49,
+"active": -16.6
+},
+"pads-rise-bloom.ohpepreset": {
+"st": -10.41,
+"tp": -3.08,
+"active": -15.2
+},
+"pads-rise-choir.ohpepreset": {
+"st": -11.04,
+"tp": -7.16,
+"active": -18.5
+},
+"pads-rise-glass.ohpepreset": {
+"st": -11.17,
+"tp": -3.2,
+"active": -16.7
+},
+"pads-rise-strings.ohpepreset": {
+"st": -9.81,
+"tp": -2.61,
+"active": -14.6
+},
+"pads-rise-warmth.ohpepreset": {
+"st": -10.05,
+"tp": -1.86,
+"active": -14.1
+},
+"pads-slide-choir.ohpepreset": {
+"st": -10.96,
+"tp": -7.29,
+"active": -18.7
+},
+"pads-slow-motion-choir.ohpepreset": {
+"st": -10.97,
+"tp": -6.98,
+"active": -18.6
+},
+"pads-slow-planet.ohpepreset": {
+"st": -10.95,
+"tp": -2.5,
+"active": -17.0
+},
+"pads-spectral-morph.ohpepreset": {
+"st": -8.51,
+"tp": -3.07,
+"active": -19.3
+},
+"pads-sub-floor-pad.ohpepreset": {
+"st": -11.0,
+"tp": -3.47,
+"active": -14.5
+},
+"pads-super-stack.ohpepreset": {
+"st": -11.01,
+"tp": -3.38,
+"active": -15.5
+},
+"pads-sus-horizon.ohpepreset": {
+"st": -11.51,
+"tp": -2.14,
+"active": -16.8
+},
+"pads-sympathetic-pad.ohpepreset": {
+"st": -11.92,
+"tp": -9.17,
+"active": -16.8
+},
+"pads-sympathy-choir.ohpepreset": {
+"st": -9.59,
+"tp": -4.31,
+"active": -18.1
+},
+"pads-tempo-tide-pad.ohpepreset": {
+"st": -11.75,
+"tp": -2.27,
+"active": -16.7
+},
+"pads-tidal-pad.ohpepreset": {
+"st": -10.25,
+"tp": -3.37,
+"active": -16.6
+},
+"pads-tine-bloom.ohpepreset": {
+"st": -10.42,
+"tp": -1.05,
+"active": -15.7
+},
+"pads-voice-filter-pad.ohpepreset": {
+"st": -11.03,
+"tp": -4.89,
+"active": -19.0
+},
+"pads-vowel-pad.ohpepreset": {
+"st": -10.2,
+"tp": -4.11,
+"active": -18.0
+},
+"pads-warm-horizon.ohpepreset": {
+"st": -9.68,
+"tp": -0.71,
+"active": -14.7
+},
+"pads-warm-strings.ohpepreset": {
+"st": -9.57,
+"tp": -2.36,
+"active": -14.7
+},
+"pads-weave-cluster-3d.ohpepreset": {
+"st": -11.85,
+"tp": -0.98,
+"active": -16.7
+},
+"plucks-concert-harp.ohpepreset": {
+"st": -10.12,
+"tp": -2.67,
+"active": -15.4
+},
+"plucks-drone-strings.ohpepreset": {
+"st": -11.0,
+"tp": -4.77,
+"active": -17.4
+},
+"plucks-echo-harp.ohpepreset": {
+"st": -10.94,
+"tp": -1.26,
+"active": -19.4
+},
+"plucks-fm-koto.ohpepreset": {
+"st": -9.59,
+"tp": -6.7,
+"active": -16.4
+},
+"plucks-future-chord.ohpepreset": {
+"st": -9.88,
+"tp": -0.49,
+"active": -17.4
+},
+"plucks-gamelan-plate.ohpepreset": {
+"st": -10.97,
+"tp": -9.31,
+"active": -17.1
+},
+"plucks-glass-droplets.ohpepreset": {
+"st": -12.38,
+"tp": 0.02,
+"active": -17.3
+},
+"plucks-glass-plate-pluck.ohpepreset": {
+"st": -9.75,
+"tp": -5.35,
+"active": -16.2
+},
+"plucks-glass-pluck.ohpepreset": {
+"st": -9.88,
+"tp": -2.61,
+"active": -15.5
+},
+"plucks-harp-constellation.ohpepreset": {
+"st": -11.84,
+"tp": -2.53,
+"active": -17.8
+},
+"plucks-harp-pluck.ohpepreset": {
+"st": -9.92,
+"tp": -2.9,
+"active": -16.6
+},
+"plucks-kalimba-body.ohpepreset": {
+"st": -10.29,
+"tp": -2.06,
+"active": -18.5
+},
+"plucks-kalimba-circle.ohpepreset": {
+"st": -11.01,
+"tp": -1.98,
+"active": -18.4
+},
+"plucks-kalimba.ohpepreset": {
+"st": -9.5,
+"tp": -1.49,
+"active": -17.2
+},
+"plucks-koto-pluck.ohpepreset": {
+"st": -10.0,
+"tp": -3.73,
+"active": -18.7
+},
+"plucks-living-nylon.ohpepreset": {
+"st": -10.98,
+"tp": -4.55,
+"active": -19.0
+},
+"plucks-marimba-ricochet.ohpepreset": {
+"st": -10.31,
+"tp": -4.41,
+"active": -18.6
+},
+"plucks-muted-pick.ohpepreset": {
+"st": -11.64,
+"tp": -1.85,
+"active": -17.6
+},
+"plucks-nylon-guitar.ohpepreset": {
+"st": -9.72,
+"tp": -2.87,
+"active": -16.3
+},
+"plucks-ping-pong-space-pluck.ohpepreset": {
+"st": -10.78,
+"tp": -2.44,
+"active": -19.5
+},
+"plucks-pluck-nebula.ohpepreset": {
+"st": -10.73,
+"tp": -0.76,
+"active": -19.3
+},
+"plucks-plucked-plate.ohpepreset": {
+"st": -10.98,
+"tp": -7.47,
+"active": -16.6
+},
+"plucks-poly-pluck.ohpepreset": {
+"st": -9.87,
+"tp": -3.73,
+"active": -18.3
+},
+"plucks-resonator-hit.ohpepreset": {
+"st": -9.89,
+"tp": -0.86,
+"active": -15.6
+},
+"plucks-steel-drum-fm.ohpepreset": {
+"st": -9.5,
+"tp": -4.82,
+"active": -16.5
+},
+"plucks-steel-string.ohpepreset": {
+"st": -10.03,
+"tp": -4.63,
+"active": -18.4
+},
+"plucks-stereo-pluck.ohpepreset": {
+"st": -11.24,
+"tp": -2.25,
+"active": -18.3
+},
+"plucks-table-pluck.ohpepreset": {
+"st": -12.26,
+"tp": -1.45,
+"active": -17.2
+},
+"plucks-wide-glass-pluck.ohpepreset": {
+"st": -10.1,
+"tp": -5.01,
+"active": -17.8
+},
+"plucks-zip-pluck.ohpepreset": {
+"st": -10.07,
+"tp": -0.84,
+"active": -15.5
+},
+"plucks-zither-drizzle.ohpepreset": {
+"st": -10.52,
+"tp": -1.85,
+"active": -18.6
+},
+"plucks-zither.ohpepreset": {
+"st": -10.49,
+"tp": -3.91,
+"active": -18.7
+},
+"textures-backwards-kalimba.ohpepreset": {
+"st": -16.84,
+"tp": -4.22,
+"active": -22.4
+},
+"textures-bowed-metal-body.ohpepreset": {
+"st": -10.04,
+"tp": -2.63,
+"active": -17.4
+},
+"textures-breath-bore.ohpepreset": {
+"st": -11.03,
+"tp": -4.88,
+"active": -17.5
+},
+"textures-breath-texture.ohpepreset": {
+"st": -11.6,
+"tp": -4.26,
+"active": -16.4
+},
+"textures-breathing-machine.ohpepreset": {
+"st": -11.66,
+"tp": -4.61,
+"active": -18.2
+},
+"textures-close-whispers.ohpepreset": {
+"st": -11.17,
+"tp": -2.0,
+"active": -16.9
+},
+"textures-dark-matter.ohpepreset": {
+"st": -12.45,
+"tp": -3.59,
+"active": -16.9
+},
+"textures-deep-space-drone.ohpepreset": {
+"st": -10.99,
+"tp": -4.0,
+"active": -18.6
+},
+"textures-distant-voices.ohpepreset": {
+"st": -5.27,
+"tp": 2.88,
+"active": -11.7
+},
+"textures-dust-orchestra.ohpepreset": {
+"st": -12.97,
+"tp": -6.86,
+"active": -19.6
+},
+"textures-ember-field.ohpepreset": {
+"st": -13.47,
+"tp": -1.64,
+"active": -20.3
+},
+"textures-fm-grains.ohpepreset": {
+"st": -10.64,
+"tp": -4.96,
+"active": -19.7
+},
+"textures-fourths-drift.ohpepreset": {
+"st": -12.12,
+"tp": -2.37,
+"active": -17.2
+},
+"textures-glacier.ohpepreset": {
+"st": -12.44,
+"tp": -2.77,
+"active": -18.2
+},
+"textures-glass-swarm.ohpepreset": {
+"st": -9.99,
+"tp": -2.43,
+"active": -17.0
+},
+"textures-gravity-hat-pad.ohpepreset": {
+"st": -11.48,
+"tp": -4.64,
+"active": -19.4
+},
+"textures-grit-drone.ohpepreset": {
+"st": -12.19,
+"tp": -1.96,
+"active": -16.1
+},
+"textures-harp-cloud.ohpepreset": {
+"st": -10.99,
+"tp": -1.56,
+"active": -15.7
+},
+"textures-harp-mist.ohpepreset": {
+"st": -11.34,
+"tp": -1.0,
+"active": -15.1
+},
+"textures-kalimba-dust.ohpepreset": {
+"st": -11.49,
+"tp": -3.08,
+"active": -17.4
+},
+"textures-kalimba-storm.ohpepreset": {
+"st": -13.29,
+"tp": -0.98,
+"active": -19.6
+},
+"textures-marimba-rain.ohpepreset": {
+"st": -11.35,
+"tp": -3.27,
+"active": -17.2
+},
+"textures-metal-choir.ohpepreset": {
+"st": -10.21,
+"tp": -4.82,
+"active": -19.2
+},
+"textures-night-insects.ohpepreset": {
+"st": -12.0,
+"tp": 0.36,
+"active": -18.2
+},
+"textures-night-rain.ohpepreset": {
+"st": -10.33,
+"tp": -2.89,
+"active": -18.6
+},
+"textures-night-swarm.ohpepreset": {
+"st": -11.15,
+"tp": -2.32,
+"active": -19.5
+},
+"textures-rain-canopy.ohpepreset": {
+"st": -14.32,
+"tp": -3.77,
+"active": -20.5
+},
+"textures-recorder-breath.ohpepreset": {
+"st": -11.25,
+"tp": -3.91,
+"active": -17.4
+},
+"textures-rust-texture.ohpepreset": {
+"st": -11.65,
+"tp": -3.44,
+"active": -18.7
+},
+"textures-singing-glass.ohpepreset": {
+"st": -11.63,
+"tp": -5.46,
+"active": -18.3
+},
+"textures-slow-weather.ohpepreset": {
+"st": -11.15,
+"tp": -1.78,
+"active": -17.1
+},
+"textures-starfield.ohpepreset": {
+"st": -12.01,
+"tp": 1.76,
+"active": -19.7
+},
+"textures-swarm-field-3d.ohpepreset": {
+"st": -10.63,
+"tp": -2.67,
+"active": -17.8
+},
+"textures-vinyl-crackle.ohpepreset": {
+"st": -9.72,
+"tp": -3.57,
+"active": -19.3
+},
+"textures-voice-halo.ohpepreset": {
+"st": -10.99,
+"tp": -4.25,
+"active": -17.6
+},
+"textures-whisper-room.ohpepreset": {
+"st": -11.76,
+"tp": -4.17,
+"active": -17.1
+},
+"textures-wind-spiral.ohpepreset": {
+"st": -9.6,
+"tp": -0.92,
+"active": -19.3
+},
+"textures-zither-cloud.ohpepreset": {
+"st": -11.56,
+"tp": -4.12,
+"active": -17.3
+},
+"vocal-aah-choir.ohpepreset": {
+"st": -10.08,
+"tp": -5.9,
+"active": -17.4
+},
+"vocal-angel-overhead.ohpepreset": {
+"st": -9.86,
+"tp": -3.37,
+"active": -16.0
+},
+"vocal-breath-circle.ohpepreset": {
+"st": -11.47,
+"tp": -1.04,
+"active": -15.4
+},
+"vocal-choir-grains.ohpepreset": {
+"st": -9.58,
+"tp": -6.02,
+"active": -19.1
+},
+"vocal-choir-weave.ohpepreset": {
+"st": -10.41,
+"tp": -4.65,
+"active": -16.6
+},
+"vocal-formant-voices.ohpepreset": {
+"st": -7.12,
+"tp": -3.64,
+"active": -17.3
+},
+"vocal-gospel-hum.ohpepreset": {
+"st": -10.93,
+"tp": -5.71,
+"active": -16.0
+},
+"vocal-living-choir.ohpepreset": {
+"st": -11.03,
+"tp": -5.98,
+"active": -18.9
+},
+"vocal-male-ensemble.ohpepreset": {
+"st": -10.48,
+"tp": -4.64,
+"active": -15.8
+},
+"vocal-ooh-choir.ohpepreset": {
+"st": -9.93,
+"tp": -4.96,
+"active": -15.2
+},
+"vocal-pressure-vowel.ohpepreset": {
+"st": -11.69,
+"tp": -3.92,
+"active": -16.4
+},
+"vocal-solo-soprano.ohpepreset": {
+"st": -9.87,
+"tp": -7.45,
+"active": -18.1
+},
+"vocal-talking-synth.ohpepreset": {
+"st": -11.32,
+"tp": -6.54,
+"active": -16.0
+},
+"vocal-voice-vowel-lead.ohpepreset": {
+"st": -10.6,
+"tp": -5.52,
+"active": -14.3
+},
+"vocal-vowel-morph.ohpepreset": {
+"st": -12.16,
+"tp": -5.71,
+"active": -16.2
+}
+}

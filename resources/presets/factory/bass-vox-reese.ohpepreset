@@ -138,7 +138,7 @@
     "mpe.smooth": 0.04,
     "mpe.bend": 48,
     "glide": 0.03,
-    "gain": 6.8,
+    "gain": 6.1,
     "mod.s6.src": 9,
     "mod.s6.via": 0,
     "mod.s6.dst": 4,
@@ -146,6 +146,7 @@
     "mod.s6.curve": 0,
     "expr.at.curve1": 3,
     "expr.at.amt1": 0.3,
-    "expr.at.dst1": 12
+    "expr.at.dst1": 12,
+    "chordroom": 5.3
   }
 }

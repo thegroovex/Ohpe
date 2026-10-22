@@ -133,6 +133,8 @@ public:
         pitchEnvPhase = 1.0f;
     }
     bool isActive() const noexcept { return ampEnv.isActive(); }
+    /** p74: 1 while the key is held (attack, decay, sustain), the envelope level once released, 0 when idle. */
+    float loadWeight() const noexcept { return ! ampEnv.isActive() ? 0.0f : (ampEnv.isReleasing() ? std::min (1.0f, ampEnv.getLevel()) : 1.0f); }
     int getNote() const noexcept { return note; }
     /** The pitch the voice is gliding at now (semitones, -1 when it has never sounded). */
     float glidePitch() const noexcept { return currentNote; }
@@ -581,6 +583,13 @@ public:
     {
         int n = 0;
         for (const auto& v : voices) n += v.isActive() ? 1 : 0;
+        return n;
+    }
+
+    float voiceLoad() const noexcept override
+    {
+        float n = 0.0f;
+        for (const auto& v : voices) n += v.loadWeight();
         return n;
     }
 

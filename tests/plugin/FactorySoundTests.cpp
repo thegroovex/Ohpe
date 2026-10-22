@@ -113,3 +113,34 @@ TEST_CASE ("factory sounds: every factory preset renders cleanly with the record
     CHECK (parts >= 100);
     CHECK (projects >= 6);
 }
+
+TEST_CASE ("factory sounds: 8-note chords at full velocity stay below -1 dBTP without the limiter, no hard clip (p74)" * doctest::test_suite ("sliced"))
+{
+    // the polyphony check: every part preset holds a wide 8-note chord (C1 .. G4) at velocity 127 for two seconds,
+    // master limiter off - the chord headroom of the part keeps the sum clean, no stage clamps the waveform
+    factorykit::loadBank();
+    const auto slice = test::testSlice();
+    int parts = 0;
+    const std::vector<int> chord { 36, 43, 48, 52, 55, 60, 64, 67 };
+    for (int i = 0; i < OhpePresets::namedResourceListSize; ++i)
+    {
+        if (! slice.has (i)) continue;
+        int size = 0;
+        const char* data = OhpePresets::getNamedResource (OhpePresets::namedResourceList[i], size);
+        preset::Preset p;
+        REQUIRE (preset::fromJson (std::string (data, (size_t) size), p));
+        if (p.meta.kind != preset::Kind::Part) continue;
+        CAPTURE (p.meta.name);
+        Core core;
+        core.prepare (48000.0, 256);
+        factorykit::load (core);
+        const auto a = render::renderPart (core, p, 0, 120.0, 1.0e9, 1.0, 2.0, chord, 127);
+        const double tp = render::truePeakDb (a);
+        CAPTURE (tp);
+        CHECK (tp <= -1.0);
+        CHECK (render::flatTopRuns (a) == 0);
+        CHECK (render::measure (a).nonFinite == 0);
+        ++parts;
+    }
+    CHECK (parts >= 0);
+}

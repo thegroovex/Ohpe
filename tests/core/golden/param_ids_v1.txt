@@ -6904,3 +6904,7 @@ p4.grav.curve
 p4.grav.formant
 p4.grav.mix
 p4.grav.quality
+p1.chordroom
+p2.chordroom
+p3.chordroom
+p4.chordroom
