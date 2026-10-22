@@ -292,6 +292,7 @@ endif()
 # ---------------------------------------------------------------- p23: bounce to engine
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/BounceUiTests.cpp)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/TapeMemoryUiTests.cpp) # p67
 endif()
 
 # ---------------------------------------------------------------- p27: the in-app updater
