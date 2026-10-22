@@ -1,6 +1,6 @@
 # Tape memory (p67)
 
-Ohpe – designed by groovex. [Deutsch](../de/TAPE-GEDAECHTNIS.md)
+Ohpe – designed by groovex. [Deutsch](../de/TAPE-MEMORY.md)
 
 Ohpe never forgets the last half minute. While it runs it keeps a rolling memory of its own output, and one key –
 **CAPTURE** – turns what you just played into a new instrument. Played a phrase you liked by accident, a happy
@@ -41,6 +41,18 @@ The last capture of each part is saved inside the session or project (state sect
 *Export last capture as WAV* writes a 24-bit WAV (the root as its unity note) into the capture library:
 `<user application data>/groovex/Ohpe/Captures` (the environment variable `OHPE_CAPTURE_DIR` overrides it).
 MEMORY > *Clear the memory* forgets what is held.
+
+## Loading another sound after a capture
+
+A preset chosen in the library or with the preset strip arrows loads completely into the part – engine, factory
+instrument or sample, all parameters – even while the part plays a capture: the capture leaves the part's Sampler,
+so it never covers the new sound. It is not lost: it stays in this session's memory, MEMORY > *Restore last
+capture* puts it back into its part (engine Sampler, mode and root as captured) and *Export last capture as WAV*
+still writes it; the display says so when it happens. Browsing the library without loading brings the capture back
+when the library closes. A project loads its own sound into every part the same way; a project saved while a part
+plays a capture keeps that capture (audio inside) and brings it back. Part presets store the sound's settings, not
+the captured audio. RANDOM and BREED shape the captured sound (they never change the engine or the sample choice),
+so the capture stays. A capture belongs to its part only; other parts and presets never pick it up.
 
 ## Parameters
 

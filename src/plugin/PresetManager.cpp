@@ -157,7 +157,7 @@ int PresetManager::arpPresetPart() const
     return sameArp (preset::arpSnapshot (proc.core().params()), arpByPreset) ? arpOwner : -1;
 }
 
-bool PresetManager::apply (const preset::Preset& p, int part)
+bool PresetManager::apply (const preset::Preset& p, int part, bool keepCapture)
 {
     if (part < 0) part = editPart();
     bool ok = false;
@@ -181,8 +181,17 @@ bool PresetManager::apply (const preset::Preset& p, int part)
         else if (r.arpApplied || r.arpReleased)
             arpOwner = -1;
     });
+    // p72: a tape-memory capture in the part's Sampler would keep overriding the preset's instrument / sample (the
+    // Sampler plays its zones before the factory instrument); it is set aside and stays restorable for the session
+    const bool announce = ! quietCaptureRelease && ! previewing();
+    if (ok && p.meta.kind == preset::Kind::Project)
+        for (int q = 0; q < numParts; ++q) proc.tapeMemory().release (q, announce);
+    else if (ok && ! keepCapture)
+        proc.tapeMemory().release (part, announce);
     if (ok && p.meta.kind == preset::Kind::Project && p.sections.count ("samples") > 0)
         proc.sampleLoader().restoreFromState();
+    if (ok && p.meta.kind == preset::Kind::Project && p.sections.count ("tapememory") > 0)
+        proc.tapeMemory().restoreFromState (false); // p72: the project's captures (after "samples"); others stay set aside
     if (ok && p.meta.kind == preset::Kind::Project) // p20: the project's user wavetables (none = the built-in ones)
     {
         if (p.sections.count ("usertables") == 0) proc.core().setStateSection ("usertables", {});
@@ -308,6 +317,9 @@ juce::File PresetManager::save (const preset::Meta& metaIn, bool project, int pa
         proc.userTables().storeInState(); // p20
         const auto tables = proc.core().stateSection ("usertables");
         if (! tables.empty() && tables.find ("\"parts\":{}") == std::string::npos) extra["usertables"] = tables;
+        proc.tapeMemory().storeInState(); // p72: captures still playing travel with the project (audio inside)
+        const auto captures = proc.core().stateSection ("tapememory");
+        if (! captures.empty() && captures.find ("\"parts\":{}") == std::string::npos) extra["tapememory"] = captures;
         p = preset::captureProject (proc.core(), meta, extra);
     }
     else
@@ -421,6 +433,8 @@ void PresetManager::beginPreview (int part)
     previewArpByPreset = arpByPreset;
     proc.userTables().storeInState(); // p20: reverting brings the user wavetables back too
     previewBackup = preset::captureProject (proc.core(), {}, { { "usertables", proc.core().stateSection ("usertables") } });
+    previewCaptureStore = proc.tapeMemory().storedCaptures(); // p72
+    for (int q = 0; q < numParts; ++q) previewCaptures[(size_t) q] = proc.tapeMemory().captureOf (q) != nullptr;
 }
 
 void PresetManager::revertPreview()
@@ -428,7 +442,14 @@ void PresetManager::revertPreview()
     if (! previewBackup) return;
     auto backup = std::move (*previewBackup);
     previewBackup.reset();
+    quietCaptureRelease = true;
     apply (backup, previewPart);
+    quietCaptureRelease = false;
+    proc.tapeMemory().setStoredCaptures (previewCaptureStore);
+    previewCaptureStore = {};
+    for (int q = 0; q < numParts; ++q) // p72: the captures that played before the preview play again
+        if (previewCaptures[(size_t) q]) proc.tapeMemory().reattach (q);
+    previewCaptures.fill (false);
     currentIndex = previewIndex;
     arpOwner = previewArpOwner; // the arp is back as it was, and so is who set it
     arpByPreset = previewArpByPreset;

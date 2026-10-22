@@ -21,10 +21,10 @@ void registerParams (ParamRegistry& reg)
 {
     using namespace pd;
     auto add = [&] (ParamDescriptor d, const char* group) { d.group = group; reg.add (std::move (d)); };
-    add (choice (Core::Ids::tapememLen, "Memory Length", "Gedächtnislänge", { "5 s", "10 s", "20 s", "30 s" },
+    add (choice (Core::Ids::tapememLen, "Memory Length", "Memory-Länge", { "5 s", "10 s", "20 s", "30 s" },
                  { "5 s", "10 s", "20 s", "30 s" }, Len30s),
          "tapemem");
-    add (choice (Core::Ids::tapememSrc, "Memory Source", "Gedächtnisquelle", { "Main Out", "Part 1", "Part 2", "Part 3", "Part 4" },
+    add (choice (Core::Ids::tapememSrc, "Memory Source", "Memory-Quelle", { "Main Out", "Part 1", "Part 2", "Part 3", "Part 4" },
                  { "Hauptausgang", "Part 1", "Part 2", "Part 3", "Part 4" }, SourceMain),
          "tapemem");
     add (choice (Core::Ids::tapememMode, "Capture Mode", "Merk-Modus", { "Chromatic", "Slices" }, { "Chromatisch", "Slices" }, ModeChromatic),

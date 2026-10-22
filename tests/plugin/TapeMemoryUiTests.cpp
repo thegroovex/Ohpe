@@ -137,9 +137,166 @@ TEST_CASE ("plug-in p67: CAPTURE and MEMORY soft keys on the tape page, CAPTURE 
     e.setLanguage (i18n::Language::German);
     CHECK (d.softKeyList()[3].label == juce::String::fromUTF8 ("Merken"));
     e.selectMode (ui::Mode::Tape);
-    CHECK (d.softKeyList()[13].label == juce::String::fromUTF8 ("Gedächtnis"));
+    CHECK (d.softKeyList()[13].label == juce::String::fromUTF8 ("Memory"));
     CHECK (e.createComponentSnapshot (e.getLocalBounds()).isValid());
     e.setLanguage (i18n::Language::English);
     CHECK (i18n::allKeys().contains ("Captured into Part"));
+    ed.reset();
+}
+
+namespace
+{
+/** p72: a factory part preset: a Sampler one that picks a factory instrument, or one of another engine. */
+int factoryPartPreset (OhpeProcessor& p, bool sampler, preset::Preset* out = nullptr)
+{
+    const auto& list = p.presets().entries();
+    for (int i = 0; i < (int) list.size(); ++i)
+    {
+        const auto& e = list[(size_t) i];
+        if (! e.factory || e.meta.kind != preset::Kind::Part || e.meta.engine.empty() || (e.meta.engine == "sampler") != sampler) continue;
+        preset::Preset pr;
+        if (! preset::fromJson (p.presets().read (e), pr)) continue;
+        const auto inst = [&pr] (const char* id) { auto it = pr.params.find (id); return it != pr.params.end() ? it->second : 0.0f; };
+        if (sampler && inst ("sampler.inst") <= 0.0f && inst ("sampler.inst2") <= 0.0f) continue;
+        if (out != nullptr) *out = pr;
+        return i;
+    }
+    return -1;
+}
+
+void captureInto (OhpeProcessor& p, int part)
+{
+    REQUIRE (p.tapeMemory().capture (part, tapemem::ModeChromatic));
+    p.tapeMemory().finishNow();
+    REQUIRE ((p.tapeMemory().captureOf (part) != nullptr));
+}
+} // namespace
+
+TEST_CASE ("plug-in p72: a preset loaded after CAPTURE plays completely; the capture is set aside, not lost")
+{
+    OhpeProcessor p;
+    p.prepareToPlay (48000.0, 256);
+    play (p, 200, 57);
+    captureInto (p, 0);
+    captureInto (p, 1);
+    const auto* cap0 = p.tapeMemory().captureOf (0);
+    const auto sample0 = cap0->sample;
+
+    preset::Preset sp;
+    const int samplerPreset = factoryPartPreset (p, true, &sp);
+    const int otherPreset = factoryPartPreset (p, false);
+    REQUIRE (samplerPreset >= 0);
+    REQUIRE (otherPreset >= 0);
+
+    // library path: a Sampler preset with a factory instrument - its instrument plays, not the capture
+    REQUIRE (p.presets().load (samplerPreset, 0));
+    CHECK (p.core().params().get ("p1.engine") == (float) EngineType::Sampler);
+    CHECK (samplerOf (p, 0)->zones().empty()); // no zone overrides the factory instrument
+    for (const char* id : { "sampler.inst", "sampler.inst2" })
+        if (auto it = sp.params.find (id); it != sp.params.end())
+            CHECK (p.core().params().get (std::string ("p1.") + id) == doctest::Approx (it->second));
+    CHECK ((p.tapeMemory().captureOf (0) == nullptr));
+    REQUIRE ((p.tapeMemory().storedCapture (0) != nullptr)); // set aside, not lost
+    CHECK ((p.tapeMemory().storedCapture (0)->sample == sample0));
+    CHECK (p.tapeMemory().lastMessage() == "Capture set aside - Memory menu restores it");
+    // no leak: part 2 keeps its own capture
+    REQUIRE ((p.tapeMemory().captureOf (1) != nullptr));
+    CHECK (samplerOf (p, 1)->zones().size() == 1);
+
+    // the Memory menu brings it back
+    REQUIRE (p.tapeMemory().restore (0));
+    CHECK (p.core().params().get ("p1.engine") == (float) EngineType::Sampler);
+    REQUIRE ((p.tapeMemory().captureOf (0) != nullptr));
+    CHECK ((samplerOf (p, 0)->zones()[0].sample == sample0));
+
+    // preset strip arrows
+    REQUIRE (p.presets().step (1, 0));
+    CHECK ((p.tapeMemory().captureOf (0) == nullptr));
+    CHECK (samplerOf (p, 0)->zones().empty());
+
+    // another engine: it plays; a later Sampler preset does not bring the capture back either
+    REQUIRE (p.tapeMemory().restore (0));
+    REQUIRE (p.presets().load (otherPreset, 0));
+    CHECK (p.core().params().get ("p1.engine") != (float) EngineType::Sampler);
+    CHECK (samplerOf (p, 0)->zones().empty());
+    REQUIRE (p.presets().load (samplerPreset, 0));
+    CHECK (samplerOf (p, 0)->zones().empty());
+
+    // library preview: browsing sets the capture aside, closing without loading brings it back
+    REQUIRE (p.tapeMemory().restore (0));
+    const int before = p.tapeMemory().messageCount();
+    p.presets().beginPreview (0);
+    REQUIRE (p.presets().load (samplerPreset, 0));
+    CHECK (samplerOf (p, 0)->zones().empty());
+    p.presets().revertPreview();
+    REQUIRE ((p.tapeMemory().captureOf (0) != nullptr));
+    CHECK (p.core().params().get ("p1.engine") == (float) EngineType::Sampler);
+    CHECK (p.tapeMemory().messageCount() == before); // quiet while browsing
+
+    // a breed child keeps the part's sample choice, so the capture stays
+    {
+        preset::Preset child;
+        child.meta.kind = preset::Kind::Part;
+        child.params["sampler.tone"] = 0.3f;
+        REQUIRE (p.presets().apply (child, 0, true));
+        CHECK ((p.tapeMemory().captureOf (0) != nullptr));
+    }
+
+    // session: only captures still playing are stored; a set-aside one is not restored into the part
+    REQUIRE (p.presets().load (samplerPreset, 0));
+    juce::MemoryBlock state;
+    p.getStateInformation (state);
+    {
+        OhpeProcessor q;
+        q.prepareToPlay (48000.0, 256);
+        q.setStateInformation (state.getData(), (int) state.getSize());
+        CHECK (samplerOf (q, 0)->zones().empty());
+        CHECK ((q.tapeMemory().captureOf (0) == nullptr));
+        REQUIRE ((q.tapeMemory().captureOf (1) != nullptr));
+    }
+
+    // a project brings its own sound into every part: captures are set aside; a project saved with a capture
+    // brings it back
+    REQUIRE (p.tapeMemory().restore (0));
+    TempFolder tmp;
+    p.presets().setUserFolder (tmp.dir);
+    preset::Meta meta;
+    meta.name = "Capture Project";
+    const auto file = p.presets().save (meta, true, 0, true);
+    REQUIRE (file.existsAsFile());
+    p.presets().rescan();
+    const int projIdx = p.presets().indexOfFile (file);
+    REQUIRE (projIdx >= 0);
+    REQUIRE (p.presets().load (samplerPreset, 0));
+    REQUIRE (p.presets().load (otherPreset, 1));
+    CHECK ((p.tapeMemory().captureOf (1) == nullptr));
+    REQUIRE (p.presets().load (projIdx, 0));
+    REQUIRE ((p.tapeMemory().captureOf (0) != nullptr));
+    REQUIRE ((p.tapeMemory().captureOf (1) != nullptr));
+    CHECK ((p.tapeMemory().captureOf (0)->sample->numFrames() == sample0->numFrames()));
+    preset::Preset plain = preset::captureProject (p.core(), {}, {});
+    REQUIRE (p.presets().apply (plain, 0));
+    CHECK ((p.tapeMemory().captureOf (0) == nullptr));
+    CHECK ((p.tapeMemory().captureOf (1) == nullptr));
+    CHECK ((p.tapeMemory().storedCapture (1) != nullptr));
+}
+
+TEST_CASE ("plug-in p72: RANDOM shapes a captured sound (the sample stays); DE menu text")
+{
+    OhpeProcessor p;
+    p.prepareToPlay (48000.0, 256);
+    play (p, 200, 57);
+    captureInto (p, 0);
+    std::unique_ptr<juce::AudioProcessorEditor> ed (p.createEditor());
+    auto& e = *dynamic_cast<OhpeEditor*> (ed.get());
+    e.selectPart (0);
+    e.selectMode (ui::Mode::Synth);
+    e.selectEngine (EngineType::Sampler);
+    e.randomiseSound (42);
+    CHECK ((p.tapeMemory().captureOf (0) != nullptr));
+    i18n::setCurrent (i18n::Language::German);
+    CHECK (i18n::tr ("Tape memory") == "Tape-Memory");
+    CHECK (i18n::tr ("Restore last capture") == juce::String::fromUTF8 ("Zuletzt Gemerktes zurückholen"));
+    i18n::setCurrent (i18n::Language::English);
     ed.reset();
 }

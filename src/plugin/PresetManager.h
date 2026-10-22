@@ -4,6 +4,7 @@
 
 #include "preset/Preset.h"
 #include "preset/PresetLibrary.h"
+#include "tapemem/TapeMemory.h"
 #include "update/PackFormat.h"
 
 #include <juce_core/juce_core.h>
@@ -54,7 +55,9 @@ public:
     /** Loads entry `index` into part `part` (0-based; -1 = the edit part "ui.part"). */
     bool load (int index, int part = -1);
     /** Loads a parsed preset (part presets into `part`, -1 = edit part). */
-    bool apply (const preset::Preset& p, int part = -1);
+    /** p72: `keepCapture` = a tape-memory capture in the part stays (breed children: the sample choice is not bred);
+        otherwise a capture there is set aside (TapeMemoryManager::release) so the preset's own sound plays. */
+    bool apply (const preset::Preset& p, int part = -1, bool keepCapture = false);
     /** Loads the next / previous entry of the current view (wraps). */
     bool step (int delta, int part = -1);
 
@@ -99,7 +102,7 @@ public:
     /** Preview handling for the browser. */
     void beginPreview (int part = -1);
     void revertPreview();
-    void endPreview() { previewBackup.reset(); }
+    void endPreview() { previewBackup.reset(); previewCaptureStore = {}; }
     bool previewing() const noexcept { return previewBackup.has_value(); }
 
     int editPart() const; ///< 0-based part of "ui.part"
@@ -128,5 +131,8 @@ private:
     std::vector<float> arpByPreset; ///< arp values right after that preset loaded
     int previewArpOwner = -1;
     std::vector<float> previewArpByPreset;
+    std::array<tapemem::Capture, numParts> previewCaptureStore {}; ///< p72: the stored captures when the preview began
+    std::array<bool, numParts> previewCaptures {}; ///< p72: parts whose tape-memory capture played when the preview began
+    bool quietCaptureRelease = false;              ///< p72: no display message while a preview / its revert sets one aside
 };
 } // namespace ohpe

@@ -460,7 +460,7 @@ Soft keys on the display – two rows: the edits of the selected track above, th
 | **Export** | renders master + the eight tracks as **24-bit WAV** files into a folder you choose (offline, faster than real time; the live audio is not interrupted) |
 | **Bounce** | moves the edit track (or the source on the Bounce page; the loop range while the loop is on) into the Grain or Sampler engine of the edit part, as an endless loop by default – [Bounce to engine](BOUNCE.md) |
 | **Capture** | (end of the first row, p67) turns the tape memory – the last seconds of Ohpe's own output – into an instrument in the Sampler of the target part (Chromatic or Slices); dark while the memory is empty – [Tape memory](TAPE-MEMORY.md) |
-| **Memory** | (end of the second row) the memory menu: Chromatic / Slices, length (5–30 s), source (main out, part 1–4), target part, export the last capture as WAV, clear the memory, MIDI learn for CAPTURE |
+| **Memory** | (end of the second row) the memory menu: Chromatic / Slices, length (5–30 s), source (main out, part 1–4), target part, restore the last capture (after a preset change), export the last capture as WAV, clear the memory, MIDI learn for CAPTURE |
 
 ![Clear all asks first](../images/ohpe-tape-clear.png)
 
