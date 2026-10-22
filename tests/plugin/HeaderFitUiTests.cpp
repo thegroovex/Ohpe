@@ -8,9 +8,9 @@
 
 #include <doctest/doctest.h>
 
-#include "core/engines/EngineFactory.h"
-#include "core/seq/ScaleChord.h"
-#include "core/settings/UserSettings.h"
+#include "engines/EngineFactory.h"
+#include "seq/ScaleChord.h"
+#include "settings/UserSettings.h"
 #include "plugin/Localisation.h"
 #include "plugin/PluginProcessor.h"
 #include "ui/Palette.h"
