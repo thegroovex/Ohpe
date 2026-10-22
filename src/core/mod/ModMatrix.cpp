@@ -128,6 +128,8 @@ const std::vector<DestInfo>& destTable()
         add ("gravcurve", "Gravity Curve", "Gravitation Kurve", DestKind::PartParam, 0, "grav.curve");
         add ("gravformant", "Gravity Formant", "Gravitation Formant", DestKind::PartParam, 0, "grav.formant");
         add ("gravmix", "Gravity Mix", "Gravitation Mischung", DestKind::PartParam, 0, "grav.mix");
+        // p77: 3D strength
+        add ("spaceamount", "3D Amount", "3D-Stärke", DestKind::PartParam, 0, "space.amount");
         return v;
     }();
     return t;

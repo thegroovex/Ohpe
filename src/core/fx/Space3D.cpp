@@ -397,6 +397,7 @@ void SpaceEffect::prepare (double sampleRate, int)
     const int directMax = (int) std::ceil ((maxDistance / speedOfSound + 2.0f * itdMax + 0.002f) * sr) + 8;
     for (auto& s : src) s.line.prepare (directMax);
     lowLine.prepare (directMax);
+    for (auto& l : dryLine) l.prepare (directMax); // p77
     roomLine.prepare ((int) std::ceil (0.42f * sr) + directMax);
     for (int i = 0; i < 4; ++i) fdn[(size_t) i].assign ((size_t) (0.05f * sr) + 8, 0.0f);
     for (int b = 0; b < 4; ++b) bandFreqG[(size_t) b] = fastTan (pi * std::min (bandHz[b], 0.45f * sr) / sr);
@@ -417,6 +418,7 @@ void SpaceEffect::reset() noexcept
     }
     src[1].numEars = 4;
     lowLine.reset();
+    for (auto& l : dryLine) l.reset(); // p77
     roomLine.reset();
     for (auto& f : xoLp) f.reset();
     for (auto& c : xoHp)
@@ -431,6 +433,11 @@ void SpaceEffect::reset() noexcept
     fresh = true;
     phase = 0.0;
     wasPlaying = false;
+    retrigPending = false; // p77
+    retrigHold = 0;
+    amountSm = amount;
+    dryGain = dDryGain = dWetGain = 0.0f;
+    wetGain = 1.0f;
 }
 
 void SpaceEffect::setTransportPosition (double p, bool isPlaying) noexcept
@@ -474,7 +481,7 @@ void SpaceEffect::advancePhase (int n) noexcept
 {
     const double len = pathLengthBeats (pathLen);
     phase += tempo / 60.0 / len * (double) pathRate * (double) n / (double) sr;
-    if (playing && hasPpq && path != PathOff && std::abs (pathRate - 1.0f) < 1.0e-4f)
+    if (retrigMode == RetrigFree && playing && hasPpq && path != PathOff && std::abs (pathRate - 1.0f) < 1.0e-4f)
     {
         // phase-locked to the song position while the transport plays at the nominal rate: repeatable motion
         const double now = ppq + (double) ppqSamples / (double) sr * tempo / 60.0;
@@ -514,18 +521,39 @@ void SpaceEffect::control (int n) noexcept
     }
     setRoomShape();
     advancePhase (n);
+    if (retrigPending) // p77: the motion starts again from its start position, the position glides there quickly
+    {
+        retrigPending = false;
+        if (retrigMode != RetrigFree)
+        {
+            phase = 0.0;
+            if (! fresh) retrigHold = (int) (2.0f * retrigGlideSeconds * sr);
+        }
+    }
+    // p77: amount - smoothed (about 20 ms), exactly 1 = the unchanged full effect
+    amountSm = fresh ? amount : amountSm + (amount - amountSm) * (1.0f - std::exp (-(float) n / (0.02f * sr)));
+    if (std::abs (amountSm - amount) < 1.0e-4f) amountSm = amount;
+    const float am = amountSm;
+    const bool full = am >= 1.0f;
 
     // target position
-    const Vec3 local = pathPoint (path, phase + (double) pathPhase, pathSize, seed);
-    const float k = std::max (0.05f, lengthOf (local));
-    const Vec3 o = orient (local, azimuth, elevation);
+    Vec3 local = pathPoint (path, phase + (double) pathPhase, pathSize, seed);
+    if (! full) // p77: the motion shrinks towards the front (radius and distance factor scale with the amount)
+        local = { local.x * am, 1.0f + (local.y - 1.0f) * am, local.z * am };
+    float k = std::max (0.05f, lengthOf (local));
+    const Vec3 o = full ? orient (local, azimuth, elevation) : orient (local, azimuth * am, elevation * am);
     const Vec3 tDir { o.x / k, o.y / k, o.z / k };
+    if (! full) k = std::pow (k, am); // distance factor -> 1: the base distance
     const float tDist = std::clamp (distance * k, minDistance, maxDistance);
+    roomEff = full ? room : room * am;
+    airEff = full ? air : air * am;
 
     // glide: direction on the sphere (normalised lerp), distance in the log domain. Two cascaded stages (critically
     // damped, each half the glide time): the source starts and stops moving smoothly instead of jumping to full speed,
     // so a jump of the position (automation, a fresh target) never steps the Doppler pitch.
-    const float c = fresh ? 1.0f : 1.0f - std::exp (-(float) n / (0.5f * glide * sr));
+    const float glideNow = retrigHold > 0 ? std::min (glide, retrigGlideSeconds) : glide; // p77: retrigger = a quick glide
+    retrigHold = std::max (0, retrigHold - n);
+    const float c = fresh ? 1.0f : 1.0f - std::exp (-(float) n / (0.5f * glideNow * sr));
     auto slerp = [c] (const Vec3& from, const Vec3& to) {
         Vec3 nd { from.x + (to.x - from.x) * c, from.y + (to.y - from.y) * c, from.z + (to.z - from.z) * c };
         float l = lengthOf (nd);
@@ -547,12 +575,12 @@ void SpaceEffect::control (int n) noexcept
     const float bTarget = monitor == Headphones ? 1.0f : 0.0f;
     binauralAmt = fresh ? bTarget : binauralAmt + (bTarget - binauralAmt) * (1.0f - std::exp (-(float) n / (0.03f * sr)));
     if (std::abs (binauralAmt - bTarget) < 1.0e-4f) binauralAmt = bTarget;
-    const float b = binauralAmt;
+    const float b = full ? binauralAmt : binauralAmt * am; // p77: HRTF colouring scales with the amount
 
     // distance delay (Doppler): slew-limited, so the pitch shift stays within about +-12 %
     // The limit is a radial speed of 0.12 c: a delay line read with slope s shifts the pitch by (1 - s), and a source at
     // speed v gives s = v / (c + v) receding (pitch / 1.12) and s = -v / (c - v) approaching (pitch / 0.88).
-    const float tDelay = doppler * std::max (0.0f, d - minDistance) / speedOfSound * sr;
+    const float tDelay = (full ? doppler : doppler * am) * std::max (0.0f, d - minDistance) / speedOfSound * sr;
     constexpr float vMax = 0.12f;
     const float upStep = vMax / (1.0f + vMax) * (float) n, downStep = vMax / (1.0f - vMax) * (float) n;
     const float newDelay = fresh ? tDelay : directDelay + std::clamp (tDelay - directDelay, -downStep, upStep);
@@ -564,6 +592,14 @@ void SpaceEffect::control (int n) noexcept
     if (fresh) { lowDelay = lowTarget; lowGain = distanceGain (d); }
     dLowDelay = (lowTarget - lowDelay) * invN;
     dLowGain = (distanceGain (d) - lowGain) * invN;
+    // p77: below full amount the plain input (at the base distance level, delayed like the wet centre) fades in
+    {
+        const float w = full ? 0.0f : (1.0f - am) * (1.0f - am);
+        const float target = w * distanceGain (distance);
+        if (fresh) { dryGain = target; wetGain = 1.0f - w; }
+        dDryGain = (target - dryGain) * invN;
+        dWetGain = ((1.0f - w) - wetGain) * invN;
+    }
 
     updateSources (pos, b, n);
     updateRoom (pos, b, n);
@@ -615,7 +651,7 @@ void SpaceEffect::updateSources (const Vec3& p, float b, int n) noexcept
     const float gTarget[2] = { g, g * 0.6f * (1.0f - 0.35f * spread / 180.0f) };
 
     // air absorption
-    const float fc = 24000.0f / (1.0f + air * 0.15f * std::max (0.0f, d - refDistance));
+    const float fc = 24000.0f / (1.0f + airEff * 0.15f * std::max (0.0f, d - refDistance));
     const float airCoeff = fc >= 0.45f * sr ? 1.0f : 1.0f - std::exp (-2.0f * pi * fc / sr);
 
     // directional bands (computed for the mid, shared by the side): binaural set (b = 1) blended with the speaker set
@@ -669,7 +705,7 @@ void SpaceEffect::updateSources (const Vec3& p, float b, int n) noexcept
 void SpaceEffect::updateRoom (const Vec3& p, float b, int n) noexcept
 {
     const float invN = 1.0f / (float) n;
-    const float rTarget = room;
+    const float rTarget = roomEff;
     if (fresh) roomAmt = rTarget;
     dRoomAmt = (rTarget - roomAmt) * invN;
     const float W = 4.0f + 26.0f * roomSize, H = 2.6f + 6.0f * roomSize, h = std::min (1.6f, 0.5f * H);
@@ -725,6 +761,8 @@ void SpaceEffect::process (float* left, float* right, int numSamples) noexcept
         const float hl = xoHp[0][1].process (xoHp[0][0].process (inL)), hr = xoHp[1][1].process (xoHp[1][0].process (inR));
         const float hi[2] = { 0.5f * (hl + hr), 0.5f * (hl - hr) }; // mid, side
         lowLine.push (low);
+        dryLine[0].push (inL); // p77
+        dryLine[1].push (inR);
         const float lowOut = lowLine.linear (lowDelay) * lowGain;
         lowDelay += dLowDelay;
         lowGain += dLowGain;
@@ -805,8 +843,17 @@ void SpaceEffect::process (float* left, float* right, int numSamples) noexcept
         if (countdown == 0) // exact targets at the end of every control block (no drift)
         {
             dRoomAmt = 0.0f;
-            roomAmt = room;
+            roomAmt = roomEff;
         }
+
+        if (dryGain != 0.0f || dDryGain != 0.0f) // p77: amount < 1 - crossfade to the plain input, aligned with the wet centre
+        {
+            outL = outL * wetGain + dryLine[0].linear (lowDelay - dLowDelay) * dryGain;
+            outR = outR * wetGain + dryLine[1].linear (lowDelay - dLowDelay) * dryGain;
+        }
+        dryGain += dDryGain;
+        wetGain += dWetGain;
+        if (countdown == 0 && dDryGain != 0.0f && std::abs (dryGain) < 1.0e-6f) { dryGain = 0.0f; dDryGain = 0.0f; wetGain = 1.0f; dWetGain = 0.0f; }
 
         left[i] = outL;
         right[i] = outR;

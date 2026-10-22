@@ -372,5 +372,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate66GravityParams (reg);
     // ---- p74: chord headroom per part - voice-load-aware gain after the engines (chords stay clean, single notes as they are)
     for (auto& p : parts) p->registerLate74HeadroomParams (reg);
+    // ---- p77: 3D motion retrigger (Free / First / Note) and 3D strength per part
+    for (auto& p : parts) p->registerLate77SpaceParams (reg);
 }
 } // namespace ohpe
