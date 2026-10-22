@@ -38,7 +38,7 @@
     "fx2.reverb.damping": 0.5,
     "fx2.reverb.predelay": 0.02,
     "fx2.reverb.mix": 0.25,
-    "gain": 18.5,
+    "gain": 21.0,
     "fx3.type": 10,
     "fx3.compressor.thresh": -4.0,
     "fx3.compressor.ratio": 8.0,
@@ -52,6 +52,6 @@
     "mod.s1.dst": 4,
     "mod.s1.amt": 0.3,
     "mod.s1.curve": 0,
-    "chordroom": 5.4
+    "chordroom": 7.4
   }
 }

@@ -215,7 +215,7 @@
   },
   "arp-random-spark-arp.ohpepreset": {
    "params": {
-    "gain": 15.7,
+    "gain": 19.8,
     "fx4.compressor.attack": 0.1,
     "fx4.compressor.thresh": -4.0,
     "fx4.compressor.knee": 6.0,
@@ -622,7 +622,7 @@
   },
   "fx-doppler-fly-by.ohpepreset": {
    "params": {
-    "gain": 15.6,
+    "gain": 17.6,
     "fx.compressor.attack": 0.1,
     "fx.compressor.thresh": -6.0,
     "fx.compressor.knee": 6.0,
@@ -677,7 +677,7 @@
     "fx.compressor.attack": 0.1,
     "fx.compressor.thresh": -6.0,
     "fx.compressor.knee": 6.0,
-    "chordroom": 12.3
+    "chordroom": 13.1
    }
   },
   "fx-stereo-zap.ohpepreset": {
@@ -724,19 +724,19 @@
   },
   "keys-concert-grand.ohpepreset": {
    "params": {
-    "gain": 7.4,
+    "gain": 9.4,
     "chordroom": 4.5
    }
   },
   "keys-crystal-organ.ohpepreset": {
    "params": {
-    "gain": 21.4,
-    "chordroom": 13.0
+    "gain": 23.7,
+    "chordroom": 15.0
    }
   },
   "keys-felt-grand.ohpepreset": {
    "params": {
-    "gain": 9.5,
+    "gain": 10.8,
     "chordroom": 4.5
    }
   },
@@ -760,7 +760,7 @@
   },
   "keys-halo-grand.ohpepreset": {
    "params": {
-    "gain": 10.7,
+    "gain": 12.2,
     "chordroom": 4.5
    }
   },
@@ -772,7 +772,7 @@
   },
   "keys-music-box.ohpepreset": {
    "params": {
-    "gain": 18.4,
+    "gain": 19.0,
     "chordroom": 10.7
    }
   },
@@ -871,7 +871,7 @@
   },
   "leads-fingerboard-breath-lead.ohpepreset": {
    "params": {
-    "gain": 22.3,
+    "gain": 24.0,
     "chordroom": 17.5
    }
   },
@@ -1373,11 +1373,11 @@
   },
   "textures-backwards-kalimba.ohpepreset": {
    "params": {
-    "gain": 18.5,
+    "gain": 21.0,
     "fx3.compressor.attack": 0.1,
     "fx3.compressor.thresh": -4.0,
     "fx3.compressor.knee": 6.0,
-    "chordroom": 5.4
+    "chordroom": 7.4
    }
   },
   "textures-breath-bore.ohpepreset": {
@@ -1416,7 +1416,7 @@
   "textures-kalimba-storm.ohpepreset": {
    "params": {
     "gain": 24.0,
-    "chordroom": 9.1
+    "chordroom": 8.7
    }
   },
   "textures-metal-choir.ohpepreset": {
@@ -1430,7 +1430,7 @@
   },
   "textures-starfield.ohpepreset": {
    "params": {
-    "gain": 5.7,
+    "gain": 11.8,
     "chordroom": 4.5
    }
   },
@@ -1478,8 +1478,8 @@
   },
   "bass-wood-body-bass.ohpepreset": {
    "params": {
-    "gain": 16.7,
-    "chordroom": 17.9
+    "gain": 24.0,
+    "chordroom": 4.5
    }
   },
   "leads-pressure-glide-lead.ohpepreset": {
@@ -1556,7 +1556,7 @@
   },
   "bass-spinning-pluck-bass.ohpepreset": {
    "params": {
-    "gain": 7.1,
+    "gain": 11.0,
     "fx2.compressor.attack": 0.1,
     "fx2.compressor.thresh": -8.0,
     "fx2.compressor.knee": 6.0,
@@ -1598,14 +1598,14 @@
   },
   "fx-thunder-walk.ohpepreset": {
    "params": {
-    "gain": 8.5,
+    "gain": 10.5,
     "chordroom": 18.9
    }
   },
   "fx-vortex-riser.ohpepreset": {
    "params": {
-    "gain": 14.8,
-    "chordroom": 11.4
+    "gain": 19.2,
+    "chordroom": 16.3
    }
   },
   "keys-ceiling-harpsichord.ohpepreset": {
@@ -1628,7 +1628,7 @@
   },
   "leads-comet-lead.ohpepreset": {
    "params": {
-    "gain": 8.7,
+    "gain": 9.2,
     "chordroom": 5.7
    }
   },
@@ -1736,14 +1736,14 @@
   },
   "textures-night-insects.ohpepreset": {
    "params": {
-    "gain": 5.4,
-    "chordroom": 8.1
+    "gain": 11.0,
+    "chordroom": 12.7
    }
   },
   "textures-rain-canopy.ohpepreset": {
    "params": {
     "gain": 24.0,
-    "chordroom": 4.5
+    "chordroom": 0.0
    }
   },
   "textures-voice-halo.ohpepreset": {
@@ -1754,8 +1754,8 @@
   },
   "textures-wind-spiral.ohpepreset": {
    "params": {
-    "gain": 16.0,
-    "chordroom": 14.2
+    "gain": 20.0,
+    "chordroom": 14.6
    }
   },
   "vocal-breath-circle.ohpepreset": {
@@ -2030,8 +2030,8 @@
     "fx3.compressor.attack": 0.1,
     "fx3.compressor.thresh": -7.0,
     "fx3.compressor.knee": 6.0,
-    "chordroom": 7.6,
-    "gain": 19.8
+    "chordroom": 8.7,
+    "gain": 24.0
    }
   },
   "textures-zither-cloud.ohpepreset": {
@@ -2314,7 +2314,7 @@
   "keys-sympathetic-harp-keys.ohpepreset": {
    "params": {
     "chordroom": 4.5,
-    "gain": 12.0
+    "gain": 12.8
    }
   },
   "keys-upright-keys.ohpepreset": {
@@ -2618,7 +2618,7 @@
   "textures-bowed-metal-body.ohpepreset": {
    "params": {
     "chordroom": 21.4,
-    "gain": 16.3
+    "gain": 19.2
    }
   },
   "textures-breath-texture.ohpepreset": {
