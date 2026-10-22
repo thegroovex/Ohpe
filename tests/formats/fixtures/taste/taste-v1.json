@@ -1,0 +1,20 @@
+{
+ "format": "ohpe-taste",
+ "version": 1,
+ "learning": true,
+ "curiosity": 0.25,
+ "sounds": {
+  "breed:12345": {"f": 1.5, "n": 0, "e": 2, "t": 3},
+  "factory/Warm Pad": {"f": 2.75, "n": 2, "e": 2, "t": 2},
+  "factory/Harsh Lead": {"f": -1.0, "n": 1, "e": 0, "t": 1}
+ },
+ "engines": {
+  "2": {
+   "analog.cutoff": [6.0, 0.82, 1.0, 0.2],
+   "amp.a": [6.0, 0.6, 0.0, 0.5]
+  },
+  "0": {
+   "fm.index": [0.0, 0.5, 1.0, 0.9]
+  }
+ }
+}

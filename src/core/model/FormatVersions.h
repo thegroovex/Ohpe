@@ -35,6 +35,7 @@ constexpr int settings = 1;       ///< <user data>/Settings/settings.json ("vers
 constexpr int updateSettings = 1; ///< <user data>/Settings/update.json ("version"; absent = 0, before 1.0)
 constexpr int library = 1;        ///< library.json (favourites, ratings): {"format":"ohpe-library"}
 constexpr int installedPacks = 1; ///< Content/installed.json "format"
+constexpr int taste = 1;          ///< p69: <user data>/Taste/taste.json (learning breed): {"format":"ohpe-taste"}
 
 // sections inside a state / project preset (each its own "version")
 constexpr int sequencer = 1;      ///< "sequencer"
@@ -53,7 +54,7 @@ struct Entry
 };
 
 /** Every constant above, in the order of tests/formats/FORMATS.lock (append-only). */
-constexpr std::array<Entry, 20> all { { { "state", state },
+constexpr std::array<Entry, 21> all { { { "state", state },
                                         { "preset", preset },
                                         { "modSchema", modSchema },
                                         { "tapeFile", tapeFile },
@@ -72,5 +73,6 @@ constexpr std::array<Entry, 20> all { { { "state", state },
                                         { "harmony", harmony },
                                         { "samples", samples },
                                         { "userTables", userTables },
-                                        { "genome", genome } } };
+                                        { "genome", genome },
+                                        { "taste", taste } } };
 } // namespace ohpe::formats

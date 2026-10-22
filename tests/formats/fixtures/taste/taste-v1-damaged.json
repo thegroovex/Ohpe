@@ -1,0 +1,8 @@
+{
+ "format": "ohpe-taste",
+ "version": "one",
+ "learning": "yes",
+ "curiosity": 7,
+ "sounds": {"a": "x", "b": {"f": "high", "n": -4, "t": -1}, "": {"f": 1}},
+ "engines": {"two": {"analog.cutoff": [1, 2, 3, 4]}, "2": {"analog.cutoff": [1e99, -5, "x"], "amp.a": [1, 0.5, 0, 0.5, 9], "analog.reso": [100, 2, -1, 0.5]}},
+ "trailing": [
