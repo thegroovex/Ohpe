@@ -5,7 +5,12 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
-## Unreleased
+## 0.7.0 Preview – 2026-10-22
+
+[Notes / Hinweise](docs/release-notes/0.7.0.md)
+
+- EN: Key Gravity (partials pulled to key and chord), Voice Control (a live voice as seven modulation sources), Tape Memory (capture the last 30 s as a playable instrument), learning BREED key, first-start tour, factory bank curated to 374 presets at −11 LUFS, loader hardening with crash-safe start, versioned file formats with golden fixtures.
+- DE: Tonart-Gravitation (Teiltöne zu Tonart und Akkord gezogen), Stimmsteuerung (eine Live-Stimme als sieben Modulationsquellen), Tape-Gedächtnis (die letzten 30 s als spielbares Instrument festhalten), lernende BREED-Taste, Einführung beim ersten Start, Werksbank auf 374 Presets bei −11 LUFS kuratiert, robustes Laden mit absturzsicherem Start, versionierte Dateiformate mit Referenzdateien.
 
 - EN: Key Gravity (p66): a spectral stage per part right after the engines pulls every partial toward the key / scale
   and the held chord (Scale, Chord, Chord+Scale; host key when available). Gravity, Target, Glide (partials flow on
@@ -74,12 +79,12 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   Reiter Hilfe. settings.json bekommt den Schlüssel "tour" (keine Versionsänderung).
 - EN: Factory bank curated for 1.0 (p65): every preset rendered offline and compared; three near-duplicates retired
   (Sine Slide, Phase Reese, Sparkle Bell – sessions that used them keep their sound and show no preset name), names
-  unique and free of maker names (Funk Clav → Funk Snap Keys, Lo-Fi spelling), tags fixed (FM electric pianos under
+  unique and free of maker names (one preset renamed, Lo-Fi spelling), tags fixed (FM electric pianos under
   Piano and more), and every preset level-matched to one target – −11 LUFS short-term (EBU R128), true peak at or
   below −1 dBTP – through its level parameter only. Clipping presets fixed. Details: docs/en/FACTORY-SOUNDS.md.
 - DE: Werksbank für 1.0 kuratiert (p65): jedes Preset offline gerendert und verglichen; drei Beinahe-Dubletten
   zurückgezogen (Sine Slide, Phase Reese, Sparkle Bell – Sitzungen damit behalten ihren Klang und zeigen keinen
-  Preset-Namen), Namen eindeutig und ohne Herstellernamen (Funk Clav → Funk Snap Keys, Schreibweise Lo-Fi), Tags
+  Preset-Namen), Namen eindeutig und ohne Herstellernamen (ein Preset umbenannt, Schreibweise Lo-Fi), Tags
   korrigiert (FM-E-Pianos unter Klavier u. a.) und jedes Preset auf ein Ziel eingepegelt – −11 LUFS Kurzzeit
   (EBU R128), True Peak höchstens −1 dBTP – nur über seinen Pegelparameter. Übersteuernde Presets behoben. Details:
   docs/de/FACTORY-SOUNDS.md.
