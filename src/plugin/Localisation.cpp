@@ -616,17 +616,20 @@ const std::map<juce::String, juce::String>& table()
         { "this session only", "nur für diese Sitzung" },
         // p67: tape memory
         { "Capture", "Merken" },
-        { "Memory", "Gedächtnis" },
-        { "Tape memory", "Tape-Gedächtnis" },
-        { "held", "im Gedächtnis" },
+        { "Memory", "Memory" },
+        { "Tape memory", "Tape-Memory" },
+        { "held", "im Memory" },
         { "Length", "Länge" },
         { "Into", "Ziel" },
         { "Export last capture as WAV", "Zuletzt Gemerktes als WAV exportieren" },
-        { "Clear the memory", "Gedächtnis leeren" },
-        { "Tape memory is empty - play something first", "Das Tape-Gedächtnis ist leer – erst etwas spielen" },
+        { "Clear the memory", "Memory leeren" },
+        { "Tape memory is empty - play something first", "Das Tape-Memory ist leer – erst etwas spielen" },
         { "Capturing ...", "Wird gemerkt ..." },
-        { "Nothing to capture - the memory is silent", "Nichts zu merken – das Gedächtnis ist stumm" },
+        { "Nothing to capture - the memory is silent", "Nichts zu merken – das Memory ist stumm" },
         { "Captured into Part", "Gemerkt in Part" },
+        { "Restore last capture", "Zuletzt Gemerktes zurückholen" }, // p72
+        { "Capture set aside - Memory menu restores it", "Gemerktes beiseitegelegt – das Memory-Menü holt es zurück" }, // p72
+        { "Capture restored into Part", "Gemerktes zurück in Part" }, // p72
         { "slices from C2", "Slices ab C2" },
         { "chromatic, root", "chromatisch, Grundton" },
         { "chromatic, no pitch found (root C4)", "chromatisch, keine Tonhöhe erkannt (Grundton C4)" },

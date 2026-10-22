@@ -86,8 +86,8 @@ const HelpTopic helpTopics[] = {
       "Der Sequencer-Modus hat Step-, Euklid- und Orbit-Ansichten; Schritte können Parameterwerte festhalten.\n\n"
       "Arpeggiator: Das Haltepedal (CC 64) hält losgelassene Tasten bis Pedal hoch im Arpeggio, Sostenuto (CC 66) nur die beim "
       "Treten gedrückten; mit Halten ergänzen Tasten unter dem Pedal den gehaltenen Satz.\n\n"
-      "Tape-Gedächtnis: Ohpe behält immer die letzten 30 s seines Ausgangs. MERKEN (Tape-Seite, Sampler-Seite, MIDI, Grid-Controller Add Track) "
-      "macht daraus ein Sampler-Instrument - Chromatisch (gestimmt, Grundton erkannt) oder Slices; GEDÄCHTNIS wählt Modus, Länge, Quelle und Part." },
+      "Tape-Memory: Ohpe behält immer die letzten 30 s seines Ausgangs. MERKEN (Tape-Seite, Sampler-Seite, MIDI, Grid-Controller Add Track) "
+      "macht daraus ein Sampler-Instrument - Chromatisch (gestimmt, Grundton erkannt) oder Slices; MEMORY wählt Modus, Länge, Quelle und Part." },
     { "MIDI, MPE and sync", "MIDI, MPE und Sync",
       "Each part listens on its own MIDI channel (Omni = every channel). Settings > MIDI sets the channel, MPE and the bend ranges of every part.\n\n"
       "With MPE on, each note gets its own pitch bend, pressure and timbre (lower zone: channel 1 is the master channel).\n\n"

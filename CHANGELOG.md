@@ -30,13 +30,26 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   Gravitation des Edit-Parts (bei 0 % leer). Klick öffnet die Seite Tonart-Gravitation direkt, Ziehen / Mausrad
   stellen den Wert ein, Rechtsklick = MIDI-Learn; Tooltip und Hilfethema DE / EN. Die Sends-Seiten und die Karte der
   Pro-Ansicht bleiben. Keine neuen Parameter.
+- EN: Fix (Tape Memory): a preset loaded after CAPTURE (library, preset strip arrows, project) now loads completely –
+  engine, factory instrument or sample, parameters – instead of the captured sound playing on. The capture is set
+  aside, not lost: MEMORY > *Restore last capture* puts it back, export still works, library browsing without
+  loading brings it back, and a project saved with a capture keeps it. RANDOM and BREED keep the capture (they never
+  change the sample choice); a capture never reaches other parts or presets.
+- DE: Fehlerbehebung (Tape-Memory): Ein Preset, das nach MERKEN geladen wird (Bibliothek, Pfeile der Preset-Leiste,
+  Projekt), lädt jetzt vollständig – Engine, Werksinstrument oder Sample, Parameter –, statt dass der gemerkte Klang
+  weiterspielt. Das Gemerkte wird beiseitegelegt, nicht verworfen: MEMORY > *Zuletzt Gemerktes zurückholen* holt es
+  zurück, der Export geht weiter, Stöbern ohne Laden bringt es zurück, und ein mit Gemerktem gespeichertes Projekt
+  behält es. ZUFALL und ZUCHT behalten das Gemerkte (sie ändern die Sample-Wahl nie); Gemerktes gelangt nie in andere
+  Parts oder Presets.
+- DE: Die Funktion heißt in Oberfläche, Hilfe und Dokumentation jetzt durchgehend „Tape-Memory“;
+  die Anleitung liegt unter [docs/de/TAPE-MEMORY.md](docs/de/TAPE-MEMORY.md).
 
 ## 0.7.0 Preview – 2026-10-22
 
 [Notes / Hinweise](docs/release-notes/0.7.0.md)
 
 - EN: Key Gravity (partials pulled to key and chord), Voice Control (a live voice as seven modulation sources), Tape Memory (capture the last 30 s as a playable instrument), learning BREED key, first-start tour, factory bank curated to 374 presets at −11 LUFS, loader hardening with crash-safe start, versioned file formats with golden fixtures.
-- DE: Tonart-Gravitation (Teiltöne zu Tonart und Akkord gezogen), Stimmsteuerung (eine Live-Stimme als sieben Modulationsquellen), Tape-Gedächtnis (die letzten 30 s als spielbares Instrument festhalten), lernende BREED-Taste, Einführung beim ersten Start, Werksbank auf 374 Presets bei −11 LUFS kuratiert, robustes Laden mit absturzsicherem Start, versionierte Dateiformate mit Referenzdateien.
+- DE: Tonart-Gravitation (Teiltöne zu Tonart und Akkord gezogen), Stimmsteuerung (eine Live-Stimme als sieben Modulationsquellen), Tape-Memory (die letzten 30 s als spielbares Instrument festhalten), lernende BREED-Taste, Einführung beim ersten Start, Werksbank auf 374 Presets bei −11 LUFS kuratiert, robustes Laden mit absturzsicherem Start, versionierte Dateiformate mit Referenzdateien.
 
 - EN: Key Gravity (p66): a spectral stage per part right after the engines pulls every partial toward the key / scale
   and the held chord (Scale, Chord, Chord+Scale; host key when available). Gravity, Target, Glide (partials flow on
@@ -86,7 +99,7 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   nearest semitone, root set) or Slices (one slice per onset from C2). The analysis runs off the audio thread;
   captures are saved inside the session (new state section `tapememory`, format `tapeMemory` 1) and export as WAV to
   the capture library. 5 IDs `tapemem.len/src/mode/to/go` appended after `harmony.kb.fixed`.
-- DE: Tape-Gedächtnis (p67): Ohpe behält immer die letzten 30 s seines eigenen Ausgangs (Hauptausgang oder ein Part,
+- DE: Tape-Memory (p67): Ohpe behält immer die letzten 30 s seines eigenen Ausgangs (Hauptausgang oder ein Part,
   16-Bit-Ringpuffer, etwa 6 MB bei 48 kHz). MERKEN (Tape-Seite, Sampler-Seite, MIDI-zuweisbar `tapemem.go`,
   Grid-Controller *Add Track*) macht daraus ein Instrument im Sampler eines Parts: Chromatisch (der stärkste Ton,
   Tonhöhe erkannt und auf den nächsten Halbton gestimmt, Grundton gesetzt) oder Slices (ein Slice pro Einsatz ab C2).

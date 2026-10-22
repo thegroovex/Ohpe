@@ -128,7 +128,7 @@ Gen-IDs sind part-lokale Parameter-IDs, die Mittelwerte normiert (0..1). Eine be
 `format`) lädt als leeres Profil; falsche Werte werden verworfen oder begrenzt; unbekannte Gen-IDs oder Engines
 werden ignoriert (und nicht zurückgeschrieben). Fixtures: `taste/taste-v1.json`, `taste/taste-v1-damaged.json`.
 
-### Tape-Gedächtnis (`tapeMemory` 1, p67)
+### Tape-Memory (`tapeMemory` 1, p67)
 
 Abschnitt `tapememory`: `{"format": "ohpe-tapememory", "version": 1, "parts": {"p1": {"mode": 0, "root": 62,
 "slices": 1, "name": "Capture 1", "rate": 48000, "channels": 2, "frames": 96000, "pcm16": "<base64>"}}}` – das
