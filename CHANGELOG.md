@@ -5,8 +5,15 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
-## Unreleased / Unveröffentlicht
+## Unreleased
 
+- EN: Key Gravity on the header (p70): a small ring right next to the key and its lock shows the edit part's gravity
+  amount (empty at 0 %). Click opens the Key Gravity page directly, drag / mouse wheel set the amount, right-click =
+  MIDI learn; tooltip and help topic EN / DE. The Sends pages and the pro view card stay. No new parameters.
+- DE: Tonart-Gravitation in der Kopfzeile (p70): ein kleiner Ring direkt neben der Tonart und ihrem Schloss zeigt die
+  Gravitation des Edit-Parts (bei 0 % leer). Klick öffnet die Seite Tonart-Gravitation direkt, Ziehen / Mausrad
+  stellen den Wert ein, Rechtsklick = MIDI-Learn; Tooltip und Hilfethema DE / EN. Die Sends-Seiten und die Karte der
+  Pro-Ansicht bleiben. Keine neuen Parameter.
 - EN: Fix (Tape Memory): a preset loaded after CAPTURE (library, preset strip arrows, project) now loads completely –
   engine, factory instrument or sample, parameters – instead of the captured sound playing on. The capture is set
   aside, not lost: MEMORY > *Restore last capture* puts it back, export still works, library browsing without
@@ -18,8 +25,8 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   zurück, der Export geht weiter, Stöbern ohne Laden bringt es zurück, und ein mit Gemerktem gespeichertes Projekt
   behält es. ZUFALL und ZUCHT behalten das Gemerkte (sie ändern die Sample-Wahl nie); Gemerktes gelangt nie in andere
   Parts oder Presets.
-- DE: Die Funktion heißt in Oberfläche, Hilfe und Dokumentation jetzt durchgehend „Tape-Memory“ (statt
-  „Tape-Gedächtnis“); die Anleitung liegt unter [docs/de/TAPE-MEMORY.md](docs/de/TAPE-MEMORY.md).
+- DE: Die Funktion heißt in Oberfläche, Hilfe und Dokumentation jetzt durchgehend „Tape-Memory“;
+  die Anleitung liegt unter [docs/de/TAPE-MEMORY.md](docs/de/TAPE-MEMORY.md).
 
 ## 0.7.0 Preview – 2026-10-22
 

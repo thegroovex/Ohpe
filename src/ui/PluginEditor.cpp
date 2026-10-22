@@ -350,6 +350,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     display.onMorphCornerClicked = [this] (int c) { showCornerMenu (c); }; // p16
     display.onFxSlotClicked = [this] (int s) { selectFxSlot (s); };
     display.onFxSlotMoved = [this] (int from, int to) { moveFxSlot (from, to); };
+    display.onGravityClicked = [this] { openKeyGravity(); }; // p70: the gravity ring on the header
     display.onSpaceBadgeClicked = [this] { // 1.0: the 3D badge opens the Space view of the edit part
         if (mode != Mode::Effects) selectMode (Mode::Effects);
         selectView (modfx::FxViewSpace);
@@ -822,6 +823,22 @@ void OhpeEditor::moveFxSlot (int from, int to)
         rebindEncoders();
         saveUiState();
     }
+}
+
+// p70: the Key Gravity encoder page of the edit part (Effects mode, Sends view) - from the header's gravity ring
+void OhpeEditor::openKeyGravity()
+{
+    if (! modeInfo (Mode::Effects).available) return;
+    if (proView.isVisible()) showProView (false);
+    mode = Mode::Effects;
+    ctx.fxView = modfx::FxViewSends;
+    const auto ids = modeParams (Mode::Effects, proc.core(), ctx);
+    const auto amt = "p" + std::to_string (ctx.part + 1) + ".grav.amt";
+    for (size_t i = 0; i < ids.size(); ++i)
+        if (ids[i] == amt) pageOf[(size_t) Mode::Effects] = (int) i / 4;
+    rebindEncoders();
+    refreshKeys();
+    saveUiState();
 }
 
 void OhpeEditor::selectMode (Mode m)

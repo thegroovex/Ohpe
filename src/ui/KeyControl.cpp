@@ -3,6 +3,7 @@
 #include "KeyControl.h"
 
 #include "plugin/Localisation.h"
+#include "TempoControl.h"
 
 #include <cmath>
 
@@ -278,4 +279,126 @@ VoiceStripLayout layoutVoiceStrip (juce::Rectangle<float> area, bool softKeys, c
     if (l.chord.getBottom() > area.getBottom()) l.chord = l.chord.withBottom (area.getBottom());
     return l;
 }
+
+// ---------------------------------------------------------------- p70: Key Gravity on the header
+GravityControl::GravityControl (OhpeProcessor& p) : proc (p)
+{
+    setRepaintsOnMouseActivity (true);
+    refresh();
+}
+
+void GravityControl::setPart (int part)
+{
+    part = juce::jlimit (0, Core::numParts - 1, part);
+    if (part == editPart) return;
+    editPart = part;
+    refresh();
+    repaint();
+}
+
+juce::String GravityControl::paramId() const { return "p" + juce::String (editPart + 1) + ".grav.amt"; }
+
+bool GravityControl::available() const { return proc.core().params().indexOf (paramId().toStdString()) >= 0; }
+
+float GravityControl::amount() const
+{
+    return available() ? juce::jlimit (0.0f, 1.0f, proc.core().params().get (paramId().toStdString())) : 0.0f;
+}
+
+void GravityControl::refresh()
+{
+    const float a = amount();
+    if (std::abs (a - shown) > 1.0e-4f)
+    {
+        shown = a;
+        repaint();
+    }
+}
+
+void GravityControl::setAmount (float a)
+{
+    if (! available()) return;
+    setParamFromScreen (proc, paramId().toRawUTF8(), juce::jlimit (0.0f, 1.0f, a));
+    refresh();
+}
+
+juce::String GravityControl::getTooltip()
+{
+    return tr ("Key Gravity \u2013 pulls the sound into key") + " (" + juce::String (juce::roundToInt (shown * 100.0f)) + " %)";
+}
+
+void GravityControl::paint (juce::Graphics& g)
+{
+    auto b = getLocalBounds().toFloat();
+    const float h = b.getHeight();
+    const bool hover = isMouseOverOrDragging();
+    if (hover || dragging) // as the key and the tempo: a soft yellow field behind while it is edited
+    {
+        g.setColour (colour::sunYellow.withAlpha (0.16f));
+        g.fillRoundedRectangle (b.reduced (h * 0.04f, h * 0.12f), h * 0.2f);
+    }
+    const float d = juce::jmin (b.getWidth(), h) * 0.64f;
+    const auto ring = b.withSizeKeepingCentre (d, d);
+    const float stroke = juce::jmax (1.5f, d * 0.16f);
+    const auto c = ring.getCentre();
+    const float r = (d - stroke) * 0.5f;
+    // the track: a thin dim circle
+    g.setColour (colour::displayDim.withAlpha (hover ? 0.9f : 0.6f));
+    g.drawEllipse (ring.reduced (stroke * 0.5f), juce::jmax (1.0f, stroke * 0.45f));
+    // the amount: an arc from 12 o'clock, clockwise; empty at 0 %
+    const auto accent = colour::encoder (0);
+    if (shown > 0.001f)
+    {
+        juce::Path arc;
+        arc.addCentredArc (c.x, c.y, r, r, 0.0f, 0.0f, juce::MathConstants<float>::twoPi * juce::jmin (1.0f, shown), true);
+        g.setColour (accent);
+        g.strokePath (arc, juce::PathStrokeType (stroke, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+    }
+    // the centre: a small dot - the pitch the ring pulls to (lit with the amount)
+    g.setColour (shown > 0.001f ? accent : colour::displayDim);
+    g.fillEllipse (juce::Rectangle<float> (d * 0.22f, d * 0.22f).withCentre (c));
+}
+
+void GravityControl::mouseDown (const juce::MouseEvent& e)
+{
+    moved = false;
+    if (e.mods.isPopupMenu())
+    {
+        if (available()) showControlMenu (proc, paramId(), this);
+        return;
+    }
+    dragStart = amount();
+    dragging = true;
+    repaint();
+}
+
+void GravityControl::mouseDrag (const juce::MouseEvent& e)
+{
+    if (! dragging || e.mods.isPopupMenu()) return;
+    const float dy = (float) -e.getDistanceFromDragStartY();
+    if (! moved && std::abs (dy) < 3.0f) return;
+    moved = true;
+    setAmount (dragStart + dy * (e.mods.isShiftDown() ? 0.001f : 0.0066f));
+}
+
+void GravityControl::mouseUp (const juce::MouseEvent& e)
+{
+    const bool wasDrag = moved;
+    dragging = false;
+    repaint();
+    if (e.mods.isPopupMenu() || wasDrag) return;
+    if (onOpen) onOpen();
+}
+
+void GravityControl::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w)
+{
+    const float dir = (w.deltaY != 0.0f ? w.deltaY : w.deltaX) * (w.isReversed ? -1.0f : 1.0f);
+    if (dir == 0.0f) return;
+    const float step = e.mods.isShiftDown() ? 0.01f : 0.05f;
+    // whole steps (a 5 % grid), so the wheel lands on round values
+    const float now = amount();
+    const float next = dir > 0.0f ? std::floor (now / step + 1.0e-3f) * step + step : std::ceil (now / step - 1.0e-3f) * step - step;
+    setAmount (next);
+}
+
 } // namespace ohpe::ui

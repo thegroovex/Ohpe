@@ -390,6 +390,19 @@ This is the global key `key.root` / `key.scale` that the part's **Scale** quanti
 harmony brain (before it heard anything; *Take Key* writes into it) and the in-key grid already use – nothing new to
 keep in sync.
 
+**Key Gravity on the header (p70).** Right next to the key, left of it: a small **ring** for the edit part's
+[Key Gravity](KEY-GRAVITY.md) (`pN.grav.amt`). It fills clockwise in the accent colour of its encoder with the amount
+and is empty at 0 % (the stage is off). Tooltip: *Key Gravity – pulls the sound into key*.
+
+| Gesture | What it does |
+|---|---|
+| click | opens the **Key Gravity** encoder page of the edit part (Effects mode, Sends tab) |
+| drag up / down | the amount (Shift: fine) |
+| mouse wheel | the amount ± 5 % (Shift: ± 1 %) |
+| right-click | MIDI learn / clear / reset of `pN.grav.amt` |
+
+The two Key Gravity pages at the end of the Sends tab and the pro view's card stay where they were.
+
 **Scale Lock** (`key.lock`, German *In Tonart*): every note that reaches a part plays in the key – the on-screen
 keyboard, MIDI from a keyboard or the host, the sequencers, the arpeggiator (it gets locked notes). Two modes
 (`key.lock.mode`):
