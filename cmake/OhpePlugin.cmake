@@ -354,3 +354,8 @@ endif()
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/GravityHeaderUiTests.cpp)
 endif()
+
+# ---------------------------------------------------------------- p75: the display's header never cuts a title
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/HeaderFitUiTests.cpp)
+endif()

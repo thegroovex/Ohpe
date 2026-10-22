@@ -24,6 +24,7 @@
 #include "plugin/PluginProcessor.h"
 #include "ui/PluginEditor.h"
 #include "engines/SamplerEngine.h"
+#include "seq/ScaleChord.h"
 #include "ui/ProTiles.h"
 #include "mod/ModVoice.h"
 #include "plugin/Updater.h"
@@ -295,6 +296,30 @@ int main (int argc, char* argv[])
         save (e, dir.getChildFile ("ohpe-mixer" + suffix + ".png"));
         p.parameter ("seq.run")->setValueNotifyingHost (0.0f);
         run (p, 4);
+
+        // p75: the display's header on every page at 2x - every title whole next to the full key (C# Phrygian)
+        {
+            const auto header = juce::Rectangle<int> (256, 112, 688, 52);
+            const auto engineBefore = (EngineType) (int) std::lround (p.core().params().get ("p1.engine"));
+            p.setKeyFromUi (1, scales::Phrygian);
+            const std::pair<ui::Mode, const char*> pages[] = { { ui::Mode::Synth, "synth" }, { ui::Mode::Envelope, "envelope" }, { ui::Mode::Lfo, "lfo" },
+                                                               { ui::Mode::Mixer, "mixer" }, { ui::Mode::Effects, "effects" }, { ui::Mode::Sequencer, "sequencer" },
+                                                               { ui::Mode::Tape, "tape" }, { ui::Mode::Drum, "drum" } };
+            for (const auto& [m, name] : pages)
+            {
+                e.selectMode (m);
+                e.advanceAnimation (0.1f);
+                save (e, dir.getChildFile ("ohpe-header-" + juce::String (name) + suffix + ".png"), 2.0f, header);
+            }
+            e.selectMode (ui::Mode::Synth);
+            e.selectEngine (EngineType::Wavetable);
+            e.advanceAnimation (0.1f);
+            save (e, dir.getChildFile ("ohpe-header-wavetable" + suffix + ".png"), 2.0f, header);
+            e.selectEngine (engineBefore);
+            p.setKeyFromUi (0, scales::Major);
+            e.selectMode (ui::Mode::Mixer);
+            e.advanceAnimation (0.1f);
+        }
 
         // p11: tape page - recorded with the transport keys: REC on tracks 1 and 2 (part 1), loop set;
         //      one shot while recording (REC lit), one after STOP with track 2 selected

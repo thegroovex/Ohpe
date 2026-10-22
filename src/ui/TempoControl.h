@@ -19,6 +19,9 @@ class TempoReadout : public juce::Component, public juce::SettableTooltipClient
 {
 public:
     enum class Style { Header, Panel };
+    static constexpr float headerFont = 0.44f; ///< p75: header text size (fraction of the header height; was 0.5)
+    /** p75: the header text size in use (lowered a little on a crowded header). */
+    void setTextSize (float fraction) { if (fraction != textSize) { textSize = fraction; repaint(); } }
     TempoReadout (OhpeProcessor& p, Style s);
     void setUiScale (float s) { if (s != uiScale) { uiScale = s; repaint(); } }
     /** Repaints when the shown value changed (the editor's timer). */
@@ -42,7 +45,7 @@ private:
     void hideTextEntry();
     OhpeProcessor& proc;
     Style style;
-    float uiScale = 1.0f;
+    float uiScale = 1.0f, textSize = headerFont;
     float dragStartBpm = 120.0f, shownBpm = -1.0f;
     bool dragging = false, shownLocked = false, shownRunning = false;
     juce::TextEditor entry;

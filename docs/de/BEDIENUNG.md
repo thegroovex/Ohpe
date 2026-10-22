@@ -390,8 +390,11 @@ der letzte Akkord bleibt bis zum nächsten stehen. Auch Akkord-Grundtöne stehen
 in As-Dur, *C#* in A-Dur).
 
 **Die Tonart in der Kopfzeile.** Links von **TAP** und dem Tempo: Tonart und Skala (*F# DOR*, *H DUR*) und ein
-Vorhängeschloss für **In Tonart**. In einer vollen Kopfzeile (die Part-Seiten) steht die Kurzform – *F#m*, *Cdo*,
-*Ahm* (harmonisch Moll) –, ein langer Titel zeigt nur noch den Engine-Namen; das 3D-Abzeichen wird nie verdeckt.
+Vorhängeschloss für **In Tonart**. Die Kopfzeile ist so aufgeteilt, dass jeder Seitentitel und jeder Engine-Name
+(deutsch und englisch) vollständig neben der ganzen Tonart steht: Auf der Synth-Seite zeigt ein langer Titel den
+Engine-Namen (*WAVETABLE* statt *SYNTH / WAVETABLE*), Mixer, Tape und Drum kürzen *MIXER / KANAL 3* nur bei Platzmangel
+zu *MIXER 3*, und in einer sehr vollen Kopfzeile (externe Clock) werden Tempo- und Tonart-Schrift etwas kleiner. Ein
+Titel wird nie abgeschnitten, das 3D-Abzeichen nie verdeckt.
 Dieselben Griffe wie beim Tempo:
 
 | Geste | Wirkung |
@@ -436,7 +439,7 @@ zeigen *Weiße Tasten*.
 
 **Vom Host.** Die Plug-in-Formate geben einem Instrument keine Tonart oder Skala mit, also ist die Tonart Ohpes eigene:
 `key.root` / `key.scale` sind Host-Parameter und lassen sich vom Host automatisieren. Sollte ein Host einmal eine
-Tonart mitgeben, zeigt die Anzeige **HOST**, Grundton und Skala sind dann nur lesbar, In Tonart bleibt einstellbar.
+Tonart mitgeben, wird die Anzeige violett (der Tooltip nennt den Host als Quelle), Grundton und Skala sind dann nur lesbar, In Tonart bleibt einstellbar.
 Alles ist MIDI-zuweisbar. Parameter: [PARAMETERS.md](../PARAMETERS.md#p45--scale-lock).
 
 ## Tape-Seite

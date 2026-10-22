@@ -409,28 +409,38 @@ void Display::resized()
 void Display::placeTempo()
 {
     // p39: the tempo where it always was (right of the header, before the page arrows), the TAP key left of it
+    // p75: one compact row - smaller mono text (key, tempo), a narrower TAP, page arrows and gravity ring, so every
+    // mode title and engine name (EN / DE) and the full key ("C# PHRYG") fit side by side without an ellipsis
     const auto h = headerArea();
-    const auto bpmArea = h.withTrimmedRight (h.getHeight() * 4.0f);
-    // as wide as its longest text (the play sign, three digits, the HOST / CLOCK tag when it follows), TAP right before it
-    const juce::String widest = juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xb6 ")) + "300.0 BPM" + (proc.tempoFollowsHost() ? "  CLOCK" : "");
-    const float w = juce::GlyphArrangement::getStringWidth (monoFont (h.getHeight() * 0.5f), widest) + h.getHeight() * 0.45f;
-    tempoHeader.setBounds (bpmArea.withLeft (bpmArea.getRight() - w).toNearestInt());
-    tapHeader.setBounds (juce::Rectangle<float> (h.getHeight() * 1.3f, h.getHeight()).withPosition (bpmArea.getRight() - w - h.getHeight() * 1.4f, h.getY()).toNearestInt());
-    tapHeader.setVisible (! proc.tempoFollowsHost());
-    // p45: the key left of TAP (left of the tempo when TAP is hidden); compact ("F#m") when the full form would reach
-    // the badges after the (shortest) title - it never overlaps the 3D badge
     const float hh = h.getHeight();
-    const float left = (float) (tapHeader.isVisible() ? tapHeader.getX() : tempoHeader.getX()) - hh * 0.1f;
+    const auto bpmArea = h.withTrimmedRight (hh * headerRightTrim);
     // p70: the Key Gravity ring left of the key (hidden without the stage); the key's room starts left of it
     gravHeader.setPart (ctx.part);
     gravHeader.setVisible (gravHeader.available());
     const float gw = gravHeader.isVisible() ? GravityControl::preferredWidth (hh) : 0.0f;
-    const auto tf = brandFont (hh * 0.62f);
-    const float titleFull = juce::GlyphArrangement::getStringWidth (tf, headerTitle (false)) + 4.0f;
-    const float titleMin = mode == Mode::Synth ? juce::GlyphArrangement::getStringWidth (tf, headerTitle (true)) + 4.0f : juce::jmin (titleFull, hh * 4.0f);
-    const float leftNeed = h.getX() + juce::jmin (titleFull, titleMin) + headerBadgesWidth() + hh * 0.2f;
-    const bool full = left - keyHeader.neededWidth (hh, false) - gw >= leftNeed;
+    tapHeader.setVisible (! proc.tempoFollowsHost());
+    // the shortest title the header may show: the engine name on the Synth page, "MIXER  3" etc. (never cut further)
+    const float titleMin = juce::GlyphArrangement::getStringWidth (brandFont (hh * headerTitleFont), headerTitle (true)) + 4.0f;
+    const float leftNeed = h.getX() + titleMin + headerBadgesWidth();
+    // as wide as its longest text (the play sign, three digits, the HOST / CLOCK tag when it follows), TAP right before it
+    const juce::String widest = juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xb6 ")) + "300.0 BPM" + (proc.tempoFollowsHost() ? "  CLOCK" : "");
+    // p75: the mono text (tempo, key) a little smaller on a crowded header (host clock, wide platform fonts), so the
+    // key keeps its full form ("C# PHRYG") next to the whole title; compact ("C#ph") only as the last resort
+    bool full = false;
+    for (float size : { TempoReadout::headerFont, 0.41f, 0.38f, 0.35f })
+    {
+        tempoHeader.setTextSize (size);
+        keyHeader.setTextSize (size);
+        const float w = juce::GlyphArrangement::getStringWidth (monoFont (hh * size), widest) + hh * 0.4f;
+        tempoHeader.setBounds (bpmArea.withLeft (bpmArea.getRight() - w).toNearestInt());
+        tapHeader.setBounds (juce::Rectangle<float> (hh * headerTapW, hh).withPosition (bpmArea.getRight() - w - hh * (headerTapW + 0.05f), h.getY()).toNearestInt());
+        // p45: the key left of TAP (left of the tempo when TAP is hidden); it never overlaps the 3D badge
+        const float left = (float) (tapHeader.isVisible() ? tapHeader.getX() : tempoHeader.getX()) - hh * 0.1f;
+        full = left - keyHeader.neededWidth (hh, false) - gw >= leftNeed;
+        if (full) break;
+    }
     keyHeader.setCompact (! full);
+    const float left = (float) (tapHeader.isVisible() ? tapHeader.getX() : tempoHeader.getX()) - hh * 0.1f;
     const float kw = keyHeader.neededWidth (hh, ! full);
     keyHeader.setBounds (juce::Rectangle<float> (kw, hh).withPosition (left - kw, h.getY()).toNearestInt());
     gravHeader.setBounds (juce::Rectangle<float> (gw, hh).withPosition ((float) keyHeader.getX() - gw, h.getY()).toNearestInt());
@@ -438,23 +448,43 @@ void Display::placeTempo()
     keyLaidOut = keyHeader.shownText() + "|" + headerTitle (false) + "|" + juce::String (ctx.part);
 }
 
-juce::String Display::headerTitle (bool engineOnly)
+juce::String Display::headerTitle (bool compact)
 {
     auto& core = proc.core();
     const auto& eng = engineTypeInfo (selectedEngine (core, ctx.part));
-    if (engineOnly && mode == Mode::Synth) return i18n::upper (i18n::pick (eng.nameEn, eng.nameDe));
+    if (compact && mode == Mode::Synth) return i18n::upper (i18n::pick (eng.nameEn, eng.nameDe));
     juce::String title = i18n::upper (tr (modeInfo (mode).nameEn));
     if (mode == Mode::Synth) title << "  /  " << i18n::upper (i18n::pick (eng.nameEn, eng.nameDe));
-    if (mode == Mode::Mixer) title << "  /  " << i18n::upper (tr ("Channel")) << " " << (ctx.mixerChannel + 1);
-    if (mode == Mode::Tape) title << "  /  " << i18n::upper (tr ("Track")) << " " << (ctx.tapeTrack + 1);
-    if (mode == Mode::Drum) title << "  /  " << i18n::upper (tr ("Pad")) << " " << (ctx.drumPad + 1);
+    // p75 compact: the number alone after the mode name ("MIXER  3") when "MIXER  /  CHANNEL 3" does not fit
+    const auto sub = [&] (const char* what, int n) { title << (compact ? juce::String ("  ") : "  /  " + i18n::upper (tr (what)) + " ") << n; };
+    if (mode == Mode::Mixer) sub ("Channel", ctx.mixerChannel + 1);
+    if (mode == Mode::Tape) sub ("Track", ctx.tapeTrack + 1);
+    if (mode == Mode::Drum) sub ("Pad", ctx.drumPad + 1);
     return title;
 }
 
 float Display::headerBadgesWidth() const
 {
+    // p75: gap, part badge, gap, 3D badge, a little air before the gravity ring / key
     const bool partBadge = mode == Mode::Synth || mode == Mode::Envelope || mode == Mode::Lfo || mode == Mode::Effects;
-    return headerArea().getHeight() * (0.4f + (partBadge ? 1.9f : 0.0f) + 1.75f);
+    return headerArea().getHeight() * (headerGap + (partBadge ? headerPartBadgeW + headerGap : 0.0f) + header3dBadgeW + 0.2f);
+}
+
+Display::HeaderTitleFit Display::headerTitleFit()
+{
+    const auto h = headerArea();
+    const auto tf = brandFont (h.getHeight() * headerTitleFont);
+    HeaderTitleFit fit;
+    fit.room = (float) headerLeftX() - h.getX() - headerBadgesWidth();
+    fit.text = headerTitle (false);
+    fit.needed = juce::GlyphArrangement::getStringWidth (tf, fit.text) + 4.0f;
+    if (fit.needed > fit.room) // a crowded header keeps "VOCAL" / "MIXER  3" rather than cutting "SYNTH / VO..."
+    {
+        fit.compact = true;
+        fit.text = headerTitle (true);
+        fit.needed = juce::GlyphArrangement::getStringWidth (tf, fit.text) + 4.0f;
+    }
+    return fit;
 }
 
 void Display::paintOverChildren (juce::Graphics& g)
@@ -682,7 +712,7 @@ juce::Rectangle<float> Display::spaceBadgeArea() const
     const auto h = headerArea();
     // after the title and the part badge (placed while painting the header)
     if (! badgeRect.isEmpty()) return badgeRect;
-    return juce::Rectangle<float> (h.getHeight() * 1.75f, h.getHeight() * 0.66f).withPosition (h.getCentreX(), h.getCentreY() - h.getHeight() * 0.33f);
+    return juce::Rectangle<float> (h.getHeight() * header3dBadgeW, h.getHeight() * 0.6f).withPosition (h.getCentreX(), h.getCentreY() - h.getHeight() * 0.3f);
 }
 
 // ---------------------------------------------------------------- layout
@@ -937,7 +967,7 @@ juce::Rectangle<float> Display::padCell (int p) const
 juce::Rectangle<float> Display::pageArrow (bool right) const
 {
     auto h = headerArea();
-    const float w = h.getHeight() * 1.1f;
+    const float w = h.getHeight() * headerArrowW; // p75: was 1.1
     return right ? h.withLeft (h.getRight() - w) : h.withLeft (h.getRight() - w * 3.2f).withWidth (w);
 }
 
@@ -1249,25 +1279,20 @@ void Display::paint (juce::Graphics& g)
 
     // header
     auto h = headerArea();
-    g.setFont (brandFont (h.getHeight() * 0.62f));
+    g.setFont (brandFont (h.getHeight() * headerTitleFont));
     g.setColour (colour::displayText);
-    juce::String title = headerTitle (false);
     const bool partMode = mode == Mode::Synth || mode == Mode::Envelope || mode == Mode::Lfo;
-    // 1.0: a long title (engine names, German) shortens with an ellipsis before it pushes the part badge and the 3D badge
-    // into the tempo on the right: badges = 0.4 + 1.9 (part) + 2.3 (3D) header heights, tempo + page arrows = 7.8
-    const float badgesW = h.getHeight() * ((partMode || mode == Mode::Effects ? 2.3f : 0.4f) + 1.75f + 0.2f);
-    const float titleMax = juce::jmax (h.getHeight() * 1.0f, juce::jmin (h.getWidth() * 0.62f, h.getWidth() - juce::jmax (h.getHeight() * 7.8f, h.getRight() - (float) headerLeftX() + h.getHeight() * 0.3f) - badgesW));
-    // p45: a crowded Synth header keeps the engine name ("VOCAL") rather than cutting "SYNTH / VO..."
-    if (mode == Mode::Synth && juce::GlyphArrangement::getStringWidth (brandFont (h.getHeight() * 0.62f), title) + 4.0f > titleMax) title = headerTitle (true);
-    const float titleW = juce::jmin (titleMax, juce::GlyphArrangement::getStringWidth (brandFont (h.getHeight() * 0.62f), title) + 4.0f);
-    g.drawText (title, h.withWidth (titleW), juce::Justification::centredLeft, true);
-    float badgeX = h.getX() + titleW + h.getHeight() * 0.4f; // 1.0: where the 3D badge goes
+    // p75: the title always fits (placeTempo keeps its room, the key goes compact first); drawn without an ellipsis
+    const auto fit = headerTitleFit();
+    const float titleW = fit.needed;
+    g.drawText (fit.text, h.withWidth (titleW + 2.0f), juce::Justification::centredLeft, false);
+    const float hh = h.getHeight();
+    float badgeX = h.getX() + titleW + hh * headerGap; // 1.0: where the 3D badge goes
     if (partMode || mode == Mode::Effects)
     {
-        badgeX += h.getHeight() * 1.9f;
         // part badge: which of the four parts the pages edit
-        auto badge = juce::Rectangle<float> (h.getHeight() * 1.5f, h.getHeight() * 0.62f)
-                         .withPosition (h.getX() + titleW + h.getHeight() * 0.4f, h.getCentreY() - h.getHeight() * 0.31f);
+        auto badge = juce::Rectangle<float> (hh * headerPartBadgeW, hh * 0.58f).withPosition (badgeX, h.getCentreY() - hh * 0.29f);
+        badgeX += hh * (headerPartBadgeW + headerGap);
         g.setColour (colour::sunYellow);
         g.fillRoundedRectangle (badge, badge.getHeight() * 0.3f);
         g.setColour (colour::display);
@@ -1275,17 +1300,17 @@ void Display::paint (juce::Graphics& g)
         g.drawText ("P" + juce::String (ctx.part + 1), badge, juce::Justification::centred);
     }
     // 1.0: the 3D badge - lights up while the edit part plays binaural 3D
-    badgeRect = juce::Rectangle<float> (h.getHeight() * 1.75f, h.getHeight() * 0.66f).withPosition (badgeX, h.getCentreY() - h.getHeight() * 0.33f);
+    badgeRect = juce::Rectangle<float> (hh * header3dBadgeW, hh * 0.6f).withPosition (badgeX, h.getCentreY() - hh * 0.3f);
     space3d::drawBadge (g, spaceBadgeArea(), space3d::partState (core, ctx.part), time, space3d::speakerMonitoring (core)); // p41
-    g.setFont (monoFont (h.getHeight() * 0.5f));
+    g.setFont (monoFont (hh * TempoReadout::headerFont));
     g.setColour (colour::displayDim);
     // p39: the tempo and TAP are child components (editable); the header keeps their room
-    const auto bpmArea = h.withTrimmedRight (h.getHeight() * 4.0f);
+    const auto bpmArea = h.withTrimmedRight (hh * headerRightTrim);
     if (mode != Mode::Tape) // p11: the tape's state on every other page
     {
         const float bpmW = bpmArea.getRight() - (float) headerLeftX() - h.getHeight() * 0.3f; // p45: the key, TAP, the tempo (p70: + gravity)
         auto room = bpmArea.withTrimmedRight (bpmW + h.getHeight() * 0.5f);
-        room = room.withLeft (h.getX() + titleW + h.getHeight() * ((partMode || mode == Mode::Effects) ? 2.4f : 0.5f));
+        room = room.withLeft (badgeRect.getRight() + hh * 0.2f);
         if (room.getWidth() > 0.0f) paintTapeHeaderStatus (g, room, h.getHeight());
     }
     if (pages > 1)
