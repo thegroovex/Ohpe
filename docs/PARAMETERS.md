@@ -1107,3 +1107,11 @@ Appended after `p4.voice.map` (p68), for each part N = 1 … 4 in this order (gr
 | `pN.grav.formant` | Part N Gravity Formant | Part N Gravitation Formant | 0 … 1 (formant keep) | 0.5 |
 | `pN.grav.mix` | Part N Gravity Mix | Part N Gravitation Mischung | 0 … 1 | 1 |
 | `pN.grav.quality` | Part N Gravity Quality | Part N Gravitation Qualität | Low Latency / Normal / High (Geringe Latenz / Normal / Hoch) | Normal |
+
+## Chord headroom (p74)
+
+Appended after `p4.grav.quality`. Details: [FACTORY-SOUNDS](en/FACTORY-SOUNDS.md) / [Werksklänge](de/FACTORY-SOUNDS.md).
+
+| ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `pN.chordroom` | Part N Chord Headroom | Part N Akkord-Reserve | 0 … 24 dB at 8 sounding notes (log curve: 1 note 0 dB, 2 a third, 4 two thirds; 0 = off) | 4.5 dB |

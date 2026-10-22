@@ -63,7 +63,7 @@
     "lfo.dest": 1,
     "wavetable.lfopos": 0.12,
     "voices": 8,
-    "gain": 18.7,
+    "gain": 20.5,
     "fx3.type": 10,
     "fx3.compressor.thresh": -7.0,
     "fx3.compressor.ratio": 8.0,
@@ -77,7 +77,7 @@
     "mod.s1.dst": 44,
     "mod.s1.amt": 0.25,
     "mod.s1.curve": 0,
-    "chordroom": 4.5
+    "chordroom": 11.2
   },
   "arp": {
     "on": 1,

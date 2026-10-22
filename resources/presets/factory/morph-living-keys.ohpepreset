@@ -59,14 +59,14 @@
     "voices": 12,
     "velsens": 0.15,
     "glide": 0.0,
-    "gain": 4.4,
+    "gain": 5.7,
     "morph.on": 1,
     "morph.x": 0.0,
     "morph.y": 0.0,
     "morph.glide": 0.15,
     "morph.xsrc": 3,
     "morph.ysrc": 1,
-    "chordroom": 6.7
+    "chordroom": 8.0
   },
   "morph": {
     "corners": [

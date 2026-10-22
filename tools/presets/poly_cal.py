@@ -32,6 +32,10 @@ ROOM_MIN, ROOM_MAX = 0.0, 24.0
 DEFAULT_ROOM = 4.5
 GUARD_MARGIN = 3.0     # dB a chord may reach the peak guard above a single note
 BASE = os.path.join(HERE, "poly_baseline.json")
+# hand-tuned in bank_curation.json, left alone by the rounds: Dust Orchestra (the preset of the p74 report) gets a large
+# chord headroom and its level after a gentler guard (makeup), so chords never reach the guard and single notes sit
+# near the bank target
+HAND = {"textures-dust-orchestra.ohpepreset"}
 
 
 class A:  # argument shim for bank_curate.render_rows
@@ -94,7 +98,7 @@ def round_(args):
     changed = 0
     log = []
     for f in sorted(phrase):
-        if f not in bank or f not in chord:
+        if f not in bank or f not in chord or f in HAND:
             continue
         p = bank[f]["params"]
         g = float(p.get("gain", 0.0))

@@ -44,14 +44,14 @@
     "fx.chorus.drift": 0.35,
     "fx.chorus.spread": 0.85,
     "fx.chorus.lowcut": 150.0,
-    "gain": 16.1,
+    "gain": 19.3,
     "morph.on": 1,
     "morph.x": 0.0,
     "morph.y": 0.0,
     "morph.glide": 0.35,
     "morph.xsrc": 3,
     "morph.ysrc": 1,
-    "chordroom": 9.8
+    "chordroom": 13.0
   },
   "morph": {
     "corners": [

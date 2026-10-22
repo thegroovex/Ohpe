@@ -48,7 +48,7 @@
     "fx.chorus.drift": 0.35,
     "fx.chorus.spread": 0.85,
     "fx.chorus.lowcut": 150.0,
-    "gain": 16.1,
+    "gain": 18.2,
     "life": 0.2,
     "fx2.type": 10,
     "fx2.compressor.thresh": -4.0,

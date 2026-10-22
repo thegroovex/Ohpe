@@ -85,7 +85,7 @@
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
     "voices": 10,
-    "gain": 16.9,
+    "gain": 19.8,
     "fx3.type": 10,
     "fx3.compressor.thresh": -7.0,
     "fx3.compressor.ratio": 8.0,
@@ -99,6 +99,6 @@
     "mod.s3.dst": 4,
     "mod.s3.amt": 0.3,
     "mod.s3.curve": 0,
-    "chordroom": 5.9
+    "chordroom": 7.6
   }
 }

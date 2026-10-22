@@ -47,7 +47,7 @@
     "fx2.chorus.drift": 0.35,
     "fx2.chorus.spread": 0.85,
     "fx2.chorus.lowcut": 160.0,
-    "gain": 10.1,
+    "gain": 10.4,
     "lfo2.rate": 5.3,
     "lfo2.sync": 0,
     "lfo2.shape": 0,

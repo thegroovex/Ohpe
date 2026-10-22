@@ -138,13 +138,13 @@
     "mpe.smooth": 0.06,
     "mpe.bend": 48,
     "voices": 8,
-    "gain": 6.5,
+    "gain": 7.3,
     "life": 0.35,
     "mod.s7.src": 9,
     "mod.s7.via": 0,
     "mod.s7.dst": 4,
     "mod.s7.amt": 0.3,
     "mod.s7.curve": 0,
-    "chordroom": 8.1
+    "chordroom": 8.9
   }
 }

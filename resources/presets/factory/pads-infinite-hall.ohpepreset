@@ -132,7 +132,7 @@
     "mpe.smooth": 0.04,
     "mpe.bend": 48,
     "voices": 6,
-    "gain": 8.5,
+    "gain": 11.8,
     "fx6.type": 10,
     "fx6.compressor.thresh": -4.0,
     "fx6.compressor.ratio": 8.0,
@@ -146,6 +146,6 @@
     "mod.s7.dst": 4,
     "mod.s7.amt": 0.3,
     "mod.s7.curve": 0,
-    "chordroom": 9.2
+    "chordroom": 10.0
   }
 }

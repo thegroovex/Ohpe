@@ -13,8 +13,9 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   limiter (up to 12 dB of limiting). New per-part **Chord Headroom** (`pN.chordroom`, 0–24 dB at 8 notes): a smooth,
   voice-count-aware gain right after the engines (1 note untouched, glides down within a few ms when notes start,
   back over ~250 ms – no pumping). Every factory part preset is calibrated so a held 8-note chord at velocity 127
-  stays at or below −1 dBTP without the limiter while single notes keep their level; the peak guards are now a soft
-  last-resort safety (1 ms attack, −2 dB). New regression test (all part presets, 8-note chord at velocity 127,
+  stays at or below −1 dBTP without the limiter while single notes keep their level; presets with a peak guard get
+  enough chord headroom that chords reach the guard at most 3 dB hotter than single notes (Dust Orchestra: no gain
+  reduction on chords any more, gentler guard, single notes near −11 LUFS). New regression test (all part presets, 8-note chord at velocity 127,
   ≤ −1 dBTP, no hard clip) and an offline polyphony audit (`tools/presets/poly_audit.py`). Older sessions get 4.5 dB
   of chord headroom: single notes sound the same, big chords a little quieter and cleaner. MIDI-mappable.
 - DE: Saubere Akkorde (p74) – Kratzen / Knistern behoben, wenn mehrere Noten (ab 4) gleichzeitig klingen, etwa bei
@@ -24,8 +25,9 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   (`pN.chordroom`, 0–24 dB bei 8 Noten): eine weiche, stimmenzahl-abhängige Verstärkung direkt nach den Engines
   (1 Note unberührt, in wenigen ms herunter, wenn Noten beginnen, in ~250 ms zurück – kein Pumpen). Jedes
   Werks-Part-Preset ist so eingemessen, dass ein gehaltener 8-Noten-Akkord mit Anschlag 127 ohne Limiter bei höchstens
-  −1 dBTP bleibt und einzelne Noten ihren Pegel behalten; der Spitzenschutz ist jetzt nur noch eine weiche letzte
-  Sicherung (1 ms Attack, −2 dB). Neuer Regressionstest (alle Part-Presets, 8-Noten-Akkord mit Anschlag 127,
+  −1 dBTP bleibt und einzelne Noten ihren Pegel behalten; Presets mit Spitzenschutz bekommen so viel Akkord-Reserve,
+  dass Akkorde ihn höchstens 3 dB heißer erreichen als einzelne Noten (Dust Orchestra: keine Pegelreduktion mehr auf
+  Akkorden, sanfterer Schutz, einzelne Noten nahe −11 LUFS). Neuer Regressionstest (alle Part-Presets, 8-Noten-Akkord mit Anschlag 127,
   ≤ −1 dBTP, kein hartes Clipping) und ein Offline-Polyphonie-Audit (`tools/presets/poly_audit.py`). Ältere Sessions
   bekommen 4,5 dB Akkord-Reserve: einzelne Noten klingen gleich, große Akkorde etwas leiser und sauberer.
   MIDI-zuweisbar.

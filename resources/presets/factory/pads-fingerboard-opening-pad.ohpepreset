@@ -58,7 +58,7 @@
     "voices": 10,
     "velsens": 0.15,
     "glide": 0.0,
-    "gain": 14.8,
+    "gain": 17.5,
     "mpe.slide": 0.0,
     "mpe.smooth": 0.015,
     "mpe.hd": 1,
@@ -68,6 +68,6 @@
     "mpe.timbre": 5,
     "mpe.timbreamt": 0.8,
     "mpe.pcurve": -0.2,
-    "chordroom": 8.8
+    "chordroom": 11.5
   }
 }

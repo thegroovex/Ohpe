@@ -41,7 +41,7 @@
     "fx.chorus.drift": 0.35,
     "fx.chorus.spread": 0.85,
     "fx.chorus.lowcut": 150.0,
-    "gain": 13.6,
+    "gain": 15.2,
     "fx2.type": 10,
     "fx2.compressor.thresh": -4.0,
     "fx2.compressor.ratio": 8.0,
@@ -55,6 +55,6 @@
     "mod.s1.dst": 4,
     "mod.s1.amt": 0.3,
     "mod.s1.curve": 0,
-    "chordroom": 8.9
+    "chordroom": 9.1
   }
 }

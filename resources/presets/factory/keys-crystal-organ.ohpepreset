@@ -141,12 +141,12 @@
     "mpe.smooth": 0.04,
     "mpe.bend": 48,
     "voices": 8,
-    "gain": 18.0,
+    "gain": 21.4,
     "mod.s6.src": 9,
     "mod.s6.via": 0,
     "mod.s6.dst": 4,
     "mod.s6.amt": 0.2,
     "mod.s6.curve": 0,
-    "chordroom": 9.7
+    "chordroom": 13.0
   }
 }
