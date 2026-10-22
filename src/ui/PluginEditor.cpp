@@ -47,7 +47,7 @@ enum SoftKeyId
     skMotionRec = 100, skMotionPlay, skMotionClear,   // p22: motion recorder
     skPadFirst = 110,                                 // p25: performance pads (latching: 110 .. 113)
     skHarmonyTake = 120, skHarmonyHold, skHarmonyClear, // p24: harmony brain
-    skVoiceOn = 130, skVoiceMap, // p68: Voice Control
+    skVoiceOn = 170, skVoiceMap, // p68: Voice Control
     skTapeClear = 130, skTapeClearAll, skTapeSave, skTapeLoad, // p38: clear track / all, save / load the tape
     // p42: the loop keys of the tape page (the loop readout left of the keys opens / closes them)
     skLoopSetIn = 140, skLoopSetOut, skLoopOnOff, skLoopSnap, skLoopToIn, skLoopBack, skLoopUndo, skLoopRedo, skLoopHalf,
