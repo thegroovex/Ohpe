@@ -26,7 +26,7 @@ sys.path.insert(0, HERE)
 import bank_curate as bc  # noqa: E402
 import poly_audit as pa  # noqa: E402
 
-CHORD_TP = -1.5        # dBTP target of the 8-note chords (the regression test allows -1.0)
+CHORD_TP = -1.5        # dBTP target of the 4- and 8-note chords (the regression test allows -1.0)
 SINGLE_TP = -1.2       # a single note / the phrase stay below this
 ROOM_MIN, ROOM_MAX = 0.0, 24.0
 DEFAULT_ROOM = 4.5
@@ -34,8 +34,10 @@ GUARD_MARGIN = 3.0     # dB a chord may reach the peak guard above a single note
 BASE = os.path.join(HERE, "poly_baseline.json")
 # hand-tuned in bank_curation.json, left alone by the rounds: Dust Orchestra (the preset of the p74 report) gets a large
 # chord headroom and its level after a gentler guard (makeup), so chords never reach the guard and single notes sit
-# near the bank target
-HAND = {"textures-dust-orchestra.ohpepreset"}
+# near the bank target; four mono basses whose output stage (multiband / compressor makeup) sets their peak, so their
+# output stage was lowered instead of the level (the level in front of it hardly moves the peak)
+HAND = {"textures-dust-orchestra.ohpepreset", "bass-vowel-growl.ohpepreset", "bass-orbit-reese.ohpepreset",
+        "bass-neuro-swirl.ohpepreset", "bass-pendulum-wobble.ohpepreset"}
 
 
 class A:  # argument shim for bank_curate.render_rows
@@ -65,7 +67,7 @@ def guard_prefix(params):
 
 def chord_and_single(render, wavdir, files, d):
     chord, single = {}, {}
-    for c in ("8wide", "8close"):
+    for c in ("4close", "8wide", "8close"):
         for wheel in (0, 127):
             for f, r in pa.render(render, wavdir, files, pa.CHORDS[c], 127, wheel, d).items():
                 chord[f + ".ohpepreset"] = max(chord.get(f + ".ohpepreset", -200.0), r["tp"])

@@ -410,8 +410,9 @@
   },
   "bass-orbit-reese.ohpepreset": {
    "params": {
-    "gain": 2.9,
-    "chordroom": 5.5
+    "gain": 6.5,
+    "chordroom": 5.5,
+    "fx2.multiband.output": 4.8
    }
   },
   "bass-punch-fm-bass.ohpepreset": {
@@ -557,8 +558,9 @@
   },
   "bass-vowel-growl.ohpepreset": {
    "params": {
-    "gain": -0.0,
-    "chordroom": 6.1
+    "gain": 1.5,
+    "chordroom": 6.1,
+    "fx4.compressor.makeup": 6.3
    }
   },
   "bass-warm-roller.ohpepreset": {
@@ -870,7 +872,7 @@
   "leads-fingerboard-breath-lead.ohpepreset": {
    "params": {
     "gain": 22.3,
-    "chordroom": 9.0
+    "chordroom": 17.5
    }
   },
   "leads-fm-brass-lead.ohpepreset": {
@@ -1050,7 +1052,7 @@
   "pads-bright-wide-pad.ohpepreset": {
    "params": {
     "gain": 18.1,
-    "chordroom": 12.1
+    "chordroom": 14.8
    }
   },
   "pads-crystal-slide.ohpepreset": {
@@ -1070,8 +1072,8 @@
   },
   "pads-fingerboard-opening-pad.ohpepreset": {
    "params": {
-    "gain": 17.5,
-    "chordroom": 11.5
+    "gain": 18.1,
+    "chordroom": 14.8
    }
   },
   "pads-frozen-vibes.ohpepreset": {
@@ -1408,7 +1410,7 @@
   "textures-harp-mist.ohpepreset": {
    "params": {
     "gain": 16.9,
-    "chordroom": 13.8
+    "chordroom": 16.2
    }
   },
   "textures-kalimba-storm.ohpepreset": {
@@ -1735,7 +1737,7 @@
   "textures-night-insects.ohpepreset": {
    "params": {
     "gain": 5.4,
-    "chordroom": 6.4
+    "chordroom": 8.1
    }
   },
   "textures-rain-canopy.ohpepreset": {
@@ -2090,13 +2092,15 @@
   "bass-neuro-swirl.ohpepreset": {
    "params": {
     "chordroom": 8.8,
-    "gain": 4.7
+    "gain": 12.9,
+    "fx2.multiband.output": 2.7
    }
   },
   "bass-pendulum-wobble.ohpepreset": {
    "params": {
     "chordroom": 9.0,
-    "gain": 6.6
+    "gain": 11.7,
+    "fx2.multiband.output": 7.3
    }
   },
   "bass-punch-sub.ohpepreset": {
@@ -2360,7 +2364,7 @@
   },
   "morph-four-worlds.ohpepreset": {
    "params": {
-    "chordroom": 13.0,
+    "chordroom": 14.1,
     "gain": 19.3
    }
   },
@@ -2378,7 +2382,7 @@
   },
   "morph-strings-filter.ohpepreset": {
    "params": {
-    "chordroom": 13.0,
+    "chordroom": 14.1,
     "gain": 19.3
    }
   },
@@ -2426,7 +2430,7 @@
   },
   "pads-evolving-tide.ohpepreset": {
    "params": {
-    "chordroom": 8.9,
+    "chordroom": 11.4,
     "gain": 7.3
    }
   },
@@ -2546,7 +2550,7 @@
   },
   "pads-tine-bloom.ohpepreset": {
    "params": {
-    "chordroom": 14.9,
+    "chordroom": 16.5,
     "gain": 14.3
    }
   },
@@ -2613,8 +2617,8 @@
   },
   "textures-bowed-metal-body.ohpepreset": {
    "params": {
-    "chordroom": 11.2,
-    "gain": 12.6
+    "chordroom": 21.4,
+    "gain": 16.3
    }
   },
   "textures-breath-texture.ohpepreset": {
@@ -2655,7 +2659,7 @@
   },
   "textures-kalimba-dust.ohpepreset": {
    "params": {
-    "chordroom": 10.5,
+    "chordroom": 11.8,
     "gain": 16.3
    }
   },
