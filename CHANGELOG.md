@@ -5,7 +5,15 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
-## Unreleased
+## 0.7.1 Preview – 2026-10-22
+
+[Notes / Hinweise](docs/release-notes/0.7.1.md)
+
+- EN: Eight new 3D motion paths, 49 binaural factory presets, RANDOM loudness fix, Key Gravity ring on the header,
+  Tape-Memory fix (a preset loaded after CAPTURE loads completely; restore last capture).
+- DE: Acht neue 3D-Bewegungspfade, 49 binaurale Werks-Presets, Lautheits-Fix für ZUFALL, Ring der
+  Tonart-Gravitation in der Kopfzeile, Tape-Memory-Fehlerbehebung (ein Preset nach MERKEN lädt vollständig; zuletzt
+  Gemerktes zurückholen).
 
 - EN: 3D Space – eight new motion paths (p73), appended to the path list (choices 13–20; older sounds and automation
   keep their path and sound identical): **Ping-Pong L/R** (ear to ear on the beat, in front one way, behind the other),
