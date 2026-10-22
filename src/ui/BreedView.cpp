@@ -458,7 +458,7 @@ void BreedView::audition (int i, bool playNote)
     const auto* g = ses->current();
     if (g == nullptr || i < 0 || i >= (int) g->children.size()) return;
     selected = i;
-    proc.presets().apply (childPreset (i), -1);
+    proc.presets().apply (childPreset (i), -1, true); // p72: a capture in the part stays (the sample is not bred)
     const auto& child = g->children[(size_t) i];
     proc.taste().soundChanged ("breed:" + std::to_string (child.seed), child.genome); // p69: play time, skips
     if (playNote && playNotes)

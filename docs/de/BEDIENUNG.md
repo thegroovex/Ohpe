@@ -201,7 +201,7 @@ Sampler). Jeder Part hat eigene Samples. Die Pfade werden mit dem Projekt gespei
 **BOUNCE** (dritte Taste, p23) bringt Tape- oder Live-Eingangs-Audio in die angezeigte Engine: Ein Menü bietet die
 Bearbeitungsspur, Tape 1 … 8, den Tape-Mix und den Eingang (1–8 Takte) sowie *Endlosschleife* (standardmäßig an – der
 Bounce schleift nahtlos). Siehe [Bounce ins Instrument](BOUNCE-INS-INSTRUMENT.md). Auf der Sampler-Seite bringt eine vierte
-Taste, **MERKEN** (p67), das Tape-Gedächtnis in diesen Part ([Tape-Gedächtnis](TAPE-GEDAECHTNIS.md)).
+Taste, **MERKEN** (p67), das Tape-Memory in diesen Part ([Tape-Memory](TAPE-MEMORY.md)).
 
 ## Eigene Wavetables und Formanten (p20)
 
@@ -463,8 +463,8 @@ Soft-Tasten im Display – zwei Reihen: oben die Schnitte der gewählten Spur, u
 | **Band laden** | lädt eine `.ohpetape`-Datei (oder sie aufs Fenster ziehen). Enthält das Band schon Material, fragt Ohpe vorher (*Aufgenommenes Band ersetzen?*); das Laden ist ein Rückgängig-Schritt, **Rückgängig** holt das alte Band zurück. Ein Band mit anderer Abtastrate wird umgerechnet und behält seine Tonhöhe |
 | **Export** | rendert Master + die acht Spuren als **24-Bit-WAV** in einen wählbaren Ordner (offline, schneller als Echtzeit; das laufende Audio wird nicht unterbrochen) |
 | **Bounce** | bringt die Bearbeitungsspur (oder die Quelle der Bounce-Seite; bei eingeschalteter Schleife den Schleifenbereich) in die Grain- oder Sampler-Engine des bearbeiteten Parts, standardmäßig als Endlosschleife – [Bounce ins Instrument](BOUNCE-INS-INSTRUMENT.md) |
-| **Merken** | (Ende der ersten Reihe, p67) macht das Tape-Gedächtnis – die letzten Sekunden von Ohpes eigenem Ausgang – zum Instrument im Sampler des Ziel-Parts (Chromatisch oder Slices); dunkel, solange das Gedächtnis leer ist – [Tape-Gedächtnis](TAPE-GEDAECHTNIS.md) |
-| **Gedächtnis** | (Ende der zweiten Reihe) das Gedächtnis-Menü: Chromatisch / Slices, Länge (5–30 s), Quelle (Hauptausgang, Part 1–4), Ziel-Part, zuletzt Gemerktes als WAV exportieren, Gedächtnis leeren, MIDI-Learn für MERKEN |
+| **Merken** | (Ende der ersten Reihe, p67) macht das Tape-Memory – die letzten Sekunden von Ohpes eigenem Ausgang – zum Instrument im Sampler des Ziel-Parts (Chromatisch oder Slices); dunkel, solange das Memory leer ist – [Tape-Memory](TAPE-MEMORY.md) |
+| **Memory** | (Ende der zweiten Reihe) das Memory-Menü: Chromatisch / Slices, Länge (5–30 s), Quelle (Hauptausgang, Part 1–4), Ziel-Part, zuletzt Gemerktes zurückholen (nach einem Preset-Wechsel), zuletzt Gemerktes als WAV exportieren, Memory leeren, MIDI-Learn für MERKEN |
 
 ![Alles löschen fragt vorher](../images/ohpe-tape-clear-de.png)
 

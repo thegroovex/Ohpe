@@ -118,10 +118,43 @@ const tapemem::Capture* TapeMemoryManager::captureOf (int part) const
     return z.size() == 1 && z[0].sample == c.sample ? &c : nullptr;
 }
 
+const tapemem::Capture* TapeMemoryManager::storedCapture (int part) const
+{
+    if (part < 0 || part >= Core::numParts) return nullptr;
+    const auto& c = captures[(size_t) part];
+    return c.sample != nullptr ? &c : nullptr;
+}
+
+bool TapeMemoryManager::release (int part, bool announce)
+{
+    if (captureOf (part) == nullptr) return false;
+    if (auto* e = dynamic_cast<SamplerEngine*> (core.part (part).engine (EngineType::Sampler))) e->clearZones();
+    if (announce) post (tr ("Capture set aside - Memory menu restores it"));
+    return true;
+}
+
+bool TapeMemoryManager::restore (int part)
+{
+    if (part < 0) part = lastPart.load();
+    const auto* c = storedCapture (part);
+    if (c == nullptr || ! tapemem::apply (core, part, *c, setParam)) return false;
+    post (tr ("Capture restored into Part") + " " + juce::String (part + 1));
+    return true;
+}
+
+bool TapeMemoryManager::reattach (int part)
+{
+    const auto* c = storedCapture (part);
+    auto* e = dynamic_cast<SamplerEngine*> (core.part (part).engine (EngineType::Sampler));
+    if (c == nullptr || e == nullptr) return false;
+    e->setSample (c->sample, c->mode == tapemem::ModeSlices ? tapemem::sliceBaseKey : c->root);
+    return true;
+}
+
 juce::File TapeMemoryManager::exportWav (int part)
 {
     if (part < 0) part = lastPart.load();
-    const auto* c = captureOf (part);
+    const auto* c = storedCapture (part); // p72: a capture set aside by a preset can still be exported
     if (c == nullptr || ! library.createDirectory())
     {
         post (tr ("No capture to export"));
@@ -158,9 +191,10 @@ void TapeMemoryManager::storeInState()
     core.setStateSection ("tapememory", tapemem::saveCaptures (keep));
 }
 
-int TapeMemoryManager::restoreFromState()
+int TapeMemoryManager::restoreFromState (bool clearOthers)
 {
-    for (auto& c : captures) c = {};
+    if (clearOthers)
+        for (auto& c : captures) c = {};
     int n = 0;
     for (auto& s : tapemem::restoreCaptures (core.stateSection ("tapememory")))
     {

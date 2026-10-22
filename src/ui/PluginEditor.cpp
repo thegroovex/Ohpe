@@ -2169,7 +2169,7 @@ void OhpeEditor::showTapeMemoryMenu()
     // p67: the tape memory settings (all MIDI-learnable parameters), export and clear
     auto& reg = proc.core().params();
     auto& tm = proc.tapeMemory();
-    enum { idMode = 1, idLen = 10, idSrc = 20, idTo = 30, idExport = 40, idClear, idLearn };
+    enum { idMode = 1, idLen = 10, idSrc = 20, idTo = 30, idExport = 40, idClear, idLearn, idRestore };
     auto pick = [&reg] (const char* id) { return (int) std::lround (reg.get (id)); };
     auto choices = [&reg] (const char* id) {
         const auto& d = reg.descriptor (reg.indexOf (id));
@@ -2188,7 +2188,9 @@ void OhpeEditor::showTapeMemoryMenu()
     m.addSubMenu (tr ("Source"), srcs);
     m.addSubMenu (tr ("Into"), tos);
     m.addSeparator();
-    m.addItem (idExport, tr ("Export last capture as WAV"), tm.captureOf (tm.lastCapturedPart()) != nullptr);
+    // p72: a preset loaded over the last capture set it aside; it comes back from here
+    m.addItem (idRestore, tr ("Restore last capture"), tm.storedCapture (tm.lastCapturedPart()) != nullptr && tm.captureOf (tm.lastCapturedPart()) == nullptr);
+    m.addItem (idExport, tr ("Export last capture as WAV"), tm.storedCapture (tm.lastCapturedPart()) != nullptr);
     m.addItem (idClear, tr ("Clear the memory"), tm.heldSeconds() > 0.0);
     m.addItem (idLearn, tr ("MIDI Learn") + ": " + tr ("Capture"));
     juce::Component::SafePointer<OhpeEditor> safe (this);
@@ -2200,6 +2202,7 @@ void OhpeEditor::showTapeMemoryMenu()
         else if (r >= idSrc && r < idSrc + tapemem::numSources) self.setParamPlain (Core::Ids::tapememSrc, (float) (r - idSrc));
         else if (r >= idTo && r < idTo + tapemem::numTargets) self.setParamPlain (Core::Ids::tapememTo, (float) (r - idTo));
         else if (r == idExport) self.proc.tapeMemory().exportWav();
+        else if (r == idRestore) self.proc.tapeMemory().restore();
         else if (r == idClear) self.proc.core().tapeMemory().clear();
         else if (r == idLearn) self.proc.armMidiLearn (Core::Ids::tapememGo);
         self.refreshSoftKeys();

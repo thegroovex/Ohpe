@@ -13,7 +13,7 @@
 #include <vector>
 
 /**
-    p67: Tape Memory (Tape-Gedächtnis). Ohpe always keeps the last seconds of its own output (the main output, or one
+    p67: Tape Memory (Tape-Memory). Ohpe always keeps the last seconds of its own output (the main output, or one
     part after its FX rack) in a preallocated ring buffer. One button (CAPTURE / MERKEN, "tapemem.go") turns that
     memory into a playable instrument in the Sampler of a part:
 

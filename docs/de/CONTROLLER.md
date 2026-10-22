@@ -196,7 +196,7 @@ Scales loslassen, ohne etwas zu wählen, schaltet zur nächsten Anordnung (kurz 
 | Fixed Length | Schrittanzahl 4 → 8 → 16 → 32 → 64 → 4 – leuchtet, wenn nicht 16 |
 | Automation | Bewegungsaufnahme des Edit-Parts an / aus (`pN.motion.rec`) – leuchtet, solange scharf, blinkt, während das Band läuft |
 | Add Effect | der gewählte FX-Slot (Part-Rack, wenn die Effekt-Seite kein Rack zeigt) bekommt den nächsten Effekttyp |
-| Add Track | MERKEN: das Tape-Gedächtnis wird zum Instrument im Ziel-Part (`tapemem.go`, siehe [TAPE-GEDAECHTNIS.md](TAPE-GEDAECHTNIS.md)) – leuchtet schwach, solange das Gedächtnis Klang hält, blinkt während der Analyse |
+| Add Track | MERKEN: das Tape-Memory wird zum Instrument im Ziel-Part (`tapemem.go`, siehe [TAPE-MEMORY.md](TAPE-MEMORY.md)) – leuchtet schwach, solange das Memory Klang hält, blinkt während der Analyse |
 | User | öffnet / schließt ZUCHT – leuchtet, solange offen |
 | 1/4 … 1/32t (rechts) | gehalten beim Spielen der Pads = Notenwiederholung: der Arpeggiator auf dem Edit-Part in diesem Raster (1/4, 1/4T, 1/8, 1/8T, 1/16, 1/16T, 1/32, 1/32T), beim Loslassen wie vorher; Shift = Arp-Raster setzen und behalten – grün, solange gehalten, gelb = Raster des Arps |
 
