@@ -130,6 +130,8 @@ public:
 
     // used by tests and the screenshot tool
     void selectMode (ui::Mode m);
+    /** p70: opens the edit part's Key Gravity encoder page (Effects mode, Sends view) - the header's gravity ring. */
+    void openKeyGravity();
     void selectEngine (EngineType t);
     void selectPart (int part);                 ///< 0..3
     void selectSeqView (ui::SeqView v);

@@ -7,6 +7,10 @@ toward the current key and the chord that is held. A slightly detuned pad locks 
 chord tones, and at high amounts noise and drum loops turn into pitched texture that plays the chord. It sits on the
 Effects mode's last two encoder pages **Key Gravity** and in the pro view as the card **Key Gravity**.
 
+**Quickest way in (p70):** the small ring on the display's header, right next to the key, shows the edit part's
+Gravity (empty at 0 %). Click it to open the Key Gravity page directly; drag or turn the mouse wheel on it to set the
+amount; right-click for MIDI learn. See [User interface](USER-INTERFACE.md).
+
 | Control | Parameter | What it does |
 |---|---|---|
 | Gravity | `pN.grav.amt` | 0 = off (the part sounds exactly as without the stage: bit-identical, no latency, no CPU) … 100 % |

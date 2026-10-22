@@ -5,6 +5,16 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
+## Unreleased
+
+- EN: Key Gravity on the header (p70): a small ring right next to the key and its lock shows the edit part's gravity
+  amount (empty at 0 %). Click opens the Key Gravity page directly, drag / mouse wheel set the amount, right-click =
+  MIDI learn; tooltip and help topic EN / DE. The Sends pages and the pro view card stay. No new parameters.
+- DE: Tonart-Gravitation in der Kopfzeile (p70): ein kleiner Ring direkt neben der Tonart und ihrem Schloss zeigt die
+  Gravitation des Edit-Parts (bei 0 % leer). Klick öffnet die Seite Tonart-Gravitation direkt, Ziehen / Mausrad
+  stellen den Wert ein, Rechtsklick = MIDI-Learn; Tooltip und Hilfethema DE / EN. Die Sends-Seiten und die Karte der
+  Pro-Ansicht bleiben. Keine neuen Parameter.
+
 ## 0.7.0 Preview – 2026-10-22
 
 [Notes / Hinweise](docs/release-notes/0.7.0.md)

@@ -56,6 +56,48 @@ private:
     bool dragging = false, moved = false, onLock = false, compact = false;
 };
 
+/**
+    p70: Key Gravity on the display's header, right next to the key and its lock - a small ring that shows the edit
+    part's gravity amount (pN.grav.amt; empty at 0 %, the accent colour of its encoder).
+      click                opens the Key Gravity encoder page (onOpen)
+      drag up / down       the amount (1 % per 1.5 pixels; Shift: fine)
+      mouse wheel          the amount +- 5 % (Shift: 1 %)
+      right-click          MIDI learn / clear / reset, as every control
+    Hidden when the part has no Key Gravity stage. No parameters of its own.
+*/
+class GravityControl : public juce::Component, public juce::TooltipClient
+{
+public:
+    explicit GravityControl (OhpeProcessor& p);
+    void setPart (int part);
+    int part() const noexcept { return editPart; }
+    juce::String paramId() const; ///< "p1.grav.amt"
+    bool available() const;       ///< the part has the stage
+    float amount() const;         ///< 0 .. 1
+    float shownAmount() const noexcept { return shown; } ///< what the ring shows (after refresh)
+    /** Repaints when the amount changed (the editor's timer). */
+    void refresh();
+    /** Width the ring needs at header height h. */
+    static float preferredWidth (float h) noexcept { return h * 0.95f; }
+    std::function<void()> onOpen;
+
+    juce::String getTooltip() override;
+    void paint (juce::Graphics& g) override;
+    void mouseDown (const juce::MouseEvent& e) override;
+    void mouseDrag (const juce::MouseEvent& e) override;
+    void mouseUp (const juce::MouseEvent& e) override;
+    void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
+    void mouseEnter (const juce::MouseEvent&) override { repaint(); }
+    void mouseExit (const juce::MouseEvent&) override { repaint(); }
+
+private:
+    void setAmount (float a);
+    OhpeProcessor& proc;
+    int editPart = 0;
+    float shown = 0.0f, dragStart = 0.0f;
+    bool dragging = false, moved = false;
+};
+
 /** p45: draws a padlock (closed = on) into `area`. */
 void drawLockSign (juce::Graphics& g, juce::Rectangle<float> area, juce::Colour ink, bool closed);
 
