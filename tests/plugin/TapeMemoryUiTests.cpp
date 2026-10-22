@@ -65,7 +65,7 @@ TEST_CASE ("plug-in p67: the output fills the tape memory; CAPTURE makes a Sampl
     REQUIRE (s->zones().size() == 1);
     const auto* c = p.tapeMemory().captureOf (1);
     REQUIRE ((c != nullptr));
-    CHECK (s->zones()[0].sample == c->sample);
+    CHECK ((s->zones()[0].sample == c->sample));
     CHECK (s->zones()[0].rootKey == c->root);
     CHECK (p.tapeMemory().lastMessage().startsWith ("Captured into Part 2"));
 

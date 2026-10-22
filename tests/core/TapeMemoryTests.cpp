@@ -151,7 +151,7 @@ TEST_CASE ("p67 tape memory: Chromatic capture - silence trimmed, pitch correcte
     m.insert (m.end(), t.begin(), t.end());
     m.insert (m.end(), 24000, 0.0f);
     const auto c = tapemem::build (stereo (m), tapemem::ModeChromatic, "Capture 1");
-    REQUIRE (c.sample != nullptr);
+    REQUIRE ((c.sample != nullptr));
     CHECK (c.root == 57);
     CHECK (c.cents == doctest::Approx (-30.0).epsilon (0.1));
     CHECK (c.sample->numFrames() < (int64_t) (1.7 * kRate)); // the silence is gone
@@ -168,10 +168,10 @@ TEST_CASE ("p67 tape memory: Chromatic capture - silence trimmed, pitch correcte
     REQUIRE (e != nullptr);
     REQUIRE (e->zones().size() == 1);
     CHECK (e->zones()[0].rootKey == 57);
-    CHECK (e->zones()[0].sample == c.sample);
+    CHECK ((e->zones()[0].sample == c.sample));
     CHECK_FALSE (tapemem::apply (*core, 4, c, recorder()));
     // silence gives nothing
-    CHECK (tapemem::build (stereo (std::vector<float> (48000, 0.0f)), tapemem::ModeChromatic, "x").sample == nullptr);
+    CHECK ((tapemem::build (stereo (std::vector<float> (48000, 0.0f)), tapemem::ModeChromatic, "x").sample == nullptr));
 }
 
 TEST_CASE ("p67 tape memory: Chromatic picks the strongest note; Slices finds one slice per hit")
@@ -186,10 +186,10 @@ TEST_CASE ("p67 tape memory: Chromatic picks the strongest note; Slices finds on
         m.insert (m.end(), t.begin(), t.end());
     }
     const auto chroma = tapemem::build (stereo (m), tapemem::ModeChromatic, "c");
-    REQUIRE (chroma.sample != nullptr);
+    REQUIRE ((chroma.sample != nullptr));
     CHECK (chroma.root == 55); // G3 = the loud one
     const auto sl = tapemem::build (stereo (m), tapemem::ModeSlices, "s");
-    REQUIRE (sl.sample != nullptr);
+    REQUIRE ((sl.sample != nullptr));
     CHECK (sl.slices >= 4);
     CHECK (sl.slices <= 5);
     auto core = std::make_unique<Core>();
@@ -210,7 +210,7 @@ TEST_CASE ("p67 tape memory: captures survive the session (state section round t
     const auto t = tone (261.63, 0.6);
     m.insert (m.end(), t.begin(), t.end());
     const auto c = tapemem::build (stereo (m), tapemem::ModeChromatic, "Capture 3");
-    REQUIRE (c.sample != nullptr);
+    REQUIRE ((c.sample != nullptr));
     const auto json = tapemem::saveCaptures ({ { 2, c } });
     CHECK (json.find ("\"format\":\"ohpe-tapememory\"") != std::string::npos);
     CHECK (json.find ("\"version\":1") != std::string::npos);
