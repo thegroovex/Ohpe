@@ -78,7 +78,7 @@ public:
     /** Repaints when the amount changed (the editor's timer). */
     void refresh();
     /** Width the ring needs at header height h. */
-    static float preferredWidth (float h) noexcept { return h * 0.95f; }
+    static float preferredWidth (float h) noexcept { return h * 0.8f; }
     std::function<void()> onOpen;
 
     juce::String getTooltip() override;

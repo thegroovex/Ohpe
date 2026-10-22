@@ -337,7 +337,7 @@ void GravityControl::paint (juce::Graphics& g)
         g.setColour (colour::sunYellow.withAlpha (0.16f));
         g.fillRoundedRectangle (b.reduced (h * 0.04f, h * 0.12f), h * 0.2f);
     }
-    const float d = juce::jmin (b.getWidth(), h) * 0.56f;
+    const float d = juce::jmin (b.getWidth(), h) * 0.64f;
     const auto ring = b.withSizeKeepingCentre (d, d);
     const float stroke = juce::jmax (1.5f, d * 0.16f);
     const auto c = ring.getCentre();
