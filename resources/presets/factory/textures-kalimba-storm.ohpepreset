@@ -61,6 +61,14 @@
     "mod.s1.dst": 8,
     "mod.s1.amt": 0.4,
     "mod.s1.curve": 0,
-    "chordroom": 8.7
+    "chordroom": 8.7,
+    "fx3.type": 10,
+    "fx3.compressor.thresh": -20.0,
+    "fx3.compressor.ratio": 2.0,
+    "fx3.compressor.attack": 2.0,
+    "fx3.compressor.release": 200.0,
+    "fx3.compressor.knee": 6.0,
+    "fx3.compressor.makeup": 6.5,
+    "fx3.compressor.mix": 1.0
   }
 }

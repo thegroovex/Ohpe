@@ -673,11 +673,11 @@
   },
   "fx-spiral-riser.ohpepreset": {
    "params": {
-    "gain": 16.9,
+    "gain": 24.0,
     "fx.compressor.attack": 0.1,
     "fx.compressor.thresh": -6.0,
     "fx.compressor.knee": 6.0,
-    "chordroom": 13.1
+    "chordroom": 24.0
    }
   },
   "fx-stereo-zap.ohpepreset": {
@@ -1416,7 +1416,15 @@
   "textures-kalimba-storm.ohpepreset": {
    "params": {
     "gain": 24.0,
-    "chordroom": 8.7
+    "chordroom": 8.7,
+    "fx3.type": 10,
+    "fx3.compressor.thresh": -20.0,
+    "fx3.compressor.ratio": 2.0,
+    "fx3.compressor.attack": 2.0,
+    "fx3.compressor.release": 200.0,
+    "fx3.compressor.knee": 6.0,
+    "fx3.compressor.makeup": 6.5,
+    "fx3.compressor.mix": 1.0
    }
   },
   "textures-metal-choir.ohpepreset": {
@@ -1634,7 +1642,7 @@
   },
   "leads-ear-to-ear-lead.ohpepreset": {
    "params": {
-    "gain": 14.5,
+    "gain": 15.1,
     "chordroom": 4.6
    }
   },
@@ -1736,8 +1744,16 @@
   },
   "textures-night-insects.ohpepreset": {
    "params": {
-    "gain": 11.0,
-    "chordroom": 12.7
+    "gain": 12.0,
+    "chordroom": 12.7,
+    "fx3.type": 10,
+    "fx3.compressor.thresh": -12.0,
+    "fx3.compressor.ratio": 2.0,
+    "fx3.compressor.attack": 2.0,
+    "fx3.compressor.release": 200.0,
+    "fx3.compressor.knee": 6.0,
+    "fx3.compressor.makeup": 5.0,
+    "fx3.compressor.mix": 1.0
    }
   },
   "textures-rain-canopy.ohpepreset": {
@@ -2093,7 +2109,15 @@
    "params": {
     "chordroom": 8.8,
     "gain": 12.9,
-    "fx2.multiband.output": 2.7
+    "fx2.multiband.output": 2.7,
+    "fx3.type": 10,
+    "fx3.compressor.thresh": -14.0,
+    "fx3.compressor.ratio": 2.0,
+    "fx3.compressor.attack": 1.0,
+    "fx3.compressor.release": 200.0,
+    "fx3.compressor.knee": 6.0,
+    "fx3.compressor.makeup": 2.5,
+    "fx3.compressor.mix": 1.0
    }
   },
   "bass-pendulum-wobble.ohpepreset": {
