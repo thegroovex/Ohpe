@@ -185,6 +185,24 @@ TEST_CASE ("update: release list, channels, skip, previous version")
     CHECK (parseReleaseList ("").empty());
 }
 
+TEST_CASE ("update: a preview channel user is offered the stable release (0.7.1 preview -> 0.7.2)")
+{
+    const auto list = parseReleaseList (R"([
+      { "tag_name": "v0.7.2", "prerelease": false, "draft": false, "assets": [] },
+      { "tag_name": "v0.7.1", "prerelease": true, "draft": false, "assets": [] },
+      { "tag_name": "v0.7.0", "prerelease": true, "draft": false, "assets": [] }
+    ])");
+    REQUIRE (list.size() == 3);
+    CHECK_FALSE (list[0].prerelease);
+    const auto cur = Version::of ("0.7.1");
+    const auto s = Settings::defaults (cur);
+    CHECK (s.channel == Channel::Preview); // a pre-1.0 build follows the preview channel ...
+    REQUIRE (pickUpdate (list, s.channel, cur) == 0); // ... and still gets the stable release
+    CHECK (pickUpdate (list, Channel::Stable, cur) == 0);
+    CHECK (pickUpdate (list, Channel::Preview, Version::of ("0.7.0")) == 0); // the newest, not the next preview
+    CHECK (pickUpdate (list, Channel::Preview, Version::of ("0.7.2")) == -1); // up to date
+}
+
 TEST_CASE ("update: settings round trip, daily auto check, never while playing, remind / skip")
 {
     const auto d0 = Settings::defaults (Version::of ("0.3.0"));
