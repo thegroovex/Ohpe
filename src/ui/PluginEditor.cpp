@@ -50,7 +50,8 @@ enum SoftKeyId
     // p42: the loop keys of the tape page (the loop readout left of the keys opens / closes them)
     skLoopSetIn = 140, skLoopSetOut, skLoopOnOff, skLoopSnap, skLoopToIn, skLoopBack, skLoopUndo, skLoopRedo, skLoopHalf,
     skLoopDouble, skLoopFit,
-    skFxEditor = 160 // p55: opens / closes the FX editor (Rack / Master views)
+    skFxEditor = 160, // p55: opens / closes the FX editor (Rack / Master views)
+    skCapture = 170, skMemory                          // p67: tape memory - CAPTURE, the memory menu
 };
 
 juce::String tapefileExtension() { return tapefile::extension; } // p38: ".ohpetape"
@@ -74,7 +75,7 @@ bool isPresetFile (const juce::String& path) { return juce::File (path).hasFileE
 /** Parameters a step may lock: sound parameters, not transport / sequencer / remote controls. */
 bool lockable (const juce::String& id)
 {
-    for (const char* p : { "seq.", "tempo", "sync.", "lib.", "ui.", "tape.", "key.", "perf.", "bounce." })
+    for (const char* p : { "seq.", "tempo", "sync.", "lib.", "ui.", "tape.", "key.", "perf.", "bounce.", "tapemem." })
         if (id.startsWith (p)) return false;
     return id.isNotEmpty();
 }
@@ -1684,6 +1685,8 @@ void OhpeEditor::refreshSoftKeys()
         keys.push_back ({ skLoadSample, tr ("Load sample") });
         keys.push_back ({ skClearSample, tr ("Clear") });
         keys.push_back ({ skBounce, tr ("Bounce"), true, proc.bounces().recording() }); // p23
+        if (shownEngine == EngineType::Sampler) // p67: the tape memory into this part
+            keys.push_back ({ skCapture, tr ("Capture"), proc.tapeMemory().heldSeconds() > 0.05, proc.tapeMemory().busy() });
         juce::String name;
         auto& part = core.part (ctx.part);
         if (shownEngine == EngineType::Grain)
@@ -1737,7 +1740,10 @@ void OhpeEditor::refreshSoftKeys()
                  { skTapeSave, tr ("Save Tape"), any },
                  { skTapeLoad, tr ("Load Tape") },
                  { skExport, tr ("Export") },
-                 { skBounce, tr ("Bounce"), true, proc.bounces().recording() } }; // p11: "to the start" is a transport button now; p23: bounce
+                 { skBounce, tr ("Bounce"), true, proc.bounces().recording() }, // p11: "to the start" is a transport button now; p23: bounce
+                 // p67: tape memory - CAPTURE (the memory settings) and the memory menu
+                 { skCapture, tr ("Capture"), proc.tapeMemory().heldSeconds() > 0.05, proc.tapeMemory().busy() },
+                 { skMemory, tr ("Memory") } };
     }
     else if (mode == Mode::Drum)
     {
@@ -1923,6 +1929,11 @@ void OhpeEditor::onSoftKey (int id)
         }
         case skHarmonyClear: core.harmony().requestClear(); break; // p24
         case skTableImport: showTableImportMenu(); return; // p20
+        case skCapture: // p67: the tape page uses the target setting, the Sampler page captures into its part
+            if (mode == Mode::Tape) proc.tapeMemory().capture();
+            else proc.tapeMemory().capture (ctx.part);
+            break;
+        case skMemory: showTapeMemoryMenu(); return; // p67
         case skBounce: // p23: the tape page bounces at once (the bounce settings), the Grain / Sampler page offers the sources
             if (mode == Mode::Tape)
             {
@@ -2126,6 +2137,48 @@ void OhpeEditor::showBounceMenu()
             self.setParamPlain (Core::Ids::bounceSrc, (float) (r - idSource));
             bm.bounce (part, target, r - idSource);
         }
+        self.refreshSoftKeys();
+    });
+}
+
+void OhpeEditor::showTapeMemoryMenu()
+{
+    // p67: the tape memory settings (all MIDI-learnable parameters), export and clear
+    auto& reg = proc.core().params();
+    auto& tm = proc.tapeMemory();
+    enum { idMode = 1, idLen = 10, idSrc = 20, idTo = 30, idExport = 40, idClear, idLearn };
+    auto pick = [&reg] (const char* id) { return (int) std::lround (reg.get (id)); };
+    auto choices = [&reg] (const char* id) {
+        const auto& d = reg.descriptor (reg.indexOf (id));
+        return i18n::current() == i18n::Language::German && ! d.choicesDe.empty() ? d.choicesDe : d.choices;
+    };
+    juce::PopupMenu m;
+    m.addSectionHeader (tr ("Tape memory") + " - " + juce::String (tm.heldSeconds(), 1) + " s " + tr ("held"));
+    const auto modes = choices (Core::Ids::tapememMode);
+    for (int k = 0; k < tapemem::numModes; ++k) m.addItem (idMode + k, juce::String::fromUTF8 (modes[(size_t) k].c_str()), true, pick (Core::Ids::tapememMode) == k);
+    juce::PopupMenu lens, srcs, tos;
+    const auto ln = choices (Core::Ids::tapememLen), sn = choices (Core::Ids::tapememSrc), tn = choices (Core::Ids::tapememTo);
+    for (int k = 0; k < tapemem::numLengths; ++k) lens.addItem (idLen + k, juce::String::fromUTF8 (ln[(size_t) k].c_str()), true, pick (Core::Ids::tapememLen) == k);
+    for (int k = 0; k < tapemem::numSources; ++k) srcs.addItem (idSrc + k, juce::String::fromUTF8 (sn[(size_t) k].c_str()), true, pick (Core::Ids::tapememSrc) == k);
+    for (int k = 0; k < tapemem::numTargets; ++k) tos.addItem (idTo + k, juce::String::fromUTF8 (tn[(size_t) k].c_str()), true, pick (Core::Ids::tapememTo) == k);
+    m.addSubMenu (tr ("Length"), lens);
+    m.addSubMenu (tr ("Source"), srcs);
+    m.addSubMenu (tr ("Into"), tos);
+    m.addSeparator();
+    m.addItem (idExport, tr ("Export last capture as WAV"), tm.captureOf (tm.lastCapturedPart()) != nullptr);
+    m.addItem (idClear, tr ("Clear the memory"), tm.heldSeconds() > 0.0);
+    m.addItem (idLearn, tr ("MIDI Learn") + ": " + tr ("Capture"));
+    juce::Component::SafePointer<OhpeEditor> safe (this);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&display), [safe] (int r) {
+        if (safe == nullptr || r == 0) return;
+        auto& self = *safe;
+        if (r >= idMode && r < idMode + tapemem::numModes) self.setParamPlain (Core::Ids::tapememMode, (float) (r - idMode));
+        else if (r >= idLen && r < idLen + tapemem::numLengths) self.setParamPlain (Core::Ids::tapememLen, (float) (r - idLen));
+        else if (r >= idSrc && r < idSrc + tapemem::numSources) self.setParamPlain (Core::Ids::tapememSrc, (float) (r - idSrc));
+        else if (r >= idTo && r < idTo + tapemem::numTargets) self.setParamPlain (Core::Ids::tapememTo, (float) (r - idTo));
+        else if (r == idExport) self.proc.tapeMemory().exportWav();
+        else if (r == idClear) self.proc.core().tapeMemory().clear();
+        else if (r == idLearn) self.proc.armMidiLearn (Core::Ids::tapememGo);
         self.refreshSoftKeys();
     });
 }
@@ -2617,6 +2670,21 @@ void OhpeEditor::timerCallback()
             display.repaint();
         }
     }
+    {   // p67: tape memory messages, CAPTURE busy / enabled
+        auto& tm = proc.tapeMemory();
+        if (const int n = tm.messageCount(); n != tapeMemMessagesSeen)
+        {
+            tapeMemMessagesSeen = n;
+            display.flash (tm.lastMessage());
+            refreshSoftKeys();
+        }
+        const int state = (tm.busy() ? 2 : 0) + (tm.heldSeconds() > 0.05 ? 1 : 0);
+        if (state != tapeMemState)
+        {
+            tapeMemState = state;
+            refreshSoftKeys();
+        }
+    }
     {   // p23: bounce messages and the input recording's progress
         auto& b = proc.bounces();
         if (const int n = b.messageCount(); n != bounceMessagesSeen)
@@ -2731,6 +2799,7 @@ void OhpeEditor::showMidiMenu()
                             Core::Ids::tapeTxPlay, Core::Ids::tapeTxTapePlay, Core::Ids::tapeTxStop, Core::Ids::tapeTxRec,
                             Core::Ids::tapeRtz, Core::Ids::tapeTxLoop, Core::Ids::tapeTxArm, Core::Ids::tapeEditTrack,
                             Core::Ids::bounceGo, // p23
+                            Core::Ids::tapememGo, // p67
                             Core::Ids::tapeClearTrack, Core::Ids::tapeClearAll }) // p38
     {
         const int idx = proc.core().params().indexOf (id);
