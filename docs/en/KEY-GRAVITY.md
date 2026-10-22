@@ -47,5 +47,6 @@ a drum loop into the chord. See [Modulation](MODULATION.md).
 
 ## Factory sounds
 
-*Gravity Loop Pad* (a drum loop becomes a pad in key), *Gravity Choir Noise*, *Gravity Bell Lock* and *Gravity Chord Rain*
-show the stage; they live in the bank under the tag *gravity*.
+*Gravity Noise Choir* (pure noise pulled into the held chord), *Gravity Hat Pad* (a hat cluster melted into a pad in
+key), *Gravity Bell Lock* and *Gravity Drum Wash* show the stage; in the library you find them via the "Gravity …" name
+prefix (search "Gravity" – tags are categories only). The mod wheel lowers the gravity on all four.

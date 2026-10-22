@@ -9,7 +9,7 @@
     "Textures"
   ],
   "engine": "analog",
-  "comment": "Pure noise pulled into the chord you hold - Key Gravity at full on Chord. Wheel: from magnetic to gentle.",
+  "comment": "Pure noise pulled into the chord you hold - Key Gravity at full on Chord. Wheel: less gravity, back to noise.",
   "params": {
     "engine": 2,
     "analog.shape": 0.5,
@@ -57,9 +57,9 @@
     "fx2.hall.mix": 0.3,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
-    "mod.s1.dst": 92,
+    "mod.s1.dst": 90,
     "mod.s1.amt": -0.8,
     "mod.s1.curve": 0,
-    "gain": 6.0
+    "gain": 3.0
   }
 }

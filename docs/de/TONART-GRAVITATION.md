@@ -51,5 +51,7 @@ Modrad → Tonart-Gravitation, um einen Drum-Loop in den Akkord zu spielen. Sieh
 
 ## Werksklänge
 
-*Gravity Loop Pad* (ein Drum-Loop wird zum Pad in der Tonart), *Gravity Choir Noise*, *Gravity Bell Lock* und
-*Gravity Chord Rain* zeigen die Stufe; sie stehen in der Bank unter dem Tag *gravity*.
+*Gravity Noise Choir* (reines Rauschen in den gehaltenen Akkord gezogen), *Gravity Hat Pad* (ein Hi-Hat-Cluster zum Pad
+in der Tonart geschmolzen), *Gravity Bell Lock* und *Gravity Drum Wash* zeigen die Stufe; in der Bibliothek findest du
+sie über das Namenspräfix „Gravity …“ (nach „Gravity“ suchen – Tags sind nur Kategorien). Das Modrad nimmt bei allen
+vier die Gravitation zurück.

@@ -38,11 +38,11 @@ def hall(slot, mix, size=0.85, decay=5.0):
 
 PRESETS = [
     ("pads-gravity-noise-choir", "Gravity Noise Choir", ["Pads", "Textures"], "analog",
-     "Pure noise pulled into the chord you hold - Key Gravity at full on Chord. Wheel: from magnetic to gentle.",
+     "Pure noise pulled into the chord you hold - Key Gravity at full on Chord. Wheel: less gravity, back to noise.",
      {"engine": 2, "analog.shape": 0.5, "analog.detune": 0.0, "analog.cutoff": 7000, "analog.reso": 0.1, "analog.oscmix": 0.0,
       "analog.sub": 0.0, "analog.noise": 1.0, "analog.ftype": 0, "analog.drive": 0.1, "analog.keytrack": 0.5,
       "amp.a": 0.5, "amp.d": 1.0, "amp.s": 1.0, "amp.r": 1.6, "mod.a": 0.5, "mod.d": 1.0, "mod.s": 1.0, "mod.r": 1.0, "mod.amt": 0.0,
-      "voices": 8, **grav(1.0, 1, 0.35, 0.6, 0.3, 1.0, 2), **comp("fx", 3.0), **hall("fx2", 0.3), **wheel("gravcurve", -0.8),
+      "voices": 8, **grav(1.0, 1, 0.35, 0.6, 0.3, 1.0, 2), **comp("fx", 3.0), **hall("fx2", 0.3), **wheel("gravamt", -0.8),
       "gain": 6.0}),
     ("textures-gravity-hat-pad", "Gravity Hat Pad", ["Textures", "Pads"], "cluster",
      "A metallic hat cluster held long and melted into chord and scale - drum to pad. Wheel: less gravity, more metal.",
