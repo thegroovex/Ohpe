@@ -157,11 +157,12 @@
     "mpe.smooth": 0.04,
     "mpe.bend": 48,
     "voices": 6,
-    "gain": 15.6,
+    "gain": 15.9,
     "mod.s9.src": 9,
     "mod.s9.via": 0,
     "mod.s9.dst": 4,
     "mod.s9.amt": 0.25,
-    "mod.s9.curve": 0
+    "mod.s9.curve": 0,
+    "chordroom": 4.6
   }
 }

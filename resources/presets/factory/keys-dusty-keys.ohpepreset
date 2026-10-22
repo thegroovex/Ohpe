@@ -62,7 +62,7 @@
     "fx3.chorus.drift": 0.35,
     "fx3.chorus.spread": 0.85,
     "fx3.chorus.lowcut": 160.0,
-    "gain": 6.6,
+    "gain": 9.7,
     "lfo2.rate": 5.3,
     "lfo2.sync": 0,
     "lfo2.shape": 0,
@@ -74,6 +74,7 @@
     "mod.s1.via": 9,
     "mod.s1.dst": 1,
     "mod.s1.amt": 0.015,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 4.5
   }
 }

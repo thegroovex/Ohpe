@@ -68,6 +68,7 @@
     "mod.s1.amt": 0.4,
     "mod.s1.curve": 0,
     "velsens": 0.4,
-    "gain": 24.0
+    "gain": 24.0,
+    "chordroom": 4.5
   }
 }

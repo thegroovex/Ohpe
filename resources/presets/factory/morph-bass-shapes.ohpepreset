@@ -50,7 +50,8 @@
     "morph.ysrc": 1,
     "expr.at.dst1": 12,
     "expr.at.amt1": 0.3,
-    "expr.at.curve1": 3
+    "expr.at.curve1": 3,
+    "chordroom": 4.5
   },
   "morph": {
     "corners": [

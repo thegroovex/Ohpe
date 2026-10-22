@@ -142,6 +142,7 @@
     "mod.s8.via": 0,
     "mod.s8.dst": 4,
     "mod.s8.amt": 0.25,
-    "mod.s8.curve": 0
+    "mod.s8.curve": 0,
+    "chordroom": 4.5
   }
 }

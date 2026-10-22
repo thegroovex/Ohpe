@@ -126,13 +126,13 @@
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
     "glide": 0.02,
-    "gain": -4.0,
+    "gain": -8.5,
     "fx6.type": 10,
-    "fx6.compressor.thresh": -2.0,
+    "fx6.compressor.thresh": -4.0,
     "fx6.compressor.ratio": 8.0,
-    "fx6.compressor.attack": 1.0,
+    "fx6.compressor.attack": 0.1,
     "fx6.compressor.release": 180.0,
-    "fx6.compressor.knee": 4.0,
+    "fx6.compressor.knee": 6.0,
     "fx6.compressor.makeup": 0.0,
     "fx6.compressor.mix": 1.0,
     "mod.s6.src": 9,
@@ -142,6 +142,7 @@
     "mod.s6.curve": 0,
     "expr.at.curve1": 3,
     "expr.at.amt1": 0.3,
-    "expr.at.dst1": 12
+    "expr.at.dst1": 12,
+    "chordroom": 4.5
   }
 }

@@ -59,11 +59,11 @@
     "fx.reverb.predelay": 0.02,
     "fx.reverb.mix": 0.16,
     "fx2.type": 10,
-    "fx2.compressor.thresh": -2.0,
+    "fx2.compressor.thresh": -9.0,
     "fx2.compressor.ratio": 8.0,
-    "fx2.compressor.attack": 1.0,
+    "fx2.compressor.attack": 0.1,
     "fx2.compressor.release": 120.0,
-    "fx2.compressor.knee": 4.0,
+    "fx2.compressor.knee": 6.0,
     "fx2.compressor.makeup": 0.0,
     "fx2.compressor.mix": 1.0,
     "mod.s1.src": 13,
@@ -84,6 +84,7 @@
     "voices": 6,
     "velsens": 0.3,
     "glide": 0.0,
-    "gain": 14.1
+    "gain": 13.1,
+    "chordroom": 6.4
   }
 }

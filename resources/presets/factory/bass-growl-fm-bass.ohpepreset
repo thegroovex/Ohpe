@@ -62,6 +62,7 @@
     "mod.s1.via": 0,
     "mod.s1.dst": 4,
     "mod.s1.amt": 0.25,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 4.5
   }
 }

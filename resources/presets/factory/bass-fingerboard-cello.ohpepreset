@@ -83,6 +83,7 @@
     "mpe.pressamt": 0.4,
     "mpe.timbre": 1,
     "mpe.timbreamt": 0.45,
-    "mpe.pcurve": 0.2
+    "mpe.pcurve": 0.2,
+    "chordroom": 4.5
   }
 }

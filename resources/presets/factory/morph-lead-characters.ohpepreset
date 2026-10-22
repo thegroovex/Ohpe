@@ -63,7 +63,7 @@
     "fx.reverb.mix": 0.16,
     "velsens": 0.4,
     "glide": 0.0,
-    "gain": 3.2,
+    "gain": 3.7,
     "mod.s1.src": 12,
     "mod.s1.via": 0,
     "mod.s1.dst": 77,
@@ -74,7 +74,8 @@
     "morph.y": 0.0,
     "morph.glide": 0.12,
     "morph.xsrc": 3,
-    "morph.ysrc": 1
+    "morph.ysrc": 1,
+    "chordroom": 4.5
   },
   "morph": {
     "corners": [

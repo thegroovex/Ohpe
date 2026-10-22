@@ -50,7 +50,7 @@
     "fx2.chorus.drift": 0.35,
     "fx2.chorus.spread": 0.85,
     "fx2.chorus.lowcut": 150.0,
-    "gain": 17.0,
+    "gain": 20.6,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,
@@ -58,6 +58,7 @@
     "mod.s1.curve": 0,
     "expr.at.curve1": 3,
     "expr.at.amt1": 0.15,
-    "expr.at.dst1": 12
+    "expr.at.dst1": 12,
+    "chordroom": 5.9
   }
 }

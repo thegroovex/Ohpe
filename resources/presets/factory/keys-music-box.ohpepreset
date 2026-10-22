@@ -31,11 +31,12 @@
     "voices": 12,
     "velsens": 0.5,
     "tune": 0,
-    "gain": 10.9,
+    "gain": 16.1,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,
     "mod.s1.amt": 0.06,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 8.4
   }
 }

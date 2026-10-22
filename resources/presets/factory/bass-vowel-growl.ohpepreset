@@ -139,6 +139,7 @@
     "mod.s9.via": 0,
     "mod.s9.dst": 4,
     "mod.s9.amt": 0.25,
-    "mod.s9.curve": 0
+    "mod.s9.curve": 0,
+    "chordroom": 6.1
   }
 }

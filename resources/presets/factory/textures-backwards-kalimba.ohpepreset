@@ -38,19 +38,20 @@
     "fx2.reverb.damping": 0.5,
     "fx2.reverb.predelay": 0.02,
     "fx2.reverb.mix": 0.25,
-    "gain": 24.0,
+    "gain": 18.5,
     "fx3.type": 10,
-    "fx3.compressor.thresh": -2.0,
+    "fx3.compressor.thresh": -4.0,
     "fx3.compressor.ratio": 8.0,
-    "fx3.compressor.attack": 1.0,
+    "fx3.compressor.attack": 0.1,
     "fx3.compressor.release": 180.0,
-    "fx3.compressor.knee": 4.0,
+    "fx3.compressor.knee": 6.0,
     "fx3.compressor.makeup": 0.0,
     "fx3.compressor.mix": 1.0,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,
     "mod.s1.amt": 0.3,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 5.4
   }
 }

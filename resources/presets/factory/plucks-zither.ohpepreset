@@ -45,11 +45,12 @@
     "fx3.chorus.drift": 0.3,
     "fx3.chorus.spread": 0.85,
     "fx3.chorus.lowcut": 200.0,
-    "gain": 0.5,
+    "gain": 1.5,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,
     "mod.s1.amt": -0.45,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 4.5
   }
 }

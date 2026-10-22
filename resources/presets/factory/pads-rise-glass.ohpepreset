@@ -51,11 +51,12 @@
     "fx2.reverb.damping": 0.4,
     "fx2.reverb.predelay": 0.03,
     "fx2.reverb.mix": 0.3,
-    "gain": 7.5,
+    "gain": 13.2,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,
     "mod.s1.amt": 0.3,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 9.2
   }
 }

@@ -9,15 +9,17 @@ every preset room for chords; this script sets it per preset so a held 8-note ch
 voicing, mod wheel 0 and max, master limiter off) stays at or below CHORD_TP dBTP, and moves the level parameter
 "gain" back so the category phrase (the bank loudness measure of bank_curate.py) keeps the loudness it had before
 p74 - single notes stay where they were or come closer to the -11 LUFS bank target, chords get the headroom.
-The peak guards (rack compressor, attack 0.1 ms, ratio 8 - make_factory.py) become a soft last-resort safety:
-attack 1 ms, threshold -2 dB, knee 4 dB (they used to squash held chords by up to 11 dB - audible grit).
+Presets with a peak guard (rack compressor, attack 0.1 ms, ratio 8 - make_factory.py) keep it as it is, but their
+chord headroom is set so the chord reaches the guard at most GUARD_MARGIN dB hotter than a single note does (measured
+with the guard taken out): the guard then works on chords as it was designed to on single notes, instead of squashing
+held chords by up to 11 dB (the audible grit of p74). Limited polyphony takes a larger amount (the curve only reaches
+log2(voices) / 3 of it); a mono part (or one at 24 dB) moves its level instead.
 
   python3 tools/presets/poly_cal.py baseline --render OLD_BIN --wavdir DIR     # phrase loudness before p74
-  python3 tools/presets/poly_cal.py guards                                      # relaxes the peak guards (once)
   python3 tools/presets/poly_cal.py round --render BIN --wavdir DIR             # one calibration round, then "apply"
   python3 tools/presets/bank_curate.py apply
 """
-import argparse, json, os, sys, tempfile
+import argparse, json, math, os, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -28,6 +30,7 @@ CHORD_TP = -1.5        # dBTP target of the 8-note chords (the regression test a
 SINGLE_TP = -1.2       # a single note / the phrase stay below this
 ROOM_MIN, ROOM_MAX = 0.0, 24.0
 DEFAULT_ROOM = 4.5
+GUARD_MARGIN = 3.0     # dB a chord may reach the peak guard above a single note
 BASE = os.path.join(HERE, "poly_baseline.json")
 
 
@@ -46,24 +49,25 @@ def baseline(args):
     json.dump({f: {"st": r["st"], "tp": r["tp"], "active": r["active"]} for f, r in rows.items()}, open(BASE, "w"), indent=0)
 
 
-def guards(_args):
-    cur = json.load(open(bc.CURATION, encoding="utf-8"))
-    bank = bc.load_bank()
-    n = 0
-    for f, p in sorted(bank.items()):
-        if p["kind"] != "part":
-            continue
-        for k, v in p["params"].items():
-            if not (k.endswith(".type") and v == 10):
-                continue
+def guard_prefix(params):
+    """Rack prefix of the preset's peak guard ("fx4.compressor." ...) or None."""
+    for k, v in params.items():
+        if k.endswith(".type") and v == 10:
             pre = k[:-4] + "compressor."
-            q = p["params"]
-            if q.get(pre + "attack") == 0.1 and q.get(pre + "ratio") == 8.0 and q.get(pre + "release", 0) >= 120.0:
-                cur["changed"].setdefault(f, {}).setdefault("params", {}).update(
-                    {pre + "attack": 1.0, pre + "thresh": -2.0, pre + "knee": 4.0})
-                n += 1
-    json.dump(cur, open(bc.CURATION, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
-    print("guards relaxed", n)
+            if params.get(pre + "attack") == 0.1 and params.get(pre + "ratio") == 8.0 and params.get(pre + "release", 0) >= 120.0:
+                return pre
+    return None
+
+
+def chord_and_single(render, wavdir, files, d):
+    chord, single = {}, {}
+    for c in ("8wide", "8close"):
+        for wheel in (0, 127):
+            for f, r in pa.render(render, wavdir, files, pa.CHORDS[c], 127, wheel, d).items():
+                chord[f + ".ohpepreset"] = max(chord.get(f + ".ohpepreset", -200.0), r["tp"])
+    for f, r in pa.render(render, wavdir, files, pa.CHORDS["1"], 127, 0, d).items():
+        single[f + ".ohpepreset"] = r["tp"]
+    return chord, single
 
 
 def round_(args):
@@ -71,14 +75,21 @@ def round_(args):
     bank = bc.load_bank()
     files = parts(bank, args.only)
     phrase = bc.render_rows(A(args.render, args.wavdir), files)
-    chord, single = {}, {}
     with tempfile.TemporaryDirectory() as d:
-        for c in ("8wide", "8close"):
-            for wheel in (0, 127):
-                for f, r in pa.render(args.render, args.wavdir, files, pa.CHORDS[c], 127, wheel, d).items():
-                    chord[f + ".ohpepreset"] = max(chord.get(f + ".ohpepreset", -200.0), r["tp"])
-        for f, r in pa.render(args.render, args.wavdir, files, pa.CHORDS["1"], 127, 0, d).items():
-            single[f + ".ohpepreset"] = r["tp"]
+        chord, single = chord_and_single(args.render, args.wavdir, files, d)
+        # the peak-guarded presets once more without their guard: how much hotter than a single note a chord reaches it
+        gdir = os.path.join(d, "unguarded")
+        os.makedirs(gdir)
+        gfiles = []
+        for path in files:
+            f = os.path.basename(path)
+            pre = guard_prefix(bank[f]["params"])
+            if pre:
+                q = json.loads(json.dumps(bank[f]))
+                q["params"][pre[:-len("compressor.")] + "type"] = 0
+                json.dump(q, open(os.path.join(gdir, f), "w"))
+                gfiles.append(os.path.join(gdir, f))
+        gchord, gsingle = chord_and_single(args.render, args.wavdir, gfiles, d) if gfiles else ({}, {})
     cur = json.load(open(bc.CURATION, encoding="utf-8"))
     changed = 0
     log = []
@@ -97,9 +108,17 @@ def round_(args):
         ng = max(bc.GAIN_MIN, min(bc.GAIN_MAX, round(g + dg, 1)))
         dg = ng - g
         need = chord[f] + dg - CHORD_TP                          # chord peak after the gain move
-        nh = h + need if need > 0 else h
-        if need < -2.0 and h > DEFAULT_ROOM:                     # far below: give some back (not below the default)
-            nh = max(DEFAULT_ROOM, h + need + 1.0)
+        share = math.log2(max(1, min(8, int(p.get("voices", 8))))) / 3.0  # limited polyphony reaches only this share
+        if f in gchord and share >= 0.3:                         # the guard sees chords about as it sees single notes
+            need = max(need, gchord[f] - gsingle.get(f, gchord[f]) - GUARD_MARGIN)
+        nh = h
+        if need > 0:
+            if share < 0.3:                                      # mono: only the level helps
+                ng = max(bc.GAIN_MIN, round(ng - need, 1))
+            else:
+                nh = h + need / share
+                if nh > ROOM_MAX:
+                    ng = max(bc.GAIN_MIN, round(ng - (nh - ROOM_MAX) * share, 1))
         nh = max(ROOM_MIN, min(ROOM_MAX, round(nh, 1)))
         if "chordroom" not in p or abs(nh - h) >= 0.2 or abs(ng - g) >= 0.1:
             ch = cur["changed"].setdefault(f, {}).setdefault("params", {})
@@ -119,12 +138,12 @@ def round_(args):
 
 def main():
     a = argparse.ArgumentParser()
-    a.add_argument("cmd", choices=["baseline", "guards", "round"])
+    a.add_argument("cmd", choices=["baseline", "round"])
     a.add_argument("--render")
     a.add_argument("--wavdir")
     a.add_argument("--only", nargs="*")
     args = a.parse_args()
-    {"baseline": baseline, "guards": guards, "round": round_}[args.cmd](args)
+    {"baseline": baseline, "round": round_}[args.cmd](args)
 
 
 if __name__ == "__main__":

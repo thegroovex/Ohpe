@@ -130,11 +130,12 @@
     "mpe.smooth": 0.06,
     "mpe.bend": 48,
     "voices": 8,
-    "gain": 1.7,
+    "gain": 7.0,
     "mod.s7.src": 9,
     "mod.s7.via": 0,
     "mod.s7.dst": 4,
     "mod.s7.amt": 0.3,
-    "mod.s7.curve": 0
+    "mod.s7.curve": 0,
+    "chordroom": 8.1
   }
 }

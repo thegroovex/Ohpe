@@ -51,11 +51,11 @@
     "space.glide": 0.06,
     "vol": 1.0,
     "fx.type": 10,
-    "fx.compressor.thresh": -2.0,
+    "fx.compressor.thresh": -6.0,
     "fx.compressor.ratio": 8.0,
-    "fx.compressor.attack": 1.0,
+    "fx.compressor.attack": 0.1,
     "fx.compressor.release": 180.0,
-    "fx.compressor.knee": 4.0,
+    "fx.compressor.knee": 6.0,
     "fx.compressor.makeup": 1.8,
     "fx.compressor.mix": 1.0,
     "fx2.type": 6,
@@ -65,11 +65,12 @@
     "fx2.reverb.mix": 0.22,
     "wavetable.lfopos": 0.12,
     "voices": 2,
-    "gain": 19.0,
+    "gain": 13.6,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,
     "mod.s1.amt": 0.35,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 4.5
   }
 }

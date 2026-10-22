@@ -71,7 +71,8 @@
     "voices": 10,
     "velsens": 0.25,
     "glide": 0.0,
-    "gain": -1.0
+    "gain": 4.2,
+    "chordroom": 8.1
   },
   "usertables": {
     "wavetable": {

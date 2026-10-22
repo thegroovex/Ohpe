@@ -35,19 +35,20 @@
     "lfo.shape": 1,
     "lfo.dest": 1,
     "voices": 6,
-    "gain": 15.9,
+    "gain": 15.5,
     "fx.type": 10,
-    "fx.compressor.thresh": -2.0,
+    "fx.compressor.thresh": -7.0,
     "fx.compressor.ratio": 8.0,
-    "fx.compressor.attack": 1.0,
+    "fx.compressor.attack": 0.1,
     "fx.compressor.release": 180.0,
-    "fx.compressor.knee": 4.0,
+    "fx.compressor.knee": 6.0,
     "fx.compressor.makeup": 0.0,
     "fx.compressor.mix": 1.0,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,
     "mod.s1.amt": 0.35,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 7.7
   }
 }

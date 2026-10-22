@@ -59,7 +59,7 @@
     "lfo.dest": 3,
     "wavetable.lfopos": 0.12,
     "voices": 10,
-    "gain": 5.2,
+    "gain": 8.1,
     "lfo2.rate": 5.3,
     "lfo2.sync": 0,
     "lfo2.shape": 0,
@@ -71,6 +71,7 @@
     "mod.s1.via": 9,
     "mod.s1.dst": 1,
     "mod.s1.amt": 0.03,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 6.6
   }
 }

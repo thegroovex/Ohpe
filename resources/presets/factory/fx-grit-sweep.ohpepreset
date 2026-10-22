@@ -36,19 +36,20 @@
     "fx.filterdrive.mode": 0,
     "fx.filterdrive.mix": 0.7,
     "voices": 6,
-    "gain": 23.3,
+    "gain": 20.3,
     "fx2.type": 10,
-    "fx2.compressor.thresh": -2.0,
+    "fx2.compressor.thresh": -7.0,
     "fx2.compressor.ratio": 8.0,
-    "fx2.compressor.attack": 1.0,
+    "fx2.compressor.attack": 0.1,
     "fx2.compressor.release": 180.0,
-    "fx2.compressor.knee": 4.0,
+    "fx2.compressor.knee": 6.0,
     "fx2.compressor.makeup": 0.0,
     "fx2.compressor.mix": 1.0,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,
     "mod.s1.amt": 0.35,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 4.9
   }
 }

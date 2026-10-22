@@ -76,6 +76,7 @@
     "velsens": 0.45,
     "glide": 0.03,
     "glide.press": 0.6,
-    "gain": 17.9
+    "gain": 14.5,
+    "chordroom": 4.6
   }
 }

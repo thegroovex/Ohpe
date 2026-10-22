@@ -42,12 +42,13 @@
     "fx.chorus.drift": 0.35,
     "fx.chorus.spread": 0.85,
     "fx.chorus.lowcut": 150.0,
-    "gain": 10.2,
+    "gain": 17.1,
     "life": 0.25,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,
     "mod.s1.amt": 0.3,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 12.0
   }
 }

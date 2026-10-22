@@ -62,6 +62,7 @@
     "mod.s4.via": 0,
     "mod.s4.dst": 4,
     "mod.s4.amt": 0.2,
-    "mod.s4.curve": 0
+    "mod.s4.curve": 0,
+    "chordroom": 4.5
   }
 }

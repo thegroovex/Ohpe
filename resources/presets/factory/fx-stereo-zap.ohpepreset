@@ -55,11 +55,12 @@
     "lfo.dest": 1,
     "wavetable.lfopos": 0.12,
     "voices": 4,
-    "gain": 5.6,
+    "gain": 4.8,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,
     "mod.s1.amt": 0.35,
-    "mod.s1.curve": 0
+    "mod.s1.curve": 0,
+    "chordroom": 4.5
   }
 }
