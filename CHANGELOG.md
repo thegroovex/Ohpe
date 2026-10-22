@@ -5,6 +5,31 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
+## Unreleased
+
+- EN: Clean chords (p74) – fixed grit / crackle when several notes (4 and up) play at once on sounds such as Dust
+  Orchestra. Cause: chords summed without headroom ran into the fast peak guard of those presets (a compressor with
+  0.1 ms attack that squashed held chords by up to 11 dB) or, on other presets, far above full scale into the master
+  limiter (up to 12 dB of limiting). New per-part **Chord Headroom** (`pN.chordroom`, 0–24 dB at 8 notes): a smooth,
+  voice-count-aware gain right after the engines (1 note untouched, glides down within a few ms when notes start,
+  back over ~250 ms – no pumping). Every factory part preset is calibrated so a held 8-note chord at velocity 127
+  stays at or below −1 dBTP without the limiter while single notes keep their level; the peak guards are now a soft
+  last-resort safety (1 ms attack, −2 dB). New regression test (all part presets, 8-note chord at velocity 127,
+  ≤ −1 dBTP, no hard clip) and an offline polyphony audit (`tools/presets/poly_audit.py`). Older sessions get 4.5 dB
+  of chord headroom: single notes sound the same, big chords a little quieter and cleaner. MIDI-mappable.
+- DE: Saubere Akkorde (p74) – Kratzen / Knistern behoben, wenn mehrere Noten (ab 4) gleichzeitig klingen, etwa bei
+  Dust Orchestra. Ursache: Akkorde wurden ohne Reserve summiert und liefen in den schnellen Spitzenschutz dieser
+  Presets (ein Kompressor mit 0,1 ms Attack, der gehaltene Akkorde um bis zu 11 dB drückte) oder, bei anderen Presets,
+  weit über Vollaussteuerung in den Master-Limiter (bis zu 12 dB Begrenzung). Neu pro Part: **Akkord-Reserve**
+  (`pN.chordroom`, 0–24 dB bei 8 Noten): eine weiche, stimmenzahl-abhängige Verstärkung direkt nach den Engines
+  (1 Note unberührt, in wenigen ms herunter, wenn Noten beginnen, in ~250 ms zurück – kein Pumpen). Jedes
+  Werks-Part-Preset ist so eingemessen, dass ein gehaltener 8-Noten-Akkord mit Anschlag 127 ohne Limiter bei höchstens
+  −1 dBTP bleibt und einzelne Noten ihren Pegel behalten; der Spitzenschutz ist jetzt nur noch eine weiche letzte
+  Sicherung (1 ms Attack, −2 dB). Neuer Regressionstest (alle Part-Presets, 8-Noten-Akkord mit Anschlag 127,
+  ≤ −1 dBTP, kein hartes Clipping) und ein Offline-Polyphonie-Audit (`tools/presets/poly_audit.py`). Ältere Sessions
+  bekommen 4,5 dB Akkord-Reserve: einzelne Noten klingen gleich, große Akkorde etwas leiser und sauberer.
+  MIDI-zuweisbar.
+
 ## 0.7.1 Preview – 2026-10-22
 
 [Notes / Hinweise](docs/release-notes/0.7.1.md)

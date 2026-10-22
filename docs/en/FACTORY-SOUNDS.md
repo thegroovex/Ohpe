@@ -14,6 +14,14 @@ through the list – every preset loads at once, so you hear it while you browse
 * A **part preset** loads into the edit part (part selector 1–4). Its **Part Gain** (`pN.gain`, dB)
   matches its loudness to the other factory sounds: all of them sit around −18 … −12 dBFS RMS when
   played, so switching presets does not jump in level.
+* **Chord Headroom** (`pN.chordroom`, 0–24 dB, p74) keeps chords clean: the part's sum is lowered smoothly by
+  the number of notes sounding – 1 note 0 dB, 2 notes a third, 4 notes two thirds and 8 notes the full amount (a
+  released note fades out of the count with its envelope). The gain moves down within a few milliseconds when notes
+  start and back over about a quarter of a second when they end, so single notes are never touched and nothing
+  pumps. It works right after the engines, so the body, every rack effect and the 3D stage get the room. Every
+  factory part preset carries its own value: a held 8-note chord at full velocity stays at or below −1 dBTP without
+  the master limiter, while single notes keep their level. Older sessions and new parts use 4.5 dB. MIDI-mappable
+  like every parameter.
 * The **FX rack** (up to six effects per part, see [TAPE-MIXER-FX.md](TAPE-MIXER-FX.md)) is part of
   the preset and exists on **every part**, so a preset sounds the same in any part. (The projects
   made before 0.8 keep their parts 2–4 dry, as they were designed.)

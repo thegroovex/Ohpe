@@ -14,6 +14,14 @@ oder eine Engine, dann durch die Liste klicken – jedes Preset lädt sofort, du
 * Ein **Part-Preset** lädt in den bearbeiteten Part (Part-Wahl 1–4). Sein **Part-Gain**
   (`pN.gain`, dB) gleicht die Lautheit an die anderen Werksklänge an: alle liegen beim Spielen bei
   etwa −18 … −12 dBFS RMS, beim Umschalten springt der Pegel also nicht.
+* **Akkord-Reserve** (`pN.chordroom`, 0–24 dB, p74) hält Akkorde sauber: die Summe des Parts wird weich nach der
+  Zahl der klingenden Noten abgesenkt – 1 Note 0 dB, 2 Noten ein Drittel, 4 Noten zwei Drittel, 8 Noten der volle
+  Wert (eine losgelassene Note zählt mit ihrer Hüllkurve immer weniger). Die Verstärkung geht in wenigen
+  Millisekunden herunter, wenn Noten beginnen, und in etwa einer Viertelsekunde zurück, wenn sie enden – einzelne
+  Noten bleiben unberührt, nichts pumpt. Sie wirkt direkt nach den Engines, so haben Resonanzkörper, alle Rack-Effekte
+  und die 3D-Stufe den Platz. Jedes Werks-Part-Preset hat seinen eigenen Wert: ein gehaltener 8-Noten-Akkord mit
+  voller Anschlagstärke bleibt ohne Master-Limiter bei höchstens −1 dBTP, einzelne Noten behalten ihren Pegel. Ältere
+  Sessions und neue Parts nutzen 4,5 dB. Wie jeder Parameter MIDI-zuweisbar.
 * Das **FX-Rack** (bis zu sechs Effekte pro Part, siehe [BAND-MISCHER-FX.md](BAND-MISCHER-FX.md))
   gehört zum Preset und **jeder Part** hat es, ein Preset klingt also in jedem Part gleich. (Die
   Projekte von vor 0.8 lassen ihre Parts 2–4 trocken, wie sie gebaut wurden.)

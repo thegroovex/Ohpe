@@ -252,6 +252,58 @@ struct Metrics
     int denormals = 0;
 };
 
+/** p74: true peak (dBTP) - the sample peak and the inter-sample peaks of a 4x windowed-sinc interpolation (32 taps). */
+inline double truePeakDb (const Audio& a)
+{
+    constexpr int half = 16;
+    double coef[3][2 * half];
+    for (int ph = 0; ph < 3; ++ph)
+    {
+        const double frac = (ph + 1) * 0.25;
+        double total = 0.0;
+        for (int j = 0; j < 2 * half; ++j)
+        {
+            const double t = frac - (double) (j - (half - 1)), pi = 3.14159265358979323846;
+            const double s = std::abs (t) < 1.0e-9 ? 1.0 : std::sin (pi * t) / (pi * t);
+            const double u = t / (half + 0.5);
+            const double w = std::abs (u) >= 1.0 ? 0.0 : 0.5 + 0.5 * std::cos (pi * u);
+            total += (coef[ph][j] = s * w);
+        }
+        for (auto& c : coef[ph]) c /= total;
+    }
+    double peak = 0.0;
+    for (const auto* ch : { &a.l, &a.r })
+    {
+        const auto& x = *ch;
+        const auto n = (int64_t) x.size();
+        for (int64_t m = 0; m < n; ++m)
+        {
+            peak = std::max (peak, (double) std::abs (x[(size_t) m]));
+            if (m < half - 1 || m + half >= n) continue;
+            for (int ph = 0; ph < 3; ++ph)
+            {
+                double y = 0.0;
+                for (int j = 0; j < 2 * half; ++j) y += coef[ph][j] * x[(size_t) (m - (half - 1) + j)];
+                peak = std::max (peak, std::abs (y));
+            }
+        }
+    }
+    return peak > 1.0e-10 ? 20.0 * std::log10 (peak) : -200.0;
+}
+
+/** p74: hard-clip signature - runs of three or more equal samples above 0.5 (a stage clamping the waveform). */
+inline int flatTopRuns (const Audio& a)
+{
+    int runs = 0;
+    for (const auto* ch : { &a.l, &a.r })
+        for (size_t i = 2; i < ch->size(); ++i)
+        {
+            const float x = (*ch)[i];
+            if (std::abs (x) > 0.5f && x == (*ch)[i - 1] && x == (*ch)[i - 2]) ++runs;
+        }
+    return runs;
+}
+
 inline double toDb (double x) { return x > 1.0e-10 ? 20.0 * std::log10 (x) : -200.0; }
 
 inline Metrics measure (const Audio& a)
