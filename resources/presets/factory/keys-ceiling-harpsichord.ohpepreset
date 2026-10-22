@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "sampler",
-  "comment": "A harpsichord that rises over your head and settles behind you every four bars, the room answering from all sides. The mod wheel darkens the quill. Best with headphones.",
+  "comment": "A harpsichord that rises over your head and settles behind you every two bars from the first note of each phrase, the room answering from all sides. The mod wheel darkens the quill. Best with headphones.",
   "params": {
     "engine": 7,
     "sampler.inst": 6,
@@ -30,7 +30,7 @@
     "lfo.dest": 3,
     "space.on": 1,
     "space.path": 11,
-    "space.pathlen": 6,
+    "space.pathlen": 5,
     "space.pathrate": 1.0,
     "space.pathsize": 0.45,
     "space.pathphase": 0.0,
@@ -69,6 +69,7 @@
     "velsens": 0.5,
     "glide": 0.0,
     "gain": 8.1,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "space.retrig": 1
   }
 }

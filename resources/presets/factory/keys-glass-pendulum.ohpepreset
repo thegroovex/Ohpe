@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "sampler",
-  "comment": "Glass harmonica tones swinging from one ear to the other on a slow pendulum, each phrase landing somewhere new. The mod wheel softens the glass. Best with headphones.",
+  "comment": "Glass harmonica tones swinging from one ear to the other on a pendulum that starts again with each phrase. The mod wheel softens the glass. Best with headphones.",
   "params": {
     "engine": 7,
     "sampler.inst": 8,
@@ -30,7 +30,7 @@
     "lfo.dest": 1,
     "space.on": 1,
     "space.path": 5,
-    "space.pathlen": 5,
+    "space.pathlen": 4,
     "space.pathrate": 1.0,
     "space.pathsize": 0.6,
     "space.pathphase": 0.0,
@@ -69,6 +69,7 @@
     "velsens": 0.5,
     "glide": 0.0,
     "gain": 12.7,
-    "chordroom": 9.9
+    "chordroom": 9.9,
+    "space.retrig": 1
   }
 }

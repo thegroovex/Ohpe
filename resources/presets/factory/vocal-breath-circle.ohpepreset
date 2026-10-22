@@ -10,7 +10,7 @@
     "Textures"
   ],
   "engine": "vocal",
-  "comment": "Close, rhythmic breaths circling your head every two bars at whispering distance: intimate and slightly uncanny. The mod wheel adds a sung tone to the breath. Best with headphones.",
+  "comment": "Close, rhythmic breaths circling your head every bar from the first breath of each phrase at whispering distance: intimate and slightly uncanny. The mod wheel adds a sung tone to the breath. Best with headphones.",
   "params": {
     "engine": 5,
     "vocal.vowel": 2.4,
@@ -35,7 +35,7 @@
     "lfo.dest": 1,
     "space.on": 1,
     "space.path": 1,
-    "space.pathlen": 5,
+    "space.pathlen": 4,
     "space.pathrate": 1.0,
     "space.pathsize": 0.3,
     "space.pathphase": 0.0,
@@ -74,6 +74,7 @@
     "velsens": 0.35,
     "glide": 0.0,
     "gain": 10.5,
-    "chordroom": 8.1
+    "chordroom": 8.1,
+    "space.retrig": 1
   }
 }

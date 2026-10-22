@@ -167,7 +167,7 @@ PRESETS_SPACE = [
       space("spiral", "2 bars", size=1.0, dist=2.2, spread=60.0, room=0.4, roomsize=0.6, doppler=0.1),
       {"vol": 1.0}, voices=2),
     S("Doppler Fly-By", ["FX", "3D"], "wavetable",
-      "A siren tone racing past from left to right and back - the pitch bends with the Doppler effect as it passes.",
+      "A siren tone racing past from left to right and back with every note - the pitch bends with the Doppler effect as it passes.",
       wt(table="digital", pos=0.3, tone=0.7, unison=0.3, univoices=3, uniwidth=0.5, keytrack=0.5),
       amp(0.05, 0.5, 1.0, 0.6), mod(0.01, 0.3, 0.5, 0.3, 0.2), lfo(5.5, 0.08, "sine", "pitch"), rev(3, 0.7, 0.4, 0.02, 0.22),
       comp(4, -6.0, 8.0, 0.1, 180.0, makeup=1.8),

@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "analog",
-  "comment": "A singing analog lead hopping from one ear to the other every bar – in front of you on the way right, behind you on the way back. Velocity opens the filter; the mod wheel opens it further. Best with headphones.",
+  "comment": "A singing analog lead hopping from one ear to the other every half bar, starting again with every new note – in front of you on the way right, behind you on the way back. Velocity opens the filter; the mod wheel opens it further. Best with headphones.",
   "params": {
     "engine": 2,
     "analog.shape": 0.25,
@@ -35,7 +35,7 @@
     "lfo.dest": 0,
     "space.on": 1,
     "space.path": 13,
-    "space.pathlen": 5,
+    "space.pathlen": 4,
     "space.pathrate": 1.0,
     "space.pathsize": 0.35,
     "space.pathphase": 0.0,
@@ -77,6 +77,7 @@
     "glide": 0.03,
     "glide.press": 0.6,
     "gain": 15.1,
-    "chordroom": 4.6
+    "chordroom": 4.6,
+    "space.retrig": 2
   }
 }

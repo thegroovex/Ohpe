@@ -60,7 +60,7 @@ exact bypass (every older sound plays bit-identically); switching crossfades ove
 | 3D Motion | 3D Space (`pN.space.mode`, p41) | Off, Headphones, Speakers | the 3D switch: *Off* = the stage off; *Headphones* = on, binaural; *Speakers* = on, speaker rendering. Drawn as a segmented switch; encoder 1 steps through the three states |
 | | Motion Path | Off, Circle, Figure-8, Fly-By, Random Orbit, Pendulum, Spiral Up, Ping-Pong F/B, Swarm, Whisper, Distance Walk, Over the Head, Weave, Ping-Pong L/R, Four Corners, Breathe, Helix, Fly-Over, Bounce, Wander, Loop Orbit | see below |
 | | Motion Length | 1/16 … 32 Bars, 1/4. | one cycle of the path, in time with the song |
-| | Motion Rate | ×−4 … ×4 (default ×1) | multiplies the speed; negative = backwards, 0 = stopped. At exactly ×1 the motion locks to the song position (it repeats identically on every playback) |
+| | Motion Rate | ×−4 … ×4 (default ×1) | multiplies the speed; negative = backwards, 0 = stopped. At exactly ×1 the motion locks to the song position (it repeats identically on every playback; with Retrigger *Free* only). Fastest: Motion Length 1/16 at ×4 = one cycle per 1/64 note – for short notes use 1/2 … 1/16 with Retrigger *Note* |
 | 3D Position | Azimuth | −180 … 180° | direction (0 = front, +90 = right, ±180 = behind); rotates the whole path |
 | | Elevation | −60 … 90° | height; tilts the whole path |
 | | Distance | 0.2 … 40 m | base distance (the path scales from it) |
@@ -76,6 +76,8 @@ exact bypass (every older sound plays bit-identically); switching crossfades ove
 | Monitoring | Mono Below | 40 … 300 Hz | everything below stays **mono and unspatialised** (Linkwitz-Riley crossover, default 120 Hz) – the sub never moves |
 | | 3D Monitoring (`space.out`, global) | Headphones, Speakers | binaural rendering or speaker rendering for every 3D part and rack slot |
 | | Mono Check (`space.monocheck`, global) | off / on | folds the main output to mono – listen for what speakers in mono would play |
+| Amount & Retrigger | Amount (`pN.space.amount`, p77) | 0 … 100 % (default 100 %) | strength of the 3D effect: 100 % = the full position, motion and binaural colouring; lower values shrink the motion towards the front, the direction, distance, Doppler, air and room, and fade to the plain stereo sound at 0 %. The level stays about the same (the plain sound plays at the base distance level). Smoothed, click-free; matrix target |
+| | Motion Retrigger (`pN.space.retrig`, p77) | Free, First, Note (default Free) | *Free* = the motion runs on with the song (as before); *First* = it restarts from its start position on a note played after all keys were up; *Note* = on every note (in mono, legato notes – a key still down – keep it running). The position glides to the start in about 8 ms, so a restart never clicks. With First / Note the motion runs from the note, not from the song position |
 
 *3D Monitoring* and *Mono Check* belong to the listener: project presets neither save nor change them.
 
@@ -140,7 +142,7 @@ Azimuth and Elevation rotate every path: a Pendulum at azimuth 90° swings left 
 ## Modulation and MPE
 
 The modulation matrix (LFO mode → Mod) moves **Azimuth, Elevation, Distance, Motion Path Rate** and
-**Motion Path Phase** of the part's stage (targets 67 – 71, [MODULATION.md](MODULATION.md)). With an MPE
+**Motion Path Phase** of the part's stage (targets 67 – 71) and its **3D Amount** (target 95, p77; [MODULATION.md](MODULATION.md)). With an MPE
 controller or poly aftertouch:
 
 * **Slide (Timbre) → Elevation**: sliding up lifts the sound above your head;

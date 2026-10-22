@@ -129,6 +129,10 @@ public:
         amount - glides down within a few ms when notes start and back over ~250 ms when they end (no pumping, single
         notes untouched). It sits right after the engines, so every stage after them (body, FX rack, 3D) gets the room. */
     void registerLate74HeadroomParams (ParamRegistry& reg) const;
+    /** p77 3D motion retrigger and strength: "pN.space.retrig" (Free / First / Note - the motion restarts from its start
+        position on a note after silence or on every note; mono legato notes do not restart it) and "pN.space.amount"
+        (0..1, 1 = the full 3D effect, 0 = the plain stereo input; mod matrix target). */
+    void registerLate77SpaceParams (ParamRegistry& reg) const;
     /** p74: the chord headroom gain applied now (linear, 1 = none; tests / displays). */
     float chordHeadroomGain() const noexcept { return chordGain; }
     /** p66, audio thread (core, every block): the key's scale and the held chord as absolute pitch-class masks. */
@@ -352,6 +356,7 @@ private:
     int spaceOnIndex = -1;
     std::array<int, SpaceEffect::numParams> spaceIndex {};
     std::array<float, SpaceEffect::numParams> spaceLast {};
+    int spaceRetrigIndex = -1, spaceAmountIndex = -1; // p77
     bool spaceOn = false;
     float spaceFade = 0.0f, spaceFadeStep = 0.001f;
     std::vector<float> spaceDryL, spaceDryR;

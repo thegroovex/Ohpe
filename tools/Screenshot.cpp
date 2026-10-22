@@ -8,7 +8,7 @@
 // p20: the user wavetable frame stack (ohpe-user-wavetable). p27: the update view (ohpe-update).
 // p32: the settings menu (ohpe-settings*, ohpe-about*, ohpe-help-overlay*), the night skin (ohpe-dark, *-dark).
 // p23: bounce to engine - a loop bounced into Grain (ohpe-bounce). p67: tape memory slices (ohpe-tapemem). p66: Key Gravity pages (ohpe-key-gravity). p70: the gravity ring on the header (ohpe-gravity-header). p33: the Expression page (ohpe-expression).
-// p41: the 3D switch (ohpe-space-switch-{off,headphones,speakers}[-dark]).
+// p41: the 3D switch (ohpe-space-switch-{off,headphones,speakers}[-dark]). p77: the 3D page Amount & Retrigger (ohpe-space-retrigger).
 // p38: the tape page's clear-all confirmation (ohpe-tape-clear, ohpe-tape-clear-dark) and the tape page at night (ohpe-tape-dark).
 // p42: the tape page's loop keys and loop readout (ohpe-tape-loop, ohpe-tape-loop-dark).
 // p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
@@ -713,6 +713,17 @@ int main (int argc, char* argv[])
                 playAnimated (p, e, 45);
                 save (e, dir.getChildFile ("ohpe-space-paths" + suffix + ".png"));
                 setPlain (p, "p1.space.elevation", 0.0f);
+                // p77: the last 3D page - Amount and Motion Retrigger (ohpe-space-retrigger)
+                setPlain (p, "p1.space.amount", 0.7f);
+                setChoice (p, "p1.space.retrig", "Note");
+                auto& disp = e.displayComponent();
+                if (disp.onPageChange) disp.onPageChange (5 - e.shownPage());
+                playAnimated (p, e, 30, { 60 }, 1);
+                save (e, dir.getChildFile ("ohpe-space-retrigger" + suffix + ".png"));
+                release (p, { 60 });
+                if (disp.onPageChange) disp.onPageChange (-e.shownPage());
+                setPlain (p, "p1.space.amount", 1.0f);
+                setChoice (p, "p1.space.retrig", "Free");
             }
             release (p, { 48, 55 });
             for (int part = 1; part <= 3; ++part) setPlain (p, "p" + juce::String (part) + ".space.on", 0.0f);

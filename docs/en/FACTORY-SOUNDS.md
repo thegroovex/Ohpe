@@ -157,13 +157,13 @@ wheel fully up changes the sound cleanly.
 | Hard Edge FM Lead | Leads | FM | Character macros, Expression | A cutting FM lead voiced with the Hard macro (shorter attack, more feedback, more edge). Velocity adds bite, pressure vibrato; the mod wheel pushes Hard further into a snarl. |
 | Living Flute Lead | Leads | Vocal | Life, Expression | A breathy flute-like voice whose pitch and breath drift a little with Life, like a real player. Pressure brings in vibrato and more breath, the mod wheel a wider vibrato. |
 | Morph Lead Characters | Leads, Morph | Analog | Morph pad | One melody, four players: a bowed wooden tube at home, a breathy flute to the right, a hard FM lead above and a biting digital lead in the far corner. Mod wheel = right, pressure = up. |
-| Pendulum Lead | Leads, 3D | Analog | 3D motion path, Tempo-synced | A bright pulse lead swinging like a pendulum from one side of your head to the other, once every two bars (motion path Pendulum, in tempo). Pressure adds vibrato; the mod wheel slows the swing. Best with headphones. |
+| Pendulum Lead | Leads, 3D | Analog | 3D motion path, Tempo-synced | A bright pulse lead swinging like a pendulum from one side of your head to the other, once per bar from the first note of each phrase (motion path Pendulum, in tempo). Pressure adds vibrato; the mod wheel slows the swing. Best with headphones. |
 | Pressure Glide Lead | Leads | Analog | Glide pressure, Expression | A singing mono saw lead built for legato: pressure stretches the glide (pressure glide) and the Expression page adds vibrato as you lean in. The mod wheel opens the filter. |
 | Velocity Bite Lead | Leads | Wavetable | Expression, Character macros | A digital wavetable lead that bites harder the harder you play: velocity opens the tone and drives it (Hard), pressure adds vibrato. The mod wheel adds wavetable FM. |
 | Glass Plate Pluck | Plucks | FM | Resonator, Expression | A short FM pluck striking a thin glass plate tuned to the note: crisp attack, then bell partials that bloom. Velocity strikes harder; the mod wheel lets the plate ring longer. |
 | Kalimba Body | Plucks | Sampler | Resonator, Expression | The recorded kalimba over a small wooden box body that rings with every note: warmer, rounder, a little hollow. Velocity brightens; the mod wheel opens the box (more body). |
 | Living Nylon | Plucks | Pluck | Life, Expression | A warm nylon string with a little Life: every note drifts and breathes a touch differently, like a hand-played guitar. Velocity plucks brighter; the mod wheel moves the pluck towards the bridge. |
-| Ping-Pong Space Pluck | Plucks, 3D | Pluck | 3D motion path, Tempo-synced | A bright pluck that bounces front to back on every half bar (motion path Ping-Pong front/back, in tempo) inside a small room. Velocity plucks harder; the mod wheel speeds up the bounce. Best with headphones. |
+| Ping-Pong Space Pluck | Plucks, 3D | Pluck | 3D motion path, Tempo-synced | A bright pluck that bounces front to back every half bar, starting again with every note (motion path Ping-Pong front/back, in tempo) inside a small room. Velocity plucks harder; the mod wheel speeds up the bounce. Best with headphones. |
 | Living Bell Arp | Arp | FM | Life, Character macros | Soft FM bells arpeggiated in sixteenths, with Life and Alive keeping every repeat a little different - drift, tone and pan move on their own. The mod wheel throws the echoes. |
 | Orbit Space Arp | Arp, 3D | FM | 3D motion path, Tempo-synced | Bell arpeggios circling the listener once per bar (motion path Circle, one bar, in tempo) at arm's length, in a soft room. Pressure pulls them closer; the mod wheel moves the orbit further out. Best with headphones. |
 | Resonant Comb Arp | Arp | Pluck | Resonator, Tempo-synced | A plucked-string arpeggio through the Resonator as a rack effect: a string body tuned to the chord you hold rings under every step. The mod wheel lets the body ring longer, the echo is a synced dotted eighth. |
@@ -205,9 +205,9 @@ wheel fully up changes the sound cleanly.
 | Rain Canopy | Textures, 3D | Grain | Swarm | Dense short grains falling like rain on leaves above and around you: a swarm of drops spread over the whole sphere, slightly overhead. The mod wheel makes the drops finer. Best with headphones. |
 | Voice Halo | Textures, 3D, Vocal | Vocal | Circle | A sung halo whose place follows your own voice: sing into the input and your vowel turns it around your head, your level draws it nearer. Without input a gently orbiting choir. The mod wheel speeds the orbit. Best with headphones. |
 | Wind Spiral | Textures, 3D, FX | Analog | Spiral Up | Filtered wind that spirals up and over your head every four bars and starts again at your feet, its resonance whistling softly. The mod wheel opens the gusts. Best with headphones. |
-| Ceiling Harpsichord | Keys, 3D | Sampler | Over the Head | A harpsichord that rises over your head and settles behind you every four bars, the room answering from all sides. The mod wheel darkens the quill. Best with headphones. |
-| Glass Pendulum | Keys, 3D | Sampler | Pendulum | Glass harmonica tones swinging from one ear to the other on a slow pendulum, each phrase landing somewhere new. The mod wheel softens the glass. Best with headphones. |
-| Orbiting Tines | Keys, 3D | FM | Circle | A bell-tine electric piano drifting in a small circle in front of you every two bars, like the instrument sways as you play. Velocity adds bite; the mod wheel adds tine brightness. Best with headphones. |
+| Ceiling Harpsichord | Keys, 3D | Sampler | Over the Head | A harpsichord that rises over your head and settles behind you every two bars from the first note of each phrase, the room answering from all sides. The mod wheel darkens the quill. Best with headphones. |
+| Glass Pendulum | Keys, 3D | Sampler | Pendulum | Glass harmonica tones swinging from one ear to the other on a pendulum that starts again with each phrase. The mod wheel softens the glass. Best with headphones. |
+| Orbiting Tines | Keys, 3D | FM | Circle | A bell-tine electric piano drifting in a small circle in front of you once per bar, starting again with every note, like the instrument sways as you play. Velocity adds bite; the mod wheel adds tine brightness. Best with headphones. |
 | Rotor Organ | Keys, 3D | Cluster | Circle | A drawbar-style organ whose sound really spins around your head (circle, one bar). The mod wheel throws the rotor into the fast speed. Best with headphones. |
 | Vibes in the Round | Keys, 3D | Sampler | Ping-Pong F/B | Vibraphone bouncing between the front and the back of your head every half bar, the motor-like shimmer becoming real movement. The mod wheel moves the vibes further away. Best with headphones. |
 | Glass Droplets | Plucks, 3D | Pluck | fixed position | Bright glassy plucks falling like droplets at random points around your head, a little above. Velocity sets the splash; the mod wheel lets them ring longer. Best with headphones. |
@@ -225,10 +225,10 @@ wheel fully up changes the sound cleanly.
 | Orbit Sub | Bass, 3D | Analog | Circle | A round saw bass whose low end stays centred and mono while its upper harmonics circle your head every two bars. The mod wheel opens the filter. Best with headphones. |
 | Pendulum Growl | Bass, 3D | FM | Pendulum | A growling FM bass whose bright edge swings from ear to ear every half bar while the fundamental stays planted in the middle. The mod wheel raises the FM index. Best with headphones. |
 | Spinning Pluck Bass | Bass, 3D | Pluck | Circle | A plucked string bass: the woody attack spins once around your head every half bar, the low note stays centred. The mod wheel lets the string sustain. Best with headphones. |
-| Comet Lead | Leads, 3D | Wavetable | Fly-By | A bright wavetable lead that streaks past you every two bars, rising in pitch as it approaches and falling as it leaves (Doppler). The mod wheel sweeps the tone. Best with headphones. |
-| Ear to Ear Lead | Leads, 3D | Analog | Ping-Pong L/R | A singing analog lead hopping from one ear to the other every bar – in front of you on the way right, behind you on the way back. Velocity opens the filter; the mod wheel opens it further. Best with headphones. |
-| Overhead Flute | Leads, 3D | Sampler | Over the Head | A breathy recorder melody floating over your head and down behind you every four bars, as if played from a gallery. The mod wheel brightens the breath. Best with headphones. |
-| Vowel Orbit Lead | Leads, 3D, Vocal | Vocal | Circle | A singing vowel lead circling you every four bars like a voice moving through the room. Pressure adds vibrato; the mod wheel walks the vowel from 'ah' to 'ee'. Best with headphones. |
+| Comet Lead | Leads, 3D | Wavetable | Fly-By | A bright wavetable lead that streaks past you with every note it plays, rising in pitch as it approaches and falling as it leaves (Doppler). The mod wheel sweeps the tone. Best with headphones. |
+| Ear to Ear Lead | Leads, 3D | Analog | Ping-Pong L/R | A singing analog lead hopping from one ear to the other every half bar, starting again with every new note – in front of you on the way right, behind you on the way back. Velocity opens the filter; the mod wheel opens it further. Best with headphones. |
+| Overhead Flute | Leads, 3D | Sampler | Over the Head | A breathy recorder melody floating over your head and down behind you every two bars from the first note of each phrase, as if played from a gallery. The mod wheel brightens the breath. Best with headphones. |
+| Vowel Orbit Lead | Leads, 3D, Vocal | Vocal | Circle | A singing vowel lead circling you every two bars from the first note of each phrase like a voice moving through the room. Pressure adds vibrato; the mod wheel walks the vowel from 'ah' to 'ee'. Best with headphones. |
 | Circling Hats | Drums, 3D | Cluster | Circle | Metallic cluster hats travelling around your head once every beat, so a straight hat pattern becomes a ring of ticks. The mod wheel speeds the ring up. Best with headphones. |
 | Hand Drum Ring | Drums, 3D | FM | Circle | Hand-drum tones sitting in a ring around you: low strokes behind, open tones in front, each note at its own angle, and the ring slowly turning. The mod wheel speeds the turn. Best with headphones. |
 | Round Toms | Drums, 3D | FM | fixed position | Tuned FM toms placed around you by pitch, low toms on the left and behind, high toms to the right and in front, so a fill rolls around your head. The mod wheel moves the kit further away. Best with headphones. |
@@ -237,7 +237,7 @@ wheel fully up changes the sound cleanly.
 | Thunder Walk | FX, 3D, Textures | Analog | Distance Walk | A low, rolling rumble wandering near and far over eight bars like a storm crossing the valley, the sub kept mono and steady. The mod wheel brings the storm closer. Best with headphones. |
 | Vortex Riser | FX, 3D | Analog | Spiral Up | A noise riser caught in a vortex: it spirals upwards faster and faster around your head over four bars. Hold a note for the build; the mod wheel tightens the vortex. Best with headphones. |
 | Angel Overhead | Vocal, 3D | Vocal | Over the Head | A pure, high 'ooh' voice floating over your head and down behind you every eight bars, like a singer in the gallery. The mod wheel opens the vowel. Best with headphones. |
-| Breath Circle | Vocal, 3D, Textures | Vocal | Circle | Close, rhythmic breaths circling your head every two bars at whispering distance: intimate and slightly uncanny. The mod wheel adds a sung tone to the breath. Best with headphones. |
+| Breath Circle | Vocal, 3D, Textures | Vocal | Circle | Close, rhythmic breaths circling your head every bar from the first breath of each phrase at whispering distance: intimate and slightly uncanny. The mod wheel adds a sung tone to the breath. Best with headphones. |
 | Choir Weave | Vocal, 3D, Pads | Vocal | Weave | A dark male-formant choir weaving a wavy orbit around you over eight bars, rising and dipping as it turns. Pressure pulls it closer; the mod wheel lifts the formant. Best with headphones. |
 <!-- binaural:end -->
 
@@ -581,7 +581,7 @@ Tools, for contributors:
 |---|---|---|---|
 | Alien Signal | FM | – | Random-stepping FM timbre: radio chatter from far away. |
 | Detune Swarm | Cluster | Textures | Seven wildly drifting oscillators: a swarm. |
-| Doppler Fly-By | Wavetable | 3D | A siren tone racing past from left to right and back - the pitch bends with the Doppler effect as it passes. |
+| Doppler Fly-By | Wavetable | 3D | A siren tone racing past from left to right and back with every note - the pitch bends with the Doppler effect as it passes. |
 | Downlifter | Analog | – | Falling noise and saw sweep over three seconds with a jet flanger - the end of the build. |
 | Glitch Spray | Grain | Textures | Tiny, fast grains crushed and scattered into a stereo delay: digital spray. |
 | Gong Hit | FM | Textures | Inharmonic FM gong with a long shimmer. |
@@ -740,7 +740,7 @@ Presets marked *Arp:* switch the arpeggiator on for the part they load into; it 
 | Name | Engine | Also in | Description |
 |---|---|---|---|
 | Binaural Lead | Wavetable | Leads, MPE | Expressive lead placed in front of you: slide moves it up over your head, pressure brings it right up to your ear, a slow drift keeps it alive. Made for MPE controllers and headphones. |
-| Doppler Fly-By | Wavetable | FX | A siren tone racing past from left to right and back - the pitch bends with the Doppler effect as it passes. |
+| Doppler Fly-By | Wavetable | FX | A siren tone racing past from left to right and back with every note - the pitch bends with the Doppler effect as it passes. |
 | Figure Eight Arp | Wavetable | Arp | Digital arp tracing a lying eight around you - left front, across, right behind - over two bars. *Arp: Up/Down · 1/16 · 2 oct* |
 | Halo Drift | Cluster | Pads, MPE | Detuned cluster choir wandering around and above you on a slow random orbit - never the same place twice. |
 | Neuro Swirl | Wavetable | Bass, MPE | Talking formant growl swirling in a figure eight once a bar - the vowel moves, the space moves, the sub does not. |

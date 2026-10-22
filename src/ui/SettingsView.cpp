@@ -235,7 +235,9 @@ const HelpTopic helpTopics[] = {
       "Paths: Circle, Figure-8, Fly-By, Random Orbit, Pendulum, Spiral Up, Ping-Pong F/B, Swarm, Whisper, Distance Walk, Over the Head, "
       "Weave, Ping-Pong L/R (ear to ear on the beat), Four Corners (one corner per beat), Breathe (near - far), Helix (circles up and "
       "back down), Fly-Over (over your head, front to back), Bounce (hops left - right), Wander (a random loop that repeats) and "
-      "Loop Orbit (an orbit with four small loops). Every path is MIDI-mappable and automatable.",
+"Loop Orbit (an orbit with four small loops). Every path is MIDI-mappable and automatable.\n\n"
+      "The last page (Amount & Retrigger): Amount sets how strong the 3D effect is (0 % = the plain stereo sound), Motion Retrigger "
+      "restarts the motion from its start on a note - First after all keys were up, Note on every note - so short notes hear it.",
       "Jeder Part hat eine 3D-Stufe (Effekte > 3D-Raum): mit Encoder 2 einen Bewegungspfad wählen, mit Encoder 3 seine Länge - er läuft im "
       "Takt des Songs und wird vor dem Punkt des Parts als gepunktete Kurve gezeichnet. Bewegungsgröße formt jeden Pfad, Bewegungsphase "
       "versetzt ihn, Azimut und Elevation drehen den ganzen Pfad.\n\n"
@@ -243,7 +245,10 @@ const HelpTopic helpTopics[] = {
       "Über den Kopf, Wellenorbit, Ping-Pong l/r (im Takt von Ohr zu Ohr), Vier Ecken (eine Ecke pro Schlag), Atmen (nah - fern), "
       "Helix (kreist hinauf und wieder hinab), Überflug (über den Kopf, von vorn nach hinten), Hüpfen (springt links - rechts), "
       "Wandern (eine Zufallsschleife, die sich wiederholt) und Schleifenorbit (ein Orbit mit vier kleinen Schleifen). Jeder Pfad ist "
-      "MIDI-zuweisbar und automatisierbar." },
+      "MIDI-zuweisbar und automatisierbar.\n\n"
+      "Die letzte Seite (Stärke & Retrigger): Stärke stellt ein, wie kräftig der 3D-Effekt ist (0 % = der normale Stereoklang), "
+      "Bewegung Retrigger startet die Bewegung bei einer Note wieder am Anfang - Erste nach losgelassenen Tasten, Note bei jeder "
+      "Note -, so hören auch kurze Noten sie." },
     { "Updates", "Updates",
       "Ohpe can look for new versions once a day (off until you switch it on) or when you press Check now. Nothing about you is sent.\n\n"
       "Downloads are verified before they open. Content packs add presets without reinstalling; the previous pack is kept for a rollback.",

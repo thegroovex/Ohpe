@@ -24,6 +24,8 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 OUT = os.path.join(ROOT, "resources", "presets", "factory")
 MANIFEST = os.path.join(HERE, "binaural_files.json")
 sys.path.insert(0, HERE)
+import p77_retrigger  # noqa: E402
+sys.path.insert(0, HERE)
 
 from factory_parts import an, fm, wt, pl, cl, gr, vo, sm, amp, mod, lfo, arp, pitchenv, MONO, P as _P  # noqa: E402
 from factory_parts_r3 import fx, chain, slot_prefix, lfo_n  # noqa: E402
@@ -168,6 +170,7 @@ def B(name, cat, engine, en, de, *dicts, wheel, routes=(), arp_block=None, guard
     p["file"] = "%s-%s.ohpepreset" % (CAT_PREFIX[cat], slug(name))
     sp = p["params"]
     p["path"] = PATH[sp["space.path"]]
+    p77_retrigger.apply(p)  # p77: motion retrigger / faster motion where the 3D effect was too slow for normal playing
     PRESETS.append(p)
     return p
 

@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "wavetable",
-  "comment": "A siren tone racing past from left to right and back - the pitch bends with the Doppler effect as it passes.",
+  "comment": "A siren tone racing past from left to right and back with every note - the pitch bends with the Doppler effect as it passes.",
   "params": {
     "engine": 1,
     "wavetable.table": 3,
@@ -34,7 +34,7 @@
     "lfo.dest": 0,
     "space.on": 1,
     "space.path": 3,
-    "space.pathlen": 5,
+    "space.pathlen": 4,
     "space.pathrate": 1.0,
     "space.pathsize": 0.8,
     "space.pathphase": 0.0,
@@ -71,6 +71,7 @@
     "mod.s1.dst": 4,
     "mod.s1.amt": 0.35,
     "mod.s1.curve": 0,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "space.retrig": 2
   }
 }

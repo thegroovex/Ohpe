@@ -6908,3 +6908,11 @@ p1.chordroom
 p2.chordroom
 p3.chordroom
 p4.chordroom
+p1.space.retrig
+p1.space.amount
+p2.space.retrig
+p2.space.amount
+p3.space.retrig
+p3.space.amount
+p4.space.retrig
+p4.space.amount

@@ -5,6 +5,31 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
+## Unreleased / Unveröffentlicht
+
+- EN: 3D motion retrigger and 3D amount (p77) – the binaural motion can now restart with the notes, like the key
+  sync of an arpeggiator or LFO: new per-part **Motion Retrigger** (`pN.space.retrig`: *Free* = runs on with the song
+  as before, *First* = restarts from its start position on a note after all keys were up, *Note* = on every note; mono
+  legato notes keep it running). The position glides to the start in about 8 ms – no clicks. New per-part **Amount**
+  (`pN.space.amount`, 0–100 %, default 100 % = unchanged): sets the strength of the 3D effect, from full binaural
+  position, motion and colouring down to the plain stereo sound, at about the same level; smoothed and click-free,
+  mod matrix target 95 *3D Amount*. Both on the new 3D page *Amount & Retrigger*, MIDI-mappable and automatable. The
+  motion speed already reaches one cycle per 1/64 note (Motion Length 1/16 at ×4, tempo-synced) – no range change.
+  12 factory 3D presets whose motion was too slow to hear on normal playing restart with the notes and/or move
+  faster (Comet Lead, Ear to Ear Lead, Pendulum Lead, Vowel Orbit Lead, Overhead Flute, Orbiting Tines, Glass
+  Pendulum, Ceiling Harpsichord, Vibes in the Round, Ping-Pong Space Pluck, Doppler Fly-By, Breath Circle); names kept.
+- DE: 3D-Bewegungs-Retrigger und 3D-Stärke (p77) – die binaurale Bewegung kann jetzt mit den Noten neu starten, wie
+  der Key-Sync eines Arpeggiators oder LFOs: neuer **Bewegung Retrigger** je Part (`pN.space.retrig`: *Frei* = läuft
+  wie bisher mit dem Song weiter, *Erste* = beginnt wieder am Startpunkt bei einer Note, nachdem alle Tasten
+  losgelassen waren, *Note* = bei jeder Note; Mono-Legato-Noten lassen sie weiterlaufen). Die Position gleitet in etwa
+  6 ms zum Start – kein Knacken. Neue **Stärke** je Part (`pN.space.amount`, 0–100 %, Standard 100 % = unverändert):
+  stellt die Stärke des 3D-Effekts ein, von voller binauraler Position, Bewegung und Färbung bis zum normalen
+  Stereoklang, bei etwa gleichem Pegel; geglättet und klickfrei, Modulationsziel 95 *3D-Stärke*. Beide auf der neuen
+  3D-Seite *Stärke & Retrigger*, MIDI-zuweisbar und automatisierbar. Das Bewegungstempo reicht schon bis zu einem
+  Durchlauf pro 1/64-Note (Bewegungslänge 1/16 bei ×4, im Tempo) – keine Bereichsänderung. 12 3D-Werkspresets, deren
+  Bewegung beim normalen Spielen zu langsam war, starten mit den Noten neu und/oder bewegen sich schneller; Namen
+  bleiben.
+
 ## 0.7.2 – 2026-10-22
 
 [Notes / Hinweise](docs/release-notes/0.7.2.md)

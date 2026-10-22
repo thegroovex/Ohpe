@@ -102,6 +102,7 @@ Verzögerung 0 … 4 s, Attack 1 ms … 10 s (linear), Halten 0 … 4 s, Decay 1
 | 85 | Sub-Pegel | – | p31: Pegel der [SUB-Ebene](SUB-EBENE.md) des Parts `pN.sub.level`, 0 … 100 %; z. B. Anschlag → Sub-Pegel für mehr Tiefe bei harten Noten, Mod-Hüllkurve → Sub-Pegel für einen Sub, der nur am Anfang drückt (81 – 84: die Charakter-Makros) |
 | 86 – 89 | Glide-Zeit, Amp Attack, Amp Decay, Amp Release | – | p33: die Glide-Zeit `pN.glide` des Parts (zusätzlich zum Parameter oder einer CC-5-Portamento-Zeit) und die Lautstärke-Hüllkurve `pN.amp.a` / `.d` / `.r`, ganzer Bereich; z. B. Notendruck → Glide-Zeit (die Werksklänge mit Glide), Anschlag → Amp Attack (negativ: harte Noten setzen schneller ein) |
 | 90 – 94 | Tonart-Gravitation, Gravitation Glide, Gravitation Kurve, Gravitation Formant, Gravitation Mischung | – | p66: die [Tonart-Gravitation](TONART-GRAVITATION.md) des Parts `pN.grav.amt` / `.glide` / `.curve` / `.formant` / `.mix`; z. B. Modrad → Tonart-Gravitation, um einen Drum-Loop in den gehaltenen Akkord zu spielen |
+| 95 | 3D-Stärke | – | p77: die Stärke der [3D-Stufe](RAUM.md) des Parts `pN.space.amount`; z. B. Modrad → 3D-Stärke, um den 3D-Effekt einzublenden |
 
 Die [Ausdrucks-Seite](AUSDRUCK.md) (p33) fügt pro Part vier weitere Verbindungen hinzu – Anschlag und Aftertouch auf
 je zwei Funktionen –, die genau wie die 16 hier arbeiten.

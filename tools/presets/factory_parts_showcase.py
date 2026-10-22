@@ -437,7 +437,7 @@ S("Velocity Bite Lead", ["Leads"], "wavetable", ["expr", "char"],
 S("Pendulum Lead", ["Leads", "3D"], "analog", ["space", "tempo"],
   "A bright pulse lead swinging like a pendulum from one side of your head to the other, once every two bars (motion path "
   "Pendulum, in tempo). Pressure adds vibrato; the mod wheel slows the swing. Best with headphones.",
-  "Ein heller Puls-Lead, der wie ein Pendel alle zwei Takte von einer Seite des Kopfes zur anderen schwingt "
+  "Ein heller Puls-Lead, der wie ein Pendel jeden Takt ab der ersten Note einer Phrase von einer Seite des Kopfes zur anderen schwingt "
   "(Bewegungspfad Pendel, im Tempo). Druck gibt Vibrato; das Modrad verlangsamt das Schwingen. Am besten mit Kopfhörern.",
   an(shape=0.6, detune=0.08, cutoff=2000, reso=0.15, oscmix=0.4, sub=0.1, drive=0.2, keytrack=0.4),
   amp(0.005, 0.4, 0.85, 0.3), mod(0.002, 0.3, 0.4, 0.3, 0.15), {"voices": 4},
@@ -500,9 +500,9 @@ S("Glass Plate Pluck", ["Plucks"], "fm", ["reso", "expr"],
   wheel=("resodecay", 0.5), voices=10, velsens=0.7)
 
 S("Ping-Pong Space Pluck", ["Plucks", "3D"], "pluck", ["space", "tempo"],
-  "A bright pluck that bounces front to back on every half bar (motion path Ping-Pong front/back, in tempo) inside a small "
+  "A bright pluck that bounces front to back every half bar, starting again with every note (motion path Ping-Pong front/back, in tempo) inside a small "
   "room. Velocity plucks harder; the mod wheel speeds up the bounce. Best with headphones.",
-  "Ein heller Zupfer, der jeden halben Takt von vorn nach hinten springt (Bewegungspfad Ping-Pong vorn/hinten, im Tempo), "
+  "Ein heller Zupfer, der jeden halben Takt von vorn nach hinten springt, mit jeder Note von vorn (Bewegungspfad Ping-Pong vorn/hinten, im Tempo), "
   "in einem kleinen Raum. Anschlag zupft härter; das Modrad beschleunigt das Springen. Am besten mit Kopfhörern.",
   pl(material=0.2, damping=0.4, bright=0.42, body=0.35, excite=0.45, pickpos=0.18, bodysize=0.4),
   amp(0.002, 1.5, 0.0, 0.5), mod(0.001, 0.3, 0.0, 0.2, 0.1), lfo(0.09, 0.15, "tri", "timbre"),

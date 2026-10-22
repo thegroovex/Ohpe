@@ -10,7 +10,7 @@
     "Vocal"
   ],
   "engine": "vocal",
-  "comment": "A singing vowel lead circling you every four bars like a voice moving through the room. Pressure adds vibrato; the mod wheel walks the vowel from 'ah' to 'ee'. Best with headphones.",
+  "comment": "A singing vowel lead circling you every two bars from the first note of each phrase like a voice moving through the room. Pressure adds vibrato; the mod wheel walks the vowel from 'ah' to 'ee'. Best with headphones.",
   "params": {
     "engine": 5,
     "vocal.vowel": 0.2,
@@ -35,7 +35,7 @@
     "lfo.dest": 1,
     "space.on": 1,
     "space.path": 1,
-    "space.pathlen": 6,
+    "space.pathlen": 5,
     "space.pathrate": 1.0,
     "space.pathsize": 0.5,
     "space.pathphase": 0.0,
@@ -82,6 +82,7 @@
     "glide": 0.05,
     "glide.press": 0.6,
     "gain": 5.4,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "space.retrig": 1
   }
 }

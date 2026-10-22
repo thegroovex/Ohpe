@@ -293,6 +293,20 @@ void Part::registerLate74HeadroomParams (ParamRegistry& reg) const
     reg.add (std::move (d));
 }
 
+void Part::registerLate77SpaceParams (ParamRegistry& reg) const
+{
+    using namespace pd;
+    const auto n = std::to_string (number);
+    const std::string P = "Part " + n + " 3D ";
+    auto r = choice (id ("space.retrig"), P + "Motion Retrigger", P + "Bewegung Retrigger", { "Free", "First", "Note" },
+                     { "Frei", "Erste", "Note" }, SpaceEffect::RetrigFree);
+    r.group = "part" + n + "/space";
+    reg.add (std::move (r));
+    auto a = continuous (id ("space.amount"), P + "Amount", P + "Stärke", 0.0f, 1.0f, 1.0f, ParamUnit::Percent);
+    a.group = "part" + n + "/space";
+    reg.add (std::move (a));
+}
+
 void Part::applyChordHeadroom (float* l, float* r, int numSamples) noexcept
 {
     float load = 0.0f;
@@ -462,6 +476,8 @@ void Part::bind (const ParamRegistry& reg)
     }
     chordRoomIndex = reg.indexOf (id ("chordroom")); // p74
     spaceOnIndex = reg.indexOf (id ("space.on")); // 1.0
+    spaceRetrigIndex = reg.indexOf (id ("space.retrig")); // p77
+    spaceAmountIndex = reg.indexOf (id ("space.amount"));
     resoOnIndex = reg.indexOf (id ("reso.on"));   // p19
     {
         const auto ds = reso.getParamDescriptors();
@@ -710,6 +726,8 @@ void Part::applyParams (const ParamSnapshot& s) noexcept
         for (size_t i = 0; i < spaceIndex.size(); ++i)
             if (spaceIndex[i] >= 0)
                 if (const float val = s[spaceIndex[i]]; ! (val == spaceLast[i])) { spaceLast[i] = val; space.setParam ((int) i, val); }
+        if (spaceRetrigIndex >= 0) space.setRetrigger (s.getInt (spaceRetrigIndex)); // p77
+        if (spaceAmountIndex >= 0) space.setAmount (s[spaceAmountIndex]);
     }
 
     // p19 resonator body stage
@@ -796,6 +814,12 @@ void Part::pushCommon() noexcept
 void Part::noteOn (int note, float velocity) noexcept
 {
     if (note < 0 || note > 127) return;
+    { // p77: 3D motion retrigger - First: no key down (or sustained) before; Note: every note but mono legato
+        const int mode = space.retriggerMode();
+        const bool keyDown = keys.numHeld > 0 && ! (keys.numHeld == 1 && held[(size_t) note] > 0.0f);
+        if ((mode == SpaceEffect::RetrigFirst && ! keyDown) || (mode == SpaceEffect::RetrigNote && ! (keyDown && polyphony == 1)))
+            space.retrigger();
+    }
     held[(size_t) note] = std::max (velocity, 1.0e-3f); // p16
     for (auto* f : followers)
         if (f != nullptr) f->noteOn (note, velocity);

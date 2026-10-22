@@ -95,6 +95,11 @@ juce::String explanation (const std::string& paramId)
         { "sub.oct", "How far below the played note the sub sounds: one or two octaves.", "Wie weit unter der gespielten Note der Sub klingt: eine oder zwei Oktaven." },
         { "sub.shape", "Wave of the sub: Sine (pure), Round (a little warmer), Square (hollow, more push) - swipe the picture.", "Welle des Subs: Sinus (rein), Rund (etwas wärmer), Rechteck (hohl, mehr Druck) - über das Bild wischen." },
         { "sub.direct", "On: the sub skips the engine's filter and stays full under a closed filter.", "An: der Sub umgeht das Filter der Engine und bleibt auch bei geschlossenem Filter voll." },
+        // p77: 3D motion retrigger and strength
+        { "space.retrig", "When the 3D motion starts again from its start position: Free = runs on with the song, First = on a note after all keys were up, Note = on every note (mono legato notes keep it running).",
+          "Wann die 3D-Bewegung wieder an ihrem Startpunkt beginnt: Frei = läuft mit dem Song weiter, Erste = bei einer Note, nachdem alle Tasten losgelassen waren, Note = bei jeder Note (Mono-Legato-Noten lassen sie weiterlaufen)." },
+        { "space.amount", "Strength of the 3D effect: 100 % = full 3D position, motion and colouring, 0 % = the plain stereo sound. The level stays about the same.",
+          "Stärke des 3D-Effekts: 100 % = volle 3D-Position, Bewegung und Färbung, 0 % = der normale Stereoklang. Der Pegel bleibt etwa gleich." },
         // p66: Key Gravity
         { "grav.amt", "Pulls every partial of the part toward the key and the held chord - high values turn noise and drums into pitched texture in key (0 = off).",
           "Zieht jeden Teilton des Parts zur Tonart und zum gehaltenen Akkord - hohe Werte machen aus Rauschen und Drums tonale Texturen in der Tonart (0 = aus)." },

@@ -117,6 +117,20 @@ public:
     void setMonitorMode (int mode) noexcept override { monitor = mode == Speakers ? Speakers : Headphones; }
     int modulationParam (int j) const noexcept override { return j; }
 
+    /** p77: motion retrigger (per-part stage only, own parameter "pN.space.retrig"): Free = runs on (and locks to the song
+        position at rate x1 while the transport plays), First = restarts on a note after silence, Note = on every note. */
+    enum Retrig { RetrigFree = 0, RetrigFirst, RetrigNote, numRetrigModes };
+    void setRetrigger (int mode) noexcept { retrigMode = mode < 0 || mode >= numRetrigModes ? RetrigFree : mode; }
+    int retriggerMode() const noexcept { return retrigMode; }
+    /** p77: restarts the motion from its start position (phase 0 + phase offset); the position glides there in a few ms
+        (whatever the Motion Glide), the interaural delay at the Doppler speed limit. */
+    void retrigger() noexcept { retrigPending = true; }
+    /** p77: strength of the 3D effect 0..1 ("pN.space.amount"): 1 = full (unchanged), 0 = the plain stereo input at the base
+        distance level. Scales motion size, base direction, distance, HRTF colouring, Doppler, air and room; smoothed. */
+    void setAmount (float a) noexcept { amount = a < 0.0f ? 0.0f : (a > 1.0f ? 1.0f : a); }
+    float currentAmount() const noexcept { return amountSm; }
+    static constexpr float retrigGlideSeconds = 0.008f; ///< p77: the glide to the start position (two stages, ~25 ms to arrive)
+
     /** Seed of the random orbit (the part number), so parts do not move alike. */
     void setSeed (uint32_t s) noexcept { seed = s; }
 
@@ -189,6 +203,10 @@ private:
     float azimuth = 0.0f, elevation = 0.0f, distance = 1.5f, pathRate = 1.0f, pathPhase = 0.0f, pathSize = 0.5f, spread = 40.0f,
           room = 0.25f, roomSize = 0.4f, doppler = 0.5f, air = 0.6f, rolloff = 0.7f, lowKeep = 120.0f, glide = 0.05f;
     int path = space::PathOff, pathLen = 4;
+    int retrigMode = RetrigFree, retrigHold = 0; // p77
+    bool retrigPending = false;
+    float amount = 1.0f, amountSm = 1.0f, roomEff = 0.25f, airEff = 0.6f, dryGain = 0.0f, dDryGain = 0.0f, wetGain = 1.0f, dWetGain = 0.0f, dryOffset = 0.0f, earUp = 1.0f, earDown = 1.0f; // p77
+    Line dryLine[2]; // p77: the input, delayed like the wet signal's centre (amount < 1)
     int monitor = Headphones;
     uint32_t seed = 1;
 

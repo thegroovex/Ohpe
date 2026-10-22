@@ -9,7 +9,7 @@
     "3D"
   ],
   "engine": "fm",
-  "comment": "A bell-tine electric piano drifting in a small circle in front of you every two bars, like the instrument sways as you play. Velocity adds bite; the mod wheel adds tine brightness. Best with headphones.",
+  "comment": "A bell-tine electric piano drifting in a small circle in front of you once per bar, starting again with every note, like the instrument sways as you play. Velocity adds bite; the mod wheel adds tine brightness. Best with headphones.",
   "params": {
     "engine": 0,
     "fm.algo": 0,
@@ -40,7 +40,7 @@
     "lfo.dest": 3,
     "space.on": 1,
     "space.path": 1,
-    "space.pathlen": 5,
+    "space.pathlen": 4,
     "space.pathrate": 1.0,
     "space.pathsize": 0.25,
     "space.pathphase": 0.0,
@@ -90,6 +90,7 @@
     "velsens": 0.55,
     "glide": 0.0,
     "gain": 1.6,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "space.retrig": 2
   }
 }

@@ -107,6 +107,7 @@ Release 1 ms … 10 s (exponential).
 | 85 | Sub Level | – | p31: the part's [SUB layer](SUB.md) level `pN.sub.level`, 0 … 100 %; e.g. Velocity → Sub Level for more low end on hard notes, Mod Env → Sub Level for a sub that only thumps at the start (81 – 84: the character macros) |
 | 86 – 89 | Glide Time, Amp Attack, Amp Decay, Amp Release | – | p33: the part's glide time `pN.glide` (added to the parameter or a CC 5 portamento time) and amp envelope `pN.amp.a` / `.d` / `.r`, full range; e.g. Note Pressure → Glide Time (the factory glide sounds), Velocity → Amp Attack (negative: hard notes start faster) |
 | 90 – 94 | Key Gravity, Gravity Glide, Gravity Curve, Gravity Formant, Gravity Mix | – | p66: the part's [Key Gravity](KEY-GRAVITY.md) `pN.grav.amt` / `.glide` / `.curve` / `.formant` / `.mix`; e.g. Mod Wheel → Key Gravity to play a drum loop into the held chord |
+| 95 | 3D Amount | – | p77: the strength of the part's [3D stage](SPACE.md) `pN.space.amount`; e.g. Mod Wheel → 3D Amount to bring the 3D effect in |
 
 The [Expression page](EXPRESSION.md) (p33) adds four more routings per part – velocity and aftertouch to two
 functions each – that work exactly like the 16 below.
