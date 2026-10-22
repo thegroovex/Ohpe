@@ -152,6 +152,9 @@ public:
 
     virtual void render (float* left, float* right, int numSamples) noexcept = 0;
     virtual int activeVoiceCount() const noexcept = 0;
+    /** p74: how many notes are sounding at full weight: a held or starting voice counts 1, a released one its envelope
+        level (its tail fades out of the count). The part's chord headroom follows it. */
+    virtual float voiceLoad() const noexcept { return (float) activeVoiceCount(); }
 
     /** p20: play the user material (user wavetable / user formants) instead of the built-in one. Optional. */
     virtual void setUserSource (bool on) noexcept { (void) on; }

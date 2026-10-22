@@ -124,6 +124,13 @@ public:
     /** p66 Key Gravity: "pN.grav.amt" (0 = off), ".target" (Scale / Chord / Chord+Scale), ".glide" (s), ".curve" (-1..+1),
         ".formant" (formant keep), ".mix", ".quality" (Low Latency / Normal / High). The spectral stage right after the engines. */
     void registerLate66GravityParams (ParamRegistry& reg) const;
+    /** p74 chord headroom: "pN.chordroom" (dB the part's sum is lowered by at 8 sounding notes, 0 = off). The gain follows
+        the voice load (ISynthEngine::voiceLoad) on a log curve - 1 note = 0 dB, 2 = a third, 4 = two thirds of the
+        amount - glides down within a few ms when notes start and back over ~250 ms when they end (no pumping, single
+        notes untouched). It sits right after the engines, so every stage after them (body, FX rack, 3D) gets the room. */
+    void registerLate74HeadroomParams (ParamRegistry& reg) const;
+    /** p74: the chord headroom gain applied now (linear, 1 = none; tests / displays). */
+    float chordHeadroomGain() const noexcept { return chordGain; }
     /** p66, audio thread (core, every block): the key's scale and the held chord as absolute pitch-class masks. */
     void setGravityTargets (uint16_t scaleMask, uint16_t chordMask) noexcept { gravity.setTargets (scaleMask, chordMask); }
     /** p66, audio thread: the latency every part runs at (the largest one a running stage needs; 0 = none). */
@@ -206,6 +213,7 @@ public:
         Slot k = 0..maxFollowers-1, nullptr = none.
     */
     static constexpr int maxFollowers = 3;
+    static constexpr float defaultChordHeadroomDb = 4.5f; ///< p74: chord headroom at 8 notes (new and old sessions)
     void setFollower (int k, Part* p) noexcept
     {
         if (k >= 0 && k < maxFollowers) followers[(size_t) k] = p;
@@ -330,6 +338,10 @@ private:
     float glideMod = 0.0f; ///< p33: the matrix's offset on the glide time (seconds; added to the parameter or CC 5 time)
     std::array<int, mod::numDests> partDestIndex {}; ///< registry index of every PartParam target (-1: not registered)
     float lastGain = -1.0f;
+    // ---- p74: chord headroom (voice-load-aware gain right after the engines)
+    int chordRoomIndex = -1;
+    float chordRoomDb = 0.0f, chordGain = 1.0f, chordDown = 0.0f, chordUp = 0.0f;
+    void applyChordHeadroom (float* l, float* r, int numSamples) noexcept;
     // ---- p35: sleeping while silent
     bool asleep = false;
     int quietSamples = 0, sleepHoldSamples = 216000;

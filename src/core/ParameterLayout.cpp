@@ -370,5 +370,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     voice::VoiceControl::registerParams (reg, Core::numParts);
     // ---- p66: Key Gravity per part - the spectral stage after the engines that pulls every partial to the key / chord
     for (auto& p : parts) p->registerLate66GravityParams (reg);
+    // ---- p74: chord headroom per part - voice-load-aware gain after the engines (chords stay clean, single notes as they are)
+    for (auto& p : parts) p->registerLate74HeadroomParams (reg);
 }
 } // namespace ohpe

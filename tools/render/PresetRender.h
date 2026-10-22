@@ -182,7 +182,7 @@ inline Phrase holdPhrase (const std::string& category, double beats)
 
 inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0, double bpm = 100.0, double beatsLimit = 1.0e9,
                          double tailLimit = 1.0e9, double holdSeconds = 0.0, const std::vector<int>& holdNotes = {},
-                         int holdVelocity = 0, int modWheel = -1)
+                         int holdVelocity = 0, int modWheel = -1, bool limiter = false)
 {
     preset::PartOptions opt;
     opt.arp = false; // measure the sound itself: the phrase plays the notes, not the arpeggiator
@@ -191,7 +191,7 @@ inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0,
     usertable::partFromJson (core, partIndex, p.userTables ? *p.userTables : std::string(),
                              [] (const std::string&, const std::string&) { return usertable::UserTablePtr(); });
     core.params().set ("tempo", (float) bpm);
-    core.params().set ("mix.master.limit", 0.0f); // measure the preset itself, not the master limiter
+    core.params().set ("mix.master.limit", limiter ? 1.0f : 0.0f); // measure the preset itself, not the master limiter (p74: or as heard)
     core.prepareEffects(); // rack slots 2-6 prepare their types lazily (the plugin does this on the message thread)
     auto phrase = holdSeconds > 0.0 ? holdPhrase (primaryCategory (p.meta), holdSeconds * bpm / 60.0)
                                     : phraseFor (primaryCategory (p.meta));
@@ -199,7 +199,15 @@ inline Audio renderPart (Core& core, const preset::Preset& p, int partIndex = 0,
     {
         const int vel = holdVelocity > 0 ? holdVelocity : phrase.notes.front().velocity;
         phrase.notes.clear();
-        for (int n : holdNotes) phrase.notes.push_back ({ 0, phrase.beats, n, vel });
+        // p74: -1 separates chords - a progression, the hold time split evenly between them (voice stealing, overlaps)
+        const int numChords = 1 + (int) std::count (holdNotes.begin(), holdNotes.end(), -1);
+        const double len = phrase.beats / numChords;
+        int c = 0;
+        for (int n : holdNotes)
+        {
+            if (n < 0) { ++c; continue; }
+            phrase.notes.push_back ({ c * len, len, n, vel });
+        }
     }
     const double sr = core.sampleRate();
     const double spb = 60.0 / bpm * sr;

@@ -14,7 +14,7 @@
 // --beats N / --tail S: shorten the phrase and its tail (the factory level tests render 4 beats + 1 s).
 //
 // Part presets play the phrase of their main category (render::phraseFor); project presets run
-// their sequencers for --seconds (default 16). The master limiter is off, so peaks are honest (--limit keeps a project's limiter, as heard).
+// their sequencers for --seconds (default 16). The master limiter is off, so peaks are honest (--limit keeps the limiter, as heard; p74: for part presets too).
 
 #include "OhpeCore.h"
 #include "preset/Preset.h"
@@ -178,10 +178,18 @@ int main (int argc, char** argv)
         else if (a == "--hold") hold = std::stod (next());
         else if (a == "--beats") beats = std::stod (next()); // phrase limit, as the level tests render it
         else if (a == "--tail") tail = std::stod (next());
-        else if (a == "--notes") // with --hold: the held notes, comma separated (MIDI numbers)
+        else if (a == "--notes") // with --hold: the held notes, comma separated (MIDI numbers); p74: "/" starts the next chord
         {
             std::stringstream ns (next());
-            for (std::string t; std::getline (ns, t, ',');) notes.push_back (std::stoi (t));
+            for (std::string t; std::getline (ns, t, ',');)
+            {
+                for (size_t k; (k = t.find ('/')) != std::string::npos; t = t.substr (k + 1))
+                {
+                    if (k > 0) notes.push_back (std::stoi (t.substr (0, k)));
+                    notes.push_back (-1);
+                }
+                if (! t.empty()) notes.push_back (std::stoi (t));
+            }
         }
         else if (a == "--vel") vel = std::stoi (next()); // with --hold: their velocity
         else if (a == "--wheel") wheel = std::stoi (next()); // p29: mod wheel position 0..127 (CC 1 at the start)
@@ -206,7 +214,7 @@ int main (int argc, char** argv)
         core->prepare (48000.0, 256);
         for (const auto& [pad, s] : bank.studio) core->drumKit().setFactorySample (pad, s);
         const bool project = p.meta.kind == preset::Kind::Project;
-        const auto audio = project ? render::renderProject (*core, p, seconds, limiter, wheel) : render::renderPart (*core, p, part, bpm, beats, tail, hold, notes, vel, wheel);
+        const auto audio = project ? render::renderProject (*core, p, seconds, limiter, wheel) : render::renderPart (*core, p, part, bpm, beats, tail, hold, notes, vel, wheel, limiter);
         const auto m = render::measure (audio);
         if (! out.empty()) writeWav (out / (base (file) + ".wav"), audio);
 
