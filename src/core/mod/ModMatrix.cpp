@@ -45,6 +45,13 @@ const std::vector<SourceInfo>& sourceTable()
         { "tension", "Tension", "Spannung", false, S::Part },
         { "vibrato", "Vibrato (5.5 Hz)", "Vibrato (5,5 Hz)", true, S::Voice }, // p33
         { "keybend", "Key + Bend", "Taste + Bend", true, S::Voice }, // p50: continuous slide position (fingerboard)
+        { "voicelevel", "Voice Level", "Stimme Pegel", false, S::Part }, // p68: Voice Control (the live input)
+        { "vowelx", "Vowel X", "Vokal X", true, S::Part },
+        { "vowely", "Vowel Y", "Vokal Y", true, S::Part },
+        { "voicebright", "Voice Brightness", "Stimme Helligkeit", false, S::Part },
+        { "voicenoise", "Voice Noisiness", "Stimme Rauschanteil", false, S::Part },
+        { "voicepitch", "Voice Pitch", "Stimme Tonhöhe", false, S::Part },
+        { "voiceonset", "Voice Onset", "Stimme Einsatz", false, S::Part },
     };
     return t;
 }
