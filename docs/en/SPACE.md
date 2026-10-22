@@ -20,7 +20,7 @@ binaural colouration and stays fully mono-compatible.
    *2 Bars*. Press Play: the dot of the part flies around the head in the display.
 4. Put on headphones for *Headphones* (binaural); choose *Speakers* when you listen on speakers.
 
-Or load one of the presets with the **3D** tag in the library – they carry a headphones pictogram.
+Or load one of the presets with the **3D** tag in the library – they carry a headphones pictogram. The factory bank has 75 of them (72 part presets and three projects; 49 binaural showcase presets were added in p71, listed in [FACTORY-SOUNDS.md](FACTORY-SOUNDS.md#binaural-presets-p71)).
 
 ## The 3D badge and the headphones pictogram
 
@@ -152,7 +152,7 @@ Distance and Motion Rate. Keep the slot's mix at 100 % (the dry signal is not de
 ## Mono compatibility and the low end
 
 * The band below *Mono Below* is summed to mono and never spatialised – basses keep a centred, solid sub
-  while their mid range moves (all 3D bass presets use 150 – 180 Hz).
+  while their mid range moves (the 3D bass presets use 150 – 220 Hz).
 * **Speakers**: amplitude panning without any time differences – the mono fold loses at most 3 dB
   anywhere on the circle (tested).
 * **Headphones**: binaural signals contain small time differences between the ears. They fold to mono

@@ -20,7 +20,7 @@ binaurale Färbung gerendert und bleibt voll monokompatibel.
    *2 Takte*. Play drücken: der Punkt des Parts fliegt im Display um den Kopf.
 4. Für *Kopfhörer* (binaural) Kopfhörer aufsetzen; *Lautsprecher* wählen, wenn du über Lautsprecher hörst.
 
-Oder eines der Presets mit dem Tag **3D** aus der Bibliothek laden – sie tragen ein Kopfhörer-Piktogramm.
+Oder eines der Presets mit dem Tag **3D** aus der Bibliothek laden – sie tragen ein Kopfhörer-Piktogramm. Die Werksbank hat 75 davon (72 Part-Presets und drei Projekte; 49 binaurale Showcase-Presets kamen mit p71 dazu, aufgelistet in [FACTORY-SOUNDS.md](FACTORY-SOUNDS.md#binaurale-presets-p71)).
 
 ## Das 3D-Abzeichen und das Kopfhörer-Piktogramm
 
@@ -153,7 +153,7 @@ Bewegungstempo. Den Mix des Slots auf 100 % lassen (das trockene Signal ist nich
 ## Monokompatibilität und Bassbereich
 
 * Das Band unter *Mono unter* wird mono summiert und nie räumlich bewegt – Bässe behalten einen zentrierten,
-  festen Sub, während sich ihre Mitten bewegen (alle 3D-Bass-Presets nutzen 150 – 180 Hz).
+  festen Sub, während sich ihre Mitten bewegen (die 3D-Bass-Presets nutzen 150 – 220 Hz).
 * **Lautsprecher**: Amplituden-Panning ohne Zeitunterschiede – die Mono-Faltung verliert überall auf dem Kreis
   höchstens 3 dB (getestet).
 * **Kopfhörer**: binaurale Signale enthalten kleine Zeitunterschiede zwischen den Ohren. Sie falten ohne hohle

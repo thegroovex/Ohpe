@@ -642,11 +642,12 @@ B("Hand Drum Ring", "Drums", "fm",
   "the ring slowly turning. The mod wheel speeds the turn." + HP_EN,
   "Handtrommeltöne in einem Ring um dich: tiefe Schläge hinten, Slaps vorn, jeder Ton in seinem eigenen Winkel, der "
   "Ring dreht sich langsam. Das Modrad beschleunigt die Drehung." + HP_DE,
-  fm(algo=0, modratio=2.3, index=0.12, feedback=0.1, op1ratio=1, op2ratio=2.3, op1level=1.0, op2level=0.35, op3level=0.0,
-     op4level=0.0, op5level=0.0, op6level=0.0),
-  amp(0.001, 0.3, 0.0, 0.15), mod(0.001, 0.05, 0.0, 0.05, 0.5), pitchenv(0.25, 0.04),
-  space("circle", "4bars", size=0.0, distance=1.5, spread=15.0, room=0.3, roomsize=0.4, doppler=0.0, glide=0.01),
-  rev(0.4, 0.1),
+  fm(algo=2, modratio=1.5, index=0.22, feedback=0.25, op1ratio=1, op2ratio=1.5, op3ratio=3.3, op1level=1.0, op2level=0.5,
+     op3level=0.25, op4level=0.0, op5level=0.0, op6level=0.0),
+  amp(0.001, 0.2, 0.0, 0.12), mod(0.001, 0.03, 0.0, 0.03, 0.7), pitchenv(0.5, 0.02), lfo(0.3, 0.08, "sine", "timbre"),
+  space("circle", "4bars", size=0.0, distance=1.6, spread=30.0, room=0.45, roomsize=0.3, doppler=0.0, glide=0.01,
+        air=0.4, rolloff=0.5),
+  rev(0.3, 0.14),
   routes=[route("key", "azimuth", -0.6)], wheel=("pathrate", 0.8), voices=6, velsens=0.7)
 
 # ================================================================================================================ FX

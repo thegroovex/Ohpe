@@ -2,7 +2,7 @@
 
 *English · Deutsch: [../de/FACTORY-SOUNDS.md](../de/FACTORY-SOUNDS.md)*
 
-Ohpe ships with **356 part presets** for all eight engines, **18 project presets** (demo patterns
+Ohpe ships with **412 part presets** for all eight engines, **18 project presets** (demo patterns
 that use all four parts, the sequencers and the drum kit), **six drum kits**, **ten recorded
 instruments** and (0.8) **four keyboard instruments** (grand and upright piano, tine and reed
 electric piano) for the Sampler and Grain engines. Open them with **LIBRARY**: pick a category on the
@@ -174,6 +174,64 @@ wheel fully up changes the sound cleanly.
 | Pads Performance Set | Drums, Bass, FX | Project | Performance pads, Tempo-synced | A house loop set up for the performance pads (Effects mode, Pads): stutter on sixteenths, a one-bar tape stop, a low-pass sweep over two bars and a reverb freeze, all on the beat. While the sweep closes, the pad opens its own filter against it; while any pad is held the plucks step back. Press Play, then hold the pads. |
 | Binaural Scene | Pads, 3D, Textures | Project | 3D motion path, Tempo-synced | Four sounds moving around your head at once: a pad spiralling upwards over sixteen bars, bells circling once per bar, plucks bouncing front to back on the half bar and a glassy grain swarm. Every path is measured in bars, so the whole scene follows the tempo. Headphones on, press Play. |
 <!-- showcase:end -->
+
+## Binaural presets (p71)
+
+49 part presets made for headphones, each built around the part's binaural 3D stage: pads circling the head, near whispers and far-off voices, rain-like grain fields, plucks and bells placed around you, percussion whose hits land at different places (pitch or chance picks the direction), basses whose low end stays centred and mono while the overtones move, and arps that travel - some combined with Key Gravity or Voice Control. They carry the **3D** category: the library's *3D* chip or a search for *3D* / *binaural* lists them, and the headphones pictogram marks them in the list. Every one is level-matched to the bank target and has an audible mod wheel.
+
+<!-- binaural:begin -->
+| Name | Category | Engine | Motion | Description |
+|---|---|---|---|---|
+| Bowed Ring | Pads, 3D | Sampler | Circle | Bowed metal turning slowly against the clock around the listener (circle, four bars, reversed), with a long ringing room. The mod wheel darkens the bow. Best with headphones. |
+| Cathedral Ring | Pads, 3D | Cluster | Over the Head | Major-seventh stacks hanging in a high vault: the pad passes over your head and back every eight bars while a slow drift keeps the stack shimmering. The mod wheel opens the tone. Best with headphones. |
+| Choir Around You | Pads, 3D | Vocal | Random Orbit | A soft 'aah' choir drifting on a random orbit around the listener over sixteen bars, sometimes above, sometimes behind. The mod wheel turns the vowel towards 'ooh'. Best with headphones. |
+| Glass Horizon | Pads, 3D | Grain | Distance Walk | Long glass grains spread into a wide horizon that walks away and comes back towards you over eight bars. The mod wheel scatters the grains into a sparkle. Best with headphones. |
+| Gravity Halo | Pads, 3D, Textures | Analog | Spiral Up | A breathy noise-and-saw pad pulled into the key by Key Gravity, spiralling up around you over sixteen bars. The mod wheel releases the gravity, so the pad drifts free of the key. Best with headphones. |
+| Halo Carousel | Pads, 3D | Wavetable | Circle | A glassy unison pad that circles your head once every eight bars at a few steps' distance, its wide image turning with it. Pressure draws it closer; the mod wheel speeds the carousel up. Best with headphones. |
+| Morning Mist | Pads, 3D | FM | Figure-8 | Soft two-operator FM tones tracing a slow figure-eight through the space around your head, close in front, further behind. The mod wheel adds bell-like brightness. Best with headphones. |
+| Slow Planet | Pads, 3D | Analog | Weave | A warm detuned saw pad weaving around the head on a wave-shaped orbit that rises and dips over sixteen bars. Velocity softens the attack; the mod wheel brings the planet in from far away. Best with headphones. |
+| Close Whispers | Textures, 3D, Vocal | Vocal | Whisper | Breath and whispered vowels right at your ears, slipping from one side to the other like someone leaning in (motion path Whisper, four bars). Pressure adds breath; the mod wheel changes the vowel. Best with headphones. |
+| Distant Voices | Textures, 3D, Vocal | Vocal | Distance Walk | Hummed voices far off in a large space, wandering nearer and further over sixteen bars. The mod wheel brings them into the room with you. Best with headphones. |
+| Ember Field | Textures, 3D | Grain | Random Orbit | Short crackling marimba grains like embers, popping up at random places around you on a wandering orbit. The mod wheel stretches the crackle into glowing tones. Best with headphones. |
+| Night Insects | Textures, 3D | Grain | Swarm | Tiny bright chirps of plucked strings buzzing around your head on a fast swarm path, near and far at once. The mod wheel scatters them wider. Best with headphones. |
+| Rain Canopy | Textures, 3D | Grain | Swarm | Dense short grains falling like rain on leaves above and around you: a swarm of drops spread over the whole sphere, slightly overhead. The mod wheel thickens the downpour. Best with headphones. |
+| Voice Halo | Textures, 3D, Vocal | Vocal | Circle | A sung halo whose place follows your own voice: sing into the input and your vowel turns it around your head, your level draws it nearer. Without input a gently orbiting choir. The mod wheel speeds the orbit. Best with headphones. |
+| Wind Spiral | Textures, 3D, FX | Analog | Spiral Up | Filtered wind that spirals up and over your head every four bars and starts again at your feet, its resonance whistling softly. The mod wheel opens the gusts. Best with headphones. |
+| Ceiling Harpsichord | Keys, 3D | Sampler | Over the Head | A harpsichord that rises over your head and settles behind you every four bars, the room answering from all sides. The mod wheel darkens the quill. Best with headphones. |
+| Glass Pendulum | Keys, 3D | Sampler | Pendulum | Glass harmonica tones swinging from one ear to the other on a slow pendulum, each phrase landing somewhere new. The mod wheel softens the glass. Best with headphones. |
+| Orbiting Tines | Keys, 3D | FM | Circle | A bell-tine electric piano drifting in a small circle in front of you every two bars, like the instrument sways as you play. Velocity adds bite; the mod wheel adds tine brightness. Best with headphones. |
+| Rotor Organ | Keys, 3D | Cluster | Circle | A drawbar-style organ whose sound really spins around your head (circle, one bar). The mod wheel throws the rotor into the fast speed. Best with headphones. |
+| Vibes in the Round | Keys, 3D | Sampler | Ping-Pong F/B | Vibraphone bouncing between the front and the back of your head every half bar, the motor-like shimmer becoming real movement. The mod wheel moves the vibes further away. Best with headphones. |
+| Glass Droplets | Plucks, 3D | Pluck | fixed position | Bright glassy plucks falling like droplets at random points around your head, a little above. Velocity sets the splash; the mod wheel lets them ring longer. Best with headphones. |
+| Harp Constellation | Plucks, 3D | Sampler | fixed position | Every harp note appears as a star at its own random place around and above you, then the next one lights up elsewhere. The mod wheel lifts the constellation higher. Best with headphones. |
+| Kalimba Circle | Plucks, 3D | Sampler | Circle | Kalimba notes placed around a circle by pitch: low notes on your left, high notes behind you to the right, the whole ring turning once per bar. The mod wheel brightens the tines. Best with headphones. |
+| Marimba Ricochet | Plucks, 3D, Drums | Sampler | Ping-Pong F/B | Marimba hits ricocheting between front and back every quarter note, crisp and close. The mod wheel throws them further out into the room. Best with headphones. |
+| Zither Drizzle | Plucks, 3D | Sampler | Swarm | Zither strings scattered by a swarm path, every pluck coming from a slightly different place like a light drizzle. The mod wheel darkens the strings. Best with headphones. |
+| Bell Ricochet | Arp, 3D | Sampler | Ping-Pong F/B | Glockenspiel notes in random order bouncing front to back every eighth note, sparkling around the listener. The mod wheel speeds the bounce. Best with headphones. |
+| Helix Sequence | Arp, 3D | Wavetable | Spiral Up | A glassy wavetable arpeggio climbing a double helix around your head: it spirals up over two bars while the notes climb. The mod wheel sweeps the wavetable. Best with headphones. |
+| Pulse Orbit | Arp, 3D | Analog | Figure-8 | A resonant square arpeggio tracing a figure-eight through your head space every two bars. The mod wheel opens the filter. Best with headphones. |
+| Satellite Arp | Arp, 3D | FM | Circle | FM bell arpeggios orbiting your head once per bar like a satellite, just out of reach. The mod wheel pushes the orbit further out. Best with headphones. |
+| Swarm Sequence | Arp, 3D | Cluster | Swarm | Detuned cluster stabs arpeggiated in eighths, each note flying off with a swarm that never lands twice in the same place. The mod wheel widens the stack. Best with headphones. |
+| Gravity Bass Halo | Bass, 3D | Analog | Figure-8 | A vowel-like analog bass whose partials Key Gravity tunes into the key; the halo of overtones circles in a figure-eight over the centred sub. The mod wheel deepens the gravity. Best with headphones. |
+| Halo Reese | Bass, 3D | Wavetable | Weave | A wide detuned reese bass with a mono sub core; the moving top weaves around you on a four-bar orbit. The mod wheel sweeps the wavetable for growl. Best with headphones. |
+| Orbit Sub | Bass, 3D | Analog | Circle | A round saw bass whose low end stays centred and mono while its upper harmonics circle your head every two bars. The mod wheel opens the filter. Best with headphones. |
+| Pendulum Growl | Bass, 3D | FM | Pendulum | A growling FM bass whose bright edge swings from ear to ear every half bar while the fundamental stays planted in the middle. The mod wheel raises the FM index. Best with headphones. |
+| Spinning Pluck Bass | Bass, 3D | Pluck | Circle | A plucked string bass: the woody attack spins once around your head every half bar, the low note stays centred. The mod wheel lets the string sustain. Best with headphones. |
+| Comet Lead | Leads, 3D | Wavetable | Fly-By | A bright wavetable lead that streaks past you every two bars, rising in pitch as it approaches and falling as it leaves (Doppler). The mod wheel sweeps the tone. Best with headphones. |
+| Ear to Ear Lead | Leads, 3D | Analog | Pendulum | A singing analog lead swinging from one ear to the other and back every two bars, so a melody sweeps across your head. Velocity opens the filter; the mod wheel opens it further. Best with headphones. |
+| Overhead Flute | Leads, 3D | Sampler | Over the Head | A breathy recorder melody floating over your head and down behind you every four bars, as if played from a gallery. The mod wheel brightens the breath. Best with headphones. |
+| Vowel Orbit Lead | Leads, 3D, Vocal | Vocal | Circle | A singing vowel lead circling you every four bars like a voice moving through the room. Pressure adds vibrato; the mod wheel walks the vowel from 'ah' to 'ee'. Best with headphones. |
+| Circling Hats | Drums, 3D | Cluster | Circle | Metallic cluster hats travelling around your head once every beat, so a straight hat pattern becomes a ring of ticks. The mod wheel speeds the ring up. Best with headphones. |
+| Hand Drum Ring | Drums, 3D | FM | Circle | Hand-drum tones sitting in a ring around you: low strokes behind, slaps in front, each note at its own angle, and the ring slowly turning. The mod wheel speeds the turn. Best with headphones. |
+| Round Toms | Drums, 3D | FM | fixed position | Tuned FM toms placed around you by pitch, low toms on the left and behind, high toms to the right and in front, so a fill rolls around your head. The mod wheel moves the kit further away. Best with headphones. |
+| Drone Flyover | FX, 3D | Wavetable | Fly-By | A gritty engine drone that approaches from far in front, roars past overhead and fades out behind you (Fly-By with strong Doppler). Hold a note; the mod wheel speeds up the passes. Best with headphones. |
+| Grain Vortex | FX, 3D, Textures | Grain | Swarm | Bursts of reversed vibraphone grains whirling around the listener on a swarm path with Doppler swoops. The mod wheel sprays the grains wider. Best with headphones. |
+| Thunder Walk | FX, 3D, Textures | Analog | Distance Walk | A low, rolling rumble wandering near and far over eight bars like a storm crossing the valley, the sub kept mono and steady. The mod wheel brings the storm closer. Best with headphones. |
+| Vortex Riser | FX, 3D | Analog | Spiral Up | A noise riser caught in a vortex: it spirals upwards faster and faster around your head over four bars. Hold a note for the build; the mod wheel tightens the vortex. Best with headphones. |
+| Angel Overhead | Vocal, 3D | Vocal | Over the Head | A pure, high 'ooh' voice floating over your head and down behind you every eight bars, like a singer in the gallery. The mod wheel opens the vowel. Best with headphones. |
+| Breath Circle | Vocal, 3D, Textures | Vocal | Circle | Close, rhythmic breaths circling your head every two bars at whispering distance: intimate and slightly uncanny. The mod wheel adds a sung tone to the breath. Best with headphones. |
+| Choir Weave | Vocal, 3D, Pads | Vocal | Weave | A dark male-formant choir weaving a wavy orbit around you over eight bars, rising and dipping as it turns. Pressure pulls it closer; the mod wheel lifts the formant. Best with headphones. |
+<!-- binaural:end -->
 
 ## Drum kits
 
