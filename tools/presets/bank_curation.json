@@ -937,7 +937,7 @@
   "leads-pendulum-lead.ohpepreset": {
    "params": {
     "gain": 12.2,
-    "chordroom": 9.6,
+    "chordroom": 10.2,
     "space.retrig": 1,
     "space.pathlen": 4
    },
@@ -1674,7 +1674,7 @@
   },
   "leads-comet-lead.ohpepreset": {
    "params": {
-    "gain": 9.2,
+    "gain": 9.7,
     "chordroom": 5.7,
     "space.retrig": 2,
     "space.pathlen": 3
