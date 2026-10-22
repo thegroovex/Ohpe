@@ -458,9 +458,12 @@ Result make (breed::Audition& audition, const breed::Genome& base, int engineTyp
     Loudness bestM;
     double bestPenalty = 1.0e30;
     int tooQuiet = 0; // candidates that only failed by needing more gain than the part has
-    for (int a = 0; a < maxAttempts; ++a)
+    float bestShortfall = 0.0f; // dB the best candidate stays under the target even with the gain at its top
+    for (int a = 0; a < maxAttempts + maxExtraAttempts; ++a)
     {
         if (audition.aborted()) break;
+        // past the normal attempts only while the best candidate would still play far too quiet
+        if (a >= maxAttempts && (best.empty() || bestPenalty >= 1.0e6 || bestShortfall <= farTooQuietDb)) break;
         auto cand = roll (s, base, engineType, breed::Rng::mix (seed, (uint64_t) a));
         audition.renderAudio (cand, l, r, hold);
         ++res.renders;
@@ -478,10 +481,12 @@ Result make (breed::Audition& audition, const breed::Genome& base, int engineTyp
             bestPenalty = penalty;
             best = std::move (cand);
             bestM = m;
+            bestShortfall = std::max (0.0f, needed - maxGainDb);
         }
         if (penalty <= 0.0) break;
-        // the part's own chain (a compressor first in the rack, say) caps it: more rolls rarely help
-        if (penalty < 1.0e6 && m.flatness <= maxFlatness && ++tooQuiet >= 2) break;
+        // the part's own chain (a compressor first in the rack, say) caps it: more rolls rarely help - unless even
+        // the best candidate would stay far under the target, then a few more (seeded) rolls look for a louder one
+        if (penalty < 1.0e6 && m.flatness <= maxFlatness && ++tooQuiet >= 2 && bestShortfall <= farTooQuietDb) break;
     }
     if (best.empty() || bestM.nonFinite > 0 || bestM.momentaryMax < silentLufs - 30.0f)
     {
