@@ -80,7 +80,7 @@ bool Display::keyPressed (const juce::KeyPress& key)
         onPageChange (code == juce::KeyPress::rightKey ? 1 : -1);
         return true;
     }
-    const auto c = key.getTextCharacter();
+    const auto c = key.getTextCharacter() != 0 ? key.getTextCharacter() : (juce::juce_wchar) key.getKeyCode();
     if (c >= '1' && c <= '9' && onSoftKey)
     {
         const size_t i = (size_t) (c - '1');

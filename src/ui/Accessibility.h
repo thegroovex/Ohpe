@@ -99,7 +99,9 @@ public:
     juce::Component* target() const;
     void setScale (float s) { scale = s; repaint(); }
     /** Draws the ring around `c` without a real keyboard focus (screenshots, tests; nullptr = the focus again). */
-    void setTargetForTests (juce::Component* c) { forced = c; repaint(); }
+    void setTargetForTests (juce::Component* c) { forced = c; update(); }
+    /** Shows / hides the ring for the current focus (after the focus or an overlay changed). */
+    void update();
     std::function<bool()> blocked; ///< true while an overlay covers the plate (no ring)
     void paint (juce::Graphics& g) override;
 

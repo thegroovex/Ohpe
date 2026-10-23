@@ -276,7 +276,14 @@ FocusRing::FocusRing()
     setInterceptsMouseClicks (false, false);
     setWantsKeyboardFocus (false);
     setAccessible (false);
+    setVisible (false); // shown only while it has a control to ring (layout checks see no extra component)
     juce::Desktop::getInstance().addFocusChangeListener (this);
+}
+
+void FocusRing::update()
+{
+    setVisible (target() != nullptr);
+    repaint();
 }
 
 FocusRing::~FocusRing() { juce::Desktop::getInstance().removeFocusChangeListener (this); }
@@ -286,7 +293,7 @@ void FocusRing::setKeyboardNavigation (bool on)
     if (on != navigating)
     {
         navigating = on;
-        repaint();
+        update();
     }
 }
 
@@ -313,5 +320,5 @@ void FocusRing::paint (juce::Graphics& g)
     g.drawRoundedRectangle (r, rad, 2.0f * s);
 }
 
-void FocusRing::globalFocusChanged (juce::Component*) { repaint(); }
+void FocusRing::globalFocusChanged (juce::Component*) { update(); }
 } // namespace ohpe::ui::a11y

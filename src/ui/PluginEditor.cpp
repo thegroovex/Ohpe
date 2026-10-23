@@ -179,7 +179,7 @@ std::unique_ptr<juce::AccessibilityHandler> PartSelector::createAccessibilityHan
 
 bool PartSelector::keyPressed (const juce::KeyPress& key)
 {
-    const auto c = key.getTextCharacter();
+    const auto c = key.getTextCharacter() != 0 ? key.getTextCharacter() : (juce::juce_wchar) key.getKeyCode();
     if (c >= '1' && c < '1' + Core::numParts && ! key.getModifiers().isAnyModifierKeyDown())
     {
         if (onSelect) onSelect (c - '1');
@@ -554,7 +554,7 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
     tapeReadout.setAccessibleTitle ("Tape counter");
     keysReadout.setAccessibleTitle ("Keyboard range");
     settingsKey.onSecondaryClick = [this] { showUiSizeMenu (&settingsKey); };
-    addAndMakeVisible (focusRing);
+    addChildComponent (focusRing);
     focusRing.blocked = [this] { return focusAreas().empty(); };
     navMouse.onDown = [this] (const juce::MouseEvent& e) {
         focusRing.setKeyboardNavigation (false);
@@ -1393,6 +1393,7 @@ std::vector<juce::Component*> OhpeEditor::plateComponents()
 
 void OhpeEditor::updateOverlayVisibility()
 {
+    focusRing.update(); // p83: no ring while an overlay covers the plate
     // Before: the overlays only covered the plate by z-order. Legends painted by the editor above the
     // lid's top edge ("ENGINE / P1", "MODE") stayed visible, and the controls under the lid stayed live
     // (display animation, tooltips, hit-testing at the lid's edges). Now every plate control is hidden
@@ -2707,7 +2708,7 @@ juce::Component* OhpeEditor::moveFocus (bool forward, bool areas)
     }
     focusRing.setKeyboardNavigation (true);
     if (next != nullptr) next->grabKeyboardFocus();
-    focusRing.repaint();
+    focusRing.update();
     return next;
 }
 
