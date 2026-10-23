@@ -1309,7 +1309,7 @@ void OhpeEditor::paintOverChildren (juce::Graphics& g)
     if (highlightTime > 0.0f) // p82: the search result on the plate - a breathing yellow ring (yellow = what you edit)
     {
         const float s = (float) getWidth() / (float) designWidth;
-        const float a = juce::jlimit (0.0f, 1.0f, highlightTime) * (0.55f + 0.45f * std::sin (highlightTime * 6.0f));
+        const float a = juce::jlimit (0.0f, 1.0f, highlightTime) * (0.75f + 0.25f * std::sin (highlightTime * 6.0f));
         g.setColour (colour::sunYellow.withAlpha (0.25f * a));
         g.drawRoundedRectangle (highlightRect.expanded (3.0f * s), radius::panel * s, 6.0f * s);
         g.setColour (colour::sunYellow.withAlpha (a));
