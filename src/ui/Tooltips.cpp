@@ -114,16 +114,16 @@ const std::vector<Control>& controls()
         { "key.midi", "MIDI", "MIDI",
           "MIDI maps and remote controls: learn, export, import, clear",
           "MIDI-Maps und Fernsteuerung: lernen, exportieren, importieren, löschen" },
-        { "key.grid", "Grid keyboard", "Grid-Tastatur",
+        { "key.grid", "Grid keyboard", "Raster-Tastatur",
           "Grid keyboard: 4 x 24 pads with MPE - every chord has the same shape in every key; swaps the piano keys",
-          "Grid-Tastatur: 4 x 24 Pads mit MPE - jeder Akkord hat in jeder Tonart dieselbe Form; ersetzt die Klaviertasten" },
+          "Raster-Tastatur: 4 x 24 Pads mit MPE - jeder Akkord hat in jeder Tonart dieselbe Form; ersetzt die Klaviertasten" },
         { "keys.readout", "Keyboard range", "Tastaturbereich",
           "Range of the on-screen keyboard and its octave shift; red during MIDI learn",
           "Bereich der Bildschirmtastatur und ihre Oktavlage; rot während MIDI-Learn" },
         { "keyboard", "Keyboard", "Tastatur",
           "Play the edit part - click or drag over the keys",
           "Den Edit-Part spielen - Tasten anklicken oder darüberziehen" },
-        { "grid.keyboard", "Grid", "Grid",
+        { "grid.keyboard", "Grid", "Raster",
           "Every chord has the same shape everywhere. With MPE on: slide sideways = bend, up / down = slide",
           "Jeder Akkord hat überall dieselbe Form. Mit MPE: seitlich gleiten = Bend, auf / ab = Slide" },
         { "wheel.pitch", "Pitch bend", "Pitch Bend",
@@ -338,7 +338,7 @@ std::vector<Result> search (const std::vector<Entry>& index, const juce::String&
             const auto f = fold (*title);
             best = std::max (best, foldedScore (words (f), f.removeCharacters (" "), q));
         }
-        for (const auto* text : { &e.textEn, &e.textDe })
+        for (const auto* text : { &e.whereEn, &e.whereDe, &e.textEn, &e.textDe })
         {
             if (best >= 0.6f) break;
             const auto f = fold (*text);

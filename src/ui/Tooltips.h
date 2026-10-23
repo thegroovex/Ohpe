@@ -72,6 +72,7 @@ struct Entry
     juce::String titleEn, titleDe; ///< what the result list shows
     juce::String textEn, textDe;   ///< more words to match (description, keywords, where it is)
     juce::String target;           ///< Topic: help topic index; Parameter: parameter ID; Control: control key
+    juce::String whereEn, whereDe; ///< where it is ("Synth > Filter"; shown under the title, matched like the text)
 };
 
 struct Result

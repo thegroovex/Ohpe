@@ -10,6 +10,8 @@
 #include "VoiceView.h"
 #include "PadsView.h"
 #include "HarmonyView.h"
+#include "ProTiles.h"
+#include "Tooltips.h"
 
 #include "Palette.h"
 #include "Brand.h"
@@ -146,13 +148,27 @@ void PartSelector::paint (juce::Graphics& g)
     }
 }
 
-juce::String PartSelector::getTooltip()
+juce::String PartSelector::getTooltip() { return tips::regionTipAt (tipRegions(), getMouseXYRelative().toFloat()); }
+
+std::vector<tips::Region> PartSelector::tipRegions()
 {
-    const auto m = getMouseXYRelative().toFloat();
+    // p82: what a click does, and (1.0) the part's 3D state
+    std::vector<tips::Region> r;
     for (int i = 0; i < Core::numParts; ++i)
-        if (cell (i).contains (m) && spatial[(size_t) i] != 0)
-            return tr ("Part") + " " + juce::String (i + 1) + ": " + ui::space3d::badgeTooltip ((ui::space3d::State) spatial[(size_t) i]);
-    return {};
+    {
+        auto tip = tr ("Part") + " " + juce::String (i + 1) + ": "
+                 + tips::t ("click to edit it (yellow number = the edit part)", "anklicken, um ihn zu bearbeiten (gelbe Zahl = Edit-Part)");
+        if (spatial[(size_t) i] != 0) tip << "\n" << ui::space3d::badgeTooltip ((ui::space3d::State) spatial[(size_t) i]);
+        r.push_back ({ cell (i), tip });
+    }
+    return r;
+}
+
+std::vector<tips::Region> PresetStrip::tipRegions()
+{
+    return { { arrow (false), tips::t ("Previous preset", "Vorheriges Preset") },
+             { arrow (true), tips::t ("Next preset", "Nächstes Preset") },
+             { getLocalBounds().toFloat(), tips::controlTip ("preset.strip") } };
 }
 
 void PartSelector::mouseDown (const juce::MouseEvent& e)
@@ -425,8 +441,19 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
         refreshVersionBadge();
     }
     tooltipWindow = std::make_unique<juce::TooltipWindow> (this, 700); // p11: tooltips on keys and the display
+    for (int i = 0; i < 4; ++i) // p82: an encoder says what its value does
+        encoders[(size_t) i]->tipText = [this, i] {
+            auto& enc = *encoders[(size_t) i];
+            const auto how = tips::t ("Turn or drag (Shift: fine), double-click: default", "Drehen oder ziehen (Shift: fein), Doppelklick: Standardwert");
+            if (const auto& v = enc.boundVirtual(); v != nullptr)
+                return v->name + "  " + (v->text && v->get ? v->text (v->get()) : juce::String()) + "\n" + how;
+            if (enc.boundId().isEmpty()) return tips::t ("Encoder - free on this page", "Encoder - auf dieser Seite frei");
+            return tips::withLearn (ui::pro::hoverText (proc, enc.boundId().toStdString()) + "\n" + how);
+        };
     // p32: the settings view and the help overlay
     {
+        settingsView.getSearchIndex = [this] { return helpSearchIndex(); };                          // p82
+        settingsView.onSearchResult = [this] (const tips::Entry& en) { return revealSearchResult (en); };
         const bool standalone = proc.wrapperType == juce::AudioProcessor::wrapperType_Standalone;
         settingsView.setStandalone (standalone);
         settingsView.onClosed = [this] { settingsKey.setActive (false); updateOverlayVisibility(); rebindEncoders(); };
@@ -1217,6 +1244,15 @@ void OhpeEditor::paintOverChildren (juce::Graphics& g)
         g.setColour (juce::Colours::black.withAlpha (juce::jlimit (0.0f, 0.75f, (1.0f - b) * 1.1f)));
         g.fillRoundedRectangle (display.getBounds().toFloat(), radius::inset * (float) getWidth() / (float) designWidth);
     }
+    if (highlightTime > 0.0f) // p82: the search result on the plate - a breathing yellow ring (yellow = what you edit)
+    {
+        const float s = (float) getWidth() / (float) designWidth;
+        const float a = juce::jlimit (0.0f, 1.0f, highlightTime) * (0.55f + 0.45f * std::sin (highlightTime * 6.0f));
+        g.setColour (colour::sunYellow.withAlpha (0.25f * a));
+        g.drawRoundedRectangle (highlightRect.expanded (3.0f * s), radius::panel * s, 6.0f * s);
+        g.setColour (colour::sunYellow.withAlpha (a));
+        g.drawRoundedRectangle (highlightRect, radius::inner * s, 2.5f * s);
+    }
 }
 
 void OhpeEditor::showBreeding (bool show, int libraryEntry)
@@ -1462,7 +1498,7 @@ void OhpeEditor::refreshLeds()
                 if ((leds.engineParts[(size_t) t] >> p) & 1u) parts << (parts.isEmpty() ? "" : ", ") << (p + 1);
             auto tip = tr (engineTypeInfo ((EngineType) t).nameEn) + " - " + tr ("Bar: one segment per part - yellow = the edit part, violet = another part uses the engine");
             if (parts.isNotEmpty()) tip << "\n" << tr ("Parts") << ": " << parts;
-            k.setTooltip (tip);
+            k.setTooltip (tips::withLearn (tip)); // p82: right-click learns the engine switch
         }
     }
     engineTipsValid = true;
@@ -1693,6 +1729,269 @@ void OhpeEditor::advanceAnimation (float seconds)
     presetStrip.setName (proc.presets().currentName());
     refreshVersionBadge(); // p27
     refreshCpuMeter(); // p35
+}
+
+// ---------------------------------------------------------------- p82: the help search
+void OhpeEditor::highlight (juce::Rectangle<float> area, float seconds)
+{
+    if (highlightTime > 0.0f) repaint (highlightRect.expanded (12.0f).toNearestInt());
+    highlightRect = area.expanded (3.0f);
+    highlightTime = seconds;
+    repaint (highlightRect.expanded (12.0f).toNearestInt());
+}
+
+std::vector<tips::Entry> OhpeEditor::helpSearchIndex()
+{
+    std::vector<tips::Entry> index = SettingsView::helpSearchEntries();
+    const auto lang = i18n::current();
+    auto inGerman = [lang] (const juce::String& en) {
+        i18n::setCurrent (i18n::Language::German);
+        auto de = tr (en);
+        i18n::setCurrent (lang);
+        return de;
+    };
+    auto u8 = [] (const char* t) { return juce::String::fromUTF8 (t); };
+    for (const auto& c : tips::controls())
+        index.push_back ({ tips::Kind::Control, u8 (c.nameEn), u8 (c.nameDe), u8 (c.tipEn), u8 (c.tipDe), c.key, {}, {} });
+    for (int t = 0; t < numEngineTypes; ++t)
+    {
+        const auto& info = engineTypeInfo ((EngineType) t);
+        if (! info.implemented) continue;
+        index.push_back ({ tips::Kind::Control, u8 (info.nameEn), u8 (info.nameDe), "engine key: the sound engine of the edit part",
+                           u8 ("Engine-Taste: die Klangerzeugung des Edit-Parts"), "engine." + juce::String (t), "Engines", "Engines" });
+    }
+    for (int m = 0; m < numModes; ++m)
+    {
+        if (! modeInfo ((Mode) m).available) continue;
+        const juce::String en (modeInfo ((Mode) m).nameEn);
+        index.push_back ({ tips::Kind::Control, en, inGerman (en), "mode key", "Modustaste", "mode." + juce::String (m),
+                           "Modes", inGerman ("Mode") });
+    }
+    // parameters: where they are on the encoder pages (mode > view > page), the edit part's and the global ones
+    auto& core = proc.core();
+    std::map<std::string, std::pair<juce::String, juce::String>> where;
+    for (int m = 0; m < numModes; ++m)
+    {
+        const auto mo = (Mode) m;
+        if (! modeInfo (mo).available) continue;
+        const int views = mo == Mode::Lfo ? modfx::numLfoViews : mo == Mode::Effects ? modfx::numFxViews : mo == Mode::Sequencer ? numSeqViews : 1;
+        for (int v = 0; v < views; ++v)
+        {
+            auto c = ctx;
+            juce::String viewEn;
+            if (mo == Mode::Lfo) { c.lfoView = v; viewEn = modfx::lfoViewName (v); }
+            else if (mo == Mode::Effects) { c.fxView = v; viewEn = modfx::fxViewName (v); }
+            else if (mo == Mode::Sequencer) { c.seqView = (SeqView) v; viewEn = seqViewName ((SeqView) v); }
+            const auto ids = modeParams (mo, core, c);
+            const auto titles = pageTitles (mo, core, c);
+            for (size_t k = 0; k < ids.size(); ++k)
+            {
+                if (ids[k].empty() || where.count (ids[k]) != 0) continue;
+                const juce::String page (k / 4 < titles.size() ? titles[k / 4] : std::string());
+                const juce::String modeEn (modeInfo (mo).nameEn);
+                juce::String en = modeEn, de = inGerman (modeEn);
+                if (viewEn.isNotEmpty()) { en << " > " << viewEn; de << " > " << inGerman (viewEn); }
+                if (page.isNotEmpty()) { en << " > " << page; de << " > " << inGerman (page); }
+                where[ids[k]] = { en, de };
+            }
+        }
+    }
+    const auto& reg = core.params();
+    const std::string partPrefix = "p" + std::to_string (ctx.part + 1) + ".";
+    const auto engine = selectedEngine (core, ctx.part);
+    for (int i = 0; i < reg.size(); ++i)
+    {
+        const auto& d = reg.descriptor (i);
+        const auto& id = d.id;
+        if (id.size() > 2 && id[0] == 'p' && id[1] >= '1' && id[1] <= '9' && id[2] == '.')
+        {
+            if (id.rfind (partPrefix, 0) != 0) continue; // another part's copy
+            bool otherEngine = false; // the engines the part does not play are not on its pages
+            for (int t = 0; t < numEngineTypes; ++t)
+                if ((EngineType) t != engine && id.rfind (partPrefix + engineTypeInfo ((EngineType) t).id + ".", 0) == 0) otherEngine = true;
+            if (otherEngine) continue;
+        }
+        tips::Entry e { tips::Kind::Parameter, u8 (d.nameEn.c_str()), u8 (d.nameDe.c_str()), {}, {}, juce::String (id), {}, {} };
+        i18n::setCurrent (i18n::Language::English);
+        e.textEn = ui::pro::explanation (id);
+        i18n::setCurrent (i18n::Language::German);
+        e.textDe = ui::pro::explanation (id);
+        i18n::setCurrent (lang);
+        if (const auto it = where.find (id); it != where.end()) { e.whereEn = it->second.first; e.whereDe = it->second.second; }
+        else if (d.group.empty()) continue; // neither on a page nor in a group: an internal value
+        else { e.whereEn = e.whereDe = juce::String (d.group); }
+        index.push_back (std::move (e));
+    }
+    return index;
+}
+
+void OhpeEditor::openHelpSearch (const juce::String& query)
+{
+    showSettings (true, SettingsView::Help);
+    settingsView.showPage (SettingsView::Help);
+    settingsView.setSearchText (query);
+    settingsView.focusSearch();
+}
+
+bool OhpeEditor::revealSearchResult (const tips::Entry& en)
+{
+    if (en.kind == tips::Kind::Topic)
+    {
+        showSettings (true, SettingsView::Help);
+        settingsView.setHelpTopic (en.target.getIntValue());
+        return true;
+    }
+    if (en.kind == tips::Kind::Control && en.target.startsWith ("settings."))
+    {
+        static const std::pair<const char*, int> pages[] = { { "settings.general", SettingsView::General }, { "settings.display", SettingsView::Display },
+                                                             { "settings.midi", SettingsView::Midi }, { "settings.learn", SettingsView::MidiLearn },
+                                                             { "settings.controller", SettingsView::Controller }, { "settings.updates", SettingsView::Updates },
+                                                             { "settings.help", SettingsView::Help }, { "settings.about", SettingsView::About } };
+        for (const auto& [k, pg] : pages)
+            if (en.target == k) { showSettings (true, pg); settingsView.showPage (pg); return true; }
+        return false;
+    }
+    showSettings (false);
+    if (en.kind == tips::Kind::Parameter) return revealParameter (en.target);
+    if (en.target == "tour") { showTour (true); return true; }
+    return revealControl (en.target);
+}
+
+bool OhpeEditor::revealParameter (const juce::String& paramId)
+{
+    auto& core = proc.core();
+    const auto id = paramId.toStdString();
+    if (id.size() > 2 && id[0] == 'p' && id[1] >= '1' && id[1] <= '4' && id[2] == '.' && id[1] - '1' != ctx.part) selectPart (id[1] - '1');
+    if (library.isVisible()) showLibrary (false);
+    if (breedView.isVisible()) showBreeding (false);
+    if (fxEditor.isVisible()) showFxEditor (false);
+    if (proView.isVisible()) showProView (false);
+    lockStepIndex = -1;
+    for (int m = 0; m < numModes; ++m)
+    {
+        const auto mo = (Mode) m;
+        if (! modeInfo (mo).available) continue;
+        const int views = mo == Mode::Lfo ? modfx::numLfoViews : mo == Mode::Effects ? modfx::numFxViews : mo == Mode::Sequencer ? numSeqViews : 1;
+        for (int v = 0; v < views; ++v)
+        {
+            auto c = ctx;
+            if (mo == Mode::Lfo) c.lfoView = v;
+            else if (mo == Mode::Effects) c.fxView = v;
+            else if (mo == Mode::Sequencer) c.seqView = (SeqView) v;
+            const auto ids = modeParams (mo, core, c);
+            const auto it = std::find (ids.begin(), ids.end(), id);
+            if (it == ids.end()) continue;
+            const int k = (int) (it - ids.begin());
+            mode = mo;
+            ctx = c;
+            currentPage() = k / 4;
+            rebindEncoders();
+            refreshKeys();
+            saveUiState();
+            highlight (encoders[(size_t) (k % 4)]->getBounds().toFloat());
+            return true;
+        }
+    }
+    // not on an encoder page: the pro view card that has it
+    for (int m = 0; m < numModes; ++m)
+    {
+        const auto mo = (Mode) m;
+        if (! modeInfo (mo).available) continue;
+        bool has = false;
+        for (const auto& grp : proGroups (mo, core, ctx))
+            if (std::find (grp.ids.begin(), grp.ids.end(), id) != grp.ids.end()) has = true;
+        if (! has) continue;
+        mode = mo;
+        rebindEncoders();
+        refreshKeys();
+        showProView (true);
+        proView.setSimple (false);
+        for (int b = 0; b < proView.numBars(); ++b)
+            if (proView.bar (b).paramId() == paramId)
+            {
+                auto& bar = proView.bar (b);
+                auto& vp = proView.scroller();
+                if (auto* content = vp.getViewedComponent())
+                    vp.setViewPosition (0, juce::jmax (0, content->getLocalArea (&bar, bar.getLocalBounds()).getY() - vp.getHeight() / 3));
+                highlight (getLocalArea (&bar, bar.getLocalBounds()).toFloat());
+                break;
+            }
+        return true;
+    }
+    return false;
+}
+
+juce::Component* OhpeEditor::controlComponent (const juce::String& key)
+{
+    static const char* const prefixEngine = "engine.";
+    if (key.startsWith (prefixEngine))
+    {
+        const int t = key.fromFirstOccurrenceOf (".", false, false).getIntValue();
+        return t >= 0 && t < numEngineTypes ? engineKeys[(size_t) t].get() : nullptr;
+    }
+    if (key.startsWith ("mode."))
+    {
+        const int m = key.fromFirstOccurrenceOf (".", false, false).getIntValue();
+        return m >= 0 && m < numModes ? modeKeys[(size_t) m].get() : nullptr;
+    }
+    const std::pair<const char*, juce::Component*> map[] = {
+        { "part.selector", &partSelector }, { "preset.strip", &presetStrip }, { "key.library", &libraryKey }, { "key.pro", &proKey },
+        { "key.breed", &breedKey }, { "key.random", &randomKey }, { "key.save", &saveKey }, { "key.settings", &settingsKey },
+        { "version.badge", &versionBadge }, { "cpu.meter", &cpuMeter }, { "engine.column", engineKeys[(size_t) shownEngine].get() },
+        { "mode.column", modeKeys[(size_t) mode].get() }, { "display", &display }, { "life.bar", &lifeBar },
+        { "key.play", &playKey }, { "key.rec", &recKey }, { "key.stop", &stopKey }, { "key.tostart", &toStartKey }, { "key.loop", &loopKey },
+        { "tape.readout", &tapeReadout }, { "tempo.panel", &tempoPanel }, { "click.strip", &clickStrip }, { "key.octdown", &octDownKey },
+        { "key.octup", &octUpKey }, { "key.midi", &midiKey }, { "key.grid", &gridKey }, { "keys.readout", &keysReadout },
+        { "keyboard", grid.isVisible() ? (juce::Component*) &grid : (juce::Component*) &keyboard }, { "grid.keyboard", &grid },
+        { "wheel.pitch", &pitchWheel }, { "wheel.mod", &modWheel }, { "glide.switch", &glideSwitch }, { "glide.knob", &glideKnob },
+        { "header.key", &display.headerKey() }, { "header.gravity", &display.headerGravity() },
+    };
+    for (const auto& [k, c] : map)
+        if (key == k) return c;
+    return nullptr;
+}
+
+bool OhpeEditor::revealControl (const juce::String& key)
+{
+    if (library.isVisible()) showLibrary (false);
+    if (breedView.isVisible()) showBreeding (false);
+    if (proView.isVisible()) showProView (false);
+    if (fxEditor.isVisible()) showFxEditor (false);
+    auto showView = [this] (Mode m, int v) {
+        selectMode (m);
+        if (v >= 0) selectView (v);
+        highlight (display.getBounds().toFloat());
+        return true;
+    };
+    static const std::pair<const char*, int> lfoViews[] = { { "view.lfo.mod", modfx::LfoViewMod }, { "view.lfo.morph", modfx::LfoViewMorph },
+                                                            { "view.lfo.motion", modfx::LfoViewMotion }, { "view.lfo.harmony", modfx::LfoViewHarmony },
+                                                            { "view.lfo.voice", modfx::LfoViewVoice } };
+    static const std::pair<const char*, int> fxViews[] = { { "view.fx.sends", modfx::FxViewSends }, { "view.fx.rack", modfx::FxViewRack },
+                                                           { "view.fx.master", modfx::FxViewMaster }, { "view.fx.space", modfx::FxViewSpace },
+                                                           { "view.fx.body", modfx::FxViewBody }, { "view.fx.pads", modfx::FxViewPads } };
+    for (const auto& [k, v] : lfoViews)
+        if (key == k) return showView (Mode::Lfo, v);
+    for (const auto& [k, v] : fxViews)
+        if (key == k) return showView (Mode::Effects, v);
+    if (key == "view.tape.memory") return showView (Mode::Tape, -1);
+    if (key == "header.3d")
+    {
+        highlight (display.spaceBadgeArea().translated ((float) display.getX(), (float) display.getY()));
+        return true;
+    }
+    if (key == "encoders")
+    {
+        auto r = encoders[0]->getBounds();
+        for (auto& enc : encoders) r = r.getUnion (enc->getBounds());
+        highlight (r.toFloat());
+        return true;
+    }
+    if (key == "grid.keyboard" && ! grid.isVisible()) showGridKeyboard (true);
+    if (key.startsWith ("mode.")) selectMode ((Mode) key.fromFirstOccurrenceOf (".", false, false).getIntValue());
+    auto* c = controlComponent (key);
+    if (c == nullptr || ! c->isVisible()) return false;
+    highlight (getLocalArea (c, c->getLocalBounds()).toFloat());
+    return true;
 }
 
 void OhpeEditor::refreshSoftKeys()
@@ -2497,34 +2796,38 @@ void OhpeEditor::refreshKeys()
     for (int t = 0; t < numEngineTypes; ++t) engineKeys[(size_t) t]->setActive ((EngineType) t == shownEngine);
     for (int m = 0; m < numModes; ++m) modeKeys[(size_t) m]->setActive ((Mode) m == mode);
     refreshTransportKeys();
-    // p11: tooltips (translated; the shortcut in brackets in the standalone app)
+    // p11: tooltips (translated; the shortcut in brackets in the standalone app). p82: the texts of the control
+    // catalogue (EN / DE, also found by the help search); keys that learn MIDI with a right-click say so
     const bool sa = proc.wrapperType == juce::AudioProcessor::wrapperType_Standalone;
-    auto tip = [sa] (const char* text, const char* key) { return tr (text) + (sa ? "  (" + juce::String (key) + ")" : juce::String()); };
+    auto tip = [sa] (const char* key, const char* shortcut) { return tips::controlTip (key) + (sa ? "  (" + juce::String (shortcut) + ")" : juce::String()); };
     const bool linked = proc.core().params().get (Core::Ids::tapeTxLink) >= 0.5f;
-    playKey.setTooltip (tip (linked ? "Play / stop - sequencer and tape" : "Play / stop the sequencer", "Space") + "\n" + tr ("Bar: green = playing (breathing)"));
-    recKey.setTooltip (tip ("Record on the tape - arms the selected track when none is armed", "R") + "\n" + tr ("Bar: red = record on, breathing = recording"));
-    stopKey.setTooltip (tip ("Stop - press again to go to the start", "Space"));
-    toStartKey.setTooltip (tip ("To the start of the tape", "Enter"));
-    loopKey.setTooltip (tip ("Loop between loop in and out", "L") + "\n" + tr ("Bar: yellow = loop on"));
-    midiKey.setTooltip (tr ("MIDI maps and remote controls") + "\n" + tr ("Bar: red = MIDI learn"));
-    gridKey.setTooltip (tr ("Grid keyboard: 4 x 24 pads with MPE - every chord has the same shape in every key (fourths, thirds, whole tones or sequential - in key or chromatic); swaps the piano keys")
-                        + "\n" + tr ("Bar: yellow = grid shown")); // p24, p47
-    grid.setTooltip (tr ("Every chord has the same shape everywhere. With MPE on: slide sideways = bend, up / down = slide"));
-    tapeReadout.setTooltip (tr ("Tape position (minutes:seconds) and bar.beat; REC = recording, PLAY = tape rolling"));
-    keysReadout.setTooltip (tr ("Range of the on-screen keyboard and its octave shift; red during MIDI learn"));
-    libraryKey.setTooltip (tr ("Preset library"));
-    proKey.setTooltip (tr ("All parameters of the mode"));
-    breedKey.setTooltip (tr ("Breeding: cross two sounds, hear six children, keep the best - it learns what you like (opens / closes the breeding view)")); // p51
-    randomKey.setTooltip (tr ("Random: new values for the sound of the edit part's engine (in the breeding view: a new parent B)"));
-    saveKey.setTooltip (tr ("Save the edit part as a user preset"));
-    settingsKey.setTooltip (tr ("Settings: language, help, skin, display, MIDI, updates, about")); // p32
-    pitchWheel.setTooltip (tr ("Pitch bend - springs back to the centre; right-click: MIDI learn"));
-    modWheel.setTooltip (tr ("Mod wheel (modulation matrix source); right-click: MIDI learn"));
-    glideSwitch.setTooltip (tr ("Glide mode of the edit part: Auto, Legato or Always"));
-    glideKnob.setTooltip (tr ("Glide time of the edit part"));
-    lifeBar.setTooltip (tr ("Life of the edit part: 0 = static; more = held notes keep evolving (drift, breathing filter, grain scatter). Right-click: MIDI learn"));
-    octDownKey.setTooltip (tr ("Keyboard one octave down") + "\n" + tr ("Bar: yellow = keyboard shifted down"));
-    octUpKey.setTooltip (tr ("Keyboard one octave up") + "\n" + tr ("Bar: yellow = keyboard shifted up"));
+    auto& L = tips::withLearn;
+    playKey.setTooltip (L ((linked ? tr ("Play / stop - sequencer and tape") : tr ("Play / stop the sequencer")) + (sa ? "  (Space)" : "") + "\n" + tr ("Bar: green = playing (breathing)")));
+    recKey.setTooltip (L (tip ("key.rec", "R") + "\n" + tr ("Bar: red = record on, breathing = recording")));
+    stopKey.setTooltip (L (tip ("key.stop", "Space")));
+    toStartKey.setTooltip (L (tip ("key.tostart", "Enter")));
+    loopKey.setTooltip (L (tip ("key.loop", "L") + "\n" + tr ("Bar: yellow = loop on")));
+    midiKey.setTooltip (tips::controlTip ("key.midi") + "\n" + tr ("Bar: red = MIDI learn"));
+    gridKey.setTooltip (tips::controlTip ("key.grid") + "\n" + tr ("Bar: yellow = grid shown")); // p24, p47
+    grid.setTooltip (tips::controlTip ("grid.keyboard"));
+    keyboard.setTooltip (tips::controlTip ("keyboard"));
+    tapeReadout.setTooltip (tips::controlTip ("tape.readout"));
+    keysReadout.setTooltip (tips::controlTip ("keys.readout"));
+    libraryKey.setTooltip (L (tips::controlTip ("key.library")));
+    proKey.setTooltip (tips::controlTip ("key.pro"));
+    breedKey.setTooltip (L (tips::controlTip ("key.breed"))); // p51
+    randomKey.setTooltip (tips::controlTip ("key.random"));
+    saveKey.setTooltip (tips::controlTip ("key.save"));
+    settingsKey.setTooltip (tips::controlTip ("key.settings") + "\n"
+                            + tips::t ("F1: help overlay - Ctrl / Cmd + F: help search", "F1: Hilfe-Overlay - Strg / Cmd + F: Hilfesuche")); // p32, p82
+    pitchWheel.setTooltip (L (tips::controlTip ("wheel.pitch")));
+    modWheel.setTooltip (L (tips::controlTip ("wheel.mod")));
+    glideSwitch.setTooltip (L (tips::controlTip ("glide.switch")));
+    glideKnob.setTooltip (L (tips::controlTip ("glide.knob")));
+    lifeBar.setTooltip (L (tips::controlTip ("life.bar")));
+    octDownKey.setTooltip (tips::controlTip ("key.octdown") + "\n" + tr ("Bar: yellow = keyboard shifted down"));
+    octUpKey.setTooltip (tips::controlTip ("key.octup") + "\n" + tr ("Bar: yellow = keyboard shifted up"));
+    engineTipsValid = false; // p82: the engine keys' tooltips follow the language too
     for (int m = 0; m < numModes; ++m) // p14: what the mode keys' light bars say
     {
         const auto status = (Mode) m == Mode::Sequencer ? tr ("violet = sequencer running")
@@ -2533,8 +2836,8 @@ void OhpeEditor::refreshKeys()
                           : (Mode) m == Mode::Drum      ? tr ("violet = a sequencer plays the drum kit")
                           : (Mode) m == Mode::Lfo       ? tr ("violet = LFO or modulation routed")
                                                         : juce::String();
-        modeKeys[(size_t) m]->setTooltip (tr (modeInfo ((Mode) m).nameEn) + " - " + tr ("Bar: yellow = shown page")
-                                          + (status.isNotEmpty() ? ", " + status : juce::String()));
+        modeKeys[(size_t) m]->setTooltip (tr (modeInfo ((Mode) m).nameEn) + " - " + tips::t ("shows this mode on the display and the encoders", "zeigt diesen Modus auf Display und Encodern")
+                                          + "\n" + tr ("Bar: yellow = shown page") + (status.isNotEmpty() ? ", " + status : juce::String()));
     }
     libraryKey.setActive (library.isVisible());
     proKey.setActive (proView.isVisible());
@@ -2547,6 +2850,11 @@ bool OhpeEditor::keyPressed (const juce::KeyPress& key)
 {
     if (tour.isVisible()) return tour.keyPressed (key); // p64: the tour has the keys while open
     if (handleShortcut (key)) return true; // p11: standalone transport shortcuts
+    if (key == juce::KeyPress ('f', juce::ModifierKeys::commandModifier, 0)) // p82: the help search
+    {
+        openHelpSearch();
+        return true;
+    }
     if (key.getKeyCode() == juce::KeyPress::F1Key) // p32: the help overlay on / off
     {
         auto s = userSettings->get();
@@ -2578,6 +2886,11 @@ void OhpeEditor::timerCallback()
     }
     auto& core = proc.core();
     display.tick (1.0f / 30.0f);
+    if (highlightTime > 0.0f) // p82
+    {
+        highlightTime -= 1.0f / 30.0f;
+        repaint (highlightRect.expanded (12.0f).toNearestInt());
+    }
     {
         std::array<int, 4> st {}; // 1.0: 3D state of every part for the part selector
         for (int p = 0; p < Core::numParts; ++p) st[(size_t) p] = (int) ui::space3d::partState (core, p);
