@@ -28,6 +28,7 @@
 #include <juce_audio_utils/juce_audio_utils.h>
 
 #include <atomic>
+#include <cstdlib>
 #include <cmath>
 #include <functional>
 #include <iostream>
@@ -502,11 +503,14 @@ void state (Context& c)
     check (s2 == s1, "restored in a second instance: getStateInformation identical: " + firstDifference (s1, s2));
     if (! (s2 == s1)) dumpOnMismatch ("state12", s1, s2);
 
-    auto c3 = h.create (44100.0, 256); // another sample rate / block size: the session must not change
+    auto c3 = h.create (48000.0, 256); // another block size and only the main bus: the session must not change
+    c3->releaseResources();
+    c3->disableNonMainBuses();
+    c3->prepareToPlay (48000.0, 256);
     c3->setStateInformation (s2.getData(), (int) s2.getSize());
     settle (*c3, 40);
     const auto s3 = stateOf (*c3);
-    check (s3 == s1, "restored in a third instance at 44.1 kHz: identical: " + firstDifference (s1, s3));
+    check (s3 == s1, "restored in a third instance (256-sample blocks, main bus only): identical: " + firstDifference (s1, s3));
     if (! (s3 == s1)) dumpOnMismatch ("state13", s1, s3);
 
     // back into the first instance (undo / reload in the same session), after playing
@@ -625,8 +629,7 @@ void automation (Context& c)
 /** One offline bounce: the fixture session with tape playing, notes in all parts, 3 s, every output. */
 Render bounceOnce (juce::AudioPluginInstance& p, const juce::MemoryBlock& session)
 {
-    p.releaseResources();
-    p.setNonRealtime (true);
+    p.setNonRealtime (true); // takes effect with the next prepareToPlay (VST3 process mode "offline")
     p.setStateInformation (session.getData(), (int) session.getSize());
     settle (p, 30);
     p.releaseResources();
