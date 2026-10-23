@@ -19,8 +19,8 @@ fails CI on a crash, a hang (watchdog per section), a NaN / Inf / runaway sample
 | `bypass` | The host bypass parameter: silent while bypassed, plays again afterwards, toggled every block without glitches. |
 | `latency` | The reported latency at each sample rate is plausible, constant while playing, and no sound appears before it. |
 | `multi` | Four instances processed in parallel on their own threads each sound bit-identical to the same instance alone; a change in one stays in that one. |
-| `editor` | Plays with no editor; the editor opens and closes three times while audio runs on its own thread; plays afterwards. |
-| `transport` | Host transport stopped → playing at 120 BPM → tempo change to 90 → loop jumps → stop → play at 140 from beat 16 → relocate: the metronome ("click in plug-in") clicks on every host beat within 2 samples (after the reported latency) and stays silent while the host is stopped. |
+| `editor` | Plays with no editor; the editor opens and closes three times while audio runs on its own thread; plays afterwards (on Linux the editor is created and destroyed without a window: the headless X server has no window manager to embed it). |
+| `transport` | Host transport stopped → playing at 120 BPM → tempo change to 90 → loop jumps → stop → play at 140 from beat 16 → relocate, with Ohpe's sequencer Run on: the metronome ("click in plug-in") clicks on every host beat within 2 samples (after the reported latency) and stays silent while the host is stopped. |
 
 On Linux, macOS and Windows every section is its own CTest (`vst3_host_test`, `vst3_host_<section>`); the macOS
 auval job runs all sections against the installed Audio Unit. Locally:
@@ -59,11 +59,11 @@ format. Report failures as a GitHub issue with the steps and, if possible, the p
 - [ ] A MIDI-mapped knob (MIDI learn in Ohpe) also moves the DAW's lane.
 
 ### 4. Transport and tempo
-- [ ] Turn the metronome on with "click in plug-in": it clicks on your DAW's beats. Start, stop, loop a region,
+- [ ] Switch Ohpe's sequencer **Run** on (Ohpe follows the host transport while it is on) and the metronome with "click in plug-in": it clicks on your DAW's beats. Start, stop, loop a region,
       jump around the timeline – it follows and stays on the grid.
 - [ ] Change the project tempo (also a tempo change in the middle of the song): tempo-synced LFOs, delays and the
       sequencers follow.
-- [ ] Start the sequencer pattern from your DAW's play button; stop stops it.
+- [ ] With Run on, your DAW's play button starts the sequencer pattern; stop stops it.
 
 ### 5. Offline bounce / export
 - [ ] Export (render) a song section faster than real time twice: both files are identical (null test: invert one,

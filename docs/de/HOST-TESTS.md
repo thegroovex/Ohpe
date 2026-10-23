@@ -20,8 +20,8 @@ entgleistem Sample (> +12 dBFS) oder Abweichung.
 | `bypass` | Der Bypass-Parameter des Hosts: still im Bypass, spielt danach wieder, Umschalten in jedem Block ohne Störungen. |
 | `latency` | Die gemeldete Latenz je Abtastrate ist plausibel, bleibt beim Spielen konstant, und vor ihr erklingt nichts. |
 | `multi` | Vier Instanzen, parallel auf eigenen Threads verarbeitet, klingen jede bit-gleich wie allein; eine Änderung in einer bleibt in dieser. |
-| `editor` | Spielt ohne Editor; der Editor öffnet und schließt dreimal, während das Audio auf eigenem Thread läuft; spielt danach. |
-| `transport` | Host-Transport gestoppt → läuft mit 120 BPM → Tempowechsel auf 90 → Loop-Sprünge → Stopp → läuft mit 140 ab Schlag 16 → Sprung zurück: das Metronom („Klick im Plug-in“) klickt auf jedem Host-Schlag auf 2 Samples genau (nach der gemeldeten Latenz) und schweigt, solange der Host steht. |
+| `editor` | Spielt ohne Editor; der Editor öffnet und schließt dreimal, während das Audio auf eigenem Thread läuft; spielt danach (unter Linux wird der Editor ohne Fenster angelegt und zerstört: der X-Server ohne Bildschirm hat keinen Fenstermanager zum Einbetten). |
+| `transport` | Host-Transport gestoppt → läuft mit 120 BPM → Tempowechsel auf 90 → Loop-Sprünge → Stopp → läuft mit 140 ab Schlag 16 → Sprung zurück, bei eingeschaltetem Sequenzer-Run von Ohpe: das Metronom („Klick im Plug-in“) klickt auf jedem Host-Schlag auf 2 Samples genau (nach der gemeldeten Latenz) und schweigt, solange der Host steht. |
 
 Unter Linux, macOS und Windows ist jeder Abschnitt ein eigener CTest (`vst3_host_test`, `vst3_host_<abschnitt>`);
 der auval-Job auf dem Mac prüft alle Abschnitte an der installierten Audio Unit. Lokal:
@@ -60,10 +60,10 @@ bitte als GitHub-Issue mit den Schritten und wenn möglich der Projektdatei meld
 - [ ] Ein per MIDI gelernter Regler (MIDI-Learn in Ohpe) bewegt auch die Spur der DAW.
 
 ### 4. Transport und Tempo
-- [ ] Metronom mit „Klick im Plug-in“ einschalten: es klickt auf den Schlägen der DAW. Starten, stoppen, einen
+- [ ] Ohpes Sequenzer-**Run** einschalten (solange er an ist, folgt Ohpe dem Host-Transport) und das Metronom mit „Klick im Plug-in“: es klickt auf den Schlägen der DAW. Starten, stoppen, einen
       Bereich loopen, in der Zeitleiste springen – es folgt und bleibt im Raster.
 - [ ] Projekttempo ändern (auch ein Tempowechsel mitten im Song): tempo-synchrone LFOs, Delays und die Sequenzer folgen.
-- [ ] Das Sequenzer-Pattern mit der Play-Taste der DAW starten; Stopp hält es an.
+- [ ] Bei eingeschaltetem Run startet die Play-Taste der DAW das Sequenzer-Pattern; Stopp hält es an.
 
 ### 5. Offline-Bounce / Export
 - [ ] Einen Songabschnitt zweimal schneller als Echtzeit exportieren: beide Dateien sind gleich (Nulltest: eine

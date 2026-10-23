@@ -37,6 +37,10 @@
 #include <thread>
 #include <vector>
 
+#if JUCE_MAC
+ #include <CoreFoundation/CoreFoundation.h>
+#endif
+
 namespace
 {
 int failures = 0;
@@ -257,6 +261,7 @@ void settle (juce::AudioPluginInstance& p, int blocks = 25, int block = 256)
 
 bool sameAudio (const Render& a, const Render& b, juce::String& where)
 {
+    where = {};
     if (a.out.getNumChannels() != b.out.getNumChannels() || a.out.getNumSamples() != b.out.getNumSamples())
     {
         where = "different sizes";
@@ -266,18 +271,104 @@ bool sameAudio (const Render& a, const Render& b, juce::String& where)
         for (int i = 0; i < a.out.getNumSamples(); ++i)
             if (! (a.out.getSample (ch, i) == b.out.getSample (ch, i)))
             {
-                where = "channel " + juce::String (ch) + " sample " + juce::String (i) + ": " + juce::String (a.out.getSample (ch, i), 9)
-                        + " vs " + juce::String (b.out.getSample (ch, i), 9);
+                float worst = 0.0f;
+                int worstAt = i, worstCh = ch, differing = 0;
+                for (int c2 = 0; c2 < a.out.getNumChannels(); ++c2)
+                    for (int k = 0; k < a.out.getNumSamples(); ++k)
+                        if (const float d = std::abs (a.out.getSample (c2, k) - b.out.getSample (c2, k)); d > 0.0f)
+                        {
+                            ++differing;
+                            if (d > worst) { worst = d; worstAt = k; worstCh = c2; }
+                        }
+                where = "(first: channel " + juce::String (ch) + " sample " + juce::String (i) + ": " + juce::String (a.out.getSample (ch, i), 12)
+                        + " vs " + juce::String (b.out.getSample (ch, i), 12) + "; " + juce::String (differing) + " samples differ, largest "
+                        + juce::String (juce::Decibels::gainToDecibels (worst, -300.0f), 1) + " dBFS at channel " + juce::String (worstCh)
+                        + " sample " + juce::String (worstAt) + ")";
                 return false;
             }
     return true;
 }
 
-juce::MemoryBlock stateOf (juce::AudioPluginInstance& p)
+/** The plug-in's own state inside what the host gets: the VST3 host wraps the component / controller states as
+    base64 in XML, the Audio Unit host in a property list (the plug-in data raw inside). Both are unwrapped to the
+    plug-in's state blob (JSON, optional tape audio, the framework's private data after it). */
+juce::MemoryBlock pluginBlob (const juce::MemoryBlock& host)
+{
+    static const char marker[] = "{\"format\":\"ohpe-state\"";
+    auto find = [] (const juce::MemoryBlock& m) -> juce::int64 {
+        const auto n = sizeof (marker) - 1;
+        const char* d = static_cast<const char*> (m.getData());
+        for (size_t i = 0; i + n <= m.getSize(); ++i)
+            if (std::memcmp (d + i, marker, n) == 0) return (juce::int64) i;
+        return -1;
+    };
+    auto slice = [] (const juce::MemoryBlock& m, juce::int64 at) {
+        return juce::MemoryBlock (static_cast<const char*> (m.getData()) + at, m.getSize() - (size_t) at);
+    };
+    if (auto at = find (host); at >= 0) return slice (host, at);
+    if (auto xml = juce::AudioProcessor::getXmlFromBinary (host.getData(), (int) host.getSize()))
+        if (auto* comp = xml->getChildByName ("IComponent"))
+        {
+            juce::MemoryBlock inner;
+            if (inner.fromBase64Encoding (comp->getAllSubText().trim()))
+                if (auto at = find (inner); at >= 0) return slice (inner, at);
+        }
+    return host;
+}
+
+juce::MemoryBlock hostStateOf (juce::AudioPluginInstance& p)
 {
     juce::MemoryBlock m;
     p.getStateInformation (m);
     return m;
+}
+
+juce::MemoryBlock stateOf (juce::AudioPluginInstance& p) { return pluginBlob (hostStateOf (p)); }
+
+#if JUCE_MAC
+juce::MemoryBlock withAuPluginBlob (const juce::MemoryBlock& host, const juce::MemoryBlock& blob)
+{
+    juce::MemoryBlock result;
+    CFDataRef in = CFDataCreate (nullptr, static_cast<const UInt8*> (host.getData()), (CFIndex) host.getSize());
+    CFPropertyListRef list = CFPropertyListCreateWithData (nullptr, in, kCFPropertyListMutableContainersAndLeaves, nullptr, nullptr);
+    CFRelease (in);
+    if (list != nullptr && CFGetTypeID (list) == CFDictionaryGetTypeID())
+    {
+        CFDataRef data = CFDataCreate (nullptr, static_cast<const UInt8*> (blob.getData()), (CFIndex) blob.getSize());
+        CFDictionarySetValue ((CFMutableDictionaryRef) list, CFSTR ("jucePluginState"), data);
+        CFRelease (data);
+        if (CFDataRef out = CFPropertyListCreateData (nullptr, list, kCFPropertyListBinaryFormat_v1_0, 0, nullptr))
+        {
+            result.append (CFDataGetBytePtr (out), (size_t) CFDataGetLength (out));
+            CFRelease (out);
+        }
+    }
+    if (list != nullptr) CFRelease (list);
+    return result;
+}
+#endif
+
+/** A plug-in state blob (a saved session file, a fixture) wrapped the way this host format stores it. */
+juce::MemoryBlock hostStateFor (juce::AudioPluginInstance& p, const juce::MemoryBlock& blob)
+{
+    const auto host = hostStateOf (p);
+    if (auto xml = juce::AudioProcessor::getXmlFromBinary (host.getData(), (int) host.getSize()))
+    {
+        juce::XmlElement state (xml->getTagName());
+        state.createNewChildElement ("IComponent")->addTextElement (blob.toBase64Encoding());
+        juce::MemoryBlock out;
+        juce::AudioProcessor::copyXmlToBinary (state, out);
+        return out;
+    }
+   #if JUCE_MAC
+    if (auto au = withAuPluginBlob (host, blob); au.getSize() > 0) return au;
+   #endif
+    return blob;
+}
+
+void restore (juce::AudioPluginInstance& p, const juce::MemoryBlock& hostState)
+{
+    p.setStateInformation (hostState.getData(), (int) hostState.getSize());
 }
 
 juce::String firstDifference (const juce::MemoryBlock& a, const juce::MemoryBlock& b)
@@ -287,7 +378,7 @@ juce::String firstDifference (const juce::MemoryBlock& a, const juce::MemoryBloc
     while (i < n && a[i] == b[i]) ++i;
     if (i == n && a.getSize() == b.getSize()) return "identical";
     auto excerpt = [i] (const juce::MemoryBlock& m) {
-        const size_t from = i > 60 ? i - 60 : 0, to = juce::jmin (m.getSize(), i + 60);
+        const size_t from = i > 80 ? i - 80 : 0, to = juce::jmin (m.getSize(), i + 80);
         juce::String s;
         for (size_t k = from; k < to; ++k)
         {
@@ -300,20 +391,43 @@ juce::String firstDifference (const juce::MemoryBlock& a, const juce::MemoryBloc
            + juce::String ((int) i) + "\n           A: " + excerpt (a) + "\n           B: " + excerpt (b);
 }
 
-juce::var stateJson (const juce::MemoryBlock& m)
+/** Length of the JSON object at the start of a blob (strings and escapes respected), 0 if none. */
+size_t jsonLength (const juce::MemoryBlock& m)
 {
     const char* d = static_cast<const char*> (m.getData());
-    size_t n = 0;
-    while (n < m.getSize() && d[n] != 0) ++n;
-    return juce::JSON::parse (juce::String::fromUTF8 (d, (int) n));
+    int depth = 0;
+    bool inString = false, escaped = false;
+    for (size_t i = 0; i < m.getSize(); ++i)
+    {
+        const char c = d[i];
+        if (inString)
+        {
+            if (escaped) escaped = false;
+            else if (c == '\\') escaped = true;
+            else if (c == '"') inString = false;
+            continue;
+        }
+        if (c == '"') inString = true;
+        else if (c == '{' || c == '[') ++depth;
+        else if (c == '}' || c == ']')
+        {
+            if (--depth == 0) return i + 1;
+        }
+        else if (c == 0) return 0;
+    }
+    return 0;
+}
+
+juce::var stateJson (const juce::MemoryBlock& m)
+{
+    const auto n = jsonLength (m);
+    return n > 0 ? juce::JSON::parse (juce::String::fromUTF8 (static_cast<const char*> (m.getData()), (int) n)) : juce::var();
 }
 
 bool hasTapeAudio (const juce::MemoryBlock& m)
 {
-    const char* d = static_cast<const char*> (m.getData());
-    size_t n = 0;
-    while (n < m.getSize() && d[n] != 0) ++n;
-    return m.getSize() > n + 1000;
+    const auto n = jsonLength (m);
+    return n > 0 && m.getSize() > n + 2000 && m[n] == 0;
 }
 
 void dumpOnMismatch (const juce::String& tag, const juce::MemoryBlock& a, const juce::MemoryBlock& b)
@@ -382,12 +496,14 @@ void basic (Context& c)
     auto note = render (*plugin, 48000, fixed (512), chord (0, 24000, { 1 }));
     check (note.finite && note.peak > 0.01f, "a note plays (peak " + juce::String (note.peak) + ")");
 
-    auto state = stateOf (*plugin);
+    const auto hostState = hostStateOf (*plugin);
+    const auto state = pluginBlob (hostState);
+    check (stateJson (state).isObject(), "plug-in state found in the host's state (" + juce::String ((int) hostState.getSize()) + " bytes)");
     check (state.getSize() > 1000, "state saved (" + juce::String ((int) state.getSize()) + " bytes)");
     auto second = h.create();
     if (second != nullptr)
     {
-        second->setStateInformation (state.getData(), (int) state.getSize());
+        restore (*second, hostState);
         settle (*second);
         auto again = stateOf (*second);
         check (again == state, "state restored identically in a second instance: " + firstDifference (state, again));
@@ -447,8 +563,9 @@ void state (Context& c)
     const auto fixture = c.source.getChildFile ("tests/formats/fixtures/state/plugin-state-v1-with-tape.bin");
     juce::MemoryBlock fx;
     check (fixture.loadFileAsData (fx), "fixture state with tape loaded (" + fixture.getFileName() + ")");
-    a->setStateInformation (fx.getData(), (int) fx.getSize());
+    restore (*a, hostStateFor (*a, fx));
     settle (*a);
+    check (hasTapeAudio (stateOf (*a)), "fixture loaded through the host: tape audio in the state");
 
     // a preset in every part (the host-mappable "next preset" trigger on the edit part)
     auto* part = pm ("ui.part");
@@ -477,7 +594,8 @@ void state (Context& c)
     render (*a, 24000, fixed (512), chord (0, 12000), {}, false);
     settle (*a, 20);
 
-    const auto s1 = stateOf (*a);
+    const auto hs1 = hostStateOf (*a);
+    const auto s1 = pluginBlob (hs1);
     const auto json = stateJson (s1);
     check (json.isObject() && json["format"].toString() == "ohpe-state", "state JSON readable");
     const auto presets = json["sections"]["ui"]["presets"];
@@ -497,7 +615,7 @@ void state (Context& c)
 
     // round trip over fresh instances: byte-identical
     auto b = h.create();
-    b->setStateInformation (s1.getData(), (int) s1.getSize());
+    restore (*b, hs1);
     settle (*b, 40);
     const auto s2 = stateOf (*b);
     check (s2 == s1, "restored in a second instance: getStateInformation identical: " + firstDifference (s1, s2));
@@ -507,7 +625,7 @@ void state (Context& c)
     c3->releaseResources();
     c3->disableNonMainBuses();
     c3->prepareToPlay (48000.0, 256);
-    c3->setStateInformation (s2.getData(), (int) s2.getSize());
+    restore (*c3, hostStateOf (*b)); // the second instance's state, as a host copies a track
     settle (*c3, 40);
     const auto s3 = stateOf (*c3);
     check (s3 == s1, "restored in a third instance (256-sample blocks, main bus only): identical: " + firstDifference (s1, s3));
@@ -515,7 +633,7 @@ void state (Context& c)
 
     // back into the first instance (undo / reload in the same session), after playing
     render (*a, 24000, fixed (512), chord (0, 12000), {}, false);
-    a->setStateInformation (s1.getData(), (int) s1.getSize());
+    restore (*a, hs1);
     settle (*a, 40);
     const auto s4 = stateOf (*a);
     check (s4 == s1, "restored into the same instance: identical: " + firstDifference (s1, s4));
@@ -535,6 +653,7 @@ void state (Context& c)
     a->setStateInformation (nullptr, 0);
     const char junk[] = "{\"format\":\"ohpe-state\",\"version\":1,\"params\":{\"p1.vol\":";
     a->setStateInformation (junk, (int) sizeof (junk));
+    restore (*a, hostStateFor (*a, juce::MemoryBlock (junk, sizeof (junk)))); // damaged inside a valid host wrapper
     settle (*a);
     auto after = render (*a, 24000, fixed (512), chord (0, 12000), {}, false);
     check (after.finite, "damaged / empty state: instance keeps running");
@@ -599,7 +718,8 @@ void automation (Context& c)
     auto down64 = rampRender (true, 64);
     juce::String where;
     check (down1.finite && down64.finite && flat.finite, "per-sample automation: finite and bounded");
-    check (sameAudio (down1, down1b, where), "per-sample automation renders identically twice " + where);
+    const bool twice = sameAudio (down1, down1b, where);
+    check (twice, "per-sample automation renders identically twice " + where);
     const float tailFlat = flat.rms (0, 19200, 24000), tailDown = down1.rms (0, 19200, 24000), tail64 = down64.rms (0, 19200, 24000);
     const float headFlat = flat.rms (0, 1000, 4800), headDown = down1.rms (0, 1000, 4800);
     check (tailFlat > 1.0e-3f && tailDown < tailFlat * 0.25f, "volume ramp reaches the sound (tail rms " + juce::String (tailDown, 5) + " vs " + juce::String (tailFlat, 5) + ")");
@@ -612,17 +732,18 @@ void automation (Context& c)
     {
         setParam (tune, 0.8f);
         settle (*p, 5);
-        const auto s = stateOf (*p);
-        const auto v1 = stateJson (s)["params"]["p1.tune"];
+        const float set = tune->getValue(); // stepped parameter: the value the plug-in settled on
+        const auto s = hostStateOf (*p);
+        const auto v1 = stateJson (pluginBlob (s))["params"]["p1.tune"];
         setParam (tune, 0.3f);
         settle (*p, 5);
         const auto v2 = stateJson (stateOf (*p))["params"]["p1.tune"];
         check (! v1.isVoid() && ! v2.isVoid() && ! ((double) v1 == (double) v2), "automated value in the saved state (" + v1.toString() + " / " + v2.toString() + ")");
         auto q = h.create();
-        q->setStateInformation (s.getData(), (int) s.getSize());
+        restore (*q, s);
         settle (*q);
         ParamMap qm (*q);
-        check (qm ("p1.tune") != nullptr && std::abs (qm ("p1.tune")->getValue() - 0.8f) < 1.0e-3f, "automated value restored for the host (" + juce::String (qm ("p1.tune") ? qm ("p1.tune")->getValue() : -1.0f) + ")");
+        check (qm ("p1.tune") != nullptr && std::abs (qm ("p1.tune")->getValue() - set) < 1.0e-4f, "automated value restored for the host (" + juce::String (qm ("p1.tune") ? qm ("p1.tune")->getValue() : -1.0f) + " / " + juce::String (set) + ")");
     }
 }
 
@@ -630,7 +751,7 @@ void automation (Context& c)
 Render bounceOnce (juce::AudioPluginInstance& p, const juce::MemoryBlock& session)
 {
     p.setNonRealtime (true); // takes effect with the next prepareToPlay (VST3 process mode "offline")
-    p.setStateInformation (session.getData(), (int) session.getSize());
+    restore (p, session);
     settle (p, 30);
     p.releaseResources();
     p.prepareToPlay (48000.0, 512); // a host prepares (resets) the instance before every bounce
@@ -651,21 +772,29 @@ void bounce (Context& c)
     // the session: the fixture with tape audio, the tape playing, some sound settings
     juce::MemoryBlock fx;
     c.source.getChildFile ("tests/formats/fixtures/state/plugin-state-v1-with-tape.bin").loadFileAsData (fx);
-    a->setStateInformation (fx.getData(), (int) fx.getSize());
+    restore (*a, hostStateFor (*a, fx));
     ParamMap pm (*a);
     if (auto* tp = pm ("tape.play")) setParam (tp, 1.0f);
     if (auto* ch = pm ("p2.analog.cutoff")) setParam (ch, 0.3f);
     settle (*a, 20);
-    const auto session = stateOf (*a);
+    const auto session = hostStateOf (*a);
 
     auto r1 = bounceOnce (*a, session);
     auto r2 = bounceOnce (*b, session);
     auto r3 = bounceOnce (*a, session);
+    auto fresh = h.create();
+    auto r4 = bounceOnce (*fresh, session);
     juce::String where;
-    check (r1.finite && r2.finite && r3.finite, "offline bounces finite and bounded");
+    check (r1.finite && r2.finite && r3.finite && r4.finite, "offline bounces finite and bounded");
     check (r1.peak > 0.01f, "offline bounce has sound (peak " + juce::String (r1.peak) + ")");
-    check (sameAudio (r1, r2, where), "two instances bounce bit-identically (" + juce::String (r1.out.getNumChannels()) + " channels) " + where);
-    check (sameAudio (r1, r3, where), "two bounces of one instance bit-identical " + where);
+    bool same = sameAudio (r1, r3, where);
+    check (same, "two bounces of one instance bit-identical " + where);
+    same = sameAudio (r2, r4, where);
+    check (same, "two fresh instances bounce bit-identically " + where);
+    same = sameAudio (r1, r2, where);
+    check (same, "the instance that made the session and a fresh one bounce bit-identically (" + juce::String (r1.out.getNumChannels()) + " channels) " + where);
+    const auto sa = stateOf (*a), sb = stateOf (*b);
+    check (sa == sb, "after the bounces both instances hold the same state: " + firstDifference (sa, sb));
 }
 
 void rates (Context& c)
@@ -848,11 +977,24 @@ void editor (Context& c)
         opened = opened && ed != nullptr && ed->getWidth() > 100 && ed->getHeight() > 100;
         if (ed != nullptr)
         {
-            ed->addToDesktop (0);
-            ed->setVisible (true);
+           #if JUCE_LINUX || JUCE_BSD
+            // headless X server: the plug-in window is not embedded (X embedding needs a window manager); the editor
+            // is created, runs its timers and is destroyed while the audio runs
+            const bool window = std::getenv ("OHPE_HOSTTEST_EDITOR_WINDOW") != nullptr;
+           #else
+            const bool window = true;
+           #endif
+            if (window)
+            {
+                ed->addToDesktop (0);
+                ed->setVisible (true);
+            }
             pump (700);
-            ed->setVisible (false);
-            ed->removeFromDesktop();
+            if (window)
+            {
+                ed->setVisible (false);
+                ed->removeFromDesktop();
+            }
         }
         ed.reset();
         pump (300);
@@ -899,6 +1041,7 @@ void transport (Context& c)
             setPlain (pm, "metro.plugin", 1.0f);
             setPlain (pm, "metro.level", 1.0f);
         }
+        setPlain (pm, "seq.run", 1.0f); // Ohpe follows the host transport while its Run is on (docs/en/SEQUENCERS.md)
         settle (*p);
         p->releaseResources();
         p->prepareToPlay (rate, block);
