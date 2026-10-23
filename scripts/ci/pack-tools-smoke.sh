@@ -98,4 +98,6 @@ assert not any("zpaid" in f for f in os.listdir(d)), "a paid pack was zipped for
 assert m["notes"]["en"].strip() and m["notes"]["de"].strip(), m["notes"]
 print("manifest ok: %d assets, %d content" % (len(m["assets"]), len(m["content"])))
 P
+# p81: paid packs never reach the public manifest (object / string / any non-free license, broken paid packs, stray files)
+python3 "$ROOT/tests/tools/test_make_manifest.py"
 echo "pack tools smoke: ok"

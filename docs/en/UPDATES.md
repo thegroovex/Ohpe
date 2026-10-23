@@ -29,7 +29,9 @@ opening the library, the pro view or the breeding view closes it too.
 ## How it works
 
 * **Where it looks.** Ohpe reads the public release list of the project on GitHub. No account, no telemetry: nothing
-  about you, your system or your music is sent. Without a connection the view says so; nothing else happens.
+  about you, your system or your music is sent. Without a connection the view says so; nothing else happens. A server
+  that answers with an error (rate limit, maintenance) or with something that is not a release list is reported as
+  such – never as "up to date". Redirects are followed (at most 8); a request that gets no answer gives up after 15 s.
 * **When.** Only when you press CHECK NOW – or, if you switch it on, automatically **at most once a day** while an Ohpe
   window is open, and **never while the transport or the tape is running**.
 * **Channels.** *Stable* offers releases only; *Preview* also offers pre-releases. Builds before 1.0 start on Preview.
@@ -37,7 +39,8 @@ opening the library, the pro view or the breeding view closes it too.
   download **continues where it stopped** (also after a restart of Ohpe).
 * **Verification.** Every file is checked against the **SHA-256 checksum** published with the release (and its size).
   A file that fails the check is **deleted and never opened**. The check is repeated right before INSTALL opens it.
-  Code signature / notarisation checks follow once the installers are signed.
+  Code signature / notarisation checks follow once the installers are signed. **Size limits:** a download larger than
+  2 GB (declared or while it streams) and a release list or manifest larger than 4 MB are refused.
 * **Installing.** The standalone offers to quit so the installer can replace the program. In a plug-in host Ohpe asks
   you to save the project and quit the host before the installer continues.
 
@@ -72,6 +75,12 @@ The `release-assets` workflow (run it with the release tag and the CI run id) at
 `ohpe-update.json` with `tools/update/make_manifest.py`: every asset with platform, kind, size and SHA-256, the
 release text split at its `## English` / `## Deutsch` headings, and the content packs of `packaging/content/<id>/`
 (a `pack.json` with `id`, `version`, `kind`, `name.en`, `name.de`, `minApp`, and a `files/` folder). Releases without a
-manifest still work: Ohpe reads their text and `SHA256SUMS.txt`.
+manifest still work: Ohpe reads their text and `SHA256SUMS.txt`. **Only free packs are listed:** a pack whose
+`pack.json` has any `license` other than `free` (object or plain string) is skipped before it is read, and pack files
+that were not built from a free pack folder are never listed.
+
+**Tests.** `tests/plugin/UpdaterE2ETests.cpp` runs the updater end to end against a local HTTP mock server (release
+list, manifests, checksums, installers, packs; broken connections, ignored ranges, stalls, errors, redirects, malformed
+answers); `tests/tools/test_make_manifest.py` (part of `scripts/ci/pack-tools-smoke.sh`) checks the manifest generator.
 
 See also: [installing on macOS](INSTALL.md) · [playing the interface](USER-INTERFACE.md) · [presets](PRESETS.md).

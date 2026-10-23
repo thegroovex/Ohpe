@@ -30,6 +30,8 @@ eine neuere Version, zeigt die Beschriftung einen kleinen **gelben Leuchtbalken*
 
 * **Wo Ohpe sucht.** Ohpe liest die öffentliche Release-Liste des Projekts auf GitHub. Kein Konto, keine Telemetrie:
   nichts über dich, dein System oder deine Musik wird gesendet. Ohne Verbindung sagt die Ansicht das; sonst passiert nichts.
+  Antwortet der Server mit einem Fehler (Ratenlimit, Wartung) oder mit etwas, das keine Release-Liste ist, wird das so
+  gemeldet – nie als „aktuell“. Weiterleitungen werden verfolgt (höchstens 8); eine Anfrage ohne Antwort gibt nach 15 s auf.
 * **Wann.** Nur wenn du JETZT PRÜFEN drückst – oder, wenn du es einschaltest, automatisch **höchstens einmal am Tag**,
   solange ein Ohpe-Fenster offen ist, und **nie, während Transport oder Band laufen**.
 * **Kanäle.** *Stabil* bietet nur Releases an, *Vorschau* auch Vorab-Versionen. Versionen vor 1.0 starten mit Vorschau.
@@ -37,7 +39,8 @@ eine neuere Version, zeigt die Beschriftung einen kleinen **gelben Leuchtbalken*
   erneut versucht, und der Download **macht dort weiter, wo er stoppte** (auch nach einem Neustart von Ohpe).
 * **Prüfung.** Jede Datei wird gegen die mit dem Release veröffentlichte **SHA-256-Prüfsumme** (und ihre Größe) geprüft.
   Eine Datei, die die Prüfung nicht besteht, wird **gelöscht und nie geöffnet**. Direkt vor INSTALLIEREN wird erneut
-  geprüft. Prüfungen von Code-Signatur / Notarisierung folgen, sobald die Installer signiert sind.
+  geprüft. Prüfungen von Code-Signatur / Notarisierung folgen, sobald die Installer signiert sind. **Größengrenzen:** ein
+  Download über 2 GB (angekündigt oder während er läuft) und eine Release-Liste oder ein Manifest über 4 MB werden abgelehnt.
 * **Installieren.** Die Standalone-App bietet an, sich zu beenden, damit der Installer das Programm ersetzen kann. Im
   Plug-in-Host bittet Ohpe, das Projekt zu speichern und den Host zu beenden, bevor der Installer weitermacht.
 
@@ -74,6 +77,14 @@ Der Workflow `release-assets` (mit Release-Tag und CI-Run-ID starten) hängt die
 `ohpe-update.json` mit `tools/update/make_manifest.py`: jedes Asset mit Plattform, Art, Größe und SHA-256, den
 Release-Text getrennt an seinen Überschriften `## English` / `## Deutsch`, und die Inhaltspakete aus
 `packaging/content/<id>/` (eine `pack.json` mit `id`, `version`, `kind`, `name.en`, `name.de`, `minApp` und ein Ordner
-`files/`). Releases ohne Manifest funktionieren weiter: Ohpe liest ihren Text und `SHA256SUMS.txt`.
+`files/`). Releases ohne Manifest funktionieren weiter: Ohpe liest ihren Text und `SHA256SUMS.txt`. **Nur kostenlose
+Pakete werden gelistet:** ein Paket, dessen `pack.json` eine andere `license` als `free` hat (Objekt oder einfacher
+Text), wird übersprungen, bevor es gelesen wird; Paketdateien, die nicht aus einem kostenlosen Paketordner gebaut
+wurden, werden nie gelistet.
+
+**Tests.** `tests/plugin/UpdaterE2ETests.cpp` prüft den Updater durchgehend gegen einen lokalen HTTP-Testserver
+(Release-Liste, Manifeste, Prüfsummen, Installer, Pakete; abgebrochene Verbindungen, ignorierte Bereiche, hängende
+Antworten, Fehler, Weiterleitungen, kaputte Antworten); `tests/tools/test_make_manifest.py` (Teil von
+`scripts/ci/pack-tools-smoke.sh`) prüft den Manifest-Generator.
 
 Siehe auch: [Installation](INSTALLATION.md) · [Bedienung](BEDIENUNG.md) · [Presets](PRESETS.md).

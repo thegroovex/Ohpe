@@ -582,6 +582,16 @@ void Updater::doInstallPack (juce::String id)
     };
     if (pack.sha256.empty()) { done (State::Failed, "The release has no checksum - not installed", id); return; }
     if (pack.size > maxDownloadBytes) { done (State::Failed, "The download is larger than allowed and was refused", str (pack.nameEn)); return; }
+    bool needsNewer = false;
+    {
+        std::lock_guard<std::mutex> g (lock);
+        needsNewer = update::packState (pack, registry, appVersion()) == update::PackState::NeedsNewerApp;
+    }
+    if (needsNewer)
+    {
+        done (State::Failed, "This pack needs a newer Ohpe", str (pack.minApp)); // p81: not downloaded at all
+        return;
+    }
     const auto prevState = snapshot().state;
     setState (State::Downloading, "Downloading the content pack", str (pack.nameEn));
     const auto content = folder().getChildFile ("Content");

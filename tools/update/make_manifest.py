@@ -72,6 +72,32 @@ def split_notes(body):
     return en if en is not None else de, de if de is not None else en
 
 
+def license_type(lic):
+    if lic is None:
+        return "free"
+    if isinstance(lic, str):
+        return lic.strip().lower() or "free"
+    if isinstance(lic, dict):
+        t = lic.get("type", "free")
+        return t.strip().lower() if isinstance(t, str) and t.strip() else ("free" if t is None else "invalid")
+    return "invalid"
+
+
+def is_free(meta_path):
+    try:
+        with open(meta_path, encoding="utf-8") as f:
+            raw = json.load(f)
+    except (OSError, ValueError):
+        return True  # not readable here: make_ohpepack reports the error as before
+    return not isinstance(raw, dict) or license_type(raw.get("license")) == "free"
+
+
+def is_content_file(name):
+    """A content pack file (built here or not): never a program asset of the release."""
+    low = name.lower()
+    return low.endswith(".ohpepack") or low.startswith("ohpe-content-")
+
+
 SAFE_ID = re.compile(r"^[a-z0-9_\-][a-z0-9_\-.]{0,63}$")
 
 
@@ -86,9 +112,14 @@ def build_packs(content_dir, out_dir):
         meta_path = os.path.join(folder, "pack.json")
         if not os.path.isfile(meta_path) or not os.path.isdir(os.path.join(folder, "files")):
             continue
+        # p49: the public release lists only free Ohpe content; paid packs are never zipped or listed here.
+        # p81: decided from the raw pack.json before anything is read or checked, so a paid pack (license as an
+        # object or as a plain string, any type but "free") can neither be built nor stop the release build
+        if not is_free(meta_path):
+            print("skipped (not free): %s" % sub)
+            continue
         meta, data = make_ohpepack.pack_meta(folder, "")
-        # p49: the public release lists only free Ohpe content; paid packs are never zipped or listed here
-        if (meta.get("license") or {}).get("type", "free") != "free":
+        if license_type(meta.get("license")) != "free":
             print("skipped (not free): %s" % sub)
             continue
         pid, ver = meta["id"], meta["version"]
@@ -126,6 +157,11 @@ def main():
     for name in sorted(os.listdir(a.dir)):
         path = os.path.join(a.dir, name)
         if not os.path.isfile(path) or name in (MANIFEST, SUMS) or name in pack_files:
+            continue
+        if is_content_file(name):
+            # p81: a pack file that was not built from a free pack folder above (e.g. a paid pack copied into the
+            # release folder) is never listed
+            print("not listed (content pack not built from a free pack folder): %s" % name)
             continue
         c = classify(name)
         if c is None:
