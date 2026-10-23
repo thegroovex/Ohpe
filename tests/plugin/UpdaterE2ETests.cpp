@@ -31,6 +31,8 @@ namespace
 {
 std::string std8 (const juce::String& s) { return s.toStdString(); }
 
+juce::String js (const std::string& s) { return juce::String::fromUTF8 (s.c_str(), (int) s.size()); }
+
 std::string bytesOf (const juce::String& s) { return std::string (s.toRawUTF8(), (size_t) s.getNumBytesAsUTF8()); }
 
 std::string payload (size_t n, uint32_t seed)
@@ -343,8 +345,8 @@ struct Harness
             const auto digest = update::Sha256::of (r.installer);
             const std::string tag = "v" + r.version;
             juce::String assets;
-            assets << "{ \"name\": \"" << assetName (r.version) << "\", \"size\": " << (int) r.installer.size()
-                   << ", \"browser_download_url\": \"" << srv.url (inst) << "\" }";
+            assets << "{ \"name\": \"" << js (assetName (r.version)) << "\", \"size\": " << (int) r.installer.size()
+                   << ", \"browser_download_url\": \"" << js (srv.url (inst)) << "\" }";
             if (r.withManifest)
             {
                 update::Release m;
@@ -368,7 +370,7 @@ struct Harness
                 mr.contentType = "application/json";
                 const auto mp = "/dl/" + tag + "/ohpe-update.json";
                 srv.set (mp, mr);
-                assets << ", { \"name\": \"ohpe-update.json\", \"browser_download_url\": \"" << srv.url (mp) << "\" }";
+                assets << ", { \"name\": \"ohpe-update.json\", \"browser_download_url\": \"" << js (srv.url (mp)) << "\" }";
             }
             if (r.withSums)
             {
@@ -376,12 +378,12 @@ struct Harness
                 sr.body = digest + "  " + assetName (r.version) + "\n";
                 const auto sp = "/dl/" + tag + "/SHA256SUMS.txt";
                 srv.set (sp, sr);
-                assets << ", { \"name\": \"SHA256SUMS.txt\", \"browser_download_url\": \"" << srv.url (sp) << "\" }";
+                assets << ", { \"name\": \"SHA256SUMS.txt\", \"browser_download_url\": \"" << js (srv.url (sp)) << "\" }";
             }
-            list << (first ? "" : ",") << "{ \"tag_name\": \"" << tag << "\", \"draft\": false, \"prerelease\": "
-                 << (r.prerelease ? "true" : "false") << ", \"html_url\": \"" << srv.url ("/page/" + tag)
-                 << "\", \"published_at\": \"2026-10-01T00:00:00Z\", \"body\": \"## English\\nnotes " << r.version
-                 << "\\n## Deutsch\\nHinweise " << r.version << "\", \"assets\": [ " << assets << " ] }";
+            list << (first ? "" : ",") << "{ \"tag_name\": \"" << js (tag) << "\", \"draft\": false, \"prerelease\": "
+                 << (r.prerelease ? "true" : "false") << ", \"html_url\": \"" << js (srv.url ("/page/" + tag))
+                 << "\", \"published_at\": \"2026-10-01T00:00:00Z\", \"body\": \"## English\\nnotes " << js (r.version)
+                 << "\\n## Deutsch\\nHinweise " << js (r.version) << "\", \"assets\": [ " << assets << " ] }";
             first = false;
         }
         list << "]";

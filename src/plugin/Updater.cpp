@@ -326,7 +326,7 @@ juce::String Updater::fetchText (const juce::String& urlText, int* statusOut, bo
     if (in == nullptr || (status != 200 && status != 0)) return {};
     // p81: never read more than maxTextBytes (a wrong URL or a hostile server could stream without end)
     juce::MemoryBlock mb;
-    in->readIntoMemoryBlock (mb, (ssize_t) maxTextBytes + 1);
+    in->readIntoMemoryBlock (mb, maxTextBytes + 1);
     if (mb.getSize() > (size_t) maxTextBytes) { if (tooLargeOut != nullptr) *tooLargeOut = true; return {}; }
     return juce::String::fromUTF8 ((const char*) mb.getData(), (int) mb.getSize());
 }
