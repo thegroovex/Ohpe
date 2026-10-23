@@ -1,6 +1,7 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "KeyControl.h"
+#include "Tooltips.h"
 
 #include "plugin/Localisation.h"
 #include "TempoControl.h"
@@ -332,7 +333,8 @@ void GravityControl::setAmount (float a)
 
 juce::String GravityControl::getTooltip()
 {
-    return tr ("Key Gravity \u2013 pulls the sound into key") + " (" + juce::String (juce::roundToInt (shown * 100.0f)) + " %)";
+    return tips::withLearn (tr ("Key Gravity \u2013 pulls the sound into key") + " (" + juce::String (juce::roundToInt (shown * 100.0f)) + " %)"
+                            + "\n" + tips::t ("Click: its page - drag or mouse wheel: amount", "Klick: ihre Seite - Ziehen oder Mausrad: Stärke")); // p82
 }
 
 void GravityControl::paint (juce::Graphics& g)

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Widgets.h"
+#include "Tooltips.h"
 
 namespace ohpe::ui
 {
@@ -32,6 +33,7 @@ public:
     /** Text field: sets the tempo from text ("128", "92.5"); false = not a number in range. Public for tests. */
     bool commitText (const juce::String& text);
     juce::String shownText() const;
+    juce::String getTooltip() override; ///< p82: follows the language
 
     void paint (juce::Graphics& g) override;
     void resized() override;
@@ -58,13 +60,14 @@ private:
       count-in    Off -> 1 bar -> 2 bars ("metro.countin"); during a count-in the beats left in red;
                   right-click: MIDI learn
 */
-class ClickStrip : public juce::Component, public juce::TooltipClient
+class ClickStrip : public juce::Component, public juce::TooltipClient, public tips::RegionProvider
 {
 public:
     explicit ClickStrip (OhpeProcessor& p);
     void setUiScale (float s) { if (s != uiScale) { uiScale = s; repaint(); } }
     void refresh(); ///< the editor's timer: flash, count-in
     juce::String getTooltip() override;
+    std::vector<tips::Region> tipRegions() override; ///< p82: the two fields
     void paint (juce::Graphics& g) override;
     void mouseDown (const juce::MouseEvent& e) override;
     void mouseMove (const juce::MouseEvent& e) override { hover = fieldAt (e.position); repaint(); }
@@ -89,6 +92,7 @@ class TapKey : public juce::Component, public juce::SettableTooltipClient
 {
 public:
     explicit TapKey (OhpeProcessor& p);
+    juce::String getTooltip() override; ///< p82: follows the language
     void refresh();
     void paint (juce::Graphics& g) override;
     void mouseDown (const juce::MouseEvent& e) override;
