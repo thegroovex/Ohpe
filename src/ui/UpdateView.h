@@ -3,6 +3,7 @@
 #pragma once
 
 #include "plugin/Updater.h"
+#include "Tooltips.h"
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -20,7 +21,7 @@ namespace ohpe::ui
     VERSION, REMIND LATER; the settings (automatic check once a day - off until switched on -, channel stable /
     preview, last check); the content packs on offer (INSTALL / UPDATE / ROLL BACK); PREVIOUS VERSION (rollback).
 */
-class UpdateView : public juce::Component, private juce::ChangeListener
+class UpdateView : public juce::Component, public juce::TooltipClient, public tips::RegionProvider, private juce::ChangeListener
 {
 public:
     explicit UpdateView (Updater& u);
@@ -35,6 +36,8 @@ public:
     void paint (juce::Graphics& g) override;
     void resized() override {}
     void mouseDown (const juce::MouseEvent& e) override;
+    juce::String getTooltip() override;              ///< p82: the painted control under the mouse
+    std::vector<tips::Region> tipRegions() override; ///< p82: every painted control
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
     bool keyPressed (const juce::KeyPress& k) override;
 
@@ -49,6 +52,7 @@ private:
     {
         juce::Rectangle<float> area;
         std::function<void()> action;
+        juce::String tip; ///< p82
     };
     void changeListenerCallback (juce::ChangeBroadcaster*) override { repaint(); }
     float unit() const;
@@ -58,6 +62,8 @@ private:
     void install();
 
     Updater& updater;
+    juce::String tipNow; ///< p82: the tooltip of the next chips
+    void rowTip (const char* en, const char* de) { tipNow = tips::t (en, de); }
     std::vector<Hit> hits;
     float scroll = 0.0f, maxScroll = 0.0f;
     bool standalone = false;

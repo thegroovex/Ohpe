@@ -127,7 +127,7 @@ void UpdateView::chip (juce::Graphics& g, juce::Rectangle<float> r, const juce::
     g.setColour ((on ? colour::display : colour::displayText).withAlpha (enabled ? 1.0f : 0.35f));
     g.setFont (labelFont (juce::jmin (r.getHeight() * 0.52f, u * 1.5f)));
     g.drawFittedText (text, r.reduced (u * 0.5f, 0).toNearestInt(), juce::Justification::centred, 1, 0.75f);
-    if (enabled && action) hits.push_back ({ r, std::move (action) });
+    if (enabled && action) hits.push_back ({ r, std::move (action), tipNow });
 }
 
 void UpdateView::paintNotes (juce::Graphics& g, juce::Rectangle<float> area, const Updater::Snapshot& s)
@@ -162,6 +162,7 @@ void UpdateView::paintNotes (juce::Graphics& g, juce::Rectangle<float> area, con
 void UpdateView::paint (juce::Graphics& g)
 {
     hits.clear();
+    tipNow = {};
     const float u = unit();
     const auto b = getLocalBounds().toFloat();
     const float du = (float) getWidth() / 1152.0f;
@@ -191,6 +192,7 @@ void UpdateView::paint (juce::Graphics& g)
         g.drawFittedText (tr (s.message) + (s.detail.isNotEmpty() && s.state != Updater::State::Downloading ? "  " + s.detail : juce::String()),
                           juce::Rectangle<float> (u * 38.0f, u * 1.4f, u * 61.0f, u * 3.2f).toNearestInt(), juce::Justification::centredRight, 1, 0.8f);
     }
+    rowTip ("Close the update view (Esc)", "Update-Ansicht schließen (Esc)");
     chip (g, { b.getWidth() - u * 12.5f, u * 1.4f, u * 10.5f, u * 3.2f }, i18n::upper (tr ("Close")), false, colour::displayText, [this] { close(); });
 
     // ---- left: the version on offer and its notes
@@ -242,12 +244,15 @@ void UpdateView::paint (juce::Graphics& g)
         g.setColour (colour::displayText);
         g.setFont (labelFont (u * 1.4f));
         g.drawText (juce::String (juce::roundToInt (s.progress * 100.0)) + " %   " + s.detail, bar.reduced (u * 1.0f, 0), juce::Justification::centredLeft, true);
+        rowTip ("Stop the download", "Den Download abbrechen");
         chip (g, { x + w - u * 11.0f, y, u * 11.0f, h }, i18n::upper (tr ("Cancel")), false, colour::signalRed, [this] { updater.cancel(); });
     }
     else
     {
+        rowTip ("Look for a new version now", "Jetzt nach einer neuen Version suchen");
         chip (g, { x, y, u * 14.0f, h }, i18n::upper (tr ("Check now")), false, colour::displayText, [this] { updater.checkNow(); }, ! busy);
         if (s.state == Updater::State::Ready)
+            rowTip ("Open the downloaded installer", "Den heruntergeladenen Installer öffnen");
             chip (g, { x + u * 15.0f, y, w - u * 15.0f, h }, i18n::upper (tr ("Install")) + "  " + s.detail, true, colour::sunYellow, [this] { install(); });
         else if (s.hasRelease)
         {
@@ -259,7 +264,9 @@ void UpdateView::paint (juce::Graphics& g)
     }
     y += h + u * 1.0f;
     const bool offer = s.hasRelease && s.state != Updater::State::Downloading;
+    rowTip ("Do not offer this version again", "Diese Version nicht mehr anbieten");
     chip (g, { x, y, (w - u * 1.0f) * 0.5f, h * 0.85f }, i18n::upper (tr ("Skip this version")), false, colour::displayText, [this] { updater.skipThisVersion(); }, offer);
+    rowTip ("Offer it again later", "Später wieder anbieten");
     chip (g, { x + (w + u * 1.0f) * 0.5f, y, (w - u * 1.0f) * 0.5f, h * 0.85f }, i18n::upper (tr ("Remind me later")), false, colour::displayText,
           [this] { updater.remindLater(); }, offer);
 
@@ -278,10 +285,12 @@ void UpdateView::paint (juce::Graphics& g)
     legend (tr ("Settings"), y);
     y += u * 2.0f;
     label (tr ("Check automatically (once a day)"), y);
+    rowTip ("Look for a new version once a day", "Einmal am Tag nach einer neuen Version suchen");
     chip (g, { x + w - u * 20.0f, y, u * 9.5f, h * 0.85f }, i18n::upper (tr ("Off")), ! prefs.autoCheck, colour::displayText, [this] { updater.setAutoCheck (false); });
     chip (g, { x + w - u * 9.5f, y, u * 9.5f, h * 0.85f }, i18n::upper (tr ("On")), prefs.autoCheck, colour::sunYellow, [this] { updater.setAutoCheck (true); });
     y += h;
     label (tr ("Channel"), y);
+    rowTip ("Which releases: stable ones only, or previews too", "Welche Versionen: nur stabile, oder auch Vorschauen");
     chip (g, { x + w - u * 20.0f, y, u * 9.5f, h * 0.85f }, i18n::upper (tr ("Stable")), prefs.channel == update::Channel::Stable, colour::sunYellow,
           [this] { updater.setChannel (update::Channel::Stable); });
     chip (g, { x + w - u * 9.5f, y, u * 9.5f, h * 0.85f }, i18n::upper (tr ("Preview")), prefs.channel == update::Channel::Preview, colour::sunYellow,
@@ -316,10 +325,12 @@ void UpdateView::paint (juce::Graphics& g)
         switch (row.state)
         {
             case update::PackState::NotInstalled:
+                rowTip ("Download and install this content pack", "Dieses Inhaltspaket herunterladen und installieren");
                 chip (g, { x + w - u * 9.5f, y, u * 9.5f, h * 0.85f }, i18n::upper (thisBusy ? tr ("Loading") : tr ("Install")), false, colour::sunYellow,
                       [this, id] { updater.installPack (id); }, ! busy);
                 break;
             case update::PackState::UpdateAvailable:
+                rowTip ("Update this content pack", "Dieses Inhaltspaket aktualisieren");
                 chip (g, { x + w - u * 9.5f, y, u * 9.5f, h * 0.85f }, i18n::upper (thisBusy ? tr ("Loading") : tr ("Update")), true, colour::sunYellow,
                       [this, id] { updater.installPack (id); }, ! busy);
                 break;
@@ -334,6 +345,7 @@ void UpdateView::paint (juce::Graphics& g)
                 break;
         }
         if (row.canRollBack && row.state != update::PackState::NeedsNewerApp)
+            rowTip ("Back to the previous version of the pack", "Zurück zur vorigen Version des Pakets");
             chip (g, { x + w - u * 20.0f, y, u * 10.0f, h * 0.85f }, i18n::upper (tr ("Roll back")), false, colour::displayText,
                   [this, id] { updater.rollbackPack (id); }, ! busy);
         y += h;
@@ -342,6 +354,7 @@ void UpdateView::paint (juce::Graphics& g)
     // rollback of the program, footer
     const float footY = b.getHeight() - u * 5.6f;
     if (s.hasPrevious)
+        rowTip ("Install the previous program version again", "Die vorige Programmversion wieder installieren");
         chip (g, { x, footY - h, w, h * 0.85f }, i18n::upper (tr ("Previous version")) + " " + str (s.previous.version.toString()), false,
               colour::displayText, [this] { updater.downloadPrevious(); }, ! busy);
     g.setColour (colour::displayDim);
@@ -374,4 +387,25 @@ bool UpdateView::keyPressed (const juce::KeyPress& k)
     if (k == juce::KeyPress::returnKey) { runPrimary(); return true; }
     return false;
 }
+// ---------------------------------------------------------------- p82: tooltips of the painted controls
+juce::String UpdateView::getTooltip()
+{
+    const auto p = getMouseXYRelative().toFloat();
+    for (auto it = hits.rbegin(); it != hits.rend(); ++it)
+        if (it->area.contains (p)) return it->tip;
+    return {};
+}
+
+std::vector<tips::Region> UpdateView::tipRegions()
+{
+    {
+        juce::Image img (juce::Image::ARGB, juce::jmax (1, getWidth()), juce::jmax (1, getHeight()), true);
+        juce::Graphics g (img);
+        paint (g); // the hit list of what is shown now
+    }
+    std::vector<tips::Region> r;
+    for (auto it = hits.rbegin(); it != hits.rend(); ++it) r.push_back ({ it->area, it->tip });
+    return r;
+}
+
 } // namespace ohpe::ui

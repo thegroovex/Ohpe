@@ -4,6 +4,7 @@
 
 #include "breed/SoundGenome.h"
 #include "plugin/PluginProcessor.h"
+#include "Tooltips.h"
 
 #include <functional>
 #include <map>
@@ -25,7 +26,7 @@ namespace ohpe::ui
     Thumbnails and level matching run on a worker thread (breed::Audition, a private core), so the brood plays at its
     parents' loudness. The session (parents, generations, kept children) lives in the plug-in state (section "breed").
 */
-class BreedView : public juce::Component, private juce::Timer
+class BreedView : public juce::Component, public juce::TooltipClient, public tips::RegionProvider, private juce::Timer
 {
 public:
     explicit BreedView (OhpeProcessor& p);
@@ -40,6 +41,8 @@ public:
     void paint (juce::Graphics& g) override;
     void resized() override {}
     void mouseDown (const juce::MouseEvent& e) override;
+    juce::String getTooltip() override;              ///< p82: the painted control under the mouse
+    std::vector<tips::Region> tipRegions() override; ///< p82: every painted control
     void mouseDrag (const juce::MouseEvent& e) override;
     bool keyPressed (const juce::KeyPress& k) override;
 
@@ -91,6 +94,7 @@ private:
         std::function<void()> action;
         bool rightClick = false;
         std::function<void()> secondary;
+        juce::String tip; ///< p82
     };
     void timerCallback() override;
     float unit() const;
@@ -114,6 +118,8 @@ private:
     std::unique_ptr<breed::Session> ses;
     std::unique_ptr<Worker> worker;
     std::map<uint64_t, breed::Audition::Sketch> sketches; ///< by child seed
+    juce::String tipNow; ///< p82: the tooltip of the next chips
+    void rowTip (const char* en, const char* de) { tipNow = tips::t (en, de); }
     std::vector<Hit> hits;
     juce::String status;
     int selected = -1;

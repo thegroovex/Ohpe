@@ -606,12 +606,13 @@ void BreedView::chip (juce::Graphics& g, juce::Rectangle<float> r, const juce::S
     g.setColour (on ? colour::display : colour::displayText);
     g.setFont (labelFont (juce::jmin (r.getHeight() * 0.52f, u * 1.6f)));
     g.drawFittedText (text, r.reduced (u * 0.4f, 0).toNearestInt(), juce::Justification::centred, 1, 0.75f);
-    hits.push_back ({ r, std::move (action), false, std::move (secondary) });
+    hits.push_back ({ r, std::move (action), false, std::move (secondary), tipNow });
 }
 
 void BreedView::paint (juce::Graphics& g)
 {
     hits.clear();
+    tipNow = {};
     const float u = unit();
     const auto b = getLocalBounds().toFloat();
     const float du = (float) getWidth() / 1152.0f;
@@ -631,8 +632,11 @@ void BreedView::paint (juce::Graphics& g)
                                                       + juce::String (ses->currentIndex() + 1) + " / " + juce::String (ses->numGenerations()) + ")"
                                                 : i18n::upper (tr ("No brood yet"));
     g.drawText (genText, juce::Rectangle<float> (u * 17.5f, u * 1.4f, u * 22.0f, u * 3.2f), juce::Justification::centredLeft, true);
+    rowTip ("Back to the previous generation", "Zurück zur vorigen Generation");
     chip (g, { u * 40.0f, u * 1.4f, u * 4.0f, u * 3.2f }, juce::String::fromUTF8 ("\xe2\x80\xb9"), false, colour::displayText, [this] { undo(); });
+    rowTip ("Forward to the next generation", "Vor zur nächsten Generation");
     chip (g, { u * 44.6f, u * 1.4f, u * 4.0f, u * 3.2f }, juce::String::fromUTF8 ("\xe2\x80\xba"), false, colour::displayText, [this] { redo(); });
+    rowTip ("Audition with a note (on) or a short phrase (off)", "Mit einer Note (ein) oder einer kurzen Phrase (aus) anhören");
     chip (g, { u * 49.6f, u * 1.4f, u * 9.0f, u * 3.2f }, juce::String::fromUTF8 ("\xe2\x99\xaa ") + tr ("Note"), playNotes, colour::playGreenLit,
           [this] { playNotes = ! playNotes; repaint(); });
     if (status.isNotEmpty())
@@ -641,7 +645,9 @@ void BreedView::paint (juce::Graphics& g)
         g.setFont (labelFont (u * 1.4f));
         g.drawText (status, juce::Rectangle<float> (u * 59.5f, u * 1.4f, u * 29.0f, u * 3.2f), juce::Justification::centredRight, true);
     }
+    rowTip ("Keep the selected child as the part's sound and close", "Das gewählte Kind als Sound des Parts übernehmen und schließen");
     chip (g, { b.getWidth() - u * 24.0f, u * 1.4f, u * 10.5f, u * 3.2f }, i18n::upper (tr ("Keep")), true, colour::sunYellow, [this] { close (true); });
+    rowTip ("Back to the sound from before (Esc)", "Zurück zum Sound von vorher (Esc)");
     chip (g, { b.getWidth() - u * 12.5f, u * 1.4f, u * 10.5f, u * 3.2f }, i18n::upper (tr ("Cancel")), false, colour::signalRed, [this] { close (false); });
 
     // ---- second row: parents, die, mutation, BREED / AGAIN
@@ -660,11 +666,13 @@ void BreedView::paint (juce::Graphics& g)
         g.setFont (labelFont (u * 1.5f));
         g.drawFittedText (parentLabel (w) + juce::String::fromUTF8 ("  \xe2\x96\xbe"), r.withTrimmedLeft (u * 4.0f).reduced (u * 0.4f, 0).toNearestInt(),
                           juce::Justification::centredLeft, 1, 0.8f);
-        hits.push_back ({ r, [this, w] { showParentMenu (w); }, false, {} });
+        hits.push_back ({ r, [this, w] { showParentMenu (w); }, false, {},
+                          tips::t ("Parent: pick the sound to cross (current sound, a preset, a kept child)", "Elternteil: den Sound zum Kreuzen wählen (aktueller Sound, ein Preset, ein behaltenes Kind)") });
     }
     g.setColour (colour::displayDim);
     g.setFont (brandFont (u * 2.0f));
     g.drawText (juce::String::fromUTF8 ("\xc3\x97"), juce::Rectangle<float> (u * 29.0f, y2, u * 3.5f, h2), juce::Justification::centred);
+    rowTip ("Dice: a random parent B", "Würfel: ein zufälliges Elternteil B");
     chip (g, { u * 60.0f, y2, u * 5.0f, h2 }, juce::String::fromUTF8 ("\xe2\x9a\x83"), false, colour::sunYellow, [this] { randomParent (1); });
     {
         const auto r = amountArea();
@@ -677,7 +685,9 @@ void BreedView::paint (juce::Graphics& g)
         g.drawText (i18n::upper (tr ("Mutation")) + " " + juce::String (juce::roundToInt (ses->amount * 100.0f)) + " %", r.reduced (u * 0.8f, 0),
                     juce::Justification::centredLeft, true);
     }
+    rowTip ("Breed six new children from A and B", "Sechs neue Kinder aus A und B züchten");
     chip (g, { u * 87.5f, y2, u * 12.0f, h2 }, i18n::upper (tr ("Breed")), ses->ready(), colour::sunYellow, [this] { breedNew(); });
+    rowTip ("Again: breed from the kept children", "Nochmal: aus den behaltenen Kindern züchten");
     chip (g, { u * 100.5f, y2, u * 11.5f, h2 }, i18n::upper (tr ("Again")), gen != nullptr, colour::ultraviolet, [this] { breedAgain(); });
 
     // ---- third row: how the groups are inherited
@@ -691,6 +701,7 @@ void BreedView::paint (juce::Graphics& g)
             const auto c = ses->options.choice[(size_t) k];
             const juce::Rectangle<float> r { u * (11.0f + 15.2f * (float) k), y3, u * 14.6f, h3 };
             const auto accent = c == breed::Choice::B ? colour::ultraviolet : c == breed::Choice::Blend ? parentColour (0.5f) : colour::displayText;
+rowTip ("How the group is inherited: auto, from A, from B or blended - click to change", "Wie die Gruppe vererbt wird: automatisch, von A, von B oder gemischt - klicken zum Wechseln");
             chip (g, r, tr (breed::groupName (k)) + ": " + tr (choiceLabel (c)), c != breed::Choice::Auto, accent, [this, k, c] {
                 setGroupChoice (k, (breed::Choice) (((int) c + 1) % 4));
             });
@@ -781,13 +792,17 @@ void BreedView::paintLearnRow (juce::Graphics& g, float y, float h)
     const float u = unit();
     auto& taste = proc.taste();
     const bool on = taste.learning();
+    rowTip ("Learning: what you keep and save teaches the breeding your taste", "Lernen: was du behältst und speicherst, lehrt die Zucht deinen Geschmack");
     chip (g, { u * 2.0f, y, u * 12.0f, h }, i18n::upper (tr ("Learn")) + ": " + i18n::upper (tr (on ? "On" : "Off")), on, colour::playGreenLit,
           [this, on] { setLearning (! on); });
     const int pct = juce::roundToInt (taste.curiosity() * 100.0f);
+    rowTip ("Curiosity: how often it tries something new - click: more, right-click: less", "Neugier: wie oft sie etwas Neues versucht - Klick: mehr, Rechtsklick: weniger");
     chip (g, { u * 14.6f, y, u * 16.0f, h }, i18n::upper (tr ("Curiosity")) + " " + juce::String (pct) + " %", false, colour::sunYellow,
           [this, pct] { setCuriosity ((float) ((pct + 10) > 100 ? 0 : pct + 10) / 100.0f); },
           [this, pct] { setCuriosity ((float) juce::jmax (0, pct - 10) / 100.0f); });
+    rowTip ("Why: show what it learned about your taste", "Warum: zeigen, was sie über deinen Geschmack gelernt hat");
     chip (g, { u * 31.2f, y, u * 9.0f, h }, i18n::upper (tr ("Why")), showWhy, colour::ultraviolet, [this] { setShowWhy (! showWhy); });
+    rowTip ("Forget the learned taste (click twice)", "Den gelernten Geschmack vergessen (zweimal klicken)");
     chip (g, { u * 40.8f, y, u * 10.0f, h }, i18n::upper (tr ("Reset")), resetArmed, colour::signalRed, [this] { resetTaste(); });
 }
 
@@ -835,15 +850,18 @@ void BreedView::paintTile (juce::Graphics& g, int i, juce::Rectangle<float> r)
         g.setColour (colour::sunYellow);
         g.drawRoundedRectangle (r.reduced (u * 0.1f), u * 0.8f, u * 0.25f);
     }
-    hits.push_back ({ r, [this, i] { audition (i); }, false, [this, i] { showChildMenu (i); } });
+    hits.push_back ({ r, [this, i] { audition (i); }, false, [this, i] { showChildMenu (i); },
+                      tips::t ("Child: click to hear it; right-click: use as parent, save, more", "Kind: klicken zum Anhören; Rechtsklick: als Elternteil nehmen, speichern, mehr") });
 
     auto inner = r.reduced (u * 1.0f, u * 0.8f);
     // name + heart + save
     g.setColour (colour::displayText);
     g.setFont (labelFont (u * 1.6f));
     g.drawFittedText (str (c.name), inner.withHeight (u * 2.6f).withTrimmedRight (u * 14.0f).toNearestInt(), juce::Justification::centredLeft, 1, 0.8f);
+    rowTip ("Keep this child for AGAIN", "Dieses Kind für NOCHMAL behalten");
     chip (g, { inner.getRight() - u * 13.4f, inner.getY(), u * 4.0f, u * 2.6f }, c.kept ? heartFull() : heartEmpty(), c.kept, colour::rose,
           [this, i] { toggleKept (i); });
+    rowTip ("Save this child to the library", "Dieses Kind in die Bibliothek speichern");
     chip (g, { inner.getRight() - u * 9.0f, inner.getY(), u * 9.0f, u * 2.6f }, i18n::upper (tr ("Save")), false, colour::sunYellow,
           [this, i] { saveChild (i); });
 
@@ -943,4 +961,27 @@ bool BreedView::keyPressed (const juce::KeyPress& k)
     }
     return false;
 }
+// ---------------------------------------------------------------- p82: tooltips of the painted controls
+juce::String BreedView::getTooltip()
+{
+    const auto p = getMouseXYRelative().toFloat();
+    if (amountArea().contains (p)) return tips::t ("Mutation: how far the children may stray from the parents - drag", "Mutation: wie weit sich die Kinder von den Eltern entfernen dürfen - ziehen");
+    for (auto it = hits.rbegin(); it != hits.rend(); ++it)
+        if (it->area.contains (p)) return it->tip;
+    return {};
+}
+
+std::vector<tips::Region> BreedView::tipRegions()
+{
+    {
+        juce::Image img (juce::Image::ARGB, juce::jmax (1, getWidth()), juce::jmax (1, getHeight()), true);
+        juce::Graphics g (img);
+        paint (g); // the hit list of what is shown now
+    }
+    std::vector<tips::Region> r;
+    r.push_back ({ amountArea(), tips::t ("Mutation: how far the children may stray from the parents - drag", "Mutation: wie weit sich die Kinder von den Eltern entfernen dürfen - ziehen") });
+    for (auto it = hits.rbegin(); it != hits.rend(); ++it) r.push_back ({ it->area, it->tip });
+    return r;
+}
+
 } // namespace ohpe::ui
