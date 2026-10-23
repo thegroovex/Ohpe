@@ -1007,7 +1007,11 @@ void OhpeProcessor::syncHostParametersFromRegistry()
             const float norm = reg.getNormalised (i);
             if (std::abs (p->getValue() - norm) > 1.0e-6f)
                 p->setValueNotifyingHost (norm);
-            lastPushed[(size_t) i].store (NAN, std::memory_order_relaxed); // re-sync on the next block
+            // p80: the registry holds the exact value (session, preset); the host parameter only its normalised
+            // image. Mark that image as already pushed, so it never overwrites the exact value on the next block
+            // (before: re-synced from the host value - a save / load round trip drifted float values, and a value
+            // within 1e-6 of the old host value even came back as the old one)
+            lastPushed[(size_t) i].store (rawValues[(size_t) i]->load (std::memory_order_relaxed), std::memory_order_relaxed);
         }
 }
 

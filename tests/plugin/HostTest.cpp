@@ -294,12 +294,17 @@ bool sameAudio (const Render& a, const Render& b, juce::String& where)
     plug-in's state blob (JSON, optional tape audio, the framework's private data after it). */
 juce::MemoryBlock pluginBlob (const juce::MemoryBlock& host)
 {
-    static const char marker[] = "{\"format\":\"ohpe-state\"";
+    static const char marker[] = "\"format\":\"ohpe-state\""; // inside the state's top-level object
     auto find = [] (const juce::MemoryBlock& m) -> juce::int64 {
         const auto n = sizeof (marker) - 1;
         const char* d = static_cast<const char*> (m.getData());
         for (size_t i = 0; i + n <= m.getSize(); ++i)
-            if (std::memcmp (d + i, marker, n) == 0) return (juce::int64) i;
+            if (std::memcmp (d + i, marker, n) == 0)
+            {
+                for (size_t k = i; k-- > 0 && i - k < 4096;) // back to the object's opening brace
+                    if (d[k] == '{') return (juce::int64) k;
+                return -1;
+            }
         return -1;
     };
     auto slice = [] (const juce::MemoryBlock& m, juce::int64 at) {
@@ -743,7 +748,10 @@ void automation (Context& c)
         restore (*q, s);
         settle (*q);
         ParamMap qm (*q);
-        check (qm ("p1.tune") != nullptr && std::abs (qm ("p1.tune")->getValue() - set) < 1.0e-4f, "automated value restored for the host (" + juce::String (qm ("p1.tune") ? qm ("p1.tune")->getValue() : -1.0f) + " / " + juce::String (set) + ")");
+        const auto v3 = stateJson (stateOf (*q))["params"]["p1.tune"];
+        check (! v3.isVoid() && (double) v3 == (double) v1, "automated value restored (" + v3.toString() + ")");
+        // p1.tune is stepped (semitones): the host may see the value it sent or the step the plug-in settled on
+        check (qm ("p1.tune") != nullptr && std::abs (qm ("p1.tune")->getValue() - set) < 0.03f, "automated value restored for the host (" + juce::String (qm ("p1.tune") ? qm ("p1.tune")->getValue() : -1.0f) + " / " + juce::String (set) + ")");
     }
 }
 
@@ -795,6 +803,26 @@ void bounce (Context& c)
     check (same, "the instance that made the session and a fresh one bounce bit-identically (" + juce::String (r1.out.getNumChannels()) + " channels) " + where);
     const auto sa = stateOf (*a), sb = stateOf (*b);
     check (sa == sb, "after the bounces both instances hold the same state: " + firstDifference (sa, sb));
+    if (! same) // which part of the session maker's history its sound depends on (diagnostics)
+    {
+        auto variant = [&] (const char* name, bool loadFixture, bool setParams) {
+            auto x = h.create();
+            ParamMap xm (*x);
+            if (loadFixture) restore (*x, hostStateFor (*x, fx));
+            if (setParams)
+            {
+                if (auto* tp = xm ("tape.play")) setParam (tp, 1.0f);
+                if (auto* ch = xm ("p2.analog.cutoff")) setParam (ch, 0.3f);
+            }
+            settle (*x, 20);
+            auto rv = bounceOnce (*x, session);
+            juce::String w;
+            info (juce::String ("history ") + name + ": " + (sameAudio (r1, rv, w) ? "sounds like the session maker" : "differs " + w));
+        };
+        variant ("fixture only", true, false);
+        variant ("host parameters only", false, true);
+        variant ("fixture + host parameters", true, true);
+    }
 }
 
 void rates (Context& c)
