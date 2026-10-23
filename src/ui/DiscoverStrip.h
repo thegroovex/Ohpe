@@ -4,6 +4,7 @@
 
 #include "discover/Discover.h"
 #include "plugin/PluginProcessor.h"
+#include "Tooltips.h"
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -28,7 +29,8 @@ namespace ohpe::ui
     A sound being auditioned and not kept returns when VARY is pressed again, or when the strip is reset.
 */
 class DiscoverStrip : public juce::Component,
-                      public juce::TooltipClient
+                      public juce::TooltipClient,
+                      public tips::RegionProvider
 {
 public:
     explicit DiscoverStrip (OhpeProcessor& p);
@@ -44,6 +46,7 @@ public:
     std::function<void()> onUnlockAll;
 
     void tick (float seconds);
+    std::vector<tips::Region> tipRegions() override; ///< p82: knobs, VARY tiles, dice, lock, strength, timeline
 
     // ---- actions (mouse, tests, screenshots)
     void vary();

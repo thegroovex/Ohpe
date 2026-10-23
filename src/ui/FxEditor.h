@@ -130,9 +130,11 @@ private:
 };
 
 /** The editor panel: header with the slots, the picture, every parameter of the slot. */
-class FxEditor : public juce::Component
+class FxEditor : public juce::Component, public juce::TooltipClient, public tips::RegionProvider
 {
 public:
+    juce::String getTooltip() override { return tips::regionTipAt (tipRegions(), getMouseXYRelative().toFloat()); } ///< p82
+    std::vector<tips::Region> tipRegions() override; ///< p82: close, slot tabs
     explicit FxEditor (OhpeProcessor& p);
 
     /** Shows a slot (rebuilds when the view, part, slot or the slot's type changed). */
