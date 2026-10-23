@@ -66,8 +66,14 @@ void checkContrast (const char* skin)
     CHECK (contrast (colour::displayText, colour::displayGrid) >= 4.5);
     CHECK (contrast (colour::displayText, colour::pill) >= 4.5);
     CHECK (contrast (colour::displayText, colour::keyDark) >= 4.5); // popup menus
-    CHECK (contrast (colour::displayDim, colour::display) >= 3.0);
-    CHECK (contrast (colour::displayDim, colour::displayGrid) >= 3.0);
+    CHECK (contrast (colour::displayDim, colour::display) >= 4.5); // p83: WCAG AA for the dim texts too (was 3:1)
+    CHECK (contrast (colour::displayDim, colour::displayGrid) >= 4.5);
+    // p83: every light bar has an edge >= 3:1 on its cap (non-text contrast), the focus ring >= 3:1 on every surface
+    for (auto bar : { colour::sunYellow, colour::ultraviolet, colour::playGreen, colour::playGreenLit, colour::signalRed, colour::rose })
+        CHECK (contrast (a11y::ensureContrast (bar, colour::capBottom, 3.0), colour::capBottom) >= 3.0);
+    for (auto surface : { colour::body, colour::panel, colour::capTop, colour::capBottom, colour::display, colour::displayGrid })
+        CHECK (juce::jmax (contrast (colour::ink, surface), contrast (colour::sunYellow, surface)) >= 3.0);
+    CHECK (contrast (colour::engraving, colour::capTop) >= 4.5); // p83: night skin legends on the caps
     CHECK (contrast (colour::display, colour::sunYellow) >= 4.5); // text on a lit chip
     CHECK (contrast (colour::sunYellow, colour::display) >= 4.5);
     CHECK (contrast (colour::playGreenLit, colour::display) >= 4.5);

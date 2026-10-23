@@ -44,6 +44,11 @@ void drawLockSign (juce::Graphics& g, juce::Rectangle<float> area, juce::Colour 
 // ---------------------------------------------------------------- key readout
 KeyReadout::KeyReadout (OhpeProcessor& p) : proc (p) { setRepaintsOnMouseActivity (true); }
 
+std::unique_ptr<juce::AccessibilityHandler> KeyReadout::createAccessibilityHandler()
+{
+    return a11y::textHandler (*this, [] { return tr ("Key"); }, [this] { return shownText(); });
+}
+
 juce::String KeyReadout::shortScaleName (int scale)
 {
     // at most five letters: the header keeps room for the title (the menu and the tooltip give the full names)
@@ -292,7 +297,28 @@ VoiceStripLayout layoutVoiceStrip (juce::Rectangle<float> area, bool softKeys, c
 GravityControl::GravityControl (OhpeProcessor& p) : proc (p)
 {
     setRepaintsOnMouseActivity (true);
+    a11y::makeFocusable (*this); // p83
     refresh();
+}
+
+std::unique_ptr<juce::AccessibilityHandler> GravityControl::createAccessibilityHandler()
+{
+    auto v = a11y::paramAccess (proc, [this] { return paramId(); }, [] { return tr ("Key Gravity"); });
+    v.enabled = [this] { return available(); };
+    return a11y::valueHandler (*this, std::move (v));
+}
+
+bool GravityControl::keyPressed (const juce::KeyPress& key)
+{
+    if (! available()) return false;
+    if (key.getKeyCode() == juce::KeyPress::returnKey && ! key.getModifiers().isAnyModifierKeyDown())
+    {
+        if (onOpen) onOpen();
+        return true;
+    }
+    const bool used = a11y::handleValueKey (key, a11y::paramAccess (proc, [this] { return paramId(); }));
+    if (used) refresh();
+    return used;
 }
 
 void GravityControl::setPart (int part)

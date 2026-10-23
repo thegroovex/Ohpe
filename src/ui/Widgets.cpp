@@ -82,10 +82,57 @@ Encoder::Encoder (OhpeProcessor& p, int i) : proc (p), index (i)
     knob.setVelocityBasedMode (false);
     knob.setVelocityModeParameters (1.0, 1, 0.0, false); // Cmd / Ctrl mean fine control, not velocity mode
     knob.onValueChange = [this] { repaint(); };
+    // p83: the encoder takes the focus (Tab) and speaks for its knob; the slider itself stays out of both
+    knob.setWantsKeyboardFocus (false);
+    knob.setAccessible (false);
+    a11y::makeFocusable (*this);
     addAndMakeVisible (knob);
 }
 
 Encoder::~Encoder() { attachment.reset(); }
+
+a11y::ValueAccess Encoder::access()
+{
+    a11y::ValueAccess v;
+    v.title = [this] {
+        if (virt != nullptr) return virt->name;
+        const auto t = a11y::paramTitle (proc, paramId);
+        return t.isNotEmpty() ? t : tr ("Encoder") + " " + juce::String (index + 1);
+    };
+    v.get = [this] { return normalisedValue(); };
+    v.set = [this] (float x) {
+        if (virt != nullptr) { if (virt->set) virt->set (x); refreshVirtual(); }
+        else setParameterNormalised (proc, paramId, x);
+        repaint();
+    };
+    v.text = [this] {
+        if (virt != nullptr) return virt->text ? virt->text (normalisedValue()) : juce::String();
+        const int idx = proc.core().params().indexOf (paramId.toStdString());
+        auto* p = proc.parameter (paramId);
+        if (idx < 0 || p == nullptr) return juce::String();
+        const auto& d = proc.core().params().descriptor (idx);
+        const float plain = p->convertFrom0to1 (p->getValue());
+        const auto special = modfx::specialValueText (proc.core(), d.id, plain);
+        return special.isNotEmpty() ? special : formatValue (d, plain);
+    };
+    v.steps = [this] {
+        if (virt != nullptr) return 0;
+        auto* p = proc.parameter (paramId);
+        const int n = p != nullptr ? p->getNumSteps() : 0;
+        return n > 1 && n <= a11y::maxSteps ? n : 0;
+    };
+    v.reset = [this] {
+        if (virt != nullptr) { if (virt->reset) virt->reset(); refreshVirtual(); }
+        else if (auto* p = proc.parameter (paramId)) setParameterNormalised (proc, paramId, p->getDefaultValue());
+        repaint();
+    };
+    v.enabled = [this] { return virt != nullptr || proc.parameter (paramId) != nullptr; };
+    return v;
+}
+
+std::unique_ptr<juce::AccessibilityHandler> Encoder::createAccessibilityHandler() { return a11y::valueHandler (*this, access()); }
+
+bool Encoder::keyPressed (const juce::KeyPress& key) { return a11y::handleValueKey (key, access()); }
 
 void Encoder::bindVirtual (VirtualPtr v)
 {
@@ -251,11 +298,36 @@ PictoKey::PictoKey (Picto p, juce::String legendEnglish)
     : juce::Button (legendEnglish), picto (p), legend (std::move (legendEnglish)), accent (colour::signalRed)
 {
     setMouseCursor (juce::MouseCursor::PointingHandCursor);
-    // p11: keys never take the keyboard focus - Space / R are the transport shortcuts in the
-    // standalone app, not "click the last key"
-    setWantsKeyboardFocus (false);
-    setMouseClickGrabsKeyboardFocus (false);
+    // p11: a click never gives a key the keyboard focus - Space / R are the transport shortcuts in the
+    // standalone app, not "click the last key". p83: Tab does (Enter / Space press the focused key).
+    a11y::makeFocusable (*this);
 }
+
+juce::String PictoKey::accessibleTitle() const
+{
+    const auto& en = a11yTitle.isNotEmpty() ? a11yTitle : legend.isNotEmpty() ? legend : getButtonText();
+    return tr (en);
+}
+
+a11y::PressAccess PictoKey::access()
+{
+    a11y::PressAccess a;
+    a.title = [this] { return accessibleTitle(); };
+    a.press = [this] { // at once (triggerClick would post it): the screen reader and the tests see the result
+        if (! isEnabled()) return;
+        if (onClick) onClick();
+        else triggerClick();
+    };
+    if (onSecondaryClick) a.secondary = [this] { if (onSecondaryClick) onSecondaryClick(); };
+    a.checked = [this] { return active ? 1 : -1; };
+    a.value = [this] { return available ? juce::String() : tr ("not available"); };
+    a.enabled = [this] { return isEnabled(); };
+    return a;
+}
+
+std::unique_ptr<juce::AccessibilityHandler> PictoKey::createAccessibilityHandler() { return a11y::pressHandler (*this, access()); }
+
+bool PictoKey::keyPressed (const juce::KeyPress& key) { return a11y::handlePressKey (key, access()); }
 
 void PictoKey::mouseDown (const juce::MouseEvent& e)
 {
@@ -403,6 +475,10 @@ void drawBarWindow (juce::Graphics& g, juce::Rectangle<float> r, juce::Colour co
     }
     g.setColour (colour.withMultipliedAlpha (0.4f + 0.6f * level));
     g.fillRoundedRectangle (r, rr);
+    // p83: a fine edge in the bar's own colour, deepened (light skin) or lifted (night skin) to >= 3:1 on the cap, so
+    // a lit bar stands out even where its colour is close to the cap's (yellow on warm white)
+    g.setColour (a11y::ensureContrast (colour, colour::capBottom, 3.0).withMultipliedAlpha (0.4f + 0.6f * level));
+    g.drawRoundedRectangle (r.reduced (0.4f * s), juce::jmax (0.5f, rr - 0.4f * s), 0.8f * s);
 }
 } // namespace
 
@@ -625,7 +701,7 @@ Wheel::Wheel (OhpeProcessor& p, juce::String paramId, juce::String legendEnglish
 {
     setName (legend);
     setMouseCursor (juce::MouseCursor::UpDownResizeCursor);
-    setWantsKeyboardFocus (false);
+    a11y::makeFocusable (*this); // p83: Tab, never a click (the keyboard keeps the focus for notes)
 }
 
 float Wheel::value() const
@@ -740,6 +816,18 @@ void Wheel::mouseDoubleClick (const juce::MouseEvent&)
     if (auto* q = proc.parameter (id)) set (q->getDefaultValue());
 }
 
+std::unique_ptr<juce::AccessibilityHandler> Wheel::createAccessibilityHandler()
+{
+    return a11y::valueHandler (*this, a11y::paramAccess (proc, [this] { return id; }, [this] { return tr (legend); }));
+}
+
+bool Wheel::keyPressed (const juce::KeyPress& key)
+{
+    const bool used = a11y::handleValueKey (key, a11y::paramAccess (proc, [this] { return id; }));
+    if (used) refresh();
+    return used;
+}
+
 void Wheel::timerCallback()
 {
     const float v = value();
@@ -756,7 +844,20 @@ void Wheel::timerCallback()
 SlideSwitch::SlideSwitch (OhpeProcessor& p) : proc (p)
 {
     setMouseCursor (juce::MouseCursor::PointingHandCursor);
-    setWantsKeyboardFocus (false);
+    a11y::makeFocusable (*this); // p83
+}
+
+std::unique_ptr<juce::AccessibilityHandler> SlideSwitch::createAccessibilityHandler()
+{
+    return a11y::valueHandler (*this, a11y::paramAccess (proc, [this] { return id; },
+                                                         [this] { return caption.isNotEmpty() ? tr (caption) : a11y::paramTitle (proc, id); }));
+}
+
+bool SlideSwitch::keyPressed (const juce::KeyPress& key)
+{
+    const bool used = a11y::handleValueKey (key, a11y::paramAccess (proc, [this] { return id; }));
+    if (used) refresh();
+    return used;
 }
 
 void SlideSwitch::bind (const juce::String& paramId)
@@ -868,10 +969,25 @@ MiniKnob::MiniKnob (OhpeProcessor& p, juce::String legendEnglish) : proc (p), le
     knob.setVelocityModeParameters (1.0, 1, 0.0, false);
     knob.onValueChange = [this] { repaint(); };
     knob.setWantsKeyboardFocus (false);
+    knob.setAccessible (false); // p83: the mini knob speaks for its slider
+    a11y::makeFocusable (*this);
     addAndMakeVisible (knob);
 }
 
 MiniKnob::~MiniKnob() { attachment.reset(); }
+
+std::unique_ptr<juce::AccessibilityHandler> MiniKnob::createAccessibilityHandler()
+{
+    return a11y::valueHandler (*this, a11y::paramAccess (proc, [this] { return id; },
+                                                         [this] { return legend.isNotEmpty() ? tr (legend) : a11y::paramTitle (proc, id); }));
+}
+
+bool MiniKnob::keyPressed (const juce::KeyPress& key)
+{
+    const bool used = a11y::handleValueKey (key, a11y::paramAccess (proc, [this] { return id; }));
+    if (used) repaint();
+    return used;
+}
 
 void MiniKnob::bind (const juce::String& paramId)
 {
@@ -938,6 +1054,19 @@ LifeBar::LifeBar (OhpeProcessor& p) : proc (p)
 {
     setMouseCursor (juce::MouseCursor::LeftRightResizeCursor);
     setName ("LifeBar");
+    a11y::makeFocusable (*this); // p83
+}
+
+std::unique_ptr<juce::AccessibilityHandler> LifeBar::createAccessibilityHandler()
+{
+    return a11y::valueHandler (*this, a11y::paramAccess (proc, [this] { return id; }, [] { return tr ("Life"); }));
+}
+
+bool LifeBar::keyPressed (const juce::KeyPress& key)
+{
+    const bool used = a11y::handleValueKey (key, a11y::paramAccess (proc, [this] { return id; }));
+    if (used) repaint();
+    return used;
 }
 
 void LifeBar::bind (const juce::String& paramId)
@@ -1087,6 +1216,15 @@ void Readout::setContent (const juce::String& b, juce::Colour c, const juce::Str
     main = m;
     aside = a;
     repaint();
+}
+
+std::unique_ptr<juce::AccessibilityHandler> Readout::createAccessibilityHandler()
+{
+    // p83: read-only; the value is what the glass shows (the hint while one is up)
+    return a11y::textHandler (*this, [this] { return tr (a11yTitle.isNotEmpty() ? a11yTitle : getName()); }, [this] {
+        if (hint.isNotEmpty()) return hint;
+        return juce::StringArray { badge, main, aside }.joinIntoString (" ").trim();
+    });
 }
 
 void Readout::paint (juce::Graphics& g)

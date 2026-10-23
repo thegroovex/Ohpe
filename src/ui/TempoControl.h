@@ -40,6 +40,9 @@ public:
     void mouseUp (const juce::MouseEvent& e) override;
     void mouseDoubleClick (const juce::MouseEvent& e) override;
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override; ///< p83: the tempo (1 BPM steps)
+    bool keyPressed (const juce::KeyPress& key) override;                             ///< p83: arrows / Page, Enter types it
+    a11y::ValueAccess access();
 
 private:
     void hideTextEntry();
@@ -67,6 +70,7 @@ public:
     juce::String getTooltip() override;
     void paint (juce::Graphics& g) override;
     void mouseDown (const juce::MouseEvent& e) override;
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override; ///< p83: click state (read-only)
     void mouseMove (const juce::MouseEvent& e) override { hover = fieldAt (e.position); repaint(); }
     void mouseExit (const juce::MouseEvent&) override { hover = -1; repaint(); }
 
@@ -94,6 +98,8 @@ public:
     void mouseDown (const juce::MouseEvent& e) override;
     void mouseEnter (const juce::MouseEvent&) override { repaint(); }
     void mouseExit (const juce::MouseEvent&) override { repaint(); }
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override; ///< p83
+    bool keyPressed (const juce::KeyPress& key) override;                             ///< p83: Enter / Space tap
 
 private:
     OhpeProcessor& proc;

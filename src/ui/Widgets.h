@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
+#include "Accessibility.h"
 #include "Palette.h"
 #include "Pictograms.h"
 #include "plugin/PluginProcessor.h"
@@ -77,6 +78,11 @@ public:
 
     float normalisedValue() const;
 
+    /** p83: screen reader (title = the bound parameter's name, value as shown) and keyboard (arrows, Page, Delete). */
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override;
+    bool keyPressed (const juce::KeyPress& key) override;
+    a11y::ValueAccess access();
+
 private:
     class Knob : public juce::Slider
     {
@@ -150,13 +156,21 @@ public:
 
     std::function<void()> onSecondaryClick;
 
+    /** p83: the screen reader's name when the legend alone does not say it (two OCTAVE keys: "Octave down" / "up");
+        English, translated when read. Empty = the legend. */
+    void setAccessibleTitle (juce::String englishText) { a11yTitle = std::move (englishText); }
+    juce::String accessibleTitle() const;
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override;
+    bool keyPressed (const juce::KeyPress& key) override; ///< p83: Enter / Space press, Shift+F10 the menu
+    a11y::PressAccess access();
+
     void paintButton (juce::Graphics& g, bool over, bool down) override;
     void mouseDown (const juce::MouseEvent& e) override;
     void mouseUp (const juce::MouseEvent& e) override;
 
 private:
     Picto picto;
-    juce::String legend;
+    juce::String legend, a11yTitle;
     bool hasLed = false, legendOnTop = false, showLegend = true, segmented = false, joinLeft = false, joinRight = false, flushRight = false;
     float ledLevel = 0.0f;
     juce::Colour ledColour;
@@ -219,6 +233,8 @@ public:
     void mouseUp (const juce::MouseEvent& e) override;
     void mouseDoubleClick (const juce::MouseEvent& e) override;
     juce::Rectangle<float> slotArea() const;
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override; ///< p83
+    bool keyPressed (const juce::KeyPress& key) override;                             ///< p83
 
 private:
     void timerCallback() override;
@@ -253,6 +269,8 @@ public:
     void setCaption (juce::String englishText) { caption = std::move (englishText); repaint(); }
     const juce::String& getCaption() const noexcept { return caption; }
     juce::Rectangle<float> captionArea() const;
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override; ///< p83
+    bool keyPressed (const juce::KeyPress& key) override;                             ///< p83
 
 private:
     OhpeProcessor& proc;
@@ -278,6 +296,8 @@ public:
     void setUiScale (float s) { if (s != uiScale) { uiScale = s; resized(); repaint(); } }
     /** p14 rev 3: the caption (GLIDE) right of the knob - the text column it shares with PORTAMENTO. */
     juce::Rectangle<float> captionArea() const;
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override; ///< p83
+    bool keyPressed (const juce::KeyPress& key) override;                             ///< p83
 
 private:
     float uiScale = 1.0f;
@@ -320,6 +340,8 @@ public:
     void mouseDrag (const juce::MouseEvent& e) override;
     void mouseUp (const juce::MouseEvent& e) override;
     void mouseDoubleClick (const juce::MouseEvent& e) override;
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override; ///< p83
+    bool keyPressed (const juce::KeyPress& key) override;                             ///< p83
 
 private:
     OhpeProcessor& proc;
@@ -355,9 +377,12 @@ public:
     void setHint (const juce::String& h) { if (h != hint) { hint = h; repaint(); } }
     const juce::String& hintText() const noexcept { return hint; }
     void paint (juce::Graphics& g) override;
+    /** p83: the screen reader's name of the readout (English, translated when read); its value is what it shows. */
+    void setAccessibleTitle (juce::String englishText) { a11yTitle = std::move (englishText); }
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override;
 
 private:
-    juce::String badge, main, aside, hint;
+    juce::String badge, main, aside, hint, a11yTitle;
     juce::Colour badgeColour;
     float uiScale = 1.0f;
 };
