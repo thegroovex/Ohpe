@@ -89,6 +89,11 @@ LibraryBrowser::~LibraryBrowser() { presets.removeChangeListener (this); }
 
 void LibraryBrowser::languageChanged()
 {
+    // p82: the fields' tooltips
+    search.setTooltip (tips::t ("Search the presets: name, category, tag, engine, author (English or German)", "Presets suchen: Name, Kategorie, Tag, Engine, Autor (Deutsch oder Englisch)"));
+    saveName.setTooltip (tips::t ("Name of the new preset", "Name des neuen Presets"));
+    saveAuthor.setTooltip (tips::t ("Who made it (remembered for the next preset)", "Wer es gemacht hat (für das nächste Preset gemerkt)"));
+    saveFreeTags.setTooltip (tips::t ("More tags of your own, comma separated", "Weitere eigene Tags, durch Komma getrennt"));
     search.setTextToShowWhenEmpty (tr ("Search: name, category, MPE, engine ..."), colour::displayDim);
     saveName.setTextToShowWhenEmpty (tr ("Name"), colour::displayDim);
     saveAuthor.setTextToShowWhenEmpty (tr ("Author"), colour::displayDim);
@@ -360,12 +365,39 @@ void LibraryBrowser::chip (juce::Graphics& g, juce::Rectangle<float> r, const ju
     g.setColour (on ? colour::display : colour::displayText);
     g.setFont (labelFont (juce::jmin (r.getHeight() * 0.52f, u * 1.6f)));
     g.drawText (text, r.reduced (u * 0.4f, 0), juce::Justification::centred, true);
-    hits.push_back ({ r, std::move (action) });
+    hits.push_back ({ r, std::move (action), tipNow });
+}
+
+juce::String LibraryBrowser::getTooltip()
+{
+    const auto p = getMouseXYRelative().toFloat();
+    for (auto it = hits.rbegin(); it != hits.rend(); ++it)
+        if (it->area.contains (p)) return it->tip;
+    return {};
+}
+
+std::vector<tips::Region> LibraryBrowser::tipRegions()
+{
+    {
+        juce::Image img (juce::Image::ARGB, juce::jmax (1, getWidth()), juce::jmax (1, getHeight()), true);
+        juce::Graphics g (img);
+        paint (g); // the hit list of what is shown now
+    }
+    std::vector<tips::Region> r;
+    for (auto it = hits.rbegin(); it != hits.rend(); ++it) r.push_back ({ it->area, it->tip });
+    return r;
+}
+
+juce::String LibraryBrowser::getTooltipForRow (int row)
+{
+    if (row < 0 || row >= (int) rows.size()) return {};
+    return tips::t ("Click: hear the preset - double-click: keep it and close", "Klick: das Preset anhören - Doppelklick: übernehmen und schließen");
 }
 
 void LibraryBrowser::paint (juce::Graphics& g)
 {
     hits.clear();
+    tipNow = {};
     const float u = unit();
     const auto b = getLocalBounds().toFloat();
     g.setGradientFill (juce::ColourGradient (colour::bezel, 0, b.getY(), colour::bezelLow, 0, b.getBottom(), false)); // p14: dark frame
@@ -382,7 +414,9 @@ void LibraryBrowser::paint (juce::Graphics& g)
     g.setFont (labelFont (u * 1.5f));
     g.drawText (tr ("Part") + " " + juce::String (presets.editPart() + 1) + "  /  " + presets.currentName(),
                 juce::Rectangle<float> (u * 51.0f, u * 1.4f, u * 37.0f, u * 3.2f), juce::Justification::centredLeft, true);
+    rowTip ("Keep: close the library with the preset loaded", "Übernehmen: die Bibliothek mit dem geladenen Preset schließen");
     chip (g, { b.getWidth() - u * 24.0f, u * 1.4f, u * 10.5f, u * 3.2f }, i18n::upper (tr ("Keep")), true, colour::sunYellow, [this] { close (true); });
+    rowTip ("Cancel: back to the sound from before (Esc)", "Abbrechen: zurück zum Sound von vorher (Esc)");
     chip (g, { b.getWidth() - u * 12.5f, u * 1.4f, u * 10.5f, u * 3.2f }, i18n::upper (tr ("Cancel")), false, colour::signalRed, [this] { close (false); });
 
     // second row: bank, kind, favourites, sort
@@ -393,13 +427,16 @@ void LibraryBrowser::paint (juce::Graphics& g)
         chip (g, { x, y2, w, h2 }, text, on, colour::displayText, std::move (act));
         x += w + u * 0.5f;
     };
+    rowTip ("Bank filter: all, factory or your own presets", "Bank-Filter: alle, Werks- oder eigene Presets");
     seg (tr ("All"), u * 6.0f, f.bank == preset::Bank::All, [this] { presets.filter.bank = preset::Bank::All; rebuild(); });
     seg (tr ("Factory"), u * 8.0f, f.bank == preset::Bank::Factory, [this] { presets.filter.bank = preset::Bank::Factory; rebuild(); });
     seg (tr ("User"), u * 7.5f, f.bank == preset::Bank::User, [this] { presets.filter.bank = preset::Bank::User; rebuild(); });
     x += u * 1.5f;
+    rowTip ("Kind filter: part sounds or whole projects (click again: both)", "Art-Filter: Part-Sounds oder ganze Projekte (nochmal: beide)");
     seg (tr ("Parts"), u * 7.0f, f.kind == 0, [this] { presets.filter.kind = presets.filter.kind == 0 ? -1 : 0; rebuild(); });
     seg (tr ("Projects"), u * 8.5f, f.kind == 1, [this] { presets.filter.kind = presets.filter.kind == 1 ? -1 : 1; rebuild(); });
     x += u * 1.5f;
+    rowTip ("Only your favourites", "Nur deine Favoriten");
     seg (starFull() + " " + tr ("Favourites"), u * 12.0f, f.favouritesOnly, [this] { presets.filter.favouritesOnly = ! presets.filter.favouritesOnly; rebuild(); });
     x += u * 1.5f;
     g.setColour (colour::displayDim);
@@ -410,12 +447,14 @@ void LibraryBrowser::paint (juce::Graphics& g)
     g.drawText (sortLabel, juce::Rectangle<float> (x, y2, sortW, h2), juce::Justification::centredLeft, false);
     x += sortW;
     const char* sorts[] = { "Name", "Rating", "Engine", "Newest" };
+rowTip ("Sort the list: name, rating, engine or newest", "Liste sortieren: Name, Bewertung, Engine oder neueste");
     for (int s = 0; s < 4; ++s)
         seg (tr (sorts[s]), u * 8.0f, (int) f.sort == s, [this, s] { presets.filter.sort = (preset::Sort) s; rebuild(); });
     // content packs: filter by pack, install, manage (menu)
     {
         const float pw = juce::jmin (u * 12.0f, b.getWidth() - u * 2.0f - x);
         if (pw > u * 6.0f)
+            rowTip ("Content packs: filter by pack, install or manage packs", "Inhaltspakete: nach Paket filtern, Pakete installieren oder verwalten");
             chip (g, { b.getWidth() - u * 2.0f - pw, y2, pw, h2 }, packChipText(), ! f.pack.empty(), colour::ultraviolet, [this] { showPackMenu(); });
     }
 
@@ -436,6 +475,7 @@ void LibraryBrowser::paint (juce::Graphics& g)
     {
         const auto key = std::string (cats[i].key);
         const bool on = std::find (f.tags.begin(), f.tags.end(), key) != f.tags.end();
+rowTip ("Category filter - several add up (click again to remove)", "Kategorie-Filter - mehrere ergänzen sich (nochmal klicken entfernt)");
         chip (g, { left.getX() + (cw + u * 0.6f) * (float) (i % 2), left.getY() + u * 2.4f + (ch + u * 0.5f) * (float) (i / 2), cw, ch },
               categoryLabel (cats[i]), on, colour::encoder ((int) i), [this, key] { toggleTag (str (key)); });
     }
@@ -444,6 +484,7 @@ void LibraryBrowser::paint (juce::Graphics& g)
         const auto key = quick[q];
         const size_t i = cats.size() + q;
         const bool on = std::find (f.required.begin(), f.required.end(), key) != f.required.end();
+rowTip ("Quick filter: only presets that have all chosen tags", "Schnellfilter: nur Presets, die alle gewählten Tags haben");
         chip (g, { left.getX() + (cw + u * 0.6f) * (float) (i % 2), left.getY() + u * 2.4f + (ch + u * 0.5f) * (float) (i / 2), cw, ch },
               tagLabel (key), on, colour::ultraviolet, [this, key] { toggleQuickTag (str (key)); });
     }
@@ -455,6 +496,7 @@ void LibraryBrowser::paint (juce::Graphics& g)
         const int i = t + 1;
         const std::string id = t < 0 ? std::string() : engineTypeInfo ((EngineType) t).id;
         const juce::String label = t < 0 ? tr ("All") : engineLabel (id);
+rowTip ("Engine filter: presets of one sound engine", "Engine-Filter: Presets einer Klangerzeugung");
         chip (g, { left.getX() + (cw + u * 0.6f) * (float) (i % 2), ey + u * 2.4f + (ch + u * 0.5f) * (float) (i / 2), cw, ch }, label,
               f.engine == id, colour::sunYellow, [this, id] { presets.filter.engine = id; rebuild(); });
     }
@@ -490,6 +532,7 @@ void LibraryBrowser::paint (juce::Graphics& g)
         for (size_t i = 0; i < cats.size(); ++i)
         {
             const auto key = juce::String (cats[i].key);
+rowTip ("Tag the new preset with this category", "Das neue Preset mit dieser Kategorie markieren");
             chip (g, { r.getX() + (tw + u * 0.5f) * (float) (i % 3), r.getY() + u * 12.8f + (th + u * 0.4f) * (float) (i / 3), tw, th },
                   categoryLabel (cats[i]), saveTags.contains (key), colour::encoder ((int) i), [this, key] {
                       if (saveTags.contains (key)) saveTags.removeString (key);
@@ -498,11 +541,14 @@ void LibraryBrowser::paint (juce::Graphics& g)
                   });
         }
         const float ky = r.getY() + u * 33.0f;
+        rowTip ("Save the edit part only, or the whole project (all parts, mixer, effects)", "Nur den Edit-Part speichern, oder das ganze Projekt (alle Parts, Mixer, Effekte)");
         chip (g, { r.getX(), ky, r.getWidth() * 0.49f, u * 2.8f }, tr ("This part"), ! saveProject, colour::displayText, [this] { saveProject = false; repaint(); });
         chip (g, { r.getX() + r.getWidth() * 0.51f, ky, r.getWidth() * 0.49f, u * 2.8f }, tr ("Whole project"), saveProject, colour::displayText,
               [this] { saveProject = true; repaint(); });
         const float by = r.getBottom() - u * 3.4f;
+        rowTip ("Save the preset", "Das Preset speichern");
         chip (g, { r.getX(), by, r.getWidth() * 0.49f, u * 3.2f }, i18n::upper (tr ("Save")), true, colour::sunYellow, [this] { commitSave(); });
+        rowTip ("Back to the list without saving", "Zurück zur Liste, ohne zu speichern");
         chip (g, { r.getX() + r.getWidth() * 0.51f, by, r.getWidth() * 0.49f, u * 3.2f }, i18n::upper (tr ("Back")), false, colour::displayText,
               [this] { showSavePanel (false); });
         return;
@@ -547,17 +593,21 @@ void LibraryBrowser::paint (juce::Graphics& g)
         }
         // favourite + rating
         const float ry = r.getY() + u * 26.0f;
+        rowTip ("Favourite on / off", "Favorit ein / aus");
         chip (g, { r.getX(), ry, u * 4.0f, u * 3.0f }, e.favourite ? starFull() : starEmpty(), e.favourite, colour::rose,
               [this, sel, fav = e.favourite] { presets.setFavourite (sel, ! fav); });
+rowTip ("Rating: one to five stars (click the same star again: none)", "Bewertung: ein bis fünf Sterne (denselben Stern nochmal: keine)");
         for (int s = 1; s <= 5; ++s)
             chip (g, { r.getX() + u * 5.0f + (float) (s - 1) * u * 3.4f, ry, u * 3.0f, u * 3.0f }, s <= e.rating ? starFull() : starEmpty(),
                   s <= e.rating, colour::sunYellow, [this, sel, s, rating = e.rating] { presets.setRating (sel, rating == s ? 0 : s); });
         if (e.meta.kind == preset::Kind::Part && onBreed) // p18
         {
             const juce::Rectangle<float> br { r.getX() + u * 22.6f, ry, r.getWidth() - u * 22.6f, u * 3.0f };
+            rowTip ("Breed the current sound with this preset", "Den aktuellen Sound mit diesem Preset kreuzen");
             chip (g, br, i18n::upper (tr ("Breed")), false, colour::ultraviolet, [this, sel] { if (onBreed) onBreed (sel); });
         }
         if (! e.factory)
+            rowTip ("Delete this user preset (asks first)", "Dieses User-Preset löschen (fragt vorher)");
             chip (g, { r.getX(), r.getBottom() - u * 7.2f, r.getWidth(), u * 3.0f }, tr ("Delete"), false, colour::signalRed, [this, sel] {
                 juce::Component::SafePointer<LibraryBrowser> safe (this);
                 juce::AlertWindow::showAsync (juce::MessageBoxOptions().withIconType (juce::MessageBoxIconType::QuestionIcon)
@@ -574,6 +624,7 @@ void LibraryBrowser::paint (juce::Graphics& g)
         g.drawFittedText (tr ("Select a preset to hear it. Keep closes the library with it, Cancel goes back."),
                           r.withHeight (u * 10.0f).toNearestInt(), juce::Justification::topLeft, 4, 0.9f);
     }
+rowTip ("Save the edit part or the project as a user preset", "Den Edit-Part oder das Projekt als User-Preset speichern");
     chip (g, { r.getX(), r.getBottom() - u * 3.4f, r.getWidth(), u * 3.2f }, i18n::upper (tr ("Save preset")) + " ...", false, colour::sunYellow,
           [this] { showSavePanel (true); });
 }
