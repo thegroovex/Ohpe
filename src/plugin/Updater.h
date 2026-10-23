@@ -77,6 +77,8 @@ public:
     Snapshot snapshot() const;
     update::Settings settings() const;
     static update::Version currentVersion();
+    /** The version update decisions are made for: currentVersion(), or the one set for tests. */
+    update::Version appVersion() const;
 
     void setAutoCheck (bool on);
     void setChannel (update::Channel c);
@@ -122,6 +124,17 @@ public:
     // tests / screenshot tool
     void setDataFolderForTests (const juce::File& f);
     void setReleaseListUrl (const juce::String& url) { listUrl = url; }
+    /** p81 (end-to-end tests): pretend to be `v` (empty = the build's version) - also resets the settings defaults. */
+    void setAppVersionForTests (const juce::String& v);
+    /** p81: network timeout per request and the first retry pause (doubles per attempt, at most 16x). */
+    void setNetworkTimingForTests (int timeoutMs, int retryBaseMs) { netTimeoutMs = timeoutMs; retryBaseMs_ = retryBaseMs; }
+    /** p81: the largest download (installer / pack) and the largest text answer (release list, manifest, sums). */
+    void setLimitsForTests (uint64_t maxDownload, int maxText) { maxDownloadBytes = maxDownload; maxTextBytes = maxText; }
+
+    /** Size limits: a download larger than this is refused before (declared size) and while (streamed bytes) it runs;
+        release list / manifest / checksum list answers larger than maxTextBytesDefault count as unreadable. */
+    static constexpr uint64_t maxDownloadBytesDefault = 2048ull * 1024 * 1024;
+    static constexpr int maxTextBytesDefault = 4 * 1024 * 1024;
     /** Shows a release as found by a check (no network): state Available or the given state. */
     void showReleaseForTests (const update::Release& r, State s = State::Available, double progress = 0.0);
     bool waitIdle (int timeoutMs);
@@ -139,7 +152,8 @@ private:
     void loadSettings();
     void refreshPacks();
     juce::File folder() const;
-    juce::String fetchText (const juce::String& url, int* status = nullptr);
+    /** The answer's text; empty on failure. `status`: the HTTP status (0 = no answer); `tooLarge`: cut at maxTextBytes. */
+    juce::String fetchText (const juce::String& url, int* status = nullptr, bool* tooLarge = nullptr);
     update::DownloadReport fetchFile (const juce::String& url, const juce::File& target, const std::string& sha256, uint64_t size);
 
     mutable std::mutex lock;
@@ -151,6 +165,10 @@ private:
     juce::String part { "plugin" };
     juce::String listUrl { "https://api.github.com/repos/thegroovex/Ohpe/releases?per_page=30" };
     juce::File testFolder;
+    juce::String testVersion;
+    int netTimeoutMs = 15000, retryBaseMs_ = 1000;
+    uint64_t maxDownloadBytes = maxDownloadBytesDefault;
+    int maxTextBytes = maxTextBytesDefault;
     std::atomic<int> contentGen { 0 };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Updater)

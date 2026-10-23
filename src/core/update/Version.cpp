@@ -63,6 +63,7 @@ bool Version::parse (const std::string& textIn, Version& out)
         for (const auto& id : split (pre, '.'))
         {
             if (id.empty()) return false;
+            if (id.size() > 1 && id[0] == '0' && allDigits (id)) return false; // p81: semver - no leading zeros ("preview.01")
             for (char c : id)
                 if (! (std::isalnum ((unsigned char) c) || c == '-')) return false;
         }

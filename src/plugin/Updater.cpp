@@ -22,7 +22,7 @@ juce::String userAgent() { return "Ohpe/" OHPE_VERSION; }
 class UrlTransport final : public update::Transport
 {
 public:
-    explicit UrlTransport (juce::Thread& t) : thread (t) {}
+    UrlTransport (juce::Thread& t, int timeoutMs) : thread (t), timeout (timeoutMs) {}
 
     bool open (const std::string& urlText, uint64_t offset, uint64_t& total, bool& fromOffset) override
     {
@@ -37,18 +37,32 @@ public:
             in = std::move (f);
             return true;
         }
-        juce::String headers = "User-Agent: " + userAgent() + "\r\nAccept: application/octet-stream";
-        if (offset > 0) headers << "\r\nRange: bytes=" << (juce::int64) offset << "-";
         juce::StringPairArray response;
         int status = 0;
-        auto stream = url.createInputStream (juce::URL::InputStreamOptions (juce::URL::ParameterHandling::inAddress)
-                                                 .withExtraHeaders (headers)
-                                                 .withConnectionTimeoutMs (20000)
-                                                 .withResponseHeaders (&response)
-                                                 .withStatusCode (&status)
-                                                 .withNumRedirectsToFollow (8));
+        auto request = [&] (uint64_t from) {
+            juce::String headers = "User-Agent: " + userAgent() + "\r\nAccept: application/octet-stream";
+            if (from > 0) headers << "\r\nRange: bytes=" << (juce::int64) from << "-";
+            response.clear();
+            status = 0;
+            return url.createInputStream (juce::URL::InputStreamOptions (juce::URL::ParameterHandling::inAddress)
+                                              .withExtraHeaders (headers)
+                                              .withConnectionTimeoutMs (timeout)
+                                              .withResponseHeaders (&response)
+                                              .withStatusCode (&status)
+                                              .withNumRedirectsToFollow (8));
+        };
+        auto stream = request (offset);
+        bool restarted = false;
+        if (offset > 0 && status == 416)
+        {
+            // p81: the partial file is not a prefix the server can continue (stale, as long or longer than the
+            // file): ask for the whole file - fromOffset = false makes the download start over instead of
+            // failing on every attempt
+            stream = request (0);
+            restarted = true;
+        }
         if (stream == nullptr) return false;
-        if (status == 206)
+        if (status == 206 && ! restarted)
         {
             fromOffset = true;
             // Content-Range: bytes 100-999/1000
@@ -62,7 +76,7 @@ public:
         }
         else if (status == 200 || status == 0)
         {
-            fromOffset = offset == 0;
+            fromOffset = offset == 0 && ! restarted;
             const auto len = stream->getTotalLength();
             total = len > 0 ? (uint64_t) len : 0;
         }
@@ -85,6 +99,7 @@ public:
 
 private:
     juce::Thread& thread;
+    int timeout = 20000;
     std::unique_ptr<juce::InputStream> in;
 };
 
@@ -156,6 +171,19 @@ Updater::~Updater()
 
 update::Version Updater::currentVersion() { return update::Version::of (OHPE_VERSION); }
 
+update::Version Updater::appVersion() const
+{
+    if (testVersion.isNotEmpty())
+        if (const auto v = update::Version::of (std8 (testVersion)); v.valid()) return v;
+    return currentVersion();
+}
+
+void Updater::setAppVersionForTests (const juce::String& v)
+{
+    testVersion = v;
+    loadSettings();
+}
+
 juce::File Updater::dataFolder()
 {
     const auto env = juce::SystemStats::getEnvironmentVariable ("OHPE_DATA_DIR", {});
@@ -180,7 +208,7 @@ void Updater::setDataFolderForTests (const juce::File& f)
 void Updater::loadSettings()
 {
     const auto f = folder().getChildFile ("Settings").getChildFile ("update.json");
-    const auto defaults = update::Settings::defaults (currentVersion());
+    const auto defaults = update::Settings::defaults (appVersion());
     const auto reg = folder().getChildFile ("Content").getChildFile ("installed.json");
     std::lock_guard<std::mutex> g (lock);
     prefs = f.existsAsFile() ? update::Settings::fromJson (std8 (f.loadFileAsString()), defaults) : defaults;
@@ -275,33 +303,62 @@ void Updater::maybeAutoCheck (bool playing)
     if (update::autoCheckDue (settings(), now, playing)) startJob ([this] { doCheck (true); });
 }
 
-juce::String Updater::fetchText (const juce::String& urlText, int* statusOut)
+juce::String Updater::fetchText (const juce::String& urlText, int* statusOut, bool* tooLargeOut)
 {
+    if (tooLargeOut != nullptr) *tooLargeOut = false;
+    if (statusOut != nullptr) *statusOut = 0;
     const juce::URL url (urlText);
-    if (url.isLocalFile()) return url.getLocalFile().loadFileAsString();
+    if (url.isLocalFile())
+    {
+        const auto f = url.getLocalFile();
+        if (! f.existsAsFile()) return {};
+        if (statusOut != nullptr) *statusOut = 200;
+        if (f.getSize() > maxTextBytes) { if (tooLargeOut != nullptr) *tooLargeOut = true; return {}; }
+        return f.loadFileAsString();
+    }
     int status = 0;
     auto in = url.createInputStream (juce::URL::InputStreamOptions (juce::URL::ParameterHandling::inAddress)
                                          .withExtraHeaders ("User-Agent: " + userAgent() + "\r\nAccept: application/vnd.github+json")
-                                         .withConnectionTimeoutMs (15000)
+                                         .withConnectionTimeoutMs (netTimeoutMs)
                                          .withStatusCode (&status)
                                          .withNumRedirectsToFollow (8));
     if (statusOut != nullptr) *statusOut = status;
     if (in == nullptr || (status != 200 && status != 0)) return {};
-    return in->readEntireStreamAsString();
+    // p81: never read more than maxTextBytes (a wrong URL or a hostile server could stream without end)
+    juce::MemoryBlock mb;
+    in->readIntoMemoryBlock (mb, (ssize_t) maxTextBytes + 1);
+    if (mb.getSize() > (size_t) maxTextBytes) { if (tooLargeOut != nullptr) *tooLargeOut = true; return {}; }
+    return juce::String::fromUTF8 ((const char*) mb.getData(), (int) mb.getSize());
 }
 
 void Updater::doCheck (bool automatic)
 {
     setState (State::Checking, "Checking for updates");
     int status = 0;
-    const auto text = fetchText (listUrl, &status);
-    if (text.isEmpty())
+    bool tooLarge = false;
+    const auto text = fetchText (listUrl, &status, &tooLarge);
+    if (threadShouldExit()) return;
+    if (status != 0 && status != 200)
+    {
+        // p81: the server answered, but with an error (rate limit, moved, down) - not "offline"
+        setState (State::Failed, "The update server answered with an error", "HTTP " + juce::String (status));
+        return;
+    }
+    if (text.isEmpty() && ! tooLarge)
     {
         setState (State::Offline, automatic ? "Could not check for updates (offline?)" : "No connection to the update server", {});
         return;
     }
-    const auto list = update::parseReleaseList (std8 (text));
-    const auto cur = currentVersion();
+    bool listOk = false;
+    const auto list = tooLarge ? std::vector<update::ReleaseRef> {} : update::parseReleaseList (std8 (text), &listOk);
+    if (! listOk)
+    {
+        // p81: a cut-off, malformed or foreign answer (captive portal page, error object) used to read as an empty
+        // list and say "Ohpe is up to date"
+        setState (State::Failed, "The update server sent an answer Ohpe cannot read", {});
+        return;
+    }
+    const auto cur = appVersion();
     update::Settings s = settings();
     const int pick = update::pickUpdate (list, s.channel, cur, s.skipped);
     const int prev = update::pickPrevious (list, cur);
@@ -360,7 +417,7 @@ void Updater::doCheck (bool automatic)
 
 void Updater::refreshPacks()
 {
-    const auto cur = currentVersion();
+    const auto cur = appVersion();
     std::lock_guard<std::mutex> g (lock);
     for (auto& row : snap.packs)
     {
@@ -374,15 +431,16 @@ void Updater::refreshPacks()
 
 update::DownloadReport Updater::fetchFile (const juce::String& url, const juce::File& target, const std::string& sha256, uint64_t size)
 {
-    UrlTransport net (*this);
+    UrlTransport net (*this, netTimeoutMs);
     LocalPartialFile part (target.withFileExtension (target.getFileExtension() + ".part"));
     update::DownloadOptions o;
     o.url = std8 (url);
     o.sha256 = sha256;
     o.expectedSize = size;
+    o.maxBytes = maxDownloadBytes;
     o.cancel = &cancelFlag;
     o.waitBeforeRetry = [this] (int attempt) {
-        const int ms = (int) juce::jmin (16000.0, 1000.0 * std::pow (2.0, attempt - 1));
+        const int ms = (int) juce::jmin (16.0 * retryBaseMs_, retryBaseMs_ * std::pow (2.0, attempt - 1));
         for (int t = 0; t < ms && ! cancelFlag && ! threadShouldExit(); t += 50) juce::Thread::sleep (50);
     };
     o.progress = [this] (uint64_t done, uint64_t total) {
@@ -429,6 +487,11 @@ void Updater::doDownload (bool previous)
         setState (State::Failed, "The release has no checksum - not installed", str (asset->name));
         return;
     }
+    if (asset->size > maxDownloadBytes)
+    {
+        setState (State::Failed, "The download is larger than allowed and was refused", str (asset->name));
+        return;
+    }
     setState (State::Downloading, previous ? "Downloading the previous version" : "Downloading the update", str (asset->name));
     const auto target = folder().getChildFile ("Updates").getChildFile (safeFileName (asset->name, "Ohpe-update"));
     const auto rep = fetchFile (str (asset->url), target, asset->sha256, asset->size);
@@ -446,6 +509,7 @@ void Updater::doDownload (bool previous)
         case update::DownloadResult::SizeMismatch: setState (State::Failed, "The download failed the checksum test and was deleted", str (asset->name)); return;
         case update::DownloadResult::WriteFailed: setState (State::Failed, "Could not write the download", target.getFullPathName()); return;
         case update::DownloadResult::NetworkFailed: setState (State::Failed, "Download interrupted - try again to continue it", str (asset->name)); return;
+        case update::DownloadResult::TooLarge: setState (State::Failed, "The download is larger than allowed and was refused", str (asset->name)); return;
     }
     setState (State::Ready, asset->kind == "installer" ? "Verified - ready to install" : "Verified - ready to unpack", str (asset->name));
 }
@@ -517,6 +581,7 @@ void Updater::doInstallPack (juce::String id)
         setState (s, msg, detail);
     };
     if (pack.sha256.empty()) { done (State::Failed, "The release has no checksum - not installed", id); return; }
+    if (pack.size > maxDownloadBytes) { done (State::Failed, "The download is larger than allowed and was refused", str (pack.nameEn)); return; }
     const auto prevState = snapshot().state;
     setState (State::Downloading, "Downloading the content pack", str (pack.nameEn));
     const auto content = folder().getChildFile ("Content");
@@ -526,7 +591,8 @@ void Updater::doInstallPack (juce::String id)
     {
         done (State::Failed, rep.result == update::DownloadResult::ChecksumMismatch || rep.result == update::DownloadResult::SizeMismatch
                                  ? "The download failed the checksum test and was deleted"
-                                 : "Download interrupted - try again to continue it",
+                             : rep.result == update::DownloadResult::TooLarge ? "The download is larger than allowed and was refused"
+                                                                              : "Download interrupted - try again to continue it",
               str (pack.nameEn));
         return;
     }
@@ -544,7 +610,7 @@ void Updater::doInstallPack (juce::String id)
         reg = registry;
     }
     content::InstallOptions opt;
-    opt.app = currentVersion();
+    opt.app = appVersion();
     opt.cancel = &cancelFlag;
     const auto res = content::installZip (zipFile, content, expected, reg, opt);
     if (! res.ok)
@@ -589,7 +655,7 @@ void Updater::doInstallPackFile (juce::File zip)
     }
     content::InstallOptions opt;
     opt.requireChecksums = ohpepack; // old .zip packs (flat, no checksums) still install
-    opt.app = currentVersion();
+    opt.app = appVersion();
     opt.cancel = &cancelFlag;
     const auto res = content::installZip (zip, folder().getChildFile ("Content"), {}, reg, opt);
     if (! res.ok) { done (State::Failed, res.error, res.detail.isNotEmpty() ? res.detail : zip.getFileName()); return; }
@@ -649,12 +715,15 @@ bool Updater::rollbackPack (const juce::String& id)
     const auto content = folder().getChildFile ("Content");
     const auto target = content.getChildFile (id), backup = content.getChildFile (".backup").getChildFile (id);
     if (! backup.isDirectory()) return false;
-    std::string regText;
+    // p81: the registry changes only after the folders moved (a failed move used to leave it pointing at the
+    // backup version while the files were still the new ones)
+    update::ContentRegistry next;
     {
         std::lock_guard<std::mutex> g (lock);
-        if (! registry.rolledBack (std8 (id))) return false;
-        regText = registry.toJson();
+        next = registry;
     }
+    if (! next.rolledBack (std8 (id))) return false;
+    const auto regText = next.toJson();
     const auto old = content.getChildFile (".staging").getChildFile (id + "-old");
     old.deleteRecursively();
     old.getParentDirectory().createDirectory();
@@ -666,6 +735,10 @@ bool Updater::rollbackPack (const juce::String& id)
     }
     old.deleteRecursively();
     content.getChildFile ("installed.json").replaceWithText (str (regText));
+    {
+        std::lock_guard<std::mutex> g (lock);
+        registry = next;
+    }
     refreshPacks();
     {
         std::lock_guard<std::mutex> g (lock);

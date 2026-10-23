@@ -18,6 +18,7 @@ const char* resultName (DownloadResult r) noexcept
         case DownloadResult::SizeMismatch: return "size mismatch";
         case DownloadResult::WriteFailed: return "write failed";
         case DownloadResult::Cancelled: return "cancelled";
+        case DownloadResult::TooLarge: return "too large";
     }
     return "?";
 }
@@ -40,6 +41,8 @@ DownloadReport download (Transport& net, PartialFile& file, const DownloadOption
     int failuresInRow = 0;
     uint64_t total = o.expectedSize;
     bool complete = false;
+    auto tooLarge = [&o] (uint64_t n) { return o.maxBytes > 0 && n > o.maxBytes; };
+    if (tooLarge (total)) { file.clear(); rep.result = DownloadResult::TooLarge; return rep; }
 
     while (! complete)
     {
@@ -68,6 +71,13 @@ DownloadReport download (Transport& net, PartialFile& file, const DownloadOption
         else if (offset > 0)
             ++rep.resumes;
         if (total == 0 && reported > 0) total = reported; // the transport reports the full size
+        if (tooLarge (total) || tooLarge (reported))
+        {
+            net.close();
+            file.clear();
+            rep.result = DownloadResult::TooLarge;
+            return rep;
+        }
         if (o.progress) o.progress (offset, total);
 
         bool progressed = false;
@@ -79,6 +89,13 @@ DownloadReport download (Transport& net, PartialFile& file, const DownloadOption
             if (n == 0) { complete = true; break; }
             if (! file.append (buffer.data(), (size_t) n)) { net.close(); rep.result = DownloadResult::WriteFailed; rep.bytes = file.size(); return rep; }
             progressed = true;
+            if (tooLarge (file.size()))
+            {
+                net.close();
+                file.clear();
+                rep.result = DownloadResult::TooLarge;
+                return rep;
+            }
             if (o.progress) o.progress (file.size(), total);
             if (total > 0 && file.size() >= total) { complete = true; break; }
         }

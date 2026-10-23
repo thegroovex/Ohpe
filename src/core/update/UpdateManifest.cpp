@@ -264,12 +264,14 @@ void applySums (Release& r, const std::string& sumsText)
             if (const auto it = sums.find (a.name); it != sums.end()) a.sha256 = it->second;
 }
 
-std::vector<ReleaseRef> parseReleaseList (const std::string& text)
+std::vector<ReleaseRef> parseReleaseList (const std::string& text, bool* ok)
 try // p63: a damaged document (wrong types) never throws out of the loader
 {
     std::vector<ReleaseRef> list;
+    if (ok != nullptr) *ok = false;
     const json j = jsonutil::parse (text);
     if (j.is_discarded() || ! j.is_array()) return list;
+    if (ok != nullptr) *ok = true;
     for (const auto& o : j)
     {
         if (! o.is_object()) continue;
@@ -306,6 +308,7 @@ try // p63: a damaged document (wrong types) never throws out of the loader
 }
 catch (const std::exception&)
 {
+    if (ok != nullptr) *ok = false;
     return {};
 }
 
