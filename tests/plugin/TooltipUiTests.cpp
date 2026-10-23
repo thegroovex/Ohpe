@@ -120,6 +120,7 @@ void checkState (OhpeEditor& e, const juce::String& state, juce::StringArray& pr
     int n = 0;
     e.setLanguage (i18n::Language::English);
     e.advanceAnimation (0.05f);
+    (void) e.createComponentSnapshot (e.getLocalBounds(), true, 0.4f); // painted views build their controls while painting
     walk (e, state, en, e, n);
     total += n;
     e.setLanguage (i18n::Language::German);
