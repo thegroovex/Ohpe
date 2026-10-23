@@ -6,6 +6,7 @@ name: CI
 # jobs on the build artefacts:
 #   Linux    core tests (own JUCE-free build, starts at once), plug-in tests + VST3 host matrix,
 #            pluginval (strictness 5), documentation screenshots (not on pushes to main)
+#   Manual   the PDF manual EN + DE (tools/manual), with a check of every image link in the docs
 #   macOS    all tests (incl. the VST3 host matrix), auval -strict + the Audio Unit host matrix, plus the
 #            pkg/DMG installer (installed and tested on the runner)
 #   Windows  all tests (incl. the VST3 host matrix)
@@ -669,11 +670,37 @@ jobs:
           python scripts/ci/run-tests.py --build-dir build --split core_tests,plugin_tests \
             -j "$NUMBER_OF_PROCESSORS" --shard ${{ matrix.shard }}/3 --timings .ci-timings/windows.json
 
+  # ---------------------------------------------------------------------------------- manual
+  manual:
+    name: Manual (PDF)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: tools/manual/requirements.txt
+      - name: Install WeasyPrint
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libpango-1.0-0 libpangoft2-1.0-0 fonts-dejavu-core > /dev/null
+          pip install -q -r tools/manual/requirements.txt
+      - name: Check links and images in all docs
+        run: python3 tools/manual/build_manual.py --check
+      - name: Build the manual (EN + DE)
+        run: python3 tools/manual/build_manual.py --strict --out dist-manual
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ohpe-Manual
+          path: dist-manual/*.pdf
+          if-no-files-found: error
+
   # ---------------------------------------------------------------------------------- result
   result:
     name: CI result
     if: always()
-    needs: [changes, docs-only, linux-core, linux-build, linux-plugin-tests, linux-pluginval, linux-screenshots,
+    needs: [changes, docs-only, manual, linux-core, linux-build, linux-plugin-tests, linux-pluginval, linux-screenshots,
             macos-build, macos-tests, macos-auval, macos-installer, windows-build, windows-tests]
     runs-on: ubuntu-latest
     steps:
