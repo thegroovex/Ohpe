@@ -63,6 +63,7 @@ struct Route
     bool honourRange = true;     ///< false: always the whole file with 200
     size_t breakAfter = 0;       ///< > 0: the next `breaks` responses close after this many body bytes
     int breaks = 0;
+    bool cleanBreak = false;     ///< a break announces the shorter length (the stream ends early but cleanly)
     bool stall = false;          ///< accept, never answer
     bool endless = false;        ///< no Content-Length, stream until the client gives up
     bool noLength = false;       ///< no Content-Length (body then close)
@@ -237,7 +238,9 @@ private:
         const char* reason = status == 200 ? "OK" : status == 206 ? "Partial Content" : status == 302 ? "Found"
                            : status == 404 ? "Not Found" : status == 416 ? "Range Not Satisfiable" : "Error";
         std::string h = "HTTP/1.1 " + std::to_string (status) + " " + reason + "\r\nContent-Type: " + r.contentType + "\r\n" + extra;
-        if (! r.endless && ! r.noLength) h += "Content-Length: " + std::to_string (body.size()) + "\r\n";
+        const size_t sendBytes = breakThis && r.breakAfter > 0 ? std::min (body.size(), r.breakAfter) : body.size();
+        if (! r.endless && ! r.noLength)
+            h += "Content-Length: " + std::to_string (breakThis && r.cleanBreak ? sendBytes : body.size()) + "\r\n";
         h += "Connection: close\r\n\r\n";
         if (! sendAll (s, h.data(), h.size())) return;
         if (r.endless)
@@ -247,8 +250,7 @@ private:
                 if (! sendAll (s, chunk.data(), chunk.size())) return;
             return;
         }
-        const size_t n = breakThis && r.breakAfter > 0 ? std::min (body.size(), r.breakAfter) : body.size();
-        sendAll (s, body.data(), n);
+        sendAll (s, body.data(), sendBytes);
         if (breakThis) juce::Thread::sleep (30); // let the bytes reach the client before the hang-up
     }
 
@@ -563,6 +565,9 @@ TEST_CASE ("updater e2e: background download resumes after interruptions and aft
         br.body = r.installer;
         br.breakAfter = 90000; // the next three connections break after 90 kB
         br.breaks = 3;
+       #if JUCE_WINDOWS
+        br.cleanBreak = true; // the system HTTP stack retries a reset GET by itself and may stall; end the body early instead
+       #endif
         h.srv.set (path, br);
     }
     auto u = h.updater ("0.7.3");
