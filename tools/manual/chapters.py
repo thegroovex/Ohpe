@@ -80,7 +80,7 @@ STRINGS = {
         "features": "Feature overview",
         "readme_start": "Features",
         "readme_end": "Screenshots",
-        "params": "Appendix: parameters",
+        "params": "Parameters",
         "params_note": "",
         "parts": {
             "start": "Getting started",
@@ -103,7 +103,7 @@ STRINGS = {
         "features": "Funktionen im Überblick",
         "readme_start": "Funktionen",
         "readme_end": "Bilder",
-        "params": "Anhang: Parameter",
+        "params": "Parameter",
         "params_note": "Die Tabellen nennen zu jeder Parameter-ID den englischen und den deutschen Namen; "
                        "die Erläuterungen dieses Anhangs sind englisch.",
         "parts": {

@@ -269,7 +269,7 @@ def render(ch, mdit, links, images, broken):
     def table_class(m):
         head = m.group(0)
         ncols = head.count("<th")
-        cls = "wide" if ncols >= 5 else ("mid" if ncols == 4 else "")
+        cls = {1: "", 2: "two", 3: "three", 4: "mid"}.get(ncols, "wide")
         return f'<table class="{cls}">' + head[len("<table>"):]
     out = re.sub(r"<table>\s*<thead>.*?</thead>", table_class, out, flags=re.S)
     return out
@@ -344,7 +344,7 @@ def load_chapters(lang):
     return parts
 
 
-def build(lang, outdir, check_only=False, html_only=False):
+def build(lang, outdir, check_only=False, html_only=False, strict=False):
     S = STRINGS[lang]
     ver = version()
     mdit = make_md()
@@ -434,6 +434,13 @@ def build(lang, outdir, check_only=False, html_only=False):
         return True, 0
     from weasyprint import HTML
     rendered = HTML(string=doc, base_url=str(HERE)).render()
+    from verify_layout import check as layout_check
+    problems = layout_check(rendered)
+    for pr in problems:
+        print(f"  [{lang}] layout: {pr}")
+    if problems and strict:
+        print(f"[{lang}] {len(problems)} layout problem(s)")
+        return False, len(rendered.pages)
     pdf = outdir / f"{name}.pdf"
     rendered.write_pdf(pdf)
     n = len(rendered.pages)
@@ -447,6 +454,7 @@ def main():
     ap.add_argument("--out", default=str(ROOT / "docs" / "manual"))
     ap.add_argument("--check", action="store_true", help="only check links and images")
     ap.add_argument("--html-only", action="store_true")
+    ap.add_argument("--strict", action="store_true", help="fail on layout problems (orphan headings, overflow, split lists)")
     a = ap.parse_args()
     ok = True
     bad = check_all_doc_images()
@@ -457,7 +465,7 @@ def main():
             print("   ", b)
     langs = ["en", "de"] if a.lang == "all" else [a.lang]
     for lang in langs:
-        r, _ = build(lang, Path(a.out), a.check, a.html_only)
+        r, _ = build(lang, Path(a.out), a.check, a.html_only, a.strict)
         ok = ok and r
     sys.exit(0 if ok else 1)
 
