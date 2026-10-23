@@ -27,6 +27,7 @@ set(OHPE_PLUGIN_SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/Pictograms.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Pages.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Widgets.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/Accessibility.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/Display.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/TempoControl.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/KeyControl.cpp
@@ -358,4 +359,9 @@ endif()
 # ---------------------------------------------------------------- p75: the display's header never cuts a title
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/HeaderFitUiTests.cpp)
+endif()
+
+# ---------------------------------------------------------------- p83: accessibility, keyboard operation, UI sizes
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/AccessibilityUiTests.cpp)
 endif()

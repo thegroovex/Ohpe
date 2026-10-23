@@ -39,7 +39,7 @@ struct UserSettings
     Skin skin = Skin::Light;
     float brightness = 1.0f;       ///< display brightness 0.4 .. 1.0 (dims the dark display, lowers glare at night)
     Animations animations = Animations::Full;
-    float windowScale = 1.0f;      ///< default window size: one of windowScales
+    float windowScale = 1.0f;      ///< UI size (default window size): one of windowScales (p83: 75 .. 200 %)
     /** p46: the external controller of the standalone app (Settings > MIDI > Controller). JSON "controller":
         { "profile": "off" | "grid1", "in": port name, "out": port name, "master": "volume" | "tempo",
           "strip": "bend" | "mod" }. */
@@ -74,7 +74,8 @@ struct UserSettings
 enum ControllerProfile { ControllerOff = 0, ControllerGrid1, numControllerProfiles };
 
 constexpr float minBrightness = 0.4f;
-constexpr float windowScales[] = { 0.75f, 1.0f, 1.25f, 1.5f };
+/** p83: the UI sizes (window scale of the 1200 x 800 plate) - settings, right-click on the housing; per computer. */
+constexpr float windowScales[] = { 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f };
 
 /** The nearest allowed window scale. */
 float snapWindowScale (float s) noexcept;

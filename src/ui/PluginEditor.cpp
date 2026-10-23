@@ -161,6 +161,33 @@ void PartSelector::mouseDown (const juce::MouseEvent& e)
         if (cell (i).contains (e.position) && onSelect) onSelect (i);
 }
 
+ui::a11y::ValueAccess PartSelector::access()
+{
+    ui::a11y::ValueAccess v;
+    v.title = [] { return tr ("Part"); };
+    v.get = [this] { return (float) part / (float) (Core::numParts - 1); };
+    v.set = [this] (float x) {
+        const int p = juce::jlimit (0, Core::numParts - 1, juce::roundToInt (x * (float) (Core::numParts - 1)));
+        if (onSelect) onSelect (p);
+    };
+    v.text = [this] { return tr ("Part") + " " + juce::String (part + 1); };
+    v.steps = [] { return Core::numParts; };
+    return v;
+}
+
+std::unique_ptr<juce::AccessibilityHandler> PartSelector::createAccessibilityHandler() { return ui::a11y::valueHandler (*this, access()); }
+
+bool PartSelector::keyPressed (const juce::KeyPress& key)
+{
+    const auto c = key.getTextCharacter();
+    if (c >= '1' && c < '1' + Core::numParts && ! key.getModifiers().isAnyModifierKeyDown())
+    {
+        if (onSelect) onSelect (c - '1');
+        return true;
+    }
+    return ui::a11y::handleValueKey (key, access());
+}
+
 juce::Rectangle<float> PresetStrip::arrow (bool right) const
 {
     auto b = getLocalBounds().toFloat();
@@ -192,6 +219,32 @@ void PresetStrip::mouseDown (const juce::MouseEvent& e)
     if (arrow (false).contains (e.position)) { if (onStep) onStep (-1); }
     else if (arrow (true).contains (e.position)) { if (onStep) onStep (1); }
     else if (onOpen) onOpen();
+}
+
+std::unique_ptr<juce::AccessibilityHandler> PresetStrip::createAccessibilityHandler()
+{
+    ui::a11y::PressAccess a;
+    a.title = [] { return tr ("Preset"); };
+    a.value = [this] { return name; };
+    a.press = [this] { if (onOpen) onOpen(); };
+    return ui::a11y::pressHandler (*this, std::move (a));
+}
+
+bool PresetStrip::keyPressed (const juce::KeyPress& key)
+{
+    if (key.getModifiers().isAnyModifierKeyDown()) return false;
+    const int code = key.getKeyCode();
+    if (code == juce::KeyPress::leftKey || code == juce::KeyPress::rightKey || code == juce::KeyPress::upKey || code == juce::KeyPress::downKey)
+    {
+        if (onStep) onStep (code == juce::KeyPress::rightKey || code == juce::KeyPress::downKey ? 1 : -1);
+        return true;
+    }
+    if (code == juce::KeyPress::returnKey || code == juce::KeyPress::spaceKey)
+    {
+        if (onOpen) onOpen();
+        return true;
+    }
+    return false;
 }
 
 // ---------------------------------------------------------------- editor
@@ -490,6 +543,31 @@ OhpeEditor::OhpeEditor (OhpeProcessor& p)
         addMouseListener (&claimOnClick, true);
     }
     transportMessagesSeen = proc.transportMessageCount();
+
+    // p83: keyboard operation and the screen reader. Tab walks the plate's controls (focusOrder), a click never
+    // takes the focus from the keyboard; the ring shows where Tab is.
+    setFocusContainerType (juce::Component::FocusContainerType::keyboardFocusContainer);
+    for (auto* c : std::initializer_list<juce::Component*> { &partSelector, &presetStrip, &versionBadge })
+        ui::a11y::makeFocusable (*c);
+    octDownKey.setAccessibleTitle ("Octave down");
+    octUpKey.setAccessibleTitle ("Octave up");
+    tapeReadout.setAccessibleTitle ("Tape counter");
+    keysReadout.setAccessibleTitle ("Keyboard range");
+    settingsKey.onSecondaryClick = [this] { showUiSizeMenu (&settingsKey); };
+    addAndMakeVisible (focusRing);
+    focusRing.blocked = [this] { return focusAreas().empty(); };
+    navMouse.onDown = [this] (const juce::MouseEvent& e) {
+        focusRing.setKeyboardNavigation (false);
+        // a click on the plate gives the computer keyboard back to the notes (the clicked control keeps no focus)
+        auto* f = juce::Component::getCurrentlyFocusedComponent();
+        if (f != nullptr && f != &keyboard && isParentOf (f) && ! keyboard.isParentOf (e.eventComponent) && e.eventComponent != &keyboard)
+        {
+            const auto order = focusOrder();
+            if (std::find (order.begin(), order.end(), f) != order.end() && keyboard.isShowing()) keyboard.grabKeyboardFocus();
+        }
+    };
+    addMouseListener (&navMouse, true);
+    refreshAccessibleTitles();
     startTimerHz (30);
 }
 
@@ -653,6 +731,9 @@ void OhpeEditor::resized()
     tempoPanel.setUiScale (s); // p39
     clickStrip.setUiScale (s);
     keysReadout.setUiScale (s);
+    focusRing.setBounds (getLocalBounds()); // p83
+    focusRing.setScale (s);
+    focusRing.toFront (false);
     background = {}; // rendered again at the next paint (at the physical pixel scale)
 }
 
@@ -969,6 +1050,7 @@ void OhpeEditor::selectLockStep (int step)
 void OhpeEditor::setLanguage (i18n::Language lang)
 {
     i18n::setCurrent (lang);
+    refreshAccessibleTitles(); // p83
     library.languageChanged();
     saveUiState();
     refreshKeys();
@@ -2543,9 +2625,166 @@ void OhpeEditor::refreshKeys()
     for (auto& e : encoders) e->repaint();
 }
 
+void OhpeEditor::refreshAccessibleTitles()
+{
+    // p83: components without their own handler carry their title (the plate's handlers read theirs when asked)
+    keyboard.setTitle (tr ("Keyboard"));
+    keyboard.setDescription (tr ("Computer keyboard: A W S E D F T G Y H U J K O L P play the notes while the keyboard has the focus"));
+    grid.setTitle (tr ("Grid keyboard"));
+    cpuMeter.setTitle (tr ("CPU load"));
+    setTitle ("Ohpe");
+}
+
+std::vector<std::vector<juce::Component*>> OhpeEditor::focusAreas()
+{
+    std::vector<std::vector<juce::Component*>> areas;
+    for (auto* o : std::initializer_list<juce::Component*> { &library, &breedView, &updateView, &settingsView, &proView, &fxEditor, &tour,
+                                                             &confirmDialog, &recoveryNotice })
+        if (o->isVisible()) return areas; // an overlay has the keys
+    auto shown = [this] (juce::Component* c) {
+        if (c == nullptr || ! c->getWantsKeyboardFocus() || ! c->isEnabled()) return false;
+        for (auto* p = c; p != nullptr && p != this; p = p->getParentComponent())
+            if (! p->isVisible()) return false;
+        return isParentOf (c);
+    };
+    auto add = [&] (std::initializer_list<juce::Component*> list) {
+        std::vector<juce::Component*> a;
+        for (auto* c : list)
+            if (shown (c)) a.push_back (c);
+        if (! a.empty()) areas.push_back (std::move (a));
+    };
+    add ({ &versionBadge, &partSelector, &presetStrip, &libraryKey, &proKey, &breedKey, &randomKey, &saveKey, &settingsKey });
+    {
+        std::vector<juce::Component*> engines;
+        for (auto& k : engineKeys) if (shown (k.get())) engines.push_back (k.get());
+        if (shown (&lifeBar)) engines.push_back (&lifeBar);
+        if (! engines.empty()) areas.push_back (std::move (engines));
+    }
+    add ({ &display, &display.headerGravity(), &display.headerTap(), &display.headerTempo() });
+    add ({ encoders[0].get(), encoders[1].get(), encoders[2].get(), encoders[3].get() });
+    {
+        std::vector<juce::Component*> modes;
+        for (auto& k : modeKeys) if (shown (k.get())) modes.push_back (k.get());
+        if (! modes.empty()) areas.push_back (std::move (modes));
+    }
+    add ({ &playKey, &recKey, &stopKey, &toStartKey, &loopKey, &tempoPanel });
+    add ({ &octDownKey, &octUpKey, &midiKey, &gridKey, &pitchWheel, &modWheel, &glideSwitch, &glideKnob, &keyboard, &grid });
+    return areas;
+}
+
+std::vector<juce::Component*> OhpeEditor::focusOrder()
+{
+    std::vector<juce::Component*> all;
+    for (auto& a : focusAreas()) all.insert (all.end(), a.begin(), a.end());
+    return all;
+}
+
+juce::Component* OhpeEditor::moveFocus (bool forward, bool areas)
+{
+    const auto list = focusAreas();
+    if (list.empty()) return nullptr;
+    auto* f = juce::Component::getCurrentlyFocusedComponent();
+    int area = -1, index = -1;
+    for (int a = 0; a < (int) list.size() && area < 0; ++a)
+        for (int i = 0; i < (int) list[(size_t) a].size(); ++i)
+            if (list[(size_t) a][(size_t) i] == f || (f != nullptr && list[(size_t) a][(size_t) i]->isParentOf (f))) { area = a; index = i; break; }
+    juce::Component* next = nullptr;
+    const int numAreas = (int) list.size();
+    if (areas || area < 0)
+    {
+        const int a = area < 0 ? (forward ? 0 : numAreas - 1) : (area + (forward ? 1 : numAreas - 1)) % numAreas;
+        next = list[(size_t) a].front();
+    }
+    else
+    {
+        std::vector<juce::Component*> flat;
+        for (auto& v : list) flat.insert (flat.end(), v.begin(), v.end());
+        int at = 0;
+        for (int a = 0; a < area; ++a) at += (int) list[(size_t) a].size();
+        at += index;
+        const int n = (int) flat.size();
+        next = flat[(size_t) ((at + (forward ? 1 : n - 1)) % n)];
+    }
+    focusRing.setKeyboardNavigation (true);
+    if (next != nullptr) next->grabKeyboardFocus();
+    focusRing.repaint();
+    return next;
+}
+
+namespace
+{
+/** p83: Tab follows the plate's areas (OhpeEditor::focusAreas); the keyboard has the focus by default (notes). */
+class PlateTraverser final : public juce::ComponentTraverser
+{
+public:
+    explicit PlateTraverser (OhpeEditor& e) : editor (e) {}
+    juce::Component* getDefaultComponent (juce::Component*) override
+    {
+        if (editor.keyboardComponent().isVisible()) return &editor.keyboardComponent();
+        if (editor.gridKeyboard().isVisible()) return &editor.gridKeyboard();
+        return nullptr;
+    }
+    juce::Component* getNextComponent (juce::Component* c) override { return step (c, 1); }
+    juce::Component* getPreviousComponent (juce::Component* c) override { return step (c, -1); }
+    std::vector<juce::Component*> getAllComponents (juce::Component*) override { return editor.focusOrder(); }
+
+private:
+    juce::Component* step (juce::Component* c, int d)
+    {
+        const auto all = editor.focusOrder();
+        if (all.empty()) return nullptr;
+        const auto it = std::find (all.begin(), all.end(), c);
+        if (it == all.end()) return all.front();
+        const int n = (int) all.size(), i = (int) std::distance (all.begin(), it);
+        return all[(size_t) ((i + d + n) % n)];
+    }
+    OhpeEditor& editor;
+};
+} // namespace
+
+std::unique_ptr<juce::ComponentTraverser> OhpeEditor::createKeyboardFocusTraverser() { return std::make_unique<PlateTraverser> (*this); }
+
+void OhpeEditor::mouseDown (const juce::MouseEvent& e)
+{
+    if (e.eventComponent == this && e.mods.isPopupMenu()) showUiSizeMenu (this);
+}
+
+void OhpeEditor::setUiSize (float scale)
+{
+    auto v = userSettings->get();
+    v.windowScale = settings::snapWindowScale (scale);
+    shownWindowScale = 0.0f; // the window takes the size even when the setting was already this one
+    userSettings->set (v);
+    applyUserSettings();
+}
+
+void OhpeEditor::showUiSizeMenu (juce::Component* target)
+{
+    juce::PopupMenu m;
+    m.addSectionHeader (tr ("UI size"));
+    const float now = userSettings->get().windowScale;
+    int id = 1;
+    for (float v : settings::windowScales)
+        m.addItem (id++, juce::String (juce::roundToInt (v * 100.0f)) + " %", true, std::abs (v - now) < 0.01f);
+    juce::Component::SafePointer<OhpeEditor> safe (this);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (target), [safe] (int r) {
+        if (safe != nullptr && r >= 1 && r <= (int) std::size (settings::windowScales)) safe->setUiSize (settings::windowScales[r - 1]);
+    });
+}
+
 bool OhpeEditor::keyPressed (const juce::KeyPress& key)
 {
     if (tour.isVisible()) return tour.keyPressed (key); // p64: the tour has the keys while open
+    {   // p83: Tab / Shift+Tab walk the controls, F6 / Shift+F6 (or Ctrl+Tab) jump between the plate's areas
+        const auto mods = key.getModifiers();
+        const bool tab = key.getKeyCode() == juce::KeyPress::tabKey && ! mods.isAltDown() && ! mods.isCommandDown();
+        const bool f6 = key.getKeyCode() == juce::KeyPress::F6Key;
+        if ((tab || f6) && ! focusAreas().empty())
+        {
+            moveFocus (! mods.isShiftDown(), f6 || mods.isCtrlDown());
+            return true;
+        }
+    }
     if (handleShortcut (key)) return true; // p11: standalone transport shortcuts
     if (key.getKeyCode() == juce::KeyPress::F1Key) // p32: the help overlay on / off
     {
@@ -2564,6 +2803,16 @@ bool OhpeEditor::keyPressed (const juce::KeyPress& key)
         if (proView.isVisible()) { showProView (false); return true; }
         if (fxEditor.isVisible()) { showFxEditor (false); return true; } // p55
         if (lockStepIndex >= 0) { selectLockStep (-1); return true; }
+        // p83: Esc on a focused control gives the computer keyboard back to the notes
+        auto* f = juce::Component::getCurrentlyFocusedComponent();
+        if (f != nullptr && f != &keyboard && f != &grid && isParentOf (f))
+        {
+            focusRing.setKeyboardNavigation (false);
+            if (keyboard.isShowing()) keyboard.grabKeyboardFocus();
+            else if (grid.isShowing()) grid.grabKeyboardFocus();
+            else f->giveAwayKeyboardFocus();
+            return true;
+        }
     }
     return false;
 }
@@ -2958,6 +3207,22 @@ void OhpeEditor::loadUiState()
 namespace ohpe::ui
 {
 juce::String VersionBadge::getTooltip() { return i18n::tr ("Version and updates"); }
+
+std::unique_ptr<juce::AccessibilityHandler> VersionBadge::createAccessibilityHandler()
+{
+    ui::a11y::PressAccess a;
+    a.title = [] { return i18n::tr ("Version and updates"); };
+    a.value = [this] { return updateText.isNotEmpty() ? updateText : versionText; };
+    a.press = [this] { if (onClick) onClick(); };
+    return ui::a11y::pressHandler (*this, std::move (a));
+}
+
+bool VersionBadge::keyPressed (const juce::KeyPress& key)
+{
+    ui::a11y::PressAccess a;
+    a.press = [this] { if (onClick) onClick(); };
+    return ui::a11y::handlePressKey (key, a);
+}
 
 void VersionBadge::paint (juce::Graphics& g)
 {
