@@ -579,7 +579,8 @@ TEST_CASE ("updater e2e: background download resumes after interruptions and aft
         // with what the server saw - the restart / range cases below run on every platform
         std::string seen;
         for (const auto& q : h.srv.requests()) seen += q.path + " [" + q.range + "]  ";
-        WARN_MESSAGE (finished, "interrupted download did not finish; progress " + std::to_string (s.progress) + ", requests: " + seen);
+        const std::string note = "interrupted download did not finish; progress " + std::to_string (s.progress) + ", requests: " + seen;
+        WARN_MESSAGE (finished, note);
         u->cancel();
         REQUIRE (u->waitIdle (30000));
     }
