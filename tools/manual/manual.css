@@ -1,0 +1,98 @@
+/* Ohpe manual - designed by groovex. Matte warm-white pages, dark cover, Space Grotesk. */
+@font-face { font-family: SG; src: url({FONTS}/SpaceGrotesk-500.ttf); font-weight: 400 500; }
+@font-face { font-family: SG; src: url({FONTS}/SpaceGrotesk-700.ttf); font-weight: 600 800; }
+
+@page {
+  size: A4; margin: 20mm 18mm 18mm 18mm; background: #f4f0e8;
+  @top-right { content: string(chapter); font: 500 7.5pt SG; color: #a39c90; }
+  @bottom-left { content: "Ohpe · designed by groovex"; font: 500 8pt SG; color: #8a847a; }
+  @bottom-right { content: counter(page); font: 500 8pt SG; color: #8a847a; }
+}
+@page cover { margin: 0; background: #1d1b19;
+  @top-right { content: none; } @bottom-left { content: none; } @bottom-right { content: none; } }
+@page part { background: #ebe5d9; @top-right { content: none; } }
+@page toc { @top-right { content: none; } }
+
+html { font: 500 9.4pt/1.45 SG; color: #2a2826; }
+body { margin: 0; }
+p, li, td, th { orphans: 3; widows: 3; hyphens: auto; overflow-wrap: break-word; }
+
+/* cover */
+.cover { page: cover; height: 297mm; width: 210mm; color: #efe9de; text-align: center; position: relative;
+  break-after: page; bookmark-level: none; }
+.cover img.icon { width: 62mm; margin-top: 52mm; }
+.wm { font: 700 54pt SG; letter-spacing: 2pt; margin-top: 8mm; }
+.wm span { display: inline-block; width: .16em; height: .16em; background: #e5243b; border-radius: 50%; margin-left: .08em; }
+.sub { font: 500 15pt SG; color: #cfc8bb; margin-top: 4mm; }
+.by { position: absolute; bottom: 22mm; width: 100%; font: 500 9pt SG; color: #8a847a; letter-spacing: 1.5pt; }
+
+/* contents */
+.toc { page: toc; break-after: page; }
+h1.toc-title { bookmark-level: 1; bookmark-label: content(); }
+.toc ul { list-style: none; padding: 0; margin: 0; }
+.toc li { margin: 0; padding: 0; }
+.toc li.toc-part { font-weight: 700; font-size: 10pt; margin-top: 3.2mm; padding-top: 1.5mm;
+  border-top: 1px solid #d9d2c5; break-after: avoid; }
+.toc li.toc-ch { padding-left: 5mm; font-size: 9pt; margin: .55mm 0; }
+.toc a { color: inherit; text-decoration: none; }
+.toc a::after { content: leader(dotted) " " target-counter(attr(href), page); color: #8a847a; }
+
+/* part divider pages */
+.partpage { page: part; break-before: page; break-after: page; padding-top: 95mm;
+  bookmark-level: 1; bookmark-label: content(); }
+.partno { font: 500 10pt SG; letter-spacing: 2pt; text-transform: uppercase; color: #8a847a; }
+.parttitle { font: 700 30pt SG; margin-top: 2mm; }
+.parttitle::after { content: ""; display: inline-block; width: 8pt; height: 8pt; border-radius: 50%;
+  background: #e5243b; margin-left: 5pt; }
+
+/* chapters */
+.chapter { break-before: page; }
+h1, h2, h3, h4, h5 { break-after: avoid; break-inside: avoid; color: #2a2826; line-height: 1.2; }
+h1 { font: 700 20pt SG; margin: 0 0 4mm; string-set: chapter content(); bookmark-level: 2; }
+h1::after { content: ""; display: inline-block; width: 5pt; height: 5pt; border-radius: 50%;
+  background: #e5243b; margin-left: 3pt; }
+h2 { font: 700 13pt SG; margin: 6mm 0 1.8mm; border-top: 1px solid #d9d2c5; padding-top: 3mm; bookmark-level: 3; }
+h3 { font: 700 11pt SG; margin: 4.5mm 0 1.5mm; bookmark-level: none; }
+h4, h5, h6 { font: 700 9.8pt SG; margin: 3.5mm 0 1mm; bookmark-level: none; }
+h1 + h2 { border-top: none; padding-top: 0; }
+p { margin: 0 0 2mm; }
+.lead { font-size: 11.5pt; color: #3d3a36; }
+b, strong { font-weight: 700; }
+a { color: #2a2826; text-decoration: none; border-bottom: .6pt solid #c9bfae; }
+ul, ol { padding-left: 5mm; margin: 1.5mm 0 2.5mm; }
+li { margin: .7mm 0; break-inside: avoid; }
+li > p { margin: 0 0 1mm; }
+ul.two { columns: 2; column-gap: 7mm; break-inside: avoid; }
+blockquote { margin: 2.5mm 0; padding: 2mm 4mm; background: #ebe5d9; border-radius: 2.5mm; break-inside: avoid; }
+blockquote p:last-child { margin-bottom: 0; }
+hr { border: none; border-top: 1px solid #d9d2c5; margin: 4mm 0; }
+
+code { font-family: "DejaVu Sans Mono", monospace; font-size: 8pt; background: #ebe5d9; border-radius: 1mm;
+  padding: 0 .6mm; overflow-wrap: anywhere; }
+pre { background: #1d1b19; color: #efe9de; border-radius: 2.5mm; padding: 2.5mm 3.5mm; font-size: 7.6pt;
+  white-space: pre-wrap; overflow-wrap: anywhere; break-inside: avoid; margin: 2mm 0 3mm; }
+pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+/* tables */
+table { width: 100%; border-collapse: collapse; margin: 2mm 0 3.5mm; font-size: 8.4pt; line-height: 1.35; }
+table.mid { font-size: 8pt; }
+table.wide { font-size: 7.4pt; }
+thead { display: table-header-group; }
+th { text-align: left; font-weight: 700; border-bottom: 1px solid #b9b0a1; padding: 1.2mm 1.6mm; vertical-align: bottom; }
+td { border-bottom: .5pt solid #ddd6ca; padding: 1.1mm 1.6mm; vertical-align: top; }
+tr { break-inside: avoid; }
+table code { font-size: 7pt; padding: 0 .3mm; background: none; }
+
+/* figures */
+figure { margin: 3mm 0 3.5mm; break-inside: avoid; text-align: center; }
+figure img, p img { max-width: 100%; max-height: 118mm; border-radius: 2.5mm; }
+figure img { box-shadow: 0 .8mm 3mm rgba(0,0,0,.16); }
+figcaption { font-size: 7.8pt; color: #8a847a; margin-top: 1.5mm; text-align: center; }
+figcaption:empty { display: none; }
+td img { max-width: 100%; border-radius: 1.5mm; }
+
+/* quick start */
+.cap { font-size: 8pt; color: #8a847a; }
+.box { background: #ebe5d9; border-radius: 2.5mm; padding: 3mm 4mm; margin: 4mm 0; break-inside: avoid; }
+.y { color: #b8920a; font-weight: 700; } .v { color: #6c4cf5; font-weight: 700; }
+.g { color: #2e9a52; font-weight: 700; } .r { color: #e5243b; font-weight: 700; }
