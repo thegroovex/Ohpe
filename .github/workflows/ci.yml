@@ -4,10 +4,11 @@ name: CI
 # Linux, macOS universal and Windows are built and tested - so a pull request is checked on all
 # three platforms before it is merged. Each platform is built once; the tests then run as parallel
 # jobs on the build artefacts:
-#   Linux    core tests (own JUCE-free build, starts at once), plug-in tests + VST3 host test,
+#   Linux    core tests (own JUCE-free build, starts at once), plug-in tests + VST3 host matrix,
 #            pluginval (strictness 5), documentation screenshots (not on pushes to main)
-#   macOS    all tests, auval -strict, plus the pkg/DMG installer (installed and tested on the runner)
-#   Windows  all tests
+#   macOS    all tests (incl. the VST3 host matrix), auval -strict + the Audio Unit host matrix, plus the
+#            pkg/DMG installer (installed and tested on the runner)
+#   Windows  all tests (incl. the VST3 host matrix)
 # The doctest binaries run one test case per process on all cores (scripts/ci/run-tests.py), and
 # the test jobs are split over several runners (matrix "shard": every process runs on exactly one).
 # Compiler output is cached with ccache, the downloaded dependencies (JUCE, Link, doctest, JSON,
@@ -459,6 +460,8 @@ jobs:
     needs: macos-build
     runs-on: macos-14
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           name: build-macos
@@ -474,6 +477,12 @@ jobs:
           sleep 2
           auval -a | grep -i ohpe || true
           auval -strict -v aumu Ohpe Grvx
+
+      # p80 host matrix: the installed Audio Unit through JUCE's AU hosting (all sections, docs/en/HOST-TESTING.md)
+      - name: Audio Unit host test
+        run: |
+          build/ohpe_hosttest_artefacts/Release/ohpe_hosttest \
+            ~/Library/Audio/Plug-Ins/Components/Ohpe.component --section all --source .
 
   macos-installer:
     name: macOS installer (pkg + DMG)

@@ -645,7 +645,9 @@ void Core::updateCountIn (const Transport& host, int numSamples) noexcept
 
 void Core::clickAt (int offset, bool downbeat) noexcept
 {
-    metro.trigger (offset, downbeat);
+    // p80: the click is added after the master limiter / Key Gravity look-ahead, so it waits for the reported latency:
+    // it lands on the beat together with the parts and the drums (and on the host's beat after its compensation)
+    metro.trigger (offset + latencySamples(), downbeat);
     lastClickDown.store (downbeat, std::memory_order_relaxed);
     clicksForUi.fetch_add (1, std::memory_order_relaxed);
 }
