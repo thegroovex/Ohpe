@@ -288,5 +288,9 @@ private:
     float headerBadgesWidth() const;                 ///< p45: part badge + 3D badge right of the title
     juce::String keyLaidOut;                         ///< p45: key text + title the header was laid out for
     int shownCountIn = 0;
+    // p79: idle display - nothing sounds, runs or changes: repaint at 10 instead of 30 frames per second
+    uint32_t lastChangeCounter = 0;
+    int idleTicks = 0;
+    bool idleFrameSkip (bool settled);
 };
 } // namespace ohpe::ui

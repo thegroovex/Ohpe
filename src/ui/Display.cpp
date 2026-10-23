@@ -660,7 +660,9 @@ void Display::tick (float seconds)
         juce::RectangleList<int> rest (getLocalBounds());
         rest.subtract (area.toNearestInt());
         if (! settled) rest = juce::RectangleList<int> (getLocalBounds()); // parallax moves the grid layer
-        for (const auto& r : rest) repaint (r);
+        const bool skip = idleFrameSkip (settled); // p79
+        if (! skip)
+            for (const auto& r : rest) repaint (r);
         if (livingObj.consumeChanged() || ! settled)
         {
             const auto now = living::objectBounds (area, livingObj);
@@ -673,7 +675,21 @@ void Display::tick (float seconds)
     }
     livingObj.reset();
     livingLast = {};
-    repaint();
+    if (! idleFrameSkip (parallax.getDistanceFrom (parallaxTarget) < 0.002f || ! animated)) repaint(); // p79
+}
+
+bool Display::idleFrameSkip (bool settled)
+{
+    // p79: after two seconds in which no voice sounded, neither transport nor tape ran, no parameter changed, no message
+    // showed and the pointer stayed away, the display repaints every third tick (10 instead of 30 frames per second).
+    // Anything that changes ends the idle state at once; scopes and trails had those two seconds to fade out.
+    const auto& core = proc.core();
+    const uint32_t cc = core.params().changeCounter();
+    const bool still = settled && core.activeVoices() == 0 && ! core.transportPlaying() && ! core.countInActive() && ! proc.tapeRolling()
+                       && ! proc.tapeRecordReady() && flashTime <= 0.0f && cc == lastChangeCounter && ! isMouseOverOrDragging (true);
+    lastChangeCounter = cc;
+    idleTicks = still ? juce::jmin (idleTicks + 1, 1 << 20) : 0;
+    return idleTicks > 60 && idleTicks % 3 != 0;
 }
 
 bool Display::livingOnScreen() const
