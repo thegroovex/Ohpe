@@ -229,7 +229,7 @@ std::vector<Scenario> scenarios()
                        space3d (c);
                        gravity (c);
                    }, 16, drumPattern, 0.5 });
-    s.push_back ({ "silent.after-play", "full setup played 1 s, released; measured after 9 s (tails gone)",
+    s.push_back ({ "silent.after-play", "full setup played 1 s, released; measured after 9 s (hall tails still fading)",
                    [] (Core& c)
                    {
                        parts (c, EngineType::Analog, 16);
@@ -238,6 +238,15 @@ std::vector<Scenario> scenarios()
                        space3d (c);
                        gravity (c);
                    }, 0, chordThenRelease, 10.0 });
+    s.push_back ({ "silent.long-after", "full setup played 1 s, released; measured after 19 s (every tail gone: all asleep)",
+                   [] (Core& c)
+                   {
+                       parts (c, EngineType::Analog, 16);
+                       for (int p = 0; p < Core::numParts; ++p) rack (c, p, 6);
+                       masterRack (c);
+                       space3d (c);
+                       gravity (c);
+                   }, 0, chordThenRelease, 20.0 });
     s.push_back ({ "silent.master-fx", "no notes; 4 master FX and both sends (tails long gone)",
                    [] (Core& c) { masterRack (c); }, 0, {}, -1.0 });
     return s;
