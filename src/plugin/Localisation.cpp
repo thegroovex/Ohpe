@@ -17,6 +17,18 @@ struct Entry
     const char* de; ///< UTF-8
 };
 
+juce::CriticalSection& missingLock()
+{
+    static juce::CriticalSection c;
+    return c;
+}
+
+juce::StringArray& missingSet()
+{
+    static juce::StringArray m;
+    return m;
+}
+
 juce::StringArray& duplicates()
 {
     static juce::StringArray d;
@@ -987,7 +999,14 @@ juce::String tr (const juce::String& english)
     if (current() == Language::English) return english;
     const auto& t = table();
     const auto it = t.find (english);
-    return it != t.end() ? it->second : english;
+    if (it != t.end()) return it->second;
+    // p82: a text with letters and no German translation is noted (the tooltip test fails on it)
+    if (english.containsAnyOf ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"))
+    {
+        const juce::ScopedLock sl (missingLock());
+        if (missingSet().size() < 2000) missingSet().addIfNotAlreadyThere (english);
+    }
+    return english;
 }
 
 juce::String tr (const char* english) { return tr (juce::String::fromUTF8 (english)); }
@@ -1019,6 +1038,18 @@ juce::StringArray allKeys()
     for (const auto& [k, v] : table()) keys.add (k);
     return keys;
 }
+juce::StringArray missingKeys()
+{
+    const juce::ScopedLock sl (missingLock());
+    return missingSet();
+}
+
+void clearMissingKeys()
+{
+    const juce::ScopedLock sl (missingLock());
+    missingSet().clear();
+}
+
 juce::StringArray duplicateKeys()
 {
     (void) table();
