@@ -12,11 +12,13 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 
 ![Ohpe – Analog-Engine](docs/images/ohpe-analog-de.png)
 
-> **Stand: Phase 4 (0.4).** Acht Engines, vier Parts, Drum-Kit, Step-, Euklid-, Arpeggiator- und
-> Orbit-Sequencer, Bandmaschine, Mixer-Dynamik, FX-Slot, MPE und MIDI-Clock-Sync, Preset-Bibliothek,
-> Profiansicht und direkte Bedienung – jetzt mit den **Werksklängen**: 120 Part-Presets, 7
-> Demo-Projekte, fünf Drum-Kits und zehn aufgenommene Instrumente. Erste Vorabversion: unsignierte Builds
-> auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
+> **Stand: 0.7.3 – Vorabversion auf dem Weg zu 1.0.** Acht Engines, vier Parts, Drum-Kit, Step-, Euklid-,
+> Arpeggiator- und Orbit-Sequencer, Bandmaschine, Mixer mit Dynamik und FX-Racks, 3D-Raum, MPE und
+> MIDI-Clock-Sync, Preset-Bibliothek, Profiansicht und direkte Bedienung – mit **430 Werks-Presets** (412
+> Part-Presets und 18 Projekte), sechs Drum-Kits und vierzehn gesampelten Instrumenten. Vorab-Builds
+> (macOS-Installer ad-hoc signiert, Windows unsigniert) gibt es auf der
+> [Release-Seite](https://github.com/thegroovex/Ohpe/releases); das komplette Handbuch als PDF (Deutsch und
+> Englisch) liegt in [docs/manual](docs/manual/).
 
 ## Funktionen
 
@@ -31,17 +33,17 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 | **Vokal-Engine** | Formant-Stimme mit Vokalen, Atem, Vibrato und Jitter; Formantspuren aus eigenen Klängen |
 | **Sampler-Engine** | Tastenzonen oder automatische Slices aus WAV-, AIFF- und FLAC-Dateien, Loop-Modi, eingebauter Keys-Klang und zehn aufgenommene Werksinstrumente (Kalimba, Marimba, Vibrafon, Harfe, Cembalo, Blockflöte …) |
 | **Drum-Kit** | 24 Pads auf MIDI-Kanal 10: fünf aufgenommene Werks-Kits (Studio, Trocken, Raum, Lo-Fi, Hybrid – CC0), eigene Samples oder Synth-Modelle, Choke-Gruppen |
-| **Werksklänge** | 120 Part-Presets über alle Engines und Kategorien, im Pegel angeglichen; 7 Demo-Projekte mit allen vier Parts, den Sequenzern und dem Drum-Kit – siehe [Werksklänge](docs/de/FACTORY-SOUNDS.md) |
+| **Werksklänge** | 412 Part-Presets über alle Engines und Kategorien, im Pegel angeglichen; 18 Projekt-Presets mit allen vier Parts, den Sequenzern und dem Drum-Kit; sechs Drum-Kits, zehn aufgenommene Instrumente und vier Tasteninstrumente – siehe [Werksklänge](docs/de/FACTORY-SOUNDS.md) |
 | **Vier Parts** | jeder mit eigener Engine, Hüllkurven, LFO, MIDI-Kanal, Skalen-/Akkord-Modus und MPE |
 | **Je Stimme** | Lautstärke- und Modulationshüllkurve, LFO mit mehreren Zielen, Glide, 16 Stimmen |
 | **Sequencer** | Step-Sequencer (bis zu 64 Schritte, Wahrscheinlichkeit, Ratchets, Parameter-Locks, 16 Pattern, Song-Modus), Euklid, Arpeggiator und Orbit (Polymetrik), jeweils mit Ziel-Part – Step, Euklid und Orbit können auch das Drum-Kit spielen |
 | **Bandmaschine** | acht Stereospuren: Aufnahme / Overdub / Punch vom Eingang, von Parts oder Drums, Varispeed, rückwärts, Loop (Start / Ende von Hand am Abspielkopf setzen, im Takt- oder Schlagraster, Kanten ziehbar – [Schleife setzen](docs/de/BAND-MISCHER-FX.md#schleife-setzen-p42)), Bandcharakter, Rückgängig, Export als WAV-Master und Stems; Vorzähler von ein oder zwei Takten (die Aufnahme beginnt genau auf der Eins) und eingebautes Metronom; das Tempo wird direkt im Display gezogen, eingetippt oder getippt – siehe [Tempo, Metronom und Vorzähler](docs/de/BEDIENUNG.md#tempo-metronom-und-vorzähler-p39) |
 | **Mixer** | acht Kanäle mit EQ, Kompressor, Lautstärke, Panorama, Mute / Solo, zwei Sends (A: Delay, B: Hall), Master-Kompressor, Bandsättigung und Limiter |
 | **FX-Racks** | sechs Slots in Reihe pro Part und vier im Master: Hyper (Unisono-Verbreiterer), Verzerrung (acht Modi), Flanger, Kompressor, Multiband, EQ, Filter, Echo, Raum, Chorus, Phaser, Bitcrush, Filter-Drive, Delay, Hall, Mitte/Seite-Stereo, 3D-Raum – Reihenfolge per Ziehen, jeder mit Mischung und Bypass – siehe [FX-Rack](docs/de/BAND-MISCHER-FX.md#fx-rack-07) |
-| **3D-Raum** | jeder Part kann sich um deinen Kopf bewegen – vorn, seitlich, hinten, oben, nah und fern – auf tempo-synchronen Bewegungspfaden (Kreis, Acht, Vorbeiflug mit Doppler, Zufallsorbit, Pendel, Spirale); binaural über Kopfhörer mit Ohpes eigenem parametrischem Kopfmodell (kein gemessener Datensatz), monokompatibel über Lautsprecher; auch als Rack-Effekt *3D-Raum*; 13 „3D“-Presets – siehe [3D-Raum](docs/de/RAUM.md) |
+| **3D-Raum** | jeder Part kann sich um deinen Kopf bewegen – vorn, seitlich, hinten, oben, nah und fern – auf tempo-synchronen Bewegungspfaden (Kreis, Acht, Vorbeiflug mit Doppler, Zufallsorbit, Pendel, Spirale); binaural über Kopfhörer mit Ohpes eigenem parametrischem Kopfmodell (kein gemessener Datensatz), monokompatibel über Lautsprecher; auch als Rack-Effekt *3D-Raum*; 75 „3D“-Presets (72 Part-Presets, drei Projekte) – siehe [3D-Raum](docs/de/RAUM.md) |
 | **Leben** | ein LEBEN-Regler pro Part lässt gehaltene Töne weiterleben: jede Stimme driftet für sich (wenige Cent Tonhöhe, atmender Filter, wandernde Engine-Farbe, Grain-Streuung) – 0 = statisch, auf jeder Engine, ein Modulationsziel – siehe [Leben](docs/de/BEDIENUNG.md#leben) |
-| **Resonanzkörper** | jeder Part kann durch einen physikalisch modellierten Körper spielen – gekoppelte Saiten mit Resonanzsaiten, gestimmt auf die Note oder den gehaltenen Akkord, eine modale Platte, ein offenes oder gedacktes Rohr; er folgt Tastatur, Pitchbend und MPE (Druck lässt ihn klingen, Slide verschiebt den Anregungspunkt); auch als Rack-Effekt *Resonanzkörper*; 7 Presets – siehe [Resonanzkörper](docs/de/RESONANZKOERPER.md) |
-| **Morph-Raum** | ein XY-Pad je Part zwischen vier vollständigen Klängen – auch über verschiedene Engines: Parameter morphen, wo die Klänge gleich aufgebaut sind, sonst spielen die Klänge parallel und werden gleich laut überblendet; spielbar mit Maus, Automation, MIDI, Modulationsmatrix, Modulationsrad oder MPE-Druck / -Slide; 4 Morph-Presets – siehe [Morph-Raum](docs/de/MORPH-RAUM.md) |
+| **Resonanzkörper** | jeder Part kann durch einen physikalisch modellierten Körper spielen – gekoppelte Saiten mit Resonanzsaiten, gestimmt auf die Note oder den gehaltenen Akkord, eine modale Platte, ein offenes oder gedacktes Rohr; er folgt Tastatur, Pitchbend und MPE (Druck lässt ihn klingen, Slide verschiebt den Anregungspunkt); auch als Rack-Effekt *Resonanzkörper*; 22 Werks-Presets nutzen ihn – siehe [Resonanzkörper](docs/de/RESONANZKOERPER.md) |
+| **Morph-Raum** | ein XY-Pad je Part zwischen vier vollständigen Klängen – auch über verschiedene Engines: Parameter morphen, wo die Klänge gleich aufgebaut sind, sonst spielen die Klänge parallel und werden gleich laut überblendet; spielbar mit Maus, Automation, MIDI, Modulationsmatrix, Modulationsrad oder MPE-Druck / -Slide; 7 Morph-Presets – siehe [Morph-Raum](docs/de/MORPH-RAUM.md) |
 | **Stimmsteuerung** | in einen Eingang singen, summen oder sprechen, und die Stimme bewegt den Klang (kein Vocoder – sie moduliert nur): Pegel, Vokal (A-E-I-O-U-Karte), Helligkeit, Konsonanten, Tonhöhe und Silbeneinsätze als Modulationsquellen, mit einem Druck *Vokal → Filter + Morph* – siehe [Stimmsteuerung](docs/de/STIMMSTEUERUNG.md) |
 | **Bewegungs-Recorder** | an den Reglern eines Parts drehen, während die Musik läuft, und bis zu vier Bewegungen je Part laufen als Schleifen-Spuren mit eigener Länge (1 – 64 Sechzehntel, polymetrisch zum Pattern); Überspielen durch erneutes Anfassen, Tiefe regelbar, auch Modulationsquellen – siehe [Bewegungs-Recorder](docs/de/BEWEGUNG.md) |
 | **Performance-Pads** | vier Pads werfen Effekte auf die Hauptsumme für Live-Sets – ein quantisiertes **Stottern** (1/4 … 1/32, Triolen), ein **Bandstopp** über 1/8 … 2 Takte, ein resonanter **Filter-Sweep** (Tiefpass nach unten / Hochpass nach oben) und ein **Hall-Freeze**, der den Moment endlos hält; halten = kurz, Umschalt-Klick = einrasten, per MIDI lernbar, Matrix-Quellen – siehe [Performance-Pads](docs/de/PERFORMANCE-PADS.md) |
