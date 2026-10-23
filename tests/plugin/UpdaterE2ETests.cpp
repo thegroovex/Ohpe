@@ -581,7 +581,7 @@ TEST_CASE ("updater e2e: background download resumes after interruptions and aft
     juce::TemporaryFile tmp2;
     const auto data2 = tmp2.getFile();
     const auto part = data2.getChildFile ("Updates").getChildFile (assetName ("0.9.0") + ".part");
-    part.getParentDirectory().createDirectories();
+    part.getParentDirectory().createDirectory();
     part.replaceWithData (r.installer.data(), 150000);
     h.srv.set (path, [&] { Route x; x.body = r.installer; return x; }());
     h.srv.clearLog();
@@ -595,7 +595,7 @@ TEST_CASE ("updater e2e: background download resumes after interruptions and aft
 
     // a server that ignores the range: the partial file is started over, the result is still right
     data2.getChildFile ("Updates").deleteRecursively();
-    part.getParentDirectory().createDirectories();
+    part.getParentDirectory().createDirectory();
     part.replaceWithData (r.installer.data(), 150000);
     h.srv.set (path, [&] { Route x; x.body = r.installer; x.honourRange = false; return x; }());
     s = download (*u2);
@@ -613,7 +613,7 @@ TEST_CASE ("updater e2e: a stale partial file the server cannot continue (416) s
     r.manifestSize = 0; // the manifest gives no size: the stale part cannot be recognised before asking
     h.publish();
     const auto part = h.data.getChildFile ("Updates").getChildFile (assetName ("0.9.0") + ".part");
-    part.getParentDirectory().createDirectories();
+    part.getParentDirectory().createDirectory();
     const auto junk = payload (130000, 99); // longer than the real file (from an older, bigger download)
     part.replaceWithData (junk.data(), junk.size());
     auto u = h.updater ("0.7.3");
@@ -734,7 +734,7 @@ TEST_CASE ("updater e2e: content packs - install, update with backup, rollback, 
     Harness h;
     REQUIRE (h.srv.running());
     const auto userPreset = h.data.getChildFile ("Presets/Mine.ohpepreset");
-    userPreset.getParentDirectory().createDirectories();
+    userPreset.getParentDirectory().createDirectory();
     userPreset.replaceWithText ("{\"mine\":true}");
 
     const auto z1 = zipOf ({ { "presets/Night Keys.ohpepreset", "{}" }, { "readme.txt", "v1" } });
