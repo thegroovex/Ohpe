@@ -702,7 +702,9 @@ TEST_CASE ("updater e2e: size limits - declared, unknown and streamed, text answ
     s = check (*u);
     CHECK (s.state == Updater::State::Failed);
     CHECK (s.message == "The update server sent an answer Ohpe cannot read");
-    CHECK_FALSE (s.hasRelease);
+    // a failed check keeps the offer of the last good one (a passing server error must not hide a verified update)
+    CHECK (s.hasRelease);
+    CHECK (s.release.version == update::Version::of ("0.9.0"));
 }
 
 TEST_CASE ("updater e2e: roll back to the previous version")
@@ -861,7 +863,7 @@ TEST_CASE ("updater e2e: offline, timeouts, HTTP errors, malformed answers, redi
     u->setReleaseListUrl (h.srv.url ("/loop"));
     s = check (*u);
     CHECK ((s.state == Updater::State::Failed || s.state == Updater::State::Offline));
-    CHECK_FALSE (s.hasRelease);
+    CHECK (s.release.version == update::Version::of ("0.9.0")); // the last good offer is kept, not replaced
 
     // a damaged manifest: the release is read from the list instead (notes from its body, no checksum -> refused)
     u->setReleaseListUrl (h.srv.url ("/releases"));
