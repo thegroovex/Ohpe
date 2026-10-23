@@ -144,4 +144,13 @@ bool ConfirmDialog::keyPressed (const juce::KeyPress& k)
     }
     return true; // modal: nothing reaches the plate behind it
 }
+// p82: the keys' tooltips
+std::vector<tips::Region> ConfirmDialog::tipRegions()
+{
+    return { { keyArea (0), opts.cancelText + " - " + tips::t ("keep everything as it is (Esc)", "alles lassen, wie es ist (Esc)") },
+             { keyArea (1), opts.confirmText + " - " + tips::t ("do it (cannot be undone)", "ausführen (lässt sich nicht rückgängig machen)") },
+             { panelArea(), tips::t ("Choose with a key - Return: the focused key, Esc: cancel", "Mit einer Taste wählen - Eingabe: die markierte Taste, Esc: abbrechen") },
+             { getLocalBounds().toFloat(), tips::t ("A click outside the question cancels", "Ein Klick neben die Frage bricht ab") } };
+}
+
 } // namespace ohpe::ui

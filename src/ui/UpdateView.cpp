@@ -257,6 +257,7 @@ void UpdateView::paint (juce::Graphics& g)
         else if (s.hasRelease)
         {
             const auto* a = s.release.assetFor (update::currentPlatform(), standalone ? "app" : "plugin");
+            rowTip ("Download the new version (checked before it opens)", "Die neue Version herunterladen (wird vor dem Öffnen geprüft)");
             chip (g, { x + u * 15.0f, y, w - u * 15.0f, h },
                   i18n::upper (tr ("Update to")) + " " + str (s.release.version.toString()) + (a != nullptr ? "   " + sizeText (a->size) : juce::String()), true,
                   colour::sunYellow, [this] { updater.downloadUpdate(); }, ! busy);

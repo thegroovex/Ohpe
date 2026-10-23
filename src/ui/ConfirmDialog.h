@@ -3,6 +3,7 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
+#include "Tooltips.h"
 
 #include <functional>
 
@@ -14,7 +15,7 @@ namespace ohpe::ui
     colour::*), a title, one line of text and two keys: CANCEL (the default - Return, Esc, a click on the backdrop)
     and the destructive key in colour::alertInk. Left / right / Tab move the focus between the keys.
 */
-class ConfirmDialog : public juce::Component
+class ConfirmDialog : public juce::Component, public juce::TooltipClient, public tips::RegionProvider
 {
 public:
     struct Options
@@ -38,6 +39,8 @@ public:
     juce::Rectangle<float> keyArea (int key) const;
 
     void paint (juce::Graphics& g) override;
+    juce::String getTooltip() override { return tips::regionTipAt (tipRegions(), getMouseXYRelative().toFloat()); } ///< p82
+    std::vector<tips::Region> tipRegions() override; ///< p82: the keys
     void mouseMove (const juce::MouseEvent& e) override;
     void mouseExit (const juce::MouseEvent& e) override;
     void mouseUp (const juce::MouseEvent& e) override;
