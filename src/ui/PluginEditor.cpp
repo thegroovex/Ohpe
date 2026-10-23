@@ -58,6 +58,68 @@ enum SoftKeyId
     skCapture = 170, skMemory                          // p67: tape memory - CAPTURE, the memory menu
 };
 
+/** p82: what a soft key of the display does (its tooltip, EN / DE). */
+juce::String softKeyTip (int id)
+{
+    using tips::t;
+    if (id >= skCornerA && id <= skCornerD) return t ("Morph corner: assign a sound from the library or the current one, or clear it", "Morph-Ecke: einen Sound aus der Bibliothek oder den aktuellen zuweisen, oder leeren");
+    if (id >= skPadFirst && id < skPadFirst + 4) return t ("Performance pad: hold for the effect (Shift-click latches); right-click on the pad picture: MIDI learn", "Performance-Pad: halten für den Effekt (Shift-Klick rastet ein); Rechtsklick auf das Pad-Bild: MIDI-Learn");
+    switch (id)
+    {
+        case skLoadSample: return t ("Load an audio file into the part (or drop one on the plate)", "Eine Audiodatei in den Part laden (oder auf die Oberfläche ziehen)");
+        case skClearSample: return t ("Remove the sample - back to the built-in tone", "Das Sample entfernen - zurück zum eingebauten Ton");
+        case skLift: return t ("Lift: copy the loop range of the edit track", "Lift: den Loop-Bereich der Edit-Spur kopieren");
+        case skCut: return t ("Cut: remove the loop range of the edit track and keep it", "Cut: den Loop-Bereich der Edit-Spur ausschneiden und behalten");
+        case skDrop: return t ("Drop: put the lifted or cut audio in at the playhead", "Drop: das kopierte oder ausgeschnittene Audio am Abspielpunkt einsetzen");
+        case skSplice: return t ("Splice: insert the clipboard at the playhead and push the rest back", "Splice: die Zwischenablage am Abspielpunkt einfügen und den Rest nach hinten schieben");
+        case skUndo: return t ("Undo the last tape edit", "Die letzte Tape-Bearbeitung rückgängig machen");
+        case skRedo: return t ("Redo the tape edit", "Die Tape-Bearbeitung wiederholen");
+        case skExport: return t ("Export the tape as audio files", "Das Tape als Audiodateien exportieren");
+        case skPadLoad: return t ("Load an audio file onto the selected drum pad", "Eine Audiodatei auf das gewählte Drum-Pad laden");
+        case skPadClear: return t ("Remove the selected pad's sample", "Das Sample des gewählten Pads entfernen");
+        case skClearLocks: return t ("Remove every parameter lock of this step", "Alle Parameter-Locks dieses Schritts entfernen");
+        case skLockDone: return t ("Leave lock editing", "Lock-Bearbeitung beenden");
+        case skModPrev: return t ("The previous routing of the modulation matrix", "Die vorige Verbindung der Modulationsmatrix");
+        case skModNext: return t ("The next routing of the modulation matrix", "Die nächste Verbindung der Modulationsmatrix");
+        case skModClear: return t ("Clear this routing (source, target, amount)", "Diese Verbindung leeren (Quelle, Ziel, Stärke)");
+        case skSlotLeft: return t ("Move the selected FX slot one place to the left", "Den gewählten FX-Slot einen Platz nach links");
+        case skSlotRight: return t ("Move the selected FX slot one place to the right", "Den gewählten FX-Slot einen Platz nach rechts");
+        case skSlotClear: return t ("Empty the selected FX slot", "Den gewählten FX-Slot leeren");
+        case skFxEditor: return t ("The FX editor: every parameter of the slot at once, points to drag", "Der FX-Editor: alle Parameter des Slots auf einmal, Punkte zum Ziehen");
+        case skTableImport: return t ("Import an audio file as a user wavetable / formant track", "Eine Audiodatei als User-Wavetable / Formantspur importieren");
+        case skTableUser: return t ("Play the imported user table (on) or the factory one (off)", "Die importierte User-Tabelle spielen (ein) oder die Werkstabelle (aus)");
+        case skTableClear: return t ("Remove the imported user table", "Die importierte User-Tabelle entfernen");
+        case skBounce: return t ("Bounce: record the tape or the input into the Grain / Sampler engine", "Bounce: das Tape oder den Eingang in die Grain- / Sampler-Engine aufnehmen");
+        case skMotionRec: return t ("Record control moves of the part as loops", "Reglerbewegungen des Parts als Loops aufnehmen");
+        case skMotionPlay: return t ("Play the recorded motion", "Die aufgenommene Bewegung abspielen");
+        case skMotionClear: return t ("Clear the part's motion lanes", "Die Bewegungsspuren des Parts löschen");
+        case skHarmonyTake: return t ("Take the key the harmony brain heard as the song key", "Die gehörte Tonart als Songtonart übernehmen");
+        case skHarmonyHold: return t ("Hold the current chord", "Den aktuellen Akkord halten");
+        case skHarmonyClear: return t ("Forget what the harmony brain heard", "Vergessen, was das Harmonie-Gehirn gehört hat");
+        case skVoiceOn: return t ("Voice Control on or off (needs an audio input)", "Stimmsteuerung ein oder aus (braucht einen Audioeingang)");
+        case skVoiceMap: return t ("Quick map: vowels move the filter and the morph of the edit part", "Schnellzuweisung: Vokale bewegen Filter und Morph des Edit-Parts");
+        case skTapeClear: return t ("Clear the edit track (asks first)", "Die Edit-Spur löschen (fragt vorher)");
+        case skTapeClearAll: return t ("Clear all eight tracks (asks first)", "Alle acht Spuren löschen (fragt vorher)");
+        case skTapeSave: return t ("Save the tape as a file", "Das Tape als Datei speichern");
+        case skTapeLoad: return t ("Load a tape file", "Eine Tape-Datei laden");
+        case skLoopSetIn: return t ("Loop in at the playhead (on the grid; Shift: free)", "Loop-Anfang am Abspielpunkt (im Raster; Shift: frei)");
+        case skLoopSetOut: return t ("Loop out at the playhead (on the grid; Shift: free)", "Loop-Ende am Abspielpunkt (im Raster; Shift: frei)");
+        case skLoopOnOff: return t ("Loop on or off", "Loop ein oder aus");
+        case skLoopSnap: return t ("Grid of the loop edges: off, beat or bar", "Raster der Loop-Kanten: aus, Schlag oder Takt");
+        case skLoopToIn: return t ("Playhead to loop in", "Abspielpunkt an den Loop-Anfang");
+        case skLoopBack: return t ("Back to the edit keys", "Zurück zu den Bearbeitungstasten");
+        case skLoopUndo: return t ("Undo the last loop range change", "Die letzte Änderung des Loop-Bereichs rückgängig machen");
+        case skLoopRedo: return t ("Redo the loop range change", "Die Änderung des Loop-Bereichs wiederholen");
+        case skLoopHalf: return t ("Halve the loop", "Den Loop halbieren");
+        case skLoopDouble: return t ("Double the loop", "Den Loop verdoppeln");
+        case skLoopFit: return t ("Fit the loop around the recorded material", "Den Loop um das aufgenommene Material legen");
+        case skCapture: return t ("Capture: put what you just played (Tape-Memory) into this part or onto the tape", "Capture: gerade Gespieltes (Tape-Memory) in diesen Part oder auf das Tape übernehmen");
+        case skMemory: return t ("Tape-Memory: mode, length, source, part, export", "Tape-Memory: Modus, Länge, Quelle, Part, Export");
+        default: break;
+    }
+    return {};
+}
+
 juce::String tapefileExtension() { return tapefile::extension; } // p38: ".ohpetape"
 
 bool isAudioFile (const juce::String& path)
@@ -2128,6 +2190,7 @@ void OhpeEditor::refreshSoftKeys()
         keys = { { skClearLocks, tr ("Clear locks") }, { skLockDone, tr ("Done"), true, true } };
         status = tr ("Turn any encoder to lock its value on this step");
     }
+    for (auto& k : keys) k.tip = softKeyTip (k.id); // p82
     display.setSoftKeys (keys);
     display.setStatus (status);
 }

@@ -9,6 +9,7 @@
 #include "TempoControl.h"
 #include "Visuals.h"
 #include "Widgets.h"
+#include "Tooltips.h"
 #include "plugin/PluginProcessor.h"
 
 #include <array>
@@ -25,7 +26,8 @@ namespace ohpe::ui
     or Ctrl = fine), click on a bar to jump, double-click to reset, right-click for MIDI learn.
 */
 class Display : public juce::Component,
-                public juce::TooltipClient
+                public juce::TooltipClient,
+                public tips::RegionProvider
 {
 public:
     explicit Display (OhpeProcessor& p);
@@ -65,6 +67,7 @@ public:
         juce::String label; ///< translated
         bool enabled = true;
         bool active = false;
+        juce::String tip; ///< p82: what it does (tooltip)
     };
 
     void setMode (Mode m, int page, int numPagesInMode, const std::vector<juce::String>& encoderIds, const juce::String& pageTitle = {});
@@ -133,6 +136,8 @@ public:
     void setShowShortcuts (bool show) { shortcuts = show; }
 
     juce::String getTooltip() override; ///< p11: depends on what the mouse is over (1.0: the 3D badge too)
+    /** p82: every control the display shows now (rows, page arrows, soft keys, tabs, steps, pads, tracks ...). */
+    std::vector<tips::Region> tipRegions() override;
 
     void paint (juce::Graphics& g) override;
     void paintOverChildren (juce::Graphics& g) override; ///< p39: the count-in countdown
