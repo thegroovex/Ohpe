@@ -81,6 +81,7 @@ thead { display: table-header-group; }
 th { text-align: left; font-weight: 700; border-bottom: 1px solid #b9b0a1; padding: 1.2mm 1.6mm; vertical-align: bottom; }
 td { border-bottom: .5pt solid #ddd6ca; padding: 1.1mm 1.6mm; vertical-align: top; }
 tr { break-inside: avoid; }
+th, td:not(:last-child) { hyphens: manual; }
 table.two td:first-child { width: 26%; hyphens: manual; }
 table.three td:first-child { hyphens: manual; }
 table code { font-size: 7pt; padding: 0 .3mm; background: none; }

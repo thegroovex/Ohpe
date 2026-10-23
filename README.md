@@ -107,16 +107,20 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 
 Full guide: [playing the interface](docs/en/USER-INTERFACE.md).
 
-## Installing on macOS
+## Installing
 
-Every push to main, every manual CI run and every pull request labelled `installer` builds a macOS
+Download the macOS installer or the Windows zips from the
+[releases page](https://github.com/thegroovex/Ohpe/releases) (Windows: unblock the zip, then *More info →
+Run anyway* at the SmartScreen warning – see [Installing Ohpe](docs/en/INSTALL.md#5-windows)). Between
+releases, every push to main, every manual CI run and every pull request labelled `installer` builds a macOS
 installer – artifact **Ohpe-macOS-Installer**
 on the run (*Actions → CI*). The disk image holds `Ohpe-Installer.pkg` (standalone app, VST3 and
 Audio Unit, each selectable; universal for Apple Silicon and Intel, macOS 11+), a Gatekeeper fix
-script, an uninstaller and a read-me in English and German. The pkg is not signed by Apple: open it
-with **right-click → Open** (or *System Settings → Privacy & Security → Open Anyway*). The installer
+script, an uninstaller and a read-me in English and German. The pkg is not signed by Apple: after the first
+blocked double-click open it with *System Settings → Privacy & Security → Open Anyway* (macOS 14 and older:
+also **right-click → Open**). The installer
 then removes the quarantine flag from the installed app and plug-ins and signs them ad hoc so
-Apple Silicon runs them. Full guide: [installing on macOS](docs/en/INSTALL.md).
+Apple Silicon runs them. Full guide: [Installing Ohpe](docs/en/INSTALL.md).
 
 ## Building
 
@@ -137,9 +141,12 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 
 ## Documentation
 
+* **[Manual (PDF)](docs/manual/Ohpe-Manual-EN.pdf)** – everything below in one book: quick start, all features,
+  MIDI and controllers, installation, parameter appendix ([German](docs/manual/Ohpe-Manual-DE.pdf));
+  built by `tools/manual/build_manual.py`
 * Engines: [Wavetable](docs/en/engines/wavetable.md), [Pluck](docs/en/engines/pluck.md),
   [Cluster](docs/en/engines/cluster.md), [Grain, Vocal, Sampler and drum kit](docs/en/GRAIN-VOCAL-SAMPLER-DRUM.md)
-* [Installing on macOS](docs/en/INSTALL.md) – installer, Gatekeeper fix, uninstall, signing
+* [Installing Ohpe](docs/en/INSTALL.md) – macOS installer, Windows, Gatekeeper fix, uninstall, signing
 * [Playing the interface](docs/en/USER-INTERFACE.md) – display, parts, pro view, step locks, tape and drum pages, Mod and Rack views
 * [Factory sounds](docs/en/FACTORY-SOUNDS.md) – every preset by category, drum kits, recorded instruments
 * [Preset library](docs/en/PRESETS.md) – browsing, saving, MIDI, file format

@@ -119,7 +119,7 @@ enthält die Standalone-App `Ohpe.exe`, `Ohpe-<Version>-Windows-VST3.zip` den Pl
 Die Builds sind nicht mit einem Code-Signing-Zertifikat signiert, deshalb warnt Windows SmartScreen einmal.
 
 1. **Download freigeben:** Rechtsklick auf die Zip → **Eigenschaften** → unten **Zulassen** ankreuzen →
-   **OK**. Dann Rechtsklick → **Alle extrahieren…**.
+   **OK**. Dann Rechtsklick → **Alle extrahieren…**
 2. **App:** `Ohpe.exe` an einen beliebigen Ort legen (z. B. `C:\Program Files\Ohpe\`) und doppelklicken.
 3. **SmartScreen:** meldet Windows *Der Computer wurde durch Windows geschützt*, auf **Weitere
    Informationen** klicken, prüfen, dass die App `Ohpe.exe` heißt, dann **Trotzdem ausführen**. Windows merkt

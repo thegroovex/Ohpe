@@ -118,7 +118,7 @@ holds the standalone app `Ohpe.exe`, `Ohpe-<version>-Windows-VST3.zip` the plug-
 The builds are not signed with a code-signing certificate, so Windows SmartScreen warns once.
 
 1. **Unblock the download:** right-click the zip → **Properties** → tick **Unblock** at the bottom →
-   **OK**. Then right-click → **Extract All…**.
+   **OK**. Then right-click → **Extract All…**
 2. **App:** move `Ohpe.exe` wherever you like (for example `C:\Program Files\Ohpe\`) and double-click it.
 3. **SmartScreen:** if Windows says *Windows protected your PC*, click **More info**, check that the
    app is `Ohpe.exe`, then click **Run anyway**. Windows remembers this; the warning does not come back

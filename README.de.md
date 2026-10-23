@@ -110,17 +110,21 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 
 Ausführlich: [Bedienung](docs/de/BEDIENUNG.md).
 
-## Installation auf dem Mac
+## Installation
 
-Jeder Push auf main, jeder manuelle CI-Lauf und jeder Pull Request mit dem Label `installer` baut
+Den macOS-Installer oder die Windows-Zips von der
+[Release-Seite](https://github.com/thegroovex/Ohpe/releases) laden (Windows: Zip freigeben, dann bei der
+SmartScreen-Warnung *Weitere Informationen → Trotzdem ausführen* – siehe
+[Ohpe installieren](docs/de/INSTALLATION.md#5-windows)). Zwischen den Releases baut jeder Push auf main, jeder manuelle CI-Lauf und jeder Pull Request mit dem Label `installer`
 einen macOS-Installer – Artefakt
 **Ohpe-macOS-Installer** am Lauf (*Actions → CI*). Das Disk-Image enthält `Ohpe-Installer.pkg`
 (Standalone-App, VST3 und Audio Unit, einzeln wählbar; universell für Apple Silicon und Intel,
 ab macOS 11), ein Gatekeeper-Fix-Skript, ein Deinstallations-Skript und Hinweise auf Deutsch und
-Englisch. Die pkg ist nicht von Apple signiert: per **Rechtsklick → Öffnen** starten (oder
-*Systemeinstellungen → Datenschutz & Sicherheit → Dennoch öffnen*). Der Installer entfernt danach
+Englisch. Die pkg ist nicht von Apple signiert: nach dem ersten
+blockierten Doppelklick über *Systemeinstellungen → Datenschutz & Sicherheit → Dennoch öffnen* starten
+(macOS 14 und älter: auch **Rechtsklick → Öffnen**). Der Installer entfernt danach
 das Quarantäne-Attribut von App und Plug-ins und signiert sie ad hoc, damit Apple Silicon sie
-ausführt. Ausführlich: [Installation auf dem Mac](docs/de/INSTALLATION.md).
+ausführt. Ausführlich: [Ohpe installieren](docs/de/INSTALLATION.md).
 
 ## Bauen
 
@@ -143,9 +147,12 @@ Alle Tests laufen mit `scripts/test-all.sh` – siehe [Mitwirken](docs/de/MITWIR
 
 ## Dokumentation
 
+* **[Handbuch (PDF)](docs/manual/Ohpe-Manual-DE.pdf)** – alles Folgende in einem Buch: Schnellstart, alle Funktionen,
+  MIDI und Controller, Installation, Parameter-Anhang ([Englisch](docs/manual/Ohpe-Manual-EN.pdf));
+  erzeugt von `tools/manual/build_manual.py`
 * Engines: [Wavetable](docs/de/engines/wavetable.md), [Zupfen](docs/de/engines/pluck.md),
   [Cluster](docs/de/engines/cluster.md), [Grain, Vokal, Sampler und Drum-Kit](docs/de/GRAIN-VOKAL-SAMPLER-DRUM.md)
-* [Installation auf dem Mac](docs/de/INSTALLATION.md) – Installer, Gatekeeper-Fix, Deinstallation, Signieren
+* [Ohpe installieren](docs/de/INSTALLATION.md) – macOS-Installer, Windows, Gatekeeper-Fix, Deinstallation, Signieren
 * [Bedienung](docs/de/BEDIENUNG.md) – Display, Parts, Profiansicht, Schritt-Locks, Tape- und Drum-Seite, Mod- und Rack-Ansicht
 * [Werksklänge](docs/de/FACTORY-SOUNDS.md) – alle Presets nach Kategorie, Drum-Kits, aufgenommene Instrumente
 * [Preset-Bibliothek](docs/de/PRESETS.md) – Stöbern, Speichern, MIDI, Dateiformat
