@@ -1,0 +1,65 @@
+<h1 id="quickstart">Quick start</h1>
+<p class="lead"><b>Ohpe is a small synth studio in one window:</b> four instruments, a drum kit, sequencers, a tape recorder and a mixer. It runs as a standalone app or as a plug-in (VST3, Audio Unit) in your music software.</p>
+<figure><img src="ohpe-analog-2x.png" alt=""><figcaption>Engine keys on the left, the display with four encoders in the centre, mode keys on the right, the keyboard row below.</figcaption></figure>
+
+<h2 id="qs-parts">1. Parts: four instruments at once</h2>
+<p>Ohpe has <b>four parts (1–4)</b>. Think of them as four separate synths living side by side: a bass, a pad, a lead and an arp, for example. Each part has its own sound, its own engine, its own effects and its own MIDI channel, and all four can play at the same time.</p>
+<p>The <b>part selector</b> at the top picks the part you're editing right now (the <i>edit part</i>). Everything you touch (engine, knobs, effects, presets, the on-screen keyboard) follows that part. The display marks it with a yellow badge, P1–P4.</p>
+<p>The <b>drum kit</b> sits next to the four parts as an extra instrument: 24 pads on MIDI channel 10.</p>
+<div class="box"><b>Light colours everywhere:</b> <span class="y">yellow</span> = what you're editing · <span class="v">violet</span> = in use elsewhere · <span class="g">green</span> = playing · <span class="r">red</span> = recording.</div>
+
+<h2 id="qs-engines">2. Engines: what kind of synth a part is</h2>
+<p>The <b>engine keys</b> on the left choose how the edit part makes sound. There are eight:</p>
+<ul class="two">
+<li><b>Analog</b>: classic oscillators and filter. Basses, leads, pads.</li>
+<li><b>FM</b>: six operators. Bells, electric pianos, metallic sounds.</li>
+<li><b>Wavetable</b>: morphing waveforms, and you can make your own from any sound.</li>
+<li><b>Pluck</b>: modelled strings and mallets.</li>
+<li><b>Cluster</b>: up to seven detuned oscillators per key, for huge chords and supersaws.</li>
+<li><b>Grain</b>: granular clouds from a sample, the tape or a built-in texture.</li>
+<li><b>Vocal</b>: a singing formant voice.</li>
+<li><b>Sampler</b>: play your own audio files, or the built-in instruments.</li>
+</ul>
+<p>Each part can use a different engine. The small light under every engine key shows which parts are using it: <span class="y">yellow</span> for the part you're editing, <span class="v">violet</span> for the others.</p>
+
+<h2 id="qs-pages">3. Pages: where you edit</h2>
+<p>The <b>mode keys</b> on the right choose what the display shows:</p>
+<ul class="two">
+<li><b>Synth</b>: the engine's sound controls</li>
+<li><b>Envelope</b>: how notes start, hold and fade, and how they react to playing</li>
+<li><b>LFO</b>: movement and modulation</li>
+<li><b>Mixer</b>: levels, pan, EQ and sends for every channel</li>
+<li><b>Effects</b>: the effect chain of each part and of the master</li>
+<li><b>Sequencer</b>: steps, Euclid, arpeggiator and Orbit patterns</li>
+<li><b>Tape</b>: an 8-track recorder for building whole songs</li>
+<li><b>Drum</b>: the drum kit's pads</li>
+</ul>
+<p>Each mode holds several <b>pages</b>. A page always shows <b>four values</b>, and those four values belong to the <b>four encoders</b> under the display. Turn the pages with the <b>arrows</b> in the display's header. You can also drag the bars on the display directly.</p>
+
+<h2 id="qs-workflow">4. The basic workflow</h2>
+<ol>
+<li>Pick a part (1–4).</li>
+<li>Pick an engine, or load a sound from the <b>LIBRARY</b> (430 factory presets).</li>
+<li>Shape it on the Synth, Envelope, LFO and Effects pages, using four encoders per page.</li>
+<li>Repeat for the other parts, then play them with the sequencers or record them to tape.</li>
+<li>Balance everything in the Mixer.</li>
+</ol>
+
+<h2 id="qs-transport">5. Play, record, stop</h2>
+<ul>
+<li><b>Keyboard</b>: play with the mouse or any MIDI keyboard; the octave keys shift it.</li>
+<li><b>Sequencer</b>: tap steps to switch them on, Shift-tap a step to edit it and lock parameters on it, press Play. In a host, the sequencer follows the host transport while Play is on.</li>
+<li><b>Transport</b> (bottom left): <b>REC</b> records on the tape at once (it arms the selected track when none is armed), <b>PLAY</b> runs the sequencer and the tape, <b>STOP</b> stops (twice = back to the start), <b>|◀</b> and <b>LOOP</b>. Standalone keys: Space, R, Enter, L.</li>
+<li>Drop an audio file on the instrument to load it into the Sampler or Grain engine, or onto a drum pad.</li>
+</ul>
+
+<h2 id="qs-shortcuts">6. Handy shortcuts</h2>
+<ul>
+<li><b>RANDOM</b> rolls a new playable sound for the edit part.</li>
+<li><b>BREED</b> crosses two sounds into new ones.</li>
+<li><b>PRO</b> shows every parameter of a page at once, as editable pictures.</li>
+<li><b>Right-click</b> any control for MIDI Learn. Everything in Ohpe can be mapped.</li>
+<li><b>Double-click</b> resets a value. Hold <b>Shift</b> while dragging for fine control.</li>
+</ul>
+<div class="box"><b>Where to go next:</b> <a href="@docs/en/USER-INTERFACE.md">Playing the interface</a> explains every key and page, <a href="@docs/en/TAPE-MIXER-FX.md#first-recording-in-30-seconds">First recording in 30 seconds</a> gets a song onto tape, and <a href="@docs/en/INSTALL.md">Installing Ohpe</a> covers macOS and Windows.</div>
+<p class="cap" style="margin-top:3mm">Free &amp; open source (AGPL v3) · macOS &amp; Windows · Standalone · VST3 · AU · github.com/thegroovex/Ohpe</p>
