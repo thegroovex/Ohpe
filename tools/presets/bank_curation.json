@@ -77,7 +77,7 @@
    ],
    "params": {
     "chordroom": 5.1,
-    "gain": 11.8
+    "gain": 11.2
    }
   },
   "keys-dusty-keys.ohpepreset": {
@@ -549,9 +549,9 @@
   },
   "bass-tear-reese.ohpepreset": {
    "params": {
-    "gain": -8.7,
+    "gain": -7.4,
     "fx6.compressor.attack": 0.1,
-    "fx6.compressor.thresh": -4.0,
+    "fx6.compressor.thresh": -5.2,
     "fx6.compressor.knee": 6.0,
     "chordroom": 4.5
    }
@@ -593,7 +593,8 @@
   "bass-warm-roller.ohpepreset": {
    "params": {
     "gain": 14.3,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx4.width.output": 11.7
    }
   },
   "bass-wub-machine.ohpepreset": {
@@ -615,12 +616,12 @@
    "params": {
     "gain": 18.1,
     "chordroom": 4.5,
-    "fx.compressor.makeup": 3.6
+    "fx.compressor.makeup": 3.4
    }
   },
   "drums-noise-snare.ohpepreset": {
    "params": {
-    "gain": 14.1,
+    "gain": 13.8,
     "chordroom": 4.5,
     "fx.compressor.makeup": 0.2
    }
@@ -670,7 +671,8 @@
   "drums-zap-perc.ohpepreset": {
    "params": {
     "gain": 16.7,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx2.compressor.makeup": 2.3
    }
   },
   "fx-doppler-fly-by.ohpepreset": {
@@ -1524,7 +1526,8 @@
   "textures-starfield.ohpepreset": {
    "params": {
     "gain": 11.8,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx.compressor.makeup": 23.7
    }
   },
   "vocal-aah-choir.ohpepreset": {
@@ -2199,10 +2202,10 @@
   "textures-night-swarm.ohpepreset": {
    "params": {
     "fx3.compressor.attack": 0.1,
-    "fx3.compressor.thresh": -7.0,
+    "fx3.compressor.thresh": -8.2,
     "fx3.compressor.knee": 6.0,
     "chordroom": 8.7,
-    "gain": 22.0
+    "gain": 24.0
    }
   },
   "textures-zither-cloud.ohpepreset": {
@@ -2624,7 +2627,8 @@
   "pads-breath-grains.ohpepreset": {
    "params": {
     "chordroom": 9.2,
-    "gain": 5.6
+    "gain": 5.6,
+    "fx2.width.output": -0.3
    }
   },
   "pads-choir-around-you.ohpepreset": {

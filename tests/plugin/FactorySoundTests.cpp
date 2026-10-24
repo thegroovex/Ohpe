@@ -153,7 +153,8 @@ TEST_CASE ("factory sounds: 8-note chords at full velocity stay below -1 dBTP wi
 
 namespace
 {
-/** p88: presets allowed above -1 dBTP after silence (documented, each with its reason). Keep this list empty if you can. */
+/** p88: presets allowed above -1 dBTP after silence (preset name -> reason). Hard check: add one only if a preset truly cannot
+    get below -1 dBTP without losing its character, and give the reason. Empty: every part preset passes. */
 const std::vector<std::pair<std::string, std::string>>& dynamicsExceptions()
 {
     static const std::vector<std::pair<std::string, std::string>> list {};
@@ -198,9 +199,9 @@ TEST_CASE ("factory sounds: after realistic silence a single note, 4- and 8-note
         CAPTURE (r.tp[0]);
         CAPTURE (r.tp[1]);
         CAPTURE (r.tp[2]);
-        WARN ((! why.empty() || r.tp[2] <= -1.0));
-        WARN ((! why.empty() || r.tp[1] <= -1.0));
-        WARN ((! why.empty() || r.tp[0] <= -1.0));
+        CHECK ((! why.empty() || r.tp[2] <= -1.0));
+        CHECK ((! why.empty() || r.tp[1] <= -1.0));
+        CHECK ((! why.empty() || r.tp[0] <= -1.0));
         CHECK (r.flatTops == 0);
         ++parts;
     }

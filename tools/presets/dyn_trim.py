@@ -78,6 +78,11 @@ def trim_target(params, delta):
         mk = float(params.get(key, 0.0))
         if mk >= delta:
             return key, round(mk - delta, 1)
+        # a last Compressor without make-up to give (a peak catcher at the end of the chain) takes a trim in front of it
+        # back by its ratio: its threshold goes down instead
+        if float(params.get(SLOTS[last] + "compressor.ratio", 1.0)) >= 4.0:
+            key = SLOTS[last] + "compressor.thresh"
+            return key, round(float(params.get(key, -12.0)) - delta, 1)
     g = float(params.get("gain", 0.0))
     return "gain", round(max(-24.0, g - delta), 1)
 

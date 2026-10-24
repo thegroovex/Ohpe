@@ -44,7 +44,7 @@
     "fx2.width.spread": 0.4,
     "fx2.width.haas": 15,
     "fx2.width.mono": 150,
-    "fx2.width.output": 0.0,
+    "fx2.width.output": -0.3,
     "fx3.type": 6,
     "fx3.reverb.size": 0.88,
     "fx3.reverb.damping": 0.45,
