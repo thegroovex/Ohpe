@@ -885,5 +885,7 @@ ein beschädigter Host-Zustand genauso abgelehnt, die Instanz behält ihren Klan
 | K (Standalone) | Metronom (Klick) an / aus |
 | Enter (Bibliothek) | gewähltes Preset behalten und schließen |
 | ↑ / ↓ (Bibliothek) | voriges / nächstes Preset der Liste |
+| Tab / Shift+Tab, F6 | Bedienung per Tastatur: nächstes / voriges Element, nächster Bereich (Fokusring) – Pfeile / Bild ↑↓ ändern Werte, Enter / Leertaste drücken Tasten, Esc gibt die Tasten an die Noten zurück; siehe [Barrierefreiheit](BARRIEREFREIHEIT.md) |
+| Rechtsklick aufs Gehäuse | UI-Größe 75 – 200 % |
 
 Siehe auch: [Preset-Bibliothek](PRESETS.md) · [Sequencer](SEQUENZER.md) · [Band, Mixer und FX](BAND-MISCHER-FX.md) · [MIDI](MIDI.md).

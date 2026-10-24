@@ -640,7 +640,7 @@ void SettingsView::paintDisplay (juce::Graphics& g, juce::Rectangle<float> a)
         std::vector<std::tuple<juce::String, bool, std::function<void()>>> list;
         for (float v : settings::windowScales)
             list.emplace_back (percent (v), s.windowScale == v, [this, v] { changeSettings ([v] (auto& x) { x.windowScale = v; }); });
-        chipsRow (y, u * 9.0f, list);
+        chipsRow (y, u * 7.4f, list); // p83: six sizes, 75 .. 200 %
     }
     y += row + u * 0.6f;
     g.setColour (colour::displayDim);

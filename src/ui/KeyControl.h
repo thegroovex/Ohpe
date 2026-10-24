@@ -55,6 +55,7 @@ public:
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
     void mouseEnter (const juce::MouseEvent&) override { repaint(); }
     void mouseExit (const juce::MouseEvent&) override { repaint(); }
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override; ///< p83: the key (read-only)
 
 private:
     OhpeProcessor& proc;
@@ -97,6 +98,8 @@ public:
     void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override;
     void mouseEnter (const juce::MouseEvent&) override { repaint(); }
     void mouseExit (const juce::MouseEvent&) override { repaint(); }
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override; ///< p83: the amount
+    bool keyPressed (const juce::KeyPress& key) override;                             ///< p83: arrows / Page, Enter opens the page
 
 private:
     void setAmount (float a);

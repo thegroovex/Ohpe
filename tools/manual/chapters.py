@@ -56,6 +56,7 @@ CHAPTERS = [
         both("docs/en/INSTALL.md", "docs/de/INSTALLATION.md"),
         both("docs/en/UPDATES.md", "docs/de/AKTUALISIERUNG.md"),
         both("docs/en/SETTINGS.md", "docs/de/EINSTELLUNGEN.md"),
+        both("docs/en/ACCESSIBILITY.md", "docs/de/BARRIEREFREIHEIT.md"),
         both("docs/en/PERFORMANCE.md", "docs/de/LEISTUNG.md"),
     ]),
     ("appendix", [

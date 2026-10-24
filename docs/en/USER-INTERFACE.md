@@ -841,5 +841,7 @@ falls back to defaults. In a plug-in host, a damaged host state is refused the s
 | K (standalone) | metronome (click) on / off |
 | Enter (library) | keep the selected preset and close |
 | ↑ / ↓ (library) | previous / next preset in the list |
+| Tab / Shift+Tab, F6 | keyboard operation: next / previous control, next area (focus ring) – arrows / Page change values, Enter / Space press keys, Esc gives the keys back to the notes; see [accessibility](ACCESSIBILITY.md) |
+| right-click on the housing | UI size 75 – 200 % |
 
 See also: [preset library](PRESETS.md) · [sequencers](SEQUENCERS.md) · [tape, mixer and effects](TAPE-MIXER-FX.md) · [MIDI](MIDI.md).
