@@ -226,6 +226,32 @@ void checkPreset (OhpeProcessor& p, Core& core, int entryIndex, Summary& sum, bo
     ++sum.presets;
 }
 
+
+/** p87 diagnosis: the p74 audit's render (fresh core, arp block not applied, 120 BPM, 2 s chord) at a given block size. */
+double auditTp (const preset::Preset& pr, int block, double* lufsOut = nullptr)
+{
+    auto core = std::make_unique<Core>();
+    core->prepare (48000.0, block);
+    factorykit::load (*core);
+    preset::PartOptions opt;
+    opt.arp = false;
+    preset::applyPart (pr, core->params(), 0, opt);
+    usertable::partFromJson (*core, 0, pr.userTables ? *pr.userTables : std::string(),
+                             [] (const std::string&, const std::string&) { return usertable::UserTablePtr(); });
+    core->params().set ("tempo", 120.0f);
+    core->params().set ("mix.master.limit", 0.0f);
+    core->prepareEffects();
+    std::vector<std::pair<int64_t, MidiEvent>> ev;
+    for (int n : materials().back().notes)
+    {
+        ev.push_back ({ 0, MidiEvent::noteOn (1, n, 127) });
+        ev.push_back ({ 96000, MidiEvent::noteOff (1, n) });
+    }
+    const auto a = render::renderCore (*core, ev, 96000 + 48000, block);
+    if (lufsOut != nullptr) *lufsOut = lufs (a);
+    return render::truePeakDb (a);
+}
+
 std::vector<int> partPresets (OhpeProcessor& p, int every)
 {
     std::vector<int> out;
@@ -316,6 +342,12 @@ TEST_CASE ("plug-in loudness: a fresh instance plays a wide 8-note chord below -
         CHECK (render::flatTopRuns (a) == 0);
         CHECK (std::abs (la - lb) <= 0.1);
         std::printf ("OHPE-STATS p87 fresh row|%s|chord8-nolimit|%.3f|%.3f|%.3f|%.3f|0\n", entry.meta.name.c_str(), la, tp, lb, render::truePeakDb (b));
+        {
+            double l64 = 0, l256 = 0, l512 = 0;
+            const double t64 = auditTp (pr, 64, &l64), t256 = auditTp (pr, 256, &l256), t512 = auditTp (pr, 512, &l512);
+            std::printf ("OHPE-STATS p87 audit|%s|tp64 %.2f|tp256 %.2f|tp512 %.2f|plugin %.2f|lufs64 %.2f|lufs256 %.2f|lufs512 %.2f|plugin %.2f\n",
+                         entry.meta.name.c_str(), t64, t256, t512, tp, l64, l256, l512, la);
+        }
         maxDiff = std::max (maxDiff, std::abs (la - lb));
         worstTp = std::max (worstTp, tp);
         over += tp > -1.0;
