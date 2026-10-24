@@ -70,8 +70,10 @@ struct Seen
 bool isJuceContainer (const juce::Component& c)
 {
     return dynamic_cast<const juce::Viewport*> (&c) != nullptr || dynamic_cast<const juce::ListBox*> (&c) != nullptr
-        || (c.getParentComponent() != nullptr && dynamic_cast<const juce::Viewport*> (c.getParentComponent()) != nullptr
-            && c.getParentComponent()->getViewedComponent() != &c);
+        || [&c] {
+               auto* vp = c.getParentComponent() != nullptr ? dynamic_cast<const juce::Viewport*> (c.getParentComponent()) : nullptr;
+               return vp != nullptr && vp->getViewedComponent() != &c;
+           }();
 }
 
 void walk (juce::Component& c, const juce::String& path, Seen& seen, juce::Component& root, int& controls)
