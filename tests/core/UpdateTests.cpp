@@ -233,6 +233,23 @@ TEST_CASE ("update: the 0.9.0 beta (pre-release) reaches preview users only, sta
     CHECK (pickUpdate (list, Channel::Preview, Version::of ("0.9.0")) == -1); // up to date
 }
 
+TEST_CASE ("update: the 0.9.1 stable release replaces 0.7.3 on the stable channel and reaches preview users too")
+{
+    const auto list = parseReleaseList (R"([
+      { "tag_name": "v0.9.1", "prerelease": false, "draft": false, "assets": [] },
+      { "tag_name": "v0.9.0", "prerelease": true, "draft": false, "assets": [] },
+      { "tag_name": "v0.7.3", "prerelease": false, "draft": false, "assets": [] }
+    ])");
+    REQUIRE (list.size() == 3);
+    CHECK_FALSE (list[0].prerelease);
+    CHECK (pickUpdate (list, Channel::Stable, Version::of ("0.7.3")) == 0);  // stable users get 0.9.1
+    CHECK (pickUpdate (list, Channel::Stable, Version::of ("0.7.2")) == 0);
+    CHECK (pickUpdate (list, Channel::Preview, Version::of ("0.9.0")) == 0); // the beta moves on to 0.9.1
+    CHECK (pickUpdate (list, Channel::Preview, Version::of ("0.7.3")) == 0);
+    CHECK (pickUpdate (list, Channel::Stable, Version::of ("0.9.1")) == -1); // up to date
+    CHECK (pickUpdate (list, Channel::Preview, Version::of ("0.9.1")) == -1);
+}
+
 TEST_CASE ("update: settings round trip, daily auto check, never while playing, remind / skip")
 {
     const auto d0 = Settings::defaults (Version::of ("0.3.0"));
