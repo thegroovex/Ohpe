@@ -96,6 +96,9 @@ public:
     /** The parameters a point edits (x, y, alt; the encoders' focus page). */
     std::vector<std::string> handleParams (int h) const;
     juce::String handleName (int h) const;
+    /** p88: the STYLE chip of the multiband compressor (empty for other types) and its starting points. */
+    juce::Rectangle<float> styleChipArea() const;
+    void applyStyle (int index);
     /** p57: how often a cached curve was rebuilt (tests: unchanged values repaint without rebuilding). */
     int curveBuilds() const noexcept { return builds; }
 
@@ -113,6 +116,7 @@ private:
     float plain (const std::string& id) const;
     InsertSlot* slotObject() const;
     void paintBackground (juce::Graphics& g, juce::Rectangle<float> plot);
+    void showStyleMenu();
     juce::String handleValues (int h) const;
     /** p57: a curve of the picture, rebuilt only when its inputs (folded into key) changed. */
     const juce::Path& cachedCurve (int slot, uint64_t key, const std::function<juce::Path()>& build);
@@ -127,6 +131,7 @@ private:
     int selected = -1, hover = -1, dragging = -1;
     juce::Point<float> dragStart, fracStart;
     float altStart = 0.0f;
+    juce::Rectangle<float> chipRect; ///< p88: where paintTile drew the STYLE chip
 };
 
 /** The editor panel: header with the slots, the picture, every parameter of the slot. */

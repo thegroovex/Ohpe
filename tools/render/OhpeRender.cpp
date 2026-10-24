@@ -12,6 +12,8 @@
 // --wheel V: the mod wheel at V (0..127) from the start (factory wheel routings, level check).
 // --notes N,N,.. / --vel V: with --hold, the held notes and their velocity (click checks at other pitches).
 // --beats N / --tail S: shorten the phrase and its tail (the factory level tests render 4 beats + 1 s).
+// --dyn: p88 after-silence audit of part presets (note, 4- and 8-note chord at 127 after silence, limiter off): prints
+//        {"file","name","tp_note","tp_chord4","tp_chord8","lufs_note"} per preset.
 //
 // Part presets play the phrase of their main category (render::phraseFor); project presets run
 // their sequencers for --seconds (default 16). The master limiter is off, so peaks are honest (--limit keeps the limiter, as heard; p74: for part presets too).
@@ -160,7 +162,7 @@ int main (int argc, char** argv)
     fs::path out, bankFile, wavdir;
     int part = 0;
     double seconds = 16.0, bpm = 100.0, hold = 0.0, beats = 1.0e9, tail = 1.0e9;
-    bool limiter = false;
+    bool limiter = false, dyn = false;
     std::vector<std::string> files;
     std::vector<int> notes;
     int vel = 0, wheel = -1;
@@ -175,6 +177,7 @@ int main (int argc, char** argv)
         else if (a == "--seconds") seconds = std::stod (next());
         else if (a == "--bpm") bpm = std::stod (next());
         else if (a == "--limit") limiter = true;
+        else if (a == "--dyn") dyn = true; // p88: the after-silence audit (render::dynamicsAudit) instead of the phrase
         else if (a == "--hold") hold = std::stod (next());
         else if (a == "--beats") beats = std::stod (next()); // phrase limit, as the level tests render it
         else if (a == "--tail") tail = std::stod (next());
@@ -214,6 +217,21 @@ int main (int argc, char** argv)
         core->prepare (48000.0, 256);
         for (const auto& [pad, s] : bank.studio) core->drumKit().setFactorySample (pad, s);
         const bool project = p.meta.kind == preset::Kind::Project;
+        if (dyn)
+        {
+            if (project) continue;
+            const auto r = render::dynamicsAudit (*core, p);
+            nlohmann::json j;
+            j["file"] = base (file);
+            j["name"] = p.meta.name;
+            j["tp_note"] = std::round (r.tp[0] * 100) / 100;
+            j["tp_chord4"] = std::round (r.tp[1] * 100) / 100;
+            j["tp_chord8"] = std::round (r.tp[2] * 100) / 100;
+            j["lufs_note"] = std::round (r.noteLufs * 100) / 100;
+            j["flat"] = r.flatTops;
+            std::cout << j.dump() << std::endl;
+            continue;
+        }
         const auto audio = project ? render::renderProject (*core, p, seconds, limiter, wheel) : render::renderPart (*core, p, part, bpm, beats, tail, hold, notes, vel, wheel, limiter);
         const auto m = render::measure (audio);
         if (! out.empty()) writeWav (out / (base (file) + ".wav"), audio);

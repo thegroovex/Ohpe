@@ -65,6 +65,14 @@
     "mod.s1.dst": 82,
     "mod.s1.amt": 0.12,
     "mod.s1.curve": 0,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx4.type": 24,
+    "fx4.mbcomp.depth": 0.3,
+    "fx4.mbcomp.time": 1.0,
+    "fx4.mbcomp.upward": 0.4,
+    "fx4.mbcomp.downward": 1.0,
+    "fx4.mbcomp.lowattack": 6.0,
+    "fx4.mbcomp.lowrelease": 120.0,
+    "fx4.mbcomp.output": 1.8
   }
 }

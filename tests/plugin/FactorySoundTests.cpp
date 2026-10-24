@@ -13,6 +13,13 @@
 #include "sample/FactoryBank.h"
 #include "../TestSlice.h"
 
+#include <algorithm>
+#include <array>
+#include <cstdio>
+#include <string>
+#include <utility>
+#include <vector>
+
 using namespace ohpe;
 
 TEST_CASE ("factory sounds: the sample bank is embedded and decodes (instruments, drum kits)")
@@ -99,8 +106,22 @@ TEST_CASE ("factory sounds: every factory preset renders cleanly with the record
         if (part)
         {
             CHECK (m.peakDb < -0.5);          // no clipping, the limiter stays out of it
-            CHECK (m.activeRmsDb > -21.0);    // level window -18 ... -12 dBFS (quality loop), with
-            CHECK (m.activeRmsDb < -10.0);    // margin for the shorter phrase
+            // level window -18 ... -12 dBFS (quality loop), with margin for the shorter phrase. p88: the peak limit after
+            // silence (-1 dBTP, test below) comes first - a peaky preset whose loudest material sits within 1 dB of it
+            // is allowed quieter (down to -32 dBFS: still clearly sounding).
+            bool peakBound = false;
+            if (m.activeRmsDb <= -21.0)
+            {
+                Core dyn;
+                dyn.prepare (48000.0, 512);
+                factorykit::load (dyn);
+                const auto r = render::dynamicsAudit (dyn, p);
+                peakBound = std::max ({ r.tp[0], r.tp[1], r.tp[2] }) > -2.0;
+                CAPTURE (r.tp[2]);
+            }
+            CAPTURE (peakBound);
+            CHECK (m.activeRmsDb > (peakBound ? -32.0 : -21.0));
+            CHECK (m.activeRmsDb < -10.0);
             CHECK (m.hfDb < -3.0);            // no wide-band fizz above 16 kHz
         }
         else
@@ -143,4 +164,63 @@ TEST_CASE ("factory sounds: 8-note chords at full velocity stay below -1 dBTP wi
         ++parts;
     }
     CHECK (parts >= 0);
+}
+
+namespace
+{
+/** p88: presets allowed above -1 dBTP after silence (preset name -> reason). Hard check: add one only if a preset truly cannot
+    get below -1 dBTP without losing its character, and give the reason. Empty: every part preset passes. */
+const std::vector<std::pair<std::string, std::string>>& dynamicsExceptions()
+{
+    static const std::vector<std::pair<std::string, std::string>> list {};
+    return list;
+}
+} // namespace
+
+TEST_CASE ("factory sounds: after realistic silence a single note, 4- and 8-note chords at full velocity stay below -1 dBTP without the limiter (p88)" * doctest::test_suite ("sliced"))
+{
+    // as played in the app: the preset sits a moment, the compressors fully release, then the material comes (render::dynamicsAudit:
+    // 2 s silence, a note C3, a 4-note and a wide 8-note chord C1 .. G4, velocity 127, each held 1.5 s with 2.5 s of silence after
+    // it; master limiter and arpeggiator off). Rows: 'OHPE-STATS p88 dyn row|preset|note TP|chord4 TP|chord8 TP|note LUFS'.
+    factorykit::loadBank();
+    const auto slicer = test::testSlice();
+    int parts = 0;
+    std::array<int, 3> overTp {}, overZero {}, overCeil {};
+    for (int i = 0; i < OhpePresets::namedResourceListSize; ++i)
+    {
+        if (! slicer.has (i)) continue;
+        int size = 0;
+        const char* data = OhpePresets::getNamedResource (OhpePresets::namedResourceList[i], size);
+        preset::Preset p;
+        REQUIRE (preset::fromJson (std::string (data, (size_t) size), p));
+        if (p.meta.kind != preset::Kind::Part) continue;
+        CAPTURE (p.meta.name);
+        Core core;
+        core.prepare (48000.0, 512);
+        factorykit::load (core);
+        const auto r = render::dynamicsAudit (core, p);
+        REQUIRE (r.nonFinite == 0);
+        for (int k = 0; k < 3; ++k)
+        {
+            overTp[(size_t) k] += r.tp[k] > -1.0;
+            overZero[(size_t) k] += r.tp[k] > 0.0;
+            overCeil[(size_t) k] += r.tp[k] > -0.57; // the master limiter's target: it would act here
+        }
+        std::printf ("OHPE-STATS p88 dyn row|%s|%.2f|%.2f|%.2f|%.2f\n", p.meta.name.c_str(), r.tp[0], r.tp[1], r.tp[2], r.noteLufs);
+        std::string why;
+        for (const auto& e : dynamicsExceptions())
+            if (e.first == p.meta.name) why = e.second;
+        CAPTURE (why);
+        CAPTURE (r.tp[0]);
+        CAPTURE (r.tp[1]);
+        CAPTURE (r.tp[2]);
+        CHECK ((! why.empty() || r.tp[2] <= -1.0));
+        CHECK ((! why.empty() || r.tp[1] <= -1.0));
+        CHECK ((! why.empty() || r.tp[0] <= -1.0));
+        CHECK (r.flatTops == 0);
+        ++parts;
+    }
+    std::printf ("OHPE-STATS p88 dyn sum|parts %d|over -1 dBTP note %d chord4 %d chord8 %d|over 0 dBFS %d %d %d|over limiter target %d %d %d\n", parts,
+                 overTp[0], overTp[1], overTp[2], overZero[0], overZero[1], overZero[2], overCeil[0], overCeil[1], overCeil[2]);
+    std::fflush (stdout);
 }

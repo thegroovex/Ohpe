@@ -291,6 +291,37 @@ inline double truePeakDb (const Audio& a)
     return peak > 1.0e-10 ? 20.0 * std::log10 (peak) : -200.0;
 }
 
+/** p88: BS.1770-4 integrated loudness (K-weighting, 400 ms blocks, 75 % overlap, absolute and relative gate); -200 if too short. */
+inline double integratedLufs (const Audio& a)
+{
+    if (a.size() < 19200) return -200.0;
+    struct Bq { double b0, b1, b2, a1, a2, z1 = 0, z2 = 0; double run (double x) { const double y = b0 * x + z1; z1 = b1 * x - a1 * y + z2; z2 = b2 * x - a2 * y; return y; } };
+    auto kw = [] (const std::vector<float>& in) {
+        Bq s { 1.53512485958697, -2.69169618940638, 1.19839281085285, -1.69065929318241, 0.73248077421585 };
+        Bq h { 1.0, -2.0, 1.0, -1.99004745483398, 0.99007225036621 };
+        std::vector<double> o (in.size());
+        for (size_t i = 0; i < in.size(); ++i) { const double y = h.run (s.run ((double) in[i])); o[i] = y * y; }
+        return o;
+    };
+    const auto l = kw (a.l), r = kw (a.r);
+    const size_t blk = 19200, hop = 4800;
+    std::vector<double> z;
+    for (size_t s = 0; s + blk <= l.size(); s += hop)
+    {
+        double acc = 0.0;
+        for (size_t i = s; i < s + blk; ++i) acc += l[i] + r[i];
+        z.push_back (acc / (double) blk);
+    }
+    auto loud = [] (double p) { return p > 0.0 ? -0.691 + 10.0 * std::log10 (p) : -200.0; };
+    double sum = 0.0; int cnt = 0;
+    for (double p : z) if (loud (p) > -70.0) { sum += p; ++cnt; }
+    if (cnt == 0) return -200.0;
+    const double rel = loud (sum / cnt) - 10.0;
+    sum = 0.0; cnt = 0;
+    for (double p : z) if (loud (p) > -70.0 && loud (p) > rel) { sum += p; ++cnt; }
+    return cnt > 0 ? loud (sum / cnt) : -200.0;
+}
+
 /** p74: hard-clip signature - runs of three or more equal samples above 0.5 (a stage clamping the waveform). */
 inline int flatTopRuns (const Audio& a)
 {
@@ -371,4 +402,56 @@ inline Metrics measure (const Audio& a)
     m.hfDb = all > 0.0 ? 10.0 * std::log10 (std::max (1.0e-20, hf / all)) : -200.0;
     return m;
 }
+/** p88: the after-silence audit - a part preset (arpeggiator off, master limiter off) sits 2 s in silence, then plays a note
+    (C3), a 4-note chord (C3 E3 G3 C4) and a wide 8-note chord (C1 .. G4) at velocity 127, each held 1.5 s with 2.5 s of
+    silence after it (the compressors release fully in between). True peak per material, loudness of the held note. */
+struct DynamicsAudit
+{
+    double tp[3] = { -200.0, -200.0, -200.0 }; ///< note, chord4, chord8 (dBTP)
+    double noteLufs = -200.0;
+    int flatTops = 0, nonFinite = 0;
+};
+
+inline Audio sliceOf (const Audio& a, size_t from, size_t len)
+{
+    Audio s;
+    s.sampleRate = a.sampleRate;
+    from = std::min (from, a.size());
+    len = std::min (len, a.size() - from);
+    s.l.assign (a.l.begin() + (long) from, a.l.begin() + (long) (from + len));
+    s.r.assign (a.r.begin() + (long) from, a.r.begin() + (long) (from + len));
+    return s;
+}
+
+inline DynamicsAudit dynamicsAudit (Core& core, const preset::Preset& p, int block = 512)
+{
+    preset::PartOptions opt;
+    opt.arp = false;
+    preset::applyPart (p, core.params(), 0, opt);
+    usertable::partFromJson (core, 0, p.userTables ? *p.userTables : std::string(),
+                             [] (const std::string&, const std::string&) { return usertable::UserTablePtr(); });
+    core.params().set ("tempo", 120.0f);
+    core.params().set ("mix.master.limit", 0.0f);
+    core.prepareEffects();
+    const std::vector<std::vector<int>> mats { { 48 }, { 48, 52, 55, 60 }, { 36, 43, 48, 52, 55, 60, 64, 67 } };
+    const double lead = 2.0, hold = 1.5, gap = 2.5, sr = core.sampleRate();
+    std::vector<std::pair<int64_t, MidiEvent>> ev;
+    std::vector<size_t> starts;
+    double t = lead;
+    for (const auto& m : mats)
+    {
+        const auto on = (int64_t) (t * sr), off = (int64_t) ((t + hold) * sr);
+        starts.push_back ((size_t) on);
+        for (int n : m) { ev.push_back ({ on, MidiEvent::noteOn (1, n, 127) }); ev.push_back ({ off, MidiEvent::noteOff (1, n) }); }
+        t += hold + gap;
+    }
+    const auto a = renderCore (core, ev, (int64_t) (t * sr), block);
+    DynamicsAudit r;
+    for (size_t k = 0; k < mats.size(); ++k) r.tp[k] = truePeakDb (sliceOf (a, starts[k], (size_t) ((hold + gap) * sr)));
+    r.noteLufs = integratedLufs (sliceOf (a, starts[0], (size_t) (hold * sr)));
+    r.flatTops = flatTopRuns (a);
+    for (size_t i = 0; i < a.size(); ++i) r.nonFinite += ! std::isfinite (a.l[i]) || ! std::isfinite (a.r[i]);
+    return r;
+}
+
 } // namespace ohpe::render

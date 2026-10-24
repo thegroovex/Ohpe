@@ -622,6 +622,10 @@ Was die Bilder zeigen (gelb = was du bearbeitest):
   Spur, die aktuelle Pegelreduktion (rot); Attack und Release als Hüllkurve mit zwei Punkten.
 * **Multiband** – die drei Bänder zwischen ihren Trennfrequenzen: Pegel eines Bands hoch / runter ziehen, die
   Trennpunkte quer; die aktuelle Verstärkung jedes Bands violett; der Ausgangspegel auf eigener Spur.
+* **Multiband-Kompressor** – drei Band-Anzeigen (Pegel −80 – 0 dBFS): der rechte Punkt eines Bands ist seine
+  Abwärts-Schwelle, der linke seine Aufwärts-Schwelle (Alt / Mausrad: die Ratio), die Zeile darunter sein Pegel; Pegel
+  (violett) und Pegeländerung (gelb angehoben, rot heruntergedrückt) live; STIL neben dem Slotnamen lädt Squash, Glue,
+  Luft & Gewicht, Punch, Dichte oder Sanft. Anleitung: [Multiband-Kompressor](MULTIBAND-KOMPRESSOR.md).
 * **Filter / Drive** – der Frequenzgang mit einem Punkt: Cutoff quer, Resonanz hoch, Drive am Rad.
 * **Verzerrung** – die Kennlinie; der Punkt bewegt Bias (quer) und Drive (hoch), Klang am Rad; Ausgangspegel,
   Vorfilter-Frequenz (Rad: Filtertyp). **Bitcrusher** – ein Sinus durch den Crusher: Bits hoch, Downsampling quer.

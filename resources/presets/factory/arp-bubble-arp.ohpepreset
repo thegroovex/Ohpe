@@ -36,7 +36,7 @@
     "fx.compressor.attack": 1.5,
     "fx.compressor.release": 90.0,
     "fx.compressor.knee": 6.0,
-    "fx.compressor.makeup": 3.5,
+    "fx.compressor.makeup": 1.8,
     "fx.compressor.mix": 1.0,
     "fx2.type": 1,
     "fx2.chorus.rate": 0.4,

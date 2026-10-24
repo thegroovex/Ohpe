@@ -7,6 +7,21 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased / Unveröffentlicht
 
+- EN: Dynamics (p88): the compressors (Compressor rack type, channel and master compressor) catch the first hit after
+  silence - an onset guard keeps the make-up gain from lifting a transient above the curve (presets with a high make-up
+  played chords up to +14 dBTP after a pause), program-dependent release, no added latency. New FX type **Multiband
+  Comp**: three bands, each pushed down above its Down threshold and lifted below its Up threshold with very high
+  ratios, Depth / Time / Upward / Downward / In / Out, per-band attack, release, gain and solo, styles (Squash, Glue,
+  Air & Weight, Punch, Density, Gentle), its own picture in the FX editor. Factory presets re-levelled so 8-note chords
+  after silence stay at or below -1 dBTP (a hard test now).
+- DE: Dynamik (p88): die Kompressoren (Rack-Typ Kompressor, Kanal- und Master-Kompressor) fangen den ersten Schlag nach
+  Stille - ein Einschwing-Wächter verhindert, dass die Aufholverstärkung einen Anschlag über die Kennlinie hebt (Presets
+  mit hoher Aufholverstärkung spielten Akkorde nach einer Pause bis +14 dBTP), programmabhängiges Release, keine
+  zusätzliche Latenz. Neuer FX-Typ **Multiband-Kompressor**: drei Bänder, jedes über seiner Abwärts-Schwelle
+  heruntergedrückt und unter seiner Aufwärts-Schwelle angehoben, mit sehr hohen Ratios, Tiefe / Zeit / Aufwärts /
+  Abwärts / Eingang / Ausgang, pro Band Attack, Release, Pegel und Solo, Stile (Squash, Glue, Luft & Gewicht, Punch,
+  Dichte, Sanft), ein eigenes Bild im FX-Editor. Werkspresets neu gepegelt, damit 8-Ton-Akkorde nach Stille bei
+  höchstens -1 dBTP bleiben (jetzt ein harter Test).
 - EN: Voice input in the standalone app (p86): the app's input never reached Voice Control, tape or bounce (the input
   bus started off and the player kept it off) - fixed; mono inputs (headset microphones) reach both sides, longer
   device blocks keep their input, the chosen input is saved at once and opens again at the next start. The Voice

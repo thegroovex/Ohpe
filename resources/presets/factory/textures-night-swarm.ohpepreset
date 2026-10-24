@@ -87,7 +87,7 @@
     "voices": 10,
     "gain": 24.0,
     "fx3.type": 10,
-    "fx3.compressor.thresh": -7.0,
+    "fx3.compressor.thresh": -8.2,
     "fx3.compressor.ratio": 8.0,
     "fx3.compressor.attack": 0.1,
     "fx3.compressor.release": 180.0,

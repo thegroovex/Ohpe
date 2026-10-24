@@ -56,7 +56,7 @@
     "fx3.multiband.mid": 0,
     "fx3.multiband.high": 1.5,
     "fx3.multiband.mix": 1.0,
-    "fx3.multiband.output": 12.0,
+    "fx3.multiband.output": 9.9,
     "fx4.type": 15,
     "fx4.hall.mode": 1,
     "fx4.hall.size": 0.7,

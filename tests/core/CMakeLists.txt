@@ -75,6 +75,8 @@ target_link_libraries(ohpe_core_tests PRIVATE Threads::Threads)
 target_sources(ohpe_core_tests PRIVATE SpaceTests.cpp)
 # p19: the resonator body
 target_sources(ohpe_core_tests PRIVATE ResonatorTests.cpp)
+# p88: dynamics - compressor onset guard, Multiband Comp
+target_sources(ohpe_core_tests PRIVATE DynamicsTests.cpp)
 target_sources(ohpe_core_tests PRIVATE KeyGravityTests.cpp)
 # p74: chord headroom per part
 target_sources(ohpe_core_tests PRIVATE ChordHeadroomTests.cpp)

@@ -61,7 +61,7 @@
     "fx4.width.spread": 0.0,
     "fx4.width.haas": 12,
     "fx4.width.mono": 120,
-    "fx4.width.output": 12.0,
+    "fx4.width.output": 9.6,
     "lfo.rate": 0.17,
     "lfo.depth": 0.12,
     "lfo.shape": 1,

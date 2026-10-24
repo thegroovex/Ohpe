@@ -37,7 +37,7 @@
     "fx.compressor.attack": 0.8,
     "fx.compressor.release": 70.0,
     "fx.compressor.knee": 6.0,
-    "fx.compressor.makeup": 5.0,
+    "fx.compressor.makeup": 3.4,
     "fx.compressor.mix": 0.7,
     "gain": 18.1,
     "mod.s1.src": 9,

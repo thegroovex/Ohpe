@@ -254,6 +254,23 @@ const HelpTopic helpTopics[] = {
       "Downloads are verified before they open. Content packs add presets without reinstalling; the previous pack is kept for a rollback.",
       "Ohpe kann einmal am Tag nach neuen Versionen suchen (aus, bis du es einschaltest) oder wenn du Jetzt prüfen drückst. Nichts über dich wird gesendet.\n\n"
       "Downloads werden vor dem Öffnen geprüft. Inhaltspakete bringen Presets ohne Neuinstallation; das vorige Paket bleibt für ein Zurücksetzen." },
+    { "Multiband compressor", "Multiband-Kompressor", // p88
+      "Multiband Comp (FX slot type) splits the sound into Low, Mid and High. Each band is pushed down above its Down threshold and "
+      "lifted below its Up threshold, both with very high ratios - more punch and density at a controlled level.\n\n"
+      "In the FX editor every band shows its level (violet) and its gain change (yellow = lifted, red = pushed down). Drag the right "
+      "point of a band for the Down threshold, the left point for the Up threshold, Alt-drag or the mouse wheel for the ratio; the row "
+      "under a band is its gain. STYLE loads a starting point (Squash, Glue, Air & Weight, Punch, Density, Gentle).\n\n"
+      "Depth mixes the processed bands with the original (40 % by default), Time scales every attack and release (0 - 1000 %), Upward "
+      "and Downward set how much of each half acts, In drives the bands, Out sets the level. A safety stage keeps the output below about -1 dBTP.",
+      "Multiband-Kompressor (FX-Slot-Typ) teilt den Klang in Tief, Mitte und Hoch. Jedes Band wird über seiner Abwärts-Schwelle "
+      "heruntergedrückt und unter seiner Aufwärts-Schwelle angehoben, beides mit sehr hohen Ratios - mehr Druck und Dichte bei "
+      "kontrolliertem Pegel.\n\n"
+      "Im FX-Editor zeigt jedes Band seinen Pegel (violett) und seine Pegeländerung (gelb = angehoben, rot = heruntergedrückt). Der "
+      "rechte Punkt eines Bands ist die Abwärts-Schwelle, der linke die Aufwärts-Schwelle, Alt-Ziehen oder das Mausrad ändern die Ratio; "
+      "die Zeile unter einem Band ist sein Pegel. STIL lädt einen Startpunkt (Squash, Glue, Luft & Gewicht, Punch, Dichte, Sanft).\n\n"
+      "Tiefe mischt die bearbeiteten Bänder mit dem Original (40 % als Vorgabe), Zeit skaliert alle Attack- und Release-Zeiten "
+      "(0 - 1000 %), Aufwärts und Abwärts stellen ein, wie viel jeder Hälfte wirkt, Eingang treibt die Bänder, Ausgang setzt den Pegel. "
+      "Eine Sicherheitsstufe hält den Ausgang unter etwa -1 dBTP." },
 };
 
 juce::String percent (float v) { return juce::String (juce::roundToInt (v * 100.0f)) + " %"; }

@@ -5,6 +5,7 @@
 #include "Delay.h"
 #include "InsertEffects.h"
 #include "MidSide.h"
+#include "MultibandComp.h"
 #include "RackEffects.h"
 #include "InsertEffects2.h"
 #include "Reverb.h"
@@ -44,6 +45,7 @@ std::unique_ptr<IEffect> InsertSlot::create (int t)
         case Width: return std::make_unique<WidthEffect>();
         case Space3D: return std::make_unique<SpaceEffect>();
         case Resonator: return std::make_unique<ResonatorEffect>();
+        case MultibandComp: return std::make_unique<MultibandCompEffect>();
         default: return nullptr;
     }
 }
@@ -62,7 +64,8 @@ std::vector<std::string> InsertSlot::typeNamesEn()
              "Hyper", "Distortion", "Flanger", "Compressor", "Multiband", "EQ", "Filter", "Echo", "Hall", "Mid/Side",
              "Comb", "Formant", "Wobble", "Tremolo", "Width", // 0.8
              "Space 3D", // 1.0
-             "Resonator" }; // p19
+             "Resonator", // p19
+             "Multiband Comp" }; // p88
 }
 std::vector<std::string> InsertSlot::typeNamesDe()
 {
@@ -70,7 +73,8 @@ std::vector<std::string> InsertSlot::typeNamesDe()
              "Hyper", "Verzerrung", "Flanger", "Kompressor", "Multiband", "EQ", "Filter", "Echo", "Raum", "Mitte/Seite",
              "Kammfilter", "Formant", "Wobble", "Tremolo", "Stereobreite", // 0.8
              "3D-Raum", // 1.0
-             "Resonanzkörper" }; // p19
+             "Resonanzkörper", // p19
+             "Multiband-Kompressor" }; // p88
 }
 
 EffectInfo InsertSlot::typeInfo (int t)

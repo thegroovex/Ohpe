@@ -7,6 +7,7 @@
 #include "fx/Space3D.h"
 #include "ResoView.h"
 #include "fx/Resonator.h"
+#include "fx/MultibandComp.h"
 #include "SpaceView.h"
 #include "plugin/Localisation.h"
 #include "plugin/ParameterBridge.h"
@@ -436,6 +437,35 @@ void paintSlotVisual (juce::Graphics& g, juce::Rectangle<float> area, Core& core
                 g.setColour (gdb >= 0.0f ? colour::sunYellow : colour::signalRed);
                 g.fillRect (juce::Rectangle<float>::leftTopRightBottom (col.getX(), std::min (mid, y), col.getRight(), std::max (mid, y)));
                 g.setColour (colour::displayDim);
+                g.setFont (labelFont (col.getHeight() * 0.18f));
+                g.drawText (i18n::upper (tr (names[b])), col, juce::Justification::centredBottom);
+            }
+        }
+        return;
+    }
+    else if (id == "mbcomp")
+    {
+        // p88: three band meters (level -80..0 dBFS), the down / up thresholds as ticks, the live gain change
+        if (auto* e = dynamic_cast<MultibandCompEffect*> (slot.effect (type)))
+        {
+            const char* names[3] = { "Low", "Mid", "High" }, *keys[3] = { "low", "mid", "high" };
+            for (int b = 0; b < 3; ++b)
+            {
+                auto col = plot.withWidth (plot.getWidth() / 3.0f).withX (plot.getX() + plot.getWidth() / 3.0f * (float) b).reduced (plot.getWidth() * 0.05f, 4.0f);
+                auto yOf = [&] (float db) { return col.getBottom() - col.getHeight() * juce::jlimit (0.0f, 1.0f, (db + 80.0f) / 80.0f); };
+                const float lv = e->bandLevelDb (b);
+                g.setColour (colour::displayGrid.brighter (0.25f));
+                g.fillRect (col);
+                g.setColour (colour::ultraviolet.withAlpha (0.8f));
+                g.fillRect (col.withTop (yOf (lv)));
+                const float gdb = juce::jlimit (-24.0f, 24.0f, e->bandGainDb (b));
+                g.setColour (gdb >= 0.0f ? colour::sunYellow : colour::signalRed);
+                g.fillRect (col.withLeft (col.getRight() - col.getWidth() * 0.18f).withTop (col.getCentreY() - juce::jmax (0.0f, gdb) / 24.0f * col.getHeight() * 0.5f)
+                               .withBottom (col.getCentreY() + juce::jmax (0.0f, -gdb) / 24.0f * col.getHeight() * 0.5f));
+                g.setColour (colour::displayText);
+                g.drawHorizontalLine ((int) yOf (val ((std::string (keys[b]) + "down").c_str())), col.getX(), col.getRight());
+                g.setColour (colour::displayDim);
+                g.drawHorizontalLine ((int) yOf (val ((std::string (keys[b]) + "up").c_str())), col.getX(), col.getRight());
                 g.setFont (labelFont (col.getHeight() * 0.18f));
                 g.drawText (i18n::upper (tr (names[b])), col, juce::Justification::centredBottom);
             }

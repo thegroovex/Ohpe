@@ -31,6 +31,7 @@ namespace ohpe
 
     1.0: Space 3D (the 3D spatialiser, Space3D.h) appended after the 0.8 types.
     p19: Resonator (the physically modelled body, Resonator.h) appended after Space 3D.
+    p88: Multiband Comp (three bands, upward + downward, MultibandComp.h) appended after Resonator.
 
     0.8 (sound revision 3): Comb, Formant, Wobble, Tremolo and Width appended after the rack types
     (InsertEffects2.h); their blocks are registered for every slot with FxRack::registerTypeBlocks.
@@ -46,6 +47,7 @@ public:
         Comb, Formant, Wobble, Tremolo, Width, // 0.8 (sound revision 3, InsertEffects2.h)
         Space3D, // 1.0 (3D spatialiser, Space3D.h)
         Resonator, // p19 (resonator body, Resonator.h)
+        MultibandComp, // p88 (three-band upward + downward compressor, MultibandComp.h)
         numTypes
     };
     static constexpr int firstRackType = Hyper; ///< the 0.7 rack types (their blocks: FxRack::registerTypeBlocks)
@@ -54,6 +56,7 @@ public:
     static constexpr int firstR3Type = Comb;  ///< the 0.8 types (their blocks: FxRack::registerTypeBlocks, after Mid/Side)
     static constexpr int firstSpaceType = Space3D; ///< 1.0: the spatialiser (its blocks: FxRack::registerTypeBlocks, at the end)
     static constexpr int firstResoType = Resonator; ///< p19: the resonator body (its blocks: FxRack::registerTypeBlocks, after p16)
+    static constexpr int firstMbcType = MultibandComp; ///< p88: the multiband compressor (its blocks: FxRack::registerTypeBlocks, at the end)
     static constexpr int numLegacyTypes = Reverb + 1; ///< the 0.2 types (their blocks: registerParams)
 
     InsertSlot();

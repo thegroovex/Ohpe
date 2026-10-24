@@ -135,7 +135,7 @@
     "mpe.slide": 0.08,
     "mpe.smooth": 0.03,
     "mpe.bend": 48,
-    "gain": -6.0,
+    "gain": -6.6,
     "fx6.type": 10,
     "fx6.compressor.thresh": -6.0,
     "fx6.compressor.ratio": 8.0,

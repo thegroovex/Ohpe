@@ -25,6 +25,7 @@ CHAPTERS = [
     ("arrange", [
         both("docs/en/SEQUENCERS.md", "docs/de/SEQUENZER.md"),
         both("docs/en/TAPE-MIXER-FX.md", "docs/de/BAND-MISCHER-FX.md"),
+        both("docs/en/MULTIBAND-COMP.md", "docs/de/MULTIBAND-KOMPRESSOR.md"),
         both("docs/en/TAPE-MEMORY.md", "docs/de/TAPE-MEMORY.md"),
         both("docs/en/BOUNCE.md", "docs/de/BOUNCE-INS-INSTRUMENT.md"),
         both("docs/en/MOTION.md", "docs/de/BEWEGUNG.md"),

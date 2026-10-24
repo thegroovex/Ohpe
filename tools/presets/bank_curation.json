@@ -57,7 +57,8 @@
    "comment": "Saw-stack reese through a slow, deep phaser, with constant-rate portamento: overlap notes and it slides like a fretless rubber band.",
    "params": {
     "gain": 11.0,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx4.width.output": 8.9
    }
   },
   "keys-digital-ep.ohpepreset": {
@@ -66,7 +67,8 @@
    ],
    "params": {
     "gain": 11.3,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx.compressor.makeup": 1.9
    }
   },
   "keys-dusty-ep.ohpepreset": {
@@ -75,7 +77,7 @@
    ],
    "params": {
     "chordroom": 5.1,
-    "gain": 13.7
+    "gain": 11.2
    }
   },
   "keys-dusty-keys.ohpepreset": {
@@ -84,7 +86,8 @@
    ],
    "params": {
     "chordroom": 4.5,
-    "gain": 9.7
+    "gain": 9.7,
+    "fx2.compressor.makeup": 1.1
    }
   },
   "keys-tine-piano.ohpepreset": {
@@ -93,7 +96,8 @@
    ],
    "params": {
     "chordroom": 4.5,
-    "gain": 14.2
+    "gain": 14.2,
+    "fx.compressor.makeup": 0.2
    }
   },
   "keys-velocity-glass-ep.ohpepreset": {
@@ -102,7 +106,13 @@
    ],
    "params": {
     "gain": 18.1,
-    "chordroom": 12.0
+    "chordroom": 12.0,
+    "fx3.type": 24,
+    "fx3.mbcomp.depth": 0.3,
+    "fx3.mbcomp.time": 1.5,
+    "fx3.mbcomp.upward": 0.6,
+    "fx3.mbcomp.downward": 0.8,
+    "fx3.mbcomp.output": -3.4
    }
   },
   "keys-scoop-keys.ohpepreset": {
@@ -129,7 +139,7 @@
    ],
    "params": {
     "chordroom": 15.4,
-    "gain": 17.2
+    "gain": 15.4
    }
   },
   "arp-digital-pluck-arp.ohpepreset": {
@@ -156,7 +166,8 @@
   "arp-chord-stab-arp.ohpepreset": {
    "params": {
     "gain": 2.8,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx3.compressor.makeup": 12.0
    }
   },
   "arp-fm-arp-bell.ohpepreset": {
@@ -168,7 +179,8 @@
   "arp-formant-arp.ohpepreset": {
    "params": {
     "gain": 16.5,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx.compressor.makeup": 6.2
    }
   },
   "arp-glock-arp.ohpepreset": {
@@ -182,7 +194,7 @@
   },
   "arp-living-bell-arp.ohpepreset": {
    "params": {
-    "gain": 7.7,
+    "gain": 6.6,
     "chordroom": 4.7
    }
   },
@@ -203,7 +215,7 @@
   },
   "arp-orbit-space-arp.ohpepreset": {
    "params": {
-    "gain": 3.2,
+    "gain": -1.0,
     "chordroom": 4.5
    }
   },
@@ -224,14 +236,15 @@
   },
   "arp-resonant-comb-arp.ohpepreset": {
    "params": {
-    "gain": 15.0,
+    "gain": 9.6,
     "chordroom": 4.5
    }
   },
   "arp-ripple-arp.ohpepreset": {
    "params": {
     "gain": 22.4,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx.compressor.makeup": 4.4
    }
   },
   "arp-spiral-arp.ohpepreset": {
@@ -261,7 +274,8 @@
   "bass-analog-reese.ohpepreset": {
    "params": {
     "gain": 11.3,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx4.width.output": 10.5
    }
   },
   "bass-bounce-bass.ohpepreset": {
@@ -273,7 +287,8 @@
   "bass-classic-reese.ohpepreset": {
    "params": {
     "gain": 7.4,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx4.width.output": 9.6
    }
   },
   "bass-click-sub.ohpepreset": {
@@ -285,13 +300,22 @@
   "bass-dark-reese.ohpepreset": {
    "params": {
     "gain": 11.2,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx4.width.output": 10.1
    }
   },
   "bass-deep-pluck-sub.ohpepreset": {
    "params": {
     "gain": 8.9,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx4.type": 24,
+    "fx4.mbcomp.depth": 0.3,
+    "fx4.mbcomp.time": 1.0,
+    "fx4.mbcomp.upward": 0.4,
+    "fx4.mbcomp.downward": 1.0,
+    "fx4.mbcomp.lowattack": 6.0,
+    "fx4.mbcomp.lowrelease": 120.0,
+    "fx4.mbcomp.output": 1.8
    }
   },
   "bass-dirty-sub.ohpepreset": {
@@ -309,7 +333,8 @@
   "bass-fingerboard-expressive-bass.ohpepreset": {
    "params": {
     "gain": 10.2,
-    "chordroom": 8.0
+    "chordroom": 8.0,
+    "fx4.width.output": 10.4
    }
   },
   "bass-flanged-reese.ohpepreset": {
@@ -412,7 +437,7 @@
    "params": {
     "gain": 6.5,
     "chordroom": 5.5,
-    "fx2.multiband.output": 4.8
+    "fx2.multiband.output": 2.0
    }
   },
   "bass-punch-fm-bass.ohpepreset": {
@@ -445,7 +470,8 @@
   "bass-roller-bass.ohpepreset": {
    "params": {
     "gain": 10.1,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx3.width.output": 8.9
    }
   },
   "bass-rolling-bass.ohpepreset": {
@@ -505,7 +531,8 @@
   "bass-sub-reese.ohpepreset": {
    "params": {
     "gain": 4.3,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx4.width.output": 10.0
    }
   },
   "bass-table-sub.ohpepreset": {
@@ -524,7 +551,7 @@
    "params": {
     "gain": -7.4,
     "fx6.compressor.attack": 0.1,
-    "fx6.compressor.thresh": -4.0,
+    "fx6.compressor.thresh": -5.2,
     "fx6.compressor.knee": 6.0,
     "chordroom": 4.5
    }
@@ -543,7 +570,7 @@
   },
   "bass-triplet-wobble.ohpepreset": {
    "params": {
-    "gain": -6.0,
+    "gain": -6.6,
     "fx6.compressor.attack": 0.1,
     "fx6.compressor.thresh": -6.0,
     "fx6.compressor.knee": 6.0,
@@ -566,7 +593,8 @@
   "bass-warm-roller.ohpepreset": {
    "params": {
     "gain": 14.3,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx4.width.output": 11.7
    }
   },
   "bass-wub-machine.ohpepreset": {
@@ -587,13 +615,15 @@
   "drums-filter-kick.ohpepreset": {
    "params": {
     "gain": 18.1,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx.compressor.makeup": 3.4
    }
   },
   "drums-noise-snare.ohpepreset": {
    "params": {
-    "gain": 16.0,
-    "chordroom": 4.5
+    "gain": 13.8,
+    "chordroom": 4.5,
+    "fx.compressor.makeup": 0.2
    }
   },
   "drums-tick-hat.ohpepreset": {
@@ -605,19 +635,44 @@
   "drums-tuned-tom.ohpepreset": {
    "params": {
     "gain": 15.6,
-    "chordroom": 5.4
+    "chordroom": 5.4,
+    "fx2.type": 24,
+    "fx2.mbcomp.depth": 0.35,
+    "fx2.mbcomp.time": 1.0,
+    "fx2.mbcomp.upward": 0.5,
+    "fx2.mbcomp.downward": 1.0,
+    "fx2.mbcomp.lowattack": 8.0,
+    "fx2.mbcomp.midattack": 5.0,
+    "fx2.mbcomp.highattack": 2.0,
+    "fx2.mbcomp.lowrelease": 80.0,
+    "fx2.mbcomp.midrelease": 60.0,
+    "fx2.mbcomp.highrelease": 50.0,
+    "fx2.mbcomp.output": -1.6
    }
   },
   "drums-wood-block.ohpepreset": {
    "params": {
     "gain": 12.2,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx2.type": 24,
+    "fx2.mbcomp.depth": 0.35,
+    "fx2.mbcomp.time": 1.0,
+    "fx2.mbcomp.upward": 0.5,
+    "fx2.mbcomp.downward": 1.0,
+    "fx2.mbcomp.lowattack": 8.0,
+    "fx2.mbcomp.midattack": 5.0,
+    "fx2.mbcomp.highattack": 2.0,
+    "fx2.mbcomp.lowrelease": 80.0,
+    "fx2.mbcomp.midrelease": 60.0,
+    "fx2.mbcomp.highrelease": 50.0,
+    "fx2.mbcomp.output": -1.3
    }
   },
   "drums-zap-perc.ohpepreset": {
    "params": {
     "gain": 16.7,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx2.compressor.makeup": 2.3
    }
   },
   "fx-doppler-fly-by.ohpepreset": {
@@ -710,13 +765,20 @@
   "keys-alive-tine-keys.ohpepreset": {
    "params": {
     "gain": 11.9,
-    "chordroom": 20.1
+    "chordroom": 20.1,
+    "fx3.type": 24,
+    "fx3.mbcomp.depth": 0.3,
+    "fx3.mbcomp.time": 1.5,
+    "fx3.mbcomp.upward": 0.6,
+    "fx3.mbcomp.downward": 0.8,
+    "fx3.mbcomp.output": -3.4
    }
   },
   "keys-bright-grand.ohpepreset": {
    "params": {
     "gain": 1.9,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx3.multiband.output": 9.9
    }
   },
   "keys-bright-poly-wide.ohpepreset": {
@@ -734,7 +796,8 @@
   "keys-crystal-organ.ohpepreset": {
    "params": {
     "gain": 23.7,
-    "chordroom": 15.0
+    "chordroom": 15.0,
+    "fx2.compressor.makeup": 4.7
    }
   },
   "keys-felt-grand.ohpepreset": {
@@ -752,7 +815,8 @@
   "keys-glass-keys.ohpepreset": {
    "params": {
     "gain": 8.9,
-    "chordroom": 4.6
+    "chordroom": 4.6,
+    "fx.compressor.makeup": 2.1
    }
   },
   "keys-glide-poly-synth.ohpepreset": {
@@ -764,31 +828,35 @@
   "keys-halo-grand.ohpepreset": {
    "params": {
     "gain": 12.2,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx2.compressor.makeup": 5.7
    }
   },
   "keys-marimba.ohpepreset": {
    "params": {
     "gain": 5.0,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx2.compressor.makeup": 1.9
    }
   },
   "keys-music-box.ohpepreset": {
    "params": {
-    "gain": 19.0,
+    "gain": 16.0,
     "chordroom": 10.7
    }
   },
   "keys-reed-tremolo.ohpepreset": {
    "params": {
     "gain": 4.9,
-    "chordroom": 7.2
+    "chordroom": 7.2,
+    "fx.compressor.makeup": 0.6
    }
   },
   "keys-suitcase-tine.ohpepreset": {
    "params": {
     "gain": 2.9,
-    "chordroom": 6.1
+    "chordroom": 6.1,
+    "fx.compressor.makeup": 1.5
    }
   },
   "keys-tape-ghost-keys.ohpepreset": {
@@ -823,7 +891,7 @@
   },
   "leads-bowed-tube.ohpepreset": {
    "params": {
-    "gain": 22.5,
+    "gain": 19.5,
     "chordroom": 4.5
    }
   },
@@ -1048,7 +1116,8 @@
   "morph-keys-and-bells.ohpepreset": {
    "params": {
     "gain": 11.3,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx.compressor.makeup": 1.9
    }
   },
   "morph-lead-characters.ohpepreset": {
@@ -1161,7 +1230,7 @@
   },
   "pads-super-stack.ohpepreset": {
    "params": {
-    "gain": 14.3,
+    "gain": 13.5,
     "chordroom": 12.1
    }
   },
@@ -1201,7 +1270,8 @@
   "plucks-future-chord.ohpepreset": {
    "params": {
     "gain": 6.4,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx3.compressor.makeup": 13.0
    }
   },
   "plucks-gamelan-plate.ohpepreset": {
@@ -1236,7 +1306,7 @@
   },
   "plucks-living-nylon.ohpepreset": {
    "params": {
-    "gain": 9.9,
+    "gain": 7.0,
     "chordroom": 4.5
    }
   },
@@ -1248,7 +1318,7 @@
   },
   "plucks-ping-pong-space-pluck.ohpepreset": {
    "params": {
-    "gain": 13.9,
+    "gain": 9.6,
     "chordroom": 5.1,
     "space.retrig": 2
    },
@@ -1287,7 +1357,8 @@
   "plucks-steel-string.ohpepreset": {
    "params": {
     "gain": 4.4,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx2.compressor.makeup": 5.1
    }
   },
   "plucks-wide-glass-pluck.ohpepreset": {
@@ -1419,13 +1490,13 @@
   },
   "textures-harp-cloud.ohpepreset": {
    "params": {
-    "gain": 24.0,
+    "gain": 22.3,
     "chordroom": 12.2
    }
   },
   "textures-harp-mist.ohpepreset": {
    "params": {
-    "gain": 16.9,
+    "gain": 14.6,
     "chordroom": 16.2
    }
   },
@@ -1455,7 +1526,8 @@
   "textures-starfield.ohpepreset": {
    "params": {
     "gain": 11.8,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx.compressor.makeup": 23.7
    }
   },
   "vocal-aah-choir.ohpepreset": {
@@ -1527,30 +1599,31 @@
   "arp-bell-ricochet.ohpepreset": {
    "params": {
     "gain": 14.3,
-    "chordroom": 13.6
+    "chordroom": 13.6,
+    "fx.compressor.makeup": 5.7
    }
   },
   "arp-helix-sequence.ohpepreset": {
    "params": {
-    "gain": 12.9,
+    "gain": 8.8,
     "chordroom": 5.9
    }
   },
   "arp-pulse-orbit.ohpepreset": {
    "params": {
-    "gain": 11.6,
+    "gain": 11.0,
     "chordroom": 5.5
    }
   },
   "arp-satellite-arp.ohpepreset": {
    "params": {
-    "gain": 6.9,
+    "gain": 5.7,
     "chordroom": 4.5
    }
   },
   "arp-swarm-sequence.ohpepreset": {
    "params": {
-    "gain": 10.3,
+    "gain": 9.7,
     "chordroom": 4.5
    }
   },
@@ -1580,7 +1653,7 @@
   },
   "bass-spinning-pluck-bass.ohpepreset": {
    "params": {
-    "gain": 11.0,
+    "gain": 9.4,
     "fx2.compressor.attack": 0.1,
     "fx2.compressor.thresh": -8.0,
     "fx2.compressor.knee": 6.0,
@@ -1596,13 +1669,37 @@
   "drums-hand-drum-ring.ohpepreset": {
    "params": {
     "gain": 16.9,
-    "chordroom": 7.0
+    "chordroom": 7.0,
+    "fx2.type": 24,
+    "fx2.mbcomp.depth": 0.35,
+    "fx2.mbcomp.time": 1.0,
+    "fx2.mbcomp.upward": 0.5,
+    "fx2.mbcomp.downward": 1.0,
+    "fx2.mbcomp.lowattack": 8.0,
+    "fx2.mbcomp.midattack": 5.0,
+    "fx2.mbcomp.highattack": 2.0,
+    "fx2.mbcomp.lowrelease": 80.0,
+    "fx2.mbcomp.midrelease": 60.0,
+    "fx2.mbcomp.highrelease": 50.0,
+    "fx2.mbcomp.output": -1.8
    }
   },
   "drums-round-toms.ohpepreset": {
    "params": {
     "gain": 8.6,
-    "chordroom": 7.3
+    "chordroom": 7.3,
+    "fx2.type": 24,
+    "fx2.mbcomp.depth": 0.35,
+    "fx2.mbcomp.time": 1.0,
+    "fx2.mbcomp.upward": 0.5,
+    "fx2.mbcomp.downward": 1.0,
+    "fx2.mbcomp.lowattack": 8.0,
+    "fx2.mbcomp.midattack": 5.0,
+    "fx2.mbcomp.highattack": 2.0,
+    "fx2.mbcomp.lowrelease": 80.0,
+    "fx2.mbcomp.midrelease": 60.0,
+    "fx2.mbcomp.highrelease": 50.0,
+    "fx2.mbcomp.output": -0.6
    }
   },
   "fx-drone-flyover.ohpepreset": {
@@ -1683,7 +1780,7 @@
   },
   "leads-ear-to-ear-lead.ohpepreset": {
    "params": {
-    "gain": 15.1,
+    "gain": 14.7,
     "chordroom": 4.6,
     "space.retrig": 2,
     "space.pathlen": 4
@@ -1716,7 +1813,7 @@
   },
   "pads-cathedral-ring.ohpepreset": {
    "params": {
-    "gain": 14.1,
+    "gain": 12.5,
     "chordroom": 12.8
    }
   },
@@ -1752,7 +1849,7 @@
   },
   "plucks-glass-droplets.ohpepreset": {
    "params": {
-    "gain": 18.8,
+    "gain": 9.9,
     "chordroom": 15.5
    }
   },
@@ -1770,7 +1867,7 @@
   },
   "plucks-zither-drizzle.ohpepreset": {
    "params": {
-    "gain": 13.0,
+    "gain": 10.7,
     "chordroom": 4.9
    }
   },
@@ -1782,13 +1879,13 @@
   },
   "textures-distant-voices.ohpepreset": {
    "params": {
-    "gain": 12.6,
+    "gain": 9.6,
     "chordroom": 4.5
    }
   },
   "textures-ember-field.ohpepreset": {
    "params": {
-    "gain": 14.5,
+    "gain": 13.6,
     "chordroom": 4.5
    }
   },
@@ -2105,7 +2202,7 @@
   "textures-night-swarm.ohpepreset": {
    "params": {
     "fx3.compressor.attack": 0.1,
-    "fx3.compressor.thresh": -7.0,
+    "fx3.compressor.thresh": -8.2,
     "fx3.compressor.knee": 6.0,
     "chordroom": 8.7,
     "gain": 24.0
@@ -2122,7 +2219,8 @@
   },
   "arp-bubble-arp.ohpepreset": {
    "params": {
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx.compressor.makeup": 1.8
    }
   },
   "arp-neuro-arp.ohpepreset": {
@@ -2132,7 +2230,8 @@
   },
   "arp-trance-gate-arp.ohpepreset": {
    "params": {
-    "chordroom": 5.7
+    "chordroom": 5.7,
+    "gain": 15.2
    }
   },
   "arp-wide-pluck-arp.ohpepreset": {
@@ -2153,7 +2252,8 @@
   "bass-grind-bass.ohpepreset": {
    "params": {
     "chordroom": 4.6,
-    "gain": 3.0
+    "gain": 3.0,
+    "fx4.compressor.makeup": 5.1
    }
   },
   "bass-growl-machine.ohpepreset": {
@@ -2218,7 +2318,8 @@
   "bass-wide-reese.ohpepreset": {
    "params": {
     "chordroom": 5.2,
-    "gain": 6.5
+    "gain": 6.5,
+    "fx4.width.output": 9.3
    }
   },
   "bass-wobble-bass.ohpepreset": {
@@ -2228,7 +2329,8 @@
   },
   "boom-boom-click.ohpepreset": {
    "params": {
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx.compressor.makeup": 1.3
    }
   },
   "boom-boom-kick-bass.ohpepreset": {
@@ -2258,7 +2360,19 @@
   },
   "drums-fm-tom.ohpepreset": {
    "params": {
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx2.type": 24,
+    "fx2.mbcomp.depth": 0.35,
+    "fx2.mbcomp.time": 1.0,
+    "fx2.mbcomp.upward": 0.5,
+    "fx2.mbcomp.downward": 1.0,
+    "fx2.mbcomp.lowattack": 8.0,
+    "fx2.mbcomp.midattack": 5.0,
+    "fx2.mbcomp.highattack": 2.0,
+    "fx2.mbcomp.lowrelease": 80.0,
+    "fx2.mbcomp.midrelease": 60.0,
+    "fx2.mbcomp.highrelease": 50.0,
+    "fx2.mbcomp.output": 0.3
    }
   },
   "drums-gravity-drum-wash.ohpepreset": {
@@ -2279,19 +2393,20 @@
   "fx-distance-walk-drone.ohpepreset": {
    "params": {
     "chordroom": 10.5,
-    "gain": 15.5
+    "gain": 12.5
    }
   },
   "keys-breathing-organ.ohpepreset": {
    "params": {
     "chordroom": 8.1,
-    "gain": 5.8
+    "gain": 5.4
    }
   },
   "keys-classic-tine.ohpepreset": {
    "params": {
     "chordroom": 5.7,
-    "gain": 3.3
+    "gain": 3.3,
+    "fx.compressor.makeup": 0.1
    }
   },
   "keys-cluster-organ.ohpepreset": {
@@ -2327,7 +2442,8 @@
   "keys-fm-vibes.ohpepreset": {
    "params": {
     "chordroom": 7.6,
-    "gain": 15.7
+    "gain": 15.7,
+    "fx.compressor.makeup": 0.4
    }
   },
   "keys-glass-pendulum.ohpepreset": {
@@ -2378,7 +2494,7 @@
   "keys-pressure-reed-keys.ohpepreset": {
    "params": {
     "chordroom": 15.0,
-    "gain": 6.4
+    "gain": 2.5
    }
   },
   "keys-reed-keys.ohpepreset": {
@@ -2402,32 +2518,35 @@
   "keys-sympathetic-harp-keys.ohpepreset": {
    "params": {
     "chordroom": 4.5,
-    "gain": 12.8
+    "gain": 11.1
    }
   },
   "keys-upright-keys.ohpepreset": {
    "params": {
     "chordroom": 4.9,
-    "gain": 8.3
+    "gain": 8.3,
+    "fx.compressor.makeup": 1.6
    }
   },
   "keys-vibes-in-the-round.ohpepreset": {
    "params": {
     "chordroom": 6.6,
-    "gain": 10.8,
+    "gain": 10.0,
     "space.retrig": 1
    }
   },
   "keys-wide-organ.ohpepreset": {
    "params": {
     "chordroom": 8.1,
-    "gain": 9.9
+    "gain": 9.9,
+    "fx.compressor.makeup": 3.8
    }
   },
   "leads-hyper-saw-lead.ohpepreset": {
    "params": {
     "chordroom": 4.6,
-    "gain": 15.9
+    "gain": 15.9,
+    "fx2.multiband.output": 5.7
    }
   },
   "leads-living-flute-lead.ohpepreset": {
@@ -2454,13 +2573,13 @@
   "morph-four-worlds.ohpepreset": {
    "params": {
     "chordroom": 14.1,
-    "gain": 19.3
+    "gain": 18.5
    }
   },
   "morph-living-keys.ohpepreset": {
    "params": {
     "chordroom": 8.0,
-    "gain": 5.7
+    "gain": 5.3
    }
   },
   "morph-pressure-pads.ohpepreset": {
@@ -2472,13 +2591,13 @@
   "morph-strings-filter.ohpepreset": {
    "params": {
     "chordroom": 14.1,
-    "gain": 19.3
+    "gain": 18.5
    }
   },
   "pads-analog-dawn.ohpepreset": {
    "params": {
     "chordroom": 8.0,
-    "gain": 12.8
+    "gain": 10.8
    }
   },
   "pads-angel-pad.ohpepreset": {
@@ -2508,7 +2627,8 @@
   "pads-breath-grains.ohpepreset": {
    "params": {
     "chordroom": 9.2,
-    "gain": 5.6
+    "gain": 5.6,
+    "fx2.width.output": -0.3
    }
   },
   "pads-choir-around-you.ohpepreset": {
@@ -2604,7 +2724,7 @@
   "pads-rise-strings.ohpepreset": {
    "params": {
     "chordroom": 15.5,
-    "gain": 19.4
+    "gain": 18.5
    }
   },
   "pads-rise-warmth.ohpepreset": {
@@ -2640,19 +2760,19 @@
   "pads-tine-bloom.ohpepreset": {
    "params": {
     "chordroom": 16.5,
-    "gain": 14.3
+    "gain": 12.5
    }
   },
   "pads-warm-horizon.ohpepreset": {
    "params": {
     "chordroom": 15.2,
-    "gain": 15.7
+    "gain": 14.5
    }
   },
   "pads-warm-strings.ohpepreset": {
    "params": {
     "chordroom": 14.1,
-    "gain": 19.2
+    "gain": 18.5
    }
   },
   "plucks-concert-harp.ohpepreset": {
@@ -2680,12 +2800,13 @@
   "plucks-kalimba-body.ohpepreset": {
    "params": {
     "chordroom": 7.2,
-    "gain": 12.8
+    "gain": 9.8
    }
   },
   "plucks-muted-pick.ohpepreset": {
    "params": {
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx.compressor.makeup": 4.3
    }
   },
   "plucks-stereo-pluck.ohpepreset": {
@@ -2701,7 +2822,8 @@
   "plucks-zip-pluck.ohpepreset": {
    "params": {
     "chordroom": 4.5,
-    "gain": 17.9
+    "gain": 17.9,
+    "fx.compressor.makeup": 5.5
    }
   },
   "textures-bowed-metal-body.ohpepreset": {
@@ -2733,7 +2855,7 @@
   "textures-fourths-drift.ohpepreset": {
    "params": {
     "chordroom": 14.2,
-    "gain": 13.9
+    "gain": 11.9
    }
   },
   "textures-glass-swarm.ohpepreset": {
@@ -2757,7 +2879,7 @@
   "textures-kalimba-dust.ohpepreset": {
    "params": {
     "chordroom": 11.8,
-    "gain": 16.3
+    "gain": 11.0
    }
   },
   "textures-recorder-breath.ohpepreset": {
@@ -2769,7 +2891,7 @@
   "textures-rust-texture.ohpepreset": {
    "params": {
     "chordroom": 4.7,
-    "gain": 6.5
+    "gain": 4.7
    }
   },
   "textures-singing-glass.ohpepreset": {

@@ -495,6 +495,18 @@ int main (int argc, char* argv[])
             animate (p, e, 20);
             save (e, dir.getChildFile ("ohpe-fx-editor-comp" + suffix + ".png"));
             e.showFxEditor (false);
+            // p88: the Multiband Comp in the FX editor - three band meters with their down / up thresholds working on the chord
+            setPlain (p, "mfx3.type", (float) InsertSlot::MultibandComp);
+            setPlain (p, "mfx3.mbcomp.depth", 0.6f);
+            prepareRack (p);
+            e.selectFxSlot (2);
+            e.showFxEditor (true);
+            if (auto* g = e.fxEditorComponent().graph()) g->selectHandle (0);
+            animate (p, e, 20);
+            save (e, dir.getChildFile ("ohpe-fx-editor-mbcomp" + suffix + ".png"));
+            e.showFxEditor (false);
+            setPlain (p, "mfx3.type", 0.0f);
+            prepareRack (p);
             release (p, { 60, 64, 67 });
         }
 

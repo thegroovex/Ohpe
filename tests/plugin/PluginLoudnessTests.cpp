@@ -8,7 +8,7 @@
 //   - loudness (BS.1770 integrated) within 0.1 dB of the core, true peak (master limiter on, as heard) at the limiter's
 //     ceiling at most, single note, 4-note and 8-note chords (the chord headroom of p74),
 //   - a fresh instance's wide 8-note chord at velocity 127 without the limiter equals the core; its true peak against the
-//     p74 target of -1 dBTP is reported (warning, see the p87 finding at that test).
+//     p74 target of -1 dBTP is reported (the hard -1 dBTP check after silence is the p88 test in FactorySoundTests).
 
 #include <doctest/doctest.h>
 
@@ -315,11 +315,8 @@ TEST_CASE ("plug-in loudness: a fresh instance plays a wide 8-note chord without
         const auto b = render::renderCore (*core, ev, totalSamples, blockSize);
         const double tp = render::truePeakDb (a), la = lufs (a), lb = lufs (b);
         CAPTURE (tp);
-        // p87 finding: played after a moment of silence (as in the app), part compressors with high make-up gain let the
-        // first transient through fully released - about a quarter of the presets exceed -1 dBTP here although the p74
-        // audit (rendered right after prepare, while the effect parameters still glide in) stays below. Reported, not yet
-        // re-calibrated: a warning until the presets are re-levelled.
-        WARN (tp <= -1.0);
+        // p87 finding (re-levelled in p88): played after a moment of silence, part compressors let the first transient
+        // through fully released. The hard -1 dBTP check after silence is the p88 test in FactorySoundTests; reported here.
         CHECK (render::flatTopRuns (a) == 0);
         CHECK (std::abs (la - lb) <= 0.1);
         std::printf ("OHPE-STATS p87 fresh row|%s|chord8-nolimit|%.3f|%.3f|%.3f|%.3f|0\n", entry.meta.name.c_str(), la, tp, lb, render::truePeakDb (b));
