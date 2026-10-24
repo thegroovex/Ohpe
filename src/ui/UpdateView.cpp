@@ -252,8 +252,10 @@ void UpdateView::paint (juce::Graphics& g)
         rowTip ("Look for a new version now", "Jetzt nach einer neuen Version suchen");
         chip (g, { x, y, u * 14.0f, h }, i18n::upper (tr ("Check now")), false, colour::displayText, [this] { updater.checkNow(); }, ! busy);
         if (s.state == Updater::State::Ready)
+        {
             rowTip ("Open the downloaded installer", "Den heruntergeladenen Installer öffnen");
             chip (g, { x + u * 15.0f, y, w - u * 15.0f, h }, i18n::upper (tr ("Install")) + "  " + s.detail, true, colour::sunYellow, [this] { install(); });
+        }
         else if (s.hasRelease)
         {
             const auto* a = s.release.assetFor (update::currentPlatform(), standalone ? "app" : "plugin");
@@ -347,6 +349,7 @@ void UpdateView::paint (juce::Graphics& g)
         }
         if (row.canRollBack && row.state != update::PackState::NeedsNewerApp)
             rowTip ("Back to the previous version of the pack", "Zurück zur vorigen Version des Pakets");
+        if (row.canRollBack && row.state != update::PackState::NeedsNewerApp)
             chip (g, { x + w - u * 20.0f, y, u * 10.0f, h * 0.85f }, i18n::upper (tr ("Roll back")), false, colour::displayText,
                   [this, id] { updater.rollbackPack (id); }, ! busy);
         y += h;
@@ -356,6 +359,7 @@ void UpdateView::paint (juce::Graphics& g)
     const float footY = b.getHeight() - u * 5.6f;
     if (s.hasPrevious)
         rowTip ("Install the previous program version again", "Die vorige Programmversion wieder installieren");
+    if (s.hasPrevious)
         chip (g, { x, footY - h, w, h * 0.85f }, i18n::upper (tr ("Previous version")) + " " + str (s.previous.version.toString()), false,
               colour::displayText, [this] { updater.downloadPrevious(); }, ! busy);
     g.setColour (colour::displayDim);

@@ -768,6 +768,7 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
             }
             if (proc.openStandaloneAudioSettings)
                 rowTip ("Audio device, sample rate and buffer size of the app", "Audiogerät, Samplerate und Puffergröße der App");
+            if (proc.openStandaloneAudioSettings)
                 chip (g, { x, yy, half, h }, i18n::upper (tr ("Audio Settings ...")), false, colour::displayText, [this] { proc.openStandaloneAudioSettings(); });
         }
         else
@@ -1015,6 +1016,7 @@ void SettingsView::paintController (juce::Graphics& g, juce::Rectangle<float> a)
     label (g, where, { x, y, leftW - (elsewhere ? wTake + gap : 0.0f), h }, ! on);
     if (elsewhere)
         rowTip ("Move the controller to this instance", "Den Controller in diese Instanz holen");
+    if (elsewhere)
         chip (g, { x + leftW - wTake, y, wTake, h }, i18n::upper (tr ("Take over here")), false, colour::ultraviolet,
               [this] { if (gridCtl != nullptr) gridCtl->claim(); repaint(); });
 }

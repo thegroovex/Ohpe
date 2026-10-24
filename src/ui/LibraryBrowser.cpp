@@ -455,6 +455,7 @@ rowTip ("Sort the list: name, rating, engine or newest", "Liste sortieren: Name,
         const float pw = juce::jmin (u * 12.0f, b.getWidth() - u * 2.0f - x);
         if (pw > u * 6.0f)
             rowTip ("Content packs: filter by pack, install or manage packs", "Inhaltspakete: nach Paket filtern, Pakete installieren oder verwalten");
+        if (pw > u * 6.0f)
             chip (g, { b.getWidth() - u * 2.0f - pw, y2, pw, h2 }, packChipText(), ! f.pack.empty(), colour::ultraviolet, [this] { showPackMenu(); });
     }
 
@@ -608,6 +609,7 @@ rowTip ("Rating: one to five stars (click the same star again: none)", "Bewertun
         }
         if (! e.factory)
             rowTip ("Delete this user preset (asks first)", "Dieses User-Preset löschen (fragt vorher)");
+        if (! e.factory)
             chip (g, { r.getX(), r.getBottom() - u * 7.2f, r.getWidth(), u * 3.0f }, tr ("Delete"), false, colour::signalRed, [this, sel] {
                 juce::Component::SafePointer<LibraryBrowser> safe (this);
                 juce::AlertWindow::showAsync (juce::MessageBoxOptions().withIconType (juce::MessageBoxIconType::QuestionIcon)

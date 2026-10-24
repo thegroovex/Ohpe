@@ -802,15 +802,11 @@ Einzelheiten: [Einstellungen](EINSTELLUNGEN.md).
 
 ## Tooltips und Hilfesuche (p82)
 
-![Ein Tooltip](../images/ohpe-tooltip-encoder-de.png)
-
 Jedes Bedienelement hat einen kurzen **Tooltip** auf Deutsch und Englisch (Einstellungen > Allgemein > Tooltips): Tasten,
 Encoder, Räder, die Zeilen des Displays, Seitenpfeile, Softkeys, Reiter, Schritte, Pads und Spuren, die Balken, Bilder und
 Kartensymbole der Profiansicht, der FX-Editor, die Bibliothek, die Zucht, die Einstellungs- und Update-Seiten. Er sagt,
 was das Element tut; Tasten und Werte, die per Rechtsklick MIDI lernen, enden mit *Rechtsklick: MIDI-Learn*. Die
 deutschen Texte behalten die üblichen Studiobegriffe (Low / High Shelf, Q, Main, Tape-Memory).
-
-![Die Hilfesuche](../images/ohpe-help-search-de.png)
 
 Die **Hilfesuche** steht über den Themen unter Einstellungen > Hilfe; **Strg / Cmd + F** öffnet sie von überall. Deutsche
 oder englische Wörter eintippen – Groß-/Kleinschreibung, Umlaute, Wortanfänge und kleine Tippfehler spielen keine Rolle
@@ -818,8 +814,6 @@ oder englische Wörter eintippen – Groß-/Kleinschreibung, Umlaute, Wortanfän
 Bedienelemente der Oberfläche. **Eingabe** oder ein Klick öffnet den besten: ein Thema erscheint auf der Seite, bei einem
 Parameter kommen sein Modus und seine Seite, sein Encoder wird einige Sekunden gelb umrandet, ein Bedienelement wird auf
 der Oberfläche umrandet; Einstellungsseiten öffnen sich direkt. **Esc** leert die Suche.
-
-![Ein Suchtreffer auf der Oberfläche](../images/ohpe-help-search-jump-de.png)
 
 ## Bibliotheks-Suche (p54)
 

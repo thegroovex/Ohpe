@@ -764,23 +764,17 @@ Details: [Settings](SETTINGS.md).
 
 ## Tooltips and help search (p82)
 
-![A tooltip](../images/ohpe-tooltip-encoder.png)
-
 Every control has a short **tooltip** in English and German (Settings > General > Tooltips): keys, encoders, wheels,
 the display's rows, page arrows, soft keys, tabs, steps, pads and tracks, the pro view's bars, pictures and card icons,
 the FX editor, the library, the breeding view, the settings and update pages. It says what the control does, and keys
 or values that learn MIDI with a right-click end with *Right-click: MIDI learn*. German texts keep the studio terms
 musicians use (Low / High Shelf, Q, Main, Tape-Memory).
 
-![The help search](../images/ohpe-help-search.png)
-
 The **help search** sits above the topics of Settings > Help; **Ctrl / Cmd + F** opens it from anywhere. Type English or
 German words – case, umlauts, word beginnings and small typos do not matter (`huellkurve`, `envelpoe`, `modrad`). The
 results are help topics, parameters (with where they are: *Synth > Filter*) and controls of the plate. **Return** or a
 click opens the best one: a topic shows on the page, a parameter's mode and page come up with its encoder ringed in
 yellow for a few seconds, a control is ringed on the plate; settings pages open directly. **Esc** clears the search.
-
-![A search result on the plate](../images/ohpe-help-search-jump.png)
 
 ## Library search (p54)
 
