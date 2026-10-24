@@ -6,6 +6,7 @@
 #include "Pages.h"
 #include "ProTiles.h"
 #include "Widgets.h"
+#include "Tooltips.h"
 
 #include <cstdint>
 #include <memory>
@@ -66,7 +67,9 @@ private:
       * responsive: one to four columns; 30 Hz animation, a tile repaints only when what it shows changed.
 */
 class ProView : public juce::Component,
-                public juce::DragAndDropContainer
+                public juce::DragAndDropContainer,
+                public juce::TooltipClient,
+                public tips::RegionProvider
 {
 public:
     explicit ProView (OhpeProcessor& p);
@@ -83,6 +86,8 @@ public:
     void paint (juce::Graphics& g) override;
     void resized() override;
     void mouseDown (const juce::MouseEvent& e) override;
+    juce::String getTooltip() override { return tips::regionTipAt (tipRegions(), getMouseXYRelative().toFloat()); } ///< p82
+    std::vector<tips::Region> tipRegions() override; ///< p82: tabs, Simple | All, close
 
     int numBars() const noexcept { return (int) bars.size(); }
     ParamBar& bar (int i) { return *bars[(size_t) i]; }
@@ -111,10 +116,12 @@ public:
     std::vector<std::string> soundIds() const;
 
 private:
-    class Content : public juce::Component
+    class Content : public juce::Component, public juce::TooltipClient, public tips::RegionProvider
     {
     public:
         explicit Content (ProView& o) : owner (o) {}
+        juce::String getTooltip() override { return tips::regionTipAt (tipRegions(), getMouseXYRelative().toFloat()); } ///< p82
+        std::vector<tips::Region> tipRegions() override; ///< p82: chevron, lock, dice of the cards
         void paint (juce::Graphics& g) override;
         void mouseDown (const juce::MouseEvent& e) override;
         ProView& owner;

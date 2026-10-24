@@ -612,26 +612,25 @@ void DiscoverStrip::mouseDoubleClick (const juce::MouseEvent& e)
     if (const int t = tileAt (e.position); t >= 0) keep (t);
 }
 
-juce::String DiscoverStrip::getTooltip()
+juce::String DiscoverStrip::getTooltip() { return tips::regionTipAt (tipRegions(), lastMouse); }
+
+std::vector<tips::Region> DiscoverStrip::tipRegions()
 {
+    std::vector<tips::Region> r;
     for (int m = 0; m < character::numMacros; ++m)
-        if (knobArea (m).contains (lastMouse)) return pro::hoverText (proc, macroId (m));
-    if (varyArea().contains (lastMouse))
-        return i18n::pick ("Six relatives of the current sound - click to listen, hold or double-click to keep, drag one onto another to cross them.",
-                           "Sechs Verwandte des aktuellen Klangs - klicken zum Anhören, halten oder doppelklicken zum Behalten, einen auf einen anderen ziehen zum Kreuzen.");
-    if (tileAt (lastMouse) >= 0)
-        return i18n::pick ("Click: listen. Hold or double-click: keep. Drag onto another tile: cross.",
-                           "Klick: anhören. Halten oder Doppelklick: behalten. Auf eine andere Kachel ziehen: kreuzen.");
-    if (diceArea().contains (lastMouse))
-        return i18n::pick ("Roll the dice: changes every unlocked group by the strength below.",
-                           "Würfeln: ändert jede nicht gesperrte Gruppe um die Stärke darunter.");
-    if (lockArea().contains (lastMouse))
-        return i18n::pick ("Locked groups stay as they are. Click: unlock all.", "Gesperrte Gruppen bleiben, wie sie sind. Klick: alle entsperren.");
-    if (strengthArea().contains (lastMouse))
-        return i18n::pick ("How far VARY and the dice move the sound: gentle .. wild.", "Wie weit VARIIEREN und Würfel den Klang bewegen: sanft .. wild.");
+        r.push_back ({ knobArea (m), tips::withLearn (pro::hoverText (proc, macroId (m))) });
+    for (int t = 0; t < 6; ++t)
+        if (! tileArea (t).isEmpty())
+            r.push_back ({ tileArea (t), i18n::pick ("Click: listen. Hold or double-click: keep. Drag onto another tile: cross.",
+                                                     "Klick: anhören. Halten oder Doppelklick: behalten. Auf eine andere Kachel ziehen: kreuzen.") });
+    r.push_back ({ varyArea(), i18n::pick ("Six relatives of the current sound - click to listen, hold or double-click to keep, drag one onto another to cross them.",
+                                           "Sechs Verwandte des aktuellen Klangs - klicken zum Anhören, halten oder doppelklicken zum Behalten, einen auf einen anderen ziehen zum Kreuzen.") });
+    r.push_back ({ diceArea(), i18n::pick ("Roll the dice: changes every unlocked group by the strength below.",
+                                           "Würfeln: ändert jede nicht gesperrte Gruppe um die Stärke darunter.") });
+    r.push_back ({ lockArea(), i18n::pick ("Locked groups stay as they are. Click: unlock all.", "Gesperrte Gruppen bleiben, wie sie sind. Klick: alle entsperren.") });
+    r.push_back ({ strengthArea().expanded (0.0f, unit()), i18n::pick ("How far VARY and the dice move the sound: gentle .. wild.", "Wie weit VARIIEREN und Würfel den Klang bewegen: sanft .. wild.") });
     for (int i = 0; i < (int) history.size(); ++i)
-        if (dotArea (i).contains (lastMouse))
-            return i18n::pick ("An earlier state - click to go back to it.", "Ein früherer Zustand - klicken, um dorthin zurückzukehren.");
-    return {};
+        r.push_back ({ dotArea (i), i18n::pick ("An earlier state - click to go back to it.", "Ein früherer Zustand - klicken, um dorthin zurückzukehren.") });
+    return r;
 }
 } // namespace ohpe::ui

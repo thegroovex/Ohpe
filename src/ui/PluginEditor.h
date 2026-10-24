@@ -14,6 +14,7 @@
 #include "OhpeLookAndFeel.h"
 #include "ProView.h"
 #include "SettingsView.h"
+#include "Tooltips.h"
 #include "PackManagerView.h"
 #include "UpdateView.h"
 #include "Widgets.h"
@@ -28,7 +29,7 @@ namespace ohpe
 namespace ui
 {
 /** Part selector 1-4 (header). */
-class PartSelector : public juce::Component, public juce::TooltipClient
+class PartSelector : public juce::Component, public juce::TooltipClient, public tips::RegionProvider
 {
 public:
     void setPart (int p) { part = p; repaint(); }
@@ -39,6 +40,7 @@ public:
         if (states != spatial || pulse) { spatial = states; time = t; repaint(); }
     }
     juce::String getTooltip() override;
+    std::vector<tips::Region> tipRegions() override; ///< p82: one tooltip per part
     std::function<void (int)> onSelect;
     void paint (juce::Graphics& g) override;
     void mouseDown (const juce::MouseEvent& e) override;
@@ -55,9 +57,11 @@ private:
 };
 
 /** Preset name with previous / next (header); a click on the name opens the library. */
-class PresetStrip : public juce::Component
+class PresetStrip : public juce::Component, public juce::TooltipClient, public tips::RegionProvider
 {
 public:
+    juce::String getTooltip() override { return tips::regionTipAt (tipRegions(), getMouseXYRelative().toFloat()); } ///< p82
+    std::vector<tips::Region> tipRegions() override;
     void setName (const juce::String& n) { if (n != name) { name = n; repaint(); } }
     std::function<void (int delta)> onStep;
     std::function<void()> onOpen;
@@ -266,6 +270,23 @@ public:
     /** The design-unit rectangles of the plate's panels and legends (layout tests). */
     static juce::Rectangle<float> designArea (const char* name);
     void softKey (int id) { onSoftKey (id); }
+
+    // ---------------------------------------------------------------- p82: the help search
+    /** Everything the help search finds: the help topics, the parameters of the edit part and the global ones, the
+        controls of the plate (names and descriptions in English and German). */
+    std::vector<ui::tips::Entry> helpSearchIndex();
+    /** Settings > Help with the search field focused (and `query` typed, if given) - also Ctrl / Cmd + F. */
+    void openHelpSearch (const juce::String& query = {});
+    /** Jumps to a search result: a topic on the Help page, a parameter on its mode page (or the pro view), a control
+        on the plate - and highlights it for a few seconds. False if it cannot be shown. */
+    bool revealSearchResult (const ui::tips::Entry& entry);
+    bool revealParameter (const juce::String& paramId);
+    bool revealControl (const juce::String& key);
+    /** The plate component a control key stands for (nullptr = none / not a component). */
+    juce::Component* controlComponent (const juce::String& key);
+    /** The highlighted area (editor pixels) while the highlight lasts, else empty (tests). */
+    juce::Rectangle<float> highlightedArea() const noexcept { return highlightTime > 0.0f ? highlightRect : juce::Rectangle<float>(); }
+    void highlight (juce::Rectangle<float> editorArea, float seconds = 3.0f);
     ui::ConfirmDialog& confirmDialogComponent() { return confirmDialog; } ///< p38
     ui::RecoveryNotice& recoveryNoticeComponent() { return recoveryNotice; } ///< p63
     /** p63: shows the processor's pending recovery offer (crash-safe start), if any. */
@@ -353,6 +374,8 @@ private:
     double gridHintUntil = 0.0; ///< p47: the grid's first-use hint in the keyboard readout shows until then (ms counter)
     std::array<unsigned, numEngineTypes> engineTipParts {}; ///< p14: part sets the engine tooltips were written for
     bool engineTipsValid = false;
+    juce::Rectangle<float> highlightRect; ///< p82: the search result shown on the plate (editor pixels)
+    float highlightTime = 0.0f;
     ui::PictoKey octDownKey { ui::Picto::OctaveDown, "Octave" };
     ui::PictoKey octUpKey { ui::Picto::OctaveUp, "Octave" };
     ui::PictoKey midiKey { ui::Picto::Midi, "MIDI" };

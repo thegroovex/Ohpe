@@ -32,6 +32,11 @@ juce::String upper (const juce::String& text);
 /** All keys with a German translation (used by the localisation test). */
 juce::StringArray allKeys();
 
+/** p82: texts tr() was asked for in German that have no translation (since the last clearMissingKeys(); checked by
+    the tooltip test after walking every view). */
+juce::StringArray missingKeys();
+void clearMissingKeys();
+
 /** Keys that appear more than once in the translation table (must stay empty; checked by a test). */
 juce::StringArray duplicateKeys();
 } // namespace ohpe::i18n

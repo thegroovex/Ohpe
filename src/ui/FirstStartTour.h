@@ -3,6 +3,7 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
+#include "Tooltips.h"
 
 #include <functional>
 #include <vector>
@@ -23,7 +24,7 @@ namespace ohpe::ui
     The editor shows it once on the first standalone start and on the first plug-in editor open (settings.json
     "tour"); Settings > General and the help pages open it again. `onFinished` runs on DONE and on SKIP.
 */
-class FirstStartTour : public juce::Component
+class FirstStartTour : public juce::Component, public juce::TooltipClient, public tips::RegionProvider
 {
 public:
     static constexpr int numSteps = 4;
@@ -55,6 +56,8 @@ public:
     void press (int key);
 
     void paint (juce::Graphics& g) override;
+    juce::String getTooltip() override { return tips::regionTipAt (tipRegions(), getMouseXYRelative().toFloat()); } ///< p82
+    std::vector<tips::Region> tipRegions() override; ///< p82: the keys
     void mouseMove (const juce::MouseEvent& e) override;
     void mouseExit (const juce::MouseEvent& e) override;
     void mouseUp (const juce::MouseEvent& e) override;

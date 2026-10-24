@@ -245,4 +245,16 @@ bool FirstStartTour::keyPressed (const juce::KeyPress& k)
     if (k == juce::KeyPress::leftKey) { back(); return true; }
     return true; // the plate waits while the tour is open
 }
+// p82: the keys' tooltips
+std::vector<tips::Region> FirstStartTour::tipRegions()
+{
+    std::vector<tips::Region> r;
+    if (hasKey (NextKey))
+        r.push_back ({ keyArea (NextKey), current == numSteps - 1 ? tips::t ("Done: close the tour (Return)", "Fertig: die Tour schließen (Eingabe)")
+                                                                  : tips::t ("Next step (Return, right arrow)", "Nächster Schritt (Eingabe, Pfeil rechts)") });
+    if (hasKey (BackKey)) r.push_back ({ keyArea (BackKey), tips::t ("The step before (left arrow)", "Der Schritt davor (Pfeil links)") });
+    if (hasKey (SkipKey)) r.push_back ({ keyArea (SkipKey), tips::t ("Skip the tour (Esc) - Settings > Help shows it again", "Die Tour überspringen (Esc) - Einstellungen > Hilfe zeigt sie wieder") });
+    return r;
+}
+
 } // namespace ohpe::ui

@@ -46,12 +46,13 @@ void PackManagerView::chip (juce::Graphics& g, juce::Rectangle<float> r, const j
     g.setColour ((on ? colour::display : colour::displayText).withAlpha (enabled ? 1.0f : 0.35f));
     g.setFont (labelFont (juce::jmin (r.getHeight() * 0.52f, u * 1.4f)));
     g.drawFittedText (text, r.reduced (u * 0.4f, 0).toNearestInt(), juce::Justification::centred, 1, 0.7f);
-    if (enabled && action) hits.push_back ({ r, text, std::move (action) });
+    if (enabled && action) hits.push_back ({ r, text, std::move (action), tipNow });
 }
 
 void PackManagerView::paint (juce::Graphics& g)
 {
     hits.clear();
+    tipNow = {};
     rows.clear();
     const float u = unit(), h = u * 3.2f, row = u * 3.9f;
     const auto a = getLocalBounds().toFloat();
@@ -78,6 +79,7 @@ void PackManagerView::paint (juce::Graphics& g)
     const auto packs = updater.installedPacks();
     uint64_t used = 0;
     for (const auto& p : packs) used += p.bytes;
+    rowTip ("Install a content pack file (.ohpepack)", "Eine Inhaltspaket-Datei (.ohpepack) installieren");
     chip (g, { a.getX(), y, u * 20.0f, h }, i18n::upper (busy && s.busyPack.isNotEmpty() ? tr ("Installing") : tr ("Install pack") + juce::String::fromUTF8 (" \xe2\x80\xa6")),
           true, colour::sunYellow, [this] { chooseAndInstall(); }, ! busy);
     g.setColour (colour::displayDim);
@@ -137,6 +139,7 @@ void PackManagerView::paint (juce::Graphics& g)
         g.drawFittedText (lic, juce::Rectangle<float> (cLic, y, cDel - cLic - u * 1.0f, h).toNearestInt(), juce::Justification::centredLeft, 1, 0.8f);
         const auto id = str (info.id);
         const bool armed = armedRemove == id;
+        rowTip ("Remove this pack (click twice)", "Dieses Paket entfernen (zweimal klicken)");
         chip (g, { cDel, y + u * 0.2f, u * 13.0f, h - u * 0.4f }, i18n::upper (armed ? tr ("Remove?") : tr ("Remove")), armed, colour::signalRed,
               [this, id, armed] {
                   if (! armed) { armedRemove = id; repaint(); return; }
@@ -194,4 +197,25 @@ bool PackManagerView::clickChip (const juce::String& text)
         }
     return false;
 }
+// ---------------------------------------------------------------- p82: tooltips of the painted controls
+juce::String PackManagerView::getTooltip()
+{
+    const auto p = getMouseXYRelative().toFloat();
+    for (auto it = hits.rbegin(); it != hits.rend(); ++it)
+        if (it->area.contains (p)) return it->tip;
+    return {};
+}
+
+std::vector<tips::Region> PackManagerView::tipRegions()
+{
+    {
+        juce::Image img (juce::Image::ARGB, juce::jmax (1, getWidth()), juce::jmax (1, getHeight()), true);
+        juce::Graphics g (img);
+        paint (g); // the hit list of what is shown now
+    }
+    std::vector<tips::Region> r;
+    for (auto it = hits.rbegin(); it != hits.rend(); ++it) r.push_back ({ it->area, it->tip });
+    return r;
+}
+
 } // namespace ohpe::ui

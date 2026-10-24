@@ -36,7 +36,12 @@ void ParamBar::refresh()
     if (std::abs (v - shown) > 1.0e-6f) repaint();
 }
 
-juce::String ParamBar::getTooltip() { return pro::hoverText (proc, id.toStdString()); }
+juce::String ParamBar::getTooltip()
+{
+    // p82: what it does, how to edit it, MIDI learn
+    return tips::withLearn (pro::hoverText (proc, id.toStdString()) + "\n"
+                            + tips::t ("Drag the bar (Shift: fine), click to jump, double-click: default", "Balken ziehen (Shift: fein), Klick springt, Doppelklick: Standardwert"));
+}
 
 void ParamBar::paint (juce::Graphics& g)
 {
@@ -516,6 +521,25 @@ void ProView::Content::paint (juce::Graphics& g)
     }
 }
 
+std::vector<tips::Region> ProView::Content::tipRegions()
+{
+    std::vector<tips::Region> r;
+    for (size_t i = 0; i < owner.cards.size(); ++i)
+    {
+        const auto& c = owner.cards[i];
+        if (! c.visible) continue;
+        if (c.numBars > 0)
+            r.push_back ({ owner.chevronArea (c), owner.isCollapsed ((int) i) ? tips::t ("Show the bars of this card", "Die Balken dieser Karte zeigen")
+                                                                              : tips::t ("Hide the bars of this card", "Die Balken dieser Karte ausblenden") });
+        if (c.partSound)
+        {
+            r.push_back ({ owner.lockArea (c), tips::t ("Lock: VARY and the dice leave this card alone", "Schloss: VARY und der Würfel lassen diese Karte in Ruhe") });
+            r.push_back ({ owner.diceArea (c), tips::t ("Dice: new values for this card only", "Würfel: neue Werte nur für diese Karte") });
+        }
+    }
+    return r;
+}
+
 void ProView::Content::mouseDown (const juce::MouseEvent& e)
 {
     for (size_t i = 0; i < owner.cards.size(); ++i)
@@ -582,6 +606,22 @@ void ProView::paint (juce::Graphics& g)
     g.drawText (i18n::upper (tr ("Simple")), left, juce::Justification::centred, false);
     g.setColour (simple ? colour::displayDim : colour::display);
     g.drawText (i18n::upper (i18n::pick ("All", "Alles")), right, juce::Justification::centred, false);
+}
+
+std::vector<tips::Region> ProView::tipRegions()
+{
+    std::vector<tips::Region> r;
+    r.push_back ({ closeArea(), tips::t ("Close the pro view (Esc)", "Profiansicht schließen (Esc)") });
+    const auto s = simpleToggleArea();
+    if (! s.isEmpty())
+    {
+        r.push_back ({ s.withWidth (s.getWidth() * 0.5f), tips::t ("Simple: the pictures and Discover only", "Einfach: nur die Bilder und Entdecken") });
+        r.push_back ({ s.withTrimmedLeft (s.getWidth() * 0.5f), tips::t ("All: every parameter as a bar too", "Alle: zusätzlich jeden Parameter als Balken") });
+    }
+    for (int m = 0; m < numModes; ++m)
+        if (! tabArea (m).isEmpty())
+            r.push_back ({ tabArea (m), tr (modeInfo ((Mode) m).nameEn) + " - " + tips::t ("every parameter of this mode", "alle Parameter dieses Modus") });
+    return r;
 }
 
 void ProView::mouseDown (const juce::MouseEvent& e)

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "plugin/Updater.h"
+#include "Tooltips.h"
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -20,7 +21,7 @@ namespace ohpe::ui
     the chip turns into REMOVE? for a second click). Packs are read-only; user presets and tables are never touched.
     Draws in the display palette (follows the night skin).
 */
-class PackManagerView : public juce::Component, private juce::ChangeListener
+class PackManagerView : public juce::Component, public juce::TooltipClient, public tips::RegionProvider, private juce::ChangeListener
 {
 public:
     explicit PackManagerView (Updater& u);
@@ -32,6 +33,8 @@ public:
 
     void paint (juce::Graphics& g) override;
     void mouseDown (const juce::MouseEvent& e) override;
+    juce::String getTooltip() override;              ///< p82: the painted control under the mouse
+    std::vector<tips::Region> tipRegions() override; ///< p82: every painted control
     void visibilityChanged() override { armedRemove.clear(); }
 
     /** Size text "1.2 MB" / "640 KB". */
@@ -48,6 +51,7 @@ private:
         juce::Rectangle<float> area;
         juce::String text;
         std::function<void()> action;
+        juce::String tip; ///< p82
     };
     void changeListenerCallback (juce::ChangeBroadcaster*) override { repaint(); }
     float unit() const { return (float) getWidth() / 88.0f; }
@@ -55,6 +59,8 @@ private:
                bool enabled = true);
 
     Updater& updater;
+    juce::String tipNow; ///< p82: the tooltip of the next chips
+    void rowTip (const char* en, const char* de) { tipNow = tips::t (en, de); }
     std::vector<Hit> hits;
     juce::StringArray rows;
     juce::String armedRemove;

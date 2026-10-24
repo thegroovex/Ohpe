@@ -152,4 +152,18 @@ void RecoveryNotice::mouseUp (const juce::MouseEvent& e)
     if (keyArea (0).contains (e.position)) restore();
     else if (numKeys() > 1 && keyArea (1).contains (e.position)) dismiss();
 }
+// p82: the keys' tooltips
+std::vector<tips::Region> RecoveryNotice::tipRegions()
+{
+    std::vector<tips::Region> r;
+    if (numKeys() > 1)
+    {
+        r.push_back ({ keyArea (0), keyText (0) + " - " + tips::t ("bring back the session from before the crash", "die Sitzung von vor dem Absturz zurückholen") });
+        r.push_back ({ keyArea (1), keyText (1) + " - " + tips::t ("start with a fresh instrument", "mit einem frischen Instrument beginnen") });
+    }
+    else
+        r.push_back ({ keyArea (0), keyText (0) + " - " + tips::t ("close the notice", "den Hinweis schließen") });
+    return r;
+}
+
 } // namespace ohpe::ui

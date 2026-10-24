@@ -1418,6 +1418,15 @@ void FxEditor::paintOverChildren (juce::Graphics& g)
             }
 }
 
+std::vector<tips::Region> FxEditor::tipRegions()
+{
+    std::vector<tips::Region> r;
+    r.push_back ({ closeArea(), tips::t ("Close the FX editor (Esc)", "FX-Editor schließen (Esc)") });
+    for (int i = 0; i < numSlots(); ++i)
+        r.push_back ({ slotTabArea (i), tips::withLearn (tips::t ("FX slot: click to edit it here", "FX-Slot: klicken, um ihn hier zu bearbeiten")) });
+    return r;
+}
+
 void FxEditor::mouseDown (const juce::MouseEvent& e)
 {
     if (closeArea().contains (e.position)) { if (onClose) onClose(); return; }

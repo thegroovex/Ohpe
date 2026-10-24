@@ -289,6 +289,21 @@ SettingsView::SettingsView (OhpeProcessor& p, Updater& u, UserSettingsStore& s) 
     store.addChangeListener (this);
     proc.addChangeListener (this);
     setWantsKeyboardFocus (true);
+    // p82: the help search field (Help page)
+    searchBox.setColour (juce::TextEditor::backgroundColourId, colour::displayGrid);
+    searchBox.setColour (juce::TextEditor::textColourId, colour::displayText);
+    searchBox.setColour (juce::TextEditor::outlineColourId, colour::displayGrid.brighter (0.3f));
+    searchBox.setColour (juce::TextEditor::focusedOutlineColourId, colour::sunYellow);
+    searchBox.setColour (juce::TextEditor::highlightColourId, colour::ultraviolet.withAlpha (0.5f));
+    searchBox.setColour (juce::TextEditor::shadowColourId, juce::Colours::transparentBlack);
+    searchBox.setEscapeAndReturnKeysConsumed (true);
+    searchBox.onTextChange = [this] { runSearch(); };
+    searchBox.onReturnKey = [this] { clickSearchResult (0); };
+    searchBox.onEscapeKey = [this] {
+        if (searchBox.getText().isEmpty()) close();
+        else setSearchText ({});
+    };
+    addChildComponent (searchBox);
     startTimer (100); // p50: fingerboard status on the MIDI page (p53: the virtual controller on the Controller page)
 }
 
@@ -302,6 +317,7 @@ SettingsView::~SettingsView()
 
 void SettingsView::open (int pg)
 {
+    searchIndex.clear(); // p82: the search index follows the edit part and the engine
     if (pg >= 0) showPage (pg);
     setVisible (true);
     toFront (true);
@@ -379,6 +395,13 @@ juce::Rectangle<float> SettingsView::contentArea() const
 
 void SettingsView::resized()
 {
+    {   // p82: the help search field
+        const float u = unit();
+        searchBox.setBounds (searchBoxArea().toNearestInt());
+        searchBox.setFont (labelFont (u * 1.5f));
+        searchBox.setIndents (juce::roundToInt (u * 0.8f), juce::jmax (0, juce::roundToInt ((u * 3.0f - u * 1.5f) * 0.5f) - 1));
+        searchBox.setVisible (isVisible() && current == Help);
+    }
     for (size_t e = 0; e < extras.size(); ++e)
         if (auto* c = extras[e].content)
         {
@@ -412,7 +435,7 @@ void SettingsView::chip (juce::Graphics& g, juce::Rectangle<float> r, const juce
     g.setColour (on ? colour::display : colour::displayText);
     g.setFont (labelFont (juce::jmin (r.getHeight() * 0.52f, u * 1.4f)));
     g.drawFittedText (text, r.reduced (u * 0.4f, 0).toNearestInt(), juce::Justification::centred, 1, 0.7f);
-    if (enabled && action) hits.push_back ({ r, text, std::move (action) });
+    if (enabled && action) hits.push_back ({ r, text, std::move (action), tipNow });
 }
 
 void SettingsView::legend (juce::Graphics& g, const juce::String& text, juce::Rectangle<float> r)
@@ -495,6 +518,13 @@ void SettingsView::paintText (juce::Graphics& g, juce::Rectangle<float> area, co
 void SettingsView::paint (juce::Graphics& g)
 {
     hits.clear();
+    tipNow = {};
+    if (current == Help) // p82: the search field's texts follow the language
+    {
+        searchBox.setTextToShowWhenEmpty (tips::t ("Search help, parameters, controls", "Hilfe, Parameter, Bedienelemente suchen"), colour::displayDim);
+        searchBox.setTooltip (tips::t ("Search the help topics, parameters and controls - English or German words, typos are fine; Return opens the first result",
+                                       "Hilfethemen, Parameter und Bedienelemente suchen - deutsche oder englische Wörter, Tippfehler sind kein Problem; Eingabe öffnet den ersten Treffer"));
+    }
     const float u = unit();
     const auto b = getLocalBounds().toFloat();
     const float du = (float) getWidth() / 1152.0f;
@@ -510,6 +540,7 @@ void SettingsView::paint (juce::Graphics& g)
     g.setFont (labelFont (u * 1.3f));
     g.drawFittedText (tr ("Saved for you on this computer - not in projects or presets"),
                       juce::Rectangle<float> (u * 32.0f, u * 1.4f, u * 66.0f, u * 3.2f).toNearestInt(), juce::Justification::centredLeft, 1, 0.8f);
+    rowTip ("Close the settings (Esc)", "Einstellungen schließen (Esc)");
     chip (g, { b.getWidth() - u * 12.5f, u * 1.4f, u * 10.5f, u * 3.2f }, i18n::upper (tr ("Close")), false, colour::displayText, [this] { close(); });
 
     // tabs
@@ -529,7 +560,10 @@ void SettingsView::paint (juce::Graphics& g)
         g.setFont (labelFont (u * 1.4f));
         const auto name = i18n::upper (tabName (t));
         g.drawFittedText (name, r.withTrimmedLeft (u * 1.6f).toNearestInt(), juce::Justification::centredLeft, 1, 0.8f);
-        hits.push_back ({ r, name, [this, t] { showPage (t); } });
+        static const char* const tabKeys[] = { "settings.general", "settings.display", "settings.midi", "settings.learn",
+                                               "settings.controller", "settings.updates", "settings.help", "settings.about" };
+        const auto tabTip = t < numPages ? tips::controlTip (tabKeys[t]) : tips::t ("Content packs: install, update and remove", "Inhaltspakete: installieren, aktualisieren und entfernen");
+        hits.push_back ({ r, name, [this, t] { showPage (t); }, tabTip }); // p82
         y += u * 4.0f;
     }
 
@@ -566,6 +600,7 @@ void SettingsView::paintGeneral (juce::Graphics& g, juce::Rectangle<float> a)
     legend (g, tr ("Language"), { a.getX(), y, a.getWidth(), u * 1.6f });
     y += u * 2.0f;
     label (g, tr ("User interface language"), { a.getX(), y, a.getWidth() * 0.4f, h });
+    rowTip ("Language of the user interface: like the system, English or German", "Sprache der Oberfläche: wie das System, Englisch oder Deutsch");
     chips3 (y, { { tr ("System"), s.language == L::System, [this] { changeSettings ([] (auto& v) { v.language = L::System; }); } },
                  { "English", s.language == L::English, [this] { changeSettings ([] (auto& v) { v.language = L::English; }); } },
                  { "Deutsch", s.language == L::German, [this] { changeSettings ([] (auto& v) { v.language = L::German; }); } } });
@@ -573,14 +608,17 @@ void SettingsView::paintGeneral (juce::Graphics& g, juce::Rectangle<float> a)
     legend (g, tr ("Help"), { a.getX(), y, a.getWidth(), u * 1.6f });
     y += u * 2.0f;
     label (g, tr ("Tooltips"), { a.getX(), y, a.getWidth() * 0.4f, h });
+    rowTip ("Tooltips like this one on every control", "Tooltips wie dieser an jedem Bedienelement");
     chips3 (y, { { tr ("Off"), ! s.tooltips, [this] { changeSettings ([] (auto& v) { v.tooltips = false; }); } },
                  { tr ("On"), s.tooltips, [this] { changeSettings ([] (auto& v) { v.tooltips = true; }); } } });
     y += row;
     label (g, tr ("Help overlay (F1)"), { a.getX(), y, a.getWidth() * 0.4f, h });
+    rowTip ("Help overlay: names and one-line explanations over the areas of the plate (F1)", "Hilfe-Overlay: Namen und Kurzerklärungen über den Bereichen der Oberfläche (F1)");
     chips3 (y, { { tr ("Off"), ! s.helpOverlay, [this] { changeSettings ([] (auto& v) { v.helpOverlay = false; }); } },
                  { tr ("On"), s.helpOverlay, [this] { changeSettings ([] (auto& v) { v.helpOverlay = true; }); } } });
     y += row;
     label (g, tr ("Help pages"), { a.getX(), y, a.getWidth() * 0.4f, h });
+    rowTip ("The first-start tour again, or the help pages with the help search", "Die Tour vom ersten Start noch einmal, oder die Hilfeseiten mit der Hilfesuche");
     chips3 (y, { { tr ("Show tour"), false, [this] { if (onShowTour) onShowTour(); } }, // p64
                  { tr ("Open help"), false, [this] { showPage (Help); } } });
     y += row + u * 1.0f;
@@ -609,6 +647,7 @@ void SettingsView::paintDisplay (juce::Graphics& g, juce::Rectangle<float> a)
     legend (g, tr ("Skin"), { a.getX(), y, a.getWidth(), u * 1.6f });
     y += u * 2.0f;
     label (g, tr ("Light, dark (night) or like the system"), { a.getX(), y, a.getWidth() * 0.4f, h });
+    rowTip ("Skin: light, dark (night) or following the system", "Erscheinung: hell, dunkel (Nacht) oder wie das System");
     chipsRow (y, u * 13.0f, { { tr ("Light"), s.skin == S::Light, [this] { changeSettings ([] (auto& v) { v.skin = S::Light; }); } },
                               { tr ("Dark"), s.skin == S::Dark, [this] { changeSettings ([] (auto& v) { v.skin = S::Dark; }); } },
                               { tr ("Auto"), s.skin == S::Auto, [this] { changeSettings ([] (auto& v) { v.skin = S::Auto; }); } } });
@@ -618,12 +657,14 @@ void SettingsView::paintDisplay (juce::Graphics& g, juce::Rectangle<float> a)
     label (g, tr ("Display brightness"), { a.getX(), y, a.getWidth() * 0.4f, h });
     {
         std::vector<std::tuple<juce::String, bool, std::function<void()>>> list;
+        rowTip ("Brightness of the dark display (lower = less glare)", "Helligkeit des dunklen Displays (weniger = weniger Blendung)");
         for (float v : { 0.4f, 0.55f, 0.7f, 0.85f, 1.0f })
             list.emplace_back (percent (v), std::abs (s.brightness - v) < 0.075f, [this, v] { changeSettings ([v] (auto& x) { x.brightness = v; }); });
         chipsRow (y, u * 7.4f, list);
     }
     y += row;
     label (g, tr ("Animations"), { a.getX(), y, a.getWidth() * 0.4f, h });
+    rowTip ("Breathing lights and display motion: full, reduced (slower) or off (still)", "Atmende Lichter und Display-Bewegung: voll, reduziert (langsamer) oder aus (still)");
     chipsRow (y, u * 13.0f, { { tr ("Full"), s.animations == A::Full, [this] { changeSettings ([] (auto& v) { v.animations = A::Full; }); } },
                               { tr ("Reduced"), s.animations == A::Reduced, [this] { changeSettings ([] (auto& v) { v.animations = A::Reduced; }); } },
                               { tr ("Off"), s.animations == A::Off, [this] { changeSettings ([] (auto& v) { v.animations = A::Off; }); } } });
@@ -631,6 +672,7 @@ void SettingsView::paintDisplay (juce::Graphics& g, juce::Rectangle<float> a)
     label (g, tr ("Animated 3D visuals"), { a.getX(), y, a.getWidth() * 0.4f, h });
     {
         const bool on = getAnimatedVisuals ? getAnimatedVisuals() : true;
+        rowTip ("Animated 3D visuals on the display (spectrum terrain, parallax)", "Animierte 3D-Visuals auf dem Display (Spektrum-Landschaft, Parallaxe)");
         chipsRow (y, u * 13.0f, { { tr ("Off"), ! on, [this] { if (setAnimatedVisuals) setAnimatedVisuals (false); repaint(); } },
                                   { tr ("On"), on, [this] { if (setAnimatedVisuals) setAnimatedVisuals (true); repaint(); } } });
     }
@@ -638,6 +680,8 @@ void SettingsView::paintDisplay (juce::Graphics& g, juce::Rectangle<float> a)
     label (g, tr ("Window size"), { a.getX(), y, a.getWidth() * 0.4f, h });
     {
         std::vector<std::tuple<juce::String, bool, std::function<void()>>> list;
+        rowTip ("UI size of the instrument, 75 .. 200 % (also with a right-click on the housing or the settings key)",
+                "UI-Größe des Instruments, 75 .. 200 % (auch per Rechtsklick auf das Gehäuse oder die Einstellungstaste)");
         for (float v : settings::windowScales)
             list.emplace_back (percent (v), s.windowScale == v, [this, v] { changeSettings ([v] (auto& x) { x.windowScale = v; }); });
         chipsRow (y, u * 7.4f, list); // p83: six sizes, 75 .. 200 %
@@ -668,13 +712,17 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
         const juce::String pre = "p" + juce::String (p + 1) + ".";
         label (g, tr ("Part") + " " + juce::String (p + 1), { a.getX(), y, u * 11.0f, h });
         const int ch = (int) std::lround (plain (pre + "midich"));
+        rowTip ("MIDI channel the part listens to (Omni = every channel): - / +", "MIDI-Kanal, auf den der Part hört (Omni = alle Kanäle): - / +");
         stepper (g, { xCh, y, u * 18.0f, h }, ch == 0 ? juce::String ("Omni") : tr ("Ch") + " " + juce::String (ch),
                  [this, pre] { step (pre + "midich", -1); }, [this, pre] { step (pre + "midich", 1); });
         const bool mpe = plain (pre + "mpe") >= 0.5f;
+        rowTip ("MPE for the part: bend, slide and pressure per note", "MPE für den Part: Bend, Slide und Druck pro Note");
         chip (g, { xMpe, y, u * 6.2f, h }, i18n::upper (tr ("Off")), ! mpe, colour::sunYellow, [this, pre] { setPlain (pre + "mpe", 0.0f); });
         chip (g, { xMpe + u * 6.8f, y, u * 6.2f, h }, i18n::upper (tr ("On")), mpe, colour::sunYellow, [this, pre] { setPlain (pre + "mpe", 1.0f); });
+        rowTip ("Pitch bend range in semitones: - / +", "Pitch-Bend-Bereich in Halbtönen: - / +");
         stepper (g, { xBend, y, u * 18.0f, h }, juce::String ((int) std::lround (plain (pre + "bend"))) + " " + tr ("st"),
                  [this, pre] { step (pre + "bend", -1); }, [this, pre] { step (pre + "bend", 1); });
+        rowTip ("Pitch bend range per note with MPE, in semitones: - / +", "Bend-Bereich pro Note bei MPE, in Halbtönen: - / +");
         stepper (g, { xMpeBend, y, u * 18.0f, h }, juce::String ((int) std::lround (plain (pre + "mpe.bend"))) + " " + tr ("st"),
                  [this, pre] { step (pre + "mpe.bend", -1); }, [this, pre] { step (pre + "mpe.bend", 1); });
         y += row;
@@ -704,18 +752,22 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
                 if (ctlKey.isNotEmpty() && juce::String (gridctl::deviceKey (d.name.toStdString())) == ctlKey)
                 {
                     label (g, d.name, { x, yy, half - u * 14.0f, h });
+                    rowTip ("This input is the grid controller - opens its page", "Dieser Eingang ist der Grid-Controller - öffnet seine Seite");
                     chip (g, { x + half - u * 13.0f, yy, u * 13.0f, h }, i18n::upper (tr ("Controller")), true, colour::ultraviolet,
                           [this] { showPage (Controller); });
                     yy += row;
                     continue;
                 }
                 label (g, d.name, { x, yy, half - u * 14.0f, h });
+                rowTip ("Use this MIDI input (on) or ignore it (off)", "Diesen MIDI-Eingang nutzen (ein) oder ignorieren (aus)");
                 chip (g, { x + half - u * 13.0f, yy, u * 6.2f, h }, i18n::upper (tr ("Off")), ! on, colour::sunYellow,
                       [this, id = d.identifier] { if (auto* m = proc.standaloneDevices) m->setMidiInputDeviceEnabled (id, false); repaint(); });
                 chip (g, { x + half - u * 6.2f, yy, u * 6.2f, h }, i18n::upper (tr ("On")), on, colour::sunYellow,
                       [this, id = d.identifier] { if (auto* m = proc.standaloneDevices) m->setMidiInputDeviceEnabled (id, true); repaint(); });
                 yy += row;
             }
+            if (proc.openStandaloneAudioSettings)
+                rowTip ("Audio device, sample rate and buffer size of the app", "Audiogerät, Samplerate und Puffergröße der App");
             if (proc.openStandaloneAudioSettings)
                 chip (g, { x, yy, half, h }, i18n::upper (tr ("Audio Settings ...")), false, colour::displayText, [this] { proc.openStandaloneAudioSettings(); });
         }
@@ -737,17 +789,20 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
         const int src = (int) std::lround (plain (Core::Ids::syncSource));
         const float cw = (half - u * 1.2f) / 3.0f;
         const juce::String names[] = { tr ("Internal"), "MIDI Clock", "Link" };
+        rowTip ("Tempo source: internal, incoming MIDI Clock or Link", "Tempoquelle: intern, eingehende MIDI Clock oder Link");
         for (int i = 0; i < 3; ++i)
             chip (g, { x + (cw + u * 0.6f) * (float) i, yy, cw, h }, i18n::upper (names[i]), src == i, colour::sunYellow,
                   [this, i] { setPlain (Core::Ids::syncSource, (float) i); });
         yy += row;
         const bool out = plain (Core::Ids::clockOut) >= 0.5f;
         label (g, tr ("MIDI Clock Out"), { x, yy, half - u * 14.0f, h });
+        rowTip ("Send MIDI Clock to other devices", "MIDI Clock an andere Geräte senden");
         chip (g, { x + half - u * 13.0f, yy, u * 6.2f, h }, i18n::upper (tr ("Off")), ! out, colour::sunYellow, [this] { setPlain (Core::Ids::clockOut, 0.0f); });
         chip (g, { x + half - u * 6.2f, yy, u * 6.2f, h }, i18n::upper (tr ("On")), out, colour::sunYellow, [this] { setPlain (Core::Ids::clockOut, 1.0f); });
         yy += row;
         const float sm = plain (Core::Ids::syncSmoothing);
         label (g, tr ("Clock Smoothing"), { x, yy, half - u * 19.0f, h });
+        rowTip ("Smooths the tempo of an incoming clock: - / +", "Glättet das Tempo einer eingehenden Clock: - / +");
         stepper (g, { x + half - u * 18.0f, yy, u * 18.0f, h }, percent (sm),
                  [this, sm] { setPlain (Core::Ids::syncSmoothing, juce::jlimit (0.0f, 1.0f, std::round (sm * 10.0f - 1.0f) / 10.0f)); },
                  [this, sm] { setPlain (Core::Ids::syncSmoothing, juce::jlimit (0.0f, 1.0f, std::round (sm * 10.0f + 1.0f) / 10.0f)); });
@@ -757,6 +812,7 @@ void SettingsView::paintMidi (juce::Graphics& g, juce::Rectangle<float> a)
         yy += u * 2.0f;
         const juce::String st = gridCtl != nullptr ? gridCtl->status() : tr ("Off");
         label (g, st, { x, yy, half - u * 14.0f, h }, gridCtl == nullptr || ! gridCtl->connected());
+        rowTip ("The grid controller page: ports, controls, virtual controller", "Seite des Grid-Controllers: Ports, Bedienelemente, virtueller Controller");
         chip (g, { x + half - u * 13.0f, yy, u * 13.0f, h }, i18n::upper (tr ("Controller")), false,
               colour::displayText, [this] { showPage (Controller); });
     }
@@ -777,6 +833,7 @@ void SettingsView::paintFingerboard (juce::Graphics& g, juce::Rectangle<float> a
         const bool on = plain (pre + "mpe") >= 0.5f && std::lround (plain (pre + "mpe.onset")) != 0 && std::lround (plain (pre + "mpe.bend")) == 96;
         if (on && first < 0) first = p;
         // one tap: MPE on, bend range 96, level from pressure, HD auto - again: back to velocity and 48
+        rowTip ("One tap sets the part up for a fingerboard controller (MPE HD, bend 96, level from pressure) - again: back", "Ein Tipp richtet den Part für einen Fingerboard-Controller ein (MPE HD, Bend 96, Pegel aus Druck) - nochmal: zurück");
         chip (g, { xParts + (cw + u * 0.6f) * (float) p, y, cw, h }, i18n::upper (tr ("Part")) + " " + juce::String (p + 1), on, colour::sunYellow,
               [this, pre, on] {
                   if (on)
@@ -823,7 +880,7 @@ void SettingsView::dropdown (juce::Graphics& g, juce::Rectangle<float> r, const 
     const float cx = r.getRight() - u * 1.6f, cy = r.getCentreY(), w = u * 0.55f;
     tri.addTriangle (cx - w, cy - w * 0.5f, cx + w, cy - w * 0.5f, cx, cy + w * 0.6f);
     g.fillPath (tri);
-    if (enabled && action) hits.push_back ({ r, text, std::move (action) });
+    if (enabled && action) hits.push_back ({ r, text, std::move (action), tipNow });
 }
 
 void SettingsView::chooseControllerPort (bool input, const juce::String& name)
@@ -890,6 +947,7 @@ void SettingsView::paintController (juce::Graphics& g, juce::Rectangle<float> a)
         changeSettings ([fn] (settings::UserSettings& s) { fn (s); s.controllerChosen = true; });
     };
     const float wOff = u * 7.0f;
+    rowTip ("Grid controller profile 1 on or off", "Grid-Controller Profil 1 ein oder aus");
     chip (g, { x, y, wOff, h }, i18n::upper (tr ("Off")), ! on, colour::sunYellow,
           [set] { set ([] (settings::UserSettings& s) { s.controllerProfile = settings::ControllerOff; }); });
     chip (g, { x + wOff + gap, y, leftW - wOff - gap, h }, i18n::upper (tr ("Grid controller profile 1")), on, colour::sunYellow,
@@ -899,6 +957,7 @@ void SettingsView::paintController (juce::Graphics& g, juce::Rectangle<float> a)
     // ports: automatic, then a menu each with the full port names
     legend (g, tr ("Ports"), { x, y, leftW, u * 1.6f });
     y += u * 2.0f;
+    rowTip ("Find the controller's ports by themselves", "Die Ports des Controllers selbst finden");
     chip (g, { x, y, leftW, h }, i18n::upper (tr ("Choose ports automatically")), us.controllerAuto, colour::sunYellow,
           [set, autoOn = us.controllerAuto] { set ([autoOn] (settings::UserSettings& s) { s.controllerAuto = ! autoOn; }); }, on);
     y += row;
@@ -912,6 +971,7 @@ void SettingsView::paintController (juce::Graphics& g, juce::Rectangle<float> a)
         juce::String shown = cur.isEmpty() ? (us.controllerAuto ? tr ("not found") : tr ("choose ...")) : cur;
         if (us.controllerAuto && cur.isNotEmpty()) shown << "  (" << tr ("auto") << ")";
         const juce::Rectangle<float> r { x + wLabel, y, leftW - wLabel, h };
+        rowTip ("Choose the MIDI port the controller uses", "Den MIDI-Port des Controllers wählen");
         dropdown (g, r, shown, [this, input, r] { portMenu (input, r); }, on);
         y += row;
     }
@@ -932,12 +992,14 @@ void SettingsView::paintController (juce::Graphics& g, juce::Rectangle<float> a)
     y += u * 2.0f;
     const float wPair = (leftW - wLabel - gap) * 0.5f;
     label (g, tr ("Touch strip"), { x, y, wLabel + u * 3.0f, h }, ! on);
+    rowTip ("What the touch strip plays: pitch bend or the mod wheel", "Was der Touch-Strip spielt: Pitch Bend oder das Modrad");
     chip (g, { x + wLabel, y, wPair, h }, i18n::upper (tr ("Bend")), us.controllerStrip == 0, colour::sunYellow,
           [set] { set ([] (settings::UserSettings& s) { s.controllerStrip = 0; }); }, on);
     chip (g, { x + wLabel + wPair + gap, y, wPair, h }, i18n::upper (tr ("Mod")), us.controllerStrip == 1, colour::sunYellow,
           [set] { set ([] (settings::UserSettings& s) { s.controllerStrip = 1; }); }, on);
     y += row;
     label (g, tr ("Master"), { x, y, wLabel, h }, ! on);
+    rowTip ("What the master encoder turns: the Main volume or the tempo", "Was der Master-Encoder dreht: die Main-Lautstärke oder das Tempo");
     chip (g, { x + wLabel, y, wPair, h }, i18n::upper (tr ("Volume")), us.controllerMaster == 0, colour::sunYellow,
           [set] { set ([] (settings::UserSettings& s) { s.controllerMaster = 0; }); }, on);
     chip (g, { x + wLabel + wPair + gap, y, wPair, h }, i18n::upper (tr ("Tempo")), us.controllerMaster == 1, colour::sunYellow,
@@ -952,6 +1014,8 @@ void SettingsView::paintController (juce::Graphics& g, juce::Rectangle<float> a)
     juce::String where;
     if (on) where = elsewhere ? tr ("Active in another instance") : tr ("Active in this instance");
     label (g, where, { x, y, leftW - (elsewhere ? wTake + gap : 0.0f), h }, ! on);
+    if (elsewhere)
+        rowTip ("Move the controller to this instance", "Den Controller in diese Instanz holen");
     if (elsewhere)
         chip (g, { x + leftW - wTake, y, wTake, h }, i18n::upper (tr ("Take over here")), false, colour::ultraviolet,
               [this] { if (gridCtl != nullptr) gridCtl->claim(); repaint(); });
@@ -1002,12 +1066,13 @@ void SettingsView::paintControllerPreview (juce::Graphics& g, juce::Rectangle<fl
             }
             g.setColour (col);
             g.fillRoundedRectangle (c, u * 0.3f);
+            tipNow = tips::t ("A button of the controller - click to press it", "Eine Taste des Controllers - klicken zum Drücken");
             hits.push_back ({ c, "BTN " + juce::String (cc), [this, cc] {
                                  if (gridCtl == nullptr) return;
                                  gridCtl->receive (juce::MidiMessage::controllerEvent (1, cc, 127));
                                  gridCtl->receive (juce::MidiMessage::controllerEvent (1, cc, 0));
                                  gridCtl->update();
-                             } });
+                             }, tipNow });
         }
         body.removeFromTop (u * 0.3f);
     };
@@ -1069,8 +1134,11 @@ void SettingsView::paintLearn (juce::Graphics& g, juce::Rectangle<float> a)
     legend (g, tr ("MIDI Learn") + "  " + juce::String ((int) maps.size()), { a.getX(), y, u * 30.0f, h });
     const float cw = u * 13.0f;
     float x = a.getRight() - cw * 3.0f - u * 1.2f;
+    rowTip ("Load a MIDI map file (replaces the mappings)", "Eine MIDI-Map-Datei laden (ersetzt die Zuweisungen)");
     chip (g, { x, y, cw, h }, i18n::upper (tr ("Import ...")), false, colour::displayText, [this] { mapFile (false); });
+    rowTip ("Save the mappings as a MIDI map file", "Die Zuweisungen als MIDI-Map-Datei speichern");
     chip (g, { x + cw + u * 0.6f, y, cw, h }, i18n::upper (tr ("Export ...")), false, colour::displayText, [this] { mapFile (true); }, ! maps.empty());
+    rowTip ("Remove every MIDI mapping", "Alle MIDI-Zuweisungen entfernen");
     chip (g, { x + (cw + u * 0.6f) * 2.0f, y, cw, h }, i18n::upper (tr ("Clear all")), false, colour::signalRed, [this] { proc.clearAllMidiMappings(); repaint(); },
           ! maps.empty());
     y += h + u * 1.2f;
@@ -1114,7 +1182,9 @@ void SettingsView::paintLearn (juce::Graphics& g, juce::Rectangle<float> a)
         const juce::Rectangle<float> editR { colKeys, yy, u * 9.0f, h };
         if (list.contains (editR.getCentre()))
         {
+            rowTip ("Edit the mapping: channel, mode, range, learn again", "Zuweisung bearbeiten: Kanal, Modus, Bereich, neu lernen");
             chip (g, editR, i18n::upper (tr ("Edit")), false, colour::displayText, [this, i, editR] { editMapping ((int) i, editR); });
+            rowTip ("Remove this mapping", "Diese Zuweisung entfernen");
             chip (g, { colKeys + u * 9.6f, yy, u * 9.4f, h }, i18n::upper (tr ("Clear")), false, colour::signalRed,
                   [this, i] { proc.removeMidiMapping ((int) i); repaint(); });
         }
@@ -1212,9 +1282,11 @@ void SettingsView::paintUpdates (juce::Graphics& g, juce::Rectangle<float> a)
         chip (g, { a.getRight() - cw * 2.0f - u * 0.6f, yy, cw, h }, i18n::upper (t1), on1, colour::sunYellow, std::move (f1));
         chip (g, { a.getRight() - cw, yy, cw, h }, i18n::upper (t2), on2, colour::sunYellow, std::move (f2));
     };
+    rowTip ("Look for a new version once a day (nothing about you is sent)", "Einmal am Tag nach einer neuen Version suchen (nichts über dich wird gesendet)");
     pair (y, tr ("Check automatically (once a day)"), tr ("Off"), ! prefs.autoCheck, [this] { updater.setAutoCheck (false); repaint(); }, tr ("On"),
           prefs.autoCheck, [this] { updater.setAutoCheck (true); repaint(); });
     y += row;
+    rowTip ("Which releases: stable ones only, or previews too", "Welche Versionen: nur stabile, oder auch Vorschauen");
     pair (y, tr ("Channel"), tr ("Stable"), prefs.channel == update::Channel::Stable, [this] { updater.setChannel (update::Channel::Stable); repaint(); },
           tr ("Preview"), prefs.channel == update::Channel::Preview, [this] { updater.setChannel (update::Channel::Preview); repaint(); });
     y += row;
@@ -1223,7 +1295,9 @@ void SettingsView::paintUpdates (juce::Graphics& g, juce::Rectangle<float> a)
     g.drawText (prefs.lastCheck > 0 ? juce::Time (prefs.lastCheck * 1000).formatted ("%Y-%m-%d %H:%M") : tr ("never"),
                 juce::Rectangle<float> (a.getRight() - cw * 2.0f - u * 0.6f, y, cw * 2.0f + u * 0.6f, h), juce::Justification::centredRight, true);
     y += row + u * 0.8f;
+    rowTip ("Look for a new version now", "Jetzt nach einer neuen Version suchen");
     chip (g, { a.getX(), y, u * 18.0f, h }, i18n::upper (tr ("Check now")), false, colour::displayText, [this] { updater.checkNow(); repaint(); }, ! busy);
+    rowTip ("The update view: what is new, download and install", "Die Update-Ansicht: was neu ist, herunterladen und installieren");
     chip (g, { a.getX() + u * 19.0f, y, u * 24.0f, h },
           i18n::upper (s.hasRelease ? tr ("Update to") + " " + juce::String::fromUTF8 (s.release.version.toString().c_str()) : tr ("Open updates")),
           s.hasRelease, colour::sunYellow, [this] { if (onOpenUpdates) onOpenUpdates(); });
@@ -1234,8 +1308,10 @@ void SettingsView::paintUpdates (juce::Graphics& g, juce::Rectangle<float> a)
     {
         const auto packs = updater.installedPacks();
         label (g, juce::String ((int) packs.size()) + " " + tr ("installed"), { a.getX(), y, a.getWidth() * 0.4f, h });
+        rowTip ("Install a content pack file (.ohpepack)", "Eine Inhaltspaket-Datei (.ohpepack) installieren");
         chip (g, { a.getRight() - cw * 2.0f - u * 0.6f, y, cw, h }, i18n::upper (tr ("Install pack") + juce::String::fromUTF8 (" \xe2\x80\xa6")), true,
               colour::sunYellow, [this] { if (onInstallPack) onInstallPack(); }, ! busy && ! updater.busy());
+        rowTip ("The pack manager: update, roll back or remove packs", "Die Paketverwaltung: Pakete aktualisieren, zurücksetzen oder entfernen");
         chip (g, { a.getRight() - cw, y, cw, h }, i18n::upper (tr ("Manage packs")), false, colour::displayText, [this] { if (onManagePacks) onManagePacks(); });
     }
     y += row + u * 0.6f;
@@ -1245,24 +1321,40 @@ void SettingsView::paintUpdates (juce::Graphics& g, juce::Rectangle<float> a)
                       juce::Rectangle<float> (a.getX(), y, a.getWidth(), u * 4.0f).toNearestInt(), juce::Justification::topLeft, 2, 0.9f);
 }
 
+juce::Rectangle<float> SettingsView::searchBoxArea() const
+{
+    const float u = unit();
+    const auto a = contentArea();
+    return { a.getX(), a.getY(), u * 24.0f, u * 3.0f };
+}
+
 void SettingsView::paintHelp (juce::Graphics& g, juce::Rectangle<float> a)
 {
     const float u = unit();
+    const float listW = u * 24.0f;
+    const juce::Rectangle<float> text { a.getX() + listW + u * 2.5f, a.getY(), a.getWidth() - listW - u * 2.5f, a.getHeight() - u * 3.0f };
+    // p82: the search field over the topics (a child component); the results replace the topics while there is a query
+    a.removeFromTop (searchBoxArea().getHeight() + u * 0.8f);
+    if (searchBox.getText().trim().isNotEmpty())
+    {
+        paintSearchResults (g, a.withWidth (listW), text);
+        return;
+    }
     // p70: the topics and the tour key always fit the page - the rows get a little lower when there are many topics
     const float fit = juce::jmin (1.0f, a.getHeight() / ((float) (numHelpTopics() + 1) * u * 3.6f + u * 0.6f));
     const float h = u * 3.0f * fit, gap = u * 0.6f * fit;
     float y = a.getY();
-    const float listW = u * 24.0f;
     for (int t = 0; t < numHelpTopics(); ++t)
     {
         const juce::Rectangle<float> r { a.getX(), y, listW, h };
         const bool on = t == topic;
+        tipNow = tips::t ("Help topic: ", "Hilfethema: ") + helpTitle (t);
         chip (g, r, helpTitle (t), on, colour::sunYellow, [this, t] { setHelpTopic (t); });
         y += h + gap;
     }
     y += gap; // p64: the first-start tour again
+    tipNow = tips::controlTip ("tour");
     chip (g, { a.getX(), y, listW, h }, i18n::upper (tr ("Show tour")), false, colour::sunYellow, [this] { if (onShowTour) onShowTour(); });
-    const juce::Rectangle<float> text { a.getX() + listW + u * 2.5f, a.getY(), a.getWidth() - listW - u * 2.5f, a.getHeight() - u * 3.0f };
     g.setColour (colour::displayText);
     g.setFont (brandFont (u * 2.0f));
     g.drawFittedText (helpTitle (topic), text.withHeight (u * 3.0f).toNearestInt(), juce::Justification::centredLeft, 1, 0.8f);
@@ -1270,6 +1362,143 @@ void SettingsView::paintHelp (juce::Graphics& g, juce::Rectangle<float> a)
     g.setColour (colour::displayDim);
     g.setFont (labelFont (u * 1.2f));
     g.drawText ("OHPE  " + aboutLine(), juce::Rectangle<float> (text.getX(), a.getBottom() - u * 2.0f, text.getWidth(), u * 2.0f), juce::Justification::centredLeft, true);
+}
+
+// ---------------------------------------------------------------- p82: the help search
+std::vector<tips::Entry> SettingsView::helpSearchEntries()
+{
+    std::vector<tips::Entry> e;
+    for (int t = 0; t < numHelpTopics(); ++t)
+    {
+        const auto& h = helpTopics[(size_t) t];
+        e.push_back ({ tips::Kind::Topic, u8 (h.titleEn), u8 (h.titleDe), u8 (h.textEn), u8 (h.textDe), juce::String (t), "Help", "Hilfe" });
+    }
+    return e;
+}
+
+void SettingsView::runSearch()
+{
+    const auto q = searchBox.getText();
+    if (q.trim().isEmpty()) results.clear();
+    else
+    {
+        if (searchIndex.empty()) searchIndex = getSearchIndex ? getSearchIndex() : helpSearchEntries();
+        results = tips::search (searchIndex, q);
+    }
+    repaint();
+}
+
+void SettingsView::setSearchText (const juce::String& text)
+{
+    if (current != Help) showPage (Help);
+    searchBox.setText (text, juce::dontSendNotification);
+    runSearch();
+}
+
+void SettingsView::focusSearch()
+{
+    if (current != Help) showPage (Help);
+    searchBox.setVisible (isVisible());
+    if (searchBox.isShowing()) searchBox.grabKeyboardFocus();
+    searchBox.selectAll();
+}
+
+bool SettingsView::clickSearchResult (int index)
+{
+    if (index < 0 || index >= (int) results.size()) return false;
+    const auto e = results[(size_t) index].entry;
+    if (e.kind == tips::Kind::Topic)
+    {
+        searchBox.setText ({}, juce::dontSendNotification);
+        results.clear();
+        setHelpTopic (e.target.getIntValue());
+        return true;
+    }
+    return onSearchResult ? onSearchResult (e) : false;
+}
+
+void SettingsView::paintSearchResults (juce::Graphics& g, juce::Rectangle<float> list, juce::Rectangle<float> text)
+{
+    const float u = unit();
+    const bool de = i18n::current() == i18n::Language::German;
+    if (results.empty())
+    {
+        label (g, tips::t ("No match - try another word (English or German)", "Kein Treffer - ein anderes Wort versuchen (Deutsch oder Englisch)"),
+               list.withHeight (u * 3.0f), true);
+        return;
+    }
+    const float h = u * 3.6f, gap = u * 0.4f;
+    const int fit = juce::jmax (1, (int) (list.getHeight() / (h + gap)));
+    float y = list.getY();
+    for (int i = 0; i < (int) results.size() && i < fit; ++i)
+    {
+        const auto& e = results[(size_t) i].entry;
+        const juce::Rectangle<float> r { list.getX(), y, list.getWidth(), h };
+        const bool first = i == 0;
+        g.setColour (first ? colour::displayGrid.brighter (0.3f) : colour::displayGrid.brighter (0.12f));
+        g.fillRoundedRectangle (r, u * 0.6f);
+        g.setColour (e.kind == tips::Kind::Topic ? colour::sunYellow : e.kind == tips::Kind::Parameter ? colour::encoder (0) : colour::ultraviolet);
+        g.fillRoundedRectangle (r.getX() + u * 0.5f, r.getY() + u * 0.7f, u * 0.4f, r.getHeight() - u * 1.4f, u * 0.2f);
+        g.setColour (colour::displayText);
+        g.setFont (labelFont (u * 1.35f));
+        g.drawFittedText (de ? e.titleDe : e.titleEn, r.withTrimmedLeft (u * 1.6f).withTrimmedRight (u * 0.6f).withHeight (h * 0.55f).toNearestInt(),
+                          juce::Justification::bottomLeft, 1, 0.8f);
+        g.setColour (colour::displayDim);
+        g.setFont (labelFont (u * 1.1f));
+        const auto where = de ? e.whereDe : e.whereEn;
+        g.drawFittedText (i18n::upper (tips::kindName (e.kind)) + (where.isNotEmpty() ? "  " + where : juce::String()),
+                          r.withTrimmedLeft (u * 1.6f).withTrimmedRight (u * 0.6f).withTrimmedTop (h * 0.55f).toNearestInt(),
+                          juce::Justification::topLeft, 1, 0.75f);
+        hits.push_back ({ r, de ? e.titleDe : e.titleEn, [this, i] { clickSearchResult (i); },
+                          tips::kindName (e.kind) + ": " + (de ? e.titleDe : e.titleEn) + " - "
+                              + (e.kind == tips::Kind::Topic ? tips::t ("click to read it", "klicken zum Lesen")
+                                                             : tips::t ("click to go there", "klicken, um dorthin zu springen")) });
+        y += h + gap;
+    }
+    // the first result in detail (Return opens it)
+    const auto& best = results.front().entry;
+    g.setColour (colour::displayText);
+    g.setFont (brandFont (u * 2.0f));
+    g.drawFittedText (de ? best.titleDe : best.titleEn, text.withHeight (u * 3.0f).toNearestInt(), juce::Justification::centredLeft, 1, 0.8f);
+    g.setColour (colour::displayDim);
+    g.setFont (labelFont (u * 1.3f));
+    const auto where = de ? best.whereDe : best.whereEn;
+    g.drawFittedText (i18n::upper (tips::kindName (best.kind)) + (where.isNotEmpty() ? "  -  " + where : juce::String()),
+                      text.withTrimmedTop (u * 3.2f).withHeight (u * 2.0f).toNearestInt(), juce::Justification::centredLeft, 1, 0.8f);
+    auto body = de ? best.textDe : best.textEn;
+    if (body.isEmpty()) body = de ? best.textEn : best.textDe;
+    float scroll = 0.0f, maxScroll = 0.0f;
+    paintText (g, text.withTrimmedTop (u * 6.0f).withTrimmedBottom (u * 4.0f), body, scroll, maxScroll);
+    g.setColour (colour::sunYellow);
+    g.setFont (labelFont (u * 1.3f));
+    g.drawFittedText (tips::t ("Return or a click opens the result - Esc clears the search", "Eingabe oder ein Klick öffnet den Treffer - Esc leert die Suche"),
+                      juce::Rectangle<float> (text.getX(), text.getBottom() - u * 2.4f, text.getWidth(), u * 2.4f).toNearestInt(),
+                      juce::Justification::centredLeft, 1, 0.8f);
+}
+
+juce::String SettingsView::getTooltip()
+{
+    // the hit list of the last paint (no extra painting while the pointer rests); later hits lie on top
+    const auto p = getMouseXYRelative().toFloat();
+    for (auto it = hits.rbegin(); it != hits.rend(); ++it)
+        if (it->area.contains (p)) return it->tip;
+    if (current == Controller && padGrid.contains (p))
+        return tips::t ("The controller's pads - press one with the mouse to play it", "Die Pads des Controllers - eines mit der Maus drücken, um es zu spielen");
+    if (current == Controller && lcdArea.contains (p))
+        return tips::t ("The controller's display - the mouse wheel turns the encoder of that column", "Das Display des Controllers - das Mausrad dreht den Encoder dieser Spalte");
+    return {};
+}
+
+std::vector<tips::Region> SettingsView::tipRegions()
+{
+    paintOffscreen();
+    std::vector<tips::Region> r;
+    for (auto it = hits.rbegin(); it != hits.rend(); ++it) r.push_back ({ it->area, it->tip });
+    if (current == Controller && ! padGrid.isEmpty())
+        r.push_back ({ padGrid, tips::t ("The controller's pads - press one with the mouse to play it", "Die Pads des Controllers - eines mit der Maus drücken, um es zu spielen") });
+    if (current == Controller && ! lcdArea.isEmpty())
+        r.push_back ({ lcdArea, tips::t ("The controller's display - the mouse wheel turns the encoder of that column", "Das Display des Controllers - das Mausrad dreht den Encoder dieser Spalte") });
+    return r;
 }
 
 void SettingsView::paintAbout (juce::Graphics& g, juce::Rectangle<float> a)
@@ -1311,6 +1540,7 @@ void SettingsView::paintAbout (juce::Graphics& g, juce::Rectangle<float> a)
     g.setFont (labelFont (u * 1.4f));
     g.drawFittedText (status, juce::Rectangle<float> (a.getX() + (s.hasRelease ? u * 2.4f : 0.0f), y, a.getWidth() * 0.5f, h).toNearestInt(),
                       juce::Justification::centredLeft, 1, 0.8f);
+rowTip ("Updates: look for a new version, or open the update view", "Updates: nach einer neuen Version suchen, oder die Update-Ansicht öffnen");
     if (s.hasRelease)
         chip (g, { a.getX() + a.getWidth() * 0.5f, y, u * 24.0f, h }, i18n::upper (tr ("Open updates")), true, colour::sunYellow,
               [this] { if (onOpenUpdates) onOpenUpdates(); });
@@ -1422,6 +1652,7 @@ void SettingsView::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseW
 
 bool SettingsView::keyPressed (const juce::KeyPress& k)
 {
+    if (k == juce::KeyPress ('f', juce::ModifierKeys::commandModifier, 0)) { focusSearch(); return true; } // p82
     if (k == juce::KeyPress::escapeKey) { close(); return true; }
     if (k == juce::KeyPress::upKey) { showPage ((current + numTabs() - 1) % numTabs()); return true; }
     if (k == juce::KeyPress::downKey) { showPage ((current + 1) % numTabs()); return true; }

@@ -25,6 +25,9 @@
 #ifdef Component
  #undef Component
 #endif
+#ifdef Point
+ #undef Point // p82: macOS plug-in headers map it to juce::Point; Ohpe headers spell juce::Point
+#endif
 
 #include "plugin/Localisation.h"
 #include "plugin/PluginProcessor.h"
