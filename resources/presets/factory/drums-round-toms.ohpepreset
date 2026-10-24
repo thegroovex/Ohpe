@@ -93,6 +93,7 @@
     "fx2.mbcomp.highattack": 2.0,
     "fx2.mbcomp.lowrelease": 80.0,
     "fx2.mbcomp.midrelease": 60.0,
-    "fx2.mbcomp.highrelease": 50.0
+    "fx2.mbcomp.highrelease": 50.0,
+    "fx2.mbcomp.output": -0.6
   }
 }

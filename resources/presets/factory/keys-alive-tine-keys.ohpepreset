@@ -62,6 +62,7 @@
     "fx3.mbcomp.depth": 0.3,
     "fx3.mbcomp.time": 1.5,
     "fx3.mbcomp.upward": 0.6,
-    "fx3.mbcomp.downward": 0.8
+    "fx3.mbcomp.downward": 0.8,
+    "fx3.mbcomp.output": -3.4
   }
 }

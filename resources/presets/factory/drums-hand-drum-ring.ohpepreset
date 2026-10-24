@@ -99,6 +99,6 @@
     "fx2.mbcomp.lowrelease": 80.0,
     "fx2.mbcomp.midrelease": 60.0,
     "fx2.mbcomp.highrelease": 50.0,
-    "fx2.mbcomp.output": -1.3
+    "fx2.mbcomp.output": -1.8
   }
 }

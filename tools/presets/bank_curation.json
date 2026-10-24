@@ -56,8 +56,9 @@
   "bass-glide-reese.ohpepreset": {
    "comment": "Saw-stack reese through a slow, deep phaser, with constant-rate portamento: overlap notes and it slides like a fretless rubber band.",
    "params": {
-    "gain": 6.1,
-    "chordroom": 4.5
+    "gain": 11.0,
+    "chordroom": 4.5,
+    "fx4.width.output": 8.9
    }
   },
   "keys-digital-ep.ohpepreset": {
@@ -110,7 +111,8 @@
     "fx3.mbcomp.depth": 0.3,
     "fx3.mbcomp.time": 1.5,
     "fx3.mbcomp.upward": 0.6,
-    "fx3.mbcomp.downward": 0.8
+    "fx3.mbcomp.downward": 0.8,
+    "fx3.mbcomp.output": -3.4
    }
   },
   "keys-scoop-keys.ohpepreset": {
@@ -271,8 +273,9 @@
   },
   "bass-analog-reese.ohpepreset": {
    "params": {
-    "gain": 8.2,
-    "chordroom": 4.5
+    "gain": 11.3,
+    "chordroom": 4.5,
+    "fx4.width.output": 10.5
    }
   },
   "bass-bounce-bass.ohpepreset": {
@@ -283,8 +286,9 @@
   },
   "bass-classic-reese.ohpepreset": {
    "params": {
-    "gain": 2.8,
-    "chordroom": 4.5
+    "gain": 7.4,
+    "chordroom": 4.5,
+    "fx4.width.output": 9.6
    }
   },
   "bass-click-sub.ohpepreset": {
@@ -295,8 +299,9 @@
   },
   "bass-dark-reese.ohpepreset": {
    "params": {
-    "gain": 7.9,
-    "chordroom": 4.5
+    "gain": 11.2,
+    "chordroom": 4.5,
+    "fx4.width.output": 10.1
    }
   },
   "bass-deep-pluck-sub.ohpepreset": {
@@ -309,7 +314,8 @@
     "fx4.mbcomp.upward": 0.4,
     "fx4.mbcomp.downward": 1.0,
     "fx4.mbcomp.lowattack": 6.0,
-    "fx4.mbcomp.lowrelease": 120.0
+    "fx4.mbcomp.lowrelease": 120.0,
+    "fx4.mbcomp.output": 1.8
    }
   },
   "bass-dirty-sub.ohpepreset": {
@@ -326,8 +332,9 @@
   },
   "bass-fingerboard-expressive-bass.ohpepreset": {
    "params": {
-    "gain": 7.1,
-    "chordroom": 8.0
+    "gain": 10.2,
+    "chordroom": 8.0,
+    "fx4.width.output": 10.4
    }
   },
   "bass-flanged-reese.ohpepreset": {
@@ -428,9 +435,9 @@
   },
   "bass-orbit-reese.ohpepreset": {
    "params": {
-    "gain": 1.8,
+    "gain": 6.5,
     "chordroom": 5.5,
-    "fx2.multiband.output": 4.8
+    "fx2.multiband.output": 2.0
    }
   },
   "bass-punch-fm-bass.ohpepreset": {
@@ -462,8 +469,9 @@
   },
   "bass-roller-bass.ohpepreset": {
    "params": {
-    "gain": 4.2,
-    "chordroom": 4.5
+    "gain": 10.1,
+    "chordroom": 4.5,
+    "fx3.width.output": 8.9
    }
   },
   "bass-rolling-bass.ohpepreset": {
@@ -522,8 +530,9 @@
   },
   "bass-sub-reese.ohpepreset": {
    "params": {
-    "gain": 1.0,
-    "chordroom": 4.5
+    "gain": 4.3,
+    "chordroom": 4.5,
+    "fx4.width.output": 10.0
    }
   },
   "bass-table-sub.ohpepreset": {
@@ -636,7 +645,8 @@
     "fx2.mbcomp.highattack": 2.0,
     "fx2.mbcomp.lowrelease": 80.0,
     "fx2.mbcomp.midrelease": 60.0,
-    "fx2.mbcomp.highrelease": 50.0
+    "fx2.mbcomp.highrelease": 50.0,
+    "fx2.mbcomp.output": -1.6
    }
   },
   "drums-wood-block.ohpepreset": {
@@ -653,7 +663,8 @@
     "fx2.mbcomp.highattack": 2.0,
     "fx2.mbcomp.lowrelease": 80.0,
     "fx2.mbcomp.midrelease": 60.0,
-    "fx2.mbcomp.highrelease": 50.0
+    "fx2.mbcomp.highrelease": 50.0,
+    "fx2.mbcomp.output": -1.3
    }
   },
   "drums-zap-perc.ohpepreset": {
@@ -757,13 +768,15 @@
     "fx3.mbcomp.depth": 0.3,
     "fx3.mbcomp.time": 1.5,
     "fx3.mbcomp.upward": 0.6,
-    "fx3.mbcomp.downward": 0.8
+    "fx3.mbcomp.downward": 0.8,
+    "fx3.mbcomp.output": -3.4
    }
   },
   "keys-bright-grand.ohpepreset": {
    "params": {
-    "gain": -1.6,
-    "chordroom": 4.5
+    "gain": 1.9,
+    "chordroom": 4.5,
+    "fx3.multiband.output": 9.9
    }
   },
   "keys-bright-poly-wide.ohpepreset": {
@@ -1665,7 +1678,7 @@
     "fx2.mbcomp.lowrelease": 80.0,
     "fx2.mbcomp.midrelease": 60.0,
     "fx2.mbcomp.highrelease": 50.0,
-    "fx2.mbcomp.output": -1.3
+    "fx2.mbcomp.output": -1.8
    }
   },
   "drums-round-toms.ohpepreset": {
@@ -1682,7 +1695,8 @@
     "fx2.mbcomp.highattack": 2.0,
     "fx2.mbcomp.lowrelease": 80.0,
     "fx2.mbcomp.midrelease": 60.0,
-    "fx2.mbcomp.highrelease": 50.0
+    "fx2.mbcomp.highrelease": 50.0,
+    "fx2.mbcomp.output": -0.6
    }
   },
   "fx-drone-flyover.ohpepreset": {
@@ -2301,7 +2315,8 @@
   "bass-wide-reese.ohpepreset": {
    "params": {
     "chordroom": 5.2,
-    "gain": 1.5
+    "gain": 6.5,
+    "fx4.width.output": 9.3
    }
   },
   "bass-wobble-bass.ohpepreset": {
@@ -2353,7 +2368,8 @@
     "fx2.mbcomp.highattack": 2.0,
     "fx2.mbcomp.lowrelease": 80.0,
     "fx2.mbcomp.midrelease": 60.0,
-    "fx2.mbcomp.highrelease": 50.0
+    "fx2.mbcomp.highrelease": 50.0,
+    "fx2.mbcomp.output": 0.3
    }
   },
   "drums-gravity-drum-wash.ohpepreset": {
@@ -2526,7 +2542,8 @@
   "leads-hyper-saw-lead.ohpepreset": {
    "params": {
     "chordroom": 4.6,
-    "gain": 5.9
+    "gain": 15.9,
+    "fx2.multiband.output": 5.7
    }
   },
   "leads-living-flute-lead.ohpepreset": {

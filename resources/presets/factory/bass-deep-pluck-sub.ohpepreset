@@ -72,6 +72,7 @@
     "fx4.mbcomp.upward": 0.4,
     "fx4.mbcomp.downward": 1.0,
     "fx4.mbcomp.lowattack": 6.0,
-    "fx4.mbcomp.lowrelease": 120.0
+    "fx4.mbcomp.lowrelease": 120.0,
+    "fx4.mbcomp.output": 1.8
   }
 }
