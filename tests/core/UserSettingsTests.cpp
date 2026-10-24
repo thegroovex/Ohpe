@@ -50,7 +50,7 @@ TEST_CASE ("user settings: broken and out-of-range values keep defaults or are c
     CHECK (s.skin == Skin::Light);
     CHECK (s.brightness == doctest::Approx (1.0f));
     CHECK (s.animations == Animations::Full);
-    CHECK (s.windowScale == doctest::Approx (1.5f));
+    CHECK (s.windowScale == doctest::Approx (2.0f)); // p83: the largest UI size
     CHECK (s.tooltips);
     CHECK (UserSettings::fromJson (R"({"brightness":0.0})").brightness == doctest::Approx (minBrightness));
     CHECK (UserSettings::fromJson (R"({"brightness":-1e300})").brightness == doctest::Approx (minBrightness));

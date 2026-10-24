@@ -1,8 +1,8 @@
-# Installing Ohpe on macOS
+# Installing Ohpe
 
 *English · Deutsch: [../de/INSTALLATION.md](../de/INSTALLATION.md)*
 
-Ohpe for macOS comes as one disk image, `Ohpe-<version>-macOS-Installer.dmg`. It runs on
+Ohpe runs on macOS and Windows; Windows is described in [section 5](#5-windows). Ohpe for macOS comes as one disk image, `Ohpe-<version>-macOS-Installer.dmg`. It runs on
 macOS 11 or newer, on Apple Silicon and Intel Macs (all binaries are universal).
 
 | File on the disk image          | What it does |
@@ -15,7 +15,12 @@ macOS 11 or newer, on Apple Silicon and Intel Macs (all binaries are universal).
 
 ## Where to get it
 
-There are no tagged releases yet. Every push to main, every manual run of the **CI** workflow and
+Download the newest version from the [releases page](https://github.com/thegroovex/Ohpe/releases):
+`Ohpe-<version>-macOS-Installer.dmg` for the Mac, `Ohpe-<version>-Windows-app.zip` and
+`Ohpe-<version>-Windows-VST3.zip` for Windows, plus `SHA256SUMS.txt` to check the files. Once Ohpe is
+installed it finds and loads new versions itself ([UPDATES.md](UPDATES.md)).
+
+Builds between releases: every push to main, every manual run of the **CI** workflow and
 every pull request labelled `installer` builds the installer on the macOS runner and attaches it to the run as the artifact
 **Ohpe-macOS-Installer**: open the repository's *Actions* tab → *CI* → a green run → *Artifacts*.
 GitHub delivers artifacts as a zip; unzip it to get the `.dmg` (and `SHA256SUMS.txt`).
@@ -26,10 +31,14 @@ The installer is not signed with an Apple Developer ID, so on the first double-c
 it *cannot be opened* or comes *from an unidentified developer*. Use one of these ways – each only
 affects this one file:
 
-1. **Right-click → Open:** in Finder, right-click (or Control-click) `Ohpe-Installer.pkg`, choose
-   **Open**, then **Open** again in the dialog.
-2. **Open Anyway:** after the first blocked attempt open **System Settings → Privacy & Security**,
-   scroll to the message about `Ohpe-Installer.pkg` and click **Open Anyway**.
+1. **Open Anyway** (every macOS version; on macOS 15 and newer the only way from the Finder):
+   1. Double-click `Ohpe-Installer.pkg`. macOS blocks it – click **Done** (or **OK**).
+   2. Open **System Settings → Privacy & Security** and scroll down to **Security**. There is a line
+      saying that `Ohpe-Installer.pkg` was blocked.
+   3. Click **Open Anyway**, confirm with your password or Touch ID, then click **Open Anyway** (or
+      **Open**) once more in the dialog. The installer starts.
+2. **Right-click → Open** (macOS 14 and older): in Finder, right-click (or Control-click)
+   `Ohpe-Installer.pkg`, choose **Open**, then **Open** again in the dialog.
 3. **Terminal:** copy the pkg out of the disk image (for example into Downloads) and remove the
    quarantine flag:
    ```sh
@@ -101,6 +110,24 @@ delete them as well (default: no). In Terminal:
 sudo bash "/Volumes/Ohpe/Uninstall Ohpe.command" --yes           # no questions, keeps presets
 sudo bash "/Volumes/Ohpe/Uninstall Ohpe.command" --yes --purge   # also deletes presets/settings
 ```
+
+## 5. Windows
+
+Ohpe for Windows (Windows 10 or 11, 64-bit) comes as two zip files: `Ohpe-<version>-Windows-app.zip`
+holds the standalone app `Ohpe.exe`, `Ohpe-<version>-Windows-VST3.zip` the plug-in folder `Ohpe.vst3`.
+The builds are not signed with a code-signing certificate, so Windows SmartScreen warns once.
+
+1. **Unblock the download:** right-click the zip → **Properties** → tick **Unblock** at the bottom →
+   **OK**. Then right-click → **Extract All…**
+2. **App:** move `Ohpe.exe` wherever you like (for example `C:\Program Files\Ohpe\`) and double-click it.
+3. **SmartScreen:** if Windows says *Windows protected your PC*, click **More info**, check that the
+   app is `Ohpe.exe`, then click **Run anyway**. Windows remembers this; the warning does not come back
+   for this file.
+4. **VST3 plug-in:** copy the whole `Ohpe.vst3` folder to `C:\Program Files\Common Files\VST3\`
+   (Windows asks for administrator rights), then let your music software rescan its plug-ins.
+
+**Uninstall:** delete `Ohpe.exe` and the `Ohpe.vst3` folder. Your own presets, tables and settings stay
+in `%APPDATA%\groovex\Ohpe`; delete that folder too if you want to remove them.
 
 ## For maintainers
 

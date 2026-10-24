@@ -80,7 +80,7 @@ nach rechts, jede Note des Parts folgt.
 * Ein **Part-Preset** speichert die Ecken des Parts in einem optionalen Block `"morph"`; lädst du es in einen
   beliebigen Part, kommen die Ecken mit, ein Preset ohne den Block leert sie ([PRESETS.md](PRESETS.md#morph-block)).
 * **Projekte** und der Plug-in-Zustand behalten die Ecken aller vier Parts.
-* Die **Werks-Bibliothek** hat vier Morph-Presets (Tag *Morph*). Sie starten in Ecke C (dem eigenen Klang des
+* Die **Werks-Bibliothek** hat sieben Morph-Presets (Tag *Morph*; vier davon stehen unten). Sie starten in Ecke C (dem eigenen Klang des
   Parts); das Modulationsrad bewegt nach rechts, Druck nach oben:
 
 | Preset | Ecken | Spuren |

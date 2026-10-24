@@ -680,10 +680,11 @@ void SettingsView::paintDisplay (juce::Graphics& g, juce::Rectangle<float> a)
     label (g, tr ("Window size"), { a.getX(), y, a.getWidth() * 0.4f, h });
     {
         std::vector<std::tuple<juce::String, bool, std::function<void()>>> list;
-        rowTip ("Window size of the instrument", "Fenstergröße des Instruments");
+        rowTip ("UI size of the instrument, 75 .. 200 % (also with a right-click on the housing or the settings key)",
+                "UI-Größe des Instruments, 75 .. 200 % (auch per Rechtsklick auf das Gehäuse oder die Einstellungstaste)");
         for (float v : settings::windowScales)
             list.emplace_back (percent (v), s.windowScale == v, [this, v] { changeSettings ([v] (auto& x) { x.windowScale = v; }); });
-        chipsRow (y, u * 9.0f, list);
+        chipsRow (y, u * 7.4f, list); // p83: six sizes, 75 .. 200 %
     }
     y += row + u * 0.6f;
     g.setColour (colour::displayDim);

@@ -7,6 +7,7 @@
 // 0.3: also the library, the pro view, the tape page, step locks and the drum kit page.
 // p20: the user wavetable frame stack (ohpe-user-wavetable). p27: the update view (ohpe-update).
 // p32: the settings menu (ohpe-settings*, ohpe-about*, ohpe-help-overlay*), the night skin (ohpe-dark, *-dark).
+// p83: the UI sizes (ohpe-ui-75, ohpe-ui-150, ohpe-ui-200, ohpe-ui-150-dark) and the focus ring (ohpe-focus-ring).
 // p23: bounce to engine - a loop bounced into Grain (ohpe-bounce). p67: tape memory slices (ohpe-tapemem). p66: Key Gravity pages (ohpe-key-gravity). p70: the gravity ring on the header (ohpe-gravity-header). p33: the Expression page (ohpe-expression).
 // p41: the 3D switch (ohpe-space-switch-{off,headphones,speakers}[-dark]). p77: the 3D page Amount & Retrigger (ohpe-space-retrigger).
 // p38: the tape page's clear-all confirmation (ohpe-tape-clear, ohpe-tape-clear-dark) and the tape page at night (ohpe-tape-dark).
@@ -1276,6 +1277,28 @@ int main (int argc, char* argv[])
                     e.selectEngine (EngineType::Analog);
                     e.selectMode (ui::Mode::Synth);
                 }
+            }
+            // p83: the UI sizes 75 / 150 / 200 % (ohpe-ui-75, -150, -200), the night skin at 150 % (ohpe-ui-150-dark) and
+            // the focus ring Tab draws (ohpe-focus-ring: an encoder, 150 %)
+            {
+                e.showSettings (false);
+                e.selectPart (0);
+                e.selectMode (ui::Mode::Synth);
+                e.selectEngine (EngineType::Analog);
+                set ([] (settings::UserSettings& v) { v.skin = settings::Skin::Light; });
+                for (int pct : { 75, 150, 200 })
+                {
+                    e.setUiSize ((float) pct / 100.0f);
+                    shot (("ohpe-ui-" + juce::String (pct)).toRawUTF8());
+                }
+                e.setUiSize (1.5f);
+                e.focusRingComponent().setTargetForTests (&e.encoder (1));
+                shot ("ohpe-focus-ring");
+                e.focusRingComponent().setTargetForTests (nullptr);
+                set ([] (settings::UserSettings& v) { v.skin = settings::Skin::Dark; });
+                shot ("ohpe-ui-150-dark");
+                set ([] (settings::UserSettings& v) { v.skin = settings::Skin::Light; });
+                e.setUiSize (1.0f);
             }
             set ([] (settings::UserSettings& v) { v = settings::UserSettings {}; });
             ui::applySkin (ui::Skin::Light);

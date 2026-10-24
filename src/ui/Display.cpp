@@ -52,9 +52,52 @@ bool euclidHit (int i, int steps, int pulses, int rot)
 }
 } // namespace
 
+std::unique_ptr<juce::AccessibilityHandler> Display::createAccessibilityHandler()
+{
+    return a11y::textHandler (*this, [] { return tr ("Display"); }, [this] { return accessibleText(); });
+}
+
+juce::String Display::accessibleText()
+{
+    juce::StringArray parts;
+    parts.add (headerTitleFit().text);
+    if (pageTitle.isNotEmpty()) parts.add (pageTitle);
+    if (flashText.isNotEmpty()) parts.add (flashText);
+    else if (status.isNotEmpty()) parts.add (status);
+    int n = 0;
+    for (const auto& k : softKeys)
+        if (++n <= 9 && k.label.isNotEmpty()) parts.add (juce::String (n) + " " + k.label + (k.active ? " (" + tr ("On") + ")" : juce::String()));
+    parts.removeEmptyStrings();
+    return parts.joinIntoString (", ");
+}
+
+bool Display::keyPressed (const juce::KeyPress& key)
+{
+    const auto mods = key.getModifiers();
+    if (mods.isCommandDown() || mods.isCtrlDown() || mods.isAltDown()) return false;
+    const int code = key.getKeyCode();
+    if ((code == juce::KeyPress::leftKey || code == juce::KeyPress::rightKey) && onPageChange)
+    {
+        onPageChange (code == juce::KeyPress::rightKey ? 1 : -1);
+        return true;
+    }
+    const auto c = key.getTextCharacter() != 0 ? key.getTextCharacter() : (juce::juce_wchar) key.getKeyCode();
+    if (c >= '1' && c <= '9' && onSoftKey)
+    {
+        const size_t i = (size_t) (c - '1');
+        if (i < softKeys.size() && softKeys[i].enabled)
+        {
+            onSoftKey (softKeys[i].id);
+            return true;
+        }
+    }
+    return false;
+}
+
 Display::Display (OhpeProcessor& p) : proc (p)
 {
     setOpaque (false);
+    a11y::makeFocusable (*this); // p83
     addAndMakeVisible (tempoHeader); // p39
     addAndMakeVisible (tapHeader);
     addAndMakeVisible (keyHeader); // p45

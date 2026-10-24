@@ -31,7 +31,7 @@ a host parameter: nothing here is automated or changes the sound of a project.
 | Display brightness | 40 – 100 % – dims the display for dark rooms |
 | Animations | **Full**, **Reduced** (slower breathing lights and 3D pulse), **Off** (running lights stand still, fully lit) |
 | Animated 3D visuals | the moving visuals of the display (same switch as in the display's visual menu) |
-| Window size | 75 / 100 / 125 / 150 % – the size a new window opens with (you can still drag the corner) |
+| Window size | UI size 75 / 100 / 125 / 150 / 175 / 200 % – the window takes it at once and a new window opens with it (you can still drag the corner); also with a right-click on the housing or the settings key – see [accessibility](ACCESSIBILITY.md) |
 
 The **night skin** covers the whole instrument – housing, keys, display, pro view, library, update view and the settings
 themselves. It uses warm dark greys, never pure white; the accents and light bars are dimmed. Every text colour keeps a

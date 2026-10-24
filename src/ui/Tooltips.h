@@ -24,6 +24,8 @@ namespace ohpe::ui::tips
 juce::String t (const char* en, const char* de);
 /** "Right-click: MIDI learn" in the current language. */
 juce::String learnHint();
+/** p83: the settings key and the housing open the UI size menu with a right-click. */
+juce::String uiSizeHint();
 /** `tip` and the MIDI learn hint on its own line. */
 juce::String withLearn (const juce::String& tip);
 

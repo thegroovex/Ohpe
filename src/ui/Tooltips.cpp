@@ -15,6 +15,8 @@ juce::String t (const char* en, const char* de)
 
 juce::String learnHint() { return t ("Right-click: MIDI learn", "Rechtsklick: MIDI-Learn"); }
 
+juce::String uiSizeHint() { return t ("Right-click: UI size (75 .. 200 %)", "Rechtsklick: UI-Größe (75 .. 200 %)"); }
+
 juce::String withLearn (const juce::String& tip) { return tip.isEmpty() ? learnHint() : tip + "\n" + learnHint(); }
 
 juce::String regionTipAt (const std::vector<Region>& regions, juce::Point<float> p)
@@ -190,8 +192,8 @@ const std::vector<Control>& controls()
           "Language, tooltips, help overlay, tour",
           "Sprache, Tooltips, Hilfe-Overlay, Tour" },
         { "settings.display", "Settings: Display", "Einstellungen: Display",
-          "Skin (light / night), display brightness, animations, window size",
-          "Erscheinung (hell / Nacht), Display-Helligkeit, Animationen, Fenstergröße" },
+          "Skin (light / night), display brightness, animations, UI size (75 .. 200 %)",
+          "Erscheinung (hell / Nacht), Display-Helligkeit, Animationen, UI-Größe (75 .. 200 %)" },
         { "settings.midi", "Settings: MIDI", "Einstellungen: MIDI",
           "MIDI channel, MPE and bend range of the parts, MIDI inputs, clock and sync",
           "MIDI-Kanal, MPE und Bend-Bereich der Parts, MIDI-Eingänge, Clock und Sync" },

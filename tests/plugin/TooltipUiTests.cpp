@@ -101,7 +101,8 @@ void walk (juce::Component& c, const juce::String& path, Seen& seen, juce::Compo
         ++controls;
         if (tip.trim().isEmpty()) seen.problems.add ("no tooltip: " + here + " '" + c.getName() + "'");
         // a key that learns MIDI with a right-click says so
-        if (auto* k = dynamic_cast<ui::PictoKey*> (&c); k != nullptr && k->onSecondaryClick != nullptr && ! tip.contains (tips::learnHint()))
+        if (auto* k = dynamic_cast<ui::PictoKey*> (&c); k != nullptr && k->onSecondaryClick != nullptr && ! tip.contains (tips::learnHint())
+                     && ! tip.contains (tips::uiSizeHint()))
             seen.problems.add ("no MIDI learn hint: " + here + " '" + k->getButtonText() + "'");
     }
     // the parts of a slider, a text field or a keyboard are the control itself
