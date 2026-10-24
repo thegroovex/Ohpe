@@ -82,6 +82,7 @@ void walk (juce::Component& c, const juce::String& path, Seen& seen, juce::Compo
     if (! c.isVisible() || c.getWidth() <= 0 || c.getHeight() <= 0) return;
     bool self = true, children = true;
     c.getInterceptsMouseClicks (self, children);
+    if (self) children = true; // JUCE: the child flag only counts when the component itself lets clicks through
     const auto here = path + "/" + className (c);
 
     if (dynamic_cast<juce::ScrollBar*> (&c) != nullptr) return; // standard scroll bars
