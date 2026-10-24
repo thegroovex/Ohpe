@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
+#include "../dsp/SleepGate.h"
 #include "../dsp/Filters.h"
 #include "../fx/FxRack.h"
 #include "../fx/KeyGravity.h"
@@ -243,8 +244,9 @@ public:
     static constexpr float sleepThreshold = 1.0e-6f;
     static constexpr float sleepHoldSeconds = 4.5f;
     bool isAsleep() const noexcept { return asleepFlag.load (std::memory_order_relaxed); }
-    /** p35, tests only: false keeps every part awake (the reference the sleeping output is compared with). */
-    inline static bool sleepAllowed = true;
+    /** p35, tests only: false keeps every part awake (the reference the sleeping output is compared with).
+        p79: the same switch as the master stage's (dsp::SleepGate::allowed). */
+    inline static bool& sleepAllowed = dsp::SleepGate::allowed;
 
     /** Local parameter ID helper: "p1." + name */
     std::string id (const std::string& name) const { return idPrefix + name; }

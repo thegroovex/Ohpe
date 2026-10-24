@@ -107,6 +107,11 @@ private:
     std::vector<int> bitrev;                 // for the current N
     std::vector<float> mag, env, curPhase, binMidi, prevPhase, prevMag, aRe, aIm, bRe, bIm, oaRe, oaIm, obRe, obIm, binW;
     std::vector<float> envPrefix;
+    // p79: the per-bin fade weights depend only on the target, the amount and the frame size - kept until one changes
+    std::vector<float> binWeight;
+    uint16_t bwMask = 0, bwChord = 0;
+    float bwBonus = -1.0f, bwTz = -1.0f, bwBinHz = -1.0f;
+    int bwHalf = -1;
     std::array<double, 128> notePhase {};
     float prevEnergy = 0.0f;
     bool havePrev = false;
