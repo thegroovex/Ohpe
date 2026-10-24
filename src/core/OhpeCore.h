@@ -170,6 +170,12 @@ public:
     /** 0.2, audio thread: the audio input for the next process() call (plug-in input bus;
         null = silent). Valid for that one call only. */
     void setAudioInput (const float* left, const float* right) noexcept { inputL = left; inputR = right; }
+    /** p86, any thread: the last process() call had an audio input (a device / host input bus delivered channels,
+        silent or not). False = no input is connected - the Voice view tells "no input chosen" from "no signal". */
+    bool inputConnected() const noexcept { return inputLive.load (std::memory_order_relaxed); }
+    /** p86: input blocks up to this length are always taken, even beyond the prepared block size (a device that
+        delivers longer blocks than announced, e.g. separate input and output devices). */
+    static constexpr int maxInputBlock = 8192;
 
     /** 0.2, offline rendering (bounce): when set, process() also copies the eight tape track
         outputs (L1, R1, L2, R2 ...) to these buffers. Message thread, not while playing live. */
@@ -456,6 +462,7 @@ private:
     const float* inputL = nullptr;
     const float* inputR = nullptr;
     std::vector<float> safeInputL, safeInputR; ///< p63: the input with NaN / Inf removed (sized in prepare())
+    std::atomic<bool> inputLive { false };     ///< p86: see inputConnected()
     std::atomic<uint64_t> guardedBlocks { 0 }; ///< p63: see nonFiniteBlocks()
     void sanitiseInput (int numSamples) noexcept;
     void guardOutputs (const OutputBuffers& outputs, int numSamples) noexcept;

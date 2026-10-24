@@ -38,7 +38,20 @@ pitch glide home to 0.
 
 **LFO > Voice** shows the vowel map – A E I O U at their places, your vowel as a yellow dot (grey while you are
 silent) – and the input meter with the gate as a white line, then small bars for level, brightness, noisiness, pitch
-and onset. The line under it says what Voice Control hears (vowel and level, *Listening* below the gate, or *No input*).
+and onset. The line under it says what Voice Control hears: vowel and level, *Listening* with the level below the
+gate, or why it hears nothing (below).
+
+### When the line says the input is silent
+
+| Line | What it means | What to do |
+|---|---|---|
+| *No input device chosen* | No input device is open (standalone) or the host does not feed Ohpe's input bus (plug-in). | Standalone: **Settings > Audio**, **Input device**. Plug-in: enable the instrument's input / sidechain in the host. |
+| *Microphone access denied* | macOS refuses the microphone for Ohpe (or for the host): every input delivers silence. | The extra soft key **Mic Access** opens the microphone page of the privacy settings; switch Ohpe (or the host) on there and restart it. |
+| *Microphone access not allowed yet* | macOS has not asked yet. | Soft key **Allow Mic** (or choosing the input) brings up the question. |
+| *Input open – no signal* | The device is open but delivers digital silence. | Check the cable / headset plug, the input level in the system's sound settings and Ohpe's **Input Gain**. |
+
+A mono input (a headset microphone, one channel) is fine: Ohpe hears it on both sides. The chosen input is saved
+when you choose it and opens again at the next start.
 
 | Encoder | Parameter | Range | Default |
 |---|---|---|---|
@@ -49,7 +62,8 @@ and onset. The line under it says what Voice Control hears (vowel and level, *Li
 | Options 1 | **Pitch Tracking** (`voice.pitch`) | Off / On | Off |
 | Options 2 | **Monitor** (`voice.monitor`) | Off / On | **Off** – hear the input on the main output; keep it off with speakers (feedback) |
 
-Soft keys: **On** switches Voice Control, **Vowel → Filter + Morph** is the quick mapping for the edit part (below).
+Soft keys: **On** switches Voice Control, **Vowel → Filter + Morph** is the quick mapping for the edit part (below);
+**Mic Access** / **Allow Mic** appears only while macOS refuses or has not yet allowed the microphone.
 All parameters are host-automatable and MIDI-learnable; they belong to your setup and are not stored in presets or
 projects.
 

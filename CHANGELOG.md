@@ -5,6 +5,20 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
+## Unreleased / Unveröffentlicht
+
+- EN: Voice input in the standalone app (p86): the app's input never reached Voice Control, tape or bounce (the input
+  bus started off and the player kept it off) - fixed; mono inputs (headset microphones) reach both sides, longer
+  device blocks keep their input, the chosen input is saved at once and opens again at the next start. The Voice
+  view tells *No input device chosen*, *Microphone access denied* (soft key to the macOS privacy settings) and
+  *Input open – no signal* apart and shows the input level while listening.
+- DE: Stimmeingang in der Standalone-App (p86): der Eingang der App kam nie bei Stimmsteuerung, Tape oder Bounce an
+  (der Eingangsbus startete aus und der Player ließ ihn aus) – behoben; Mono-Eingänge (Headset-Mikrofone) kommen auf
+  beiden Seiten an, längere Geräteblöcke behalten ihren Eingang, der gewählte Eingang wird sofort gespeichert und beim
+  nächsten Start wieder geöffnet. Die Ansicht Stimme unterscheidet *Kein Eingangsgerät gewählt*, *Mikrofonzugriff
+  verweigert* (Softkey zu den Datenschutz-Einstellungen von macOS) und *Eingang offen – kein Signal* und zeigt beim
+  Zuhören den Eingangspegel.
+
 ## 0.9.0 Beta – 2026-10-24
 
 [Notes / Hinweise](docs/release-notes/0.9.0.md)

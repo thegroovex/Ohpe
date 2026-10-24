@@ -121,6 +121,13 @@ list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/FirstStartTour.cpp) #
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/Tooltips.cpp) # p82: tooltips + help search
 # p21: pro view 2.0 - graphic tiles, the Discover strip
 list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/ui/ProTiles.cpp ${CMAKE_SOURCE_DIR}/src/ui/DiscoverStrip.cpp)
+# p86: the microphone permission (macOS: AVFoundation authorisation; elsewhere always granted)
+if(APPLE)
+    list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/MicAccess.mm)
+    list(APPEND OHPE_JUCE_MODULES "-framework AVFoundation")
+else()
+    list(APPEND OHPE_PLUGIN_SOURCES ${CMAKE_SOURCE_DIR}/src/plugin/MicAccess.cpp)
+endif()
 
 set(OHPE_FORMATS VST3 Standalone)
 if(APPLE)
@@ -197,6 +204,7 @@ if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/PartPresetNameTests.cpp) # p50
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/FxEditorTests.cpp) # p55
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/TourUiTests.cpp) # p64
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/InputRoutingTests.cpp) # p86
     target_include_directories(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/src)
     if(MSVC) # tests keep cores / processors on the stack: 8 MB main thread on Windows (default 1 MB)
         target_link_options(ohpe_plugin_tests PRIVATE /STACK:8388608)
