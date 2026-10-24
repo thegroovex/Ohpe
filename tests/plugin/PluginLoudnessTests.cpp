@@ -221,7 +221,7 @@ void checkPreset (OhpeProcessor& p, Core& core, int entryIndex, Summary& sum, bo
         if (r.coreLufs > -60.0 || r.pluginLufs > -60.0) sum.rows.push_back (r);
         CAPTURE (m.name);
         CHECK (std::abs (r.pluginLufs - r.coreLufs) <= 0.1);
-        CHECK (r.pluginTp <= std::max (-1.0, r.coreTp + 0.1));
+        CHECK (r.pluginTp <= std::max (-0.5, r.coreTp + 0.2)); // limiter on: its ceiling (-0.3 dB, target -0.57 dBTP)
     }
     ++sum.presets;
 }
@@ -266,6 +266,61 @@ void runVariant (bool allOutputs, bool withEditor, int every, const char* label)
     ed.reset();
 }
 } // namespace
+
+TEST_CASE ("plug-in loudness: a fresh instance plays a wide 8-note chord below -1 dBTP without the limiter, like the core (p74 audit through the plug-in, p87)" * doctest::test_suite ("sliced"))
+{
+    factorykit::loadBank();
+    const auto slice = test::testSlice();
+    std::vector<int> list;
+    {
+        OhpeProcessor probe;
+        list = partPresets (probe, 6);
+    }
+    const Material& chord = materials().back();
+    int done = 0, over = 0;
+    double maxDiff = 0.0, worstTp = -200.0;
+    for (size_t k = 0; k < list.size(); ++k)
+    {
+        if (! slice.has ((long long) k)) continue;
+        auto proc = std::make_unique<OhpeProcessor>();
+        auto& p = *proc;
+        p.prepareToPlay (48000.0, blockSize);
+        const auto& entry = p.presets().entries()[(size_t) list[k]];
+        CAPTURE (entry.meta.name);
+        preset::Preset pr;
+        REQUIRE (preset::fromJson (p.presets().read (entry), pr));
+        auto core = std::make_unique<Core>();
+        core->prepare (48000.0, blockSize);
+        factorykit::load (*core);
+        for (int i = 0; i < core->params().size(); ++i) core->params().set (i, p.core().params().get (i));
+        preset::applyPart (pr, core->params(), 0, preset::PartOptions {});
+        preset::applyPartMorph (pr, *core, 0);
+        usertable::partFromJson (*core, 0, pr.userTables ? *pr.userTables : std::string(),
+                                 [] (const std::string&, const std::string&) { return usertable::UserTablePtr(); });
+        core->params().set ("mix.master.limit", 0.0f);
+        core->prepareEffects();
+        core->updateMorph();
+        REQUIRE (p.presets().load (list[k], 0));
+        p.editRegistry ([] (Core& c) { c.params().set ("mix.master.limit", 0.0f); });
+        for (int b = 0; b < 4; ++b) { silence (p, 4); pump (20); }
+        render::renderCore (*core, {}, 16 * blockSize, blockSize);
+        const auto ev = eventsFor (chord);
+        const auto a = renderPlugin (p, ev);
+        const auto b = render::renderCore (*core, ev, totalSamples, blockSize);
+        const double tp = render::truePeakDb (a), la = lufs (a), lb = lufs (b);
+        CAPTURE (tp);
+        CHECK (tp <= -1.0);
+        CHECK (render::flatTopRuns (a) == 0);
+        CHECK (std::abs (la - lb) <= 0.1);
+        std::printf ("OHPE-STATS p87 fresh row|%s|chord8-nolimit|%.3f|%.3f|%.3f|%.3f|0\n", entry.meta.name.c_str(), la, tp, lb, render::truePeakDb (b));
+        maxDiff = std::max (maxDiff, std::abs (la - lb));
+        worstTp = std::max (worstTp, tp);
+        over += tp > -1.0;
+        ++done;
+    }
+    std::printf ("OHPE-STATS p87 fresh presets %d | max |plugin-core| %.3f LU | worst %.2f dBTP | over -1 dBTP %d\n", done, maxDiff, worstTp, over);
+    std::fflush (stdout);
+}
 
 TEST_CASE ("plug-in loudness: presets loaded through the preset manager play like the core, stereo out (p87)" * doctest::test_suite ("sliced"))
 {
