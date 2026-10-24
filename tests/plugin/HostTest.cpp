@@ -445,11 +445,11 @@ juce::MemoryBlock withoutKeyMemory (const juce::MemoryBlock& m)
     const int p = h >= 0 ? json.indexOf (h, "\"profile\":[") : -1;
     const int e = p >= 0 ? json.indexOfChar (p, ']') : -1;
     if (e < 0) return m;
-    const auto head = json.substring (0, p).toUTF8(), tail = json.substring (e + 1).toUTF8();
+    const std::string head = json.substring (0, p).toStdString(), tail = json.substring (e + 1).toStdString();
     juce::MemoryBlock out;
-    out.append (head.getAddress(), std::strlen (head.getAddress()));
+    out.append (head.data(), head.size());
     out.append ("\"profile\":[]", 12);
-    out.append (tail.getAddress(), std::strlen (tail.getAddress()));
+    out.append (tail.data(), tail.size());
     const auto n = jsonLength (m);
     out.append (static_cast<const char*> (m.getData()) + n, m.getSize() - n); // the tape audio part, unchanged
     return out;
@@ -974,7 +974,11 @@ void multi (Context& c)
     {
         auto p = h.create();
         ready (*p);
-        solo.push_back (render (*p, 48000, fixed (512), evFor (i)));
+        // on a worker thread too (alone), as in the parallel run: the message thread is not the audio thread
+        Render r;
+        std::thread t ([&] { r = render (*p, 48000, fixed (512), evFor (i)); });
+        t.join();
+        solo.push_back (std::move (r));
     }
     // all at once, each on its own thread (hosts process instances in parallel)
     std::vector<std::unique_ptr<juce::AudioPluginInstance>> inst;
@@ -998,6 +1002,17 @@ void multi (Context& c)
     }
     check (finite, juce::String (count) + " instances processed in parallel: all play, finite");
     check (same, "each instance sounds exactly as it does alone (no shared state) " + where);
+    if (! same) // diagnostics: does a second solo run (fresh instance, alone) reproduce the first one?
+        for (int i = 0; i < count; ++i)
+        {
+            auto p = h.create();
+            ready (*p);
+            Render r;
+            std::thread t ([&] { r = render (*p, 48000, fixed (512), evFor (i)); });
+            t.join();
+            juce::String w;
+            info ("solo repeat " + juce::String (i) + ": " + (sameAudio (solo[(size_t) i], r, w) ? "identical" : "differs " + w));
+        }
     // states stay separate
     ParamMap pm0 (*inst[0]);
     if (auto* t = pm0 ("p1.tune")) setParam (t, 0.9f);
@@ -1152,6 +1167,11 @@ void transport (Context& c)
     auto [withClicks, lat] = run (true, &expected);
     auto [without, lat2] = run (false, nullptr);
     juce::ignoreUnused (lat2);
+    {   // diagnostics: a fresh instance without clicks renders the script the same way again
+        auto again = run (false, nullptr).first;
+        juce::String w;
+        info ("without clicks, second run: " + (sameAudio (without, again, w) ? juce::String ("identical") : "differs " + w));
+    }
     check (withClicks.finite && without.finite, "transport start / stop / loop / tempo changes: finite and bounded");
 
     // the clicks = difference of the two renders; onsets after at least 40 ms of silence
