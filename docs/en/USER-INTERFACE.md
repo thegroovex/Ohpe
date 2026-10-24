@@ -595,6 +595,10 @@ What the pictures show (yellow = what you edit):
   the live gain reduction (red); attack and release as an envelope with two points.
 * **Multiband** – the three bands between their split frequencies: drag a band's level up / down, drag the split
   points across; the live gain of each band in violet; the output level on its own track.
+* **Multiband Comp** – three band meters (level −80 – 0 dBFS): the right point of a band is its Down threshold, the
+  left point its Up threshold (Alt / wheel: the ratio), the row below its gain; level (violet) and gain change (yellow
+  lifted, red pushed down) live; STYLE next to the slot name loads Squash, Glue, Air & Weight, Punch, Density or
+  Gentle. Guide: [Multiband Comp](MULTIBAND-COMP.md).
 * **Filter / Drive** – the response with one point: cutoff across, resonance up, drive on the wheel.
 * **Distortion** – the transfer curve; the point moves bias (across) and drive (up), tone on the wheel; output level,
   pre-filter frequency (wheel: filter type). **Bitcrush** – a sine through the crusher: bits up, downsampling across.

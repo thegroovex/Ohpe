@@ -1126,3 +1126,34 @@ Appended after `p4.chordroom`, per part (`p1.space.retrig`, `p1.space.amount`, `
 |---|---|---|---|---|
 | `pN.space.retrig` | Part N 3D Motion Retrigger | Part N 3D Bewegung Retrigger | Free / First / Note (Frei / Erste / Note): the motion restarts from its start position never, on a note after all keys were up, or on every note (mono legato notes do not restart it) | Free |
 | `pN.space.amount` | Part N 3D Amount | Part N 3D Stärke | 0 … 1 (0 = plain stereo, 1 = full 3D) | 1 |
+
+## Multiband Comp (p88)
+
+Rack type **Multiband Comp** (DE Multiband-Kompressor, `pN.fxK.type` / `mfxK.type` value 24, appended after Resonator).
+Its block `<slot>mbcomp.*` (32 parameters) is registered for every slot of every rack at the end of the layout (after
+`p4.space.amount`), in the order parts 1 – 4 slots 1 – 6, then master slots 1 – 4: 28 × 32 = 896 IDs,
+`p1.fx.mbcomp.depth` … `mfx4.mbcomp.highsolo`. Host names "P2 FX3 Multiband Comp Depth" / "P2 FX3 Multiband-Kompressor
+Tiefe" (slot 1 of part 1 without prefix, as every block). FX Param 1 – 4 (matrix) = Depth, Time, Downward, Upward; no
+new matrix indices. Guide: [English](en/MULTIBAND-COMP.md) · [Deutsch](de/MULTIBAND-KOMPRESSOR.md).
+
+| Local ID | English | Deutsch | Range | Default |
+|---|---|---|---|---|
+| `depth` | Multiband Comp Depth | Multiband-Kompressor Tiefe | 0 … 1 (wet / dry, per band) | 0.4 |
+| `time` | Multiband Comp Time | Multiband-Kompressor Zeit | 0 … 10 (0 – 1000 %, scales every attack / release) | 1 |
+| `upward` | Multiband Comp Upward | Multiband-Kompressor Aufwärts | 0 … 1 | 1 |
+| `downward` | Multiband Comp Downward | Multiband-Kompressor Abwärts | 0 … 1 | 1 |
+| `input` | Multiband Comp In | Multiband-Kompressor Eingang | −24 … +24 dB | 0 dB |
+| `output` | Multiband Comp Out | Multiband-Kompressor Ausgang | −24 … +24 dB | 0 dB |
+| `lowsplit` | Multiband Comp Low Split | Multiband-Kompressor Trennung tief | 40 … 1000 Hz | 120 Hz |
+| `highsplit` | Multiband Comp High Split | Multiband-Kompressor Trennung hoch | 1000 … 12000 Hz | 2500 Hz |
+| `<b>down` | Multiband Comp <B> Down Threshold | Multiband-Kompressor <B> Schwelle abwärts | −60 … 0 dB | −30 / −30 / −32 dB |
+| `<b>up` | Multiband Comp <B> Up Threshold | Multiband-Kompressor <B> Schwelle aufwärts | −80 … 0 dB | −42 / −42 / −44 dB |
+| `<b>downratio` | Multiband Comp <B> Down Ratio | Multiband-Kompressor <B> Ratio abwärts | 1 … 100 | 60 |
+| `<b>upratio` | Multiband Comp <B> Up Ratio | Multiband-Kompressor <B> Ratio aufwärts | 1 … 100 | 4 |
+| `<b>attack` | Multiband Comp <B> Attack | Multiband-Kompressor <B> Attack | 0.1 … 200 ms | 2 / 1 / 0.5 ms |
+| `<b>release` | Multiband Comp <B> Release | Multiband-Kompressor <B> Release | 5 … 2000 ms | 150 / 100 / 70 ms |
+| `<b>gain` | Multiband Comp <B> Gain | Multiband-Kompressor <B> Pegel | −24 … +24 dB | 0 dB |
+| `<b>solo` | Multiband Comp <B> Solo | Multiband-Kompressor <B> Solo | off / on | off |
+
+`<b>` = `low`, `mid`, `high` (EN Low / Mid / High, DE Tief / Mitte / Hoch), in this order; the band blocks follow the
+eight globals. Defaults are listed Low / Mid / High.
