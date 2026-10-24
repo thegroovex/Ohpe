@@ -36,7 +36,9 @@ opening the library, the pro view or the breeding view closes it too.
   window is open, and **never while the transport or the tape is running**.
 * **Channels.** *Stable* offers releases only; *Preview* also offers pre-releases. Builds before 1.0 start on Preview.
 * **Download.** The download runs on its own thread. A broken connection is retried with growing pauses and the
-  download **continues where it stopped** (also after a restart of Ohpe).
+  download **continues where it stopped** (also after a restart of Ohpe). A connection that stops delivering data
+  (no byte for twice the 15 s timeout) is dropped and continued in a new one, so a download never hangs; CANCEL
+  pauses it at once. If the server keeps breaking off without getting further, the download stops with an error.
 * **Verification.** Every file is checked against the **SHA-256 checksum** published with the release (and its size).
   A file that fails the check is **deleted and never opened**. The check is repeated right before INSTALL opens it.
   Code signature / notarisation checks follow once the installers are signed. **Size limits:** a download larger than

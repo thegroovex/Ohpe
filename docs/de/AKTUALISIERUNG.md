@@ -37,6 +37,9 @@ eine neuere Version, zeigt die Beschriftung einen kleinen **gelben Leuchtbalken*
 * **Kanäle.** *Stabil* bietet nur Releases an, *Vorschau* auch Vorab-Versionen. Versionen vor 1.0 starten mit Vorschau.
 * **Download.** Der Download läuft in einem eigenen Thread. Eine abgebrochene Verbindung wird mit wachsenden Pausen
   erneut versucht, und der Download **macht dort weiter, wo er stoppte** (auch nach einem Neustart von Ohpe).
+  Eine Verbindung, die keine Daten mehr liefert (kein Byte für das Doppelte der 15-s-Zeitgrenze), wird verworfen und
+  in einer neuen fortgesetzt – ein Download bleibt also nie hängen; ABBRECHEN pausiert ihn sofort. Bricht der Server immer
+  wieder ab, ohne dass der Download weiterkommt, endet er mit einer Fehlermeldung.
 * **Prüfung.** Jede Datei wird gegen die mit dem Release veröffentlichte **SHA-256-Prüfsumme** (und ihre Größe) geprüft.
   Eine Datei, die die Prüfung nicht besteht, wird **gelöscht und nie geöffnet**. Direkt vor INSTALLIEREN wird erneut
   geprüft. Prüfungen von Code-Signatur / Notarisierung folgen, sobald die Installer signiert sind. **Größengrenzen:** ein
