@@ -19,6 +19,7 @@
 #include "render/PresetRender.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <filesystem>
@@ -57,6 +58,8 @@ std::vector<Ev> partMaterial (double sr, double lead, double gap)
     return ev;
 }
 
+double worstLoad = 0.0, sumUs = 0.0; ///< worst block time / block duration, total processing time (last run)
+
 struct Rng
 {
     uint32_t s = 12345u;
@@ -67,6 +70,7 @@ struct Rng
 render::Audio run (Core& core, const std::vector<Ev>& events, int64_t total, int block, std::vector<int64_t>& boundaries)
 {
     render::Audio a;
+    worstLoad = sumUs = 0.0;
     a.sampleRate = core.sampleRate();
     a.l.assign ((size_t) total, 0.0f);
     a.r.assign ((size_t) total, 0.0f);
@@ -94,7 +98,12 @@ render::Audio run (Core& core, const std::vector<Ev>& events, int64_t total, int
         out.left[0] = a.l.data() + pos;
         out.right[0] = a.r.data() + pos;
         Transport tr;
+        const auto t0 = std::chrono::steady_clock::now();
         core.process (out, n, be.empty() ? nullptr : be.data(), (int) be.size(), tr);
+        const double us = std::chrono::duration<double, std::micro> (std::chrono::steady_clock::now() - t0).count();
+        const double budget = 1.0e6 * n / core.sampleRate();
+        worstLoad = std::max (worstLoad, us / budget);
+        sumUs += us;
         pos += n;
         boundaries.push_back (pos);
     }
@@ -263,9 +272,9 @@ int main (int argc, char** argv)
             const auto r = detect (audio, eventTimes, boundaries, core->latencySamples());
             if (! wavDir.empty()) writeWav (wavDir / (file.stem().string() + "_b" + std::to_string (block) + ".wav"), audio);
             std::printf ("{\"file\":\"%s\",\"kind\":\"%s\",\"engine\":\"%s\",\"block\":%d,\"free\":%d,\"event\":%d,\"holds\":%d,"
-                         "\"boundary\":%d,\"nonfinite\":%d,\"worst\":%.1f,\"peak\":%.3f,\"times\":[",
+                         "\"boundary\":%d,\"nonfinite\":%d,\"worst\":%.1f,\"peak\":%.3f,\"load\":%.3f,\"mean\":%.4f,\"times\":[",
                          file.stem().string().c_str(), project ? "project" : "part", p.meta.engine.c_str(), block, r.freeClicks,
-                         r.eventClicks, r.holds, r.onBoundary, r.nonFinite, r.worstRatio, r.peak);
+                         r.eventClicks, r.holds, r.onBoundary, r.nonFinite, r.worstRatio, r.peak, worstLoad, sumUs / (1.0e6 * (double) total / rate));
             for (size_t i = 0; i < r.freeTimes.size(); ++i) std::printf ("%s%.4f", i ? "," : "", r.freeTimes[i]);
             std::printf ("]}\n");
             std::fflush (stdout);
