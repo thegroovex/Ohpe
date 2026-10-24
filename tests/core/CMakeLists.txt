@@ -45,6 +45,10 @@ target_sources(ohpe_core_tests PRIVATE PresetTests.cpp)
 add_executable(ohpe_render ${CMAKE_SOURCE_DIR}/tools/render/OhpeRender.cpp)
 target_include_directories(ohpe_render PRIVATE ${CMAKE_SOURCE_DIR}/tools)
 target_link_libraries(ohpe_render PRIVATE ohpe_core)
+# p85: click / crackle scan of every factory preset at several host block sizes (tools/render/OhpeClickScan.cpp)
+add_executable(ohpe_clickscan ${CMAKE_SOURCE_DIR}/tools/render/OhpeClickScan.cpp)
+target_include_directories(ohpe_clickscan PRIVATE ${CMAKE_SOURCE_DIR}/tools)
+target_link_libraries(ohpe_clickscan PRIVATE ohpe_core)
 # 0.4 (package F): factory sample bank, sequencers -> drums, part gain, factory presets render
 target_sources(ohpe_core_tests PRIVATE FactorySoundTests.cpp)
 # 0.5 (sound revision 1): Orbit / Euclid swing and humanise, poly glide, the Boom kit
