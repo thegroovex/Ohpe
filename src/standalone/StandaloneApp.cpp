@@ -167,6 +167,7 @@ private:
         {
             auto* dev = getDeviceManager().getCurrentAudioDevice();
             p->deviceOutputChannels.store (dev != nullptr ? dev->getActiveOutputChannels().countNumberOfSetBits() : 2);
+            p->deviceInputChannels.store (dev != nullptr ? dev->getActiveInputChannels().countNumberOfSetBits() : 0); // p86
             // tempo sync: Link runs only while it is the sync source
             const int src = (int) std::lround (p->core().params().get (Core::Ids::syncSource));
             link.setEnabled (src == Core::SyncLink && LinkSync::available());

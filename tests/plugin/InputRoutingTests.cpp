@@ -162,6 +162,21 @@ TEST_CASE ("p86: before the fix - an input bus that starts off hears nothing thr
     player.setProcessor (nullptr);
 }
 
+TEST_CASE ("p86: the standalone app without an input device: the bus is silent and counts as not connected")
+{
+    OhpeProcessor p;
+    standaloneLayout (p);
+    p.prepareToPlay (48000.0, 512);
+    voiceOn (p, true);
+    double ph = 0.0;
+    p.deviceInputChannels.store (0); // what the app's timer stores for a device without inputs
+    runBlocks (p, 512, 4, 0.0f, ph);
+    CHECK_FALSE (p.core().inputConnected());
+    p.deviceInputChannels.store (1);
+    runBlocks (p, 512, 4, 0.0f, ph);
+    CHECK (p.core().inputConnected());
+}
+
 TEST_CASE ("p86: a stereo device and blocks longer than prepared keep their input")
 {
     OhpeProcessor p;

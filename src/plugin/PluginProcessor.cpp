@@ -297,7 +297,8 @@ void OhpeProcessor::captureInput (juce::AudioBuffer<float>& buffer, int n)
 {
     const float* inL = nullptr;
     const float* inR = nullptr;
-    if (getBusCount (true) > 0 && getBus (true, 0)->isEnabled() && inputScratch.getNumSamples() >= n)
+    if (getBusCount (true) > 0 && getBus (true, 0)->isEnabled() && inputScratch.getNumSamples() >= n
+        && deviceInputChannels.load (std::memory_order_relaxed) != 0) // p86: no input device = not connected
     {
         const auto in = getBusBuffer (buffer, true, 0);
         const int chans = juce::jmin (2, in.getNumChannels());
