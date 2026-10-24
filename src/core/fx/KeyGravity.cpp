@@ -135,6 +135,7 @@ void KeyGravity::startAnalysis() noexcept
     const float binHz = (float) sr / (float) N;
     for (int k = 0; k <= N / 2; ++k)
         binMidi[(size_t) k] = k == 0 ? -100.0f : 69.0f + 12.0f * std::log2 ((float) k * binHz / 440.0f);
+    bwHalf = -1; // p79: the cached bin weights follow the new bin pitches
     std::fill (prevPhase.begin(), prevPhase.end(), 0.0f);
     std::fill (prevMag.begin(), prevMag.end(), 0.0f);
     notePhase.fill (0.0);
