@@ -163,7 +163,8 @@ void Voice::render (float* l, float* r, int numSamples, const VoiceCommon& c) no
             for (auto& g : grains)
             {
                 if (! g.active) continue;
-                const float w = 0.5f - 0.5f * std::cos (dsp::twoPi * (float) g.age / (float) g.length);
+                // p79: Hann window with the polynomial sine (cos x = sin (x + quarter turn)); < 1e-6 from the library
+                const float w = 0.5f - 0.5f * dsp::sinTurns ((float) g.age / (float) g.length + 0.25f);
                 const float s0 = readHermite (ch0, frames, g.pos);
                 const float s1 = ch1 == ch0 ? s0 : readHermite (ch1, frames, g.pos);
                 a += s0 * w * g.gainL;

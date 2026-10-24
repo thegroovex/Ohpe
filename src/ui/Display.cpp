@@ -703,7 +703,9 @@ void Display::tick (float seconds)
         juce::RectangleList<int> rest (getLocalBounds());
         rest.subtract (area.toNearestInt());
         if (! settled) rest = juce::RectangleList<int> (getLocalBounds()); // parallax moves the grid layer
-        for (const auto& r : rest) repaint (r);
+        const bool skip = idleFrameSkip (settled); // p79
+        if (! skip)
+            for (const auto& r : rest) repaint (r);
         if (livingObj.consumeChanged() || ! settled)
         {
             const auto now = living::objectBounds (area, livingObj);
@@ -716,7 +718,31 @@ void Display::tick (float seconds)
     }
     livingObj.reset();
     livingLast = {};
-    repaint();
+    if (! idleFrameSkip (parallax.getDistanceFrom (parallaxTarget) < 0.002f || ! animated)) repaint(); // p79
+}
+
+bool Display::idleFrameSkip (bool settled)
+{
+    // p79: after two seconds in which no voice sounded, neither transport nor tape ran, no parameter changed, no message
+    // showed and the pointer stayed away, the display repaints every third tick (10 instead of 30 frames per second).
+    // Anything that changes ends the idle state at once; scopes and trails had those two seconds to fade out.
+    const auto& core = proc.core();
+    const uint32_t cc = core.params().changeCounter();
+    const bool still = settled && core.activeVoices() == 0 && ! core.transportPlaying() && ! core.countInActive() && ! proc.tapeRolling()
+                       && ! proc.tapeRecordReady() && flashTime <= 0.0f && cc == lastChangeCounter && ! isMouseOverOrDragging (true)
+                       && ! paintedAnimation && proc.learningParamId().isEmpty() // nothing on screen moves with the clock, no learn blink
+                       && (lastSource == ScopeTap::None || (! visuals.isLive() && visuals.isResting())); // scopes / terrain at rest
+    lastChangeCounter = cc;
+    idleTicks = still ? juce::jmin (idleTicks + 1, 1 << 20) : 0;
+    return idleTicks > 60 && idleTicks % 3 != 0;
+}
+
+bool Display::padsMoving() const
+{
+    const auto& pads = proc.core().pads();
+    for (int k = 0; k < PerformancePads::numPads; ++k)
+        if (pads.uiState (k) != PerformancePads::Idle || proc.core().params().get (PerformancePads::padId (k)) >= 0.5f) return true;
+    return false;
 }
 
 bool Display::livingOnScreen() const
@@ -1301,6 +1327,7 @@ void Display::paint (juce::Graphics& g)
 {
     const auto b = getLocalBounds().toFloat();
     const float u = b.getWidth() / 100.0f; // display unit
+    paintedAnimation = false; // p79: set below by everything on screen that moves with the clock
 
     // glass (0.7: with depth): inset bezel and deep glass, the dot grid as a layer further back
     // (parallax), the content, then the glass surface itself (inner shadow, sheen) on top
@@ -1344,7 +1371,8 @@ void Display::paint (juce::Graphics& g)
     }
     // 1.0: the 3D badge - lights up while the edit part plays binaural 3D
     badgeRect = juce::Rectangle<float> (hh * header3dBadgeW, hh * 0.6f).withPosition (badgeX, h.getCentreY() - hh * 0.3f);
-    space3d::drawBadge (g, spaceBadgeArea(), space3d::partState (core, ctx.part), time, space3d::speakerMonitoring (core)); // p41
+    const auto badgeState = space3d::partState (core, ctx.part);
+    space3d::drawBadge (g, spaceBadgeArea(), badgeState, anim (badgeState == space3d::State::Binaural), space3d::speakerMonitoring (core)); // p41
     g.setFont (monoFont (hh * TempoReadout::headerFont));
     g.setColour (colour::displayDim);
     // p39: the tempo and TAP are child components (editable); the header keeps their room
@@ -1392,6 +1420,7 @@ void Display::paint (juce::Graphics& g)
     // 0.7: the matrix's routing list / the FX rack's chain instead of the pictogram
     if (showsSpaceView()) // 1.0: the head-centred 3D view of every part's source
     {
+        anim (true); // the 3D scene drifts and its sources move
         spaceScene.paint (g, visualArea(), core, ctx.part, parallax, visuals.correlation());
         paintRows (g);
         paintStrip (g, stripArea());
@@ -1404,7 +1433,7 @@ void Display::paint (juce::Graphics& g)
         const auto pre = "p" + std::to_string (pt + 1) + ".reso.";
         const bool on = core.params().get (pre + "on") >= 0.5f;
         const auto va = visualArea();
-        resoview::paintBody (g, va, resoview::stateOf (core.part (pt).resoStage(), core, pre, on), time, colour::encoder (pt));
+        resoview::paintBody (g, va, resoview::stateOf (core.part (pt).resoStage(), core, pre, on), anim (on), colour::encoder (pt));
         g.setFont (labelFont (va.getHeight() * 0.05f)); // caption: the body model, as the 3D view names its monitoring
         g.setColour (colour::displayDim);
         const int mi = core.params().indexOf (pre + "model");
@@ -1416,7 +1445,7 @@ void Display::paint (juce::Graphics& g)
     }
     if (showsPadsView()) // p25: the performance pads
     {
-        padsview::paint (g, visualArea(), core, time);
+        padsview::paint (g, visualArea(), core, anim (padsMoving()));
         paintRows (g);
         paintStrip (g, stripArea());
         return;
@@ -1430,20 +1459,21 @@ void Display::paint (juce::Graphics& g)
     }
     if (showsVoiceView()) // p68: the vowel map, the input meter, the analysed values
     {
+        anim (true); // live input meter
         voiceview::paint (g, visualArea(), core);
         paintStrip (g, stripArea());
         return;
     }
     if (showsMotionView()) // p22: the motion lanes of the edit part
     {
-        motionview::paint (g, visualArea(), core, juce::jlimit (0, Core::numParts - 1, ctx.part), time);
+        motionview::paint (g, visualArea(), core, juce::jlimit (0, Core::numParts - 1, ctx.part), anim (true));
         paintRows (g);
         paintStrip (g, stripArea());
         return;
     }
     if (showsMorphView()) // p16: the morph pad of the edit part
     {
-        morphview::paint (g, visualArea(), core, juce::jlimit (0, Core::numParts - 1, ctx.part), time);
+        morphview::paint (g, visualArea(), core, juce::jlimit (0, Core::numParts - 1, ctx.part), anim (true));
         paintRows (g);
         paintStrip (g, stripArea());
         return;
@@ -1481,6 +1511,7 @@ void Display::paint (juce::Graphics& g)
     }
     else if (shown == Visual::Space) // 1.0
     {
+        anim (true); // the 3D scene drifts and its sources move
         spaceScene.paint (g, pictoArea.reduced (u * 0.4f, u * 0.2f), core, ctx.part, parallax, visuals.correlation());
     }
     else if (shown == Visual::Living) // p26: drawn only where the tick asked for it (the clip)
@@ -1513,9 +1544,10 @@ void Display::paint (juce::Graphics& g)
         }
         const auto charArea = pictoArea.reduced (u * 1.5f);
         if (mode == Mode::Synth && usertableview::wants (proc, ctx.part, type)) // p20: the user wavetable / formants
-            usertableview::paint (g, pictoArea.reduced (u * 0.6f), proc, ctx.part, type, -1.0f, time);
+            usertableview::paint (g, pictoArea.reduced (u * 0.6f), proc, ctx.part, type, -1.0f, anim (true));
         else
         {
+            ps.time = anim (true); // the large character moves with the clock
             drawPictogram (g, charArea.translated (u * 0.35f, u * 0.6f), picto, ps, juce::Colours::black.withAlpha (0.55f)); // cast shadow
             drawPictogram (g, charArea, picto, ps, dim ? colour::displayDim : colour::displayText);
         }
@@ -2127,6 +2159,7 @@ void Display::paintStrip (juce::Graphics& g, juce::Rectangle<float> s)
     if (mode == Mode::Tape) { paintTapeStrip (g, s); return; }
     if (showsModView()) // 0.7: trace of the selected routing
     {
+        anim (true); // the trace scrolls every tick
         modfx::paintModTrace (g, hasSoftKeys() ? s.withTrimmedBottom (softKeyRow().getHeight()) : s, core, ctx.part, ctx.modRouting, modHistory);
         if (hasSoftKeys()) paintSoftKeys (g);
         return;
@@ -2225,7 +2258,11 @@ void Display::paintStrip (juce::Graphics& g, juce::Rectangle<float> s)
             paintStereoScope (g, plot.reduced (plot.getWidth() * 0.01f, plot.getHeight() * 0.04f));
         }
         else
+        {
+            const int slotType = (int) std::lround (core.params().get (rack.slotPrefix (slot) + "type"));
+            anim (slotType == InsertSlot::Space3D || slotType == InsertSlot::Resonator); // their pictures move with the clock
             modfx::paintSlotVisual (g, area, core, rack.slotPrefix (slot), rack.slot (slot));
+        }
         if (hasSoftKeys()) paintSoftKeys (g);
         return;
     }

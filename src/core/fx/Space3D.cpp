@@ -751,6 +751,7 @@ void SpaceEffect::updateRoom (const Vec3& p, float b, int n) noexcept
 void SpaceEffect::process (float* left, float* right, int numSamples) noexcept
 {
     float lvl = 0.0f;
+    const float shadowA = (shadowBeta - 2.0f * sr) / (shadowBeta + 2.0f * sr); // p79: once per block, not per ear and sample
     for (int i = 0; i < numSamples; ++i)
     {
         if (countdown <= 0)
@@ -788,8 +789,7 @@ void SpaceEffect::process (float* left, float* right, int numSamples) noexcept
                 const int e = k & 1;
                 auto& E = S.ear[(size_t) k];
                 const float y = S.line.cubic (E.delay) + E.sh * S.line.linear (E.delay + E.shDelay);
-                const float a = (shadowBeta - 2.0f * sr) / (shadowBeta + 2.0f * sr);
-                const float out = E.b0 * y + E.b1 * E.x1 - a * E.y1;
+                const float out = E.b0 * y + E.b1 * E.x1 - shadowA * E.y1;
                 E.x1 = y;
                 E.y1 = dsp::flush (out);
                 (e == 0 ? outL : outR) += out * E.gain;
