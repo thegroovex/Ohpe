@@ -496,3 +496,156 @@ TEST_CASE ("update: content packs - registry, backup / rollback, safe paths, sta
     r2.installed ("keys-plus", "1.2.0");
     CHECK (packState (p, r2, Version::of ("1.1.0")) == PackState::Installed);
 }
+
+// ---- p81: edge cases found while writing the end-to-end updater test -------------------------------------------
+
+TEST_CASE ("update: version path 0.7.3 -> 0.9.0 -> 1.0.0 and pre-release suffixes")
+{
+    const auto v073 = Version::of ("0.7.3"), v090 = Version::of ("0.9.0"), v100 = Version::of ("1.0.0");
+    CHECK (v073 < v090);
+    CHECK (v090 < Version::of ("1.0.0-preview.1"));
+    CHECK (Version::of ("1.0.0-preview.1") < Version::of ("1.0.0-preview.2"));
+    CHECK (Version::of ("1.0.0-preview.2") < Version::of ("1.0.0-rc.1"));
+    CHECK (Version::of ("1.0.0-rc.1") < v100);
+    CHECK (v100 < Version::of ("1.0.1-preview.1"));
+    CHECK (Version::of ("0.7.3-preview.4") < v073);
+    CHECK (Version::of ("0.10.0") > v090);
+    CHECK (Version::of ("V1.0.0") == v100);
+    CHECK (Version::of (" 1.0.0 \n") == v100);
+    CHECK (Version::of ("1.0.0-rc.1+sha.abc") == Version::of ("1.0.0-rc.1"));
+    // semver: numeric pre-release identifiers have no leading zeros (preview.01 would sort after preview.9)
+    CHECK_FALSE (Version::of ("1.0.0-preview.01").valid());
+    CHECK (Version::of ("1.0.0-preview.0").valid());
+    CHECK (Version::of ("1.0.0-0a").valid()); // alphanumeric, not numeric
+    for (const char* bad : { "1.0.0-pre view", "1.0.0-é", "1..0", "1.0.0.", ".1.0.0", "1.0.-1", "9999999999.0.0" })
+        CHECK_MESSAGE (! Version::of (bad).valid(), bad);
+
+    // the list a 0.7.3 user sees on the way to 1.0
+    auto ref = [] (const char* tag, bool pre) { ReleaseRef r; r.version = Version::of (tag); r.prerelease = pre; return r; };
+    std::vector<ReleaseRef> list { ref ("0.7.3", false), ref ("0.9.0", false), ref ("1.0.0-preview.1", true), ref ("1.0.0-rc.1", true) };
+    CHECK (list[(size_t) pickUpdate (list, Channel::Stable, v073)].version == v090);
+    CHECK (list[(size_t) pickUpdate (list, Channel::Preview, v073)].version == Version::of ("1.0.0-rc.1"));
+    CHECK (pickUpdate (list, Channel::Stable, v090) < 0);
+    list.push_back (ref ("1.0.0", false));
+    CHECK (list[(size_t) pickUpdate (list, Channel::Stable, v073)].version == v100); // straight to the newest
+    CHECK (list[(size_t) pickUpdate (list, Channel::Preview, Version::of ("1.0.0-rc.1"))].version == v100); // preview gets stable
+    CHECK (pickUpdate (list, Channel::Preview, v100) < 0); // never "back" to a pre-release of the same number
+    CHECK (list[(size_t) pickPrevious (list, v100)].version == v090); // stable 1.0 rolls back to stable, not rc
+    CHECK (list[(size_t) pickPrevious (list, Version::of ("1.0.0-rc.1"))].version == Version::of ("1.0.0-preview.1"));
+}
+
+TEST_CASE ("update: release list - malformed answers are not an empty list")
+{
+    bool ok = true;
+    CHECK (parseReleaseList ("[]", &ok).empty());
+    CHECK (ok);
+    for (const char* bad : { "", "<html>captive portal</html>", "{\"message\":\"API rate limit exceeded\"}", "[{\"tag_name\":\"v1.0.0\"",
+                             "null", "42" })
+    {
+        ok = true;
+        CHECK (parseReleaseList (bad, &ok).empty());
+        CHECK_MESSAGE (! ok, bad);
+    }
+    ok = false;
+    const auto l = parseReleaseList ("[ 1, \"x\", {\"tag_name\": 5}, {\"tag_name\": \"v1.0.0\", \"assets\": \"none\"} ]", &ok);
+    CHECK (ok);
+    REQUIRE (l.size() == 1);
+    CHECK (l[0].version == Version::of ("1.0.0"));
+    Release r;
+    std::string err;
+    CHECK_FALSE (parseManifest ("{\"format\":1,\"app\":\"Ohpe\",\"version\":\"1.0\"}", r, &err));
+    CHECK_FALSE (parseManifest ("{\"format\":2,\"app\":\"Ohpe\",\"version\":\"1.0.0\"}", r, &err));
+    CHECK_FALSE (parseManifest ("{\"format\":1,\"app\":\"Other\",\"version\":\"1.0.0\"}", r, &err));
+    CHECK (parseManifest ("{\"format\":1,\"app\":\"Ohpe\",\"version\":\"1.0.0\",\"assets\":[{\"platform\":\"linux\",\"url\":\"u\",\"size\":-5}],\"content\":7}", r, &err));
+    REQUIRE (r.assets.size() == 1);
+    CHECK (r.assets[0].size == 0); // a negative size is "unknown", not 2^64 - 5
+}
+
+TEST_CASE ("update: download size limit - declared, reported and streamed")
+{
+    MemFile f;
+    DownloadOptions o;
+    o.url = "x";
+    o.maxBytes = 100000;
+
+    FakeNet net;
+    net.data = payload (150000);
+    o.expectedSize = net.data.size(); // declared too large: refused before connecting
+    auto r = download (net, f, o);
+    CHECK (r.result == DownloadResult::TooLarge);
+    CHECK (net.offsets.empty());
+    CHECK (std::string (resultName (r.result)) == "too large");
+
+    o.expectedSize = 0; // unknown: the transport reports the size
+    r = download (net, f, o);
+    CHECK (r.result == DownloadResult::TooLarge);
+    CHECK (f.bytes.empty());
+
+    // a server that reports nothing and streams on: stopped at the limit, nothing kept
+    struct Endless : Transport
+    {
+        int opens = 0;
+        bool open (const std::string&, uint64_t, uint64_t& total, bool& fromOffset) override { ++opens; total = 0; fromOffset = false; return true; }
+        int64_t read (uint8_t* b, size_t n) override { std::fill (b, b + n, (uint8_t) 7); return (int64_t) n; }
+    } endless;
+    r = download (endless, f, o);
+    CHECK (r.result == DownloadResult::TooLarge);
+    CHECK (f.bytes.empty());
+    CHECK (endless.opens == 1);
+
+    // within the limit: fine
+    FakeNet small;
+    small.data = payload (90000);
+    o.sha256 = Sha256::of (small.data);
+    r = download (small, f, o);
+    CHECK (r.result == DownloadResult::Ok);
+    CHECK (f.bytes == small.data);
+}
+
+TEST_CASE ("update: a stale partial file from an earlier run and a sha mismatch after resume")
+{
+    FakeNet net;
+    net.data = payload (120000);
+    MemFile f;
+    f.bytes = payload (50000).substr (0, 40000);
+    f.bytes[100] ^= 0x55; // the partial file was damaged on disk
+    DownloadOptions o;
+    o.url = "x";
+    o.sha256 = Sha256::of (net.data);
+    o.expectedSize = net.data.size();
+    auto r = download (net, f, o);
+    CHECK (r.result == DownloadResult::ChecksumMismatch); // resumed onto damaged bytes: refused and deleted
+    CHECK (f.bytes.empty());
+    CHECK (r.resumes == 1);
+    r = download (net, f, o); // the next try starts clean
+    CHECK (r.result == DownloadResult::Ok);
+    CHECK (f.bytes == net.data);
+}
+
+TEST_CASE ("update: a server that ignores ranges and keeps breaking off gives up instead of looping (p81)")
+{
+    FakeNet net;
+    net.data = payload (200000);
+    net.honourRange = false;
+    net.breakAfter = 50000; // every connection starts over and breaks off at 50 kB
+    MemFile f;
+    DownloadOptions o;
+    o.url = "x";
+    o.sha256 = Sha256::of (net.data);
+    o.expectedSize = net.data.size();
+    o.maxAttempts = 4;
+    const auto r = download (net, f, o);
+    CHECK (r.result == DownloadResult::NetworkFailed);
+    CHECK (r.attempts <= 6); // the first attempt gets further; after it, attempts in a row without progress
+    CHECK (f.bytes.size() <= 50000);
+
+    // restarting and then getting further than before is progress: completes once the breaks stop
+    FakeNet net2;
+    net2.data = net.data;
+    net2.honourRange = false;
+    MemFile g;
+    g.bytes = net.data.substr (0, 120000);
+    const auto r2 = download (net2, g, o);
+    CHECK (r2.result == DownloadResult::Ok);
+    CHECK (g.bytes == net.data);
+}

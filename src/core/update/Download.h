@@ -41,7 +41,7 @@ public:
     virtual bool readAll (const std::function<void (const uint8_t*, size_t)>& sink) = 0;
 };
 
-enum class DownloadResult { Ok = 0, NetworkFailed, ChecksumMismatch, SizeMismatch, WriteFailed, Cancelled };
+enum class DownloadResult { Ok = 0, NetworkFailed, ChecksumMismatch, SizeMismatch, WriteFailed, Cancelled, TooLarge };
 const char* resultName (DownloadResult r) noexcept;
 
 struct DownloadOptions
@@ -49,7 +49,8 @@ struct DownloadOptions
     std::string url;
     std::string sha256;      ///< expected digest (hex); empty = not checked (the updater refuses to install then)
     uint64_t expectedSize = 0; ///< 0 = unknown
-    int maxAttempts = 5;     ///< connection attempts in a row without progress
+    uint64_t maxBytes = 0;     ///< p81: hard limit (0 = none): a larger declared or streamed file is refused (TooLarge)
+    int maxAttempts = 5;     ///< connection attempts in a row without progress (getting further than ever before)
     std::function<void (int attempt)> waitBeforeRetry; ///< back-off (the plug-in sleeps 1, 2, 4 ... s); may be empty
     std::function<void (uint64_t done, uint64_t total)> progress;
     const std::atomic<bool>* cancel = nullptr;

@@ -84,8 +84,9 @@ struct ReleaseRef
 constexpr const char* manifestAssetName = "ohpe-update.json";
 constexpr const char* sumsAssetName = "SHA256SUMS.txt";
 
-/** Parses the GitHub release list. Drafts and tags that are no version are left out. */
-std::vector<ReleaseRef> parseReleaseList (const std::string& json);
+/** Parses the GitHub release list. Drafts and tags that are no version are left out. `ok` (optional) = the text was
+    a JSON array (false: not JSON, an object such as an error message, a cut-off answer - not "no releases"). */
+std::vector<ReleaseRef> parseReleaseList (const std::string& json, bool* ok = nullptr);
 
 /** Splits a bilingual release body at its "## English" / "## Deutsch" headings (both = the whole text without them). */
 void splitNotes (const std::string& body, std::string& en, std::string& de);

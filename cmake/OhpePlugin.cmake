@@ -327,6 +327,7 @@ endif()
 # ---------------------------------------------------------------- p27: the in-app updater
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/UpdaterTests.cpp)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/UpdaterE2ETests.cpp) # p81: end to end against a local HTTP mock
 endif()
 
 # ---------------------------------------------------------------- content packs: shared loader (local install, kind folders, references)
