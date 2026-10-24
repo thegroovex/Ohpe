@@ -127,6 +127,16 @@ void checkState (OhpeEditor& e, const juce::String& state, juce::StringArray& pr
     (void) e.createComponentSnapshot (e.getLocalBounds(), true, 0.4f); // painted views build their controls while painting
     walk (e, state, en, e, n);
     total += n;
+    if (n == 0)
+    {   // diagnostics: why the walk saw nothing
+        bool a = false, b = false;
+        e.getInterceptsMouseClicks (a, b);
+        int vis = 0;
+        for (auto* ch : e.getChildren()) vis += ch->isVisible() ? 1 : 0;
+        MESSAGE ("empty walk " << state << ": visible " << (int) e.isVisible() << " size " << e.getWidth() << "x" << e.getHeight()
+                 << " children " << e.getNumChildComponents() << " visible " << vis << " clicks " << (int) a << (int) b
+                 << " regionProvider " << (int) (dynamic_cast<tips::RegionProvider*> (&e) != nullptr));
+    }
     e.setLanguage (i18n::Language::German);
     e.advanceAnimation (0.05f);
     (void) e.createComponentSnapshot (e.getLocalBounds(), true, 0.4f); // paints every text of the view in German
