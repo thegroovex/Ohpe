@@ -957,14 +957,23 @@ void multi (Context& c)
     auto& h = c.host;
     constexpr int count = 4;
     auto evFor = [] (int i) { return chord (0, 30000, { 1 + i % 4 }, 48 + 7 * i); };
+    // The instance's message-thread work (20 Hz timer: start sound, FX slot types prepared on demand, morph plans)
+    // finishes before the render starts - in the solo and the parallel run alike - so only the audio threads differ.
+    // (The shared tables - wavetable bank, FM algorithms, built-in samples, factory bank - are built once under
+    // C++11 thread-safe static initialisation or published through atomics; nothing is built on first audio use.)
+    auto ready = [] (juce::AudioPluginInstance& p) {
+        settle (p, 60);
+        p.releaseResources();
+        p.prepareToPlay (48000.0, 512);
+        pump (300);
+        settle (p, 4);
+    };
     // each instance alone
     std::vector<Render> solo;
     for (int i = 0; i < count; ++i)
     {
         auto p = h.create();
-        settle (*p);
-        p->releaseResources();
-        p->prepareToPlay (48000.0, 512);
+        ready (*p);
         solo.push_back (render (*p, 48000, fixed (512), evFor (i)));
     }
     // all at once, each on its own thread (hosts process instances in parallel)
@@ -972,9 +981,7 @@ void multi (Context& c)
     for (int i = 0; i < count; ++i)
     {
         inst.push_back (h.create());
-        settle (*inst.back());
-        inst.back()->releaseResources();
-        inst.back()->prepareToPlay (48000.0, 512);
+        ready (*inst.back());
     }
     std::vector<Render> together ((size_t) count);
     std::vector<std::thread> threads;
