@@ -64,6 +64,7 @@ struct Route
     size_t breakAfter = 0;       ///< > 0: the next `breaks` responses close after this many body bytes
     int breaks = 0;
     bool cleanBreak = false;     ///< a break announces the shorter length (the stream ends early but cleanly)
+    bool hangOnBreak = false;    ///< a break keeps the connection open and silent instead of closing it (a stall)
     bool stall = false;          ///< accept, never answer
     bool endless = false;        ///< no Content-Length, stream until the client gives up
     bool noLength = false;       ///< no Content-Length (body then close)
@@ -251,6 +252,13 @@ private:
             return;
         }
         sendAll (s, body.data(), sendBytes);
+        if (breakThis && r.hangOnBreak)
+        {
+            // silent, connection open: only the client's timeout / stall watchdog gets it out of here
+            const auto until = juce::Time::getMillisecondCounter() + 20000;
+            while (! stopping && juce::Time::getMillisecondCounter() < until) juce::Thread::sleep (20);
+            return;
+        }
         if (breakThis) juce::Thread::sleep (30); // let the bytes reach the client before the hang-up
     }
 
@@ -572,20 +580,13 @@ TEST_CASE ("updater e2e: background download resumes after interruptions and aft
     u->downloadUpdate();
     const bool finished = u->waitIdle (25000);
     auto s = u->snapshot();
-   #if JUCE_WINDOWS
-    if (! finished)
     {
-        // Windows' HTTP stack has been seen to stall here in CI (not reproduced elsewhere); recorded, not fatal,
-        // with what the server saw - the restart / range cases below run on every platform
+        // p81: once seen to stall on Windows (receive timeout ignored) - the stall watchdog must make this finish
         std::string seen;
         for (const auto& q : h.srv.requests()) seen += q.path + " [" + q.range + "]  ";
         const std::string note = "interrupted download did not finish; progress " + std::to_string (s.progress) + ", requests: " + seen;
-        WARN_MESSAGE (finished, note);
-        u->cancel();
-        REQUIRE (u->waitIdle (30000));
+        REQUIRE_MESSAGE (finished, note);
     }
-    else
-   #endif
     {
         REQUIRE (finished);
         CHECK (s.state == Updater::State::Ready);
@@ -626,19 +627,13 @@ TEST_CASE ("updater e2e: background download resumes after interruptions and aft
     u2->downloadUpdate();
     const bool done2 = u2->waitIdle (25000);
     s = u2->snapshot();
-   #if JUCE_WINDOWS
-    if (! done2)
     {
-        // seen to stall in Windows CI (a 200 answer to a ranged request); recorded with the server log, not fatal
+        // p81: a 200 answer to a ranged request once stalled on Windows - the stall watchdog must make this finish
         std::string seen;
         for (const auto& q : h.srv.requests()) seen += q.path + " [" + q.range + "]  ";
         const std::string note = "range-ignored download did not finish; progress " + std::to_string (s.progress) + ", requests: " + seen;
-        WARN_MESSAGE (done2, note);
-        u2->cancel();
-        REQUIRE (u2->waitIdle (30000));
+        REQUIRE_MESSAGE (done2, note);
     }
-    else
-   #endif
     {
         REQUIRE (done2);
         CHECK (s.state == Updater::State::Ready);
@@ -646,6 +641,55 @@ TEST_CASE ("updater e2e: background download resumes after interruptions and aft
     }
     u2.reset();
     data2.deleteRecursively();
+}
+
+TEST_CASE ("updater e2e: a connection that goes silent mid-download is abandoned and continued; cancel is immediate")
+{
+    Harness h;
+    REQUIRE (h.srv.running());
+    h.add ("0.7.3", false);
+    auto& r = h.add ("0.9.0", false, 400000);
+    h.publish();
+    const auto path = h.installerPath (r);
+    auto hanging = [&] (int n) { Route x; x.body = r.installer; x.breakAfter = 120000; x.breaks = n; x.hangOnBreak = true; return x; };
+
+    // p81 regression (a Windows download hung for good): two connections stall after 120 kB with the socket open
+    h.srv.set (path, hanging (2));
+    auto u = h.updater ("0.7.3");
+    REQUIRE (check (*u).hasRelease);
+    u->downloadUpdate();
+    const bool finished = u->waitIdle (25000);
+    auto s = u->snapshot();
+    std::string seen;
+    for (const auto& q : h.srv.requests()) seen += q.path + " [" + q.range + "]  ";
+    REQUIRE_MESSAGE (finished, "stalled download did not finish; progress " + std::to_string (s.progress) + ", requests: " + seen);
+    CHECK (s.state == Updater::State::Ready);
+    CHECK (fileBytes (s.downloaded) == r.installer);
+    const auto rg = h.srv.ranges (path);
+    REQUIRE (rg.size() >= 2);
+    CHECK (rg[0].empty());
+    for (size_t i = 1; i < rg.size(); ++i) CHECK_MESSAGE (rg[i].rfind ("bytes=", 0) == 0, rg[i]); // continued, not restarted
+    u.reset();
+
+    // pausing while a read is blocked returns at once, not after the network timeout (8 s here)
+    juce::TemporaryFile tmp;
+    const auto data = tmp.getFile();
+    h.srv.set (path, hanging (1));
+    auto u2 = h.updater ("0.7.3", data);
+    u2->setNetworkTimingForTests (8000, 20);
+    REQUIRE (check (*u2).hasRelease);
+    u2->downloadUpdate();
+    const auto until = juce::Time::getMillisecondCounter() + 10000;
+    while (u2->snapshot().progress <= 0.0 && juce::Time::getMillisecondCounter() < until) juce::Thread::sleep (20);
+    REQUIRE (u2->snapshot().progress > 0.0);
+    juce::Thread::sleep (300); // the read is now blocked on the silent connection
+    const auto t0 = juce::Time::getMillisecondCounter();
+    u2->cancel();
+    REQUIRE (u2->waitIdle (6000));
+    CHECK (juce::Time::getMillisecondCounter() - t0 < 3000u);
+    CHECK (u2->snapshot().state == Updater::State::Available);
+    u2.reset();
+    data.deleteRecursively();
 }
 
 TEST_CASE ("updater e2e: a stale partial file the server cannot continue (416) starts over")

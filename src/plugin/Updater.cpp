@@ -18,15 +18,69 @@ std::string std8 (const juce::String& s) { return s.toStdString(); }
 
 juce::String userAgent() { return "Ohpe/" OHPE_VERSION; }
 
+/** p81: aborts a connection that makes no progress. Some network stacks do not honour their receive timeout
+    (seen as a download that hangs for good on Windows when a connection breaks or a server answers a ranged
+    request with the whole file); closing the stream from here unblocks the read, and the core then continues in
+    a new connection. Also aborts a blocked read at once when the user cancels or the updater shuts down. */
+class StallWatchdog final : private juce::Thread
+{
+public:
+    explicit StallWatchdog (std::function<bool()> abortNow) : juce::Thread ("Ohpe download watchdog"), abort (std::move (abortNow)) {}
+    ~StallWatchdog() override { stopThread (4000); }
+
+    void watch (juce::WebInputStream* s, int stallMs)
+    {
+        {
+            std::lock_guard<std::mutex> g (m);
+            stream = s;
+            limitMs = juce::jmax (500, stallMs);
+            lastMs = juce::Time::getMillisecondCounter();
+            fired = false;
+        }
+        if (! isThreadRunning()) startThread (juce::Thread::Priority::low);
+    }
+    void unwatch() { std::lock_guard<std::mutex> g (m); stream = nullptr; }
+    void progressed() { std::lock_guard<std::mutex> g (m); lastMs = juce::Time::getMillisecondCounter(); }
+    bool hasFired() { std::lock_guard<std::mutex> g (m); return fired; }
+
+private:
+    void run() override
+    {
+        while (! threadShouldExit())
+        {
+            wait (100);
+            std::lock_guard<std::mutex> g (m);
+            if (stream == nullptr) continue;
+            const bool stalled = juce::Time::getMillisecondCounter() - lastMs > (juce::uint32) limitMs;
+            if (stalled || (abort && abort()))
+            {
+                fired = true;
+                stream->cancel(); // under the lock: the transport cannot destroy the stream meanwhile
+                stream = nullptr;
+            }
+        }
+    }
+
+    std::function<bool()> abort;
+    std::mutex m;
+    juce::WebInputStream* stream = nullptr;
+    int limitMs = 30000;
+    juce::uint32 lastMs = 0;
+    bool fired = false;
+};
+
 /** juce::URL as the core's download transport (https; file:// for tests). */
 class UrlTransport final : public update::Transport
 {
 public:
-    UrlTransport (juce::Thread& t, int timeoutMs) : thread (t), timeout (timeoutMs) {}
+    UrlTransport (juce::Thread& t, int timeoutMs, std::function<bool()> cancelled)
+        : thread (t), timeout (timeoutMs),
+          watchdog ([&t, c = std::move (cancelled)] { return t.threadShouldExit() || (c && c()); }) {}
+    ~UrlTransport() override { close(); }
 
     bool open (const std::string& urlText, uint64_t offset, uint64_t& total, bool& fromOffset) override
     {
-        in.reset();
+        close();
         const juce::URL url (str (urlText));
         if (url.isLocalFile())
         {
@@ -34,30 +88,33 @@ public:
             if (! f->openedOk()) return false;
             total = (uint64_t) juce::jmax ((juce::int64) 0, f->getTotalLength());
             fromOffset = f->setPosition ((juce::int64) offset);
-            in = std::move (f);
+            file = std::move (f);
             return true;
         }
         juce::StringPairArray response;
         int status = 0;
-        auto request = [&] (uint64_t from) {
+        auto request = [&] (uint64_t from) -> std::unique_ptr<juce::WebInputStream> {
             juce::String headers = "User-Agent: " + userAgent() + "\r\nAccept: application/octet-stream";
             if (from > 0) headers << "\r\nRange: bytes=" << (juce::int64) from << "-";
-            response.clear();
-            status = 0;
-            return url.createInputStream (juce::URL::InputStreamOptions (juce::URL::ParameterHandling::inAddress)
-                                              .withExtraHeaders (headers)
-                                              .withConnectionTimeoutMs (timeout)
-                                              .withResponseHeaders (&response)
-                                              .withStatusCode (&status)
-                                              .withNumRedirectsToFollow (8));
+            auto w = std::make_unique<juce::WebInputStream> (url, false);
+            w->withExtraHeaders (headers).withConnectionTimeout (timeout).withNumRedirectsToFollow (8);
+            // the connection itself is watched too (a server that accepts and never answers)
+            watchdog.watch (w.get(), stallLimit());
+            const bool ok = w->connect (nullptr) && ! watchdog.hasFired();
+            watchdog.unwatch();
+            if (! ok) return nullptr;
+            status = w->getStatusCode();
+            response = w->getResponseHeaders();
+            return w;
         };
         auto stream = request (offset);
         bool restarted = false;
-        if (offset > 0 && status == 416)
+        if (stream != nullptr && offset > 0 && status == 416)
         {
             // p81: the partial file is not a prefix the server can continue (stale, as long or longer than the
             // file): ask for the whole file - fromOffset = false makes the download start over instead of
             // failing on every attempt
+            stream.reset();
             stream = request (0);
             restarted = true;
         }
@@ -82,25 +139,40 @@ public:
         }
         else
             return false;
-        in = std::move (stream);
+        web = std::move (stream);
+        watchdog.watch (web.get(), stallLimit());
         return true;
     }
 
     int64_t read (uint8_t* buffer, size_t n) override
     {
-        if (in == nullptr || thread.threadShouldExit()) return -1;
+        if (thread.threadShouldExit()) return -1;
+        juce::InputStream* in = web != nullptr ? static_cast<juce::InputStream*> (web.get()) : file.get();
+        if (in == nullptr) return -1;
         const int got = in->read (buffer, (int) juce::jmin (n, (size_t) 65536));
+        if (web != nullptr && watchdog.hasFired()) return -1; // stalled and aborted: continue in a new connection
         if (got < 0) return -1;
         if (got == 0) return in->isExhausted() ? 0 : -1;
+        if (web != nullptr) watchdog.progressed();
         return got;
     }
 
-    void close() override { in.reset(); }
+    void close() override
+    {
+        watchdog.unwatch();
+        web.reset();
+        file.reset();
+    }
 
 private:
+    /** No byte for this long = stalled. Twice the stack's own timeout, so that one normally fires first. */
+    int stallLimit() const { return juce::jmax (2000, 2 * timeout); }
+
     juce::Thread& thread;
     int timeout = 20000;
-    std::unique_ptr<juce::InputStream> in;
+    StallWatchdog watchdog;
+    std::unique_ptr<juce::WebInputStream> web;
+    std::unique_ptr<juce::InputStream> file;
 };
 
 class LocalPartialFile final : public update::PartialFile
@@ -316,17 +388,32 @@ juce::String Updater::fetchText (const juce::String& urlText, int* statusOut, bo
         if (f.getSize() > maxTextBytes) { if (tooLargeOut != nullptr) *tooLargeOut = true; return {}; }
         return f.loadFileAsString();
     }
-    int status = 0;
-    auto in = url.createInputStream (juce::URL::InputStreamOptions (juce::URL::ParameterHandling::inAddress)
-                                         .withExtraHeaders ("User-Agent: " + userAgent() + "\r\nAccept: application/vnd.github+json")
-                                         .withConnectionTimeoutMs (netTimeoutMs)
-                                         .withStatusCode (&status)
-                                         .withNumRedirectsToFollow (8));
+    // p81: the same stall watchdog as downloads - a stack that ignores its timeout must not hang the check
+    StallWatchdog watchdog ([this] { return threadShouldExit() || cancelFlag.load(); });
+    const int stallMs = juce::jmax (2000, 2 * netTimeoutMs);
+    juce::WebInputStream in (url, false);
+    in.withExtraHeaders ("User-Agent: " + userAgent() + "\r\nAccept: application/vnd.github+json")
+      .withConnectionTimeout (netTimeoutMs)
+      .withNumRedirectsToFollow (8);
+    watchdog.watch (&in, stallMs);
+    const bool connected = in.connect (nullptr) && ! watchdog.hasFired();
+    const int status = connected ? in.getStatusCode() : 0;
     if (statusOut != nullptr) *statusOut = status;
-    if (in == nullptr || (status != 200 && status != 0)) return {};
+    if (! connected || (status != 200 && status != 0)) { watchdog.unwatch(); return {}; }
     // p81: never read more than maxTextBytes (a wrong URL or a hostile server could stream without end)
     juce::MemoryBlock mb;
-    in->readIntoMemoryBlock (mb, maxTextBytes + 1);
+    juce::HeapBlock<char> buf (16384);
+    bool broken = false;
+    while (mb.getSize() <= (size_t) maxTextBytes)
+    {
+        const int n = in.read (buf.get(), 16384);
+        if (watchdog.hasFired()) { broken = true; break; }
+        if (n <= 0) break;
+        mb.append (buf.get(), (size_t) n);
+        watchdog.progressed();
+    }
+    watchdog.unwatch();
+    if (broken) { if (statusOut != nullptr) *statusOut = 0; return {}; }
     if (mb.getSize() > (size_t) maxTextBytes) { if (tooLargeOut != nullptr) *tooLargeOut = true; return {}; }
     return juce::String::fromUTF8 ((const char*) mb.getData(), (int) mb.getSize());
 }
@@ -431,7 +518,7 @@ void Updater::refreshPacks()
 
 update::DownloadReport Updater::fetchFile (const juce::String& url, const juce::File& target, const std::string& sha256, uint64_t size)
 {
-    UrlTransport net (*this, netTimeoutMs);
+    UrlTransport net (*this, netTimeoutMs, [this] { return cancelFlag.load(); });
     LocalPartialFile part (target.withFileExtension (target.getFileExtension() + ".part"));
     update::DownloadOptions o;
     o.url = std8 (url);
