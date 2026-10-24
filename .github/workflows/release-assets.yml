@@ -3,6 +3,10 @@ name: release-assets
 # Attaches the build artefacts of a finished CI run to an existing GitHub release.
 # p27: also writes the update manifest (ohpe-update.json: assets with sizes and SHA-256, the EN / DE notes from the
 # release text, content packs from packaging/content) that the in-app updater reads, and SHA256SUMS.txt.
+# 0.9.0: also attaches the macOS app / VST3 / AU zips and the PDF manual (Ohpe-Manual-EN.pdf, Ohpe-Manual-DE.pdf,
+# built by tools/manual/build_manual.py in the CI run's job "Manual (PDF)" from the same commit, so the cover shows
+# the release version). The updater manifest never lists the zips of macOS or the manuals (only installers / Windows
+# archives), and SHA256SUMS.txt covers every attached file.
 on:
   workflow_dispatch:
     inputs:
@@ -41,8 +45,14 @@ jobs:
           mkdir out
           ver="${{ inputs.tag }}"; ver="${ver#v}"
           find art -type f -name '*Installer*.dmg' -exec cp {} out/ \;
-          find art -type f -name 'Ohpe-Windows-*.zip' -print0 | while IFS= read -r -d '' f; do
+          find art -type f \( -name 'Ohpe-Windows-*.zip' -o -name 'Ohpe-macOS-*.zip' \) -print0 | while IFS= read -r -d '' f; do
             b=$(basename "$f"); cp "$f" "out/Ohpe-$ver-${b#Ohpe-}"
+          done
+          # the PDF manual EN + DE (artifact Ohpe-Manual); a release without both manuals fails here
+          for l in EN DE; do
+            m=$(find art -type f -name "Ohpe-Manual-$l.pdf" | head -n 1)
+            test -n "$m" || { echo "missing Ohpe-Manual-$l.pdf in run ${{ inputs.run_id }}"; exit 1; }
+            cp "$m" out/
           done
           find art -type f | sed 's/^/  /'
       - name: Update manifest and checksums
