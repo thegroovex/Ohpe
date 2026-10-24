@@ -12,7 +12,7 @@ Drehregler und eine Klaviatur. Ohpe läuft als
 
 ![Ohpe – Analog-Engine](docs/images/ohpe-analog-de.png)
 
-> **Stand: 0.7.3 – Vorabversion auf dem Weg zu 1.0.** Acht Engines, vier Parts, Drum-Kit, Step-, Euklid-,
+> **Stand: 0.9.0 – öffentliche Beta auf dem Weg zu 1.0.** Acht Engines, vier Parts, Drum-Kit, Step-, Euklid-,
 > Arpeggiator- und Orbit-Sequencer, Bandmaschine, Mixer mit Dynamik und FX-Racks, 3D-Raum, MPE und
 > MIDI-Clock-Sync, Preset-Bibliothek, Profiansicht und direkte Bedienung – mit **430 Werks-Presets** (412
 > Part-Presets und 18 Projekte), sechs Drum-Kits und vierzehn gesampelten Instrumenten. Vorab-Builds

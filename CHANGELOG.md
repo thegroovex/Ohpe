@@ -5,8 +5,16 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
-## Unreleased / Unveröffentlicht
+## 0.9.0 Beta – 2026-10-24
 
+[Notes / Hinweise](docs/release-notes/0.9.0.md)
+
+- EN: Public beta on the way to 1.0 (pre-release, preview channel; stable stays on 0.7.3): performance pass, host
+  test matrix with four fixes, updater hardening, tooltips and help search, UI sizes 75–200 %, keyboard operation,
+  screen reader, contrast, PDF manual EN / DE.
+- DE: Öffentliche Beta auf dem Weg zu 1.0 (Vorabversion, Kanal Vorschau; Stabil bleibt auf 0.7.3): Leistungsdurchgang,
+  Host-Testmatrix mit vier Fehlerbehebungen, robusterer Updater, Tooltips und Hilfesuche, UI-Größen 75–200 %,
+  Tastaturbedienung, Screenreader, Kontrast, PDF-Handbuch DE / EN.
 - EN: Performance (p79) – about 10 % less CPU over all benchmark scenarios on the same machine, up to −40 to −77 %
   where it matters most: idle −53 %, silent racks −60 %, silent master FX −77 %, after playing −75 %, Pluck −41 %,
   16-voice chords −18 to −49 %, drums −32 %, Key Gravity −20 %. The master limiter skips its true-peak interpolation
@@ -74,6 +82,28 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   > Hilfe hat ein Suchfeld (Strg / Cmd + F): deutsche oder englische Wörter, fehlertolerant (Groß-/Kleinschreibung,
   Umlaute, Wortanfänge, Tippfehler), findet Hilfethemen, Parameter und Bedienelemente und springt hin – zur Seite des
   Parameters mit gelb umrandetem Encoder, zum umrandeten Element auf der Oberfläche. Keine neuen Parameter.
+
+- EN: Updater hardening (p81) – a download or update check that stalls (no progress) is cancelled by a watchdog
+  instead of hanging, Cancel stops it at once; every download is checked against its SHA-256 and a size limit;
+  a malformed or unreachable update list or an HTTP error now reports an error instead of "up to date"; a server
+  that ignores a resume request is handled; paid content packs are never built into or listed in the release
+  manifest. End-to-end updater tests against a local test server (channels, skip / remind, resume, checksum and
+  size errors, previous version, packs, offline, timeouts, redirects). Known: the Linux build has no HTTPS, so
+  the updater there cannot reach the release server.
+- DE: Robusterer Updater (p81) – ein Download oder eine Update-Prüfung, die hängt (kein Fortschritt), bricht ein
+  Wächter ab, statt stehen zu bleiben, Abbrechen stoppt sofort; jeder Download wird gegen seine SHA-256-Prüfsumme und
+  eine Größengrenze geprüft; eine kaputte oder nicht erreichbare Update-Liste oder ein HTTP-Fehler meldet jetzt einen
+  Fehler statt „aktuell“; ein Server, der eine Fortsetzungsanfrage ignoriert, wird abgefangen; kostenpflichtige
+  Inhaltspakete werden nie ins Release-Manifest gebaut oder dort gelistet. End-to-End-Tests des Updaters gegen einen
+  lokalen Testserver (Kanäle, Überspringen / Erinnern, Fortsetzen, Prüfsummen- und Größenfehler, vorige Version,
+  Pakete, offline, Zeitüberschreitungen, Weiterleitungen). Bekannt: Der Linux-Build hat kein HTTPS, der Updater
+  erreicht dort den Release-Server nicht.
+- EN: PDF manual (p84) – the user manual as PDF in English and German (`Ohpe-Manual-EN.pdf`, `Ohpe-Manual-DE.pdf`),
+  built from the docs by `tools/manual/build_manual.py` on every CI run and attached to each release from 0.9.0 on,
+  together with the macOS app / VST3 / AU zips. See [tools/manual](tools/manual/README.md).
+- DE: PDF-Handbuch (p84) – das Handbuch als PDF auf Deutsch und Englisch (`Ohpe-Manual-DE.pdf`, `Ohpe-Manual-EN.pdf`),
+  aus den Dokumenten gebaut von `tools/manual/build_manual.py` bei jedem CI-Lauf und ab 0.9.0 an jedes Release
+  angehängt, zusammen mit den macOS-Zips von App / VST3 / AU. Siehe [tools/manual](tools/manual/README.md).
 
 ## 0.7.3 – 2026-10-23
 

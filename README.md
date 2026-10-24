@@ -11,7 +11,7 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 
 ![Ohpe – analog engine](docs/images/ohpe-analog.png)
 
-> **Status: 0.7.3 – preview on the way to 1.0.** Eight engines, four parts, drum kit, step / Euclid /
+> **Status: 0.9.0 – public beta on the way to 1.0.** Eight engines, four parts, drum kit, step / Euclid /
 > arpeggiator / Orbit sequencers, tape machine, mixer with dynamics and FX racks, 3D space, MPE and MIDI
 > clock sync, preset library, pro view and direct manipulation – with **430 factory presets** (412 part
 > presets and 18 projects), six drum kits and fourteen sampled instruments. Preview builds (macOS installer
