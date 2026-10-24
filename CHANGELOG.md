@@ -26,6 +26,20 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   (Akkorde, Drums, volle FX, 3D, Key Gravity, Stille nach dem Spielen), Prüfsummen der Ausgabe und Vergleichswerten
   pro System in der CI auf Linux, macOS und Windows. Ausgabe bitgleich außer Grain, Vocal und Key Gravity (unhörbare
   Rundung). Keine neuen Host-Parameter. Siehe [Leistung](docs/de/LEISTUNG.md).
+- EN: Host matrix (p80) – an automated plug-in host test runs on every CI build (VST3 on Linux / macOS / Windows, AU on
+  macOS): lifecycle, state round trip, automation, offline bounce, sample rates / block sizes, bypass, latency,
+  parallel instances, editor, host transport. See [host testing](docs/en/HOST-TESTING.md). Fixes found by it: the
+  plug-in metronome clicked 1.7 ms (its latency) early; a restored session drifted through the host parameters
+  (exact values replaced by their host image); a restored session now starts with the tape at its beginning (a fresh
+  instance and the original play it identically); the send delay could read one sample past its line when its time
+  sat a hair above a whole number of samples (stale memory in the echo).
+- DE: Host-Matrix (p80) – ein automatischer Plug-in-Host-Test läuft bei jedem CI-Build (VST3 auf Linux / macOS /
+  Windows, AU auf macOS): Lebenszyklus, Zustand speichern / laden, Automation, Offline-Bounce, Sampleraten /
+  Blockgrößen, Bypass, Latenz, parallele Instanzen, Editor, Host-Transport. Siehe [Host-Tests](docs/de/HOST-TESTS.md).
+  Damit gefundene Fehler: das Plug-in-Metronom klickte 1,7 ms (seine Latenz) zu früh; eine geladene Session driftete
+  über die Host-Parameter (exakte Werte durch ihr Host-Abbild ersetzt); eine geladene Session beginnt jetzt mit dem
+  Band am Anfang (eine neue Instanz und die ursprüngliche spielen sie gleich); das Send-Delay konnte eine Stelle hinter
+  seiner Leitung lesen, wenn seine Zeit knapp über einer ganzen Sample-Zahl lag (alter Speicherinhalt im Echo).
 - EN: Accessibility and UI size (p83) – six UI sizes 75 / 100 / 125 / 150 / 175 / 200 % (Settings › Display, or a
   right-click on the housing or the settings key; per computer in settings.json, never in projects), vector drawing
   sharp at every size and on HiDPI screens, the window keeps its aspect ratio. Full keyboard operation: Tab / Shift+Tab

@@ -60,9 +60,11 @@ void DelayEffect::process (float* l, float* r, int n) noexcept
         const float d = delaySmoother.next();
         float rp = (float) writePos - d;
         if (rp < 0.0f) rp += (float) len;
-        const int i0 = (int) rp;
-        const int i1 = (i0 + 1) % len;
+        // a read position a hair below 0 rounds to exactly len when wrapped (float): index the start, never past the end
+        int i0 = (int) rp;
         const float frac = rp - (float) i0;
+        if (i0 >= len) i0 -= len;
+        const int i1 = (i0 + 1) % len;
         const float dl = bufL[(size_t) i0] + (bufL[(size_t) i1] - bufL[(size_t) i0]) * frac;
         const float dr = bufR[(size_t) i0] + (bufR[(size_t) i1] - bufR[(size_t) i0]) * frac;
         const float inL = l[i], inR = r[i];

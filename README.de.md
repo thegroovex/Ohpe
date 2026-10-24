@@ -180,6 +180,7 @@ Alle Tests laufen mit `scripts/test-all.sh` – siehe [Mitwirken](docs/de/MITWIR
 * [Tape-Memory](docs/de/TAPE-MEMORY.md) – die letzten 30 s des Ausgangs werden mit einer Taste zum Instrument
 * [Modulationsmatrix](docs/de/MODULATION.md) – Verbindungen, Quellen, Ziele, LFO 2 / 3, Hüllkurve 3, Makros
 * [Leistung](docs/de/LEISTUNG.md) – CPU-Anzeige, schlafende stille Parts, Benchmark-Zahlen, `ohpe_bench`
+* [Host-Tests](docs/de/HOST-TESTS.md) – die automatische Plug-in-Host-Matrix in der CI (VST3 / AU) und der manuelle Testplan für eure DAW
 * [Robustheits- und Dauertests](docs/de/DAUERTEST.md) – Tests mit beschädigten Dateien und Audio-Stresstests in der CI, der manuelle 8-Stunden-Dauertest, der absturzsichere Start
 * [Parameter](docs/PARAMETERS.md) – alle Host-Parameter-IDs
 * [Architektur](docs/de/ARCHITEKTUR.md) – Kurzfassung; ausführlich auf Englisch in [ARCHITECTURE.md](docs/ARCHITECTURE.md)
