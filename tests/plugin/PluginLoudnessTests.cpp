@@ -113,7 +113,7 @@ void pump (int ms) { juce::MessageManager::getInstance()->runDispatchLoopUntil (
 struct Row
 {
     std::string preset, material;
-    double pluginLufs = 0, coreLufs = 0, pluginTp = 0, coreTp = 0;
+    double pluginLufs = 0, coreLufs = 0, pluginTp = 0, coreTp = 0, maxDiff = 0;
 };
 
 struct Summary
@@ -135,17 +135,30 @@ struct Summary
         std::printf ("OHPE-STATS p87 %s presets %d renders %d | mean plugin-core %+.3f LU, max |diff| %.3f LU | > -1 dBTP: plugin %d core %d | param mismatches %d\n",
                      variant, presets, (int) rows.size(), rows.empty() ? 0.0 : sumDiff / (double) rows.size(), maxDiff, overTp, overTpCore, paramMismatches);
         for (size_t i = 0; i < mismatchExamples.size() && i < 40; ++i) std::printf ("OHPE-STATS p87 %s param %s\n", variant, mismatchExamples[i].c_str());
-        int shown = 0;
         for (const auto& r : rows)
-            if ((std::abs (r.pluginLufs - r.coreLufs) > 0.1 || r.pluginTp > -1.0) && shown++ < 40)
-                std::printf ("OHPE-STATS p87 %s %-28s %-6s plugin %7.2f LUFS %6.2f dBTP | core %7.2f LUFS %6.2f dBTP\n", variant, r.preset.c_str(),
-                             r.material.c_str(), r.pluginLufs, r.pluginTp, r.coreLufs, r.coreTp);
+            std::printf ("OHPE-STATS p87 %s row|%s|%s|%.3f|%.3f|%.3f|%.3f|%.2e\n", variant, r.preset.c_str(), r.material.c_str(),
+                         r.pluginLufs, r.pluginTp, r.coreLufs, r.coreTp, r.maxDiff);
         std::fflush (stdout);
     }
 };
 
-/** One preset: plug-in load (+ editor), parameter check, renders vs the core. */
-void checkPreset (OhpeProcessor& p, int entryIndex, Summary& sum, bool withEditor)
+/** Silence through both (the reference core keeps the same block history as the plug-in). */
+void silenceBoth (OhpeProcessor& p, Core& core, int blocks)
+{
+    silence (p, blocks);
+    render::renderCore (core, {}, (int64_t) blocks * blockSize, blockSize);
+}
+
+double maxAbsDiff (const render::Audio& a, const render::Audio& b)
+{
+    double m = 0.0;
+    for (size_t i = 0; i < a.size() && i < b.size(); ++i)
+        m = std::max (m, (double) std::max (std::abs (a.l[i] - b.l[i]), std::abs (a.r[i] - b.r[i])));
+    return m;
+}
+
+/** One preset: plug-in load (+ editor), parameter check, renders vs the reference core (same history). */
+void checkPreset (OhpeProcessor& p, Core& core, int entryIndex, Summary& sum, bool withEditor)
 {
     const auto& entry = p.presets().entries()[(size_t) entryIndex];
     const std::string name = entry.meta.name;
@@ -153,33 +166,34 @@ void checkPreset (OhpeProcessor& p, int entryIndex, Summary& sum, bool withEdito
     preset::Preset pr;
     REQUIRE (preset::fromJson (p.presets().read (entry), pr));
 
-    // the state before the load, as the audio thread sees it
-    silence (p, 4);
-    pump (60);
+    // the arpeggiator off before each load in both (the preset manager's arp hand-over is not part of this check)
     auto& reg = p.core().params();
+    const int arpOn = reg.indexOf (std::string (Core::Ids::arpPrefix) + "on");
+    p.editRegistry ([arpOn] (Core& c) { if (arpOn >= 0) c.params().set (arpOn, 0.0f); });
+    pump (30);
+    silenceBoth (p, core, 4);
     std::vector<float> before ((size_t) reg.size());
     for (int i = 0; i < reg.size(); ++i) before[(size_t) i] = reg.get (i);
 
-    // the reference: a bare core with that state, the preset applied like the preset manager does
-    auto core = std::make_unique<Core>();
-    core->prepare (48000.0, blockSize);
-    factorykit::load (*core);
-    for (int i = 0; i < reg.size(); ++i) core->params().set (i, before[(size_t) i]);
-    preset::applyPart (pr, core->params(), 0, preset::PartOptions {});
-    preset::applyPartMorph (pr, *core, 0);
-    usertable::partFromJson (*core, 0, pr.userTables ? *pr.userTables : std::string(),
+    // the reference: the same state, the preset applied like the preset manager does
+    for (int i = 0; i < reg.size(); ++i)
+        if (core.params().get (i) != before[(size_t) i]) core.params().set (i, before[(size_t) i]);
+    preset::applyPart (pr, core.params(), 0, preset::PartOptions {});
+    preset::applyPartMorph (pr, core, 0);
+    usertable::partFromJson (core, 0, pr.userTables ? *pr.userTables : std::string(),
                              [] (const std::string&, const std::string&) { return usertable::UserTablePtr(); });
-    core->prepareEffects();
-    core->updateMorph();
+    core.prepareEffects();
+    core.updateMorph();
 
     // the plug-in: load through the preset manager, the message thread and the audio thread run as in the app
     REQUIRE (p.presets().load (entryIndex, 0));
     for (int k = 0; k < 6; ++k) { silence (p, 4); pump (withEditor ? 60 : 25); }
+    render::renderCore (core, {}, 24 * blockSize, blockSize);
 
     // every parameter: registry and host parameter equal the preset's value
     for (int i = 0; i < reg.size(); ++i)
     {
-        const float want = core->params().get (i), got = reg.get (i);
+        const float want = core.params().get (i), got = reg.get (i);
         const auto& d = reg.descriptor (i);
         const float tol = 1.0e-5f * std::max (1.0f, std::abs (d.maxValue - d.minValue));
         bool bad = std::abs (got - want) > tol;
@@ -197,15 +211,13 @@ void checkPreset (OhpeProcessor& p, int entryIndex, Summary& sum, bool withEdito
                                                 + " host " + std::to_string (host) + " before " + std::to_string (before[(size_t) i]));
         }
     }
-    // the core plays with the plug-in's non-parameter state too (morph plans, samples) - only the audio is compared
     for (const auto& m : materials())
     {
         const auto ev = eventsFor (m);
-        silence (p, 400); // tails of the previous material die away (limiter, sleep gates)
-        render::renderCore (*core, {}, 400 * blockSize, blockSize);
+        silenceBoth (p, core, 400); // tails of the previous material die away (limiter, sleep gates)
         const auto a = renderPlugin (p, ev);
-        const auto b = render::renderCore (*core, ev, totalSamples, blockSize);
-        Row r { name, m.name, lufs (a), lufs (b), render::truePeakDb (a), render::truePeakDb (b) };
+        const auto b = render::renderCore (core, ev, totalSamples, blockSize);
+        Row r { name, m.name, lufs (a), lufs (b), render::truePeakDb (a), render::truePeakDb (b), maxAbsDiff (a, b) };
         if (r.coreLufs > -60.0 || r.pluginLufs > -60.0) sum.rows.push_back (r);
         CAPTURE (m.name);
         CHECK (std::abs (r.pluginLufs - r.coreLufs) <= 0.1);
@@ -238,11 +250,17 @@ void runVariant (bool allOutputs, bool withEditor, int every, const char* label)
         OhpeEditor::showTourOnFirstOpen.store (false);
         ed.reset (p.createEditor());
     }
+    // the reference core: prepared like the plug-in, the plug-in's starting state
+    auto core = std::make_unique<Core>();
+    core->prepare (48000.0, blockSize);
+    factorykit::load (*core);
+    for (int i = 0; i < core->params().size(); ++i) core->params().set (i, p.core().params().get (i));
+    core->prepareEffects();
     Summary sum;
     const auto list = partPresets (p, every);
     REQUIRE (! list.empty());
     for (size_t k = 0; k < list.size(); ++k)
-        if (slice.has ((long long) k)) checkPreset (p, list[k], sum, withEditor);
+        if (slice.has ((long long) k)) checkPreset (p, *core, list[k], sum, withEditor);
     sum.print (label);
     CHECK (sum.paramMismatches == 0);
     ed.reset();
