@@ -326,6 +326,13 @@ TEST_CASE ("plug-in loudness: a fresh instance plays a wide 8-note chord below -
         REQUIRE (preset::fromJson (p.presets().read (entry), pr));
         std::vector<float> start ((size_t) p.core().params().size());
         for (int i = 0; i < (int) start.size(); ++i) start[(size_t) i] = p.core().params().get (i);
+        if (done == 0) // p87 diag: the plug-in's starting registry against a bare core's defaults
+        {
+            Core plain;
+            for (int i = 0; i < (int) start.size() && i < plain.params().size(); ++i)
+                if (std::abs (plain.params().get (i) - start[(size_t) i]) > 1.0e-6f)
+                    std::printf ("OHPE-STATS p87 startdiff|%s|core %g|plugin %g\n", plain.params().descriptor (i).id.c_str(), plain.params().get (i), start[(size_t) i]);
+        }
         auto core = std::make_unique<Core>();
         core->prepare (48000.0, blockSize);
         factorykit::load (*core);
