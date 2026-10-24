@@ -32,6 +32,13 @@ import tempfile
 import threading
 import time
 
+# a failing test may print any bytes; never let the console code page (Windows: cp1252) crash the runner
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(errors="replace")
+    except AttributeError:
+        pass
+
 GH = os.environ.get("GITHUB_ACTIONS") == "true"
 
 

@@ -429,11 +429,29 @@ Updater::Snapshot download (Updater& u, bool previous = false)
     return u.snapshot();
 }
 
+/** For failure messages: the updater's state and what the mock server was asked. */
+std::string context (const Updater::Snapshot& s, MockServer& srv)
+{
+    std::string t = "state " + std::to_string ((int) s.state) + " '" + s.message.toStdString() + "' (" + s.detail.toStdString()
+                  + ") progress " + std::to_string (s.progress) + "; requests:";
+    for (const auto& q : srv.requests()) t += " " + q.path + " [" + q.range + "]";
+    return t;
+}
+
 std::string fileBytes (const juce::File& f)
 {
     juce::MemoryBlock mb;
     f.loadFileAsData (mb);
     return std::string ((const char*) mb.getData(), mb.getSize());
+}
+
+/** "" when equal, else sizes and the first differing offset (doctest would print the binary contents). */
+std::string bytesDiff (const std::string& got, const std::string& want)
+{
+    if (got == want) return {};
+    size_t i = 0;
+    while (i < got.size() && i < want.size() && got[i] == want[i]) ++i;
+    return "file differs: " + std::to_string (got.size()) + " bytes vs " + std::to_string (want.size()) + " expected, first difference at " + std::to_string (i);
 }
 
 bool nothingIn (const juce::File& dir) { return ! dir.exists() || dir.findChildFiles (juce::File::findFiles, true).isEmpty(); }
@@ -473,7 +491,7 @@ TEST_CASE ("updater e2e: channels - stable, preview, preview users get the stabl
     CHECK (a->sha256 == update::Sha256::of (rc.installer)); // filled from SHA256SUMS.txt
     s = download (*u);
     CHECK (s.state == Updater::State::Ready);
-    CHECK (fileBytes (s.downloaded) == rc.installer);
+    { const auto d_ = bytesDiff (fileBytes (s.downloaded), rc.installer); CHECK_MESSAGE (d_.empty(), d_); }
 
     // 1.0.0 is out: the preview user on the release candidate is offered the stable release
     h.add ("1.0.0", false);
@@ -588,9 +606,11 @@ TEST_CASE ("updater e2e: background download resumes after interruptions and aft
         REQUIRE_MESSAGE (finished, note);
     }
     {
+        const auto ctx = context (s, h.srv);
+        INFO (ctx);
         REQUIRE (finished);
         CHECK (s.state == Updater::State::Ready);
-        CHECK (fileBytes (s.downloaded) == r.installer);
+        { const auto d_ = bytesDiff (fileBytes (s.downloaded), r.installer); CHECK_MESSAGE (d_.empty(), d_); }
         CHECK (s.progress == doctest::Approx (1.0));
         const auto rg = h.srv.ranges (path);
         REQUIRE (rg.size() >= 2);
@@ -610,8 +630,10 @@ TEST_CASE ("updater e2e: background download resumes after interruptions and aft
     auto u2 = h.updater ("0.7.3", data2);
     REQUIRE (check (*u2).hasRelease);
     s = download (*u2);
+    const auto ctxResume = context (s, h.srv);
+    INFO (ctxResume);
     CHECK (s.state == Updater::State::Ready);
-    CHECK (fileBytes (s.downloaded) == r.installer);
+    { const auto d_ = bytesDiff (fileBytes (s.downloaded), r.installer); CHECK_MESSAGE (d_.empty(), d_); }
     // continued from byte 150000 and never started over (some network stacks open a second, ranged request)
     const auto rr = h.srv.ranges (path);
     REQUIRE_FALSE (rr.empty());
@@ -635,9 +657,11 @@ TEST_CASE ("updater e2e: background download resumes after interruptions and aft
         REQUIRE_MESSAGE (done2, note);
     }
     {
+        const auto ctx = context (s, h.srv);
+        INFO (ctx);
         REQUIRE (done2);
         CHECK (s.state == Updater::State::Ready);
-        CHECK (fileBytes (s.downloaded) == r.installer);
+        { const auto d_ = bytesDiff (fileBytes (s.downloaded), r.installer); CHECK_MESSAGE (d_.empty(), d_); }
     }
     u2.reset();
     data2.deleteRecursively();
@@ -665,7 +689,7 @@ TEST_CASE ("updater e2e: a connection that goes silent mid-download is abandoned
     const std::string note = "stalled download did not finish; progress " + std::to_string (s.progress) + ", requests: " + seen;
     REQUIRE_MESSAGE (finished, note);
     CHECK (s.state == Updater::State::Ready);
-    CHECK (fileBytes (s.downloaded) == r.installer);
+    { const auto d_ = bytesDiff (fileBytes (s.downloaded), r.installer); CHECK_MESSAGE (d_.empty(), d_); }
     const auto rg = h.srv.ranges (path);
     REQUIRE (rg.size() >= 2);
     CHECK (rg[0].empty());
@@ -709,7 +733,7 @@ TEST_CASE ("updater e2e: a stale partial file the server cannot continue (416) s
     REQUIRE (check (*u).hasRelease);
     const auto s = download (*u);
     CHECK (s.state == Updater::State::Ready); // before p81: "Download interrupted" on every try
-    CHECK (fileBytes (s.downloaded) == r.installer);
+    { const auto d_ = bytesDiff (fileBytes (s.downloaded), r.installer); CHECK_MESSAGE (d_.empty(), d_); }
     const auto rg = h.srv.ranges (h.installerPath (r));
     REQUIRE_FALSE (rg.empty());
     CHECK (rg[0] == "bytes=130000-");
@@ -812,7 +836,7 @@ TEST_CASE ("updater e2e: roll back to the previous version")
     s = download (*u, true);
     CHECK (s.state == Updater::State::Ready);
     CHECK (s.downloadingPrevious);
-    CHECK (fileBytes (s.downloaded) == oldInstaller);
+    { const auto d_ = bytesDiff (fileBytes (s.downloaded), oldInstaller); CHECK_MESSAGE (d_.empty(), d_); }
 
     auto rc = h.updater ("1.0.0-rc.1");
     s = check (*rc);
@@ -983,5 +1007,5 @@ TEST_CASE ("updater e2e: offline, timeouts, HTTP errors, malformed answers, redi
     REQUIRE (check (*u).hasRelease);
     s = download (*u);
     CHECK (s.state == Updater::State::Ready);
-    CHECK (fileBytes (s.downloaded) == r.installer);
+    { const auto d_ = bytesDiff (fileBytes (s.downloaded), r.installer); CHECK_MESSAGE (d_.empty(), d_); }
 }
