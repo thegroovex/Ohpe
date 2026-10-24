@@ -109,12 +109,11 @@ public:
         };
         auto stream = request (offset);
         bool restarted = false;
-        if (stream != nullptr && offset > 0 && (status == 416 || status == 200))
+        if (stream != nullptr && offset > 0 && status == 416)
         {
-            // p81: 416 - the partial file is not a prefix the server can continue (stale, as long or longer than
-            // the file); 200 - the server ignores ranges and sends the whole file. Either way ask again for the
-            // whole file without a Range header (fromOffset = false makes the download start over): on Windows a
-            // 200 answer to a ranged request stopped delivering after 128 kB, so it is not read at all
+            // p81: the partial file is not a prefix the server can continue (stale, as long or longer than the
+            // file): ask for the whole file - fromOffset = false makes the download start over instead of
+            // failing on every attempt
             stream.reset();
             stream = request (0);
             restarted = true;

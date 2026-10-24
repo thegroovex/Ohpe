@@ -159,14 +159,25 @@ private:
         }
     }
 
-    static bool sendAll (juce::StreamingSocket& s, const char* d, size_t n)
+    bool sendAll (juce::StreamingSocket& s, const char* d, size_t n)
     {
+        // read (..., false) leaves the socket non-blocking, so send() refuses once the socket buffer is full (64 kB
+        // on Windows - this cut every larger download there): wait until it takes more. A client that hung up
+        // makes no progress and ends this after the timeout.
+        auto lastProgress = juce::Time::getMillisecondCounter();
         while (n > 0)
         {
             const int w = s.write (d, (int) std::min<size_t> (n, 16384));
-            if (w <= 0) return false;
-            d += w;
-            n -= (size_t) w;
+            if (w > 0)
+            {
+                d += w;
+                n -= (size_t) w;
+                lastProgress = juce::Time::getMillisecondCounter();
+                continue;
+            }
+            if (stopping || juce::Time::getMillisecondCounter() - lastProgress > 3000) return false;
+            if (s.waitUntilReady (false, 50) < 0) return false;
+            if (w == 0) juce::Thread::sleep (1);
         }
         return true;
     }
@@ -258,20 +269,6 @@ private:
         {
             std::lock_guard<std::mutex> g (lock);
             if (logIndex < log.size()) log[logIndex].sent = sentAll ? (long long) sendBytes : -2;
-        }
-        if (! breakThis && sentAll)
-        {
-            // close only after the client has read everything and hung up: closing a socket at once can reset the
-            // connection and drop data the client has not read yet (seen on Windows as downloads cut at 64 kB steps)
-            const auto until = juce::Time::getMillisecondCounter() + 5000;
-            char sink[1024];
-            while (! stopping && juce::Time::getMillisecondCounter() < until)
-            {
-                const int ready = s.waitUntilReady (true, 50);
-                if (ready < 0) break;
-                if (ready > 0 && s.read (sink, sizeof (sink), false) <= 0) break;
-            }
-            return;
         }
         if (breakThis && r.hangOnBreak)
         {
@@ -620,7 +617,7 @@ TEST_CASE ("updater e2e: background download resumes after interruptions and aft
     const bool finished = u->waitIdle (25000);
     auto s = u->snapshot();
     {
-        // p81: once seen to stall on Windows (receive timeout ignored) - the stall watchdog must make this finish
+        // p81: once seen to stall on Windows (the mock cut its answers at 64 kB, see sendAll) - must finish
         std::string seen;
         for (const auto& q : h.srv.requests()) seen += q.path + " [" + q.range + "]  ";
         const std::string note = "interrupted download did not finish; progress " + std::to_string (s.progress) + ", requests: " + seen;
@@ -671,7 +668,7 @@ TEST_CASE ("updater e2e: background download resumes after interruptions and aft
     const bool done2 = u2->waitIdle (25000);
     s = u2->snapshot();
     {
-        // p81: a 200 answer to a ranged request once stalled on Windows - the stall watchdog must make this finish
+        // p81: once seen to stall on Windows (the mock cut its answers at 64 kB, see sendAll) - must finish
         std::string seen;
         for (const auto& q : h.srv.requests()) seen += q.path + " [" + q.range + "]  ";
         const std::string note = "range-ignored download did not finish; progress " + std::to_string (s.progress) + ", requests: " + seen;
