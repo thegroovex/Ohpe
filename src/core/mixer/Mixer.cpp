@@ -158,6 +158,7 @@ void Mixer::prepare (double sampleRate, int maxBlockSize)
     for (auto* v : { &chL, &chR, &sendAL, &sendAR, &sendBL, &sendBR, &masterL, &masterR, &duckKey }) v->assign (n, 0.0f);
     delay.prepare (sampleRate, maxBlockSize);
     reverb.prepare (sampleRate, maxBlockSize);
+    for (auto* g : { &delayGate, &reverbGate, &rackGate }) g->prepare (sampleRate); // p79
     limiter.prepare (sr);
     for (auto& line : auxDelay) line.assign ((size_t) std::max (1, limiter.latencySamples()), 0.0f);
     auxSilent.fill (0);
@@ -194,6 +195,7 @@ void Mixer::reset() noexcept
     for (auto& r : reductions) r.store (0.0f);
     delay.reset();
     reverb.reset();
+    for (auto* g : { &delayGate, &reverbGate, &rackGate }) g->reset(); // p79
     limiter.reset();
     for (auto& line : auxDelay) std::fill (line.begin(), line.end(), 0.0f);
     auxSilent.fill (0);
@@ -429,8 +431,17 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
     }
     numDirects = 0;
 
-    delay.process (sendAL.data(), sendAR.data(), n);
-    reverb.process (sendBL.data(), sendBR.data(), n);
+    // p79: the send effects sleep while their send stays silent and their tails have died away (dsp::SleepGate)
+    if (const bool silentA = dsp::SleepGate::silent (sendAL.data(), sendAR.data(), n); delayGate.shouldProcess (silentA))
+    {
+        delay.process (sendAL.data(), sendAR.data(), n);
+        delayGate.afterProcess (silentA, sendAL.data(), sendAR.data(), n);
+    }
+    if (const bool silentB = dsp::SleepGate::silent (sendBL.data(), sendBR.data(), n); reverbGate.shouldProcess (silentB))
+    {
+        reverb.process (sendBL.data(), sendBR.data(), n);
+        reverbGate.afterProcess (silentB, sendBL.data(), sendBR.data(), n);
+    }
     const bool dynamics = masterCompOn || ! masterSat.isBypassed();
     const bool rack = masterRack != nullptr && masterRack->isActive(); // 0.7: master FX rack
     const bool perf = pads != nullptr && pads->isActive();             // p25: performance pads (nothing held: untouched)
@@ -451,7 +462,15 @@ void Mixer::process (const SourceBuffers& in, const OutputBuffers& out, int n) n
             masterL[(size_t) i] = masterL[(size_t) i] + sendAL[(size_t) i] * returnA + sendBL[(size_t) i] * returnB;
             masterR[(size_t) i] = masterR[(size_t) i] + sendAR[(size_t) i] * returnA + sendBR[(size_t) i] * returnB;
         }
-        if (rack) masterRack->process (masterL.data(), masterR.data(), n);
+        if (rack) // p79: the master rack sleeps like the send effects
+        {
+            const bool silentIn = dsp::SleepGate::silent (masterL.data(), masterR.data(), n);
+            if (rackGate.shouldProcess (silentIn))
+            {
+                masterRack->process (masterL.data(), masterR.data(), n);
+                rackGate.afterProcess (silentIn, masterL.data(), masterR.data(), n);
+            }
+        }
         if (perf) pads->process (masterL.data(), masterR.data(), n);
         if (masterCompOn) masterComp.process (masterL.data(), masterR.data(), n);
         masterSat.process (masterL.data(), masterR.data(), n);

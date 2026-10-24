@@ -1,5 +1,6 @@
 // Ohpe - designed by groovex
 // SPDX-License-Identifier: AGPL-3.0-or-later
+#include "dsp/SleepGate.h"
 #include "OhpeCore.h"
 #include "fx/SpaceMode.h"
 
@@ -645,7 +646,9 @@ void Core::updateCountIn (const Transport& host, int numSamples) noexcept
 
 void Core::clickAt (int offset, bool downbeat) noexcept
 {
-    metro.trigger (offset, downbeat);
+    // p80: the click is added after the master limiter / Key Gravity look-ahead, so it waits for the reported latency:
+    // it lands on the beat together with the parts and the drums (and on the host's beat after its compensation)
+    metro.trigger (offset + latencySamples(), downbeat);
     lastClickDown.store (downbeat, std::memory_order_relaxed);
     clicksForUi.fetch_add (1, std::memory_order_relaxed);
 }
@@ -693,6 +696,7 @@ void Core::scheduleClicks (const Transport& tr, int numSamples) noexcept
 // ---------------------------------------------------------------- process
 void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEvent* midi, int numMidi, const Transport& host) noexcept
 {
+    const dsp::ScopedFlushDenormals noDenormals; // p79: denormals flush to zero in every DSP stage (as in the plug-in wrapper)
     sanitiseInput (numSamples); // p63: NaN / Inf at the input never reach the tape, the effects or the outputs
     // 1. parameters for this block, the transport (p22: the motion lanes need its position before the parts read them)
     snapshot.pullChanged (registry); // p35: only what changed (same values as a full pull)

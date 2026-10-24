@@ -24,7 +24,7 @@ void appendTapeAudio (Core& core, juce::MemoryBlock& state);
 /** Splits a state into its JSON text and the optional tape part (nullptr / 0 if none). */
 void splitState (const void* data, int size, std::string& json, const uint8_t*& tape, size_t& tapeSize);
 
-/** Restores the tape from the tape part of a state (empty tape if there is none). Message thread. */
+/** Restores the tape from the tape part of a state (empty tape if there is none) and rewinds it to the start. Message thread. */
 void restoreTape (Core& core, const uint8_t* tape, size_t tapeSize);
 
 struct BounceOptions

@@ -7,6 +7,39 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
 ## Unreleased / Unveröffentlicht
 
+- EN: Performance (p79) – about 10 % less CPU over all benchmark scenarios on the same machine, up to −40 to −77 %
+  where it matters most: idle −53 %, silent racks −60 %, silent master FX −77 %, after playing −75 %, Pluck −41 %,
+  16-voice chords −18 to −49 %, drums −32 %, Key Gravity −20 %. The master limiter skips its true-peak interpolation
+  when no peak can reach the ceiling, send effects and the master rack sleep in silence like the parts, denormals are
+  flushed, Pluck recomputes its filter only on change, Grain and Vocal use the polynomial sine, the 3D stage and Key
+  Gravity compute per block. The display repaints at 10 instead of 30 frames per second while nothing sounds, runs,
+  changes or moves on screen. Benchmark with new scenarios (chords, drums, full FX, 3D, Key Gravity, silence after
+  playing), output hashes and per-OS baselines on Linux, macOS and Windows CI. Bit-identical output except Grain,
+  Vocal and Key Gravity (inaudible rounding). No new host parameters. See [performance](docs/en/PERFORMANCE.md).
+- DE: Leistung (p79) – rund 10 % weniger CPU über alle Benchmark-Szenarien auf demselben Rechner, bis zu −40 bis
+  −77 % dort, wo es zählt: Leerlauf −53 %, stille Racks −60 %, stille Master-FX −77 %, nach dem Spielen −75 %, Pluck
+  −41 %, Akkorde mit 16 Stimmen −18 bis −49 %, Drums −32 %, Key Gravity −20 %. Der Master-Limiter spart seine
+  True-Peak-Interpolation, wenn keine Spitze die Grenze erreichen kann, Send-Effekte und Master-Rack schlafen in der
+  Stille wie die Parts, Denormals werden auf null gesetzt, Pluck berechnet sein Filter nur bei Änderungen, Grain und
+  Vocal nutzen den Polynom-Sinus, 3D-Stufe und Key Gravity rechnen pro Block. Das Display zeichnet 10 statt 30 Bilder
+  pro Sekunde, solange nichts klingt, läuft, sich ändert oder auf dem Display bewegt. Benchmark mit neuen Szenarien
+  (Akkorde, Drums, volle FX, 3D, Key Gravity, Stille nach dem Spielen), Prüfsummen der Ausgabe und Vergleichswerten
+  pro System in der CI auf Linux, macOS und Windows. Ausgabe bitgleich außer Grain, Vocal und Key Gravity (unhörbare
+  Rundung). Keine neuen Host-Parameter. Siehe [Leistung](docs/de/LEISTUNG.md).
+- EN: Host matrix (p80) – an automated plug-in host test runs on every CI build (VST3 on Linux / macOS / Windows, AU on
+  macOS): lifecycle, state round trip, automation, offline bounce, sample rates / block sizes, bypass, latency,
+  parallel instances, editor, host transport. See [host testing](docs/en/HOST-TESTING.md). Fixes found by it: the
+  plug-in metronome clicked 1.7 ms (its latency) early; a restored session drifted through the host parameters
+  (exact values replaced by their host image); a restored session now starts with the tape at its beginning (a fresh
+  instance and the original play it identically); the send delay could read one sample past its line when its time
+  sat a hair above a whole number of samples (stale memory in the echo).
+- DE: Host-Matrix (p80) – ein automatischer Plug-in-Host-Test läuft bei jedem CI-Build (VST3 auf Linux / macOS /
+  Windows, AU auf macOS): Lebenszyklus, Zustand speichern / laden, Automation, Offline-Bounce, Sampleraten /
+  Blockgrößen, Bypass, Latenz, parallele Instanzen, Editor, Host-Transport. Siehe [Host-Tests](docs/de/HOST-TESTS.md).
+  Damit gefundene Fehler: das Plug-in-Metronom klickte 1,7 ms (seine Latenz) zu früh; eine geladene Session driftete
+  über die Host-Parameter (exakte Werte durch ihr Host-Abbild ersetzt); eine geladene Session beginnt jetzt mit dem
+  Band am Anfang (eine neue Instanz und die ursprüngliche spielen sie gleich); das Send-Delay konnte eine Stelle hinter
+  seiner Leitung lesen, wenn seine Zeit knapp über einer ganzen Sample-Zahl lag (alter Speicherinhalt im Echo).
 - EN: Accessibility and UI size (p83) – six UI sizes 75 / 100 / 125 / 150 / 175 / 200 % (Settings › Display, or a
   right-click on the housing or the settings key; per computer in settings.json, never in projects), vector drawing
   sharp at every size and on HiDPI screens, the window keeps its aspect ratio. Full keyboard operation: Tab / Shift+Tab

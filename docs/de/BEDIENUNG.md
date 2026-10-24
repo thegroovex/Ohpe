@@ -355,7 +355,9 @@ Stillstand – und blinkt bei jedem Klick grün; die Eins des Takts ist betont (
 eigener, synthetisierter Klang (keine Samples), spielt nur auf dem **Hauptausgang** und wird **nie aufs Band
 aufgenommen**. Rechtsklick auf die Taste: Klick-Lautstärke (25–100 %), Betonung auf der Eins, *Klick auch im Plug-in*,
 MIDI-Learn. Im **Plug-in** bleibt der Klick stumm, außer *Klick auch im Plug-in* (`metro.plugin`) ist an – Hosts haben
-ein eigenes Metronom; die Standalone-App klickt immer, wenn das Metronom an ist.
+ein eigenes Metronom; die Standalone-App klickt immer, wenn das Metronom an ist. Der Klick wartet Ohpes gemeldete Latenz
+(Ausgangslimiter) ab und sitzt so genau mit den Parts auf dem Schlag – im Host nach dessen Latenzausgleich auf dem
+Host-Schlag.
 
 **Vorzähler.** Die Vorzähler-Taste (**VORZ.**, `metro.countin`) schaltet **– → 1 → 2** (aus, ein Takt, zwei Takte).
 Beginnt eine Aufnahme aus dem Stillstand – **REC**, oder START mit bereiter Spur und eingeschalteter Aufnahme –, wartet

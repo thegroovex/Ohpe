@@ -3,6 +3,7 @@
 #include "OhpeCore.h"
 #include "TestHelpers.h"
 #include "fx/Compressor.h"
+#include "fx/Delay.h"
 #include "fx/InsertEffects.h"
 #include "fx/InsertSlot.h"
 #include "fx/TapeSaturator.h"
@@ -347,4 +348,31 @@ TEST_CASE ("core: part FX slot is applied to part 1 before the mixer")
     // with 8 bits the part only produces multiples of 1/128 (the channel gain has settled at 1)
     for (float v : l) REQUIRE (std::abs (v * 128.0f - std::round (v * 128.0f)) < 1.0e-3f);
     CHECK (peak (l) > 0.01f);
+}
+
+TEST_CASE ("send delay: a delay time a hair above a whole number of samples never reads past the end of the line")
+{
+    // the read position writePos - d wraps to len - 0.002, which rounds to exactly len in float (a read one past
+    // the buffer: stale memory in the echo, different from instance to instance)
+    float t = 0.375f;
+    for (int step = 0; step < 6; ++step, t = std::nextafter (t, 1.0f))
+    {
+        DelayEffect d;
+        d.setParam (DelayEffect::Time, t);
+        d.setParam (DelayEffect::Feedback, 0.0f);
+        d.setParam (DelayEffect::PingPong, 0.0f);
+        d.prepare (48000.0, 512);
+        std::vector<float> l (24000, 0.0f), r (24000, 0.0f);
+        l[0] = r[0] = 1.0f;
+        for (int at = 0; at < 24000; at += 500) d.process (l.data() + at, r.data() + at, 500);
+        float sum = 0.0f, other = 0.0f;
+        for (int i = 0; i < 24000; ++i)
+        {
+            REQUIRE (std::isfinite (l[i]));
+            if (i >= 17998 && i <= 18002) sum += l[i];
+            else other += std::abs (l[i]);
+        }
+        CHECK (sum == doctest::Approx (1.0f).epsilon (0.02)); // the impulse, 18000 samples later (float read position)
+        CHECK (other < 1.0e-6f);
+    }
 }

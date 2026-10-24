@@ -33,6 +33,9 @@ void restoreTape (Core& core, const uint8_t* tape, size_t tapeSize)
 {
     if (tape == nullptr || tapeSize == 0 || ! core.tape().loadAudio (tape, tapeSize))
         core.tape().resetContent();
+    // a restored session starts with the tape at its beginning (as a fresh instance does), wherever this
+    // instance's tape was parked before: the original and a new instance then play the session identically
+    core.tape().locateFrames (0);
 }
 
 namespace

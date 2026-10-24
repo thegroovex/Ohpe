@@ -208,10 +208,22 @@ if(OHPE_BUILD_TESTS)
     # loads the built VST3 like a DAW does
     juce_add_console_app(ohpe_hosttest PRODUCT_NAME "ohpe_hosttest")
     target_sources(ohpe_hosttest PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/HostTest.cpp)
-    target_compile_definitions(ohpe_hosttest PRIVATE JUCE_PLUGINHOST_VST3=1 JUCE_PLUGINHOST_AU=1 JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0 JUCE_DISPLAY_SPLASH_SCREEN=0)
+    target_compile_definitions(ohpe_hosttest PRIVATE JUCE_PLUGINHOST_VST3=1 JUCE_PLUGINHOST_AU=1 JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0
+                               JUCE_DISPLAY_SPLASH_SCREEN=0 JUCE_MODAL_LOOPS_PERMITTED=1)
     target_link_libraries(ohpe_hosttest PRIVATE juce::juce_audio_processors juce::juce_audio_utils juce::juce_recommended_config_flags)
     add_dependencies(ohpe_hosttest Ohpe_VST3)
-    add_test(NAME vst3_host_test COMMAND ohpe_hosttest "${CMAKE_BINARY_DIR}/Ohpe_artefacts/$<CONFIG>/VST3/Ohpe.vst3")
+    if(MSVC)
+        target_link_options(ohpe_hosttest PRIVATE /STACK:8388608)
+    endif()
+    # p80 host matrix: one CTest per section (they run in parallel); the Audio Unit runs in the macOS auval job
+    # (it has to be installed first). docs/en/HOST-TESTING.md
+    add_test(NAME vst3_host_test COMMAND ohpe_hosttest "${CMAKE_BINARY_DIR}/Ohpe_artefacts/$<CONFIG>/VST3/Ohpe.vst3"
+             --section basic --source "${CMAKE_SOURCE_DIR}")
+    foreach(section lifecycle state automation bounce rates bypass latency multi editor transport)
+        add_test(NAME vst3_host_${section} COMMAND ohpe_hosttest "${CMAKE_BINARY_DIR}/Ohpe_artefacts/$<CONFIG>/VST3/Ohpe.vst3"
+                 --section ${section} --source "${CMAKE_SOURCE_DIR}")
+        set_tests_properties(vst3_host_${section} PROPERTIES ENVIRONMENT "OHPE_LANGUAGE=en")
+    endforeach()
 
     # renders the editor into PNGs for the documentation
     juce_add_console_app(ohpe_screenshot PRODUCT_NAME "ohpe_screenshot")

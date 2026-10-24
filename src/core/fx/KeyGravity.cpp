@@ -78,8 +78,9 @@ void KeyGravity::prepare (double sampleRate, int)
     for (auto* v : { &inL, &inR, &outL, &outR, &accL, &accR, &window, &re, &im }) v->assign ((size_t) maxFrame, 0.0f);
     const size_t half = (size_t) maxFrame / 2 + 2;
     for (auto* v : { &mag, &env, &curPhase, &binMidi, &prevPhase, &prevMag, &aRe, &aIm, &bRe, &bIm, &oaRe, &oaIm, &obRe, &obIm, &binW,
-                     &envPrefix })
+                     &envPrefix, &binWeight })
         v->assign (half + 1, 0.0f);
+    bwHalf = -1; // p79: weights recomputed
     twRe.assign ((size_t) maxFrame / 2, 0.0f);
     twIm.assign ((size_t) maxFrame / 2, 0.0f);
     for (int k = 0; k < maxFrame / 2; ++k)
@@ -134,6 +135,7 @@ void KeyGravity::startAnalysis() noexcept
     const float binHz = (float) sr / (float) N;
     for (int k = 0; k <= N / 2; ++k)
         binMidi[(size_t) k] = k == 0 ? -100.0f : 69.0f + 12.0f * std::log2 ((float) k * binHz / 440.0f);
+    bwHalf = -1; // p79: the cached bin weights follow the new bin pitches
     std::fill (prevPhase.begin(), prevPhase.end(), 0.0f);
     std::fill (prevMag.begin(), prevMag.end(), 0.0f);
     notePhase.fill (0.0);
@@ -492,19 +494,33 @@ void KeyGravity::processFrame() noexcept
     if (tz > 0.0f && ! transient && np > 0)
     {
         float eb = 0.0f, ea = 0.0f;
-        const float sigma = 0.5f - 0.36f * tz;
-        const float minMidi = 69.0f + 12.0f * std::log2 (std::max (1.0f, 1.5f * binHz / 0.0595f) / 440.0f); // a semitone >= 1.5 bins
+        if (! (bwHalf == half && bwMask == mask && bwChord == chordMask && bwBonus == bonus && bwTz == tz && bwBinHz == binHz))
+        {
+            bwHalf = half;
+            bwMask = mask;
+            bwChord = chordMask;
+            bwBonus = bonus;
+            bwTz = tz;
+            bwBinHz = binHz;
+            const float sigma = 0.5f - 0.36f * tz;
+            const float minMidi = 69.0f + 12.0f * std::log2 (std::max (1.0f, 1.5f * binHz / 0.0595f) / 440.0f); // a semitone >= 1.5 bins
+            for (int k = 1; k <= half; ++k)
+            {
+                float w = 1.0f;
+                if (binMidi[(size_t) k] > minMidi)
+                {
+                    const float dk = distanceToTarget (binMidi[(size_t) k], mask, chordMask, bonus) / sigma;
+                    w = 1.0f - tz * (1.0f - std::exp (-dk * dk));
+                }
+                binWeight[(size_t) k] = w;
+            }
+        }
         for (int k = 1; k <= half; ++k)
         {
             const float pr = oaRe[(size_t) k] * oaRe[(size_t) k] + oaIm[(size_t) k] * oaIm[(size_t) k] + obRe[(size_t) k] * obRe[(size_t) k]
                              + obIm[(size_t) k] * obIm[(size_t) k];
             eb += pr;
-            float w = 1.0f;
-            if (binMidi[(size_t) k] > minMidi)
-            {
-                const float dk = distanceToTarget (binMidi[(size_t) k], mask, chordMask, bonus) / sigma;
-                w = 1.0f - tz * (1.0f - std::exp (-dk * dk));
-            }
+            const float w = binWeight[(size_t) k];
             binW[(size_t) k] = w;
             ea += pr * w * w;
         }

@@ -103,7 +103,7 @@ TEST_CASE ("metronome: clicks on every beat of the running sequencer, accent on 
     rig.run (500); // 256000 samples: beats at 0, 24000, ... 240000
     const auto o = rig.onsets();
     REQUIRE (o.size() == 11);
-    for (size_t i = 0; i < o.size(); ++i) CHECK (o[i] == i * 24000);
+    for (size_t i = 0; i < o.size(); ++i) CHECK (o[i] == i * 24000 + (size_t) rig.core.latencySamples()); // p80: clicks wait for the latency
     CHECK (allFinite (rig.rec));
     CHECK (noDenormals (rig.rec));
     CHECK (peak (rig.rec) <= 0.6f);
@@ -160,7 +160,7 @@ TEST_CASE ("count-in: one bar, the tape starts recording exactly on the bar (sam
     CHECK (rig.core.tape().positionFrames() == 200 * 512 - 96000);
     const auto o = rig.onsets();
     REQUIRE (o.size() == 4); // four count-in clicks, none after (the metronome is off)
-    for (size_t i = 0; i < 4; ++i) CHECK (o[i] == i * 24000);
+    for (size_t i = 0; i < 4; ++i) CHECK (o[i] == i * 24000 + (size_t) rig.core.latencySamples()); // p80: clicks wait for the latency
     CHECK (rig.core.clickCount() == 4);
     CHECK (peak (rig.rec, 0, 2000) > peak (rig.rec, 24000, 26000) * 1.2f); // beat 1 accented
 }
@@ -179,7 +179,7 @@ TEST_CASE ("count-in: two bars, countdown, the metronome carries on from the fir
     CHECK (rig.core.lastCountInRelease() == 192000);
     const auto o = rig.onsets();
     REQUIRE (o.size() >= 10);
-    for (size_t i = 0; i < 10; ++i) CHECK (o[i] == i * 24000); // 8 count-in clicks, then the tape's beats from 192000
+    for (size_t i = 0; i < 10; ++i) CHECK (o[i] == i * 24000 + (size_t) rig.core.latencySamples()); // 8 count-in clicks, then the tape's beats from 192000 (p80: after the latency)
 }
 
 TEST_CASE ("count-in: a sequencer started with the tape waits and starts on the release sample")

@@ -64,8 +64,9 @@ float Voice::glottalFlow (float ph, float oq) noexcept
 {
     // Rosenberg pulse: opening (rising cosine), closing (quarter cosine), closed phase
     const float tp = 0.66f * oq, tn = 0.34f * oq;
-    if (ph < tp) return 0.5f * (1.0f - std::cos (dsp::pi * ph / tp));
-    if (ph < tp + tn) return std::cos (0.5f * dsp::pi * (ph - tp) / tn);
+    // p79: the polynomial sine (cos x = sin (x + quarter turn)); differs from the library by < 1e-6 (far below hearing)
+    if (ph < tp) return 0.5f * (1.0f - dsp::sinTurns (0.5f * ph / tp + 0.25f));
+    if (ph < tp + tn) return dsp::sinTurns (0.25f * (ph - tp) / tn + 0.25f);
     return 0.0f;
 }
 

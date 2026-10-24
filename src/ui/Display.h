@@ -293,5 +293,16 @@ private:
     float headerBadgesWidth() const;                 ///< p45: part badge + 3D badge right of the title
     juce::String keyLaidOut;                         ///< p45: key text + title the header was laid out for
     int shownCountIn = 0;
+    // p79: idle display - nothing sounds, runs or changes: repaint at 10 instead of 30 frames per second
+    uint32_t lastChangeCounter = 0;
+    int idleTicks = 0;
+    bool idleFrameSkip (bool settled);
+    mutable bool paintedAnimation = false;           ///< p79: the last paint drew something that moves with the clock
+    float anim (bool moving) const noexcept          ///< p79: the clock for a drawing; `moving` keeps the display at full rate
+    {
+        paintedAnimation = paintedAnimation || moving;
+        return time;
+    }
+    bool padsMoving() const;
 };
 } // namespace ohpe::ui
