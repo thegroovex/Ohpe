@@ -38,8 +38,20 @@ gleiten Vokal, Helligkeit, Rauschanteil und Tonhöhe zurück auf 0.
 
 **LFO > Stimme** zeigt die Vokalkarte – A E I O U an ihren Plätzen, dein Vokal als gelber Punkt (grau, solange du
 schweigst) – und die Eingangsanzeige mit der Schwelle als weiße Linie, daneben kleine Balken für Pegel, Helligkeit,
-Rauschanteil, Tonhöhe und Einsatz. Die Zeile darunter sagt, was die Stimmsteuerung hört (Vokal und Pegel, *Hört zu*
-unter der Schwelle oder *Kein Eingang*).
+Rauschanteil, Tonhöhe und Einsatz. Die Zeile darunter sagt, was die Stimmsteuerung hört: Vokal und Pegel, *Hört zu*
+mit dem Pegel unter der Schwelle, oder warum sie nichts hört (unten).
+
+### Wenn die Zeile einen stillen Eingang meldet
+
+| Zeile | Bedeutung | Abhilfe |
+|---|---|---|
+| *Kein Eingangsgerät gewählt* | Kein Eingangsgerät ist offen (Standalone) oder der Host speist Ohpes Eingangsbus nicht (Plug-in). | Standalone: **Einstellungen > Audio**, **Eingangsgerät**. Plug-in: Eingang / Sidechain des Instruments im Host einschalten. |
+| *Mikrofonzugriff verweigert* | macOS verweigert Ohpe (oder dem Host) das Mikrofon: jeder Eingang liefert Stille. | Der zusätzliche Softkey **Mikrofonzugriff** öffnet die Mikrofon-Seite der Datenschutz-Einstellungen; dort Ohpe (oder den Host) einschalten und neu starten. |
+| *Mikrofonzugriff noch nicht erlaubt* | macOS hat noch nicht gefragt. | Softkey **Mikrofon erlauben** (oder das Wählen des Eingangs) bringt die Frage. |
+| *Eingang offen – kein Signal* | Das Gerät ist offen, liefert aber digitale Stille. | Kabel / Headset-Stecker, den Eingangspegel in den Toneinstellungen des Systems und Ohpes **Input Gain** prüfen. |
+
+Ein Mono-Eingang (Headset-Mikrofon, ein Kanal) ist in Ordnung: Ohpe hört ihn auf beiden Seiten. Der gewählte Eingang
+wird beim Wählen gespeichert und beim nächsten Start wieder geöffnet.
 
 | Encoder | Parameter | Bereich | Standard |
 |---|---|---|---|
@@ -51,7 +63,8 @@ unter der Schwelle oder *Kein Eingang*).
 | Optionen 2 | **Abhören** (`voice.monitor`) | Aus / Ein | **Aus** – den Eingang auf dem Hauptausgang hören; mit Lautsprechern aus lassen (Rückkopplung) |
 
 Softkeys: **Ein** schaltet die Stimmsteuerung, **Vokal → Filter + Morph** ist die Schnellzuweisung für den Edit-Part
-(unten). Alle Parameter sind automatisierbar und per MIDI lernbar; sie gehören zu deinem Aufbau und werden nicht in
+(unten); **Mikrofonzugriff** / **Mikrofon erlauben** erscheint nur, solange macOS das Mikrofon verweigert oder noch
+nicht erlaubt hat. Alle Parameter sind automatisierbar und per MIDI lernbar; sie gehören zu deinem Aufbau und werden nicht in
 Presets oder Projekten gespeichert.
 
 ## Schnellzuweisung: Vokal → Filter + Morph

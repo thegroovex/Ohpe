@@ -17,13 +17,21 @@ namespace ohpe
 {
 juce::AudioProcessor::BusesProperties OhpeProcessor::makeBuses()
 {
+    return makeBuses (juce::JUCEApplicationBase::isStandaloneApp());
+}
+
+juce::AudioProcessor::BusesProperties OhpeProcessor::makeBuses (bool standalone)
+{
     // aux outputs: on in the standalone app (multi-out to the audio interface), off by default in hosts
-    const bool standalone = juce::JUCEApplicationBase::isStandaloneApp();
     auto b = BusesProperties().withOutput ("Main", juce::AudioChannelSet::stereo(), true);
     for (int i = 1; i <= numAuxOutputs; ++i)
         b = b.withOutput ("Out " + juce::String (i), juce::AudioChannelSet::stereo(), standalone);
-    // 0.2 (tape): audio input for recording, off until the host / user enables it
-    b = b.withInput ("Input", juce::AudioChannelSet::stereo(), false);
+    // 0.2 (tape): audio input for recording, off until the host / user enables it.
+    // p86: on in the standalone app. Its player keeps the bus layout the app starts with (the holder only switches
+    // the non-main buses off), so an input bus that starts off never received the device input there - Voice
+    // Control, tape recording and bounce heard silence although an input device was chosen. A mono device reaches
+    // both channels (the player copies a single device input to every processor input).
+    b = b.withInput ("Input", juce::AudioChannelSet::stereo(), standalone);
     return b;
 }
 
@@ -130,7 +138,7 @@ void OhpeProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     ohpeCore.setStandaloneHost (wrapperType == wrapperType_Standalone); // p39: the click in a plug-in is opt-in
     setLatencySamples (ohpeCore.latencySamples()); // 0.8: limiter look-ahead, constant (on and off)
     scratch.setSize (2, juce::jmax (16, samplesPerBlock));
-    inputScratch.setSize (2, juce::jmax (16, samplesPerBlock)); // 0.2: copy of the input bus
+    inputScratch.setSize (2, juce::jmax (16, samplesPerBlock, Core::maxInputBlock)); // 0.2: copy of the input bus (p86: longer device blocks too)
     keyboardState.reset();
 }
 
@@ -289,7 +297,8 @@ void OhpeProcessor::captureInput (juce::AudioBuffer<float>& buffer, int n)
 {
     const float* inL = nullptr;
     const float* inR = nullptr;
-    if (getBusCount (true) > 0 && getBus (true, 0)->isEnabled() && inputScratch.getNumSamples() >= n)
+    if (getBusCount (true) > 0 && getBus (true, 0)->isEnabled() && inputScratch.getNumSamples() >= n
+        && deviceInputChannels.load (std::memory_order_relaxed) != 0) // p86: no input device = not connected
     {
         const auto in = getBusBuffer (buffer, true, 0);
         const int chans = juce::jmin (2, in.getNumChannels());

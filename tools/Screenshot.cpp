@@ -23,6 +23,7 @@
 // preset library reads the user folder from OHPE_PRESET_DIR when set (otherwise the default).
 
 #include "plugin/Localisation.h"
+#include "plugin/MicAccess.h"
 #include "plugin/PluginProcessor.h"
 #include "ui/PluginEditor.h"
 #include "engines/SamplerEngine.h"
@@ -890,6 +891,28 @@ int main (int argc, char* argv[])
             save (e, dir.getChildFile ("ohpe-voice-view" + suffix + ".png"));
             buffer.clear();
             for (int k = 0; k < 120; ++k) { juce::MidiBuffer none; p.processBlock (buffer, none); } // the voice goes home
+            // p86: the input states of the status line - open but silent, the microphone refused, no input device
+            auto settle = [&] {
+                for (int k = 0; k < 30; ++k) { buffer.clear(); juce::MidiBuffer none; p.processBlock (buffer, none); }
+                e.selectView (4); // the soft keys follow the state
+                e.selectView (5);
+                e.advanceAnimation (1.0f / 30.0f);
+            };
+            setPlain (p, "voice.on", 1.0f);
+            mic::setAccessForTesting (mic::Access::granted);
+            settle();
+            save (e, dir.getChildFile ("ohpe-voice-nosignal" + suffix + ".png"));
+            mic::setAccessForTesting (mic::Access::denied);
+            settle();
+            save (e, dir.getChildFile ("ohpe-voice-micdenied" + suffix + ".png"));
+            mic::setAccessForTesting (mic::Access::granted);
+            p.setChannelLayoutOfBus (true, 0, juce::AudioChannelSet::disabled());
+            settle();
+            save (e, dir.getChildFile ("ohpe-voice-noinput" + suffix + ".png"));
+            p.setChannelLayoutOfBus (true, 0, juce::AudioChannelSet::stereo());
+            mic::resetAccessForTesting();
+            setPlain (p, "voice.on", 0.0f);
+            for (int k = 0; k < 4; ++k) { buffer.clear(); juce::MidiBuffer none; p.processBlock (buffer, none); }
             e.selectView (0);
         }
 

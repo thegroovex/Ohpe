@@ -214,6 +214,9 @@ public:
 
     /** Standalone: number of output channels the audio device really has (-1 = plug-in, all buses as the host says). */
     std::atomic<int> deviceOutputChannels { -1 };
+    /** p86: standalone app only - the open device's input channel count (0 = no input device: the input bus then
+        counts as not connected, although the player fills it with silence). -1 = unknown (plug-in: the host decides). */
+    std::atomic<int> deviceInputChannels { -1 };
 
     juce::MidiKeyboardState keyboardState;
 
@@ -241,6 +244,8 @@ public:
     std::shared_ptr<void> parkedGridController;
 
     static BusesProperties makeBuses();
+    /** p86: the bus layout the processor starts with (standalone app: input bus on). */
+    static BusesProperties makeBuses (bool standaloneApp);
 
     /** p63: true when the last setStateInformation() could not load its state (damaged, or a loader failed half
         way: the instance then starts over with the factory start sound). Message thread. */

@@ -106,6 +106,7 @@ public:
     {
         if (settingsWindow != nullptr) { settingsWindow->toFront (true); return; }
         auto* page = new AudioSettingsPage (getDeviceManager(), *static_cast<OhpeProcessor*> (getAudioProcessor()));
+        page->onSetupChanged = [this] { pluginHolder->saveAudioDeviceState(); }; // p86: a chosen input is kept at once
         juce::DialogWindow::LaunchOptions o;
         o.content.setOwned (page);
         o.dialogTitle = "Ohpe - " + tr ("Audio Settings");
@@ -166,6 +167,7 @@ private:
         {
             auto* dev = getDeviceManager().getCurrentAudioDevice();
             p->deviceOutputChannels.store (dev != nullptr ? dev->getActiveOutputChannels().countNumberOfSetBits() : 2);
+            p->deviceInputChannels.store (dev != nullptr ? dev->getActiveInputChannels().countNumberOfSetBits() : 0); // p86
             // tempo sync: Link runs only while it is the sync source
             const int src = (int) std::lround (p->core().params().get (Core::Ids::syncSource));
             link.setEnabled (src == Core::SyncLink && LinkSync::available());
@@ -228,7 +230,12 @@ public:
             auto s = dm.getAudioDeviceSetup();
             if (s.inputDeviceName.isNotEmpty() && s.inputChannels.isZero())
             {
-                s.inputDeviceName = {};
+                // p86: an input the user chose (it is in the saved state with channels) is opened again, not
+                // dropped - only a default the device manager filled in by itself is cleared
+                if (chosenInput (appProperties.getUserSettings()) == s.inputDeviceName)
+                    s.inputChannels = AudioSettingsPage::inputChannelsFor (0);
+                else
+                    s.inputDeviceName = {};
                 dm.setAudioDeviceSetup (s, true);
             }
         }
@@ -256,6 +263,19 @@ public:
     }
 
 private:
+    /** p86: the input device in the saved audio state when it was saved with input channels ("" = none chosen). */
+    static juce::String chosenInput (juce::PropertiesFile* settings)
+    {
+        if (settings == nullptr) return {};
+        const auto xml = settings->getXmlValue ("audioSetup");
+        if (xml == nullptr) return {};
+        juce::BigInteger chans;
+        chans.parseString (xml->getStringAttribute ("audioDeviceInChans", "0"), 2);
+        if (chans.isZero()) return {};
+        const auto both = xml->getStringAttribute ("audioDeviceName");
+        return both.isNotEmpty() ? both : xml->getStringAttribute ("audioInputDeviceName");
+    }
+
     // ---- p63: crash-safe start ----
     // "sessionInProgress" is set while the app runs and cleared when it ends cleanly. Found set at the next start
     // (and no other instance running), the last session did not end cleanly: its state is set aside

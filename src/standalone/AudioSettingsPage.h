@@ -24,6 +24,14 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+    /** p86: called after every change the page made to the device setup (the app saves it at once, so a chosen
+        input survives a crash or a forced quit, not only a clean exit). */
+    std::function<void()> onSetupChanged;
+
+    /** p86: the input channels to open on a device with `deviceInputs` inputs: the first two (a mono device: its
+        one channel - the player gives it to both sides). Empty for none. */
+    static juce::BigInteger inputChannelsFor (int deviceInputs);
+
     /** Latency text "5.3 ms (256 samples @ 48 kHz)" for a device configuration. */
     static juce::String latencyText (int bufferSamples, int extraOutputLatency, double sampleRate);
 
@@ -33,6 +41,7 @@ private:
     void refreshDeviceLists();
     void updateLatency();
     void applySetup (std::function<void (juce::AudioDeviceManager::AudioDeviceSetup&)> change);
+    int inputCount (const juce::String& deviceName); ///< p86: 0 = unknown
     void enableAllOutputs();
 
     juce::AudioDeviceManager& dm;
