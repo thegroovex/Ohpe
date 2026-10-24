@@ -1,0 +1,65 @@
+<h1 id="quickstart">Schnellstart</h1>
+<p class="lead"><b>Ohpe ist ein kleines Synth-Studio in einem Fenster:</b> vier Instrumente, ein Drum-Kit, Sequencer, eine Bandmaschine und ein Mixer. Es läuft als Standalone-App oder als Plug-in (VST3, Audio Unit) in deiner Musiksoftware.</p>
+<figure><img src="ohpe-analog-2x.png" alt=""><figcaption>Links die Engine-Tasten, in der Mitte das Display mit vier Drehreglern, rechts die Modus-Tasten, darunter die Tastaturzeile.</figcaption></figure>
+
+<h2 id="qs-parts">1. Parts: vier Instrumente gleichzeitig</h2>
+<p>Ohpe hat <b>vier Parts (1–4)</b>. Stell sie dir als vier eigene Synthesizer nebeneinander vor, zum Beispiel einen Bass, eine Fläche, ein Lead und ein Arpeggio. Jeder Part hat seinen eigenen Klang, seine eigene Engine, eigene Effekte und einen eigenen MIDI-Kanal, und alle vier können gleichzeitig spielen.</p>
+<p>Die <b>Part-Auswahl</b> oben wählt den Part, den du gerade bearbeitest (den <i>bearbeiteten Part</i>). Alles, was du anfasst (Engine, Regler, Effekte, Presets, die Bildschirm-Klaviatur), folgt diesem Part. Das Display markiert ihn mit einem gelben Abzeichen, P1–P4.</p>
+<p>Das <b>Drum-Kit</b> steht als zusätzliches Instrument neben den vier Parts: 24 Pads auf MIDI-Kanal 10.</p>
+<div class="box"><b>Lichtfarben überall:</b> <span class="y">gelb</span> = was du bearbeitest · <span class="v">violett</span> = woanders in Gebrauch · <span class="g">grün</span> = spielt · <span class="r">rot</span> = nimmt auf.</div>
+
+<h2 id="qs-engines">2. Engines: welche Art Synthesizer ein Part ist</h2>
+<p>Die <b>Engine-Tasten</b> links bestimmen, wie der bearbeitete Part klingt. Es gibt acht:</p>
+<ul class="two">
+<li><b>Analog</b>: klassische Oszillatoren und Filter. Bässe, Leads, Flächen.</li>
+<li><b>FM</b>: sechs Operatoren. Glocken, E-Pianos, metallische Klänge.</li>
+<li><b>Wavetable</b>: sich wandelnde Wellenformen – auch eigene, aus jedem Klang.</li>
+<li><b>Pluck</b>: modellierte Saiten und Schlagklänge.</li>
+<li><b>Cluster</b>: bis zu sieben verstimmte Oszillatoren pro Taste, für riesige Akkorde und Supersaws.</li>
+<li><b>Grain</b>: granulare Wolken aus einem Sample, dem Band oder einer eingebauten Textur.</li>
+<li><b>Vokal</b>: eine singende Formant-Stimme.</li>
+<li><b>Sampler</b>: eigene Audiodateien oder die eingebauten Instrumente spielen.</li>
+</ul>
+<p>Jeder Part kann eine andere Engine nutzen. Das kleine Licht unter jeder Engine-Taste zeigt, welche Parts sie benutzen: <span class="y">gelb</span> für den bearbeiteten Part, <span class="v">violett</span> für die anderen.</p>
+
+<h2 id="qs-pages">3. Seiten: wo du bearbeitest</h2>
+<p>Die <b>Modus-Tasten</b> rechts bestimmen, was das Display zeigt:</p>
+<ul class="two">
+<li><b>Synth</b>: die Klangregler der Engine</li>
+<li><b>Hüllkurve</b>: wie Noten einsetzen, halten und ausklingen, und wie sie aufs Spiel reagieren</li>
+<li><b>LFO</b>: Bewegung und Modulation</li>
+<li><b>Mixer</b>: Pegel, Panorama, EQ und Sends für jeden Kanal</li>
+<li><b>Effekte</b>: die Effektkette jedes Parts und des Masters</li>
+<li><b>Sequencer</b>: Schritte, Euklid, Arpeggiator und Orbit-Muster</li>
+<li><b>Tape</b>: ein 8-Spur-Recorder für ganze Songs</li>
+<li><b>Drum</b>: die Pads des Drum-Kits</li>
+</ul>
+<p>Jeder Modus hat mehrere <b>Seiten</b>. Eine Seite zeigt immer <b>vier Werte</b>, und diese vier Werte gehören zu den <b>vier Drehreglern</b> unter dem Display. Mit den <b>Pfeilen</b> in der Kopfzeile des Displays blätterst du. Du kannst die Balken im Display auch direkt ziehen.</p>
+
+<h2 id="qs-workflow">4. Der Grundablauf</h2>
+<ol>
+<li>Einen Part wählen (1–4).</li>
+<li>Eine Engine wählen oder einen Klang aus der <b>BIBLIOTHEK</b> laden (430 Werks-Presets).</li>
+<li>Ihn auf den Seiten Synth, Hüllkurve, LFO und Effekte formen – vier Drehregler pro Seite.</li>
+<li>Das für die anderen Parts wiederholen, dann mit den Sequencern spielen oder aufs Band aufnehmen.</li>
+<li>Alles im Mixer ausbalancieren.</li>
+</ol>
+
+<h2 id="qs-transport">5. Spielen, aufnehmen, anhalten</h2>
+<ul>
+<li><b>Klaviatur</b>: mit der Maus oder einem MIDI-Keyboard spielen; die Oktavtasten verschieben sie.</li>
+<li><b>Sequencer</b>: Schritte antippen zum Einschalten, Shift-Tippen wählt einen Schritt zum Bearbeiten und für Parameter-Locks, Start drücken. Im Host folgt der Sequencer dem Transport des Hosts, solange Start an ist.</li>
+<li><b>Transport</b> (unten links): <b>REC</b> nimmt sofort aufs Band auf (ist keine Spur aufnahmebereit, wird die gewählte bereit geschaltet), <b>START</b> lässt Sequencer und Band laufen, <b>STOPP</b> hält an (zweimal = zurück zum Anfang), <b>|◀</b> und <b>SCHLEIFE</b>. Standalone-Tasten: Leertaste, R, Enter, L.</li>
+<li>Eine Audiodatei auf das Instrument ziehen lädt sie in Sampler oder Grain oder auf ein Drum-Pad.</li>
+</ul>
+
+<h2 id="qs-shortcuts">6. Praktische Abkürzungen</h2>
+<ul>
+<li><b>ZUFALL</b> würfelt einen neuen, spielbaren Klang für den bearbeiteten Part.</li>
+<li><b>ZUCHT</b> kreuzt zwei Klänge zu neuen.</li>
+<li><b>PRO</b> zeigt alle Parameter einer Seite auf einmal, als bedienbare Bilder.</li>
+<li><b>Rechtsklick</b> auf jedes Bedienelement öffnet MIDI-Learn. Alles in Ohpe lässt sich zuordnen.</li>
+<li><b>Doppelklick</b> setzt einen Wert zurück. <b>Shift</b> beim Ziehen regelt fein.</li>
+</ul>
+<div class="box"><b>Wie es weitergeht:</b> <a href="@docs/de/BEDIENUNG.md">Bedienung</a> erklärt jede Taste und Seite, <a href="@docs/de/BAND-MISCHER-FX.md#erste-aufnahme-in-30-sekunden">Erste Aufnahme in 30 Sekunden</a> bringt einen Song aufs Band, und <a href="@docs/de/INSTALLATION.md">Ohpe installieren</a> beschreibt macOS und Windows.</div>
+<p class="cap" style="margin-top:3mm">Frei &amp; Open Source (AGPL v3) · macOS &amp; Windows · Standalone · VST3 · AU · github.com/thegroovex/Ohpe</p>

@@ -5,6 +5,28 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
+## Unreleased / Unveröffentlicht
+
+- EN: Accessibility and UI size (p83) – six UI sizes 75 / 100 / 125 / 150 / 175 / 200 % (Settings › Display, or a
+  right-click on the housing or the settings key; per computer in settings.json, never in projects), vector drawing
+  sharp at every size and on HiDPI screens, the window keeps its aspect ratio. Full keyboard operation: Tab / Shift+Tab
+  walk the controls area by area, F6 jumps between the areas, a yellow focus ring in the Ohpe design shows where you
+  are; arrows / Page Up / Page Down change values, Delete resets, Enter / Space press keys, Shift+F10 opens a key's
+  menu, Esc gives the computer keyboard back to the notes (a click never steals it). Screen reader names and values in
+  English and German for every control and the display. Contrast to WCAG AA: brighter dim display texts, a fine edge
+  on every lit light bar (≥ 3:1 on its key), night skin legends ≥ 4.5:1. No new host parameters. See
+  [accessibility](docs/en/ACCESSIBILITY.md).
+- DE: Barrierefreiheit und UI-Größe (p83) – sechs UI-Größen 75 / 100 / 125 / 150 / 175 / 200 % (Einstellungen ›
+  Display oder Rechtsklick aufs Gehäuse bzw. die Zahnrad-Taste; pro Computer in settings.json, nie im Projekt),
+  Vektorgrafik scharf in jeder Größe und auf HiDPI-Bildschirmen, das Fenster behält sein Seitenverhältnis. Volle
+  Bedienung per Tastatur: Tab / Shift+Tab wandern Bereich für Bereich durch die Bedienelemente, F6 springt zwischen den
+  Bereichen, ein gelber Fokusring im Ohpe-Design zeigt die Stelle; Pfeile / Bild ↑ / Bild ↓ ändern Werte, Entf setzt
+  zurück, Enter / Leertaste drücken Tasten, Shift+F10 öffnet das Menü einer Taste, Esc gibt die Computertastatur an die
+  Noten zurück (ein Klick nimmt sie ihr nie). Screenreader-Namen und -Werte auf Deutsch und Englisch für jedes
+  Bedienelement und das Display. Kontrast nach WCAG AA: hellere gedimmte Display-Texte, eine feine Kante an jedem
+  leuchtenden Leuchtbalken (≥ 3:1 zur Taste), Beschriftungen der Nacht-Erscheinung ≥ 4,5:1. Keine neuen
+  Host-Parameter. Siehe [Barrierefreiheit](docs/de/BARRIEREFREIHEIT.md).
+
 ## 0.7.3 – 2026-10-23
 
 [Notes / Hinweise](docs/release-notes/0.7.3.md)
