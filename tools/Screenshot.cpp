@@ -11,6 +11,7 @@
 // p23: bounce to engine - a loop bounced into Grain (ohpe-bounce). p67: tape memory slices (ohpe-tapemem). p66: Key Gravity pages (ohpe-key-gravity). p70: the gravity ring on the header (ohpe-gravity-header). p33: the Expression page (ohpe-expression).
 // p41: the 3D switch (ohpe-space-switch-{off,headphones,speakers}[-dark]). p77: the 3D page Amount & Retrigger (ohpe-space-retrigger).
 // p38: the tape page's clear-all confirmation (ohpe-tape-clear, ohpe-tape-clear-dark) and the tape page at night (ohpe-tape-dark).
+// p82: tooltips and the help search (ohpe-tooltip-encoder, ohpe-tooltip-key, ohpe-help-search, ohpe-help-search-jump).
 // p42: the tape page's loop keys and loop readout (ohpe-tape-loop, ohpe-tape-loop-dark).
 // p11: the tape page while recording (ohpe-tape-recording). p14: the transport block, the keyboard row and the
 // octave block while recording (ohpe-transport, 2x crop; REC and PLAY at the top of their breathing).
@@ -30,6 +31,7 @@
 #include "mod/ModVoice.h"
 #include "plugin/Updater.h"
 #include "plugin/UserSettingsStore.h"
+#include "ui/Tooltips.h"
 #include "ui/Palette.h"
 #include "preset/Preset.h"
 #include "update/Sha256.h"
@@ -1047,6 +1049,39 @@ int main (int argc, char* argv[])
                     e.showGridKeyboard (false);
                 }
                 set ([] (settings::UserSettings& v) { v.helpOverlay = false; });
+                if (! dark)
+                {   // p82: tooltips (an encoder: what its value does and the MIDI learn hint; the REC key) and the help search
+                    e.selectPart (0);
+                    e.selectMode (ui::Mode::Synth);
+                    e.selectEngine (EngineType::Analog);
+                    e.advanceAnimation (0.2f);
+                    auto tipShot = [&] (juce::Component& c, const juce::String& text, const char* name) {
+                        auto img = e.createComponentSnapshot (e.getLocalBounds(), true, 1.0f);
+                        {
+                            juce::Graphics g (img);
+                            auto& lf = e.getLookAndFeel();
+                            const auto at = e.getLocalPoint (&c, juce::Point<int> (c.getWidth() / 2, c.getHeight() / 2));
+                            const auto tb = lf.getTooltipBounds (text, at, e.getLocalBounds());
+                            g.setOrigin (tb.getPosition());
+                            lf.drawTooltip (g, text, tb.getWidth(), tb.getHeight());
+                        }
+                        const auto f = dir.getChildFile (juce::String (name) + suffix + ".png");
+                        f.deleteFile();
+                        juce::FileOutputStream out (f);
+                        juce::PNGImageFormat().writeImageToStream (img, out);
+                        std::cout << "wrote " << f.getFullPathName() << std::endl;
+                    };
+                    tipShot (e.encoder (2), e.encoder (2).getTooltip(), "ohpe-tooltip-encoder");
+                    tipShot (e.recordKey(), e.recordKey().getTooltip(), "ohpe-tooltip-key");
+                    e.openHelpSearch (lang == i18n::Language::German ? juce::String::fromUTF8 ("H\xc3\xbcllkurve") : juce::String ("envelope"));
+                    shot ("ohpe-help-search");
+                    auto& sv = e.settingsComponent();
+                    sv.setSearchText ("cutoff");
+                    for (size_t i = 0; i < sv.searchResults().size(); ++i)
+                        if (sv.searchResults()[i].entry.kind == ui::tips::Kind::Parameter) { sv.clickSearchResult ((int) i); break; }
+                    shot ("ohpe-help-search-jump"); // the parameter's page, its encoder ringed in yellow
+                    e.showSettings (false);
+                }
                 e.showSettings (true, dark ? ui::SettingsView::Display : ui::SettingsView::General);
                 shot (dark ? "ohpe-settings-dark" : "ohpe-settings");
                 {   // MIDI and MIDI learn with a few mappings

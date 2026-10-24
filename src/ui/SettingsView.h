@@ -5,6 +5,7 @@
 #include "plugin/PluginProcessor.h"
 #include "plugin/Updater.h"
 #include "plugin/UserSettingsStore.h"
+#include "Tooltips.h"
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -30,7 +31,11 @@ class GridController;
 
     Hook: addExtraPage() adds a tab whose content is a component of another feature (shown in the content area).
 */
-class SettingsView : public juce::Component, private juce::ChangeListener, private juce::Timer
+class SettingsView : public juce::Component,
+                     public juce::TooltipClient,
+                     public tips::RegionProvider,
+                     private juce::ChangeListener,
+                     private juce::Timer
 {
 public:
     enum Page { General = 0, Display, Midi, MidiLearn, Controller, Updates, Help, About, numPages }; ///< p53: + Controller
@@ -74,6 +79,22 @@ public:
     static juce::String helpText (int topic);
     void setHelpTopic (int t);
     int helpTopic() const noexcept { return topic; }
+    // p82: the help search (a field above the topics of the Help page; Ctrl / Cmd + F)
+    /** The help topics as search entries (titles and texts EN / DE, target = topic index). */
+    static std::vector<tips::Entry> helpSearchEntries();
+    std::function<std::vector<tips::Entry>()> getSearchIndex;     ///< everything the search finds (the editor)
+    std::function<bool (const tips::Entry&)> onSearchResult;      ///< jumps to a result (the editor)
+    void setSearchText (const juce::String& text);
+    juce::String searchText() const { return searchBox.getText(); }
+    const std::vector<tips::Result>& searchResults() const noexcept { return results; }
+    /** Opens result `index` as a click on it does (a topic shows here, the rest via onSearchResult). */
+    bool clickSearchResult (int index);
+    void focusSearch();
+    juce::TextEditor& searchField() noexcept { return searchBox; }
+
+    juce::String getTooltip() override;               ///< p82: the painted control under the mouse
+    std::vector<tips::Region> tipRegions() override;  ///< p82: every chip, tab and field of the shown page
+
     /** The line on the About page and the help pages (and nowhere else). */
     static juce::String aboutLine();
     /** p43: the app icon (128 px image from resources/icon/png). */
@@ -102,6 +123,7 @@ private:
         juce::Rectangle<float> area;
         juce::String text;
         std::function<void()> action;
+        juce::String tip; ///< p82
     };
     struct Extra
     {
@@ -158,6 +180,15 @@ private:
     juce::Rectangle<float> padGrid, lcdArea; ///< p53: the virtual pads (8 x 8 cells), the virtual display
     int pressedPad = -1, slowTicks = 0;
     std::unique_ptr<juce::FileChooser> chooser;
+    // p82: tooltips of the painted chips (rowTip sets the one of the next chips) and the help search
+    juce::String tipNow;
+    void rowTip (const char* en, const char* de) { tipNow = tips::t (en, de); }
+    juce::TextEditor searchBox;
+    std::vector<tips::Entry> searchIndex;
+    std::vector<tips::Result> results;
+    void runSearch();
+    juce::Rectangle<float> searchBoxArea() const;
+    void paintSearchResults (juce::Graphics& g, juce::Rectangle<float> list, juce::Rectangle<float> text);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SettingsView)
 };

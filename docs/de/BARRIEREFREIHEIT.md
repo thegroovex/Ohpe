@@ -55,7 +55,9 @@ Sprache): Tasten (mit Zustand, z. B. ist eine gewählte Engine oder ein gewählt
 Name des gebundenen Parameters und sein Wert wie auf der Platte), Räder, LEBEN, Portamento, Glide, Part-Auswahl,
 Preset-Leiste, Tempo, TAP, Tonart-Gravitation, Tonart-Anzeige, Metronom-Leiste, Band- und Tastatur-Anzeige und das
 Display (Titel der Kopfzeile, Seite, Status und die nummerierten Softkeys). Werte lassen sich vom Screenreader setzen (in
-Prozent ihres Bereichs). Tooltips werden als Hilfetext gelesen. Ohpe nutzt die Barrierefreiheits-Schnittstelle des
+Prozent ihres Bereichs). Tooltips werden als Hilfetext gelesen (jedes
+Bedienelement hat einen, deutsch und englisch); **Strg / Cmd + F** öffnet die Hilfesuche, die Themen, Parameter und
+Bedienelemente per Eingabe findet (siehe *Tooltips und Hilfesuche* im Kapitel Bedienung). Ohpe nutzt die Barrierefreiheits-Schnittstelle des
 Betriebssystems (VoiceOver unter macOS, Sprachausgabe / NVDA unter Windows; unter Linux soweit der Desktop es unterstützt).
 
 ## Kontrast

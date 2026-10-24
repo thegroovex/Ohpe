@@ -59,6 +59,21 @@ und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
   Bedienelement und das Display. Kontrast nach WCAG AA: hellere gedimmte Display-Texte, eine feine Kante an jedem
   leuchtenden Leuchtbalken (≥ 3:1 zur Taste), Beschriftungen der Nacht-Erscheinung ≥ 4,5:1. Keine neuen
   Host-Parameter. Siehe [Barrierefreiheit](docs/de/BARRIEREFREIHEIT.md).
+- EN: Tooltips on every control and a help search (p82) – every interactive control (keys, encoders, wheels, the
+  display's rows, arrows, soft keys, tabs, steps, pads and tracks, pro view, FX editor, library, breeding, settings,
+  update and pack pages, dialogs, tour) has a concise English and German tooltip: what it does, plus *Right-click: MIDI
+  learn* where a right-click learns it. A test walks every view and fails on a control without both tooltips and on
+  any German text missing from the translation table. Settings > Help has a search field (Ctrl / Cmd + F): English or
+  German words, fuzzy (case, umlauts, word beginnings, typos), finds help topics, parameters and controls and jumps to
+  them – the parameter's page with its encoder ringed in yellow, the control ringed on the plate. No new parameters.
+- DE: Tooltips an jedem Bedienelement und eine Hilfesuche (p82) – jedes Bedienelement (Tasten, Encoder, Räder, die
+  Zeilen, Pfeile, Softkeys, Reiter, Schritte, Pads und Spuren des Displays, Profiansicht, FX-Editor, Bibliothek, Zucht,
+  Einstellungs-, Update- und Paketseiten, Dialoge, Tour) hat einen kurzen deutschen und englischen Tooltip: was es tut,
+  dazu *Rechtsklick: MIDI-Learn*, wo ein Rechtsklick es lernt. Ein Test geht durch jede Ansicht und schlägt fehl, wenn
+  einem Element einer der beiden Tooltips fehlt oder ein deutscher Text in der Übersetzungstabelle fehlt. Einstellungen
+  > Hilfe hat ein Suchfeld (Strg / Cmd + F): deutsche oder englische Wörter, fehlertolerant (Groß-/Kleinschreibung,
+  Umlaute, Wortanfänge, Tippfehler), findet Hilfethemen, Parameter und Bedienelemente und springt hin – zur Seite des
+  Parameters mit gelb umrandetem Encoder, zum umrandeten Element auf der Oberfläche. Keine neuen Parameter.
 
 ## 0.7.3 – 2026-10-23
 

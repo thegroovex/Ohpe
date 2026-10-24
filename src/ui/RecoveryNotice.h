@@ -3,6 +3,7 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
+#include "Tooltips.h"
 
 #include <functional>
 
@@ -15,7 +16,7 @@ namespace ohpe::ui
     START FRESH keeps the start sound. Damaged state: only OK (the state cannot be loaded). The plate stays usable
     around it; only the strip takes mouse clicks. English / German.
 */
-class RecoveryNotice : public juce::Component
+class RecoveryNotice : public juce::Component, public juce::TooltipClient, public tips::RegionProvider
 {
 public:
     enum class Reason { None = 0, UncleanExit, StateDamaged, RestoreFailed };
@@ -38,6 +39,8 @@ public:
     juce::Rectangle<float> keyArea (int key) const;
 
     void paint (juce::Graphics& g) override;
+    juce::String getTooltip() override { return tips::regionTipAt (tipRegions(), getMouseXYRelative().toFloat()); } ///< p82
+    std::vector<tips::Region> tipRegions() override; ///< p82: the keys
     bool hitTest (int x, int y) override;
     void mouseMove (const juce::MouseEvent& e) override;
     void mouseExit (const juce::MouseEvent& e) override;

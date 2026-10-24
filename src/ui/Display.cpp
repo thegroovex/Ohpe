@@ -10,6 +10,7 @@
 #include "VoiceView.h"
 #include "PadsView.h"
 #include "HarmonyView.h"
+#include "ProTiles.h"
 
 #include "Palette.h"
 #include "plugin/Localisation.h"
@@ -233,37 +234,126 @@ const char* transportTriggerId (int b)
 }
 } // namespace
 
-juce::String Display::getTooltip()
+juce::String Display::getTooltip() { return tips::regionTipAt (tipRegions(), lastMouse); }
+
+std::vector<tips::Region> Display::tipRegions()
 {
-    const auto p = lastMouse;
+    // p82: in the order a click finds them (mouseDown); every text in English and German
+    using tips::t;
+    std::vector<tips::Region> r;
     auto key = [this] (const char* k) { return shortcuts ? "  (" + juce::String (k) + ")" : juce::String(); };
-    if (spaceBadgeArea().contains (p)) // 1.0: the 3D badge in the header
-        return space3d::badgeTooltip (space3d::partState (proc.core(), ctx.part));
-    if (fxVisualArea().contains (p)) // p55
-        return i18n::pick ("Click to edit the slot in the FX editor - every parameter at once, points to drag",
-                           "Klicken: den Slot im FX-Editor bearbeiten - alle Parameter auf einmal, Punkte zum Ziehen");
+    auto add = [&r] (juce::Rectangle<float> a, const juce::String& tip) { if (! a.isEmpty()) r.push_back ({ a, tip }); };
+    const auto pageText = " (" + juce::String (page + 1) + " / " + juce::String (pages) + ")";
+    if (pages > 1)
+    {
+        add (pageArrow (false), t ("Previous page", "Vorherige Seite") + pageText);
+        add (pageArrow (true), t ("Next page", "Nächste Seite") + pageText);
+    }
+    for (int i = 0; i < (int) softKeys.size(); ++i)
+    {
+        const auto& k = softKeys[(size_t) i];
+        add (softKeyArea (i), k.label + ": " + (k.tip.isNotEmpty() ? k.tip : t ("soft key of this page", "Softkey dieser Seite")));
+    }
+    if (lockStep >= 0) add (captionArea(), t ("The step whose locks you edit - click to leave lock editing", "Der Schritt, dessen Locks du bearbeitest - klicken beendet die Lock-Bearbeitung"));
     if (mode == Mode::Tape)
     {
         for (int b = 0; b < numTransportButtons; ++b)
-            if (transportButton (b).contains (p))
-                switch (b)
-                {
-                    case TxToStart: return tr ("To the start of the tape") + key ("Enter");
-                    case TxStop: return tr ("Stop - press again to go to the start") + key ("Space");
-                    case TxPlay: return tr ("Play / stop the tape") + key ("Space");
-                    case TxRecord: return tr ("Record on the armed track - arms the selected track when none is armed") + key ("R");
-                    default: return tr ("Loop between loop in and out") + key ("L");
-                }
-        if (loopReadoutArea().contains (p)) // p42
-            return tapeLoopKeysShown ? tr ("Back to the edit keys") : tr ("Loop keys: set loop in / out at the playhead, grid, undo");
-        if (tapeLoopEdgeAt (p) != 0) return tr ("Drag the loop edge - on the grid, Shift: free"); // p42
-        for (int t = 0; t < TapeMachine::numTracks; ++t)
         {
-            if (trackArmArea (t).contains (p)) return tr ("Arm the track for recording");
-            if (trackLane (t).contains (p)) return tr ("Select the track");
+            juce::String tip;
+            switch (b)
+            {
+                case TxToStart: tip = tr ("To the start of the tape") + key ("Enter"); break;
+                case TxStop: tip = tr ("Stop - press again to go to the start") + key ("Space"); break;
+                case TxPlay: tip = tr ("Play / stop the tape") + key ("Space"); break;
+                case TxRecord: tip = tr ("Record on the armed track - arms the selected track when none is armed") + key ("R"); break;
+                default: tip = tr ("Loop between loop in and out") + key ("L"); break;
+            }
+            add (transportButton (b), tips::withLearn (tip));
+        }
+        for (int tr8 = 0; tr8 < TapeMachine::numTracks; ++tr8) add (trackArmArea (tr8), tips::withLearn (tr ("Arm the track for recording")));
+        add (loopReadoutArea(), tips::withLearn (tapeLoopKeysShown ? tr ("Back to the edit keys") : tr ("Loop keys: set loop in / out at the playhead, grid, undo")));
+        for (bool in : { true, false }) // p42: the loop edges on the lanes
+        {
+            const float x = tapeLoopEdgeX (in);
+            const auto lanes = tapeLanesArea();
+            if (x >= lanes.getX() && x <= lanes.getRight())
+                add (juce::Rectangle<float> (x - 4.0f, lanes.getY(), 8.0f, lanes.getHeight()), tips::withLearn (tr ("Drag the loop edge - on the grid, Shift: free")));
         }
     }
-    return {};
+    const auto how = t ("Drag the bar (Shift: fine), click to jump, double-click: default", "Balken ziehen (Shift: fein), Klick springt, Doppelklick: Standardwert");
+    for (int row = 0; row < 4; ++row)
+    {
+        const auto& v = virtuals[(size_t) row];
+        const juce::String id = v != nullptr ? v->paramId : (row < (int) ids.size() ? ids[(size_t) row] : juce::String());
+        if (v != nullptr)
+            add (rowArea (row), v->name + "  " + (v->text && v->get ? v->text (v->get()) : juce::String()) + "\n" + how);
+        else if (id.isNotEmpty() && proc.parameter (id) != nullptr)
+        {
+            const bool segments = segmentAt (row, segmentArea (row, 0, 0).getCentre()) >= 0; // p41: a switch row
+            const auto use = segments ? t ("Click a segment to choose it", "Ein Segment anklicken, um es zu wählen") : how;
+            add (rowArea (row), tips::withLearn (pro::hoverText (proc, id.toStdString()) + "\n" + use));
+        }
+    }
+    add (spaceBadgeArea(), space3d::badgeTooltip (space3d::partState (proc.core(), ctx.part)));
+    if (mode == Mode::Lfo || mode == Mode::Effects)
+    {
+        for (int v = 0; v < numViewTabs(); ++v)
+            add (seqTab (v), viewTabName (v) + " - " + t ("shows this view", "zeigt diese Ansicht"));
+        if (showsModView())
+            add (visualArea(), t ("The routings of the modulation matrix - click one to edit it with the encoders",
+                                  "Die Verbindungen der Modulationsmatrix - eine anklicken, um sie mit den Encodern zu bearbeiten"));
+        if (showsMorphView())
+        {
+            for (int c = 0; c < 4; ++c)
+                add (morphCornerArea (c), t ("Morph corner: click to assign a sound (library, current sound) or clear it",
+                                             "Morph-Ecke: klicken, um einen Sound zuzuweisen (Bibliothek, aktueller Sound) oder sie zu leeren"));
+            add (morphPadArea(), tips::withLearn (t ("Morph pad: drag to blend the four corner sounds", "Morph-Pad: ziehen, um die vier Eck-Sounds zu überblenden")));
+        }
+        if (showsPadsView())
+            for (int k = 0; k < PerformancePads::numPads; ++k)
+                add (padsview::padArea (visualArea(), k), tips::withLearn (tr (padsview::padName (k)) + " - "
+                                                                            + t ("hold for the effect, Shift-click latches", "halten für den Effekt, Shift-Klick rastet ein")));
+        if (showsRackView())
+        {
+            add (fxVisualArea(), t ("Click to edit the slot in the FX editor - every parameter at once, points to drag",
+                                    "Klicken: den Slot im FX-Editor bearbeiten - alle Parameter auf einmal, Punkte zum Ziehen"));
+            add (visualArea(), t ("The FX chain: click a slot to edit it, drag it onto another to move it",
+                                  "Die FX-Kette: einen Slot anklicken zum Bearbeiten, auf einen anderen ziehen zum Verschieben"));
+        }
+    }
+    if (mode == Mode::Sequencer)
+    {
+        for (int v = 0; v < numSeqViews; ++v)
+            add (seqTab (v), tr (seqViewName ((SeqView) v)) + " - " + t ("shows this sequencer", "zeigt diesen Sequencer"));
+        if (ctx.seqView == SeqView::Step)
+        {
+            for (int i = 0; i < 16; ++i)
+                add (stepCell (i), tr ("Step") + " " + juce::String (stepPage * 16 + i + 1) + ": "
+                                       + t ("click switches it on / off; Shift-click or right-click: edit its locks",
+                                            "Klick schaltet ihn ein / aus; Shift-Klick oder Rechtsklick: seine Locks bearbeiten"));
+            for (int i = 0; i < 4; ++i)
+                add (stepPageTab (i), t ("Steps", "Schritte") + " " + juce::String (i * 16 + 1) + "-" + juce::String (i * 16 + 16));
+        }
+    }
+    const bool visualClick = ! showsModView() && ! showsRackView() && ! showsSpaceView() && ! showsBodyView() && ! showsMorphView() && ! showsMotionView()
+                          && ! showsHarmonyView() && ! showsVoiceView() && ! showsPadsView() && mode != Mode::Tape;
+    if (visualClick)
+    {
+        auto area = characterArea();
+        if (mode == Mode::Sequencer) area = area.withTrimmedTop (juce::jmax (0.0f, seqTab (0).getBottom() - area.getY()));
+        add (area, t ("The visual: click switches character, scope, terrain, 3D and living object; right-click: choose the view",
+                      "Das Visual: Klick wechselt Figur, Scope, Landschaft, 3D und lebendes Objekt; Rechtsklick: Ansicht wählen"));
+    }
+    if (mode == Mode::Mixer)
+        for (int i = 0; i < 8; ++i)
+            add (channelCell (i), tr ("Channel") + " " + juce::String (i + 1) + ": " + t ("click to edit it with the encoders", "klicken, um ihn mit den Encodern zu bearbeiten"));
+    if (mode == Mode::Tape)
+        for (int tr8 = 0; tr8 < TapeMachine::numTracks; ++tr8)
+            add (trackLane (tr8), tr ("Select the track") + " " + juce::String (tr8 + 1));
+    if (mode == Mode::Drum)
+        for (int pad = 0; pad < 24; ++pad)
+            add (padCell (pad), tr ("Pad") + " " + juce::String (pad + 1) + ": " + t ("click to select it and hear it", "klicken, um es zu wählen und zu hören"));
+    return r;
 }
 
 void Display::paintTapeTransport (juce::Graphics& g, juce::Rectangle<float> a)

@@ -57,9 +57,12 @@ using VirtualPtr = std::shared_ptr<VirtualControl>;
 void setParameterNormalised (OhpeProcessor& proc, const juce::String& paramId, float norm);
 
 /** Round flat encoder with a coloured ring; bound to one host parameter at a time. */
-class Encoder : public juce::Component
+class Encoder : public juce::Component, public juce::TooltipClient
 {
 public:
+    /** p82: the tooltip (what the bound value does, MIDI learn); set by the editor. */
+    std::function<juce::String()> tipText;
+    juce::String getTooltip() override { return tipText ? tipText() : juce::String(); }
     Encoder (OhpeProcessor& p, int index);
     ~Encoder() override;
 
@@ -88,6 +91,7 @@ private:
     {
     public:
         explicit Knob (Encoder& o) : owner (o) {}
+        juce::String getTooltip() override { return owner.getTooltip(); } // p82
         void mouseDown (const juce::MouseEvent& e) override;
         void mouseUp (const juce::MouseEvent& e) override;
         void mouseDoubleClick (const juce::MouseEvent& e) override;
@@ -193,7 +197,7 @@ void drawBaselineLegend (juce::Graphics& g, const juce::String& text, juce::Rect
                          bool optical = false);
 
 /** p14: three-octave keyboard with matte keys. */
-class Keyboard : public juce::MidiKeyboardComponent
+class Keyboard : public juce::MidiKeyboardComponent, public juce::SettableTooltipClient
 {
 public:
     static constexpr int numOctaves = 3;
@@ -305,6 +309,7 @@ private:
     {
     public:
         explicit Knob (MiniKnob& o) : owner (o) {}
+        juce::String getTooltip() override { return owner.getTooltip(); } // p82: the knob is what the mouse is over
         void mouseDown (const juce::MouseEvent& e) override;
         void mouseUp (const juce::MouseEvent& e) override;
         void mouseDoubleClick (const juce::MouseEvent& e) override;

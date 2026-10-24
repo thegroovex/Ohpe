@@ -3,6 +3,7 @@
 #pragma once
 
 #include "plugin/PluginProcessor.h"
+#include "Tooltips.h"
 
 #include <functional>
 
@@ -22,6 +23,8 @@ namespace ohpe::ui
     before the library was opened.
 */
 class LibraryBrowser : public juce::Component,
+                       public juce::TooltipClient,
+                       public tips::RegionProvider,
                        private juce::ListBoxModel,
                        private juce::ChangeListener
 {
@@ -52,6 +55,8 @@ public:
     void resized() override;
     void mouseDown (const juce::MouseEvent& e) override;
     bool keyPressed (const juce::KeyPress& k) override;
+    juce::String getTooltip() override;              ///< p82: the chip under the mouse
+    std::vector<tips::Region> tipRegions() override; ///< p82: every chip
 
     // used by tests and the screenshot tool
     void selectRow (int row);
@@ -86,6 +91,7 @@ private:
     void listBoxItemClicked (int row, const juce::MouseEvent& e) override;
     void listBoxItemDoubleClicked (int row, const juce::MouseEvent& e) override;
     void selectedRowsChanged (int lastRowSelected) override;
+    juce::String getTooltipForRow (int row) override; ///< p82
     void changeListenerCallback (juce::ChangeBroadcaster*) override;
 
     void rebuild();
@@ -103,7 +109,10 @@ private:
     {
         juce::Rectangle<float> area;
         std::function<void()> action;
+        juce::String tip; ///< p82
     };
+    juce::String tipNow; ///< p82: the tooltip of the next chips
+    void rowTip (const char* en, const char* de) { tipNow = tips::t (en, de); }
     void chip (juce::Graphics& g, juce::Rectangle<float> r, const juce::String& text, bool on, juce::Colour accent, std::function<void()> action);
     juce::Rectangle<float> leftArea() const;
     juce::Rectangle<float> rightArea() const;

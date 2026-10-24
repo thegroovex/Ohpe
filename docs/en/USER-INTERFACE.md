@@ -763,6 +763,20 @@ clear, clear all, map files), **Controller** (the [grid controller](CONTROLLER.m
 
 Details: [Settings](SETTINGS.md).
 
+## Tooltips and help search (p82)
+
+Every control has a short **tooltip** in English and German (Settings > General > Tooltips): keys, encoders, wheels,
+the display's rows, page arrows, soft keys, tabs, steps, pads and tracks, the pro view's bars, pictures and card icons,
+the FX editor, the library, the breeding view, the settings and update pages. It says what the control does, and keys
+or values that learn MIDI with a right-click end with *Right-click: MIDI learn*. German texts keep the studio terms
+musicians use (Low / High Shelf, Q, Main, Tape-Memory).
+
+The **help search** sits above the topics of Settings > Help; **Ctrl / Cmd + F** opens it from anywhere. Type English or
+German words – case, umlauts, word beginnings and small typos do not matter (`huellkurve`, `envelpoe`, `modrad`). The
+results are help topics, parameters (with where they are: *Synth > Filter*) and controls of the plate. **Return** or a
+click opens the best one: a topic shows on the page, a parameter's mode and page come up with its encoder ringed in
+yellow for a few seconds, a control is ringed on the plate; settings pages open directly. **Esc** clears the search.
+
 ## Library search (p54)
 
 The library's search field matches every word (AND) against name, category, tags (**MPE**, **Fingerboard**, **Morph**),
@@ -832,6 +846,7 @@ falls back to defaults. In a plug-in host, a damaged host state is refused the s
 |---|---|
 | Esc | closes the library (cancel), the pro view, the update view or the settings, or ends step editing |
 | F1 | help overlay on / off |
+| Ctrl / Cmd + F | help search (Settings > Help) |
 | Space (standalone) | PLAY / stop |
 | R (standalone) | REC: record on the tape / punch out |
 | Enter or Home (standalone) | tape to the start |

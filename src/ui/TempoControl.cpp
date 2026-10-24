@@ -99,7 +99,11 @@ TempoReadout::TempoReadout (OhpeProcessor& p, Style s) : proc (p), style (s)
     entry.onEscapeKey = [this] { hideTextEntry(); };
     entry.onFocusLost = [this] { hideTextEntry(); };
     addChildComponent (entry);
-    setTooltip (tr ("Tempo: drag up / down (Shift: fine), double-click to type, mouse wheel; right-click: MIDI learn"));
+}
+
+juce::String TempoReadout::getTooltip()
+{
+    return tr ("Tempo: drag up / down (Shift: fine), double-click to type, mouse wheel; right-click: MIDI learn");
 }
 
 juce::String TempoReadout::shownText() const
@@ -261,6 +265,12 @@ int ClickStrip::fieldAt (juce::Point<float> p) const
     return -1;
 }
 
+std::vector<tips::Region> ClickStrip::tipRegions()
+{
+    return { { fieldArea (ClickField), tr ("Metronome: click on / off while the sequencer or the tape runs; right-click: level, accent, plug-in") },
+             { fieldArea (CountInField), tr ("Count-in for recording: off, 1 bar, 2 bars - REC starts after it, exactly on the bar") } };
+}
+
 juce::String ClickStrip::getTooltip()
 {
     const int f = fieldAt (getMouseXYRelative().toFloat());
@@ -392,9 +402,10 @@ void ClickStrip::showMetronomeMenu()
 // ---------------------------------------------------------------- TAP
 TapKey::TapKey (OhpeProcessor& p) : proc (p)
 {
-    setTooltip (tr ("Tap tempo: click in time (at least twice); right-click: MIDI learn"));
     a11y::makeFocusable (*this); // p83
 }
+
+juce::String TapKey::getTooltip() { return tr ("Tap tempo: click in time (at least twice); right-click: MIDI learn"); }
 
 std::unique_ptr<juce::AccessibilityHandler> TapKey::createAccessibilityHandler()
 {

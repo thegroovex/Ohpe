@@ -52,7 +52,8 @@ Every control has a name and a value in the UI language (English or German, swit
 value as the plate shows it), wheels, LIFE, portamento, glide, part selector, preset strip, tempo, TAP, Key Gravity, the
 key readout, the metronome strip, the tape and keyboard readouts and the display (header title, page, status and the
 numbered soft keys). Value controls can be set by the screen reader (in percent of their range). Tooltips are read as
-the control's help text. Ohpe uses the operating system's accessibility interface (VoiceOver on macOS, Narrator / NVDA
+the control's help text (every control has one, English and German); **Ctrl / Cmd + F** opens the help search, which
+finds topics, parameters and controls by typing (see *Tooltips and help search* in the user interface chapter). Ohpe uses the operating system's accessibility interface (VoiceOver on macOS, Narrator / NVDA
 on Windows; on Linux as far as the desktop supports it).
 
 ## Contrast
