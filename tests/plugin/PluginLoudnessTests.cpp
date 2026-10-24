@@ -267,7 +267,7 @@ void runVariant (bool allOutputs, bool withEditor, int every, const char* label)
 }
 } // namespace
 
-TEST_CASE ("plug-in loudness: a fresh instance plays a wide 8-note chord below -1 dBTP without the limiter, like the core (p74 audit through the plug-in, p87)" * doctest::test_suite ("sliced"))
+TEST_CASE ("plug-in loudness: a fresh instance plays a wide 8-note chord below -1 dBTP without the limiter and arp, like the core (p74 audit through the plug-in, p87)" * doctest::test_suite ("sliced"))
 {
     factorykit::loadBank();
     const auto slice = test::testSlice();
@@ -297,11 +297,14 @@ TEST_CASE ("plug-in loudness: a fresh instance plays a wide 8-note chord below -
         preset::applyPartMorph (pr, *core, 0);
         usertable::partFromJson (*core, 0, pr.userTables ? *pr.userTables : std::string(),
                                  [] (const std::string&, const std::string&) { return usertable::UserTablePtr(); });
+        // as the p74 audit measures: master limiter off, the sound itself (the preset's arpeggiator off)
+        const std::string arpOn = std::string (Core::Ids::arpPrefix) + "on";
         core->params().set ("mix.master.limit", 0.0f);
+        core->params().set (arpOn, 0.0f);
         core->prepareEffects();
         core->updateMorph();
         REQUIRE (p.presets().load (list[k], 0));
-        p.editRegistry ([] (Core& c) { c.params().set ("mix.master.limit", 0.0f); });
+        p.editRegistry ([&arpOn] (Core& c) { c.params().set ("mix.master.limit", 0.0f); c.params().set (arpOn, 0.0f); });
         for (int b = 0; b < 4; ++b) { silence (p, 4); pump (20); }
         render::renderCore (*core, {}, 16 * blockSize, blockSize);
         const auto ev = eventsFor (chord);
