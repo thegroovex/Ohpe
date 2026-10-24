@@ -74,6 +74,11 @@ bool isJuceContainer (const juce::Component& c)
         || [&c] {
                auto* vp = c.getParentComponent() != nullptr ? dynamic_cast<const juce::Viewport*> (c.getParentComponent()) : nullptr;
                return vp != nullptr && vp->getViewedComponent() != &c;
+           }()
+        // the holder of a list's rows (the rows are the controls)
+        || [&c] {
+               auto* vp = c.findParentComponentOfClass<juce::Viewport>();
+               return vp != nullptr && vp->getViewedComponent() == &c && c.findParentComponentOfClass<juce::ListBox>() != nullptr;
            }();
 }
 
@@ -85,7 +90,8 @@ void walk (juce::Component& c, const juce::String& path, Seen& seen, juce::Compo
     if (self) children = true; // JUCE: the child flag only counts when the component itself lets clicks through
     const auto here = path + "/" + className (c);
 
-    if (dynamic_cast<juce::ScrollBar*> (&c) != nullptr) return; // standard scroll bars
+    if (dynamic_cast<juce::ScrollBar*> (&c) != nullptr || dynamic_cast<juce::ResizableCornerComponent*> (&c) != nullptr)
+        return; // standard scroll bars, the window's resize corner
     if (auto* rp = dynamic_cast<tips::RegionProvider*> (&c))
     {
         int i = 0;

@@ -1072,7 +1072,7 @@ void SettingsView::paintControllerPreview (juce::Graphics& g, juce::Rectangle<fl
                                  gridCtl->receive (juce::MidiMessage::controllerEvent (1, cc, 127));
                                  gridCtl->receive (juce::MidiMessage::controllerEvent (1, cc, 0));
                                  gridCtl->update();
-                             } });
+                             }, tipNow });
         }
         body.removeFromTop (u * 0.3f);
     };
