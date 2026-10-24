@@ -392,3 +392,8 @@ endif()
 if(OHPE_BUILD_TESTS)
     target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/TooltipUiTests.cpp)
 endif()
+
+# ---------------------------------------------------------------- p87: the plug-in layer plays presets like the core
+if(OHPE_BUILD_TESTS)
+    target_sources(ohpe_plugin_tests PRIVATE ${CMAKE_SOURCE_DIR}/tests/plugin/PluginLoudnessTests.cpp)
+endif()
