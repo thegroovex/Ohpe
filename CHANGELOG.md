@@ -5,8 +5,19 @@ Ohpe – designed by groovex. Each release's full notes (English and Deutsch) ar
 Die vollständigen Hinweise jeder Version (Deutsch und English) stehen in [docs/release-notes](docs/release-notes/)
 und auf der [Release-Seite](https://github.com/thegroovex/Ohpe/releases).
 
-## Unreleased / Unveröffentlicht
+## 0.9.1 – 2026-10-24
 
+[Notes / Hinweise](docs/release-notes/0.9.1.md)
+
+- EN: Stable release (replaces 0.7.3 on the stable channel; offered to stable and preview users): voice input in the
+  standalone app fixed, compressors catch the first hit after silence, new Multiband Comp, all factory presets at or
+  below -1 dBTP after silence - no more crackle from limiter slams. Plug-in loudness test (p87): every factory preset
+  loaded through the plug-in's preset manager measures like the bare core (LUFS, dBTP, outputs, editor open).
+- DE: Stabile Version (ersetzt 0.7.3 im Kanal Stabil; für Nutzer der Kanäle Stabil und Vorschau): Stimmeingang der
+  Standalone-App behoben, Kompressoren fangen den ersten Schlag nach Stille, neuer Multiband-Kompressor, alle
+  Werkspresets nach Stille bei höchstens -1 dBTP - kein Knistern mehr durch einen hart zupackenden Limiter.
+  Plug-in-Lautheitstest (p87): jedes Werkspreset, über die Preset-Verwaltung des Plug-ins geladen, misst wie der
+  reine Kern (LUFS, dBTP, Ausgänge, offener Editor).
 - EN: Dynamics (p88): the compressors (Compressor rack type, channel and master compressor) catch the first hit after
   silence - an onset guard keeps the make-up gain from lifting a transient above the curve (presets with a high make-up
   played chords up to +14 dBTP after a pause), program-dependent release, no added latency. New FX type **Multiband
