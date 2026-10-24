@@ -1313,7 +1313,7 @@ void OhpeEditor::paintOverChildren (juce::Graphics& g)
         g.setColour (colour::sunYellow.withAlpha (0.25f * a));
         g.drawRoundedRectangle (highlightRect.expanded (3.0f * s), radius::panel * s, 6.0f * s);
         g.setColour (colour::sunYellow.withAlpha (a));
-        g.drawRoundedRectangle (highlightRect, radius::inner * s, 2.5f * s);
+        g.drawRoundedRectangle (highlightRect, radius::inset * s, 2.5f * s);
     }
 }
 
