@@ -29,6 +29,7 @@
 
 #include <atomic>
 #include <cstdlib>
+#include <cstring>
 #include <cmath>
 #include <functional>
 #include <iostream>
@@ -435,6 +436,25 @@ bool hasTapeAudio (const juce::MemoryBlock& m)
     return n > 0 && m.getSize() > n + 2000 && m[n] == 0;
 }
 
+/** The state without the harmony brain's learned key memory ("harmony" / "profile"): that memory fades while the
+    instance plays (by design), so states compared after playing leave it out. */
+juce::MemoryBlock withoutKeyMemory (const juce::MemoryBlock& m)
+{
+    const juce::String json = juce::String::fromUTF8 (static_cast<const char*> (m.getData()), (int) jsonLength (m));
+    const int h = json.indexOf ("\"harmony\":{");
+    const int p = h >= 0 ? json.indexOf (h, "\"profile\":[") : -1;
+    const int e = p >= 0 ? json.indexOfChar (p, ']') : -1;
+    if (e < 0) return m;
+    const auto head = json.substring (0, p).toUTF8(), tail = json.substring (e + 1).toUTF8();
+    juce::MemoryBlock out;
+    out.append (head.getAddress(), std::strlen (head.getAddress()));
+    out.append ("\"profile\":[]", 12);
+    out.append (tail.getAddress(), std::strlen (tail.getAddress()));
+    const auto n = jsonLength (m);
+    out.append (static_cast<const char*> (m.getData()) + n, m.getSize() - n); // the tape audio part, unchanged
+    return out;
+}
+
 void dumpOnMismatch (const juce::String& tag, const juce::MemoryBlock& a, const juce::MemoryBlock& b)
 {
     if (auto* dir = std::getenv ("OHPE_HOSTTEST_DUMP"))
@@ -509,7 +529,7 @@ void basic (Context& c)
     if (second != nullptr)
     {
         restore (*second, hostState);
-        settle (*second);
+        pump (300); // message loop only: no audio between restoring and comparing (key memory fades while playing)
         auto again = stateOf (*second);
         check (again == state, "state restored identically in a second instance: " + firstDifference (state, again));
         if (! (again == state)) dumpOnMismatch ("basic", state, again);
@@ -621,7 +641,7 @@ void state (Context& c)
     // round trip over fresh instances: byte-identical
     auto b = h.create();
     restore (*b, hs1);
-    settle (*b, 40);
+    pump (400); // message loop only, no audio processed: the restored state as loaded
     const auto s2 = stateOf (*b);
     check (s2 == s1, "restored in a second instance: getStateInformation identical: " + firstDifference (s1, s2));
     if (! (s2 == s1)) dumpOnMismatch ("state12", s1, s2);
@@ -631,15 +651,21 @@ void state (Context& c)
     c3->disableNonMainBuses();
     c3->prepareToPlay (48000.0, 256);
     restore (*c3, hostStateOf (*b)); // the second instance's state, as a host copies a track
-    settle (*c3, 40);
+    pump (400);
     const auto s3 = stateOf (*c3);
     check (s3 == s1, "restored in a third instance (256-sample blocks, main bus only): identical: " + firstDifference (s1, s3));
     if (! (s3 == s1)) dumpOnMismatch ("state13", s1, s3);
+    settle (*b, 40); // silent blocks: only the learned key memory may change
+    settle (*c3, 40);
+    {
+        const auto k1 = withoutKeyMemory (s1), k2 = withoutKeyMemory (stateOf (*b)), k3 = withoutKeyMemory (stateOf (*c3));
+        check (k2 == k1 && k3 == k1, "restored instances after running: identical apart from the learned key memory: " + firstDifference (k1, k2 == k1 ? k3 : k2));
+    }
 
     // back into the first instance (undo / reload in the same session), after playing
     render (*a, 24000, fixed (512), chord (0, 12000), {}, false);
     restore (*a, hs1);
-    settle (*a, 40);
+    pump (400);
     const auto s4 = stateOf (*a);
     check (s4 == s1, "restored into the same instance: identical: " + firstDifference (s1, s4));
 
@@ -801,7 +827,7 @@ void bounce (Context& c)
     check (same, "two fresh instances bounce bit-identically " + where);
     same = sameAudio (r1, r2, where);
     check (same, "the instance that made the session and a fresh one bounce bit-identically (" + juce::String (r1.out.getNumChannels()) + " channels) " + where);
-    const auto sa = stateOf (*a), sb = stateOf (*b);
+    const auto sa = withoutKeyMemory (stateOf (*a)), sb = withoutKeyMemory (stateOf (*b)); // both played
     check (sa == sb, "after the bounces both instances hold the same state: " + firstDifference (sa, sb));
     if (! same) // which part of the session maker's history its sound depends on (diagnostics)
     {
