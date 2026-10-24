@@ -39,10 +39,11 @@ struct Ev
     MidiEvent e;
 };
 
-std::vector<Ev> partMaterial (double sr)
+std::vector<Ev> partMaterial (double sr, double lead, double gap)
 {
     std::vector<Ev> ev;
-    auto s = [&] (double t) { return (int64_t) std::llround (t * sr); };
+    // lead: silence before the material (stages fall asleep); gap: silence inserted before the loud chord
+    auto s = [&] (double t) { return (int64_t) std::llround ((t + lead + (t >= 7.8 ? gap : 0.0)) * sr); };
     auto note = [&] (double on, double off, int n, int v) {
         ev.push_back ({ s (on), MidiEvent::noteOn (1, n, v) });
         ev.push_back ({ s (off), MidiEvent::noteOff (1, n) });
@@ -190,7 +191,8 @@ int main (int argc, char** argv)
     fs::path dir = "resources/presets/factory", wavDir;
     std::vector<int> blocks { 64, 128, 256, 512, 0 };
     double rate = 48000.0, projectSeconds = 10.0;
-    bool limiter = true;
+    bool limiter = true, arp = false;
+    double lead = 0.0, gap = 0.0;
     std::string filter;
     for (int i = 1; i < argc; ++i)
     {
@@ -200,6 +202,9 @@ int main (int argc, char** argv)
         else if (a == "--rate") rate = std::stod (next());
         else if (a == "--filter") filter = next();
         else if (a == "--nolimit") limiter = false;
+        else if (a == "--arp") arp = true;          // part presets keep their arpeggiator
+        else if (a == "--lead") lead = std::stod (next()); // seconds of silence before the material (sleep / wake)
+        else if (a == "--gap") gap = std::stod (next());   // seconds of silence before the last chord (sleep / wake)
         else if (a == "--wav") wavDir = next();
         else if (a == "--seconds") projectSeconds = std::stod (next());
         else if (a == "--blocks")
@@ -241,15 +246,15 @@ int main (int argc, char** argv)
             else
             {
                 preset::PartOptions opt;
-                opt.arp = false;
+                opt.arp = arp;
                 preset::applyPart (p, core->params(), 0, opt);
                 usertable::partFromJson (*core, 0, p.userTables ? *p.userTables : std::string(),
                                          [] (const std::string&, const std::string&) { return usertable::UserTablePtr(); });
                 core->params().set ("tempo", 100.0f);
                 core->params().set ("mix.master.limit", limiter ? 1.0f : 0.0f);
                 core->prepareEffects();
-                events = partMaterial (rate);
-                total = (int64_t) (12.0 * rate);
+                events = partMaterial (rate, lead, gap);
+                total = (int64_t) ((12.0 + lead + gap) * rate);
             }
             std::vector<int64_t> eventTimes, boundaries;
             for (const auto& e : events) eventTimes.push_back (e.at);
