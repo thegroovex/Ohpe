@@ -2396,7 +2396,11 @@ void OhpeEditor::onSoftKey (int id)
         }
         case skVoiceMic: // p86
             if (voiceview::micKey (core) == 1) mic::openPrivacySettings();
-            else mic::request ([safe = juce::Component::SafePointer<juce::Component> (this)] (bool) { if (safe != nullptr) safe->repaint(); });
+            else
+            {
+                juce::Component::SafePointer<juce::Component> safe (this);
+                mic::request ([safe] (bool) { if (safe != nullptr) safe->repaint(); });
+            }
             break;
         case skVoiceMap: // p68: three routings into the edit part's matrix
         {

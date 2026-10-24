@@ -57,7 +57,10 @@ AudioSettingsPage::AudioSettingsPage (juce::AudioDeviceManager& d, OhpeProcessor
         // p86: ask for the microphone first (macOS) - the device opens when the answer is there, so the first
         // blocks are not silent because the question was still open
         if (! none && mic::access() == mic::Access::notDetermined)
-            mic::request ([safe = juce::Component::SafePointer<AudioSettingsPage> (this), open] (bool) { if (safe != nullptr) open(); });
+        {
+            juce::Component::SafePointer<AudioSettingsPage> safe (this);
+            mic::request ([safe, open] (bool) { if (safe != nullptr) open(); });
+        }
         else
             open();
     };

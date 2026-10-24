@@ -200,6 +200,7 @@ TEST_CASE ("p86: the Voice view tells the input states apart (and offers the mic
     double ph = 0.0;
     MicOverride granted (mic::Access::granted);
 
+    voiceOn (p, false); // on by default
     runBlocks (p, 512, 2, 0.0f, ph);
     CHECK (ui::voiceview::inputState (p.core()) == InputState::off);
     CHECK (ui::voiceview::statusLine (p.core()) == "Off");
