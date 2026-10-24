@@ -62,5 +62,5 @@ detector (no gain ripple on a bass) and adds an **onset guard**: a fast peak pat
 release follows the static curve; the applied gain reduction is never smaller than the guard's minus a small transient
 allowance (0.3 dB per ms of attack, at most 3 dB). Before, a compressor fully released during silence let the first
 hit of a note or chord pass with the whole make-up gain on top (+24 dB make-up: chords up to +14 dBTP). The release is
-program-dependent: a lone hit lets go up to 3.3× faster, sustained compression uses the set release. No latency is
+program-dependent: a lone hit lets go up to 1.7× faster, sustained compression uses the set release. No latency is
 added; the sustained sound stays as it was.

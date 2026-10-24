@@ -43,6 +43,17 @@
     "mod.s1.dst": 82,
     "mod.s1.amt": 0.15,
     "mod.s1.curve": 0,
-    "chordroom": 4.5
+    "chordroom": 4.5,
+    "fx2.type": 24,
+    "fx2.mbcomp.depth": 0.35,
+    "fx2.mbcomp.time": 1.0,
+    "fx2.mbcomp.upward": 0.5,
+    "fx2.mbcomp.downward": 1.0,
+    "fx2.mbcomp.lowattack": 8.0,
+    "fx2.mbcomp.midattack": 5.0,
+    "fx2.mbcomp.highattack": 2.0,
+    "fx2.mbcomp.lowrelease": 80.0,
+    "fx2.mbcomp.midrelease": 60.0,
+    "fx2.mbcomp.highrelease": 50.0
   }
 }

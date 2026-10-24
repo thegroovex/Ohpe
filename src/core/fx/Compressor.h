@@ -28,7 +28,7 @@ inline float compStaticGainDb (float levelDb, float thresholdDb, float ratio, fl
     Zero latency (no lookahead: the part chains, the mixer and the master keep their timing). Per sample, stereo-linked:
       - held peak detector (12 ms hold, 20 ms fall, 0.8): no gain ripple inside a bass cycle - the sustained sound;
       - main gain computer: the static curve through the user's attack and a program-dependent release (single hits
-        release up to 3.3x faster, sustained compression with the set release - less pumping after a lone transient);
+        release up to 1.7x faster, sustained compression with the set release - less pumping after a lone transient);
       - onset guard (p88): a fast peak path with instant attack (on the held peak) and the same release follows the static curve. The applied
         reduction is never less than the guard's minus a small transient allowance (0.3 dB per ms of attack, at most
         3 dB); both paths release alike. Released after silence, the first hit of a note or chord is caught instead of passing with the full
@@ -45,7 +45,7 @@ public:
         holdSamples = (int) (0.012f * sr);
         envFall = std::exp (-1.0f / (0.02f * sr));
         guardAtk = 0.0f; // instant: a lagging guard lets a fast onset through by its slope in dB x the lag
-        sustainC = std::exp (-1.0f / (0.15f * sr));
+        sustainC = std::exp (-1.0f / (0.05f * sr));
         setTimes (attackMs, releaseMs);
         reset();
     }
@@ -58,7 +58,7 @@ public:
         releaseMs = std::max (1.0f, releaseMsIn);
         atkC = std::exp (-1.0f / (sr * attackMs * 0.001f));
         relSlow = std::exp (-1.0f / (sr * releaseMs * 0.001f));
-        relFast = std::exp (-1.0f / (sr * releaseMs * 0.0003f));
+        relFast = std::exp (-1.0f / (sr * releaseMs * 0.0006f));
         allowanceDb = std::min (3.0f, 0.3f * attackMs);
     }
 

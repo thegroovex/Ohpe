@@ -157,7 +157,7 @@
     "mpe.smooth": 0.04,
     "mpe.bend": 48,
     "voices": 6,
-    "gain": 15.9,
+    "gain": 5.9,
     "mod.s9.src": 9,
     "mod.s9.via": 0,
     "mod.s9.dst": 4,

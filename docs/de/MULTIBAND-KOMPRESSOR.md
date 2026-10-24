@@ -66,5 +66,5 @@ Spitzenpfad mit sofortigem Attack und gleichem Release folgt der statischen Kenn
 ist nie kleiner als die des Wächters abzüglich eines kleinen Transienten-Spielraums (0,3 dB pro ms Attack, höchstens
 3 dB). Vorher ließ ein in der Stille ganz ausgeklungener Kompressor den ersten Schlag einer Note oder eines Akkords mit
 der ganzen Aufholverstärkung durch (+24 dB Aufholverstärkung: Akkorde bis +14 dBTP). Das Release ist
-programmabhängig: ein einzelner Schlag lässt bis zu 3,3× schneller los, anhaltende Kompression nutzt das eingestellte
+programmabhängig: ein einzelner Schlag lässt bis zu 1,7× schneller los, anhaltende Kompression nutzt das eingestellte
 Release. Es kommt keine Latenz dazu; der gehaltene Klang bleibt, wie er war.

@@ -60,7 +60,7 @@
     "lfo.dest": 1,
     "monobass": 150.0,
     "velsens": 0.5,
-    "gain": 10.1,
+    "gain": 4.2,
     "mod.s1.src": 9,
     "mod.s1.via": 0,
     "mod.s1.dst": 4,

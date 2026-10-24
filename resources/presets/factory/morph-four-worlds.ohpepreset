@@ -44,7 +44,7 @@
     "fx.chorus.drift": 0.35,
     "fx.chorus.spread": 0.85,
     "fx.chorus.lowcut": 150.0,
-    "gain": 19.3,
+    "gain": 18.5,
     "morph.on": 1,
     "morph.x": 0.0,
     "morph.y": 0.0,

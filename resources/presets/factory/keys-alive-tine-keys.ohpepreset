@@ -57,6 +57,11 @@
     "velsens": 0.7,
     "glide": 0.0,
     "gain": 11.9,
-    "chordroom": 20.1
+    "chordroom": 20.1,
+    "fx3.type": 24,
+    "fx3.mbcomp.depth": 0.3,
+    "fx3.mbcomp.time": 1.5,
+    "fx3.mbcomp.upward": 0.6,
+    "fx3.mbcomp.downward": 0.8
   }
 }

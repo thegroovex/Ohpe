@@ -34,7 +34,7 @@
     "fx.phaser.feedback": 0.35,
     "fx.phaser.mix": 0.35,
     "voices": 10,
-    "gain": 12.8,
+    "gain": 10.8,
     "life": 0.3,
     "mod.s1.src": 9,
     "mod.s1.via": 0,

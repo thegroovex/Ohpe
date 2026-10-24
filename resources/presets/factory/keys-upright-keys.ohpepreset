@@ -30,7 +30,7 @@
     "fx.compressor.attack": 5.0,
     "fx.compressor.release": 140.0,
     "fx.compressor.knee": 8.0,
-    "fx.compressor.makeup": 2.0,
+    "fx.compressor.makeup": 1.6,
     "fx.compressor.mix": 1.0,
     "fx2.type": 6,
     "fx2.reverb.size": 0.4,
