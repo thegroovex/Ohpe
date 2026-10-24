@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Download.h"
 
+#include <algorithm>
+
 #include "Sha256.h"
 
 #include <vector>
@@ -41,6 +43,9 @@ DownloadReport download (Transport& net, PartialFile& file, const DownloadOption
     int failuresInRow = 0;
     uint64_t total = o.expectedSize;
     bool complete = false;
+    // p81: progress = getting further than ever before. An attempt that started over and broke off again below that
+    // mark counts as a failure, so a server / network stack that keeps restarting cannot loop for ever
+    uint64_t highWater = file.size();
     auto tooLarge = [&o] (uint64_t n) { return o.maxBytes > 0 && n > o.maxBytes; };
     if (tooLarge (total)) { file.clear(); rep.result = DownloadResult::TooLarge; return rep; }
 
@@ -101,6 +106,8 @@ DownloadReport download (Transport& net, PartialFile& file, const DownloadOption
         }
         net.close();
         if (complete && total > 0 && file.size() < total) complete = false; // the stream ended early: resume
+        if (progressed && file.size() <= highWater) progressed = false;
+        highWater = std::max (highWater, file.size());
         if (! complete) failuresInRow = progressed ? 1 : failuresInRow + 1;
     }
 

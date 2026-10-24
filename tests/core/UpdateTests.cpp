@@ -621,3 +621,31 @@ TEST_CASE ("update: a stale partial file from an earlier run and a sha mismatch 
     CHECK (r.result == DownloadResult::Ok);
     CHECK (f.bytes == net.data);
 }
+
+TEST_CASE ("update: a server that ignores ranges and keeps breaking off gives up instead of looping (p81)")
+{
+    FakeNet net;
+    net.data = payload (200000);
+    net.honourRange = false;
+    net.breakAfter = 50000; // every connection starts over and breaks off at 50 kB
+    MemFile f;
+    DownloadOptions o;
+    o.url = "x";
+    o.sha256 = Sha256::of (net.data);
+    o.expectedSize = net.data.size();
+    o.maxAttempts = 4;
+    const auto r = download (net, f, o);
+    CHECK (r.result == DownloadResult::NetworkFailed);
+    CHECK (r.attempts <= 6); // the first attempt gets further; after it, attempts in a row without progress
+    CHECK (f.bytes.size() <= 50000);
+
+    // restarting and then getting further than before is progress: completes once the breaks stop
+    FakeNet net2;
+    net2.data = net.data;
+    net2.honourRange = false;
+    MemFile g;
+    g.bytes = net.data.substr (0, 120000);
+    const auto r2 = download (net2, g, o);
+    CHECK (r2.result == DownloadResult::Ok);
+    CHECK (g.bytes == net.data);
+}
