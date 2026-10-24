@@ -40,6 +40,8 @@ Verstärkung lassen ihn durch.
 
 ## Im FX-Editor
 
+![FX-Editor: der Multiband-Kompressor mit seinen drei Band-Anzeigen](../images/ohpe-fx-editor-mbcomp-de.png)
+
 Drei Band-Anzeigen, Pegel −80 – 0 dBFS von unten nach oben:
 
 * der Pegel des Bands jetzt (violett), seine Pegeländerung jetzt am rechten Rand (gelb = angehoben, rot =
@@ -68,3 +70,11 @@ ist nie kleiner als die des Wächters abzüglich eines kleinen Transienten-Spiel
 der ganzen Aufholverstärkung durch (+24 dB Aufholverstärkung: Akkorde bis +14 dBTP). Das Release ist
 programmabhängig: ein einzelner Schlag lässt bis zu 1,7× schneller los, anhaltende Kompression nutzt das eingestellte
 Release. Es kommt keine Latenz dazu; der gehaltene Klang bleibt, wie er war.
+
+**Werksklänge neu eingepegelt.** Jedes Part-Preset wurde so gemessen, wie es in der App gespielt wird – nach Stille, ein
+Einzelton, ein 4-Ton- und ein weiter 8-Ton-Akkord mit Anschlag 127, Master-Limiter aus – und bleibt jetzt bei höchstens
+−1 dBTP (vorher: 121 von 412 Presets beim 8-Ton-Akkord über −1 dBTP, 86 über 0 dBFS). Die Absenkung sitzt wo möglich
+hinter der letzten pegelabhängigen Stufe (Aufholverstärkung eines Kompressors, Ausgang von Breite / EQ / Multiband), der
+Klang selbst bleibt also gleich; acht Drum-, Keys- und Bass-Presets haben einen Multiband-Kompressor bekommen, dessen
+**Ausgang** so steht, dass seine Sicherheitsstufe nicht eingreifen muss. Ein Test prüft die Grenze von −1 dBTP für jedes
+Part-Preset auf jeder Plattform.

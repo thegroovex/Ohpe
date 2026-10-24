@@ -13,6 +13,7 @@
 #include "sample/FactoryBank.h"
 #include "../TestSlice.h"
 
+#include <algorithm>
 #include <array>
 #include <cstdio>
 #include <string>
@@ -105,8 +106,22 @@ TEST_CASE ("factory sounds: every factory preset renders cleanly with the record
         if (part)
         {
             CHECK (m.peakDb < -0.5);          // no clipping, the limiter stays out of it
-            CHECK (m.activeRmsDb > -21.0);    // level window -18 ... -12 dBFS (quality loop), with
-            CHECK (m.activeRmsDb < -10.0);    // margin for the shorter phrase
+            // level window -18 ... -12 dBFS (quality loop), with margin for the shorter phrase. p88: the peak limit after
+            // silence (-1 dBTP, test below) comes first - a peaky preset whose loudest material sits within 1 dB of it
+            // is allowed quieter (down to -32 dBFS: still clearly sounding).
+            bool peakBound = false;
+            if (m.activeRmsDb <= -21.0)
+            {
+                Core dyn;
+                dyn.prepare (48000.0, 512);
+                factorykit::load (dyn);
+                const auto r = render::dynamicsAudit (dyn, p);
+                peakBound = std::max ({ r.tp[0], r.tp[1], r.tp[2] }) > -2.0;
+                CAPTURE (r.tp[2]);
+            }
+            CAPTURE (peakBound);
+            CHECK (m.activeRmsDb > (peakBound ? -32.0 : -21.0));
+            CHECK (m.activeRmsDb < -10.0);
             CHECK (m.hfDb < -3.0);            // no wide-band fizz above 16 kHz
         }
         else

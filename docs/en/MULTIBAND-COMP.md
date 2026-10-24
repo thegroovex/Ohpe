@@ -38,6 +38,8 @@ first hit is caught at once – neither the lift of the quiet part nor a release
 
 ## In the FX editor
 
+![FX editor: the Multiband Comp with its three band meters](../images/ohpe-fx-editor-mbcomp.png)
+
 Three band meters, level −80 – 0 dBFS from bottom to top:
 
 * the band's level now (violet), its gain change now on the right edge (yellow = lifted, red = pushed down);
@@ -64,3 +66,10 @@ allowance (0.3 dB per ms of attack, at most 3 dB). Before, a compressor fully re
 hit of a note or chord pass with the whole make-up gain on top (+24 dB make-up: chords up to +14 dBTP). The release is
 program-dependent: a lone hit lets go up to 1.7× faster, sustained compression uses the set release. No latency is
 added; the sustained sound stays as it was.
+
+**Factory sounds re-levelled.** Every part preset was measured as played in the app – after silence, a single note, a
+4-note and a wide 8-note chord at velocity 127, master limiter off – and now stays at or below −1 dBTP (before: 121 of
+412 presets above −1 dBTP on the 8-note chord, 86 above 0 dBFS). Trims sit behind the last level-dependent stage
+(a compressor's make-up, a Width / EQ / Multiband output) where possible, so the sound itself is unchanged; eight
+drum, keys and bass presets gained a Multiband Comp, its **Out** set so its safety stage stays idle. A core test checks
+the −1 dBTP limit for every part preset on every platform.
