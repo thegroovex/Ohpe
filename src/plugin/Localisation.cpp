@@ -60,6 +60,12 @@ const std::map<juce::String, juce::String>& table()
         { "Stop", "Stopp" },
         { "Octave", "Oktave" },
         { "Main", "Main" },
+        // p82: names and studio terms that stay the same in German
+        { "FM", "FM" },
+        { "Analog", "Analog" },
+        { "L", "L" },
+        { "R", "R" },
+        { "Bounce", "Bounce" },
         { "Out", "Ausgang" },
         { "Off", "Aus" },
         { "On", "Ein" },

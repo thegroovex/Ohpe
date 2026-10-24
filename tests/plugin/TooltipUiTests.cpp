@@ -40,6 +40,7 @@ struct Rig
         p.prepareToPlay (48000.0, 512);
         ed.reset (p.createEditor());
         e = dynamic_cast<OhpeEditor*> (ed.get());
+        e->setVisible (true); // a host shows the editor; the walk skips invisible components
         e->userSettingsStore().setFolderForTests (tmp.getFile());
         e->userSettingsStore().set ({});
         e->applyUserSettings();
