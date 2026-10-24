@@ -73,6 +73,7 @@ struct Route
 struct Request
 {
     std::string path, range;
+    long long sent = -1; ///< body bytes the server handed to the socket (-1 = no body sent)
 };
 
 /** A tiny HTTP/1.1 server (one thread per connection, Connection: close). */
@@ -197,8 +198,10 @@ private:
         }
         Route r;
         bool found = false, breakThis = false;
+        size_t logIndex = 0;
         {
             std::lock_guard<std::mutex> g (lock);
+            logIndex = log.size();
             log.push_back (req);
             if (auto it = routes.find (req.path); it != routes.end())
             {
@@ -251,7 +254,25 @@ private:
                 if (! sendAll (s, chunk.data(), chunk.size())) return;
             return;
         }
-        sendAll (s, body.data(), sendBytes);
+        const bool sentAll = sendAll (s, body.data(), sendBytes);
+        {
+            std::lock_guard<std::mutex> g (lock);
+            if (logIndex < log.size()) log[logIndex].sent = sentAll ? (long long) sendBytes : -2;
+        }
+        if (! breakThis && sentAll)
+        {
+            // close only after the client has read everything and hung up: closing a socket at once can reset the
+            // connection and drop data the client has not read yet (seen on Windows as downloads cut at 64 kB steps)
+            const auto until = juce::Time::getMillisecondCounter() + 5000;
+            char sink[1024];
+            while (! stopping && juce::Time::getMillisecondCounter() < until)
+            {
+                const int ready = s.waitUntilReady (true, 50);
+                if (ready < 0) break;
+                if (ready > 0 && s.read (sink, sizeof (sink), false) <= 0) break;
+            }
+            return;
+        }
         if (breakThis && r.hangOnBreak)
         {
             // silent, connection open: only the client's timeout / stall watchdog gets it out of here
@@ -434,7 +455,7 @@ std::string context (const Updater::Snapshot& s, MockServer& srv)
 {
     std::string t = "state " + std::to_string ((int) s.state) + " '" + s.message.toStdString() + "' (" + s.detail.toStdString()
                   + ") progress " + std::to_string (s.progress) + "; requests:";
-    for (const auto& q : srv.requests()) t += " " + q.path + " [" + q.range + "]";
+    for (const auto& q : srv.requests()) t += " " + q.path + " [" + q.range + "]" + (q.sent >= 0 ? " sent " + std::to_string (q.sent) : q.sent == -2 ? " send failed" : "");
     return t;
 }
 
