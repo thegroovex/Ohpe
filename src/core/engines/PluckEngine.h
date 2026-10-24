@@ -59,6 +59,21 @@ private:
     // mallet
     float modeY1[numModes] {}, modeY2[numModes] {};
     int malletPos = 0, malletLength = 0;
+    /** p79: per-note coefficients, recomputed only when their inputs change (bit-identical to computing them every tick). */
+    struct CoefCache
+    {
+        bool valid = false;
+        float f0 = 0.0f, bright = 0.0f, dampIn = 0.0f;
+        float a = 0.0f, hp = 0.0f, hpGain = 0.0f, eta = 0.0f, toneA = 0.0f, loopGain = 0.0f;
+        int N = 1;
+    } coefCache;
+    struct MalletCache
+    {
+        bool valid = false, on = false;
+        float f0 = 0.0f, damping = 0.0f, hard = 0.0f;
+        float a1[numModes] {}, a2[numModes] {}, in[numModes] {};
+    } malletCache;
+    float bodyFb = -1.0f; ///< p79: body size the three resonances are set for (-1: not set since prepare)
     // body
     dsp::Svf body1, body2, body3;
     dsp::Random noise;

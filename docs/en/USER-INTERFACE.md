@@ -341,7 +341,8 @@ accented (higher and louder). The click is Ohpe's own synthesised sound (no samp
 output** only and is **never recorded** onto the tape. Right-click the key: click level (25–100 %), accent on
 beat 1, *Click in the plug-in too*, MIDI learn. In a **plug-in** the click stays silent unless *Click in the
 plug-in too* (`metro.plugin`) is on – hosts have their own metronome; the standalone app clicks whenever the
-metronome is on.
+metronome is on. The click waits for Ohpe's reported latency (output limiter), so it sits exactly on the beat with the
+parts – and on the host's beat after its latency compensation.
 
 **Count-in.** The count-in key (**COUNT**, `metro.countin`) cycles **– → 1 → 2** (off, one bar, two bars).
 When a recording starts from stop – **REC**, or PLAY with a track armed and recording on – the tape waits:

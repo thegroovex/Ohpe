@@ -7,6 +7,7 @@
 #include "../fx/Compressor.h"
 #include "../fx/Delay.h"
 #include "../fx/Limiter.h"
+#include "../dsp/SleepGate.h"
 #include "../fx/Reverb.h"
 #include "../fx/TapeSaturator.h"
 #include "../model/ParamRegistry.h"
@@ -103,6 +104,8 @@ public:
 
     /** Peak meters (0..1+), channel 0..7 and master = 8. Readable from any thread. */
     float meter (int index) const noexcept { return meters[(size_t) index].load (std::memory_order_relaxed); }
+    /** p79, audio thread / tests: the send delay (0), the send reverb (1) or the master rack (2) sleeps in silence. */
+    bool stageAsleep (int stage) const noexcept { return stage == 0 ? delayGate.isAsleep() : stage == 1 ? reverbGate.isAsleep() : rackGate.isAsleep(); }
 
     static int defaultSourceForChannel (int ch) noexcept; ///< 0-based channel -> default source
 
@@ -140,6 +143,7 @@ private:
 
     DelayEffect delay;
     ReverbEffect reverb;
+    dsp::SleepGate delayGate, reverbGate, rackGate; ///< p79: the send effects and the master rack sleep in silence
     Limiter limiter;
     std::array<std::vector<float>, 2 * numAuxOutputs> auxDelay; ///< 0.8: aux outputs delayed like the main output
     std::array<int, 2 * numAuxOutputs> auxSilent {}; ///< p35: silent samples written in a row per aux line (off outputs)

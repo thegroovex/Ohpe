@@ -15,7 +15,10 @@
 
 #include <doctest/doctest.h>
 
+#include <algorithm>
+#include <array>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <random>
 
@@ -313,4 +316,235 @@ TEST_CASE ("p35 cpu meter: average follows, the peak holds two seconds and falls
     m.reset();
     CHECK (m.average() == 0.0f);
     CHECK (m.peak() == 0.0f);
+}
+
+// ================================================================================================ p79 (path to 1.0)
+#include "fx/Limiter.h"
+#include "dsp/SleepGate.h"
+
+namespace
+{
+/** The master limiter as it was before p79 (shifted history, true peak every sample, full window scan, log every
+    sample): the reference the optimised limiter must match bit for bit. */
+class ReferenceLimiter
+{
+public:
+    void prepare (float sampleRate)
+    {
+        sr = sampleRate;
+        look = std::max (8, (int) (0.0015f * sr));
+        delayL.assign ((size_t) look, 0.0f);
+        delayR.assign ((size_t) look, 0.0f);
+        reqRing.assign ((size_t) look, 1.0f);
+        avgRing.assign ((size_t) look, 1.0f);
+        relFast = std::exp (-1.0f / (0.06f * sr));
+        relSlow = std::exp (-1.0f / (0.35f * sr));
+        slowFollow = std::exp (-1.0f / (0.4f * sr));
+        for (int ph = 0; ph < 3; ++ph)
+        {
+            const double frac = (double) (ph + 1) * 0.25;
+            double total = 0.0;
+            for (int j = 0; j < taps; ++j)
+            {
+                const double t = frac - (double) (j - (half - 1));
+                const double pi = 3.14159265358979323846;
+                const double sinc = std::abs (t) < 1.0e-9 ? 1.0 : std::sin (pi * t) / (pi * t);
+                const double u = t / ((double) half + 0.5);
+                const double w = std::abs (u) >= 1.0 ? 0.0 : 0.5 + 0.5 * std::cos (pi * u);
+                coef[(size_t) ph][(size_t) j] = sinc * w;
+                total += sinc * w;
+            }
+            for (auto& c : coef[(size_t) ph]) c /= total;
+        }
+        sum = (double) look;
+    }
+    void resetGain()
+    {
+        std::fill (reqRing.begin(), reqRing.end(), 1.0f);
+        std::fill (avgRing.begin(), avgRing.end(), 1.0f);
+        held = 1.0f;
+        sum = (double) look;
+        gain = 1.0f;
+        workDb = 0.0f;
+    }
+    void passThrough (float* l, float* r, int n)
+    {
+        for (int i = 0; i < n; ++i)
+        {
+            push (histL, l[i]);
+            push (histR, r[i]);
+            delayL[(size_t) pos] = histL[(size_t) (half - 1)];
+            delayR[(size_t) pos] = histR[(size_t) (half - 1)];
+            if (++pos >= look) pos = 0;
+            l[i] = delayL[(size_t) pos];
+            r[i] = delayR[(size_t) pos];
+        }
+    }
+    void process (float* l, float* r, int n)
+    {
+        const float target = ceiling * 0.97f;
+        for (int i = 0; i < n; ++i)
+        {
+            push (histL, l[i]);
+            push (histR, r[i]);
+            const float xl = histL[(size_t) (half - 1)], xr = histR[(size_t) (half - 1)];
+            const float pk = std::max (truePeak (histL), truePeak (histR));
+            const float req = pk > target ? target / pk : 1.0f;
+            reqRing[(size_t) pos] = req;
+            float m = 1.0f;
+            for (float v : reqRing) m = std::min (m, v);
+            const float grDb = -dsp::gainToDb (std::max (held, 1.0e-6f));
+            workDb = grDb + (workDb - grDb) * slowFollow;
+            const float w = std::clamp ((workDb - 1.0f) * (1.0f / 3.0f), 0.0f, 1.0f);
+            const float rel = relFast + (relSlow - relFast) * w;
+            held = m < held ? m : m + (held - m) * rel;
+            sum += (double) held - (double) avgRing[(size_t) pos];
+            avgRing[(size_t) pos] = held;
+            gain = std::min (1.0f, (float) (sum / (double) look));
+            delayL[(size_t) pos] = xl;
+            delayR[(size_t) pos] = xr;
+            if (++pos >= look) pos = 0;
+            l[i] = std::clamp (delayL[(size_t) pos] * gain, -ceiling, ceiling);
+            r[i] = std::clamp (delayR[(size_t) pos] * gain, -ceiling, ceiling);
+        }
+    }
+
+private:
+    static constexpr int half = 12, taps = 24;
+    using History = std::array<float, (size_t) taps>;
+    static void push (History& h, float x)
+    {
+        for (size_t j = 0; j + 1 < h.size(); ++j) h[j] = h[j + 1];
+        h[h.size() - 1] = x;
+    }
+    float truePeak (const History& h) const
+    {
+        float pk = std::abs (h[(size_t) (half - 1)]);
+        for (const auto& c : coef)
+        {
+            double v = 0.0;
+            for (size_t j = 0; j < h.size(); ++j) v += (double) c[j] * (double) h[j];
+            pk = std::max (pk, (float) std::abs (v));
+        }
+        return pk;
+    }
+    float sr = 48000.0f, ceiling = 0.966f;
+    int look = 72, pos = 0;
+    std::vector<float> delayL, delayR, reqRing, avgRing;
+    History histL {}, histR {};
+    std::array<std::array<double, (size_t) taps>, 3> coef {};
+    double sum = 72.0;
+    float held = 1.0f, gain = 1.0f, workDb = 0.0f, relFast = 0.999f, relSlow = 0.9999f, slowFollow = 0.9999f;
+};
+} // namespace
+
+TEST_CASE ("p79 limiter: the optimised limiter renders what the previous one rendered, bit for bit")
+{
+    for (const float rate : { 44100.0f, 48000.0f, 96000.0f })
+    {
+        ReferenceLimiter ref;
+        Limiter lim;
+        ref.prepare (rate);
+        lim.prepare (rate);
+        std::mt19937 rng (7);
+        std::uniform_real_distribution<float> u (-1.0f, 1.0f);
+        int differing = 0;
+        for (int blk = 0; blk < 3000; ++blk)
+        {
+            const int n = 1 + (int) (rng() % 512);
+            std::vector<float> l ((size_t) n), r ((size_t) n);
+            const int mode = (blk / 120) % 5; // silence, quiet, near the ceiling, hard limiting, quiet with spikes
+            const float amp = mode == 0 ? 0.0f : mode == 1 ? 0.1f : mode == 2 ? 0.9f : mode == 3 ? 2.5f : 0.5f;
+            for (int i = 0; i < n; ++i)
+            {
+                l[(size_t) i] = amp * u (rng);
+                r[(size_t) i] = amp * u (rng);
+                if (mode == 4 && rng() % 300 == 0) l[(size_t) i] = 3.0f;
+            }
+            auto l2 = l, r2 = r;
+            const bool off = (blk / 700) % 4 == 3; // limiter switched off: the delay only
+            if (off) { ref.passThrough (l.data(), r.data(), n); lim.passThrough (l2.data(), r2.data(), n); }
+            else { ref.process (l.data(), r.data(), n); lim.process (l2.data(), r2.data(), n); }
+            if (blk % 1100 == 0) { ref.resetGain(); lim.resetGain(); }
+            differing += (l != l2 || r != r2) ? 1 : 0;
+        }
+        CHECK_MESSAGE (differing == 0, "rate " << rate);
+    }
+}
+
+TEST_CASE ("p79 master sleep: send delay, send reverb and master rack sleep in silence; no tail is cut")
+{
+    auto setup = [] (Core& c) {
+        set (c, "mix.ch1.senda", 0.6f);
+        set (c, "mix.ch1.sendb", 0.6f);
+        set (c, "fxa.delay.feedback", 0.6f);
+        set (c, FxRack::masterSlotPrefix (0) + "type", (float) InsertSlot::Echo);
+        set (c, FxRack::masterSlotPrefix (1) + "type", (float) InsertSlot::Hall);
+    };
+    bool asleepAt3s = true, asleepAtEnd = false;
+    auto play = [&] (Core& c, int b) {
+        if (b == 0) c.queueNote (60, 0.9f, true);
+        if (b == blockAt (0.25)) c.queueNote (60, 0.0f, false);
+        if (b == blockAt (3.0)) asleepAt3s = c.mixer().stageAsleep (0) || c.mixer().stageAsleep (1) || c.mixer().stageAsleep (2);
+        asleepAtEnd = c.mixer().stageAsleep (0) && c.mixer().stageAsleep (1) && c.mixer().stageAsleep (2);
+    };
+    Render awake, sleeping;
+    {
+        AllowSleep a (false);
+        awake = renderCore (setup, 45.0, play);
+        CHECK_FALSE (asleepAtEnd);
+    }
+    {
+        AllowSleep a (true);
+        sleeping = renderCore (setup, 45.0, play);
+    }
+    CHECK_FALSE (asleepAt3s); // the echoes still ring
+    CHECK (asleepAtEnd);
+    REQUIRE (allFinite (sleeping.l));
+    CHECK (noDenormals (sleeping.l));
+    CHECK (peak (awake.l, (size_t) (1.0 * sampleRate), (size_t) (3.0 * sampleRate)) > 1.0e-3f); // the tails are there
+    const float d = std::max (maxDiff (awake.l, sleeping.l), maxDiff (awake.r, sleeping.r));
+    MESSAGE ("master sleeping vs awake: max difference " << d);
+    CHECK (d < 1.0e-5f); // only what lay below -120 dBFS
+    // a note wakes everything within its block
+    bool woke = false;
+    renderCore (setup, 32.0, [&] (Core& c, int b) {
+        if (b == blockAt (30.0)) c.queueNote (64, 0.9f, true);
+        if (b == blockAt (30.0) + 2) woke = ! c.mixer().stageAsleep (0) && ! c.mixer().stageAsleep (1) && ! c.mixer().stageAsleep (2);
+    });
+    CHECK (woke);
+}
+
+TEST_CASE ("p79 sleep gate: NaN is never silent, a loud block wakes, the hold counts silent blocks only")
+{
+    dsp::SleepGate g;
+    g.prepare (1000.0); // hold 4500 samples
+    std::vector<float> z (500, 0.0f), loud (500, 0.5f), nanv (500, 0.0f);
+    nanv[100] = std::numeric_limits<float>::quiet_NaN();
+    CHECK (dsp::SleepGate::silent (z.data(), z.data(), 500));
+    CHECK_FALSE (dsp::SleepGate::silent (nanv.data(), z.data(), 500));
+    CHECK_FALSE (dsp::SleepGate::silent (loud.data(), z.data(), 500));
+    for (int b = 0; b < 8; ++b) { REQUIRE (g.shouldProcess (true)); g.afterProcess (true, z.data(), z.data(), 500); }
+    CHECK_FALSE (g.isAsleep()); // 4000 < 4500
+    REQUIRE (g.shouldProcess (true));
+    g.afterProcess (true, z.data(), z.data(), 500);
+    CHECK (g.isAsleep());
+    CHECK_FALSE (g.shouldProcess (true));
+    CHECK (g.shouldProcess (false)); // wakes
+    CHECK_FALSE (g.isAsleep());
+}
+
+TEST_CASE ("p79 core: denormals flush inside process() only; the caller's floating-point mode is restored")
+{
+    auto owner = std::make_unique<Core>();
+    owner->prepare (sampleRate, block);
+    std::vector<float> l (block), r (block);
+    OutputBuffers out;
+    out.left[0] = l.data();
+    out.right[0] = r.data();
+    owner->process (out, block, nullptr, 0, Transport {});
+    volatile float tiny = 1.0e-38f; // a normal number; half of it is denormal
+    volatile float half = tiny * 0.5f;
+    CHECK (half != 0.0f); // flush-to-zero is not left switched on
+    CHECK (allFinite (l));
 }
