@@ -78,7 +78,7 @@ move right, every note of the part follows.
 * A **part preset** stores the part's corners in an optional `"morph"` block; loading it into any part brings
   the corners along, a preset without the block clears them ([PRESETS.md](PRESETS.md#morph-block)).
 * **Projects** and the plug-in state keep the corners of all four parts.
-* The **factory bank** has four morph presets (tag *Morph*). They start in corner C (the part's own sound);
+* The **factory bank** has seven morph presets (tag *Morph*; four of them are described below). They start in corner C (the part's own sound);
   the mod wheel moves right, pressure moves up:
 
 | Preset | Corners | Lanes |

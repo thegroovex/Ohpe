@@ -43,6 +43,10 @@ public:
     void paint (juce::Graphics& g) override;
     void mouseDown (const juce::MouseEvent& e) override;
     juce::Rectangle<float> cell (int i) const;
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override; ///< p83: the edit part
+    bool keyPressed (const juce::KeyPress& key) override;                             ///< p83: arrows, 1 .. 4
+    ui::a11y::ValueAccess access();
+    int selectedPart() const noexcept { return part; }
 
 private:
     int part = 0;
@@ -59,6 +63,8 @@ public:
     std::function<void()> onOpen;
     void paint (juce::Graphics& g) override;
     void mouseDown (const juce::MouseEvent& e) override;
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override; ///< p83
+    bool keyPressed (const juce::KeyPress& key) override; ///< p83: Left / Right step, Enter / Space open the library
 
 private:
     juce::Rectangle<float> arrow (bool right) const;
@@ -78,6 +84,8 @@ public:
     juce::String getTooltip() override;
     void paint (juce::Graphics& g) override;
     void mouseDown (const juce::MouseEvent&) override { if (onClick) onClick(); }
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override; ///< p83
+    bool keyPressed (const juce::KeyPress& key) override;                             ///< p83: Enter / Space open the updates
 
 private:
     juce::String versionText, updateText;
@@ -120,6 +128,20 @@ public:
     void paintOverChildren (juce::Graphics&) override; ///< p32: display brightness
     void resized() override;
     bool keyPressed (const juce::KeyPress& key) override;
+    void mouseDown (const juce::MouseEvent& e) override; ///< p83: right-click on the housing: UI size
+
+    /** p83: the controls Tab walks through, area by area (header, engines, display, encoders, modes, transport and
+        keyboard row); only the visible ones, none while an overlay (library, settings, ...) is open. */
+    std::vector<std::vector<juce::Component*>> focusAreas();
+    std::vector<juce::Component*> focusOrder();
+    /** p83: Tab / Shift+Tab (areas = false) or F6 / Shift+F6 (areas = true) from the focused control; shows the ring. */
+    juce::Component* moveFocus (bool forward, bool areas);
+    ui::a11y::FocusRing& focusRingComponent() noexcept { return focusRing; }
+    /** p83: the UI size menu (right-click on the housing or the settings key): 75 .. 200 %. */
+    void showUiSizeMenu (juce::Component* target);
+    /** p83: sets the UI size (one of settings::windowScales; per computer, in the user settings). */
+    void setUiSize (float scale);
+    std::unique_ptr<juce::ComponentTraverser> createKeyboardFocusTraverser() override;
 
     // FileDragAndDropTarget: audio files -> sampler / grain of the edit part, or a drum pad;
     // .ohpepreset files -> load
@@ -385,6 +407,13 @@ private:
     int shownLanguage = -1; ///< the language setting applied last (-1: none yet)
     float shownWindowScale = 0.0f;
     ui::VersionBadge versionBadge;
+    ui::a11y::FocusRing focusRing; ///< p83: around the control Tab gave the focus to
+    struct NavMouse final : juce::MouseListener ///< p83: a click ends keyboard navigation (the keyboard plays again)
+    {
+        std::function<void (const juce::MouseEvent&)> onDown;
+        void mouseDown (const juce::MouseEvent& e) override { if (onDown) onDown (e); }
+    } navMouse;
+    void refreshAccessibleTitles();
     ui::CpuMeter cpuMeter; ///< p35
     void refreshCpuMeter();
     int contentGenerationSeen = 0;

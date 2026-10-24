@@ -11,11 +11,12 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 
 ![Ohpe – analog engine](docs/images/ohpe-analog.png)
 
-> **Status: phase 4 (0.4).** Eight engines, four parts, drum kit, step / Euclid / arpeggiator /
-> Orbit sequencers, tape machine, mixer dynamics, FX slot, MPE and MIDI clock sync, preset library,
-> pro view and direct manipulation – now with the **factory sounds**: 120 part presets, 7 demo
-> projects, five drum kits and ten recorded instruments. First preview: unsigned builds on the
-> [releases page](https://github.com/thegroovex/Ohpe/releases).
+> **Status: 0.7.3 – preview on the way to 1.0.** Eight engines, four parts, drum kit, step / Euclid /
+> arpeggiator / Orbit sequencers, tape machine, mixer with dynamics and FX racks, 3D space, MPE and MIDI
+> clock sync, preset library, pro view and direct manipulation – with **430 factory presets** (412 part
+> presets and 18 projects), six drum kits and fourteen sampled instruments. Preview builds (macOS installer
+> ad-hoc signed, Windows unsigned) are on the [releases page](https://github.com/thegroovex/Ohpe/releases);
+> the complete manual as PDF (English and German) is in [docs/manual](docs/manual/).
 
 ## Features
 
@@ -30,17 +31,17 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **Vocal engine** | formant voice with vowels, breath, vibrato and jitter; formant tracks analysed from your own sounds |
 | **Sampler engine** | key zones or automatic slices from WAV / AIFF / FLAC files, loop modes, built-in keys sound and ten recorded factory instruments (kalimba, marimba, vibraphone, harp, harpsichord, recorder …) |
 | **Drum kit** | 24 pads on MIDI channel 10: five recorded factory kits (Studio, Tight, Room, Lo-Fi, Hybrid – CC0), own samples or synth models, choke groups |
-| **Factory sounds** | 120 part presets across all engines and categories, level-matched; 7 demo projects using all four parts, the sequencers and the drum kit – see [Factory sounds](docs/en/FACTORY-SOUNDS.md) |
+| **Factory sounds** | 412 part presets across all engines and categories, level-matched; 18 project presets using all four parts, the sequencers and the drum kit; six drum kits, ten recorded instruments and four keyboard instruments – see [Factory sounds](docs/en/FACTORY-SOUNDS.md) |
 | **Four parts** | each with its own engine, envelopes, LFO, MIDI channel, scale / chord mode and MPE |
 | **Shared per voice** | amp and modulation envelopes, LFO with several destinations, glide, 16-voice polyphony |
 | **Sequencers** | step sequencer (up to 64 steps, probability, ratchets, parameter locks, 16 patterns, song mode), Euclid, arpeggiator and Orbit (polymeter), each with a target part – step, Euclid and Orbit can also play the drum kit |
 | **Tape machine** | eight stereo tracks: record / overdub / punch from the input, parts or drums, varispeed, reverse, loop (set in / out by hand at the playhead, snapped to bar or beat, edges draggable – [Setting the loop](docs/en/TAPE-MIXER-FX.md#setting-the-loop-p42)), tape character, undo, export as WAV master and stems; count-in of one or two bars (recording starts exactly on the bar) and a built-in metronome; the tempo is dragged, typed or tapped right on the display – see [Tempo, metronome and count-in](docs/en/USER-INTERFACE.md#tempo-metronome-and-count-in-p39) |
 | **Mixer** | eight channels with EQ, compressor, volume, pan, mute / solo, two sends (A: delay, B: reverb), master compressor, tape saturation and limiter |
 | **FX racks** | six serial slots per part and four on the master: hyper (unison widener), distortion (eight modes), flanger, compressor, multiband, EQ, filter, echo, hall, chorus, phaser, bitcrush, filter drive, delay, reverb, mid / side stereo, space 3D – reorder by dragging, each with mix and bypass – see [FX rack](docs/en/TAPE-MIXER-FX.md#fx-rack-07) |
-| **3D space** | every part can move around your head – front, sides, behind, above, near and far – on tempo-synced motion paths (circle, figure-8, fly-by with Doppler, random orbit, pendulum, spiral); binaural on headphones with Ohpe's own parametric head model (no measured data set), mono-compatible on speakers; also as rack effect *Space 3D*; 13 "3D" presets – see [3D Space](docs/en/SPACE.md) |
+| **3D space** | every part can move around your head – front, sides, behind, above, near and far – on tempo-synced motion paths (circle, figure-8, fly-by with Doppler, random orbit, pendulum, spiral); binaural on headphones with Ohpe's own parametric head model (no measured data set), mono-compatible on speakers; also as rack effect *Space 3D*; 75 "3D" presets (72 part presets, three projects) – see [3D Space](docs/en/SPACE.md) |
 | **Life** | one LIFE control per part keeps held notes evolving: every voice drifts on its own (a few cents of pitch, breathing filter, wandering engine colour, grain scatter) – 0 = static, on every engine, a modulation target – see [Life](docs/en/USER-INTERFACE.md#life) |
-| **Resonator body** | every part can play through a physically modelled body – coupled strings with sympathetic strings tuned to the note or the held chord, a modal plate, an open or closed tube; it follows the keyboard, pitch bend and MPE (pressure rings it, slide moves the excitation point); also as rack effect *Resonator*; 7 presets – see [Resonator](docs/en/RESONATOR.md) |
-| **Morph space** | an XY pad per part between four complete sounds – also across different engines: parameters morph where the sounds share their structure, otherwise the sounds play in parallel and cross-fade at even loudness; play it by mouse, automation, MIDI, the modulation matrix, mod wheel or MPE pressure / slide; 4 morph presets – see [Morph space](docs/en/MORPH.md) |
+| **Resonator body** | every part can play through a physically modelled body – coupled strings with sympathetic strings tuned to the note or the held chord, a modal plate, an open or closed tube; it follows the keyboard, pitch bend and MPE (pressure rings it, slide moves the excitation point); also as rack effect *Resonator*; 22 factory presets use it – see [Resonator](docs/en/RESONATOR.md) |
+| **Morph space** | an XY pad per part between four complete sounds – also across different engines: parameters morph where the sounds share their structure, otherwise the sounds play in parallel and cross-fade at even loudness; play it by mouse, automation, MIDI, the modulation matrix, mod wheel or MPE pressure / slide; 7 morph presets – see [Morph space](docs/en/MORPH.md) |
 | **Voice Control** | sing, hum or talk into an input and your voice moves the sound (not a vocoder – it only modulates): level, vowel (A-E-I-O-U map), brightness, consonants, pitch and syllable onsets as modulation sources, one-press *Vowel → Filter + Morph* – see [Voice Control](docs/en/VOICE-CONTROL.md) |
 | **Motion recorder** | turn a part's knobs while the music runs and up to four movements per part loop as lanes with their own length (1 – 64 sixteenths, polymetric to the pattern); overdub by touching again, depth control, also modulation sources – see [Motion recorder](docs/en/MOTION.md) |
 | **Performance pads** | four pads throw effects on the main mix for live sets – a quantised **stutter** (1/4 … 1/32, triplets), a **tape stop** over 1/8 … 2 bars, a resonant **filter sweep** (low-pass down / high-pass up) and a **reverb freeze** that holds the moment endlessly; hold = momentary, shift-click = latch, MIDI-learnable, matrix sources – see [Performance pads](docs/en/PADS.md) |
@@ -50,7 +51,8 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 | **Expressive playing** | Per part, velocity and aftertouch (channel, poly and MPE pressure) each drive two musical functions – cutoff, vibrato, glide time, attack, FM amount, position, drive and more – with amount and curve; the glide factory sounds stretch their glide under pressure – see [Expressive playing](docs/en/EXPRESSION.md) |
 | **In-app updates** | check for a new version from inside the standalone or the plug-in (by hand or, opt-in, once a day – never while playing), read its notes in English or German, download it in the background with resume and SHA-256 verification, then open the installer; stable / preview channel, skip or remind later, previous version as rollback, content packs without reinstalling; no telemetry – see [Updates](docs/en/UPDATES.md) |
 | **Content packs** | install preset packs from `.ohpepack` files (file dialog or drag & drop on the window): SHA-256 of every file checked before anything changes, one step of rollback, size limits; pack manager with version, size, license / signature (shown) and remove; filter the library by pack; presets point at pack content by `"<pack>/<item>"` and say which pack is missing – see [Content packs](docs/en/CONTENT-PACKS.md) |
-| **Settings and night skin** | one settings view behind the gear key: language (EN / DE), tooltips and a help overlay, help pages, a low-glare dark skin (or auto with the system), display brightness, animations, window size, MIDI setup (channels, MPE, bend ranges, inputs, clock / sync) and a MIDI learn list to edit or clear mappings, updates and about – saved per user, never in projects – see [Settings](docs/en/SETTINGS.md) |
+| **Settings and night skin** | one settings view behind the gear key: language (EN / DE), tooltips and a help overlay, help pages, a low-glare dark skin (or auto with the system), display brightness, animations, UI size 75 – 200 %, MIDI setup (channels, MPE, bend ranges, inputs, clock / sync) and a MIDI learn list to edit or clear mappings, updates and about – saved per user, never in projects – see [Settings](docs/en/SETTINGS.md) |
+| **Accessibility and UI size** | UI sizes 75 – 200 % (right-click on the housing), full keyboard operation with a focus ring (Tab, F6, arrows, Enter / Space), screen reader names and values in EN / DE, WCAG AA contrast in both skins – see [Accessibility](docs/en/ACCESSIBILITY.md) |
 | **Preset breeding** | cross two sounds (also across engines – a hybrid keeps the other engine as its layer) with a chosen mutation, hear six children with waveform / brightness thumbnails at their parents' loudness, keep the best and breed further generations with undo; children save to the library as favourites – see [Preset breeding](docs/en/BREEDING.md) |
 | **Bounce to engine** | one BOUNCE key moves a tape track, the tape mix, the loop range or a few bars of the live input into the Grain or Sampler engine of a part – as a seamless endless loop (grains wrap round the seam, held sampler notes sustain it) or a one-shot; bounces are saved as WAV and come back with the session – see [Bounce to engine](docs/en/BOUNCE.md) |
 | **Tape memory** | Ohpe always remembers the last 30 s of its own output; one CAPTURE key (MIDI-mappable, also on the Grid-Controller) turns it into a playable Sampler instrument – chromatic (pitch detected and tuned, root set) or sliced by onsets – saved inside the session, exportable as WAV – see [Tape memory](docs/en/TAPE-MEMORY.md) |
@@ -106,16 +108,20 @@ Linux) and as a **VST3** and **Audio Unit** plug-in.
 
 Full guide: [playing the interface](docs/en/USER-INTERFACE.md).
 
-## Installing on macOS
+## Installing
 
-Every push to main, every manual CI run and every pull request labelled `installer` builds a macOS
+Download the macOS installer or the Windows zips from the
+[releases page](https://github.com/thegroovex/Ohpe/releases) (Windows: unblock the zip, then *More info →
+Run anyway* at the SmartScreen warning – see [Installing Ohpe](docs/en/INSTALL.md#5-windows)). Between
+releases, every push to main, every manual CI run and every pull request labelled `installer` builds a macOS
 installer – artifact **Ohpe-macOS-Installer**
 on the run (*Actions → CI*). The disk image holds `Ohpe-Installer.pkg` (standalone app, VST3 and
 Audio Unit, each selectable; universal for Apple Silicon and Intel, macOS 11+), a Gatekeeper fix
-script, an uninstaller and a read-me in English and German. The pkg is not signed by Apple: open it
-with **right-click → Open** (or *System Settings → Privacy & Security → Open Anyway*). The installer
+script, an uninstaller and a read-me in English and German. The pkg is not signed by Apple: after the first
+blocked double-click open it with *System Settings → Privacy & Security → Open Anyway* (macOS 14 and older:
+also **right-click → Open**). The installer
 then removes the quarantine flag from the installed app and plug-ins and signs them ad hoc so
-Apple Silicon runs them. Full guide: [installing on macOS](docs/en/INSTALL.md).
+Apple Silicon runs them. Full guide: [Installing Ohpe](docs/en/INSTALL.md).
 
 ## Building
 
@@ -136,9 +142,12 @@ Run all tests with `scripts/test-all.sh` – see [CONTRIBUTING.md](CONTRIBUTING.
 
 ## Documentation
 
+* **[Manual (PDF)](docs/manual/Ohpe-Manual-EN.pdf)** – everything below in one book: quick start, all features,
+  MIDI and controllers, installation, parameter appendix ([German](docs/manual/Ohpe-Manual-DE.pdf));
+  built by `tools/manual/build_manual.py`
 * Engines: [Wavetable](docs/en/engines/wavetable.md), [Pluck](docs/en/engines/pluck.md),
   [Cluster](docs/en/engines/cluster.md), [Grain, Vocal, Sampler and drum kit](docs/en/GRAIN-VOCAL-SAMPLER-DRUM.md)
-* [Installing on macOS](docs/en/INSTALL.md) – installer, Gatekeeper fix, uninstall, signing
+* [Installing Ohpe](docs/en/INSTALL.md) – macOS installer, Windows, Gatekeeper fix, uninstall, signing
 * [Playing the interface](docs/en/USER-INTERFACE.md) – display, parts, pro view, step locks, tape and drum pages, Mod and Rack views
 * [Factory sounds](docs/en/FACTORY-SOUNDS.md) – every preset by category, drum kits, recorded instruments
 * [Preset library](docs/en/PRESETS.md) – browsing, saving, MIDI, file format

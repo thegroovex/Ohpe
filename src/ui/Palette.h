@@ -41,7 +41,7 @@ inline juce::Colour keyInk { 0xff54524e };        ///< p32: octave labels on the
 inline juce::Colour display { 0xff0c0d10 };       ///< "Night" display glass
 inline juce::Colour displayGrid { 0xff1c1e23 };
 inline juce::Colour displayText { 0xffe9e6df };   ///< warm paper white on the display only
-inline juce::Colour displayDim { 0xff6b6f78 };
+inline juce::Colour displayDim { 0xff83878f };
 // accents: one per encoder, also used for the matching value on the display
 inline juce::Colour signalRed { 0xffe5243b };     ///< encoder 1
 inline juce::Colour sunYellow { 0xfff6c20f };     ///< encoder 2

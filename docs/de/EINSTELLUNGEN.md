@@ -31,7 +31,7 @@ Keine Einstellung ist ein Host-Parameter: nichts davon wird automatisiert oder �
 | Display-Helligkeit | 40 – 100 % – dimmt das Display für dunkle Räume |
 | Animationen | **Voll**, **Reduziert** (langsameres Atmen der Lichter und 3D-Puls), **Aus** (laufende Lichter stehen still, voll an) |
 | Animierte 3D-Grafik | die bewegten Grafiken des Displays (derselbe Schalter wie im Grafik-Menü des Displays) |
-| Fenstergröße | 75 / 100 / 125 / 150 % – die Größe, mit der ein neues Fenster öffnet (die Ecke lässt sich weiter ziehen) |
+| Fenstergröße | UI-Größe 75 / 100 / 125 / 150 / 175 / 200 % – das Fenster nimmt sie sofort an, ein neues öffnet damit (die Ecke lässt sich weiter ziehen); auch per Rechtsklick aufs Gehäuse oder die Zahnrad-Taste – siehe [Barrierefreiheit](BARRIEREFREIHEIT.md) |
 
 Der **Nachtmodus** umfasst das ganze Instrument – Gehäuse, Tasten, Display, Profiansicht, Bibliothek, Update-Ansicht und
 die Einstellungen selbst. Er nutzt warme Dunkelgrautöne, nie reines Weiß; Akzente und Leuchtbalken sind gedimmt. Jede

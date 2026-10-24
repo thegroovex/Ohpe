@@ -133,6 +133,11 @@ public:
     void setShowShortcuts (bool show) { shortcuts = show; }
 
     juce::String getTooltip() override; ///< p11: depends on what the mouse is over (1.0: the 3D badge too)
+    /** p83: the screen reader reads the header, the page and the soft keys; with the keyboard focus, Left / Right
+        change the page and 1 .. 9 press the soft keys (numbered from the left). */
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override;
+    bool keyPressed (const juce::KeyPress& key) override;
+    juce::String accessibleText();
 
     void paint (juce::Graphics& g) override;
     void paintOverChildren (juce::Graphics& g) override; ///< p39: the count-in countdown
@@ -292,5 +297,12 @@ private:
     uint32_t lastChangeCounter = 0;
     int idleTicks = 0;
     bool idleFrameSkip (bool settled);
+    mutable bool paintedAnimation = false;           ///< p79: the last paint drew something that moves with the clock
+    float anim (bool moving) const noexcept          ///< p79: the clock for a drawing; `moving` keeps the display at full rate
+    {
+        paintedAnimation = paintedAnimation || moving;
+        return time;
+    }
+    bool padsMoving() const;
 };
 } // namespace ohpe::ui
