@@ -477,6 +477,7 @@ const std::map<juce::String, juce::String>& table()
         { "Flanger", "Flanger" },
         { "Compressor", "Kompressor" },
         { "Multiband", "Multiband" },
+        { "Multiband Comp", "Multiband-Kompressor" },
         { "EQ", "EQ" },
         { "Filter", "Filter" },
         { "Echo", "Echo" },

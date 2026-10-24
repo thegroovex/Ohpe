@@ -41,6 +41,7 @@ target_sources(ohpe_core PRIVATE
     fx/InsertEffects2.cpp
     fx/Space3D.cpp
     fx/Resonator.cpp
+    fx/MultibandComp.cpp
     fx/KeyGravity.cpp
     fx/InsertSlot.cpp)
 

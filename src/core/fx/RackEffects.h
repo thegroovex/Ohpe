@@ -7,6 +7,7 @@
 // sweep (cutoffs, times, gains) glide sample by sample, so automation and the modulation matrix never zipper.
 
 #include "../dsp/DspUtil.h"
+#include "Compressor.h"
 #include "IEffect.h"
 
 #include <array>
@@ -244,10 +245,8 @@ public:
     static float staticGainDb (float levelDb, float thresholdDb, float ratio, float kneeDb) noexcept;
 
 private:
-    float sr = 48000.0f, threshold = -18.0f, ratio = 4.0f, attackMs = 10.0f, releaseMs = 120.0f, knee = 6.0f, env = -120.0f, grDb = 0.0f;
-    float atkC = 0.0f, relC = 0.0f;
-    float peakEnv = 0.0f, envFall = 0.999f; ///< 0.8: held peak detector (12 ms hold, 20 ms fall)
-    int holdSamples = 576, holdLeft = 0;
+    float sr = 48000.0f, threshold = -18.0f, ratio = 4.0f, attackMs = 10.0f, releaseMs = 120.0f, knee = 6.0f;
+    CompDetector det; ///< p88: held peak + onset guard + program-dependent release (Compressor.h)
     rackdsp::Glide makeupG, mixG;
     std::atomic<float> grUi { 0.0f };
 };

@@ -318,7 +318,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     // ---- p19: the resonator body - per part stage ("pN.reso.on" + the Resonator block), then the Resonator rack type's
     //      block for every slot of every rack ------------------------------------------------------------------------
     for (auto& p : parts) p->registerLate19ResoParams (reg);
-    FxRack::registerTypeBlocks (reg, Core::numParts, InsertSlot::firstResoType, InsertSlot::numTypes);
+    FxRack::registerTypeBlocks (reg, Core::numParts, InsertSlot::firstResoType, InsertSlot::firstMbcType);
     // ---- p18: preset breeding - remote controls (triggers like the 0.3 library controls) ---------------------
     {
         auto add = [&] (ParamDescriptor d) { d.group = "remote"; reg.add (std::move (d)); };
@@ -374,5 +374,7 @@ void buildParameterLayout (ParamRegistry& reg, const std::array<std::unique_ptr<
     for (auto& p : parts) p->registerLate74HeadroomParams (reg);
     // ---- p77: 3D motion retrigger (Free / First / Note) and 3D strength per part
     for (auto& p : parts) p->registerLate77SpaceParams (reg);
+    // ---- p88: the Multiband Comp rack type's block for every slot of every rack (three-band upward + downward) ------
+    FxRack::registerTypeBlocks (reg, Core::numParts, InsertSlot::firstMbcType, InsertSlot::numTypes);
 }
 } // namespace ohpe

@@ -9,6 +9,7 @@
 #include "Widgets.h"
 #include "fx/RackEffects.h"
 #include "fx/Resonator.h"
+#include "fx/MultibandComp.h"
 #include "fx/Space3D.h"
 #include "plugin/Localisation.h"
 #include "plugin/ParameterBridge.h"
@@ -184,6 +185,27 @@ Layout layoutFor (OhpeProcessor& proc, const std::string& pre)
         add ("lowsplit", X, "", fix (0.04f), "Low split", "Trennung tief");
         add ("highsplit", X, "", fix (0.04f), "High split", "Trennung hoch");
         add ("", fix (0.5f), "output", Y, "Output", "Ausgang", "", 1);
+    }
+    else if (id == "mbcomp")
+    {
+        // p88: three band meters (level -80..0 dBFS up) with their DOWN (right) and UP (left) thresholds, a gain row
+        // under each band, OUT on the right (DEPTH on its wheel / Alt-drag)
+        L.regions = { { 0.0f, 0.0f, 0.28f, 0.8f }, { 0.31f, 0.0f, 0.28f, 0.8f }, { 0.62f, 0.0f, 0.28f, 0.8f },
+                      { 0.0f, 0.88f, 0.28f, 0.12f }, { 0.31f, 0.88f, 0.28f, 0.12f }, { 0.62f, 0.88f, 0.28f, 0.12f },
+                      { 0.94f, 0.0f, 0.05f, 1.0f } };
+        const auto Y = lin (-80.0f, 0.0f);
+        const char* keys[3][5] = { { "lowdown", "lowup", "lowdownratio", "lowupratio", "lowgain" },
+                                   { "middown", "midup", "middownratio", "midupratio", "midgain" },
+                                   { "highdown", "highup", "highdownratio", "highupratio", "highgain" } };
+        const char* en[3][3] = { { "Low down", "Low up", "Low gain" }, { "Mid down", "Mid up", "Mid gain" }, { "High down", "High up", "High gain" } };
+        const char* de[3][3] = { { "Tief ab", "Tief auf", "Tief Pegel" }, { "Mitte ab", "Mitte auf", "Mitte Pegel" }, { "Hoch ab", "Hoch auf", "Hoch Pegel" } };
+        for (int k = 0; k < 3; ++k)
+        {
+            add ("", fix (0.78f), keys[k][0], Y, en[k][0], de[k][0], keys[k][2], k);
+            add ("", fix (0.22f), keys[k][1], Y, en[k][1], de[k][1], keys[k][3], k);
+            add (keys[k][4], lin (-24.0f, 24.0f, 0.04f, 0.96f), "", fix (0.5f), en[k][2], de[k][2], "", 3 + k);
+        }
+        add ("", fix (0.5f), "output", lin (-24.0f, 24.0f, 0.04f, 0.96f), "Out", "Ausgang", "depth", 6);
     }
     else if (id == "filter" || id == "filterdrive")
     {
@@ -458,7 +480,7 @@ std::string FxGraphTile::paramAt (juce::Point<float> p) const
 
 bool FxGraphTile::animating() const
 {
-    return type == "compressor" || type == "multiband" || type == "chorus" || type == "phaser" || type == "flange" || type == "hyper"
+    return type == "compressor" || type == "multiband" || type == "mbcomp" || type == "chorus" || type == "phaser" || type == "flange" || type == "hyper"
            || type == "tremolo" || type == "wobble" || type == "space3d" || type == "resonator";
 }
 
@@ -509,9 +531,35 @@ void FxGraphTile::mouseExit (const juce::MouseEvent&)
     if (hover >= 0) { hover = -1; repaint(); }
 }
 
+juce::Rectangle<float> FxGraphTile::styleChipArea() const { return type == "mbcomp" ? chipRect : juce::Rectangle<float>(); }
+
+void FxGraphTile::showStyleMenu()
+{
+    juce::PopupMenu m;
+    const auto& list = MultibandCompEffect::styles();
+    for (size_t i = 0; i < list.size(); ++i) m.addItem ((int) i + 1, i18n::pick (list[i].nameEn, list[i].nameDe));
+    juce::Component::SafePointer<FxGraphTile> safe (this);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (this), [safe] (int r) {
+        if (safe != nullptr && r > 0) safe->applyStyle (r - 1);
+    });
+}
+
+void FxGraphTile::applyStyle (int index)
+{
+    const auto& list = MultibandCompEffect::styles();
+    if (type != "mbcomp" || index < 0 || index >= (int) list.size()) return;
+    const auto descs = MultibandCompEffect().getParamDescriptors();
+    for (size_t i = 0; i < descs.size() && i < list[(size_t) index].values.size(); ++i)
+        if (const auto* d = descOf (proc.core(), block + descs[i].id))
+            set (block + descs[i].id, d->toNormalised (d->clamp (list[(size_t) index].values[i])));
+    endAll();
+    repaint();
+}
+
 void FxGraphTile::mouseDown (const juce::MouseEvent& e)
 {
     lastMouse = e.position;
+    if (! e.mods.isPopupMenu() && styleChipArea().contains (e.position)) { showStyleMenu(); return; }
     const int i = hit (e.position);
     if (e.mods.isPopupMenu())
     {
@@ -875,6 +923,79 @@ void FxGraphTile::paintBackground (juce::Graphics& g, juce::Rectangle<float> plo
         track (g, R (1), k, "OUT");
         return;
     }
+    if (t == "mbcomp")
+    {
+        // p88: per band a level meter (violet, live), the zone it pushes down (above DOWN, red tint) and the zone it lifts
+        // (below UP, yellow tint), the live gain change as a bar on the right edge; the ratios under the band name
+        auto* s = slotObject();
+        auto* e = s != nullptr ? dynamic_cast<MultibandCompEffect*> (s->effect (typeOf (proc, prefix))) : nullptr;
+        const char* keys[3] = { "low", "mid", "high" };
+        const char* en[3] = { "LOW", "MID", "HIGH" };
+        const char* de[3] = { "TIEF", "MITTE", "HOCH" };
+        const char* splitKeys[2] = { "lowsplit", "highsplit" };
+        bool anySolo = false;
+        for (auto* kk : keys) anySolo = anySolo || v ((std::string (kk) + "solo").c_str()) >= 0.5f;
+        for (int b = 0; b < 3; ++b)
+        {
+            const auto r = R (b);
+            const std::string kb = keys[b];
+            auto yOf = [&] (float db) { return r.getBottom() - r.getHeight() * juce::jlimit (0.0f, 1.0f, (db + 80.0f) / 80.0f); };
+            const float down = v ((kb + "down").c_str()), up = v ((kb + "up").c_str());
+            const bool muted = anySolo && v ((kb + "solo").c_str()) < 0.5f;
+            g.setColour (colour::signalRed.withAlpha (muted ? 0.04f : 0.10f));
+            g.fillRect (r.withBottom (yOf (down)));
+            g.setColour (colour::sunYellow.withAlpha (muted ? 0.03f : 0.08f));
+            g.fillRect (r.withTop (yOf (up)));
+            g.setColour (colour::displayGrid.brighter (0.15f));
+            for (float db : { -20.0f, -40.0f, -60.0f }) g.drawHorizontalLine ((int) yOf (db), r.getX(), r.getRight());
+            frame (g, r, k);
+            const auto meter = juce::Rectangle<float> (r.getWidth() * 0.22f, r.getHeight()).withCentre (r.getCentre()).reduced (0.0f, k * 0.3f);
+            g.setColour (colour::displayGrid.brighter (0.3f));
+            g.fillRoundedRectangle (meter, k * 0.2f);
+            if (e != nullptr)
+            {
+                const float lv = juce::jlimit (-80.0f, 0.0f, e->bandLevelDb (b));
+                g.setColour (modc().withAlpha (muted ? 0.3f : 0.85f));
+                g.fillRoundedRectangle (meter.withTop (juce::jmin (meter.getBottom(), yOf (lv))), k * 0.2f);
+                // live gain change: up (yellow) = lifted, down (red) = pushed down, +-24 dB over half the height
+                const float gdb = juce::jlimit (-24.0f, 24.0f, e->bandGainDb (b));
+                const float mid = r.getCentreY(), y = mid - gdb / 24.0f * r.getHeight() * 0.5f;
+                g.setColour (gdb >= 0.0f ? colour::sunYellow : colour::signalRed);
+                g.fillRect (juce::Rectangle<float>::leftTopRightBottom (r.getRight() - k * 1.0f, juce::jmin (mid, y), r.getRight() - k * 0.3f, juce::jmax (mid, y)));
+            }
+            g.setColour (ink);
+            g.drawHorizontalLine ((int) yOf (down), r.getX() + r.getWidth() * 0.5f, r.getRight() - k * 1.2f);
+            g.setColour (ink.withAlpha (0.6f));
+            g.drawHorizontalLine ((int) yOf (up), r.getX() + k * 0.3f, r.getX() + r.getWidth() * 0.5f);
+            g.setFont (labelFont (k * 1.1f));
+            g.setColour (muted ? colour::displayDim : colour::displayText);
+            auto title = r.withHeight (k * 1.5f).translated (0.0f, k * 0.3f);
+            juce::String name = i18n::pick (en[b], de[b]);
+            if (v ((kb + "solo").c_str()) >= 0.5f) name << "  SOLO";
+            g.drawText (name, title, juce::Justification::centred, false);
+            g.setFont (monoFont (k * 0.9f));
+            g.setColour (colour::displayDim);
+            const auto ratio = [] (float x) { return juce::String (x, x < 10.0f ? 1 : 0) + ":1"; };
+            g.drawText (i18n::pick ("DOWN ", "AB ") + ratio (v ((kb + "downratio").c_str())) + i18n::pick ("  UP ", "  AUF ")
+                            + ratio (v ((kb + "upratio").c_str())),
+                        title.translated (0.0f, k * 1.4f), juce::Justification::centred, false);
+            if (b < 2) // the split between this band and the next
+            {
+                const float hz = v (splitKeys[b]);
+                const juce::String f = hz >= 1000.0f ? juce::String (hz / 1000.0f, 1) + "k" : juce::String ((int) std::lround (hz));
+                g.drawText (f, juce::Rectangle<float> (r.getRight() - k * 2.0f, r.getBottom() + k * 0.1f, R (b + 1).getX() - r.getRight() + k * 4.0f, k * 1.2f),
+                            juce::Justification::centred, false);
+            }
+            row (g, R (3 + b), k);
+        }
+        track (g, R (6), k, "OUT");
+        if (e != nullptr && e->safetyDb() > 0.05f) // the output safety stage acts
+        {
+            g.setColour (colour::signalRed);
+            g.fillEllipse (juce::Rectangle<float> (k * 0.8f, k * 0.8f).withCentre ({ R (6).getCentreX(), R (6).getY() - k * 2.2f }));
+        }
+        return;
+    }
     if (t == "filter" || t == "filterdrive")
     {
         const auto r = R (0);
@@ -1172,12 +1293,24 @@ void FxGraphTile::paintTile (juce::Graphics& g, juce::Rectangle<float> area)
     if (plain (prefix + "bypass") >= 0.5f && t > 0) head << "   " << i18n::upper (tr ("Bypass"));
     const float headW = juce::GlyphArrangement::getStringWidth (labelFont (k * 1.35f), head) + k * 2.0f;
     g.drawText (head, cap.withWidth (headW), juce::Justification::centredLeft, false);
+    float valuesLeft = headW;
+    if (type == "mbcomp") // p88: the styles (starting points) of the multiband compressor
+    {
+        chipRect = { cap.getX() + headW, cap.getY() + k * 0.2f, k * 8.0f, k * 1.6f };
+        const auto chip = chipRect;
+        g.setColour (colour::displayGrid.brighter (0.3f));
+        g.drawRoundedRectangle (chip.reduced (1.0f), k * 0.4f, 1.0f);
+        g.setFont (monoFont (k * 1.0f));
+        g.setColour (colour::displayText);
+        g.drawText (i18n::upper (i18n::pick ("Style", "Stil")) + " +", chip, juce::Justification::centred, false);
+        valuesLeft = chip.getRight() - area.getX() + k;
+    }
     const int shown = hover >= 0 ? hover : selected;
     if (shown >= 0 && shown < numHandles())
     {
         g.setFont (monoFont (k * 1.15f));
         g.setColour (edit());
-        g.drawFittedText (i18n::upper (handleName (shown)) + "   " + handleValues (shown), cap.withTrimmedLeft (headW).toNearestInt(), juce::Justification::centredRight, 1, 0.7f);
+        g.drawFittedText (i18n::upper (handleName (shown)) + "   " + handleValues (shown), cap.withTrimmedLeft (valuesLeft).toNearestInt(), juce::Justification::centredRight, 1, 0.7f);
     }
     const auto plot = plotArea();
     paintBackground (g, plot);

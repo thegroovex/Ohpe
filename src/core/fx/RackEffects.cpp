@@ -530,14 +530,7 @@ std::vector<ParamDescriptor> CompressorEffect::getParamDescriptors() const
 
 float CompressorEffect::staticGainDb (float levelDb, float thresholdDb, float ratio, float kneeDb) noexcept
 {
-    const float over = levelDb - thresholdDb;
-    const float slope = 1.0f / std::max (1.0f, ratio) - 1.0f;
-    if (kneeDb > 0.0f && std::abs (over) <= 0.5f * kneeDb)
-    {
-        const float x = over + 0.5f * kneeDb;
-        return slope * x * x / (2.0f * kneeDb);
-    }
-    return over > 0.0f ? slope * over : 0.0f;
+    return compStaticGainDb (levelDb, thresholdDb, ratio, kneeDb);
 }
 
 void CompressorEffect::prepare (double sampleRate, int)
@@ -545,19 +538,14 @@ void CompressorEffect::prepare (double sampleRate, int)
     sr = (float) sampleRate;
     makeupG.prepare (sr, 0.02f);
     mixG.prepare (sr, 0.02f);
-    setParam (Attack, attackMs);
-    setParam (Release, releaseMs);
-    holdSamples = (int) (0.012f * sr);
-    envFall = std::exp (-1.0f / (0.02f * sr));
+    det.prepare (sr);
+    det.setTimes (attackMs, releaseMs);
     reset();
 }
 
 void CompressorEffect::reset() noexcept
 {
-    env = -120.0f;
-    peakEnv = 0.0f;
-    holdLeft = 0;
-    grDb = 0.0f;
+    det.reset();
     makeupG.v = makeupG.t;
     mixG.v = mixG.t;
     grUi.store (0.0f);
@@ -569,8 +557,8 @@ void CompressorEffect::setParam (int i, float v) noexcept
     {
         case Threshold: threshold = v; break;
         case Ratio: ratio = std::max (1.0f, v); break;
-        case Attack: attackMs = std::max (0.05f, v); atkC = std::exp (-1.0f / (sr * attackMs * 0.001f)); break;
-        case Release: releaseMs = std::max (1.0f, v); relC = std::exp (-1.0f / (sr * releaseMs * 0.001f)); break;
+        case Attack: attackMs = std::max (0.05f, v); det.setTimes (attackMs, releaseMs); break;
+        case Release: releaseMs = std::max (1.0f, v); det.setTimes (attackMs, releaseMs); break;
         case Knee: knee = std::max (0.0f, v); break;
         case Makeup: makeupG.t = dsp::dbToGain (v); break;
         case Mix: mixG.t = dsp::clamp01 (v); break;
@@ -580,21 +568,14 @@ void CompressorEffect::setParam (int i, float v) noexcept
 
 void CompressorEffect::process (float* l, float* r, int n) noexcept
 {
+    // stereo-linked, zero latency (p88 CompDetector): the 0.8 held peak detector keeps fast settings off the waveform of
+    // a bass; the onset guard catches the first hit after silence so the make-up never lifts a transient above the curve
+    const float th = threshold, ra = ratio, kn = knee;
+    auto curve = [th, ra, kn] (float db) { return compStaticGainDb (db, th, ra, kn); };
     float worst = 0.0f;
     for (int i = 0; i < n; ++i)
     {
-        // stereo-linked peak detector, smoothed gain computer (branching attack / release). 0.8 punch pass: the
-        // detector holds a peak for 12 ms (then falls with 20 ms), so fast settings no longer follow the waveform of a
-        // bass between its peaks (gain ripple inside every cycle = distortion on the sub)
-        const float x = std::max (std::abs (l[i]), std::abs (r[i]));
-        if (x >= peakEnv) { peakEnv = x; holdLeft = holdSamples; }
-        else if (holdLeft > 0) --holdLeft;
-        else peakEnv = std::max (x, peakEnv * envFall);
-        const float peak = peakEnv;
-        const float target = staticGainDb (dsp::gainToDb (peak), threshold, ratio, knee);
-        const float c = target < grDb ? atkC : relC;
-        grDb = target + (grDb - target) * c;
-        if (grDb > -1.0e-6f) grDb = 0.0f;
+        const float grDb = det.next (std::max (std::abs (l[i]), std::abs (r[i])), curve);
         worst = std::min (worst, grDb);
         const float g = std::pow (10.0f, grDb * 0.05f) * makeupG.next();
         const float m = mixG.next();

@@ -141,7 +141,7 @@ TEST_CASE ("p19 resonator: parameters - per-part stage, rack type in every slot,
     }
     CHECK (reg.indexOf ("mfx4.resonator.mix") >= 0);
     CHECK (InsertSlot::firstResoType == InsertSlot::firstSpaceType + 1);
-    CHECK (InsertSlot::numTypes == InsertSlot::firstResoType + 1);
+    CHECK (InsertSlot::firstMbcType == InsertSlot::firstResoType + 1); // p88: Multiband Comp follows
     CHECK (InsertSlot::typeNamesEn()[(size_t) InsertSlot::Resonator] == "Resonator");
     CHECK (InsertSlot::typeNamesDe()[(size_t) InsertSlot::Resonator] == "Resonanzkörper");
     CHECK (std::string (InsertSlot::typeInfo (InsertSlot::Resonator).id) == "resonator");

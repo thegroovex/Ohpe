@@ -291,6 +291,37 @@ inline double truePeakDb (const Audio& a)
     return peak > 1.0e-10 ? 20.0 * std::log10 (peak) : -200.0;
 }
 
+/** p88: BS.1770-4 integrated loudness (K-weighting, 400 ms blocks, 75 % overlap, absolute and relative gate); -200 if too short. */
+inline double integratedLufs (const Audio& a)
+{
+    if (a.size() < 19200) return -200.0;
+    struct Bq { double b0, b1, b2, a1, a2, z1 = 0, z2 = 0; double run (double x) { const double y = b0 * x + z1; z1 = b1 * x - a1 * y + z2; z2 = b2 * x - a2 * y; return y; } };
+    auto kw = [] (const std::vector<float>& in) {
+        Bq s { 1.53512485958697, -2.69169618940638, 1.19839281085285, -1.69065929318241, 0.73248077421585 };
+        Bq h { 1.0, -2.0, 1.0, -1.99004745483398, 0.99007225036621 };
+        std::vector<double> o (in.size());
+        for (size_t i = 0; i < in.size(); ++i) { const double y = h.run (s.run ((double) in[i])); o[i] = y * y; }
+        return o;
+    };
+    const auto l = kw (a.l), r = kw (a.r);
+    const size_t blk = 19200, hop = 4800;
+    std::vector<double> z;
+    for (size_t s = 0; s + blk <= l.size(); s += hop)
+    {
+        double acc = 0.0;
+        for (size_t i = s; i < s + blk; ++i) acc += l[i] + r[i];
+        z.push_back (acc / (double) blk);
+    }
+    auto loud = [] (double p) { return p > 0.0 ? -0.691 + 10.0 * std::log10 (p) : -200.0; };
+    double sum = 0.0; int cnt = 0;
+    for (double p : z) if (loud (p) > -70.0) { sum += p; ++cnt; }
+    if (cnt == 0) return -200.0;
+    const double rel = loud (sum / cnt) - 10.0;
+    sum = 0.0; cnt = 0;
+    for (double p : z) if (loud (p) > -70.0 && loud (p) > rel) { sum += p; ++cnt; }
+    return cnt > 0 ? loud (sum / cnt) : -200.0;
+}
+
 /** p74: hard-clip signature - runs of three or more equal samples above 0.5 (a stage clamping the waveform). */
 inline int flatTopRuns (const Audio& a)
 {
