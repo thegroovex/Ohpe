@@ -662,7 +662,8 @@ TEST_CASE ("updater e2e: a connection that goes silent mid-download is abandoned
     auto s = u->snapshot();
     std::string seen;
     for (const auto& q : h.srv.requests()) seen += q.path + " [" + q.range + "]  ";
-    REQUIRE_MESSAGE (finished, "stalled download did not finish; progress " + std::to_string (s.progress) + ", requests: " + seen);
+    const std::string note = "stalled download did not finish; progress " + std::to_string (s.progress) + ", requests: " + seen;
+    REQUIRE_MESSAGE (finished, note);
     CHECK (s.state == Updater::State::Ready);
     CHECK (fileBytes (s.downloaded) == r.installer);
     const auto rg = h.srv.ranges (path);
