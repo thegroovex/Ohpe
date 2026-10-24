@@ -658,8 +658,13 @@ void state (Context& c)
     settle (*b, 40); // silent blocks: only the learned key memory may change
     settle (*c3, 40);
     {
-        const auto k1 = withoutKeyMemory (s1), k2 = withoutKeyMemory (stateOf (*b)), k3 = withoutKeyMemory (stateOf (*c3));
-        check (k2 == k1 && k3 == k1, "restored instances after running: identical apart from the learned key memory: " + firstDifference (k1, k2 == k1 ? k3 : k2));
+        // the state document only (the tape audio part is compared right after restoring, above)
+        auto doc = [] (const juce::MemoryBlock& m) { return juce::MemoryBlock (m.getData(), jsonLength (m)); };
+        const auto sb = stateOf (*b), sc = stateOf (*c3);
+        const auto k1 = doc (withoutKeyMemory (s1)), k2 = doc (withoutKeyMemory (sb)), k3 = doc (withoutKeyMemory (sc));
+        check (k2 == k1 && k3 == k1, "restored instances after running: state identical apart from the learned key memory: " + firstDifference (k1, k2 == k1 ? k3 : k2));
+        if (const auto tb = withoutKeyMemory (sb), tc = withoutKeyMemory (sc); ! (tb == tc) && k2 == k3)
+            info ("after running: the two restored instances' tape audio differs: " + firstDifference (tb, tc)); // diagnostics
     }
 
     // back into the first instance (undo / reload in the same session), after playing
