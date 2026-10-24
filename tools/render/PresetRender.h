@@ -402,4 +402,56 @@ inline Metrics measure (const Audio& a)
     m.hfDb = all > 0.0 ? 10.0 * std::log10 (std::max (1.0e-20, hf / all)) : -200.0;
     return m;
 }
+/** p88: the after-silence audit - a part preset (arpeggiator off, master limiter off) sits 2 s in silence, then plays a note
+    (C3), a 4-note chord (C3 E3 G3 C4) and a wide 8-note chord (C1 .. G4) at velocity 127, each held 1.5 s with 2.5 s of
+    silence after it (the compressors release fully in between). True peak per material, loudness of the held note. */
+struct DynamicsAudit
+{
+    double tp[3] = { -200.0, -200.0, -200.0 }; ///< note, chord4, chord8 (dBTP)
+    double noteLufs = -200.0;
+    int flatTops = 0, nonFinite = 0;
+};
+
+inline Audio sliceOf (const Audio& a, size_t from, size_t len)
+{
+    Audio s;
+    s.sampleRate = a.sampleRate;
+    from = std::min (from, a.size());
+    len = std::min (len, a.size() - from);
+    s.l.assign (a.l.begin() + (long) from, a.l.begin() + (long) (from + len));
+    s.r.assign (a.r.begin() + (long) from, a.r.begin() + (long) (from + len));
+    return s;
+}
+
+inline DynamicsAudit dynamicsAudit (Core& core, const preset::Preset& p, int block = 512)
+{
+    preset::PartOptions opt;
+    opt.arp = false;
+    preset::applyPart (p, core.params(), 0, opt);
+    usertable::partFromJson (core, 0, p.userTables ? *p.userTables : std::string(),
+                             [] (const std::string&, const std::string&) { return usertable::UserTablePtr(); });
+    core.params().set ("tempo", 120.0f);
+    core.params().set ("mix.master.limit", 0.0f);
+    core.prepareEffects();
+    const std::vector<std::vector<int>> mats { { 48 }, { 48, 52, 55, 60 }, { 36, 43, 48, 52, 55, 60, 64, 67 } };
+    const double lead = 2.0, hold = 1.5, gap = 2.5, sr = core.sampleRate();
+    std::vector<std::pair<int64_t, MidiEvent>> ev;
+    std::vector<size_t> starts;
+    double t = lead;
+    for (const auto& m : mats)
+    {
+        const auto on = (int64_t) (t * sr), off = (int64_t) ((t + hold) * sr);
+        starts.push_back ((size_t) on);
+        for (int n : m) { ev.push_back ({ on, MidiEvent::noteOn (1, n, 127) }); ev.push_back ({ off, MidiEvent::noteOff (1, n) }); }
+        t += hold + gap;
+    }
+    const auto a = renderCore (core, ev, (int64_t) (t * sr), block);
+    DynamicsAudit r;
+    for (size_t k = 0; k < mats.size(); ++k) r.tp[k] = truePeakDb (sliceOf (a, starts[k], (size_t) ((hold + gap) * sr)));
+    r.noteLufs = integratedLufs (sliceOf (a, starts[0], (size_t) (hold * sr)));
+    r.flatTops = flatTopRuns (a);
+    for (size_t i = 0; i < a.size(); ++i) r.nonFinite += ! std::isfinite (a.l[i]) || ! std::isfinite (a.r[i]);
+    return r;
+}
+
 } // namespace ohpe::render
