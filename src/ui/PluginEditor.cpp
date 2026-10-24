@@ -16,6 +16,7 @@
 #include "Palette.h"
 #include "Brand.h"
 #include "plugin/Localisation.h"
+#include "plugin/MicAccess.h"
 #include "plugin/ParameterBridge.h"
 #include "plugin/TapeIO.h"
 #include "tape/TapeFile.h"
@@ -49,7 +50,7 @@ enum SoftKeyId
     skMotionRec = 100, skMotionPlay, skMotionClear,   // p22: motion recorder
     skPadFirst = 110,                                 // p25: performance pads (latching: 110 .. 113)
     skHarmonyTake = 120, skHarmonyHold, skHarmonyClear, // p24: harmony brain
-    skVoiceOn = 180, skVoiceMap, // p68: Voice Control (after p67 capture keys 170/171)
+    skVoiceOn = 180, skVoiceMap, skVoiceMic, // p68: Voice Control (after p67 capture keys 170/171); p86: microphone access
     skTapeClear = 130, skTapeClearAll, skTapeSave, skTapeLoad, // p38: clear track / all, save / load the tape
     // p42: the loop keys of the tape page (the loop readout left of the keys opens / closes them)
     skLoopSetIn = 140, skLoopSetOut, skLoopOnOff, skLoopSnap, skLoopToIn, skLoopBack, skLoopUndo, skLoopRedo, skLoopHalf,
@@ -98,6 +99,7 @@ juce::String softKeyTip (int id)
         case skHarmonyClear: return t ("Forget what the harmony brain heard", "Vergessen, was das Harmonie-Gehirn gehört hat");
         case skVoiceOn: return t ("Voice Control on or off (needs an audio input)", "Stimmsteuerung ein oder aus (braucht einen Audioeingang)");
         case skVoiceMap: return t ("Quick map: vowels move the filter and the morph of the edit part", "Schnellzuweisung: Vokale bewegen Filter und Morph des Edit-Parts");
+        case skVoiceMic: return t ("Microphone access: opens the privacy settings of the system (or asks for access)", "Mikrofonzugriff: öffnet die Datenschutz-Einstellungen des Systems (oder fragt nach dem Zugriff)");
         case skTapeClear: return t ("Clear the edit track (asks first)", "Die Edit-Spur löschen (fragt vorher)");
         case skTapeClearAll: return t ("Clear all eight tracks (asks first)", "Alle acht Spuren löschen (fragt vorher)");
         case skTapeSave: return t ("Save the tape as a file", "Das Tape als Datei speichern");
@@ -2240,6 +2242,8 @@ void OhpeEditor::refreshSoftKeys()
         const auto* on = proc.parameter (voice::Ids::on);
         keys = { { skVoiceOn, tr ("On"), true, on != nullptr && on->getValue() > 0.5f },
                  { skVoiceMap, i18n::pick ("Vowel \xe2\x86\x92 Filter + Morph", "Vokal \xe2\x86\x92 Filter + Morph"), true } };
+        if (const int mk = voiceview::micKey (core); mk != 0) // p86: the system refuses / has not asked for the microphone
+            keys.push_back ({ skVoiceMic, mk == 1 ? tr ("Mic Access") : tr ("Allow Mic"), true });
         if (voiceMapMessage.isNotEmpty()) status = voiceMapMessage;
     }
     else if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewMotion) // p22: record, play, clear the part's lanes
@@ -2385,9 +2389,15 @@ void OhpeEditor::onSoftKey (int id)
         case skVoiceOn: // p68
         {
             const auto* prm = proc.parameter (voice::Ids::on);
-            setParamPlain (voice::Ids::on, prm != nullptr && prm->getValue() > 0.5f ? 0.0f : 1.0f);
+            const bool turnOn = ! (prm != nullptr && prm->getValue() > 0.5f);
+            setParamPlain (voice::Ids::on, turnOn ? 1.0f : 0.0f);
+            if (turnOn && mic::access() == mic::Access::notDetermined) mic::request(); // p86: the system asks once
             break;
         }
+        case skVoiceMic: // p86
+            if (voiceview::micKey (core) == 1) mic::openPrivacySettings();
+            else mic::request ([safe = juce::Component::SafePointer<juce::Component> (this)] (bool) { if (safe != nullptr) safe->repaint(); });
+            break;
         case skVoiceMap: // p68: three routings into the edit part's matrix
         {
             const int placed = proc.applyVoiceQuickMap (ctx.part);
@@ -3295,7 +3305,7 @@ void OhpeEditor::timerCallback()
     }
     if (mode == Mode::Lfo && ctx.lfoView == modfx::LfoViewVoice) // p68: the meter and the dot move with every block
     {
-        const int sig = voiceview::signature (core) + 8 * (proc.parameter (voice::Ids::on) != nullptr && proc.parameter (voice::Ids::on)->getValue() > 0.5f ? 1 : 0);
+        const int sig = voiceview::signature (core) + 64 * (proc.parameter (voice::Ids::on) != nullptr && proc.parameter (voice::Ids::on)->getValue() > 0.5f ? 1 : 0);
         if (sig != lastVoiceSignature) { lastVoiceSignature = sig; refreshSoftKeys(); }
         display.repaint();
     }

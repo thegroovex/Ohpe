@@ -24,4 +24,18 @@ void paint (juce::Graphics& g, juce::Rectangle<float> visualArea, const Core& co
 juce::String statusLine (const Core& core);
 /** Changes that matter for repainting / the soft keys (cheap, message thread). */
 int signature (const Core& core);
+
+/** p86: what the status line says about the input (the first that applies, in this order). */
+enum class InputState
+{
+    off,        ///< Voice Control is off
+    micBlocked, ///< the system refuses the microphone (macOS privacy settings): every input is silent
+    micAsk,     ///< the system has not asked for the microphone yet
+    noDevice,   ///< no input device / host input bus delivers channels
+    noSignal,   ///< an input is open but completely silent (level, cable, muted device)
+    signal      ///< the input carries a signal
+};
+InputState inputState (const Core& core);
+/** p86: the extra soft key of the Voice view: 0 = none, 1 = open the privacy settings, 2 = ask for the microphone. */
+int micKey (const Core& core);
 } // namespace ohpe::ui::voiceview

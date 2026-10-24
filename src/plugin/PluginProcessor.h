@@ -241,6 +241,8 @@ public:
     std::shared_ptr<void> parkedGridController;
 
     static BusesProperties makeBuses();
+    /** p86: the bus layout the processor starts with (standalone app: input bus on). */
+    static BusesProperties makeBuses (bool standaloneApp);
 
     /** p63: true when the last setStateInformation() could not load its state (damaged, or a loader failed half
         way: the instance then starts over with the factory start sound). Message thread. */

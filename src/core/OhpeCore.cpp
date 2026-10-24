@@ -151,8 +151,8 @@ void Core::prepare (double sampleRate, int maxBlockSize)
     metro.prepare (sr); // p39
     masterRack.prepare (sr, chunk);
     for (auto& t : tapeOut) t.assign ((size_t) chunk, 0.0f);
-    safeInputL.assign ((size_t) maxBlock, 0.0f); // p63
-    safeInputR.assign ((size_t) maxBlock, 0.0f);
+    safeInputL.assign ((size_t) std::max (maxBlock, maxInputBlock), 0.0f); // p63; p86: longer device blocks keep their input
+    safeInputR.assign ((size_t) std::max (maxBlock, maxInputBlock), 0.0f);
     std::fill (stepParamLast.begin(), stepParamLast.end(), NAN);
     for (auto* b : { &euclidBinding, &arpBinding, &orbitBinding }) std::fill (b->last.begin(), b->last.end(), NAN);
     reset();
@@ -966,8 +966,10 @@ void Core::process (const OutputBuffers& outputs, int numSamples, const MidiEven
 
 void Core::sanitiseInput (int numSamples) noexcept
 {
+    inputLive.store (inputL != nullptr || inputR != nullptr, std::memory_order_relaxed); // p86
     if (inputL == nullptr && inputR == nullptr) return;
-    if (numSamples > (int) safeInputL.size()) { inputL = inputR = nullptr; return; } // more than prepared: no input
+    if (inputL == nullptr) inputL = inputR; // p86: one channel only: both sides hear it
+    if (numSamples > (int) safeInputL.size()) { inputL = inputR = nullptr; return; } // beyond maxInputBlock: no input
     auto clean = [numSamples] (const float* in, std::vector<float>& out) -> const float* {
         if (in == nullptr) return nullptr;
         for (int i = 0; i < numSamples; ++i)

@@ -4,6 +4,7 @@
 
 #include "Palette.h"
 #include "plugin/Localisation.h"
+#include "plugin/MicAccess.h"
 
 #include <cmath>
 
@@ -97,20 +98,49 @@ void paint (juce::Graphics& g, juce::Rectangle<float> v, const Core& core)
     bar (col(), a.uiValue (voice::Onset), colour::displayText, tr ("Onset"));
 }
 
+InputState inputState (const Core& core)
+{
+    if (! isOn (core)) return InputState::off;
+    const auto access = mic::access();
+    if (mic::blocked (access)) return InputState::micBlocked;
+    if (! core.inputConnected()) return InputState::noDevice;
+    if (access == mic::Access::notDetermined) return InputState::micAsk;
+    if (core.voiceControl().analysis().uiInputDb() <= -119.0f) return InputState::noSignal;
+    return InputState::signal;
+}
+
+int micKey (const Core& core)
+{
+    switch (inputState (core))
+    {
+        case InputState::micBlocked: return 1;
+        case InputState::micAsk: return 2;
+        default: return 0;
+    }
+}
+
 juce::String statusLine (const Core& core)
 {
     const auto& a = core.voiceControl().analysis();
-    if (! isOn (core)) return tr ("Off");
-    if (a.uiInputDb() <= -119.0f) return tr ("No input - choose one in the audio settings or the host");
-    if (! a.uiGateOpen()) return tr ("Listening") + juce::String::fromUTF8 (" \xc2\xb7 ") + juce::String (juce::roundToInt (a.latencyMs())) + " ms";
+    const auto dot = juce::String::fromUTF8 (" \xc2\xb7 ");
+    switch (inputState (core))
+    {
+        case InputState::off: return tr ("Off");
+        case InputState::micBlocked: return tr ("Microphone access denied - allow it in the system settings");
+        case InputState::micAsk: return tr ("Microphone access not allowed yet");
+        case InputState::noDevice: return tr ("No input device chosen - choose one in the audio settings or the host");
+        case InputState::noSignal: return tr ("Input open - no signal (check level / cable)");
+        case InputState::signal: break;
+    }
+    const auto db = juce::String (juce::roundToInt (a.uiInputDb())) + " dB";
+    if (! a.uiGateOpen()) return tr ("Listening") + dot + db + dot + juce::String (juce::roundToInt (a.latencyMs())) + " ms";
     const float vx = 0.5f * (a.uiValue (voice::VowelX) + 1.0f), vy = 0.5f * (a.uiValue (voice::VowelY) + 1.0f);
-    return tr ("Vowel") + " " + voice::vowelName (voice::classifyVowel (vx, vy)) + juce::String::fromUTF8 (" \xc2\xb7 ")
-           + juce::String (juce::roundToInt (a.uiInputDb())) + " dB";
+    return tr ("Vowel") + " " + voice::vowelName (voice::classifyVowel (vx, vy)) + dot + db;
 }
 
 int signature (const Core& core)
 {
     const auto& a = core.voiceControl().analysis();
-    return (isOn (core) ? 1 : 0) + (a.uiGateOpen() ? 2 : 0) + (a.uiInputDb() <= -119.0f ? 4 : 0);
+    return (isOn (core) ? 1 : 0) + (a.uiGateOpen() ? 2 : 0) + 4 * (int) inputState (core); // < 8 * 6 (the editor adds 8 * 8)
 }
 } // namespace ohpe::ui::voiceview

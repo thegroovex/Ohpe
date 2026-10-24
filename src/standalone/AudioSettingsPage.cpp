@@ -3,6 +3,7 @@
 #include "AudioSettingsPage.h"
 
 #include "plugin/Localisation.h"
+#include "plugin/MicAccess.h"
 #include "ui/Palette.h"
 
 namespace ohpe
@@ -43,12 +44,22 @@ AudioSettingsPage::AudioSettingsPage (juce::AudioDeviceManager& d, OhpeProcessor
     inputBox.onChange = [this] { // p68: none by default; macOS asks for the microphone the first time one opens
         if (updating) return;
         const bool none = inputBox.getSelectedId() <= 1;
-        applySetup ([this, none] (auto& s) {
-            s.inputDeviceName = none ? juce::String() : inputBox.getText();
-            s.useDefaultInputChannels = false;
-            s.inputChannels.clear();
-            if (! none) s.inputChannels.setRange (0, 2, true);
-        });
+        const auto name = none ? juce::String() : inputBox.getText();
+        auto open = [this, name] {
+            applySetup ([this, name] (auto& s) {
+                s.inputDeviceName = name;
+                s.useDefaultInputChannels = false;
+                // p86: a mono device opens its one channel (asking for two of them is fine with every driver
+                // tried, but the count is known here - no channel the device does not have is asked for)
+                s.inputChannels = name.isEmpty() ? juce::BigInteger() : inputChannelsFor (inputCount (name));
+            });
+        };
+        // p86: ask for the microphone first (macOS) - the device opens when the answer is there, so the first
+        // blocks are not silent because the question was still open
+        if (! none && mic::access() == mic::Access::notDetermined)
+            mic::request ([safe = juce::Component::SafePointer<AudioSettingsPage> (this), open] (bool) { if (safe != nullptr) open(); });
+        else
+            open();
     };
     typeBox.onChange = [this] {
         if (updating) return;
@@ -111,6 +122,24 @@ void AudioSettingsPage::applySetup (std::function<void (juce::AudioDeviceManager
     const auto err = dm.setAudioDeviceSetup (setup, true);
     if (err.isNotEmpty()) juce::Logger::writeToLog ("Ohpe audio settings: " + err);
     refreshDeviceLists();
+    if (onSetupChanged) onSetupChanged(); // p86
+}
+
+juce::BigInteger AudioSettingsPage::inputChannelsFor (int deviceInputs)
+{
+    juce::BigInteger chans;
+    if (deviceInputs > 0) chans.setRange (0, juce::jmin (2, deviceInputs), true);
+    else chans.setRange (0, 2, true); // count unknown: the first two (the driver opens what exists)
+    return chans;
+}
+
+int AudioSettingsPage::inputCount (const juce::String& name)
+{
+    // p86: the device's input channel count when it is already the input (no second device instance is created to
+    // probe one: some drivers allow only one); unknown otherwise - the driver then opens the channels that exist
+    if (auto* dev = dm.getCurrentAudioDevice(); dev != nullptr && dm.getAudioDeviceSetup().inputDeviceName == name)
+        return dev->getInputChannelNames().size();
+    return 0;
 }
 
 void AudioSettingsPage::changeListenerCallback (juce::ChangeBroadcaster*) { refreshDeviceLists(); }
